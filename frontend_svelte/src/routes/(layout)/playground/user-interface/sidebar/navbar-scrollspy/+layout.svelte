@@ -1,9 +1,22 @@
 <script lang="ts">
-	import { initCollapse, initOverlay, initScrollspy, initDropdown } from '$lib/userInterface';
+	import { initDropdown, initOverlay, initCollapse, initScrollspy } from '$lib/userInterface';
 	import Display from '$components/Display.svelte';
 	import type { Snippet } from 'svelte';
-	// import { resolve } from '$app/paths';
 	let { children }: { children: Snippet } = $props();
+
+	let sidebar: HTMLElement | undefined = $state();
+
+	const toggleSidebar = () => {
+		if (sidebar) {
+			const sideBarInstance = window.HSOverlay.getInstance(sidebar, true);
+			const isClosed = 'hidden' in sideBarInstance.element.el.className.split(' ');
+			if (isClosed) {
+				window.HSOverlay.open(sidebar);
+			} else {
+				window.HSOverlay.close(sidebar);
+			}
+		}
+	};
 </script>
 
 <nav
@@ -11,15 +24,17 @@
 >
 	<button
 		type="button"
-		class="btn btn-text max-sm:btn-square me-2"
+		class="btn btn-text btn-square"
 		aria-haspopup="dialog"
 		aria-expanded="false"
-		aria-controls="with-navbar-sidebar-scrollspy"
-		data-overlay="#with-navbar-sidebar-scrollspy"
+		aria-controls="with-navbar-sidebar"
+		data-overlay="#with-navbar-sidebar"
 		aria-label="Toggle Sidebar"
+		onclick={() => toggleSidebar()}
 	>
-		<span class="icon-[tabler--menu-2] overlay-layout-open:hidden size-5"></span>
-		<span class="icon-[tabler--menu-3] overlay-layout-open:block hidden size-5"></span>
+		<span class="icon-[material-symbols--menu] overlay-layout-open:hidden size-6"></span>
+		<span class="icon-[material-symbols--menu-open-rounded] overlay-layout-open:block hidden size-6"
+		></span>
 	</button>
 	<div class="flex flex-1 items-center">
 		<a class="link text-base-content link-neutral text-xl font-semibold no-underline" href="/">
@@ -32,12 +47,12 @@
 			{@attach initDropdown}
 		>
 			<button
-				id="dropdown-scrollable"
+				id="dropdown-notifications"
 				type="button"
 				class="dropdown-toggle btn btn-text btn-circle dropdown-open:bg-base-content/10 size-10"
 				aria-haspopup="menu"
 				aria-expanded="false"
-				aria-label="Dropdown"
+				aria-label="Notifications Dropdown"
 			>
 				<div class="indicator">
 					<span class="indicator-item bg-error size-2 rounded-full"></span>
@@ -48,7 +63,7 @@
 				class="dropdown-menu dropdown-open:opacity-100 hidden"
 				role="menu"
 				aria-orientation="vertical"
-				aria-labelledby="dropdown-scrollable"
+				aria-labelledby="dropdown-notifications"
 			>
 				<div class="dropdown-header justify-center">
 					<h6 class="text-base-content text-base">Notifications</h6>
@@ -135,14 +150,15 @@
 		</div>
 		<div
 			class="dropdown relative inline-flex [--auto-close:inside] [--offset:8] [--placement:bottom-end]"
+			{@attach initDropdown}
 		>
 			<button
-				id="dropdown-scrollable"
+				id="dropdown-avatar"
 				type="button"
 				class="dropdown-toggle flex items-center"
 				aria-haspopup="menu"
 				aria-expanded="false"
-				aria-label="Dropdown"
+				aria-label="Avatar Dropdown"
 			>
 				<div class="avatar">
 					<div class="size-9.5 rounded-full">
@@ -202,134 +218,29 @@
 	</div>
 </nav>
 
-<div class="h-screen w-screen pt-50">
-	<div id="scrollspy-scrollable-parent" class="max-h-96 overflow-y-auto">
+<div class="h-screen w-screen">
+	<div id="scrollspy-scrollable-parent" class="grid h-screen grid-cols-5 overflow-y-auto">
 		<aside
-			id="with-navbar-sidebar-scrollspy"
-			class="overlay border-base-content/20 overlay-open:translate-x-0 drawer drawer-start sm:overlay-layout-open:translate-x-0 hidden w-64 border-e pt-50 [--auto-close:sm] [--body-scroll:true] [--is-layout-affect:true] [--opened:lg] sm:absolute sm:z-0 sm:flex sm:shadow-none lg:[--overlay-backdrop:false]"
+			id="with-navbar-sidebar"
+			class="overlay drawer drawer-start border-base-content/20 overlay-open:translate-x-0 w-64 border-e pt-50 [--auto-close:sm] [--body-scroll:true] [--is-layout-affect:true] [--opened:lg] sm:z-0 lg:[--overlay-backdrop:false]"
 			tabindex="-1"
 			{@attach initOverlay}
+			bind:this={sidebar}
 		>
 			<div class="drawer-body px-2 pt-4">
-				<ul
-					class="sticky top-0 text-sm leading-6"
-					data-scrollspy="#scrollspy"
-					data-scrollspy-scrollable-parent="#scrollspy-scrollable-parent"
-					{@attach initScrollspy}
-				>
-					<li class="text-base-content text-xl font-medium">Index</li>
-					<li data-scrollspy-group="">
-						<a
-							href="#loreum1"
-							class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content active block py-0.5 font-medium"
-						>
-							Loreum 1
-						</a>
-						<ul>
-							<li class="ms-0.5 sm:ms-4">
-								<a
-									href="#loreum2"
-									class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
-								>
-									<span class="icon-[tabler--point] size-4"></span>
-									Loreum 2
-								</a>
-							</li>
-							<li class="ms-0.5 sm:ms-4">
-								<a
-									href="#loreum3"
-									class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
-								>
-									<span class="icon-[tabler--point] size-4"></span>
-									Loreum 3
-								</a>
-							</li>
-						</ul>
-					</li>
-				</ul>
-				<ul
-					class="menu p-0"
-					data-scrollspy="#scrollspy"
-					data-scrollspy-scrollable-parent="#scrollspy-scrollable-parent"
-					{@attach initScrollspy}
-				>
-					<li class="text-base-content text-xl font-medium">Index</li>
-					<li data-scrollspy-group="">
-						<a
-							href="#loreum1"
-							class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content active block py-0.5 font-medium"
-						>
-							Loreum 1
-						</a>
-						<ul>
-							<li class="ms-0.5 sm:ms-4">
-								<a
-									href="#loreum2"
-									class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
-								>
-									<span class="icon-[tabler--point] size-4"></span>
-									Loreum 2
-								</a>
-							</li>
-							<li class="ms-0.5 sm:ms-4">
-								<a
-									href="#loreum3"
-									class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
-								>
-									<span class="icon-[tabler--point] size-4"></span>
-									Loreum 3
-								</a>
-							</li>
-						</ul>
-					</li>
-					<!-- <li>
-						<a href={resolve('/')}>
+				<ul class="menu p-0">
+					<li>
+						<a href="/">
 							<span class="icon-[tabler--home] size-5"></span>
 							Home
 						</a>
-					</li> -->
-					<!-- <li>
-						<a href="#top">
+					</li>
+					<li>
+						<a href="./scrollspy/">
 							<span class="icon-[tabler--user] size-5"></span>
-							Account
+							Other page
 						</a>
 					</li>
-					<li>
-						<a href="#top">
-							<span class="icon-[tabler--message] size-5"></span>
-							Notifications
-						</a>
-					</li>
-					<li>
-						<a href="#top">
-							<span class="icon-[tabler--mail] size-5"></span>
-							Email
-						</a>
-					</li>
-					<li>
-						<a href="#top">
-							<span class="icon-[tabler--calendar] size-5"></span>
-							Calendar
-						</a>
-					</li>
-					<li>
-						<a href="#top">
-							<span class="icon-[tabler--shopping-bag] size-5"></span>
-							Product
-						</a>
-					</li>
-					<li>
-						<a href="#top">
-							<span class="icon-[tabler--login] size-5"></span>
-							Sign In
-						</a>
-					</li>
-					<li>
-						<a href="#top">
-							<span class="icon-[tabler--logout-2] size-5"></span>
-							Sign Out
-						</a>
-					</li> -->
 					<li class="space-y-0.5">
 						<a
 							class="collapse-toggle collapse-open:bg-base-content/10"
@@ -343,43 +254,6 @@
 								class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"
 							></span>
 						</a>
-						<!-- <ul
-							id="menu-this-page-collapse"
-							class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
-							aria-labelledby="menu-this-page"
-							data-scrollspy="#scrollspy"
-							data-scrollspy-scrollable-parent="#scrollspy-scrollable-parent"
-							{@attach initScrollspy}
-						>
-							<li data-scrollspy-group="">
-								<a
-									href="#loreum1"
-									class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content active block py-0.5 font-medium"
-								>
-									Loreum 1
-								</a>
-								<ul>
-									<li class="ms-0.5 sm:ms-4">
-										<a
-											href="#loreum2"
-											class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
-										>
-											<span class="icon-[tabler--point] size-4"></span>
-											Loreum 2
-										</a>
-									</li>
-									<li class="ms-0.5 sm:ms-4">
-										<a
-											href="#loreum3"
-											class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
-										>
-											<span class="icon-[tabler--point] size-4"></span>
-											Loreum 3
-										</a>
-									</li>
-								</ul>
-							</li>
-						</ul> -->
 						<ul
 							id="menu-this-page-collapse"
 							class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
@@ -388,95 +262,110 @@
 							data-scrollspy-scrollable-parent="#scrollspy-scrollable-parent"
 							{@attach initScrollspy}
 						>
-							<li data-scrollspy-group="">
+							<li>
 								<a
 									href="#loreum1"
-									class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content active block py-0.5 font-medium"
+									class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
 								>
-									Loreum 1
-								</a>
-								<ul>
-									<li class="ms-0.5 sm:ms-4">
-										<a
-											href="#loreum2"
-											class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
-										>
-											<span class="icon-[tabler--point] size-4"></span>
-											Loreum 2
-										</a>
-									</li>
-									<li class="ms-0.5 sm:ms-4">
-										<a
-											href="#loreum3"
-											class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
-										>
-											<span class="icon-[tabler--point] size-4"></span>
-											Loreum 3
-										</a>
-									</li>
-								</ul>
-							</li>
-							<!-- </ul>
-						<ul
-							id="menu-this-page-collapse"
-							class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
-							aria-labelledby="menu-this-page"
-							data-scrollspy="#scrollspy"
-							data-scrollspy-scrollable-parent="#scrollspy-scrollable-parent"
-							{@attach initScrollspy}
-						>
-							<li
-								data-scrollspy-group=""
-								class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content active block py-0.5 font-medium"
-							>
-								<a href="#loreum1">
-									<span class="icon-[mdi--text] size-5"></span>
+									<span
+										class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+									></span>
+									<span
+										class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+									></span>
 									Loreum 1
 								</a>
 							</li>
-							<li
-								data-scrollspy-group=""
-								class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content block py-0.5 font-medium"
-							>
-								<a href="#loreum2">
-									<span class="icon-[mdi--text] size-5"></span>
+							<li>
+								<a
+									href="#loreum2"
+									class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
+								>
+									<span
+										class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+									></span>
+									<span
+										class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+									></span>
 									Loreum 2
 								</a>
-							</li> -->
-							<!-- In <li>: -->
-							<!-- class="scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content active" -->
-							<!-- class="scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content" -->
+							</li>
 							<li data-scrollspy-group="" class="space-y-0.5">
+								<!-- <a
+										class="collapse-toggle collapse-open:bg-base-content/10"
+										id="sub-menu-category"
+										data-collapse="#sub-menu-category-collapse"
+										{@attach initCollapse}
+									>
+										<span class="icon-[icon-park-outline--page] size-5"></span>
+										Sub Category
+										<span
+											class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"
+										></span>
+									</a> -->
 								<a
-									class="collapse-toggle collapse-open:bg-base-content/10"
-									id="sub-menu-academy"
-									data-collapse="#sub-menu-academy-collapse"
+									class="collapse-toggle collapse-open:bg-base-content/10 scrollspy-active:italic group"
+									id="sub-menu-category"
+									data-collapse="#sub-menu-category-collapse"
+									href="#sub-category"
 									{@attach initCollapse}
 								>
-									<span class="icon-[tabler--book] size-5"></span>
-									Sub category
+									<span
+										class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+									></span>
+									<span
+										class="icon-[icon-park-outline--page] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+									></span>
+									Sub Category
 									<span class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4"></span>
 								</a>
+								<!-- <a
+										class="scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content join-item"
+										href="#sub-category"
+										id="sub-menu-category"
+										{@attach initCollapse}
+									>
+										<span class="icon-[tabler--book] size-5"></span>
+										Sub category
+									</a>
+									<button
+										class="collapse-toggle collapse-open:bg-base-content/10 join-item"
+										data-collapse="#sub-menu-category-collapse"
+										aria-label="Sub category menu"
+									>
+										<span class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4"
+										></span>
+									</button> -->
 								<ul
-									id="sub-menu-academy-collapse"
+									id="sub-menu-category-collapse"
 									class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
-									aria-labelledby="sub-menu-academy"
+									aria-labelledby="sub-menu-category"
 								>
-									<li class="scrollspy-active:text-primary">
+									<li>
 										<a
 											href="#loreum3"
-											class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
+											class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
 										>
-											<span class="icon-[mdi--text] size-5"></span>
+											<span
+												class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+											></span>
+											<span
+												class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+											></span>
 											Loreum 3
 										</a>
 									</li>
 									<li>
 										<a
 											href="#loreum4"
-											class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
+											class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
 										>
-											<span class="icon-[mdi--text] size-5"></span>
+											<span
+												class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+											></span>
+											<span
+												class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+											></span>
 											Loreum 4
 										</a>
 									</li>
@@ -485,123 +374,148 @@
 							<li>
 								<a
 									href="#loreum5"
-									class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
+									class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
 								>
-									<span class="icon-[mdi--text] size-5"></span>
+									<span
+										class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+									></span>
+									<span
+										class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+									></span>
 									Loreum 5
 								</a>
 							</li>
 							<li>
 								<a
 									href="#loreum6"
-									class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
+									class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
 								>
-									<span class="icon-[mdi--text] size-5"></span>
+									<span
+										class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+									></span>
+									<span
+										class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+									></span>
 									Loreum 6
 								</a>
 							</li>
 						</ul>
 					</li>
-				</ul>
-			</div>
-
-			<div class="drawer-body px-2 pt-4">
-				<ul
-					class="sticky top-0 text-sm leading-6"
-					data-scrollspy="#scrollspy"
-					data-scrollspy-scrollable-parent="#scrollspy-scrollable-parent"
-					{@attach initScrollspy}
-				>
-					<li class="text-base-content text-xl font-medium">Index</li>
-					<li data-scrollspy-group="">
+					<li class="space-y-0.5">
 						<a
-							href="#loreum1"
-							class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content active block py-0.5 font-medium"
+							class="collapse-toggle collapse-open:bg-base-content/10"
+							id="menu-app"
+							data-collapse="#menu-app-collapse"
 						>
-							Loreum 1
+							<span class="icon-[tabler--apps] size-5"></span>
+							Page on Apps
+							<span
+								class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"
+							></span>
 						</a>
-						<ul>
-							<li class="ms-0.5 sm:ms-4">
-								<a
-									href="#loreum2"
-									class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
-								>
-									<span class="icon-[tabler--point] size-4"></span>
-									Loreum 2
+						<ul
+							id="menu-app-collapse"
+							class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
+							aria-labelledby="menu-app"
+							{@attach initCollapse}
+						>
+							<li>
+								<a href="./scrollspy/#">
+									<span class="icon-[tabler--message] size-5"></span>
+									App1
 								</a>
 							</li>
-							<li class="ms-0.5 sm:ms-4">
-								<a
-									href="#loreum3"
-									class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
-								>
-									<span class="icon-[tabler--point] size-4"></span>
-									Loreum 3
+							<li>
+								<a href="#loreum4">
+									<span class="icon-[tabler--calendar] size-5"></span>
+									App2
 								</a>
+							</li>
+							<li class="space-y-0.5">
+								<a
+									class="collapse-toggle collapse-open:bg-base-content/10"
+									id="sub-menu-academy"
+									data-collapse="#sub-menu-academy-collapse"
+								>
+									<span class="icon-[tabler--book] size-5"></span>
+									Academy
+									<span class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4"></span>
+								</a>
+								<ul
+									id="sub-menu-academy-collapse"
+									class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
+									aria-labelledby="sub-menu-academy"
+									{@attach initCollapse}
+								>
+									<li>
+										<a href="./scrollspy/#">
+											<span class="icon-[tabler--books] size-5"></span>
+											Courses
+										</a>
+									</li>
+									<li>
+										<a href="./scrollspy/#">
+											<span class="icon-[tabler--list-details] size-5"></span>
+											Course details
+										</a>
+									</li>
+									<li class="space-y-0.5">
+										<a
+											class="collapse-toggle collapse-open:bg-base-content/10"
+											id="sub-menu-academy-stats"
+											data-collapse="#sub-menu-academy-stats-collapse"
+										>
+											<span class="icon-[tabler--chart-bar] size-5"></span>
+											Stats
+											<span class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4"
+											></span>
+										</a>
+										<ul
+											id="sub-menu-academy-stats-collapse"
+											class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
+											aria-labelledby="sub-menu-academy-stats"
+										>
+											<li>
+												<a href="./scrollspy/#">
+													<span class="icon-[tabler--chart-donut] size-5"></span>
+													Intentions
+												</a>
+											</li>
+										</ul>
+									</li>
+								</ul>
 							</li>
 						</ul>
 					</li>
 					<li>
-						<a
-							href="#loreum4"
-							class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content block py-0.5 font-medium"
-						>
-							Loreum 4
+						<a href="./scrollspy/#">
+							<span class="icon-[tabler--mail] size-5"></span>
+							Further Page
 						</a>
 					</li>
-					<li data-scrollspy-group="">
-						<a
-							href="#loreum5"
-							class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content block py-0.5 font-medium"
-						>
-							Loreum 5
+
+					<li>
+						<a href="./scrollspy/#">
+							<span class="icon-[tabler--shopping-bag] size-5"></span>
+							About
 						</a>
-						<ul>
-							<li class="ms-0.5 sm:ms-4">
-								<a
-									href="#loreum6"
-									class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
-								>
-									<span class="icon-[tabler--point] size-4"></span>
-									Loreum 6
-								</a>
-							</li>
-							<li class="ms-0.5 sm:ms-4">
-								<a
-									href="#loreum7"
-									class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
-								>
-									<span class="icon-[tabler--point] size-4"></span>
-									Loreum 7
-								</a>
-							</li>
-						</ul>
 					</li>
 				</ul>
 			</div>
 		</aside>
-
-		<!-- <div class="sm:overlay-layout-open:ps-64 bg-base-100 min-h-full transition-all duration-300">
-	<div class="px-2">
-		<button
-			type="button"
-			class="btn btn-text btn-square"
-			aria-haspopup="dialog"
-			aria-expanded="false"
-			aria-controls="with-navbar-sidebar-scrollspy"
-			data-overlay="#with-navbar-sidebar-scrollspy"
-			aria-label="Toggle Sidebar"
+		<div
+			class="sm:overlay-layout-open:ps-64 bg-base-100 col-span-3 transition-all duration-300 sm:col-span-4"
 		>
-			<span class="icon-[tabler--menu-2] size-5"></span>
-		</button>
-	</div>
-</div> -->
-
-		<div class="sm:overlay-layout-open:ps-64">
-			<Display>Navbar and Sidebar and Scrollspy</Display>
-			<div id="scrollspy" class="max-w-lg space-y-4 pe-1">
-				{@render children?.()}
+			<div class=" bg-base-100 transition-all duration-300">
+				<div id="scrollspy" class="space-y-4 pe-1">
+					{@render children?.()}
+				</div>
 			</div>
 		</div>
 	</div>
+</div>
+
+<div class="sm:overlay-layout-open:ps-64">
+	<Display>Navbar and Sidebar</Display>
+	{@render children?.()}
 </div>
