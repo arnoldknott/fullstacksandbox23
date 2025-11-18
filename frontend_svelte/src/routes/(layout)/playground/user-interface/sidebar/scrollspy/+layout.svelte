@@ -263,7 +263,7 @@
 											<li>
 												<a href="./scrollspy/#">
 													<span class="icon-[tabler--chart-donut] size-5"></span>
-													Goals
+													Intentions
 												</a>
 											</li>
 										</ul>

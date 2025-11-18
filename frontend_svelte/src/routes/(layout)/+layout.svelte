@@ -224,7 +224,10 @@
 	<nav
 		class="navbar rounded-box bg-base-100 sticky start-0 top-0 z-1 justify-between shadow-sm md:flex md:items-stretch"
 	>
-		<div class="dropdown navbar-start inline-flex md:hidden rtl:[--placement:bottom-end]">
+		<div
+			class="dropdown navbar-start inline-flex md:hidden rtl:[--placement:bottom-end]"
+			{@attach initDropdown}
+		>
 			<button
 				type="button"
 				class="dropdown-toggle btn btn-square btn-neutral btn-outline btn-sm"

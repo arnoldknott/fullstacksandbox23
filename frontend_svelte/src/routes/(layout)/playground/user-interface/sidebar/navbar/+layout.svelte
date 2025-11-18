@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { initOverlay } from '$lib/userInterface';
+	import { initDropdown, initOverlay } from '$lib/userInterface';
 	import Display from '$components/Display.svelte';
 	import type { Snippet } from 'svelte';
 	let { children }: { children: Snippet } = $props();
@@ -17,20 +17,19 @@
 		data-overlay="#with-navbar-sidebar"
 		aria-label="Toggle Sidebar"
 	>
-		<span class="icon-[tabler--menu-2] overlay-layout-open:hidden size-5"></span>
-		<span class="icon-[tabler--menu-3] overlay-layout-open:block hidden size-5"></span>
+		<span class="icon-[material-symbols--menu] overlay-layout-open:hidden size-6"></span>
+		<span class="icon-[material-symbols--menu-open-rounded] overlay-layout-open:block hidden size-6"
+		></span>
 	</button>
 	<div class="flex flex-1 items-center">
-		<a
-			class="link text-base-content link-neutral text-xl font-semibold no-underline"
-			href="./navbar/#"
-		>
+		<a class="link text-base-content link-neutral text-xl font-semibold no-underline" href="/">
 			Fullstack Sandbox
 		</a>
 	</div>
 	<div class="navbar-end flex items-center gap-4">
 		<div
 			class="dropdown relative inline-flex [--auto-close:inside] [--offset:8] [--placement:bottom-end]"
+			{@attach initDropdown}
 		>
 			<button
 				id="dropdown-scrollable"
@@ -128,7 +127,7 @@
 						</div>
 					</div>
 				</div>
-				<a href="#" class="dropdown-footer justify-center gap-1">
+				<a href="#top" class="dropdown-footer justify-center gap-1">
 					<span class="icon-[tabler--eye] size-4"></span>
 					View all
 				</a>
@@ -136,6 +135,7 @@
 		</div>
 		<div
 			class="dropdown relative inline-flex [--auto-close:inside] [--offset:8] [--placement:bottom-end]"
+			{@attach initDropdown}
 		>
 			<button
 				id="dropdown-scrollable"
@@ -169,31 +169,31 @@
 					</div>
 				</li>
 				<li>
-					<a class="dropdown-item" href="#">
+					<a class="dropdown-item" href="#top">
 						<span class="icon-[tabler--user]"></span>
 						My Profile
 					</a>
 				</li>
 				<li>
-					<a class="dropdown-item" href="#">
+					<a class="dropdown-item" href="#top">
 						<span class="icon-[tabler--settings]"></span>
 						Settings
 					</a>
 				</li>
 				<li>
-					<a class="dropdown-item" href="#">
+					<a class="dropdown-item" href="#top">
 						<span class="icon-[tabler--receipt-rupee]"></span>
 						Billing
 					</a>
 				</li>
 				<li>
-					<a class="dropdown-item" href="#">
+					<a class="dropdown-item" href="#top">
 						<span class="icon-[tabler--help-triangle]"></span>
 						FAQs
 					</a>
 				</li>
 				<li class="dropdown-footer gap-2">
-					<a class="btn btn-error btn-soft btn-block" href="#">
+					<a class="btn btn-error btn-soft btn-block" href="#top">
 						<span class="icon-[tabler--logout]"></span>
 						Sign out
 					</a>
@@ -206,55 +206,55 @@
 <aside
 	id="with-navbar-sidebar"
 	class="overlay border-base-content/20 overlay-open:translate-x-0 drawer drawer-start sm:overlay-layout-open:translate-x-0 hidden w-64 border-e pt-50 [--auto-close:sm] [--body-scroll:true] [--is-layout-affect:true] [--opened:lg] sm:absolute sm:z-0 sm:flex sm:shadow-none lg:[--overlay-backdrop:false]"
-	{@attach initOverlay}
 	tabindex="-1"
+	{@attach initOverlay}
 >
 	<div class="drawer-body px-2 pt-4">
 		<ul class="menu p-0">
 			<li>
-				<a href="#">
+				<a href="#top">
 					<span class="icon-[tabler--home] size-5"></span>
 					Home
 				</a>
 			</li>
 			<li>
-				<a href="#">
+				<a href="#top">
 					<span class="icon-[tabler--user] size-5"></span>
 					Account
 				</a>
 			</li>
 			<li>
-				<a href="#">
+				<a href="#top">
 					<span class="icon-[tabler--message] size-5"></span>
 					Notifications
 				</a>
 			</li>
 			<li>
-				<a href="#">
+				<a href="#top">
 					<span class="icon-[tabler--mail] size-5"></span>
 					Email
 				</a>
 			</li>
 			<li>
-				<a href="#">
+				<a href="#top">
 					<span class="icon-[tabler--calendar] size-5"></span>
 					Calendar
 				</a>
 			</li>
 			<li>
-				<a href="#">
+				<a href="#top">
 					<span class="icon-[tabler--shopping-bag] size-5"></span>
 					Product
 				</a>
 			</li>
 			<li>
-				<a href="#">
+				<a href="#top">
 					<span class="icon-[tabler--login] size-5"></span>
 					Sign In
 				</a>
 			</li>
 			<li>
-				<a href="#">
+				<a href="#top">
 					<span class="icon-[tabler--logout-2] size-5"></span>
 					Sign Out
 				</a>

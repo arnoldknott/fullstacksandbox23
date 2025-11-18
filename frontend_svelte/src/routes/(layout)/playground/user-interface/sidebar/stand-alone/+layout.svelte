@@ -5,7 +5,7 @@
 </script>
 
 <div class="relative">
-	<dialog
+	<aside
 		id="collapsible-sidebar"
 		class="overlay border-base-content/20 overlay-open:translate-x-0 drawer drawer-start sm:overlay-layout-open:translate-x-0 hidden w-64 border-e [--auto-close:sm] [--body-scroll:true] [--is-layout-affect:true] [--opened:lg] sm:absolute sm:z-0 sm:flex sm:shadow-none lg:[--overlay-backdrop:false]"
 		tabindex="-1"
@@ -42,6 +42,7 @@
 						id="menu-app-collapse"
 						class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
 						aria-labelledby="menu-app"
+						{@attach initCollapse}
 					>
 						<li>
 							<a href="./stand-alone#loreum3">
@@ -70,6 +71,7 @@
 								id="sub-menu-academy-collapse"
 								class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
 								aria-labelledby="sub-menu-academy"
+								{@attach initCollapse}
 							>
 								<li>
 									<a href="./stand-alone#loreum5">
@@ -99,6 +101,7 @@
 										id="sub-menu-academy-stats-collapse"
 										class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
 										aria-labelledby="sub-menu-academy-stats"
+										{@attach initCollapse}
 									>
 										<li>
 											<a href="./stand-alone#loreum7">
@@ -127,7 +130,7 @@
 				</li>
 			</ul>
 		</div>
-	</dialog>
+	</aside>
 
 	<div class="sm:overlay-layout-open:ps-64 bg-base-100 min-h-full transition-all duration-300">
 		<div class="px-2">
