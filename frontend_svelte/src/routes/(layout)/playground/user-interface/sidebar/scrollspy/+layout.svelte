@@ -50,18 +50,28 @@
 							<li>
 								<a
 									href="#loreum1"
-									class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
+									class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
 								>
-									<span class="icon-[mdi--text] size-5"></span>
+									<span
+										class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+									></span>
+									<span
+										class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+									></span>
 									Loreum 1
 								</a>
 							</li>
 							<li>
 								<a
 									href="#loreum2"
-									class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
+									class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
 								>
-									<span class="icon-[mdi--text] size-5"></span>
+									<span
+										class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+									></span>
+									<span
+										class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+									></span>
 									Loreum 2
 								</a>
 							</li>
@@ -105,18 +115,28 @@
 									<li>
 										<a
 											href="#loreum3"
-											class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
+											class="group text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
 										>
-											<span class="icon-[mdi--text] size-5"></span>
+											<span
+												class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+											></span>
+											<span
+												class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+											></span>
 											Loreum 3
 										</a>
 									</li>
 									<li>
 										<a
 											href="#loreum4"
-											class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
+											class="group text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
 										>
-											<span class="icon-[mdi--text] size-5"></span>
+											<span
+												class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+											></span>
+											<span
+												class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+											></span>
 											Loreum 4
 										</a>
 									</li>
@@ -125,18 +145,28 @@
 							<li>
 								<a
 									href="#loreum5"
-									class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
+									class="group text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
 								>
-									<span class="icon-[mdi--text] size-5"></span>
+									<span
+										class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+									></span>
+									<span
+										class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+									></span>
 									Loreum 5
 								</a>
 							</li>
 							<li>
 								<a
 									href="#loreum6"
-									class="text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
+									class="group text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
 								>
-									<span class="icon-[mdi--text] size-5"></span>
+									<span
+										class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+									></span>
+									<span
+										class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+									></span>
 									Loreum 6
 								</a>
 							</li>
