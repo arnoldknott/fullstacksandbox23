@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { initDropdown, initOverlay, initCollapse, initScrollspy } from '$lib/userInterface';
-	import Display from '$components/Display.svelte';
 	import type { Snippet } from 'svelte';
 	let { children }: { children: Snippet } = $props();
 
@@ -290,18 +289,6 @@
 							</a>
 						</li>
 						<li data-scrollspy-group="" class="space-y-0.5">
-							<!-- <a
-										class="collapse-toggle collapse-open:bg-base-content/10"
-										id="sub-menu-category"
-										data-collapse="#sub-menu-category-collapse"
-										{@attach initCollapse}
-									>
-										<span class="icon-[icon-park-outline--page] size-5"></span>
-										Sub Category
-										<span
-											class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"
-										></span>
-									</a> -->
 							<a
 								class="collapse-toggle collapse-open:bg-base-content/10 scrollspy-active:italic group"
 								id="sub-menu-category"
@@ -318,23 +305,6 @@
 								Sub Category
 								<span class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4"></span>
 							</a>
-							<!-- <a
-										class="scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content join-item"
-										href="#sub-category"
-										id="sub-menu-category"
-										{@attach initCollapse}
-									>
-										<span class="icon-[tabler--book] size-5"></span>
-										Sub category
-									</a>
-									<button
-										class="collapse-toggle collapse-open:bg-base-content/10 join-item"
-										data-collapse="#sub-menu-category-collapse"
-										aria-label="Sub category menu"
-									>
-										<span class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4"
-										></span>
-									</button> -->
 							<ul
 								id="sub-menu-category-collapse"
 								class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
