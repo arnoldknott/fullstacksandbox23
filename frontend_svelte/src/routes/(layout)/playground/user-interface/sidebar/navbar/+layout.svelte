@@ -1,8 +1,56 @@
 <script lang="ts">
-	import { initOverlay } from '$lib/userInterface';
+	import { initDropdown, initOverlay } from '$lib/userInterface';
 	import Display from '$components/Display.svelte';
 	import type { Snippet } from 'svelte';
+	// import { onMount } from 'svelte';
 	let { children }: { children: Snippet } = $props();
+
+	let sidebar: HTMLElement | undefined = $state();
+
+	// // Ensure correct sidebar state on initial mount after client-side navigations,
+	// // especially for larger viewports where [--opened:lg] should show the drawer.
+	// onMount(() => {
+	// 	// const sidebar = document.getElementById('with-navbar-sidebar');
+	// 	if (sidebar) {
+	// 		const openOnLarge = window.matchMedia('(min-width: 1024px)').matches; // Tailwind lg breakpoint
+	// 		if (openOnLarge) {
+	// 			// Remove any lingering 'hidden' class that prevents visibility
+	// 			sidebar.classList.remove('hidden');
+	// 			window.HSOverlay.open(sidebar);
+	// 			// console.log(window.HSOverlay.getInstance(sidebar));
+	// 			// // Try to fetch FlyonUI overlay instance and open if not already
+	// 			// // @ts-ignore
+	// 			// const instance = window.HSOverlay?.getInstance(sidebar, true);
+	// 			// // @ts-ignore
+	// 			// if (instance && instance.element.isClosed?.()) {
+	// 			// 	// @ts-ignore
+	// 			// 	instance.element.open();
+	// 			// }
+	// 		} else {
+	// 			window.HSOverlay.close(sidebar);
+	// 			// // On small screens keep it closed initially
+	// 			// // @ts-ignore
+	// 			// const instance = window.HSOverlay?.getInstance(sidebar, true);
+	// 			// // @ts-ignore
+	// 			// if (instance && !instance.element.isClosed?.()) {
+	// 			// 	// @ts-ignore
+	// 			// 	instance.element.close();
+	// 			// }
+	// 		}
+	// 	}
+	// });
+
+	const toggleSidebar = () => {
+		if (sidebar) {
+			const sideBarInstance = window.HSOverlay.getInstance(sidebar, true);
+			const isClosed = 'hidden' in sideBarInstance.element.el.className.split(' ');
+			if (isClosed) {
+				window.HSOverlay.open(sidebar);
+			} else {
+				window.HSOverlay.close(sidebar);
+			}
+		}
+	};
 </script>
 
 <nav
@@ -10,35 +58,35 @@
 >
 	<button
 		type="button"
-		class="btn btn-text max-sm:btn-square me-2"
+		class="btn btn-text btn-square"
 		aria-haspopup="dialog"
 		aria-expanded="false"
 		aria-controls="with-navbar-sidebar"
 		data-overlay="#with-navbar-sidebar"
 		aria-label="Toggle Sidebar"
+		onclick={() => toggleSidebar()}
 	>
-		<span class="icon-[tabler--menu-2] overlay-layout-open:hidden size-5"></span>
-		<span class="icon-[tabler--menu-3] overlay-layout-open:block hidden size-5"></span>
+		<span class="icon-[material-symbols--menu] overlay-layout-open:hidden size-6"></span>
+		<span class="icon-[material-symbols--menu-open-rounded] overlay-layout-open:block hidden size-6"
+		></span>
 	</button>
 	<div class="flex flex-1 items-center">
-		<a
-			class="link text-base-content link-neutral text-xl font-semibold no-underline"
-			href="./navbar/#"
-		>
+		<a class="link text-base-content link-neutral text-xl font-semibold no-underline" href="/">
 			Fullstack Sandbox
 		</a>
 	</div>
 	<div class="navbar-end flex items-center gap-4">
 		<div
 			class="dropdown relative inline-flex [--auto-close:inside] [--offset:8] [--placement:bottom-end]"
+			{@attach initDropdown}
 		>
 			<button
-				id="dropdown-scrollable"
+				id="dropdown-notifications"
 				type="button"
 				class="dropdown-toggle btn btn-text btn-circle dropdown-open:bg-base-content/10 size-10"
 				aria-haspopup="menu"
 				aria-expanded="false"
-				aria-label="Dropdown"
+				aria-label="Notifications Dropdown"
 			>
 				<div class="indicator">
 					<span class="indicator-item bg-error size-2 rounded-full"></span>
@@ -49,7 +97,7 @@
 				class="dropdown-menu dropdown-open:opacity-100 hidden"
 				role="menu"
 				aria-orientation="vertical"
-				aria-labelledby="dropdown-scrollable"
+				aria-labelledby="dropdown-notifications"
 			>
 				<div class="dropdown-header justify-center">
 					<h6 class="text-base-content text-base">Notifications</h6>
@@ -128,7 +176,7 @@
 						</div>
 					</div>
 				</div>
-				<a href="#" class="dropdown-footer justify-center gap-1">
+				<a href="#top" class="dropdown-footer justify-center gap-1">
 					<span class="icon-[tabler--eye] size-4"></span>
 					View all
 				</a>
@@ -136,14 +184,15 @@
 		</div>
 		<div
 			class="dropdown relative inline-flex [--auto-close:inside] [--offset:8] [--placement:bottom-end]"
+			{@attach initDropdown}
 		>
 			<button
-				id="dropdown-scrollable"
+				id="dropdown-avatar"
 				type="button"
 				class="dropdown-toggle flex items-center"
 				aria-haspopup="menu"
 				aria-expanded="false"
-				aria-label="Dropdown"
+				aria-label="Avatar Dropdown"
 			>
 				<div class="avatar">
 					<div class="size-9.5 rounded-full">
@@ -169,31 +218,31 @@
 					</div>
 				</li>
 				<li>
-					<a class="dropdown-item" href="#">
+					<a class="dropdown-item" href="#top">
 						<span class="icon-[tabler--user]"></span>
 						My Profile
 					</a>
 				</li>
 				<li>
-					<a class="dropdown-item" href="#">
+					<a class="dropdown-item" href="#top">
 						<span class="icon-[tabler--settings]"></span>
 						Settings
 					</a>
 				</li>
 				<li>
-					<a class="dropdown-item" href="#">
+					<a class="dropdown-item" href="#top">
 						<span class="icon-[tabler--receipt-rupee]"></span>
 						Billing
 					</a>
 				</li>
 				<li>
-					<a class="dropdown-item" href="#">
+					<a class="dropdown-item" href="#top">
 						<span class="icon-[tabler--help-triangle]"></span>
 						FAQs
 					</a>
 				</li>
 				<li class="dropdown-footer gap-2">
-					<a class="btn btn-error btn-soft btn-block" href="#">
+					<a class="btn btn-error btn-soft btn-block" href="#top">
 						<span class="icon-[tabler--logout]"></span>
 						Sign out
 					</a>
@@ -203,58 +252,61 @@
 	</div>
 </nav>
 
+<!-- class="overlay border-base-content/20 overlay-open:translate-x-0 sm:overlay-layout-open:translate-x-0 drawer drawer-start sm:overlay-layout-open:translate-x-0 hidden  w-64 border-e pt-50 [--auto-close:sm] [--body-scroll:true] [--is-layout-affect:true] [--opened:lg] sm:absolute sm:flex sm:shadow-none sm:flex sm:z-0 lg:[--overlay-backdrop:false]" -->
+
 <aside
 	id="with-navbar-sidebar"
-	class="overlay border-base-content/20 overlay-open:translate-x-0 drawer drawer-start sm:overlay-layout-open:translate-x-0 hidden w-64 border-e pt-50 [--auto-close:sm] [--body-scroll:true] [--is-layout-affect:true] [--opened:lg] sm:absolute sm:z-0 sm:flex sm:shadow-none lg:[--overlay-backdrop:false]"
-	{@attach initOverlay}
+	class="overlay drawer drawer-start border-base-content/20 overlay-open:translate-x-0 w-64 border-e pt-50 [--auto-close:sm] [--body-scroll:true] [--is-layout-affect:true] [--opened:lg] sm:z-0 lg:[--overlay-backdrop:false]"
 	tabindex="-1"
+	{@attach initOverlay}
+	bind:this={sidebar}
 >
 	<div class="drawer-body px-2 pt-4">
 		<ul class="menu p-0">
 			<li>
-				<a href="#">
+				<a href="#top">
 					<span class="icon-[tabler--home] size-5"></span>
 					Home
 				</a>
 			</li>
 			<li>
-				<a href="#">
+				<a href="#top">
 					<span class="icon-[tabler--user] size-5"></span>
 					Account
 				</a>
 			</li>
 			<li>
-				<a href="#">
+				<a href="#top">
 					<span class="icon-[tabler--message] size-5"></span>
 					Notifications
 				</a>
 			</li>
 			<li>
-				<a href="#">
+				<a href="#top">
 					<span class="icon-[tabler--mail] size-5"></span>
 					Email
 				</a>
 			</li>
 			<li>
-				<a href="#">
+				<a href="#top">
 					<span class="icon-[tabler--calendar] size-5"></span>
 					Calendar
 				</a>
 			</li>
 			<li>
-				<a href="#">
+				<a href="#top">
 					<span class="icon-[tabler--shopping-bag] size-5"></span>
 					Product
 				</a>
 			</li>
 			<li>
-				<a href="#">
+				<a href="#top">
 					<span class="icon-[tabler--login] size-5"></span>
 					Sign In
 				</a>
 			</li>
 			<li>
-				<a href="#">
+				<a href="#top">
 					<span class="icon-[tabler--logout-2] size-5"></span>
 					Sign Out
 				</a>
@@ -262,22 +314,6 @@
 		</ul>
 	</div>
 </aside>
-
-<!-- <div class="sm:overlay-layout-open:ps-64 bg-base-100 min-h-full transition-all duration-300">
-	<div class="px-2">
-		<button
-			type="button"
-			class="btn btn-text btn-square"
-			aria-haspopup="dialog"
-			aria-expanded="false"
-			aria-controls="with-navbar-sidebar"
-			data-overlay="#with-navbar-sidebar"
-			aria-label="Toggle Sidebar"
-		>
-			<span class="icon-[tabler--menu-2] size-5"></span>
-		</button>
-	</div>
-</div> -->
 
 <div class="sm:overlay-layout-open:ps-64">
 	<Display>Navbar and Sidebar</Display>
