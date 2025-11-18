@@ -56,19 +56,6 @@
 <nav
 	class="navbar bg-base-100 max-sm:rounded-box border-base-content/25 relative max-sm:shadow-sm sm:z-1 sm:border-b"
 >
-	<!-- <button
-		type="button"
-		class="btn btn-text max-sm:btn-square me-2"
-		aria-haspopup="dialog"
-		aria-expanded="false"
-		aria-controls="with-navbar-sidebar"
-		data-overlay="#with-navbar-sidebar"
-		aria-label="Toggle Sidebar"
-	>
-		<span class="icon-[material-symbols--menu] overlay-layout-open:hidden size-6"></span>
-		<span class="icon-[material-symbols--menu-open-rounded] overlay-layout-open:block hidden size-6"
-		></span>
-	</button> -->
 	<button
 		type="button"
 		class="btn btn-text btn-square"
@@ -79,7 +66,6 @@
 		aria-label="Toggle Sidebar"
 		onclick={() => toggleSidebar()}
 	>
-		<!-- <span class="icon-[tabler--menu-2] size-5"></span> -->
 		<span class="icon-[material-symbols--menu] overlay-layout-open:hidden size-6"></span>
 		<span class="icon-[material-symbols--menu-open-rounded] overlay-layout-open:block hidden size-6"
 		></span>
@@ -328,103 +314,6 @@
 		</ul>
 	</div>
 </aside>
-
-<!-- <aside
-	id="collapsible-sidebar"
-	class="overlay border-base-content/20 overlay-open:translate-x-0 drawer drawer-start sm:overlay-layout-open:translate-x-0 hidden w-64 border-e [--auto-close:sm] [--body-scroll:true] [--is-layout-affect:true] [--opened:lg] sm:absolute sm:z-0 sm:flex sm:shadow-none lg:[--overlay-backdrop:false]"
-	tabindex="-1"
-	bind:this={sidebar}
-	{@attach initOverlay}
->
-	<div class="drawer-body px-2 pt-4">
-		<ul class="menu p-0">
-			<li>
-				<a href="#">
-					<span class="icon-[tabler--home] size-5"></span>
-					Home
-				</a>
-			</li>
-			<li>
-				<a href="#">
-					<span class="icon-[tabler--user] size-5"></span>
-					Account
-				</a>
-			</li>
-			<li>
-				<a href="#">
-					<span class="icon-[tabler--message] size-5"></span>
-					Notifications
-				</a>
-			</li>
-			<li>
-				<a href="#">
-					<span class="icon-[tabler--mail] size-5"></span>
-					Email
-				</a>
-			</li>
-			<li>
-				<a href="#">
-					<span class="icon-[tabler--calendar] size-5"></span>
-					Calendar
-				</a>
-			</li>
-			<li>
-				<a href="#">
-					<span class="icon-[tabler--shopping-bag] size-5"></span>
-					Product
-				</a>
-			</li>
-			<li>
-				<a href="#">
-					<span class="icon-[tabler--login] size-5"></span>
-					Sign In
-				</a>
-			</li>
-			<li>
-				<a href="#">
-					<span class="icon-[tabler--logout-2] size-5"></span>
-					Sign Out
-				</a>
-			</li>
-		</ul>
-	</div>
-</aside> -->
-
-<!-- <div class="sm:overlay-layout-open:ps-64 bg-base-100 min-h-full transition-all duration-300">
-	<div class="px-2">
-		<button
-			type="button"
-			class="btn btn-text btn-square"
-			aria-haspopup="dialog"
-			aria-expanded="false"
-			aria-controls="collapsible-sidebar"
-			data-overlay="#collapsible-sidebar"
-			aria-label="Toggle Sidebar"
-			onclick={() => toggleSidebar()}
-		>
-			<span class="icon-[material-symbols--menu] overlay-layout-open:hidden size-6"></span>
-			<span
-				class="icon-[material-symbols--menu-open-rounded] overlay-layout-open:block hidden size-6"
-			></span>
-		</button>
-	</div>
-</div> -->
-
-<!-- <div class="sm:overlay-layout-open:ps-64 bg-base-100 min-h-full transition-all duration-300">
-	<div class="px-2">
-		<button
-			type="button"
-			class="btn btn-text btn-square"
-			aria-haspopup="dialog"
-			aria-expanded="false"
-			aria-controls="with-navbar-sidebar"
-			data-overlay="#with-navbar-sidebar"
-			aria-label="Toggle Sidebar"
-		>
-			<span class="icon-[tabler--menu-2] size-5"></span>
-		</button>
-	</div>
-</div> -->
 
 <div class="sm:overlay-layout-open:ps-64">
 	<Display>Navbar and Sidebar</Display>
