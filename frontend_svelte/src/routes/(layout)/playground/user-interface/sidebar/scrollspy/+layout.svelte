@@ -75,21 +75,30 @@
 									Loreum 2
 								</a>
 							</li>
-							<li data-scrollspy-group="" class="space-y-0.5">
-								<div class="join w-full">
-									<!-- <a
-									class="collapse-toggle collapse-open:bg-base-content/10"
+							<li class="space-y-0.5">
+								<!-- <a
+										class="collapse-toggle collapse-open:bg-base-content/10"
+										id="sub-menu-category"
+										data-collapse="#sub-menu-category-collapse"
+										{@attach initCollapse}
+									>
+										<span class="icon-[icon-park-outline--page] size-5"></span>
+										Sub Category
+										<span
+											class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"
+										></span>
+									</a> -->
+								<a
+									class="collapse-toggle collapse-open:bg-base-content/10 scrollspy-active:bg-accent-container scrollspy-active:italic"
 									id="sub-menu-category"
 									data-collapse="#sub-menu-category-collapse"
 									{@attach initCollapse}
 								>
 									<span class="icon-[icon-park-outline--page] size-5"></span>
 									Sub Category
-									<span
-										class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"
-									></span>
-								</a> -->
-									<a
+									<span class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4"></span>
+								</a>
+								<!-- <a
 										class="scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content join-item"
 										href="#sub-category"
 										id="sub-menu-category"
@@ -105,8 +114,7 @@
 									>
 										<span class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4"
 										></span>
-									</button>
-								</div>
+									</button> -->
 								<ul
 									id="sub-menu-category-collapse"
 									class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
@@ -115,7 +123,7 @@
 									<li>
 										<a
 											href="#loreum3"
-											class="group text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
+											class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
 										>
 											<span
 												class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
@@ -129,7 +137,7 @@
 									<li>
 										<a
 											href="#loreum4"
-											class="group text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
+											class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
 										>
 											<span
 												class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
@@ -145,7 +153,7 @@
 							<li>
 								<a
 									href="#loreum5"
-									class="group text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
+									class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
 								>
 									<span
 										class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
@@ -159,7 +167,7 @@
 							<li>
 								<a
 									href="#loreum6"
-									class="group text-base-content/80 hover:text-base-content scrollspy-active:bg-accent-container scrollspy-active:text-accent-container-content flex items-center gap-x-2 py-0.5"
+									class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
 								>
 									<span
 										class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
