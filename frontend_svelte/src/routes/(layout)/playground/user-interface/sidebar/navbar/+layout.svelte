@@ -2,7 +2,13 @@
 	import { initDropdown, initOverlay } from '$lib/userInterface';
 	import Display from '$components/Display.svelte';
 	import type { Snippet } from 'svelte';
+	import { afterNavigate } from '$app/navigation';
 	let { children }: { children: Snippet } = $props();
+
+	afterNavigate(() => {
+		window.HSStaticMethods.autoInit();
+		console.log('Navbar initialized');
+	});
 </script>
 
 <nav
@@ -32,12 +38,12 @@
 			{@attach initDropdown}
 		>
 			<button
-				id="dropdown-scrollable"
+				id="dropdown-notifications"
 				type="button"
 				class="dropdown-toggle btn btn-text btn-circle dropdown-open:bg-base-content/10 size-10"
 				aria-haspopup="menu"
 				aria-expanded="false"
-				aria-label="Dropdown"
+				aria-label="Notifications Dropdown"
 			>
 				<div class="indicator">
 					<span class="indicator-item bg-error size-2 rounded-full"></span>
@@ -48,7 +54,7 @@
 				class="dropdown-menu dropdown-open:opacity-100 hidden"
 				role="menu"
 				aria-orientation="vertical"
-				aria-labelledby="dropdown-scrollable"
+				aria-labelledby="dropdown-notifications"
 			>
 				<div class="dropdown-header justify-center">
 					<h6 class="text-base-content text-base">Notifications</h6>
@@ -138,12 +144,12 @@
 			{@attach initDropdown}
 		>
 			<button
-				id="dropdown-scrollable"
+				id="dropdown-avatar"
 				type="button"
 				class="dropdown-toggle flex items-center"
 				aria-haspopup="menu"
 				aria-expanded="false"
-				aria-label="Dropdown"
+				aria-label="Avatar Dropdown"
 			>
 				<div class="avatar">
 					<div class="size-9.5 rounded-full">

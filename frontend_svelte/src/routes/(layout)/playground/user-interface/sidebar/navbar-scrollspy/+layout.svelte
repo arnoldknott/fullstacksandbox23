@@ -14,8 +14,8 @@
 		class="btn btn-text max-sm:btn-square me-2"
 		aria-haspopup="dialog"
 		aria-expanded="false"
-		aria-controls="with-navbar-sidebar"
-		data-overlay="#with-navbar-sidebar"
+		aria-controls="with-navbar-sidebar-scrollspy"
+		data-overlay="#with-navbar-sidebar-scrollspy"
 		aria-label="Toggle Sidebar"
 	>
 		<span class="icon-[tabler--menu-2] overlay-layout-open:hidden size-5"></span>
@@ -205,7 +205,7 @@
 <div class="h-screen w-screen pt-50">
 	<div id="scrollspy-scrollable-parent" class="max-h-96 overflow-y-auto">
 		<aside
-			id="with-navbar-sidebar"
+			id="with-navbar-sidebar-scrollspy"
 			class="overlay border-base-content/20 overlay-open:translate-x-0 drawer drawer-start sm:overlay-layout-open:translate-x-0 hidden w-64 border-e pt-50 [--auto-close:sm] [--body-scroll:true] [--is-layout-affect:true] [--opened:lg] sm:absolute sm:z-0 sm:flex sm:shadow-none lg:[--overlay-backdrop:false]"
 			tabindex="-1"
 			{@attach initOverlay}
@@ -588,8 +588,8 @@
 			class="btn btn-text btn-square"
 			aria-haspopup="dialog"
 			aria-expanded="false"
-			aria-controls="with-navbar-sidebar"
-			data-overlay="#with-navbar-sidebar"
+			aria-controls="with-navbar-sidebar-scrollspy"
+			data-overlay="#with-navbar-sidebar-scrollspy"
 			aria-label="Toggle Sidebar"
 		>
 			<span class="icon-[tabler--menu-2] size-5"></span>
