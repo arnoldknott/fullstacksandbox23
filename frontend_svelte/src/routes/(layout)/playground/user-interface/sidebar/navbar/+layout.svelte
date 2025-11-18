@@ -53,10 +53,10 @@
 	};
 </script>
 
-<!-- <nav
+<nav
 	class="navbar bg-base-100 max-sm:rounded-box border-base-content/25 relative max-sm:shadow-sm sm:z-1 sm:border-b"
 >
-	<button
+	<!-- <button
 		type="button"
 		class="btn btn-text max-sm:btn-square me-2"
 		aria-haspopup="dialog"
@@ -65,6 +65,21 @@
 		data-overlay="#with-navbar-sidebar"
 		aria-label="Toggle Sidebar"
 	>
+		<span class="icon-[material-symbols--menu] overlay-layout-open:hidden size-6"></span>
+		<span class="icon-[material-symbols--menu-open-rounded] overlay-layout-open:block hidden size-6"
+		></span>
+	</button> -->
+	<button
+		type="button"
+		class="btn btn-text btn-square"
+		aria-haspopup="dialog"
+		aria-expanded="false"
+		aria-controls="with-navbar-sidebar"
+		data-overlay="#with-navbar-sidebar"
+		aria-label="Toggle Sidebar"
+		onclick={() => toggleSidebar()}
+	>
+		<!-- <span class="icon-[tabler--menu-2] size-5"></span> -->
 		<span class="icon-[material-symbols--menu] overlay-layout-open:hidden size-6"></span>
 		<span class="icon-[material-symbols--menu-open-rounded] overlay-layout-open:block hidden size-6"
 		></span>
@@ -249,11 +264,11 @@
 			</ul>
 		</div>
 	</div>
-</nav> -->
+</nav>
 
 <!-- class="overlay border-base-content/20 overlay-open:translate-x-0 sm:overlay-layout-open:translate-x-0 drawer drawer-start sm:overlay-layout-open:translate-x-0 hidden  w-64 border-e pt-50 [--auto-close:sm] [--body-scroll:true] [--is-layout-affect:true] [--opened:lg] sm:absolute sm:flex sm:shadow-none sm:flex sm:z-0 lg:[--overlay-backdrop:false]" -->
 
-<!-- <aside
+<aside
 	id="with-navbar-sidebar"
 	class="overlay drawer drawer-start border-base-content/20 overlay-open:translate-x-0 w-64 border-e pt-50 [--auto-close:sm] [--body-scroll:true] [--is-layout-affect:true] [--opened:lg] sm:z-0 lg:[--overlay-backdrop:false]"
 	tabindex="-1"
@@ -312,9 +327,9 @@
 			</li>
 		</ul>
 	</div>
-</aside> -->
+</aside>
 
-<aside
+<!-- <aside
 	id="collapsible-sidebar"
 	class="overlay border-base-content/20 overlay-open:translate-x-0 drawer drawer-start sm:overlay-layout-open:translate-x-0 hidden w-64 border-e [--auto-close:sm] [--body-scroll:true] [--is-layout-affect:true] [--opened:lg] sm:absolute sm:z-0 sm:flex sm:shadow-none lg:[--overlay-backdrop:false]"
 	tabindex="-1"
@@ -373,10 +388,9 @@
 			</li>
 		</ul>
 	</div>
-</aside>
+</aside> -->
 
-<div class="sm:overlay-layout-open:ps-64 bg-base-100 min-h-full transition-all duration-300">
-	<!-- Navigation Toggle -->
+<!-- <div class="sm:overlay-layout-open:ps-64 bg-base-100 min-h-full transition-all duration-300">
 	<div class="px-2">
 		<button
 			type="button"
@@ -388,15 +402,13 @@
 			aria-label="Toggle Sidebar"
 			onclick={() => toggleSidebar()}
 		>
-			<!-- <span class="icon-[tabler--menu-2] size-5"></span> -->
 			<span class="icon-[material-symbols--menu] overlay-layout-open:hidden size-6"></span>
 			<span
 				class="icon-[material-symbols--menu-open-rounded] overlay-layout-open:block hidden size-6"
 			></span>
 		</button>
 	</div>
-	<!-- End Navigation Toggle -->
-</div>
+</div> -->
 
 <!-- <div class="sm:overlay-layout-open:ps-64 bg-base-100 min-h-full transition-all duration-300">
 	<div class="px-2">
