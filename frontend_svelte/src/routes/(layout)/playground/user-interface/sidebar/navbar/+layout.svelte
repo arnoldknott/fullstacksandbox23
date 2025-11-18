@@ -2,13 +2,7 @@
 	import { initDropdown, initOverlay } from '$lib/userInterface';
 	import Display from '$components/Display.svelte';
 	import type { Snippet } from 'svelte';
-	import { afterNavigate } from '$app/navigation';
 	let { children }: { children: Snippet } = $props();
-
-	afterNavigate(() => {
-		window.HSStaticMethods.autoInit();
-		console.log('Navbar initialized');
-	});
 </script>
 
 <nav
