@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { initDropdown, initOverlay, initCollapse, initScrollspy } from '$lib/userInterface';
 	import { type Snippet } from 'svelte';
+	import type { Attachment } from 'svelte/attachments';
 	let { children }: { children: Snippet } = $props();
 
 	let sidebarToggleButtonElement: HTMLButtonElement;
@@ -9,12 +10,24 @@
 	// 	console.log(sidebarToggleButtonElement.dataset);
 	// });
 
-	const addDataAttributes = (element: HTMLElement) => {
-		const dataAttributes: DOMStringMap = { myData: 'testValue', anotherData: 'anotherValue' };
-		for (const [key, value] of Object.entries(dataAttributes)) {
-			element.dataset[key] = value;
-		}
+	const addDataAttributes: Attachment<HTMLElement> = (element: HTMLElement) => {
+		element.dataset['overlayMinifier'] = '#collapsible-mini-sidebar';
+		// const dataAttributes: DOMStringMap = {
+		// 	myData: 'testValue',
+		// 	'another-Data': 'anotherValueChanged'
+		// };
+		// for (const [key, value] of Object.entries(dataAttributes)) {
+		// 	element.dataset[key] = value;
+		// }
 	};
+
+	// const addSmallScreenDataAttributes: Attachment<HTMLElement> = (element: HTMLElement) => {
+	// 	element.dataset['data-overlay'] = '#collapsible-mini-sidebar';
+	// };
+
+	// const addLargeScreenDataAttributes: Attachment<HTMLElement> = (element: HTMLElement) => {
+	// 	element.dataset['data-overlay-minifier'] = '#collapsible-mini-sidebar';
+	// };
 
 	const openSidebar = () => {
 		const { element } = window.HSOverlay.getInstance('#collapsible-mini-sidebar', true);
@@ -23,16 +36,15 @@
 	};
 </script>
 
-<!-- {#snippet sidebarToggleButton(dataset:DOMStringMap)}
+{#snippet sidebarToggleButton(classes: string, overlayModifier: {})}
 	<button
 		type="button"
-		class="btn btn-text btn-square hidden sm:block"
+		class="btn btn-text btn-square {classes}"
 		aria-haspopup="dialog"
 		aria-expanded="false"
 		aria-controls="collapsible-mini-sidebar"
-		data-overlay-minifier="#collapsible-mini-sidebar"
 		aria-label="Toggle Sidebar"
-		bind:this={sidebarToggleButtonElement}
+		{...overlayModifier}
 	>
 		<span
 			class="icon-[material-symbols--menu-open-rounded] overlay-minified:hidden size-6 max-sm:hidden"
@@ -40,12 +52,15 @@
 		<span class="icon-[material-symbols--menu] overlay-minified:block hidden size-6 max-sm:block"
 		></span>
 	</button>
-{/snippet} -->
+{/snippet}
 
 <nav
 	class="navbar rounded-box bg-base-100 shadow-shadow border-outline-variant relative sticky start-0 top-0 z-1 justify-between border-b shadow-sm md:flex md:items-stretch"
 >
-	<button
+	{@render sidebarToggleButton('hidden sm:block', {
+		'data-overlay-minifier': '#collapsible-mini-sidebar'
+	})}
+	<!-- <button
 		type="button"
 		class="btn btn-text btn-square hidden sm:block"
 		aria-haspopup="dialog"
@@ -53,7 +68,6 @@
 		aria-controls="collapsible-mini-sidebar"
 		data-overlay-minifier="#collapsible-mini-sidebar"
 		aria-label="Toggle Sidebar"
-		bind:this={sidebarToggleButtonElement}
 		{@attach addDataAttributes}
 	>
 		<span
@@ -61,8 +75,11 @@
 		></span>
 		<span class="icon-[material-symbols--menu] overlay-minified:block hidden size-6 max-sm:block"
 		></span>
-	</button>
-	<button
+	</button> -->
+	{@render sidebarToggleButton('sm:hidden', {
+		'data-overlay': '#collapsible-mini-sidebar'
+	})}
+	<!-- <button
 		type="button"
 		class="btn btn-text btn-square sm:hidden"
 		aria-haspopup="dialog"
@@ -76,7 +93,7 @@
 		></span>
 		<span class="icon-[material-symbols--menu] overlay-minified:block hidden size-6 max-sm:block"
 		></span>
-	</button>
+	</button> -->
 	<div class="flex flex-1 items-center">
 		<a class="link text-base-content link-neutral text-xl font-semibold no-underline" href="/">
 			Fullstack Platform
