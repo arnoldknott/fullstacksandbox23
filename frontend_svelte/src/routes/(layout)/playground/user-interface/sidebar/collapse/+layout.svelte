@@ -276,7 +276,7 @@
 <div id="scrollspy-scrollable-parent" class="grid h-screen overflow-y-auto">
 	<!-- <aside
 		id="collapsible-mini-sidebar"
-		class="overlay overlay-minified:w-17 overlay-open:translate-x-0 drawer drawer-start border-base-content/20 hidden w-66 border-e pt-50 [--auto-close:sm] sm:absolute sm:z-0 sm:flex sm:translate-x-0 sm:shadow-none"
+		class="overlay overlay-minified:w-19 overlay-open:translate-x-0 drawer drawer-start border-base-content/20 hidden w-66 border-e pt-50 [--auto-close:sm] sm:absolute sm:z-0 sm:flex sm:translate-x-0 sm:shadow-none"
 		{@attach initOverlay}
 		tabindex="-1"
 		bind:this={sidebar}
@@ -361,7 +361,7 @@
 	</aside> -->
 	<aside
 		id="collapsible-mini-sidebar"
-		class="overlay overlay-minified:w-17 overlay-open:translate-x-0 drawer drawer-start border-base-content/20 hidden w-66 border-e pt-50 [--auto-close:sm] sm:absolute sm:z-0 sm:flex sm:translate-x-0 sm:shadow-none"
+		class="overlay overlay-minified:w-19 overlay-open:translate-x-0 drawer drawer-start border-base-content/20 hidden w-66 border-e pt-50 [--auto-close:sm] sm:absolute sm:z-0 sm:flex sm:translate-x-0 sm:shadow-none"
 		tabindex="-1"
 		{@attach initOverlay}
 		bind:this={sidebar}
@@ -396,7 +396,10 @@
 						<span class="icon-[icon-park-outline--page] size-5"></span>
 						<span class="overlay-minified:hidden">This page</span>
 						<span
-							class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:rotate-270 size-4 transition-all duration-300"
+							class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:hidden size-4 transition-all duration-300"
+						></span>
+						<span
+							class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:block overlay-minified:rotate-270 hidden size-4 transition-all duration-300"
 							role="button"
 							tabindex="0"
 							onclick={() => openSidebar()}
@@ -623,7 +626,7 @@
 			</ul>
 		</div>
 	</aside>
-	<div class="sm:overlay-minified:ps-17 bg-base-100 ps-64 transition-all duration-300 max-sm:ps-0">
+	<div class="sm:overlay-minified:ps-19 bg-base-100 ps-64 transition-all duration-300 max-sm:ps-0">
 		<div class=" bg-base-100 transition-all duration-300">
 			<div id="scrollspy" class="space-y-4 pe-1">
 				{@render children?.()}
@@ -646,7 +649,7 @@
 
 <!-- <aside
 	id="collapsible-mini-sidebar"
-	class="overlay overlay-minified:w-17 overlay-open:translate-x-0 drawer drawer-start border-base-content/20 hidden w-66 border-e pt-50 [--auto-close:sm] sm:absolute sm:z-0 sm:flex sm:translate-x-0 sm:shadow-none"
+	class="overlay overlay-minified:w-19 overlay-open:translate-x-0 drawer drawer-start border-base-content/20 hidden w-66 border-e pt-50 [--auto-close:sm] sm:absolute sm:z-0 sm:flex sm:translate-x-0 sm:shadow-none"
 	{@attach initOverlay}
 	tabindex="-1"
 	bind:this={sidebar}
