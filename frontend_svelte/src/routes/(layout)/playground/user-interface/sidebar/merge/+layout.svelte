@@ -10,7 +10,7 @@
 	};
 </script>
 
-{#snippet sidebarToggleButton(classes: string, overlayModifier: {})}
+{#snippet sidebarToggleButton(classes: string, overlayModifier: object)}
 	<button
 		type="button"
 		class="btn btn-square btn-outline {classes}"
