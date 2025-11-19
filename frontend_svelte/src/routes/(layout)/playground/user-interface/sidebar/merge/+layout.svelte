@@ -3,12 +3,44 @@
 	import { type Snippet } from 'svelte';
 	let { children }: { children: Snippet } = $props();
 
+	let sidebarToggleButtonElement: HTMLButtonElement;
+
+	// $effect(() => {
+	// 	console.log(sidebarToggleButtonElement.dataset);
+	// });
+
+	const addDataAttributes = (element: HTMLElement) => {
+		const dataAttributes: DOMStringMap = { myData: 'testValue', anotherData: 'anotherValue' };
+		for (const [key, value] of Object.entries(dataAttributes)) {
+			element.dataset[key] = value;
+		}
+	};
+
 	const openSidebar = () => {
 		const { element } = window.HSOverlay.getInstance('#collapsible-mini-sidebar', true);
 		element.open();
 		window.HSStaticMethods.autoInit();
 	};
 </script>
+
+<!-- {#snippet sidebarToggleButton(dataset:DOMStringMap)}
+	<button
+		type="button"
+		class="btn btn-text btn-square hidden sm:block"
+		aria-haspopup="dialog"
+		aria-expanded="false"
+		aria-controls="collapsible-mini-sidebar"
+		data-overlay-minifier="#collapsible-mini-sidebar"
+		aria-label="Toggle Sidebar"
+		bind:this={sidebarToggleButtonElement}
+	>
+		<span
+			class="icon-[material-symbols--menu-open-rounded] overlay-minified:hidden size-6 max-sm:hidden"
+		></span>
+		<span class="icon-[material-symbols--menu] overlay-minified:block hidden size-6 max-sm:block"
+		></span>
+	</button>
+{/snippet} -->
 
 <nav
 	class="navbar rounded-box bg-base-100 shadow-shadow border-outline-variant relative sticky start-0 top-0 z-1 justify-between border-b shadow-sm md:flex md:items-stretch"
@@ -21,6 +53,8 @@
 		aria-controls="collapsible-mini-sidebar"
 		data-overlay-minifier="#collapsible-mini-sidebar"
 		aria-label="Toggle Sidebar"
+		bind:this={sidebarToggleButtonElement}
+		{@attach addDataAttributes}
 	>
 		<span
 			class="icon-[material-symbols--menu-open-rounded] overlay-minified:hidden size-6 max-sm:hidden"
