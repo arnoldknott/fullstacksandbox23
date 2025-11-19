@@ -27,7 +27,7 @@
 <div class="h-4"></div>
 
 <nav
-	class="navbar rounded-box bg-base-100 sticky start-0 top-[50px] z-1 shadow-sm md:flex md:items-stretch"
+	class="navbar rounded-box bg-base-100 shadow-shadow border-outline-variant sticky start-0 top-[50px] z-1 border-b shadow-sm md:flex md:items-stretch"
 >
 	<div class="w-full md:flex md:items-center md:gap-2">
 		<div class="flex items-center justify-between">
@@ -192,7 +192,7 @@
 <div class="h-96"></div>
 
 <nav
-	class="navbar rounded-box bg-base-100 sticky start-0 top-[800px] z-1 justify-between shadow-sm md:flex md:items-stretch"
+	class="navbar rounded-box bg-base-100 shadow-shadow border-outline-variant sticky start-0 top-[800px] z-1 justify-between border-b shadow-sm md:flex md:items-stretch"
 >
 	<div class="dropdown navbar-start relative inline-flex md:hidden rtl:[--placement:bottom-end]">
 		<button
