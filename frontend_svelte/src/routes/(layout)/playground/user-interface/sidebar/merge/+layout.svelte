@@ -11,22 +11,24 @@
 </script>
 
 {#snippet sidebarToggleButton(classes: string, overlayModifier: {})}
-	<button
-		type="button"
-		class="btn btn-square btn-outline {classes}"
-		aria-haspopup="dialog"
-		aria-expanded="false"
-		aria-controls="collapsible-mini-sidebar"
-		aria-label="Toggle Sidebar"
-		{...overlayModifier}
-	>
-		<span
-			class="icon-[material-symbols--menu-open-rounded] overlay-minified:hidden ml-1 block size-7 max-sm:hidden"
-		></span>
-		<span
-			class="icon-[material-symbols--menu] overlay-minified:block ml-1 hidden size-7 max-sm:block"
-		></span>
-	</button>
+	<div class="navbar-start">
+		<button
+			type="button"
+			class="btn btn-square btn-outline {classes}"
+			aria-haspopup="dialog"
+			aria-expanded="false"
+			aria-controls="collapsible-mini-sidebar"
+			aria-label="Toggle Sidebar"
+			{...overlayModifier}
+		>
+			<span
+				class="icon-[material-symbols--menu-open-rounded] overlay-minified:hidden ml-1 block size-7 max-sm:hidden"
+			></span>
+			<span
+				class="icon-[material-symbols--menu] overlay-minified:block ml-1 hidden size-7 max-sm:block"
+			></span>
+		</button>
+	</div>
 {/snippet}
 
 <nav
@@ -68,10 +70,14 @@
 		<span class="icon-[material-symbols--menu] overlay-minified:block hidden size-6 max-sm:block"
 		></span>
 	</button> -->
-	<div class="flex flex-1 items-center">
-		<a class="link text-base-content link-neutral text-xl font-semibold no-underline" href="/">
-			Fullstack Platform
-		</a>
+	<div class="navbar-center flex flex-row">
+		<div class="flex flex-col justify-center">
+			<div class="title-small text-primary italic" style="line-height: 1;">Fullstack</div>
+			<div class="title-small text-secondary font-bold tracking-widest" style="line-height: 1">
+				Platform
+			</div>
+		</div>
+		<div class="heading-large navbar-center text-accent ml-1 flex items-center">23</div>
 	</div>
 	<div class="navbar-end flex items-center gap-4">
 		<div
