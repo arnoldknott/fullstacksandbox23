@@ -11,8 +11,8 @@
 			// console.log('=== playground - collapse - sidebar instance');
 			// console.log(sideBarInstance);
 			const isOpen = 'open' in sideBarInstance.element.el.className.split(' ');
-			// const isClosed = 'hidden' in sideBarInstance.element.el.className.split(' ');
-			// const isMinified = 'minified' in sideBarInstance.element.el.className.split(' ');
+			const isClosed = 'hidden' in sideBarInstance.element.el.className.split(' ');
+			const isMinified = 'minified' in sideBarInstance.element.el.className.split(' ');
 			if (isOpen) {
 				console.log('=== playground - collapse - sidebar is open');
 				window.HSOverlay.close(sidebar);
@@ -23,6 +23,16 @@
 				console.log('=== playground - collapse - sidebar is closed');
 				window.HSOverlay.open(sidebar);
 			}
+			// if (isClosed || isMinified) {
+			// 	console.log('=== playground - collapse - sidebar is closed or minified');
+			// 	window.HSOverlay.open(sidebar);
+			// 	// } else if (isMinified) {
+			// 	// 	console.log('=== playground - collapse - sidebar is minified');
+			// 	// 	window.HSOverlay.open(sidebar);
+			// } else {
+			// 	console.log('=== playground - collapse - sidebar is open');
+			// 	window.HSOverlay.close(sidebar);
+			// }
 		}
 	};
 </script>
