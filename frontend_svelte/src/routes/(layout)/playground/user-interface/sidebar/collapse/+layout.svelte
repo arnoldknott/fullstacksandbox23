@@ -9,10 +9,12 @@
 		if (sidebar) {
 			const sideBarInstance = window.HSOverlay.getInstance(sidebar, true);
 			const isOpen = 'open' in sideBarInstance.element.el.className.split(' ');
-			if (!isOpen) {
-				window.HSOverlay.open(sidebar);
-			} else {
+			if (isOpen) {
+				console.log('Sidebar is open');
 				window.HSOverlay.close(sidebar);
+			} else {
+				console.log('Sidebar is closed');
+				window.HSOverlay.open(sidebar);
 			}
 		}
 	};
