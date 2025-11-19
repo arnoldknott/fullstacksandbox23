@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { initDropdown, initOverlay, initCollapse, initScrollspy } from '$lib/userInterface';
 	import { type Snippet } from 'svelte';
-	import type { Attachment } from 'svelte/attachments';
 	let { children }: { children: Snippet } = $props();
 
 	const openSidebar = () => {
@@ -14,7 +13,7 @@
 {#snippet sidebarToggleButton(classes: string, overlayModifier: {})}
 	<button
 		type="button"
-		class="btn btn-text btn-square {classes}"
+		class="btn btn-square btn-outline {classes}"
 		aria-haspopup="dialog"
 		aria-expanded="false"
 		aria-controls="collapsible-mini-sidebar"
@@ -22,9 +21,10 @@
 		{...overlayModifier}
 	>
 		<span
-			class="icon-[material-symbols--menu-open-rounded] overlay-minified:hidden size-6 max-sm:hidden"
+			class="icon-[material-symbols--menu-open-rounded] overlay-minified:hidden ml-1 block size-7 max-sm:hidden"
 		></span>
-		<span class="icon-[material-symbols--menu] overlay-minified:block hidden size-6 max-sm:block"
+		<span
+			class="icon-[material-symbols--menu] overlay-minified:block ml-1 hidden size-7 max-sm:block"
 		></span>
 	</button>
 {/snippet}
