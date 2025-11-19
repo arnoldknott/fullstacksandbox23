@@ -39,23 +39,23 @@
 	// 	}
 	// };
 
-	const toggleSidebar = () => {
-		if (sidebar) {
-			const sideBarInstance = window.HSOverlay.getInstance(sidebar, true);
-			const isClosed = 'hidden' in sideBarInstance.element.el.className.split(' ');
-			if (isClosed) {
-				window.HSOverlay.open(sidebar);
-			} else {
-				window.HSOverlay.close(sidebar);
-			}
-		}
-	};
-
-	// const openSidebar = () => {
+	// const toggleSidebar = () => {
 	// 	if (sidebar) {
-	// 		window.HSOverlay.open(sidebar);
+	// 		const sideBarInstance = window.HSOverlay.getInstance(sidebar, true);
+	// 		const isClosed = 'hidden' in sideBarInstance.element.el.className.split(' ');
+	// 		if (isClosed) {
+	// 			window.HSOverlay.open(sidebar);
+	// 		} else {
+	// 			window.HSOverlay.close(sidebar);
+	// 		}
 	// 	}
 	// };
+
+	const openSidebar = () => {
+		const { element } = window.HSOverlay.getInstance('#collapsible-mini-sidebar', true);
+		element.open();
+		window.HSStaticMethods.autoInit();
+	};
 </script>
 
 <nav
@@ -389,7 +389,7 @@
 					>
 						<!-- aria-controls="collapsible-mini-sidebar"
 						data-overlay-minifier="#collapsible-mini-sidebar"
-                        						role="button"
+                        role="button"
 						tabindex="0"
 						onclick={() => openSidebar()}
 						onkeydown={() => openSidebar()} -->
@@ -397,6 +397,10 @@
 						<span class="overlay-minified:hidden">This page</span>
 						<span
 							class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:rotate-270 size-4 transition-all duration-300"
+							role="button"
+							tabindex="0"
+							onclick={() => openSidebar()}
+							onkeydown={() => openSidebar()}
 						></span>
 					</a>
 					<ul
