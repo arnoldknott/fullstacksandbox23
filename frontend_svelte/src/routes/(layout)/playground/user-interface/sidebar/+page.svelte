@@ -5,28 +5,34 @@
 	const sidebars = [
 		{
 			name: 'Standalone',
-			description: '',
+			description: 'A stand-alone side bar.',
 			url: 'sidebar/stand-alone'
 		},
 		{
 			name: 'Adding Scrollspy',
-			description: '',
+			description: 'Adds scrollspy functionality within page to sidebar.',
 			url: 'sidebar/scrollspy'
 		},
 		{
 			name: 'Integrate with Navbar',
-			description: '',
+			description: 'integrates sidebar with default top navbar.',
 			url: 'sidebar/navbar'
 		},
 		{
 			name: 'Combined Navbar and Scrollspy',
-			description: '',
+			description: 'combines both default navbar integration and scrollspy.',
 			url: 'sidebar/navbar-scrollspy'
 		},
 		{
 			name: 'Adding collapse to icon sidebar',
-			description: '',
+			description: 'Adds collapse to a icon sidebar.',
 			url: 'sidebar/collapse'
+		},
+		{
+			name: 'Merge with existing navbar',
+			description:
+				'Merges sidebar with existing navbar and adds a main menu in sidebar for small screens - the previous dropdown in the navbar.',
+			url: 'sidebar/merge'
 		}
 	];
 </script>
