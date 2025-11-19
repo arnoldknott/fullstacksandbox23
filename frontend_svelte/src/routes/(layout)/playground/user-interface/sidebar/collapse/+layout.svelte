@@ -26,8 +26,8 @@
 		class="btn btn-text btn-square"
 		aria-haspopup="dialog"
 		aria-expanded="false"
-		aria-controls="with-navbar-sidebar"
-		data-overlay="#with-navbar-sidebar"
+		aria-controls="collapsible-mini-sidebar"
+		data-overlay-minifier="#collapsible-mini-sidebar"
 		aria-label="Toggle Sidebar"
 		onclick={() => toggleSidebar()}
 	>
@@ -218,9 +218,94 @@
 </nav>
 
 <div id="scrollspy-scrollable-parent" class="grid h-screen overflow-y-auto">
+	<!-- <aside
+		id="collapsible-mini-sidebar"
+		class="overlay overlay-minified:w-17 overlay-open:translate-x-0 drawer drawer-start border-base-content/20 hidden w-66 border-e pt-50 [--auto-close:sm] sm:absolute sm:z-0 sm:flex sm:translate-x-0 sm:shadow-none"
+		{@attach initOverlay}
+		tabindex="-1"
+		bind:this={sidebar}
+	>
+		<div class="drawer-body px-2 pt-4">
+			<ul class="menu p-0">
+				<li>
+					<a href="#">
+						<span class="icon-[tabler--home] size-5"></span>
+						<span class="overlay-minified:hidden">Home</span>
+					</a>
+				</li>
+				<li>
+					<a href="#">
+						<span class="icon-[tabler--user] size-5"></span>
+						<span class="overlay-minified:hidden">Account</span>
+					</a>
+				</li>
+				<li>
+					<a href="#">
+						<span class="icon-[tabler--message] size-5"></span>
+						<span class="overlay-minified:hidden">Notifications</span>
+					</a>
+				</li>
+				<li
+					class="dropdown overlay-minified:[--adaptive:adaptive] overlay-minified:[--strategy:fixed] overlay-minified:[--offset:15] overlay-minified:[--trigger:hover] overlay-minified:[--placement:right-start] relative [--adaptive:none] [--strategy:static]"
+				>
+					<button
+						id="dropdown-default"
+						type="button"
+						class="dropdown-toggle"
+						aria-haspopup="menu"
+						aria-expanded="false"
+						aria-label="Dropdown"
+					>
+						<span class="icon-[tabler--apps] size-5"></span>
+						<span class="overlay-minified:hidden">Apps</span>
+						<span
+							class="icon-[tabler--chevron-down] dropdown-open:rotate-180 overlay-minified:hidden size-4"
+						></span>
+					</button>
+					<ul
+						class="dropdown-menu overlay-minified:shadow-md overlay-minified:shadow-base-300/20 dropdown-open:opacity-100 overlay-minified:before:absolute overlay-minified:before:-start-4 overlay-minified:before:top-0 overlay-minified:before:h-full overlay-minified:before:w-4 mt-0 hidden min-w-60 shadow-none before:bg-transparent"
+						role="menu"
+						aria-orientation="vertical"
+						aria-labelledby="dropdown-default"
+					>
+						<li>
+							<a href="#">
+								<span class="icon-[tabler--mail] size-5"></span>
+								Email
+							</a>
+						</li>
+						<li>
+							<a href="#">
+								<span class="icon-[tabler--calendar] size-5"></span>
+								Calendar
+							</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					<a href="#">
+						<span class="icon-[tabler--shopping-bag] size-5"></span>
+						<span class="overlay-minified:hidden">Product</span>
+					</a>
+				</li>
+				<li>
+					<a href="#">
+						<span class="icon-[tabler--login] size-5"></span>
+						<span class="overlay-minified:hidden">Sign In</span>
+					</a>
+				</li>
+				<li>
+					<a href="#">
+						<span class="icon-[tabler--logout-2] size-5"></span>
+						<span class="overlay-minified:hidden">Sign Out</span>
+					</a>
+				</li>
+			</ul>
+		</div>
+	</aside> -->
 	<aside
-		id="with-navbar-sidebar"
-		class="overlay drawer drawer-start border-base-content/20 overlay-open:translate-x-0 w-64 border-e pt-50 [--auto-close:sm] [--body-scroll:true] [--is-layout-affect:true] [--opened:lg] sm:z-0 lg:[--overlay-backdrop:false]"
+		id="collapsible-mini-sidebar"
+		class="overlay overlay-minified:w-17 overlay-open:translate-x-0 drawer drawer-start border-base-content/20 hidden w-66 border-e pt-50 [--auto-close:sm] sm:absolute sm:z-0 sm:flex sm:translate-x-0 sm:shadow-none"
 		tabindex="-1"
 		{@attach initOverlay}
 		bind:this={sidebar}
@@ -230,13 +315,13 @@
 				<li>
 					<a href="/">
 						<span class="icon-[tabler--home] size-5"></span>
-						Home
+						<span class="overlay-minified:hidden">Home</span>
 					</a>
 				</li>
 				<li>
 					<a href="./scrollspy/">
 						<span class="icon-[tabler--user] size-5"></span>
-						Other page
+						<span class="overlay-minified:hidden">Other page</span>
 					</a>
 				</li>
 				<li class="space-y-0.5">
@@ -247,19 +332,18 @@
 						{@attach initCollapse}
 					>
 						<span class="icon-[icon-park-outline--page] size-5"></span>
-						This page
+						<span class="overlay-minified:hidden">This page</span>
 						<span
 							class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"
 						></span>
 					</a>
 					<ul
 						id="menu-this-page-collapse"
-						class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
+						class="overlay-minified:hidden collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
 						aria-labelledby="menu-this-page"
 						data-scrollspy="#scrollspy"
 						data-scrollspy-scrollable-parent="#scrollspy-scrollable-parent"
 						{@attach initScrollspy}
-						{@attach initCollapse}
 					>
 						<li>
 							<a
@@ -378,14 +462,14 @@
 						data-collapse="#menu-app-collapse"
 					>
 						<span class="icon-[tabler--apps] size-5"></span>
-						Page on Apps
+						<span class="overlay-minified:hidden">Page on Apps</span>
 						<span
 							class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"
 						></span>
 					</a>
 					<ul
 						id="menu-app-collapse"
-						class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
+						class="overlay-minified:hidden collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
 						aria-labelledby="menu-app"
 						{@attach initCollapse}
 					>
@@ -460,20 +544,20 @@
 				<li>
 					<a href="./scrollspy/#">
 						<span class="icon-[tabler--mail] size-5"></span>
-						Further Page
+						<span class="overlay-minified:hidden">Further Page</span>
 					</a>
 				</li>
 
 				<li>
 					<a href="./scrollspy/#">
 						<span class="icon-[tabler--shopping-bag] size-5"></span>
-						About
+						<span class="overlay-minified:hidden">About</span>
 					</a>
 				</li>
 			</ul>
 		</div>
 	</aside>
-	<div class="sm:overlay-layout-open:ps-64 bg-base-100 transition-all duration-300">
+	<div class="sm:overlay-minified:ps-17 bg-base-100 ps-64 transition-all duration-300 max-sm:ps-0">
 		<div class=" bg-base-100 transition-all duration-300">
 			<div id="scrollspy" class="space-y-4 pe-1">
 				{@render children?.()}
@@ -481,3 +565,101 @@
 		</div>
 	</div>
 </div>
+
+<!-- <button
+	type="button"
+	class="btn btn-text max-sm:btn-square sm:hidden"
+	aria-haspopup="dialog"
+	aria-expanded="false"
+	aria-controls="collapsible-mini-sidebar"
+	data-overlay="#collapsible-mini-sidebar"
+	aria-label="Toggle Sidebar"
+>
+	<span class="icon-[tabler--menu-2] size-5"></span>
+</button> -->
+
+<!-- <aside
+	id="collapsible-mini-sidebar"
+	class="overlay overlay-minified:w-17 overlay-open:translate-x-0 drawer drawer-start border-base-content/20 hidden w-66 border-e pt-50 [--auto-close:sm] sm:absolute sm:z-0 sm:flex sm:translate-x-0 sm:shadow-none"
+	{@attach initOverlay}
+	tabindex="-1"
+	bind:this={sidebar}
+>
+	<div class="drawer-body px-2 pt-4">
+		<ul class="menu p-0">
+			<li>
+				<a href="#">
+					<span class="icon-[tabler--home] size-5"></span>
+					<span class="overlay-minified:hidden">Home</span>
+				</a>
+			</li>
+			<li>
+				<a href="#">
+					<span class="icon-[tabler--user] size-5"></span>
+					<span class="overlay-minified:hidden">Account</span>
+				</a>
+			</li>
+			<li>
+				<a href="#">
+					<span class="icon-[tabler--message] size-5"></span>
+					<span class="overlay-minified:hidden">Notifications</span>
+				</a>
+			</li>
+			<li
+				class="dropdown overlay-minified:[--adaptive:adaptive] overlay-minified:[--strategy:fixed] overlay-minified:[--offset:15] overlay-minified:[--trigger:hover] overlay-minified:[--placement:right-start] relative [--adaptive:none] [--strategy:static]"
+			>
+				<button
+					id="dropdown-default"
+					type="button"
+					class="dropdown-toggle"
+					aria-haspopup="menu"
+					aria-expanded="false"
+					aria-label="Dropdown"
+				>
+					<span class="icon-[tabler--apps] size-5"></span>
+					<span class="overlay-minified:hidden">Apps</span>
+					<span
+						class="icon-[tabler--chevron-down] dropdown-open:rotate-180 overlay-minified:hidden size-4"
+					></span>
+				</button>
+				<ul
+					class="dropdown-menu overlay-minified:shadow-md overlay-minified:shadow-base-300/20 dropdown-open:opacity-100 overlay-minified:before:absolute overlay-minified:before:-start-4 overlay-minified:before:top-0 overlay-minified:before:h-full overlay-minified:before:w-4 mt-0 hidden min-w-60 shadow-none before:bg-transparent"
+					role="menu"
+					aria-orientation="vertical"
+					aria-labelledby="dropdown-default"
+				>
+					<li>
+						<a href="#">
+							<span class="icon-[tabler--mail] size-5"></span>
+							Email
+						</a>
+					</li>
+					<li>
+						<a href="#">
+							<span class="icon-[tabler--calendar] size-5"></span>
+							Calendar
+						</a>
+					</li>
+				</ul>
+			</li>
+			<li>
+				<a href="#">
+					<span class="icon-[tabler--shopping-bag] size-5"></span>
+					<span class="overlay-minified:hidden">Product</span>
+				</a>
+			</li>
+			<li>
+				<a href="#">
+					<span class="icon-[tabler--login] size-5"></span>
+					<span class="overlay-minified:hidden">Sign In</span>
+				</a>
+			</li>
+			<li>
+				<a href="#">
+					<span class="icon-[tabler--logout-2] size-5"></span>
+					<span class="overlay-minified:hidden">Sign Out</span>
+				</a>
+			</li>
+		</ul>
+	</div>
+</aside> -->

@@ -22,6 +22,11 @@
 			name: 'Combined Navbar and Scrollspy',
 			description: '',
 			url: 'sidebar/navbar-scrollspy'
+		},
+		{
+			name: 'Adding collapse to icon sidebar',
+			description: '',
+			url: 'sidebar/collapse'
 		}
 	];
 </script>
