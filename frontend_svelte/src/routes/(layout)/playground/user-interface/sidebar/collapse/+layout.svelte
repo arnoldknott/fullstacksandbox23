@@ -8,12 +8,19 @@
 	const toggleSidebar = () => {
 		if (sidebar) {
 			const sideBarInstance = window.HSOverlay.getInstance(sidebar, true);
+			// console.log('=== playground - collapse - sidebar instance');
+			// console.log(sideBarInstance);
 			const isOpen = 'open' in sideBarInstance.element.el.className.split(' ');
+			// const isClosed = 'hidden' in sideBarInstance.element.el.className.split(' ');
+			// const isMinified = 'minified' in sideBarInstance.element.el.className.split(' ');
 			if (isOpen) {
-				console.log('Sidebar is open');
+				console.log('=== playground - collapse - sidebar is open');
 				window.HSOverlay.close(sidebar);
+				// } else if (isMinified) {
+				// 	console.log('=== playground - collapse - sidebar is minified');
+				// 	window.HSOverlay.open(sidebar);
 			} else {
-				console.log('Sidebar is closed');
+				console.log('=== playground - collapse - sidebar is closed');
 				window.HSOverlay.open(sidebar);
 			}
 		}
@@ -33,8 +40,11 @@
 		aria-label="Toggle Sidebar"
 		onclick={() => toggleSidebar()}
 	>
-		<span class="icon-[material-symbols--menu-open-rounded] overlay-minified:hidden size-6"></span>
-		<span class="icon-[material-symbols--menu] overlay-minified:block hidden size-6"></span>
+		<span
+			class="icon-[material-symbols--menu-open-rounded] overlay-minified:hidden size-6 max-sm:hidden"
+		></span>
+		<span class="icon-[material-symbols--menu] overlay-minified:block hidden size-6 max-sm:block"
+		></span>
 	</button>
 	<div class="flex flex-1 items-center">
 		<a class="link text-base-content link-neutral text-xl font-semibold no-underline" href="/">
