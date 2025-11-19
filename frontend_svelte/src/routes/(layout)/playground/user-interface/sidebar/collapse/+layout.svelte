@@ -1,40 +1,61 @@
 <script lang="ts">
 	import { initDropdown, initOverlay, initCollapse, initScrollspy } from '$lib/userInterface';
-	import type { Snippet } from 'svelte';
+	import { type Snippet } from 'svelte';
 	let { children }: { children: Snippet } = $props();
 
-	let sidebar: HTMLElement | undefined = $state();
+	let sidebar: HTMLElement;
+
+	// const toggleSidebar = () => {
+	// 	if (sidebar) {
+	// 		const sideBarInstance = window.HSOverlay.getInstance(sidebar, true);
+	// 		// console.log('=== playground - collapse - sidebar instance');
+	// 		// console.log(sideBarInstance);
+	// 		const isOpen = 'open' in sideBarInstance.element.el.className.split(' ');
+	// 		console.log('=== sidebar isOpen: ' + isOpen);
+	// 		const isClosed = 'hidden' in sideBarInstance.element.el.className.split(' ');
+	// 		console.log('=== sidebar isClosed: ' + isClosed);
+	// 		const isMinified = 'minified' in sideBarInstance.element.el.className.split(' ');
+	// 		console.log('=== sidebar isMinified: ' + isMinified);
+	// 		if (isOpen) {
+	// 			console.log('=== playground - collapse - sidebar is open');
+	// 			window.HSOverlay.close(sidebar);
+	// 			// } else if (isMinified) {
+	// 			// 	console.log('=== playground - collapse - sidebar is minified');
+	// 			// 	window.HSOverlay.open(sidebar);
+	// 		} else {
+	// 			console.log('=== playground - collapse - sidebar is closed');
+	// 			window.HSOverlay.open(sidebar);
+	// 		}
+	// 		// if (isClosed || isMinified) {
+	// 		// 	console.log('=== playground - collapse - sidebar is closed or minified');
+	// 		// 	window.HSOverlay.open(sidebar);
+	// 		// 	// } else if (isMinified) {
+	// 		// 	// 	console.log('=== playground - collapse - sidebar is minified');
+	// 		// 	// 	window.HSOverlay.open(sidebar);
+	// 		// } else {
+	// 		// 	console.log('=== playground - collapse - sidebar is open');
+	// 		// 	window.HSOverlay.close(sidebar);
+	// 		// }
+	// 	}
+	// };
 
 	const toggleSidebar = () => {
 		if (sidebar) {
 			const sideBarInstance = window.HSOverlay.getInstance(sidebar, true);
-			// console.log('=== playground - collapse - sidebar instance');
-			// console.log(sideBarInstance);
-			const isOpen = 'open' in sideBarInstance.element.el.className.split(' ');
 			const isClosed = 'hidden' in sideBarInstance.element.el.className.split(' ');
-			const isMinified = 'minified' in sideBarInstance.element.el.className.split(' ');
-			if (isOpen) {
-				console.log('=== playground - collapse - sidebar is open');
-				window.HSOverlay.close(sidebar);
-				// } else if (isMinified) {
-				// 	console.log('=== playground - collapse - sidebar is minified');
-				// 	window.HSOverlay.open(sidebar);
-			} else {
-				console.log('=== playground - collapse - sidebar is closed');
+			if (isClosed) {
 				window.HSOverlay.open(sidebar);
+			} else {
+				window.HSOverlay.close(sidebar);
 			}
-			// if (isClosed || isMinified) {
-			// 	console.log('=== playground - collapse - sidebar is closed or minified');
-			// 	window.HSOverlay.open(sidebar);
-			// 	// } else if (isMinified) {
-			// 	// 	console.log('=== playground - collapse - sidebar is minified');
-			// 	// 	window.HSOverlay.open(sidebar);
-			// } else {
-			// 	console.log('=== playground - collapse - sidebar is open');
-			// 	window.HSOverlay.close(sidebar);
-			// }
 		}
 	};
+
+	// const openSidebar = () => {
+	// 	if (sidebar) {
+	// 		window.HSOverlay.open(sidebar);
+	// 	}
+	// };
 </script>
 
 <nav
@@ -42,13 +63,27 @@
 >
 	<button
 		type="button"
-		class="btn btn-text btn-square"
+		class="btn btn-text btn-square hidden sm:block"
 		aria-haspopup="dialog"
 		aria-expanded="false"
 		aria-controls="collapsible-mini-sidebar"
 		data-overlay-minifier="#collapsible-mini-sidebar"
 		aria-label="Toggle Sidebar"
-		onclick={() => toggleSidebar()}
+	>
+		<span
+			class="icon-[material-symbols--menu-open-rounded] overlay-minified:hidden size-6 max-sm:hidden"
+		></span>
+		<span class="icon-[material-symbols--menu] overlay-minified:block hidden size-6 max-sm:block"
+		></span>
+	</button>
+	<button
+		type="button"
+		class="btn btn-text btn-square sm:hidden"
+		aria-haspopup="dialog"
+		aria-expanded="false"
+		aria-controls="collapsible-mini-sidebar"
+		data-overlay="#collapsible-mini-sidebar"
+		aria-label="Toggle Sidebar"
 	>
 		<span
 			class="icon-[material-symbols--menu-open-rounded] overlay-minified:hidden size-6 max-sm:hidden"
@@ -58,7 +93,7 @@
 	</button>
 	<div class="flex flex-1 items-center">
 		<a class="link text-base-content link-neutral text-xl font-semibold no-underline" href="/">
-			Fullstack Sandbox
+			Fullstack Platform
 		</a>
 	</div>
 	<div class="navbar-end flex items-center gap-4">
@@ -352,15 +387,21 @@
 						data-collapse="#menu-this-page-collapse"
 						{@attach initCollapse}
 					>
+						<!-- aria-controls="collapsible-mini-sidebar"
+						data-overlay-minifier="#collapsible-mini-sidebar"
+                        						role="button"
+						tabindex="0"
+						onclick={() => openSidebar()}
+						onkeydown={() => openSidebar()} -->
 						<span class="icon-[icon-park-outline--page] size-5"></span>
 						<span class="overlay-minified:hidden">This page</span>
 						<span
-							class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"
+							class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:rotate-270 size-4 transition-all duration-300"
 						></span>
 					</a>
 					<ul
 						id="menu-this-page-collapse"
-						class="overlay-minified:hidden collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
+						class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
 						aria-labelledby="menu-this-page"
 						data-scrollspy="#scrollspy"
 						data-scrollspy-scrollable-parent="#scrollspy-scrollable-parent"
