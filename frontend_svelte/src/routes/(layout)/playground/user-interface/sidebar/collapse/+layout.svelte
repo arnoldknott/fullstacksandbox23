@@ -8,8 +8,8 @@
 	const toggleSidebar = () => {
 		if (sidebar) {
 			const sideBarInstance = window.HSOverlay.getInstance(sidebar, true);
-			const isClosed = 'hidden' in sideBarInstance.element.el.className.split(' ');
-			if (isClosed) {
+			const isOpen = 'open' in sideBarInstance.element.el.className.split(' ');
+			if (!isOpen) {
 				window.HSOverlay.open(sidebar);
 			} else {
 				window.HSOverlay.close(sidebar);
@@ -31,9 +31,8 @@
 		aria-label="Toggle Sidebar"
 		onclick={() => toggleSidebar()}
 	>
-		<span class="icon-[material-symbols--menu] overlay-layout-open:hidden size-6"></span>
-		<span class="icon-[material-symbols--menu-open-rounded] overlay-layout-open:block hidden size-6"
-		></span>
+		<span class="icon-[material-symbols--menu-open-rounded] overlay-minified:hidden size-6"></span>
+		<span class="icon-[material-symbols--menu] overlay-minified:block hidden size-6"></span>
 	</button>
 	<div class="flex flex-1 items-center">
 		<a class="link text-base-content link-neutral text-xl font-semibold no-underline" href="/">
