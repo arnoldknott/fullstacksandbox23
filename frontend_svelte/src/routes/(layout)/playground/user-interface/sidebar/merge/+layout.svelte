@@ -4,31 +4,6 @@
 	import type { Attachment } from 'svelte/attachments';
 	let { children }: { children: Snippet } = $props();
 
-	let sidebarToggleButtonElement: HTMLButtonElement;
-
-	// $effect(() => {
-	// 	console.log(sidebarToggleButtonElement.dataset);
-	// });
-
-	const addDataAttributes: Attachment<HTMLElement> = (element: HTMLElement) => {
-		element.dataset['overlayMinifier'] = '#collapsible-mini-sidebar';
-		// const dataAttributes: DOMStringMap = {
-		// 	myData: 'testValue',
-		// 	'another-Data': 'anotherValueChanged'
-		// };
-		// for (const [key, value] of Object.entries(dataAttributes)) {
-		// 	element.dataset[key] = value;
-		// }
-	};
-
-	// const addSmallScreenDataAttributes: Attachment<HTMLElement> = (element: HTMLElement) => {
-	// 	element.dataset['data-overlay'] = '#collapsible-mini-sidebar';
-	// };
-
-	// const addLargeScreenDataAttributes: Attachment<HTMLElement> = (element: HTMLElement) => {
-	// 	element.dataset['data-overlay-minifier'] = '#collapsible-mini-sidebar';
-	// };
-
 	const openSidebar = () => {
 		const { element } = window.HSOverlay.getInstance('#collapsible-mini-sidebar', true);
 		element.open();
@@ -68,7 +43,6 @@
 		aria-controls="collapsible-mini-sidebar"
 		data-overlay-minifier="#collapsible-mini-sidebar"
 		aria-label="Toggle Sidebar"
-		{@attach addDataAttributes}
 	>
 		<span
 			class="icon-[material-symbols--menu-open-rounded] overlay-minified:hidden size-6 max-sm:hidden"
