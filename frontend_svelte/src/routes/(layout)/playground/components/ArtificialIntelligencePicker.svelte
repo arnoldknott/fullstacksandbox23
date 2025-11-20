@@ -29,15 +29,15 @@
 	bind:this={artificialIntelligenceForm}
 >
 	<li class="flex grow items-center gap-2">
-		<span class="icon-[mingcute--ai-fill] bg-neutral size-6"></span>
-		<span class="text-neutral grow">Artificial Intelligence</span>
+		<span class="icon-[mingcute--ai-fill] bg-secondary size-6"></span>
+		<span class="text-secondary grow">Artificial Intelligence</span>
 	</li>
 	<li class="grow">
 		<div class="flex w-full flex-row pt-2">
 			<label class="label label-text text-base" for="ai-enabled">off</label>
 			<input
 				type="checkbox"
-				class="switch switch-neutral"
+				class="switch switch-secondary"
 				onchange={() => saveProfileAccount()}
 				bind:checked={artificialIntelligenceConfiguration.enabled}
 				id="ai-enabled"

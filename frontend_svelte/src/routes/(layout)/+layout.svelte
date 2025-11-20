@@ -338,8 +338,8 @@
 							data-overlay="#welcome-modal"
 						>
 							<!-- works via JavaScript: onclick={() => window.HSOverlay.open(welcomeModal)}  -->
-							<span class="icon-[tabler--eye] bg-neutral size-6"></span>
-							<span class="text-neutral grow">Show welcome modal</span>
+							<span class="icon-[tabler--eye] bg-secondary size-6"></span>
+							<span class="text-secondary grow">Show welcome modal</span>
 						</button>
 					</li>
 				</ul>

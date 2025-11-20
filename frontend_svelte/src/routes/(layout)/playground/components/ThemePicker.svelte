@@ -34,8 +34,8 @@
 	bind:this={themeForm}
 >
 	<li class="flex items-center gap-2">
-		<span class="icon-[material-symbols--palette-outline] bg-neutral size-6"></span>
-		<span class="text-neutral grow"> Theming</span>
+		<span class="icon-[material-symbols--palette-outline] bg-secondary size-6"></span>
+		<span class="text-secondary grow"> Theming</span>
 		<button aria-label="modeToggler" type="button">
 			<label for="mode-toggler" class="swap swap-rotate">
 				<input id="mode-toggler" type="checkbox" onclick={toggleMode} />

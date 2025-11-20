@@ -33,6 +33,12 @@
 			description:
 				'Merges sidebar with existing navbar and adds a main menu in sidebar for small screens - the previous dropdown in the navbar.',
 			url: 'sidebar/merge'
+		},
+		{
+			name: 'Segmenting code',
+			description:
+				'Segments the code from navbar and sidebar into snippets and components and parameterizes them for reusability and maintainability.',
+			url: 'sidebar/segmenting'
 		}
 	];
 </script>
