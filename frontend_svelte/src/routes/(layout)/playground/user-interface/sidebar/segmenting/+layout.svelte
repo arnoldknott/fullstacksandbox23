@@ -1,6 +1,10 @@
 <script lang="ts">
 	import { initDropdown, initOverlay, initCollapse, initScrollspy } from '$lib/userInterface';
 	import { type Snippet } from 'svelte';
+	import { Variant, type ColorConfig } from '$lib/theming';
+	import { Model, type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
+	import ThemePicker from '../../../components/ThemePicker.svelte';
+	import ArtificialIntelligencePicker from '../../../components/ArtificialIntelligencePicker.svelte';
 	let { children }: { children: Snippet } = $props();
 
 	const openSidebar = () => {
@@ -9,17 +13,33 @@
 		window.HSStaticMethods.autoInit();
 	};
 
+	let themeConfiguration: ColorConfig = $state({
+		sourceColor: '#941ff4', // <= That's a good color!// '#353c6e' // '#769CDF',
+		variant: Variant.TONAL_SPOT, // Variant.FIDELITY,//
+		contrast: 0.0
+	});
+	let themeForm = $state<HTMLFormElement | null>(null);
+
+	let artificialIntelligenceConfiguration: ArtificialIntelligenceConfig = $state({
+		enabled: true,
+		model: Model.MODEL1,
+		temperature: 0.7
+		// max_tokens: 2048
+	});
+
+	let artificialIntelligenceForm = $state<HTMLFormElement | null>(null);
+
+	const saveProfileAccount = async () => {
+		console.log('=== sidebar - segmenting - saveProfileAccount - themeConfiguration ===');
+		console.log($state.snapshot(themeConfiguration));
+		console.log(
+			'=== sidebar - segmenting - saveProfileAccount - artificialIntelligenceConfiguration ==='
+		);
+		console.log($state.snapshot(artificialIntelligenceConfiguration));
+	};
+
 	// for theme picker:
 	let mode: 'light' | 'dark' = $state('dark');
-	const toggleMode = () => {
-		mode = mode === 'dark' ? 'light' : 'dark';
-	};
-	let sourceColor = $state('#769CDF');
-	let variant = $state('TONAL_SPOT');
-	const contrastMin = -1.0;
-	const contrastMax = 1.0;
-	const contrastStep = 0.2;
-	let contrast = $state(0.0);
 </script>
 
 {#snippet sidebarToggleButton(classes: string, overlayModifier: object)}
@@ -38,6 +58,24 @@
 		<span class="icon-[material-symbols--menu] overlay-minified:flex hidden size-6 max-sm:flex"
 		></span>
 	</button>
+{/snippet}
+
+{#snippet navbarPartItem(href: string, icon: string, text: string, textClasses?: string)}
+	<li class="text-primary hidden items-center md:flex">
+		<a {href} aria-label={text} class="flex items-center gap-1"
+			><span class="icon-[{icon}] size-6"></span>
+			<span class={textClasses}>{text}</span>
+		</a>
+	</li>
+{/snippet}
+
+{#snippet sidebarPartItem(href: string, icon: string, text: string)}
+	<li class="text-primary md:hidden">
+		<a {href}>
+			<span class="icon-[{icon}] size-5"></span>
+			<span class="overlay-minified:hidden">{text}</span>
+		</a>
+	</li>
 {/snippet}
 
 <nav
@@ -89,18 +127,30 @@
 					><span class="icon-[material-symbols--home-outline-rounded] bg-neutral size-6"></span></a
 				>
 			</li> -->
-			<li class="text-primary hidden items-center md:flex">
-				<a href="/features"><span class="icon-[mdi--feature-highlight] size-6"></span> Features</a>
+			{@render navbarPartItem('/features', 'mdi--feature-highlight', 'Features')}
+			{@render navbarPartItem('/apps', 'tabler--apps', 'Apps')}
+			{@render navbarPartItem(
+				'/construction',
+				'maki--construction',
+				'Construction',
+				'hidden lg:block'
+			)}
+			<!-- <li class="text-primary hidden items-center md:flex">
+				<a href="/features" class="flex items-center gap-1"
+					><span class="icon-[mdi--feature-highlight] size-6"></span>Features</a
+				>
+			</li> -->
+			<!-- <li class="text-primary hidden items-center md:flex">
+				<a href="/apps" class="flex items-center gap-1"
+					><span class="icon-[tabler--apps] size-6"></span>Apps</a
+				>
 			</li>
 			<li class="text-primary hidden items-center md:flex">
-				<a href="/apps"><span class="icon-[tabler--apps] size-6"></span> Apps</a>
-			</li>
-			<li class="text-primary hidden items-center md:flex">
-				<a href="/construction" class="flex items-center gap-1" aria-label="Contruction"
+				<a href="/construction" aria-label="Contruction" class="flex items-center gap-1"
 					><span class="icon-[maki--construction] size-6"></span>
 					<span class="hidden lg:block">Construction</span>
 				</a>
-			</li>
+			</li> -->
 		</ul>
 	</div>
 	<div class="navbar-center flex flex-row max-sm:scale-50">
@@ -142,77 +192,15 @@
 				aria-orientation="vertical"
 				aria-labelledby="dropdown-menu-icon-user"
 			>
-				<li class="flex items-center gap-2">
-					<span class="icon-[material-symbols--palette-outline] size-6"></span>
-					<span class="grow"> Theming</span>
-					<button aria-label="modeToggler">
-						<label id="modeToggler" class="swap swap-rotate">
-							<input type="checkbox" onclick={toggleMode} />
-							<span class="icon-[tabler--sun] swap-on size-6"></span>
-							<span class="icon-[tabler--moon] swap-off size-6"></span>
-						</label>
-					</button>
-				</li>
+				<ArtificialIntelligencePicker
+					{saveProfileAccount}
+					bind:artificialIntelligenceForm
+					bind:artificialIntelligenceConfiguration
+				/>
 				<li>
-					<div class="w-48">
-						<label class="label label-text flex" for="colorPicker">
-							<span class="grow">Source color:</span>
-							<code>{sourceColor}</code>
-						</label>
-						<input
-							class="w-full"
-							type="color"
-							id="colorPicker"
-							name="color-picker"
-							bind:value={sourceColor}
-						/>
-					</div>
+					<hr class="border-outline -mx-2 my-5" />
 				</li>
-				<li>
-					<div class="relative w-48">
-						<label class="label label-text" for="themeVariant">Variant</label>
-						<select
-							class="select select-floating max-w-sm"
-							aria-label="Select variant"
-							id="themeVariant"
-							bind:value={variant}
-						>
-							<option value="TONAL_SPOT">Tonal Spot</option>
-							<option value="MONOCHROME">Monochrome</option>
-							<option value="NEUTRAL">Neutral</option>
-							<option value="VIBRANT">Vibrant</option>
-							<option value="EXPRESSIVE">Expressive</option>
-							<option value="FIDELITY">Fidelity</option>
-							<option value="CONTENT">Content</option>
-							<option value="RAINBOW">Rainbow</option>
-							<option value="FRUIT_SALAD">Fruit Salad</option>
-						</select>
-					</div>
-				</li>
-				<li>
-					<div class="w-48">
-						<label class="label label-text flex" for="contrast">
-							<span class="grow">Contrast: </span>
-							<code>{contrast}</code>
-						</label>
-
-						<input
-							type="range"
-							min={contrastMin}
-							max={contrastMax}
-							step={contrastStep}
-							class="range w-full"
-							aria-label="contrast"
-							id="contrast"
-							bind:value={contrast}
-						/>
-						<!-- <div class="flex w-full justify-between px-2 text-xs">
-							{#each allContrasts as _}
-								<span>|</span>
-							{/each}
-						</div> -->
-					</div>
-				</li>
+				<ThemePicker {saveProfileAccount} bind:themeForm bind:mode bind:themeConfiguration />
 				<li>
 					<hr class="border-outline -mx-2 my-5" />
 				</li>
@@ -242,7 +230,11 @@
 	>
 		<div class="drawer-body px-2 pt-4">
 			<ul class="menu p-0">
-				<li class="text-primary">
+				{@render sidebarPartItem('/', 'material-symbols--home-outline-rounded', 'Home')}
+				{@render sidebarPartItem('/features', 'mdi--feature-highlight', 'Features')}
+				{@render sidebarPartItem('/apps', 'tabler--apps', 'Apps')}
+				{@render sidebarPartItem('/construction', 'maki--construction', 'Construction')}
+				<!-- <li class="text-primary">
 					<a href="/">
 						<span class="icon-[material-symbols--home-outline-rounded] size-5"></span>
 						<span class="overlay-minified:hidden">Home</span>
@@ -265,7 +257,7 @@
 						<span class="icon-[maki--construction] size-5"></span>
 						<span class="overlay-minified:hidden">Construction</span>
 					</a>
-				</li>
+				</li> -->
 			</ul>
 			<div class="divider"></div>
 			<ul class="menu p-0">

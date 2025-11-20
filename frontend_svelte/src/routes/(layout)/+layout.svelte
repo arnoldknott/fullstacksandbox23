@@ -12,14 +12,13 @@
 	import type { Action } from 'svelte/action';
 	// import NavButton from '$components/NavButton.svelte';
 	// import UserButton from '$components/UserButton.svelte';
-	import type { Snippet } from 'svelte';
+	import { onMount, type Snippet } from 'svelte';
 	import { page } from '$app/state';
 	import Guard from '$components/Guard.svelte';
 	import { initDropdown } from '$lib/userInterface';
 	import ThemePicker from './playground/components/ThemePicker.svelte';
 	import ArtificialIntelligencePicker from './playground/components/ArtificialIntelligencePicker.svelte';
 	import { themeStore } from '$lib/stores';
-	import { type SubmitFunction } from '@sveltejs/kit';
 	import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
 
@@ -35,7 +34,7 @@
 
 	let welcomeModal: HTMLDivElement | null = $state(null);
 
-	$effect(() => {
+	onMount(() => {
 		if (userUnregistered) {
 			window.HSOverlay.open(welcomeModal);
 		}
@@ -84,6 +83,7 @@
 		variant: data?.session?.currentUser?.user_profile.theme_variant || Variant.TONAL_SPOT, // Variant.FIDELITY,//
 		contrast: data?.session?.currentUser?.user_profile.contrast || 0.0
 	});
+	// TBD: consider using onMount here!
 	$effect(() => {
 		if (data.session?.currentUser?.user_profile) {
 			// console.log('=== layout - data.session.currentUser.user_profile ===');
@@ -155,6 +155,7 @@
 		// console.log('=== layout - applyTheming - page.data.session.currentUser.user_profile ===');
 		// console.log(page.data.session.currentUser.user_profile);
 
+		// TBD: consider useing onMount here!
 		$effect(() => {
 			themeStore.set(theme);
 		});
@@ -171,13 +172,6 @@
 			console.log('=== layout - saveProfileAccount - themeConfiguration ===');
 			console.log($state.snapshot(themeConfiguration));
 		}
-	};
-
-	const updateProfileAccount: SubmitFunction = async () => {
-		// console.log('=== layout - updateProfileAccount - formData ===');
-		// console.log(formData);
-
-		return () => {};
 	};
 
 	// const { session } = page.data;
@@ -309,7 +303,6 @@
 					aria-labelledby="dropdown-menu-icon-user"
 				>
 					<ArtificialIntelligencePicker
-						{updateProfileAccount}
 						{saveProfileAccount}
 						bind:artificialIntelligenceForm
 						bind:artificialIntelligenceConfiguration
@@ -317,13 +310,7 @@
 					<li>
 						<hr class="border-outline -mx-2 my-5" />
 					</li>
-					<ThemePicker
-						{updateProfileAccount}
-						{saveProfileAccount}
-						bind:themeForm
-						bind:mode
-						bind:themeConfiguration
-					/>
+					<ThemePicker {saveProfileAccount} bind:themeForm bind:mode bind:themeConfiguration />
 					<li>
 						<hr class="border-outline -mx-2 my-5" />
 					</li>
@@ -338,8 +325,8 @@
 							data-overlay="#welcome-modal"
 						>
 							<!-- works via JavaScript: onclick={() => window.HSOverlay.open(welcomeModal)}  -->
-							<span class="icon-[tabler--eye] bg-neutral size-6"></span>
-							<span class="text-neutral grow">Show welcome modal</span>
+							<span class="icon-[tabler--eye] bg-secondary size-6"></span>
+							<span class="text-secondary grow">Show welcome modal</span>
 						</button>
 					</li>
 				</ul>
@@ -434,7 +421,6 @@
 							aria-labelledby="dropdown-menu-icon-user"
 						>
 							<ArtificialIntelligencePicker
-								{updateProfileAccount}
 								{saveProfileAccount}
 								bind:artificialIntelligenceForm
 								bind:artificialIntelligenceConfiguration
@@ -446,13 +432,7 @@
 							aria-orientation="vertical"
 							aria-labelledby="dropdown-menu-icon-user"
 						>
-							<ThemePicker
-								{updateProfileAccount}
-								{saveProfileAccount}
-								bind:themeForm
-								bind:mode
-								bind:themeConfiguration
-							/>
+							<ThemePicker {saveProfileAccount} bind:themeForm bind:mode bind:themeConfiguration />
 						</ul>
 					</div>
 					<!-- <div
@@ -495,7 +475,6 @@
 								aria-labelledby="dropdown-menu-icon-user"
 							>
 								<ArtificialIntelligencePicker
-									{updateProfileAccount}
 									{saveProfileAccount}
 									bind:artificialIntelligenceForm
 									bind:artificialIntelligenceConfiguration
@@ -515,7 +494,6 @@
 								aria-labelledby="dropdown-menu-icon-user"
 							>
 								<ThemePicker
-									{updateProfileAccount}
 									{saveProfileAccount}
 									bind:themeForm
 									bind:mode
@@ -542,7 +520,6 @@
 							input.formData.append('color-picker', themeConfiguration.sourceColor);
 							input.formData.append('variant-picker', themeConfiguration.variant);
 							input.formData.append('contrast', themeConfiguration.contrast.toString());
-							updateProfileAccount(input);
 						}}
 					>
 						<button

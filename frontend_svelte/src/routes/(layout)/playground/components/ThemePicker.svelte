@@ -1,17 +1,14 @@
 <script lang="ts">
-	import { type SubmitFunction } from '@sveltejs/kit';
 	import { enhance } from '$app/forms';
 	import { Variant, type ColorConfig } from '$lib/theming';
 
 	let {
 		themeForm = $bindable<HTMLFormElement | null>(),
-		updateProfileAccount,
 		saveProfileAccount,
 		mode = $bindable<'light' | 'dark'>(),
 		themeConfiguration = $bindable()
 	}: {
 		themeForm: HTMLFormElement | null;
-		updateProfileAccount: SubmitFunction;
 		saveProfileAccount: () => void;
 		mode: 'light' | 'dark';
 		themeConfiguration: ColorConfig;
@@ -26,16 +23,10 @@
 	const contrastStep = 0.2;
 </script>
 
-<form
-	method="POST"
-	action="/?/putme"
-	id="theme-form"
-	use:enhance={updateProfileAccount}
-	bind:this={themeForm}
->
+<form method="POST" action="/?/putme" id="theme-form" use:enhance bind:this={themeForm}>
 	<li class="flex items-center gap-2">
-		<span class="icon-[material-symbols--palette-outline] bg-neutral size-6"></span>
-		<span class="text-neutral grow"> Theming</span>
+		<span class="icon-[material-symbols--palette-outline] bg-secondary size-6"></span>
+		<span class="text-secondary grow"> Theming</span>
 		<button aria-label="modeToggler" type="button">
 			<label for="mode-toggler" class="swap swap-rotate">
 				<input id="mode-toggler" type="checkbox" onclick={toggleMode} />
