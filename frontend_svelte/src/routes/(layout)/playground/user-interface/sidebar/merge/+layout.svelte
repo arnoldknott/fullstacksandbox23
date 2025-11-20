@@ -25,7 +25,7 @@
 {#snippet sidebarToggleButton(classes: string, overlayModifier: object)}
 	<button
 		type="button"
-		class="btn btn-square btn-sm btn-outline {classes}"
+		class="btn btn-square btn-sm btn-outline btn-primary {classes}"
 		aria-haspopup="dialog"
 		aria-expanded="false"
 		aria-controls="collapsible-mini-sidebar"
@@ -89,8 +89,20 @@
 					><span class="icon-[material-symbols--home-outline-rounded] bg-neutral size-6"></span></a
 				>
 			</li> -->
-			<li><a href="/docs" class="text-neutral">Features</a></li>
-			<li><a href="/playground" class="text-neutral">Apps</a></li>
+			<li class="text-primary flex items-center gap-1">
+				<span class="icon-[mdi--feature-highlight] size-5"></span>
+				<a href="/features">Features</a>
+			</li>
+			<li class="text-primary flex items-center gap-1">
+				<span class="icon-[tabler--apps] size-5"></span>
+				<a href="/apps">Apps</a>
+			</li>
+			<li class="text-primary">
+				<a href="/construction" class="flex items-center gap-1" aria-label="Contruction"
+					><span class="icon-[maki--construction] size-5"></span>
+					<span class="hidden lg:block">Construction</span>
+				</a>
+			</li>
 		</ul>
 	</div>
 	<div class="navbar-center flex flex-row">
@@ -116,7 +128,7 @@
 				aria-label="User Menu"
 			></span>
 			<ul
-				class="dropdown-menu bg-base-200 text-neutral shadow-outline dropdown-open:opacity-100 hidden shadow-md"
+				class="dropdown-menu bg-base-200 text-secondary shadow-outline dropdown-open:opacity-100 hidden shadow-md"
 				role="menu"
 				aria-orientation="vertical"
 				aria-labelledby="dropdown-menu-icon-user"
@@ -203,7 +215,7 @@
 		</div>
 		<div class="flex items-center md:ml-2">
 			<button
-				class="btn btn-neutral btn-outline shadow-neutral ml-2 rounded-full shadow-sm"
+				class="btn btn-primary btn-outline shadow-primary ml-2 rounded-full shadow-sm"
 				aria-label="LogInOut"
 			>
 				<a href="#top">LogInOut</a>
@@ -221,12 +233,33 @@
 	>
 		<div class="drawer-body px-2 pt-4">
 			<ul class="menu p-0">
-				<li>
+				<li class="text-primary">
 					<a href="/">
 						<span class="icon-[material-symbols--home-outline-rounded] size-5"></span>
 						<span class="overlay-minified:hidden">Home</span>
 					</a>
 				</li>
+				<li class="text-primary md:hidden">
+					<a href="/features">
+						<span class="icon-[mdi--feature-highlight] size-5"></span>
+						<span class="overlay-minified:hidden">Features</span>
+					</a>
+				</li>
+				<li class="text-primary md:hidden">
+					<a href="/apps">
+						<span class="icon-[tabler--apps] size-5"></span>
+						<span class="overlay-minified:hidden">Apps</span>
+					</a>
+				</li>
+				<li class="text-primary md:hidden">
+					<a href="/construction">
+						<span class="icon-[maki--construction] size-5"></span>
+						<span class="overlay-minified:hidden">Construction</span>
+					</a>
+				</li>
+			</ul>
+			<div class="divider"></div>
+			<ul class="menu p-0">
 				<li>
 					<a href="./scrollspy/">
 						<span class="icon-[tabler--user] size-5"></span>
