@@ -105,7 +105,7 @@
 			</li>
 		</ul>
 	</div>
-	<div class="navbar-center flex flex-row">
+	<div class="navbar-center flex flex-row max-sm:scale-50">
 		<div class="flex flex-col justify-center">
 			<div class="title-small text-primary italic" style="line-height: 1;">Fullstack</div>
 			<div class="title-small text-secondary font-bold tracking-wide" style="line-height: 1">
@@ -115,6 +115,17 @@
 		<div class="heading-large navbar-center text-accent ml-1 flex items-center">23</div>
 	</div>
 	<div class="navbar-end">
+		<button
+			class="btn btn-sm btn-text btn-circle text-primary size-8.5 md:hidden"
+			aria-label="Search"
+		>
+			<span class="icon-[tabler--search] size-5.5"></span>
+		</button>
+		<div class="input mx-2 max-w-56 rounded-full max-md:hidden">
+			<span class="icon-[tabler--search] text-base-content/80 my-auto me-3 size-5 shrink-0"></span>
+			<label class="sr-only" for="searchInput">Full Name</label>
+			<input type="search" class="grow" placeholder="Search" id="searchInput" />
+		</div>
 		<div
 			class="dropdown flex items-center [--auto-close:inside] rtl:[--placement:bottom-end]"
 			{@attach initDropdown}
