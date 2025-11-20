@@ -422,18 +422,25 @@
 						class="collapse-toggle collapse-open:bg-base-content/10"
 						id="menu-app"
 						data-collapse="#menu-app-collapse"
+						{@attach initCollapse}
 					>
 						<span class="icon-[tabler--apps] size-5"></span>
 						<span class="overlay-minified:hidden">Page on Apps</span>
 						<span
-							class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"
+							class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:hidden size-4 transition-all duration-300"
+						></span>
+						<span
+							class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:block overlay-minified:rotate-270 hidden size-4 transition-all duration-300"
+							role="button"
+							tabindex="0"
+							onclick={() => openSidebar()}
+							onkeydown={() => openSidebar()}
 						></span>
 					</a>
 					<ul
 						id="menu-app-collapse"
-						class="overlay-minified:hidden collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
+						class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
 						aria-labelledby="menu-app"
-						{@attach initCollapse}
 					>
 						<li>
 							<a href="./scrollspy/#">
