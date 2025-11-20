@@ -77,29 +77,27 @@
 		</button>
 	</div> -->
 	<div class="navbar-start">
-		{@render sidebarToggleButton('hidden sm:flex', {
-			'data-overlay-minifier': '#collapsible-mini-sidebar'
-		})}
-		{@render sidebarToggleButton('sm:hidden', {
-			'data-overlay': '#collapsible-mini-sidebar'
-		})}
-		<ul class="menu-horizontal ml-4 hidden items-center md:flex md:gap-4">
+		<ul class="menu menu-horizontal ml-4 flex flex-nowrap items-center">
+			{@render sidebarToggleButton('hidden sm:flex', {
+				'data-overlay-minifier': '#collapsible-mini-sidebar'
+			})}
+			{@render sidebarToggleButton('sm:hidden', {
+				'data-overlay': '#collapsible-mini-sidebar'
+			})}
 			<!-- <li>
 				<a href="/" aria-label="Home"
 					><span class="icon-[material-symbols--home-outline-rounded] bg-neutral size-6"></span></a
 				>
 			</li> -->
-			<li class="text-primary flex items-center gap-1">
-				<span class="icon-[mdi--feature-highlight] size-5"></span>
-				<a href="/features">Features</a>
+			<li class="text-primary hidden items-center md:flex">
+				<a href="/features"><span class="icon-[mdi--feature-highlight] size-6"></span> Features</a>
 			</li>
-			<li class="text-primary flex items-center gap-1">
-				<span class="icon-[tabler--apps] size-5"></span>
-				<a href="/apps">Apps</a>
+			<li class="text-primary hidden items-center md:flex">
+				<a href="/apps"><span class="icon-[tabler--apps] size-6"></span> Apps</a>
 			</li>
-			<li class="text-primary">
+			<li class="text-primary hidden items-center md:flex">
 				<a href="/construction" class="flex items-center gap-1" aria-label="Contruction"
-					><span class="icon-[maki--construction] size-5"></span>
+					><span class="icon-[maki--construction] size-6"></span>
 					<span class="hidden lg:block">Construction</span>
 				</a>
 			</li>
