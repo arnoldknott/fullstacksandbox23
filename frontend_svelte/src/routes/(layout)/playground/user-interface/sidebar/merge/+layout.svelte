@@ -21,16 +21,15 @@
 		{...overlayModifier}
 	>
 		<span
-			class="icon-[material-symbols--menu-open-rounded] overlay-minified:hidden ml-1 block size-7 max-sm:hidden"
+			class="icon-[material-symbols--menu-open-rounded] overlay-minified:hidden flex size-7 max-sm:hidden"
 		></span>
-		<span
-			class="icon-[material-symbols--menu] overlay-minified:block ml-1 hidden size-7 max-sm:block"
+		<span class="icon-[material-symbols--menu] overlay-minified:flex hidden size-7 max-sm:flex"
 		></span>
 	</button>
 {/snippet}
 
 <nav
-	class="navbar rounded-box bg-base-100 shadow-shadow border-outline-variant relative sticky start-0 top-0 z-1 justify-between border-b shadow-sm md:flex md:items-stretch"
+	class="navbar rounded-box bg-base-100 shadow-shadow border-outline-variant relative sticky start-0 top-0 z-1 justify-between border-b shadow-sm md:flex md:items-center"
 >
 	<!-- <div class="navbar-start">
 		<button
@@ -66,7 +65,7 @@
 		</button>
 	</div> -->
 	<div class="navbar-start">
-		{@render sidebarToggleButton('hidden sm:block', {
+		{@render sidebarToggleButton('hidden sm:flex', {
 			'data-overlay-minifier': '#collapsible-mini-sidebar'
 		})}
 		{@render sidebarToggleButton('sm:hidden', {
