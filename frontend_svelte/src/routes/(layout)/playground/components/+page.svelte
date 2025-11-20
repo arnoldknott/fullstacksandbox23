@@ -281,10 +281,6 @@
 		// }
 	};
 
-	const updateProfileAccount: SubmitFunction = async () => {
-		return () => {};
-	};
-
 	// for diff component:
 	let diffWidth: number = $state(0);
 	let firstDiffWidth: number = $state(0);
@@ -1401,13 +1397,7 @@
 			aria-orientation="vertical"
 			aria-labelledby="dropdown-menu-icon-user"
 		>
-			<ThemePicker
-				{updateProfileAccount}
-				{saveProfileAccount}
-				bind:themeForm
-				bind:mode
-				{themeConfiguration}
-			/>
+			<ThemePicker {saveProfileAccount} bind:themeForm bind:mode {themeConfiguration} />
 		</ul>
 		<HorizontalRule />
 	</div>
@@ -1592,7 +1582,6 @@
 						aria-labelledby="dropdown-menu-icon-user"
 					>
 						<ArtificialIntelligencePicker
-							{updateProfileAccount}
 							{saveProfileAccount}
 							bind:artificialIntelligenceForm
 							bind:artificialIntelligenceConfiguration
@@ -1611,13 +1600,7 @@
 						aria-orientation="vertical"
 						aria-labelledby="dropdown-menu-icon-user"
 					>
-						<ThemePicker
-							{updateProfileAccount}
-							{saveProfileAccount}
-							bind:themeForm
-							bind:mode
-							bind:themeConfiguration
-						/>
+						<ThemePicker {saveProfileAccount} bind:themeForm bind:mode bind:themeConfiguration />
 					</ul>
 				</div>
 			</div>

@@ -5,12 +5,10 @@
 
 	let {
 		artificialIntelligenceForm = $bindable<HTMLFormElement | null>(),
-		updateProfileAccount,
 		saveProfileAccount,
 		artificialIntelligenceConfiguration = $bindable()
 	}: {
 		artificialIntelligenceForm: HTMLFormElement | null;
-		updateProfileAccount: SubmitFunction;
 		saveProfileAccount: () => void;
 		artificialIntelligenceConfiguration: ArtificialIntelligenceConfig;
 	} = $props();
@@ -25,7 +23,7 @@
 	class="align-between flex h-full flex-col"
 	action="/?/putme"
 	id="ai-form"
-	use:enhance={updateProfileAccount}
+	use:enhance
 	bind:this={artificialIntelligenceForm}
 >
 	<li class="flex grow items-center gap-2">

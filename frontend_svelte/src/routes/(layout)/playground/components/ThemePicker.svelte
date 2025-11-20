@@ -5,13 +5,11 @@
 
 	let {
 		themeForm = $bindable<HTMLFormElement | null>(),
-		updateProfileAccount,
 		saveProfileAccount,
 		mode = $bindable<'light' | 'dark'>(),
 		themeConfiguration = $bindable()
 	}: {
 		themeForm: HTMLFormElement | null;
-		updateProfileAccount: SubmitFunction;
 		saveProfileAccount: () => void;
 		mode: 'light' | 'dark';
 		themeConfiguration: ColorConfig;
@@ -26,13 +24,7 @@
 	const contrastStep = 0.2;
 </script>
 
-<form
-	method="POST"
-	action="/?/putme"
-	id="theme-form"
-	use:enhance={updateProfileAccount}
-	bind:this={themeForm}
->
+<form method="POST" action="/?/putme" id="theme-form" use:enhance bind:this={themeForm}>
 	<li class="flex items-center gap-2">
 		<span class="icon-[material-symbols--palette-outline] bg-secondary size-6"></span>
 		<span class="text-secondary grow"> Theming</span>
