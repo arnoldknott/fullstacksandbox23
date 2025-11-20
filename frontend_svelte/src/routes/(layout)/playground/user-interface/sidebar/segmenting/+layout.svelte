@@ -60,6 +60,24 @@
 	</button>
 {/snippet}
 
+{#snippet navbarPartItem(href: string, icon: string, text: string, textClasses?: string)}
+	<li class="text-primary hidden items-center md:flex">
+		<a {href} aria-label={text} class="flex items-center gap-1"
+			><span class="icon-[{icon}] size-6"></span>
+			<span class={textClasses}>{text}</span>
+		</a>
+	</li>
+{/snippet}
+
+{#snippet sidebarPartItem(href: string, icon: string, text: string)}
+	<li class="text-primary md:hidden">
+		<a {href}>
+			<span class="icon-[{icon}] size-5"></span>
+			<span class="overlay-minified:hidden">{text}</span>
+		</a>
+	</li>
+{/snippet}
+
 <nav
 	class="navbar rounded-box bg-base-100 shadow-shadow border-outline-variant relative sticky start-0 top-0 z-1 justify-between border-b shadow-sm md:flex md:items-center"
 >
@@ -109,14 +127,22 @@
 					><span class="icon-[material-symbols--home-outline-rounded] bg-neutral size-6"></span></a
 				>
 			</li> -->
-			<li class="text-primary hidden items-center md:flex">
+			{@render navbarPartItem('/features', 'mdi--feature-highlight', 'Features')}
+			{@render navbarPartItem('/apps', 'tabler--apps', 'Apps')}
+			{@render navbarPartItem(
+				'/construction',
+				'maki--construction',
+				'Construction',
+				'hidden lg:block'
+			)}
+			<!-- <li class="text-primary hidden items-center md:flex">
 				<a href="/features" class="flex items-center gap-1"
-					><span class="icon-[mdi--feature-highlight] size-6"></span> Features</a
+					><span class="icon-[mdi--feature-highlight] size-6"></span>Features</a
 				>
-			</li>
-			<li class="text-primary hidden items-center md:flex">
+			</li> -->
+			<!-- <li class="text-primary hidden items-center md:flex">
 				<a href="/apps" class="flex items-center gap-1"
-					><span class="icon-[tabler--apps] size-6"></span> Apps</a
+					><span class="icon-[tabler--apps] size-6"></span>Apps</a
 				>
 			</li>
 			<li class="text-primary hidden items-center md:flex">
@@ -124,7 +150,7 @@
 					><span class="icon-[maki--construction] size-6"></span>
 					<span class="hidden lg:block">Construction</span>
 				</a>
-			</li>
+			</li> -->
 		</ul>
 	</div>
 	<div class="navbar-center flex flex-row max-sm:scale-50">
@@ -204,7 +230,11 @@
 	>
 		<div class="drawer-body px-2 pt-4">
 			<ul class="menu p-0">
-				<li class="text-primary">
+				{@render sidebarPartItem('/', 'material-symbols--home-outline-rounded', 'Home')}
+				{@render sidebarPartItem('/features', 'mdi--feature-highlight', 'Features')}
+				{@render sidebarPartItem('/apps', 'tabler--apps', 'Apps')}
+				{@render sidebarPartItem('/construction', 'maki--construction', 'Construction')}
+				<!-- <li class="text-primary">
 					<a href="/">
 						<span class="icon-[material-symbols--home-outline-rounded] size-5"></span>
 						<span class="overlay-minified:hidden">Home</span>
@@ -227,7 +257,7 @@
 						<span class="icon-[maki--construction] size-5"></span>
 						<span class="overlay-minified:hidden">Construction</span>
 					</a>
-				</li>
+				</li> -->
 			</ul>
 			<div class="divider"></div>
 			<ul class="menu p-0">
