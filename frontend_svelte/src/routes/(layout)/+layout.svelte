@@ -12,7 +12,7 @@
 	import type { Action } from 'svelte/action';
 	// import NavButton from '$components/NavButton.svelte';
 	// import UserButton from '$components/UserButton.svelte';
-	import type { Snippet } from 'svelte';
+	import { onMount, type Snippet } from 'svelte';
 	import { page } from '$app/state';
 	import Guard from '$components/Guard.svelte';
 	import { initDropdown } from '$lib/userInterface';
@@ -35,7 +35,7 @@
 
 	let welcomeModal: HTMLDivElement | null = $state(null);
 
-	$effect(() => {
+	onMount(() => {
 		if (userUnregistered) {
 			window.HSOverlay.open(welcomeModal);
 		}
