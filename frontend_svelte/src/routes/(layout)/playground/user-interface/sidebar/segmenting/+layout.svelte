@@ -119,13 +119,17 @@
 				>
 			</li> -->
 			<li class="text-primary hidden items-center md:flex">
-				<a href="/features"><span class="icon-[mdi--feature-highlight] size-6"></span> Features</a>
+				<a href="/features" class="flex items-center gap-1"
+					><span class="icon-[mdi--feature-highlight] size-6"></span> Features</a
+				>
 			</li>
 			<li class="text-primary hidden items-center md:flex">
-				<a href="/apps"><span class="icon-[tabler--apps] size-6"></span> Apps</a>
+				<a href="/apps" class="flex items-center gap-1"
+					><span class="icon-[tabler--apps] size-6"></span> Apps</a
+				>
 			</li>
 			<li class="text-primary hidden items-center md:flex">
-				<a href="/construction" class="flex items-center gap-1" aria-label="Contruction"
+				<a href="/construction" aria-label="Contruction" class="flex items-center gap-1"
 					><span class="icon-[maki--construction] size-6"></span>
 					<span class="hidden lg:block">Construction</span>
 				</a>
