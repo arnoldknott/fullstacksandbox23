@@ -10,7 +10,6 @@
 	// import { afterNavigate } from '$app/navigation';
 	import Card from '$components/Card.svelte';
 	import { Variant, type ColorConfig } from '$lib/theming';
-	import { type SubmitFunction } from '@sveltejs/kit';
 	import { enhance } from '$app/forms';
 	import ShareItem from './ShareItem.svelte';
 	// import type { PageProps } from '../$types';

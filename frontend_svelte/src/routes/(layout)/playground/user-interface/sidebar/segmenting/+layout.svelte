@@ -40,15 +40,6 @@
 
 	// for theme picker:
 	let mode: 'light' | 'dark' = $state('dark');
-	const toggleMode = () => {
-		mode = mode === 'dark' ? 'light' : 'dark';
-	};
-	let sourceColor = $state('#769CDF');
-	let variant = $state('TONAL_SPOT');
-	const contrastMin = -1.0;
-	const contrastMax = 1.0;
-	const contrastStep = 0.2;
-	let contrast = $state(0.0);
 </script>
 
 {#snippet sidebarToggleButton(classes: string, overlayModifier: object)}
