@@ -25,7 +25,7 @@
 {#snippet sidebarToggleButton(classes: string, overlayModifier: object)}
 	<button
 		type="button"
-		class="btn btn-square btn-outline {classes}"
+		class="btn btn-square btn-sm btn-outline {classes}"
 		aria-haspopup="dialog"
 		aria-expanded="false"
 		aria-controls="collapsible-mini-sidebar"
@@ -33,9 +33,9 @@
 		{...overlayModifier}
 	>
 		<span
-			class="icon-[material-symbols--menu-open-rounded] overlay-minified:hidden flex size-7 max-sm:hidden"
+			class="icon-[material-symbols--menu-open-rounded] overlay-minified:hidden flex size-6 max-sm:hidden"
 		></span>
-		<span class="icon-[material-symbols--menu] overlay-minified:flex hidden size-7 max-sm:flex"
+		<span class="icon-[material-symbols--menu] overlay-minified:flex hidden size-6 max-sm:flex"
 		></span>
 	</button>
 {/snippet}
@@ -83,6 +83,15 @@
 		{@render sidebarToggleButton('sm:hidden', {
 			'data-overlay': '#collapsible-mini-sidebar'
 		})}
+		<ul class="menu-horizontal ml-4 hidden items-center md:flex md:gap-4">
+			<!-- <li>
+				<a href="/" aria-label="Home"
+					><span class="icon-[material-symbols--home-outline-rounded] bg-neutral size-6"></span></a
+				>
+			</li> -->
+			<li><a href="/docs" class="text-neutral">Features</a></li>
+			<li><a href="/playground" class="text-neutral">Apps</a></li>
+		</ul>
 	</div>
 	<div class="navbar-center flex flex-row">
 		<div class="flex flex-col justify-center">
@@ -214,7 +223,7 @@
 			<ul class="menu p-0">
 				<li>
 					<a href="/">
-						<span class="icon-[tabler--home] size-5"></span>
+						<span class="icon-[material-symbols--home-outline-rounded] size-5"></span>
 						<span class="overlay-minified:hidden">Home</span>
 					</a>
 				</li>
