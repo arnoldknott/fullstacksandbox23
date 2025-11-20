@@ -8,6 +8,18 @@
 		element.open();
 		window.HSStaticMethods.autoInit();
 	};
+
+	// for theme picker:
+	let mode: 'light' | 'dark' = $state('dark');
+	const toggleMode = () => {
+		mode = mode === 'dark' ? 'light' : 'dark';
+	};
+	let sourceColor = $state('#769CDF');
+	let variant = $state('TONAL_SPOT');
+	const contrastMin = -1.0;
+	const contrastMax = 1.0;
+	const contrastStep = 0.2;
+	let contrast = $state(0.0);
 </script>
 
 {#snippet sidebarToggleButton(classes: string, overlayModifier: object)}
@@ -21,16 +33,15 @@
 		{...overlayModifier}
 	>
 		<span
-			class="icon-[material-symbols--menu-open-rounded] overlay-minified:hidden ml-1 block size-7 max-sm:hidden"
+			class="icon-[material-symbols--menu-open-rounded] overlay-minified:hidden flex size-7 max-sm:hidden"
 		></span>
-		<span
-			class="icon-[material-symbols--menu] overlay-minified:block ml-1 hidden size-7 max-sm:block"
+		<span class="icon-[material-symbols--menu] overlay-minified:flex hidden size-7 max-sm:flex"
 		></span>
 	</button>
 {/snippet}
 
 <nav
-	class="navbar rounded-box bg-base-100 shadow-shadow border-outline-variant relative sticky start-0 top-0 z-1 justify-between border-b shadow-sm md:flex md:items-stretch"
+	class="navbar rounded-box bg-base-100 shadow-shadow border-outline-variant relative sticky start-0 top-0 z-1 justify-between border-b shadow-sm md:flex md:items-center"
 >
 	<!-- <div class="navbar-start">
 		<button
@@ -66,7 +77,7 @@
 		</button>
 	</div> -->
 	<div class="navbar-start">
-		{@render sidebarToggleButton('hidden sm:block', {
+		{@render sidebarToggleButton('hidden sm:flex', {
 			'data-overlay-minifier': '#collapsible-mini-sidebar'
 		})}
 		{@render sidebarToggleButton('sm:hidden', {
@@ -76,185 +87,118 @@
 	<div class="navbar-center flex flex-row">
 		<div class="flex flex-col justify-center">
 			<div class="title-small text-primary italic" style="line-height: 1;">Fullstack</div>
-			<div class="title-small text-secondary font-bold tracking-widest" style="line-height: 1">
+			<div class="title-small text-secondary font-bold tracking-wide" style="line-height: 1">
 				Platform
 			</div>
 		</div>
 		<div class="heading-large navbar-center text-accent ml-1 flex items-center">23</div>
 	</div>
-	<div class="navbar-end flex items-center gap-4">
+	<div class="navbar-end">
 		<div
-			class="dropdown relative inline-flex [--auto-close:inside] [--offset:8] [--placement:bottom-end]"
+			class="dropdown flex items-center [--auto-close:inside] rtl:[--placement:bottom-end]"
 			{@attach initDropdown}
 		>
-			<button
-				id="dropdown-notifications"
-				type="button"
-				class="dropdown-toggle btn btn-text btn-circle dropdown-open:bg-base-content/10 size-10"
+			<span
+				id="dropdown-menu-icon-user"
+				class="dropdown-toggle icon-[fa6-solid--user] size-6"
+				role="button"
 				aria-haspopup="menu"
 				aria-expanded="false"
-				aria-label="Notifications Dropdown"
-			>
-				<div class="indicator">
-					<span class="indicator-item bg-error size-2 rounded-full"></span>
-					<span class="icon-[tabler--bell] text-base-content size-5.5"></span>
-				</div>
-			</button>
-			<div
-				class="dropdown-menu dropdown-open:opacity-100 hidden"
-				role="menu"
-				aria-orientation="vertical"
-				aria-labelledby="dropdown-notifications"
-			>
-				<div class="dropdown-header justify-center">
-					<h6 class="text-base-content text-base">Notifications</h6>
-				</div>
-				<div
-					class="text-base-content/80 max-h-56 overflow-auto overflow-x-auto overflow-y-auto max-md:max-w-60"
-				>
-					<div class="dropdown-item">
-						<div class="avatar avatar-away-bottom">
-							<div class="w-10 rounded-full">
-								<img src="https://cdn.flyonui.com/fy-assets/avatar/avatar-1.png" alt="avatar 1" />
-							</div>
-						</div>
-						<div class="w-60">
-							<h6 class="truncate text-base">Charles Franklin</h6>
-							<small class="text-base-content/50 truncate">Accepted your connection</small>
-						</div>
-					</div>
-					<div class="dropdown-item">
-						<div class="avatar">
-							<div class="w-10 rounded-full">
-								<img src="https://cdn.flyonui.com/fy-assets/avatar/avatar-2.png" alt="avatar 2" />
-							</div>
-						</div>
-						<div class="w-60">
-							<h6 class="truncate text-base">
-								Martian added moved Charts & Maps task to the done board.
-							</h6>
-							<small class="text-base-content/50 truncate">Today 10:00 AM</small>
-						</div>
-					</div>
-					<div class="dropdown-item">
-						<div class="avatar avatar-online-bottom">
-							<div class="w-10 rounded-full">
-								<img src="https://cdn.flyonui.com/fy-assets/avatar/avatar-8.png" alt="avatar 8" />
-							</div>
-						</div>
-						<div class="w-60">
-							<h6 class="truncate text-base">New Message</h6>
-							<small class="text-base-content/50 truncate">You have new message from Natalie</small>
-						</div>
-					</div>
-					<div class="dropdown-item">
-						<div class="avatar avatar-placeholder">
-							<div class="bg-neutral text-neutral-content w-10 rounded-full p-2">
-								<span class="icon-[tabler--user] size-full"></span>
-							</div>
-						</div>
-						<div class="w-60">
-							<h6 class="truncate text-base">Application has been approved 🚀</h6>
-							<small class="text-base-content/50 text-wrap"
-								>Your ABC project application has been approved.</small
-							>
-						</div>
-					</div>
-					<div class="dropdown-item">
-						<div class="avatar">
-							<div class="w-10 rounded-full">
-								<img src="https://cdn.flyonui.com/fy-assets/avatar/avatar-10.png" alt="avatar 10" />
-							</div>
-						</div>
-						<div class="w-60">
-							<h6 class="truncate text-base">New message from Jane</h6>
-							<small class="text-base-content/50 text-wrap">Your have new message from Jane</small>
-						</div>
-					</div>
-					<div class="dropdown-item">
-						<div class="avatar">
-							<div class="w-10 rounded-full">
-								<img src="https://cdn.flyonui.com/fy-assets/avatar/avatar-3.png" alt="avatar 3" />
-							</div>
-						</div>
-						<div class="w-60">
-							<h6 class="truncate text-base">Barry Commented on App review task.</h6>
-							<small class="text-base-content/50 truncate">Today 8:32 AM</small>
-						</div>
-					</div>
-				</div>
-				<a href="#top" class="dropdown-footer justify-center gap-1">
-					<span class="icon-[tabler--eye] size-4"></span>
-					View all
-				</a>
-			</div>
-		</div>
-		<div
-			class="dropdown relative inline-flex [--auto-close:inside] [--offset:8] [--placement:bottom-end]"
-			{@attach initDropdown}
-		>
-			<button
-				id="dropdown-avatar"
-				type="button"
-				class="dropdown-toggle flex items-center"
-				aria-haspopup="menu"
-				aria-expanded="false"
-				aria-label="Avatar Dropdown"
-			>
-				<div class="avatar">
-					<div class="size-9.5 rounded-full">
-						<img src="https://cdn.flyonui.com/fy-assets/avatar/avatar-1.png" alt="avatar 1" />
-					</div>
-				</div>
-			</button>
+				aria-label="User Menu"
+			></span>
 			<ul
-				class="dropdown-menu dropdown-open:opacity-100 hidden min-w-60"
+				class="dropdown-menu bg-base-200 text-neutral shadow-outline dropdown-open:opacity-100 hidden shadow-md"
 				role="menu"
 				aria-orientation="vertical"
-				aria-labelledby="dropdown-avatar"
+				aria-labelledby="dropdown-menu-icon-user"
 			>
-				<li class="dropdown-header gap-2">
-					<div class="avatar">
-						<div class="w-10 rounded-full">
-							<img src="https://cdn.flyonui.com/fy-assets/avatar/avatar-1.png" alt="avatar" />
-						</div>
+				<li class="flex items-center gap-2">
+					<span class="icon-[material-symbols--palette-outline] size-6"></span>
+					<span class="grow"> Theming</span>
+					<button aria-label="modeToggler">
+						<label id="modeToggler" class="swap swap-rotate">
+							<input type="checkbox" onclick={toggleMode} />
+							<span class="icon-[tabler--sun] swap-on size-6"></span>
+							<span class="icon-[tabler--moon] swap-off size-6"></span>
+						</label>
+					</button>
+				</li>
+				<li>
+					<div class="w-48">
+						<label class="label label-text flex" for="colorPicker">
+							<span class="grow">Source color:</span>
+							<code>{sourceColor}</code>
+						</label>
+						<input
+							class="w-full"
+							type="color"
+							id="colorPicker"
+							name="color-picker"
+							bind:value={sourceColor}
+						/>
 					</div>
-					<div>
-						<h6 class="text-base-content text-base font-semibold">John Doe</h6>
-						<small class="text-base-content/50">Admin</small>
+				</li>
+				<li>
+					<div class="relative w-48">
+						<label class="label label-text" for="themeVariant">Variant</label>
+						<select
+							class="select select-floating max-w-sm"
+							aria-label="Select variant"
+							id="themeVariant"
+							bind:value={variant}
+						>
+							<option value="TONAL_SPOT">Tonal Spot</option>
+							<option value="MONOCHROME">Monochrome</option>
+							<option value="NEUTRAL">Neutral</option>
+							<option value="VIBRANT">Vibrant</option>
+							<option value="EXPRESSIVE">Expressive</option>
+							<option value="FIDELITY">Fidelity</option>
+							<option value="CONTENT">Content</option>
+							<option value="RAINBOW">Rainbow</option>
+							<option value="FRUIT_SALAD">Fruit Salad</option>
+						</select>
 					</div>
 				</li>
 				<li>
-					<a class="dropdown-item" href="#top">
-						<span class="icon-[tabler--user]"></span>
-						My Profile
-					</a>
+					<div class="w-48">
+						<label class="label label-text flex" for="contrast">
+							<span class="grow">Contrast: </span>
+							<code>{contrast}</code>
+						</label>
+
+						<input
+							type="range"
+							min={contrastMin}
+							max={contrastMax}
+							step={contrastStep}
+							class="range w-full"
+							aria-label="contrast"
+							id="contrast"
+							bind:value={contrast}
+						/>
+						<!-- <div class="flex w-full justify-between px-2 text-xs">
+							{#each allContrasts as _}
+								<span>|</span>
+							{/each}
+						</div> -->
+					</div>
 				</li>
 				<li>
-					<a class="dropdown-item" href="#top">
-						<span class="icon-[tabler--settings]"></span>
-						Settings
-					</a>
+					<hr class="border-outline -mx-2 my-5" />
 				</li>
-				<li>
-					<a class="dropdown-item" href="#top">
-						<span class="icon-[tabler--receipt-rupee]"></span>
-						Billing
-					</a>
-				</li>
-				<li>
-					<a class="dropdown-item" href="#top">
-						<span class="icon-[tabler--help-triangle]"></span>
-						FAQs
-					</a>
-				</li>
-				<li class="dropdown-footer gap-2">
-					<a class="btn btn-error btn-soft btn-block" href="#top">
-						<span class="icon-[tabler--logout]"></span>
-						Sign out
-					</a>
+				<li class="flex items-center gap-2">
+					<span class="icon-[tabler--settings] size-6"></span>
+					<span class="grow"> Settings</span>
 				</li>
 			</ul>
+		</div>
+		<div class="flex items-center md:ml-2">
+			<button
+				class="btn btn-neutral btn-outline shadow-neutral ml-2 rounded-full shadow-sm"
+				aria-label="LogInOut"
+			>
+				<a href="#top">LogInOut</a>
+			</button>
 		</div>
 	</div>
 </nav>
@@ -423,18 +367,25 @@
 						class="collapse-toggle collapse-open:bg-base-content/10"
 						id="menu-app"
 						data-collapse="#menu-app-collapse"
+						{@attach initCollapse}
 					>
 						<span class="icon-[tabler--apps] size-5"></span>
 						<span class="overlay-minified:hidden">Page on Apps</span>
 						<span
-							class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"
+							class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:hidden size-4 transition-all duration-300"
+						></span>
+						<span
+							class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:block overlay-minified:rotate-270 hidden size-4 transition-all duration-300"
+							role="button"
+							tabindex="0"
+							onclick={() => openSidebar()}
+							onkeydown={() => openSidebar()}
 						></span>
 					</a>
 					<ul
 						id="menu-app-collapse"
-						class="overlay-minified:hidden collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
+						class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
 						aria-labelledby="menu-app"
-						{@attach initCollapse}
 					>
 						<li>
 							<a href="./scrollspy/#">
