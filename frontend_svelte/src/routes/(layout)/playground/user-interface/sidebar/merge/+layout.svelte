@@ -87,7 +87,7 @@
 	<div class="navbar-center flex flex-row">
 		<div class="flex flex-col justify-center">
 			<div class="title-small text-primary italic" style="line-height: 1;">Fullstack</div>
-			<div class="title-small text-secondary font-bold tracking-widest" style="line-height: 1">
+			<div class="title-small text-secondary font-bold tracking-wide" style="line-height: 1">
 				Platform
 			</div>
 		</div>
