@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { initDropdown } from '$lib/userInterface';
 	let mode: 'light' | 'dark' = $state('dark');
 	const toggleMode = () => {
 		mode = mode === 'dark' ? 'light' : 'dark';
@@ -74,6 +75,7 @@
 	<div class="heading-large navbar-center text-accent ml-1 flex items-center">23</div>
 	<div
 		class="dropdown navbar-end flex items-center [--auto-close:inside] rtl:[--placement:bottom-end]"
+		{@attach initDropdown}
 	>
 		<span
 			id="dropdown-menu-icon-user"
@@ -283,7 +285,10 @@
 		<div class="heading-large navbar-center text-accent ml-1 flex items-center">23</div>
 	</div>
 	<div class="navbar-end">
-		<div class="dropdown flex items-center [--auto-close:inside] rtl:[--placement:bottom-end]">
+		<div
+			class="dropdown flex items-center [--auto-close:inside] rtl:[--placement:bottom-end]"
+			{@attach initDropdown}
+		>
 			<span
 				id="dropdown-menu-icon-user"
 				class="dropdown-toggle icon-[fa6-solid--user] size-6"
