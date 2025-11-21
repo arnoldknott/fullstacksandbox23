@@ -524,20 +524,6 @@
 										class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 hover:opacity-100"
 									>
 										<span
-											class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline"
-										></span>
-
-										<span class="icon-[mdi--text] size-5 group-[.active]:hidden"></span>
-										{sidebarLinks![1].children![2].children![0].name}
-									</a>
-									<!-- <a
-										href={createHref(
-											sidebarLinks[1].pathname,
-											sidebarLinks![1].children![2].children![0].hash
-										)}
-										class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 hover:opacity-100"
-									>
-										<span
 											class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
 										></span>
 
@@ -545,7 +531,7 @@
 											class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
 										></span>
 										{sidebarLinks![1].children![2].children![0].name}
-									</a> -->
+									</a>
 								</li>
 								<li>
 									<a
@@ -556,10 +542,12 @@
 										class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 hover:opacity-100"
 									>
 										<span
-											class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline"
+											class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
 										></span>
 
-										<span class="icon-[mdi--text] size-5 group-[.active]:hidden"></span>
+										<span
+											class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+										></span>
 										{sidebarLinks![1].children![2].children![1].name}
 									</a>
 								</li>
