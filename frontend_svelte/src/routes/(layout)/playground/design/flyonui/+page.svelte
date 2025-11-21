@@ -1898,6 +1898,7 @@
 				<span class="icon-[tabler--link] size-12"></span>
 				<span class="icon-[tabler--ai] size-12"></span>
 				<span class="icon-[tabler--eye] size-12"></span>
+				<span class="icon-[tabler--apps] size-12"></span>
 			</div>
 			<div>
 				<p class="label text-center">
@@ -1915,6 +1916,12 @@
 				</p>
 				<span class="icon-[ic--round-question-mark] size-12"></span>
 				<span class="icon-[ic--outline-share] size-12"></span>
+				<p class="label text-center">
+					Extension library <span class="label-prominent badge min-h-fit"
+						>Material Design Icons</span
+					>
+				</p>
+				<span class="icon-[mdi--feature-highlight] size-12"></span>
 			</div>
 			<div>
 				<p class="label text-center">
@@ -2014,6 +2021,18 @@
 				<span class="icon-[twemoji--flag-denmark] size-12"></span>
 				<span class="icon-[twemoji--flag-germany] size-12"></span>
 				<span class="icon-[twemoji--flag-united-states] size-12"></span>
+			</div>
+			<div>
+				<p class="label text-center">
+					<span class="label-prominent badge min-h-fit">Maki</span>
+				</p>
+				<span class="icon-[maki--construction] size-12"></span>
+			</div>
+			<div>
+				<p class="label text-center">
+					<span class="label-prominent badge min-h-fit">Streamline</span>
+				</p>
+				<span class="icon-[streamline--hierarchy-2] size-12"></span>
 			</div>
 		</div>
 		<HorizontalRule />
