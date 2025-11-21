@@ -133,6 +133,7 @@
 			node.setAttribute('data-scrollspy-scrollable-parent', '#scrollspy-scrollable-parent');
 			await tick();
 			initScrollspy(node);
+			forceScrollspyActivation();
 		};
 
 		const removeScrollspy = async () => {
@@ -151,6 +152,53 @@
 				await addScrollspy();
 			} else {
 				await removeScrollspy();
+			}
+		});
+
+		function forceScrollspyActivation() {
+			const container = document.querySelector(
+				'#scrollspy-scrollable-parent'
+			) as HTMLElement | null;
+			if (!container) return;
+			// Dispatch a plain scroll event first (some libraries listen to window, some to container)
+			container.dispatchEvent(new Event('scroll', { bubbles: true }));
+			window.dispatchEvent(new Event('scroll'));
+			// Nudge scroll position to ensure mutation observers / scroll listeners run even if already at target
+			const original = container.scrollTop;
+			const alt = original === 0 ? 1 : original - 1;
+			container.scrollTop = alt;
+			container.dispatchEvent(new Event('scroll', { bubbles: true }));
+			requestAnimationFrame(() => {
+				container.scrollTop = original;
+				container.dispatchEvent(new Event('scroll', { bubbles: true }));
+				window.dispatchEvent(new Event('scroll'));
+				// Attempt internal refresh if available
+				try {
+					const inst = (window as any).HSScrollspy?.getInstance?.(node);
+					inst?.refresh?.();
+				} catch {}
+			});
+		}
+
+		// Intercept clicks on same-page fragment links that wouldn't move scroll (same offset) and force activation
+		node.addEventListener('click', (e) => {
+			const targetEl = (e.target as HTMLElement).closest('a');
+			if (!targetEl) return;
+			const href = targetEl.getAttribute('href');
+			if (!href || !href.startsWith('#')) return; // only local fragments
+			const container = document.querySelector(
+				'#scrollspy-scrollable-parent'
+			) as HTMLElement | null;
+			if (!container) return;
+			const section = document.querySelector(href) as HTMLElement | null;
+			if (!section) return;
+			// Calculate target position relative to container
+			const containerRect = container.getBoundingClientRect();
+			const sectionRect = section.getBoundingClientRect();
+			const targetScrollTop = container.scrollTop + sectionRect.top - containerRect.top;
+			if (Math.abs(container.scrollTop - targetScrollTop) < 2) {
+				// No effective scroll -> manually trigger activation sequence
+				forceScrollspyActivation();
 			}
 		});
 		// Cleanup when the attachment is removed
