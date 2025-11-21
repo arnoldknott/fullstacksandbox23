@@ -2,7 +2,7 @@
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import { initDropdown, initOverlay, initCollapse, initScrollspy } from '$lib/userInterface';
-	import { tick, type Snippet } from 'svelte';
+	import { type Snippet } from 'svelte';
 	import { Variant, type ColorConfig } from '$lib/theming';
 	import { Model, type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
 	import ThemePicker from '../../../components/ThemePicker.svelte';
