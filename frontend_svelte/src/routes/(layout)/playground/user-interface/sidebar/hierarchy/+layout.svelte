@@ -172,11 +172,6 @@
 				container.scrollTop = original;
 				container.dispatchEvent(new Event('scroll', { bubbles: true }));
 				window.dispatchEvent(new Event('scroll'));
-				// Attempt internal refresh if available
-				try {
-					const inst = (window as any).HSScrollspy?.getInstance?.(node);
-					inst?.refresh?.();
-				} catch {}
 			});
 		}
 
