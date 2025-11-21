@@ -129,6 +129,10 @@
 	// 		initScrollspy(document.querySelector('#page2-collapse') as HTMLElement);
 	// });
 	const toggleScrollspyAttributes: Attachment<HTMLElement> = (node: HTMLElement) => {
+		// try {
+		//     const { element } = window.HSScrollspy.getInstance(node.id, true);
+		//     element.destroy();
+		// } catch {}
 		afterNavigate(() => {
 			if (!thisPage(sidebarLinks[1].pathname)) {
 				node.removeAttribute('data-scrollspy');
@@ -136,8 +140,9 @@
 				// console.log('=== sidebar - hierarchy - toggleScrollspyAttributes - destroy scrollspy ===');
 				// console.log(node.id);
 				// const { element } = window.HSScrollspy.getInstance(node.id, true);
+				// If scrollspy was not initialized, calling destroy will throw error
 				try {
-					const { element } = window.HSScrollspy.getInstance('#page2-collapse', true);
+					const { element } = window.HSScrollspy.getInstance(node, true);
 					element.destroy();
 				} catch {}
 			} else {
