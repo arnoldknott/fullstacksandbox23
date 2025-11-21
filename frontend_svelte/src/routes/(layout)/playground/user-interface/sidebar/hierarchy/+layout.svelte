@@ -469,52 +469,12 @@
 								{sidebarLinks[1].children[1].name}
 							</a>
 						</li>
-						<!-- <li>
-							<a
-								href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children[0].hash)}
-								class={thisPage(sidebarLinks[1].pathname)
-									? 'group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2  hover:opacity-100'
-									: ''}
-							>
-								{#if thisPage(sidebarLinks[1].pathname)}
-									<span
-										class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
-									></span>
-								{/if}
-								<span
-									class="icon-[mdi--text] size-5 {thisPage(sidebarLinks[1].pathname)
-										? 'group-[.active]:hidden group-[.scrollspy-active]:hidden'
-										: ''}"
-								></span>
-								{sidebarLinks[1].children[0].name}
-							</a>
-						</li>
-						<li>
-							<a
-								href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children[1].hash)}
-								class={thisPage(sidebarLinks[1].pathname)
-									? 'group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2  hover:opacity-100'
-									: ''}
-							>
-								{#if thisPage(sidebarLinks[1].pathname)}
-									<span
-										class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
-									></span>
-								{/if}
-								<span
-									class="icon-[mdi--text] size-5 {thisPage(sidebarLinks[1].pathname)
-										? 'group-[.active]:hidden group-[.scrollspy-active]:hidden'
-										: ''}"
-								></span>
-								{sidebarLinks[1].children[1].name}
-							</a>
-						</li> -->
-						<!-- <li data-scrollspy-group="" class="space-y-0.5">
+						<li data-scrollspy-group="" class="space-y-0.5">
 							<a
 								class="collapse-toggle collapse-open:bg-base-content/10 scrollspy-active:italic group"
 								id="page2-sub-category"
 								data-collapse="#page2-sub-category-collapse"
-								href="#sub-category"
+								href={createHref(sidebarLinks[1].pathname, sidebarLinks![1].children![2].hash)}
 								{@attach initCollapse}
 							>
 								<span
@@ -523,7 +483,7 @@
 								<span
 									class="icon-[icon-park-outline--page] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
 								></span>
-								Sub category
+								{sidebarLinks![1].children![2].name}
 								<span
 									class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"
 								></span>
@@ -535,8 +495,44 @@
 							>
 								<li>
 									<a
+										href={createHref(
+											sidebarLinks[1].pathname,
+											sidebarLinks![1].children![2].children![0].hash
+										)}
+										class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 hover:opacity-100"
+									>
+										<span
+											class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+										></span>
+
+										<span
+											class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+										></span>
+										{sidebarLinks![1].children![2].children![0].name}
+									</a>
+								</li>
+								<li>
+									<a
+										href={createHref(
+											sidebarLinks[1].pathname,
+											sidebarLinks![1].children![2].children![1].hash
+										)}
+										class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 hover:opacity-100"
+									>
+										<span
+											class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+										></span>
+
+										<span
+											class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+										></span>
+										{sidebarLinks![1].children![2].children![1].name}
+									</a>
+								</li>
+								<!-- <li>
+									<a
 										href="#loreum3"
-										class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
+										class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 hover:opacity-100"
 									>
 										<span
 											class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
@@ -550,7 +546,7 @@
 								<li>
 									<a
 										href="#loreum4"
-										class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
+										class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 hover:opacity-100"
 									>
 										<span
 											class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
@@ -560,10 +556,10 @@
 										></span>
 										Loreum 4
 									</a>
-								</li>
+								</li> -->
 							</ul>
 						</li>
-						<li>
+						<!-- <li>
 							<a
 								href="#loreum5"
 								class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
@@ -591,6 +587,35 @@
 								Loreum 6
 							</a>
 						</li> -->
+						<li>
+							<a
+								href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children[3].hash)}
+								class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 hover:opacity-100"
+							>
+								<span
+									class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+								></span>
+
+								<span
+									class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+								></span>
+								{sidebarLinks[1].children[3].name}
+							</a>
+						</li>
+						<li>
+							<a
+								href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children[4].hash)}
+								class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 hover:opacity-100"
+							>
+								<span
+									class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+								></span>
+								<span
+									class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+								></span>
+								{sidebarLinks[1].children[4].name}
+							</a>
+						</li>
 					</ul>
 					<!-- <button
 						type="button"
@@ -1139,7 +1164,7 @@
 	<div class="sm:overlay-minified:ps-19 bg-base-100 ps-64 transition-all duration-300 max-sm:ps-0">
 		<div class=" bg-base-100 transition-all duration-300">
 			<div id="scrollspy" class="space-y-4 pe-1">
-				<div id="page-information">
+				<!-- <div id="page-information">
 					URL: <JsonData data={page.url} />
 					<br />
 					Pathname: <JsonData data={page.url.pathname} />
@@ -1149,7 +1174,7 @@
 					Search: <JsonData data={page.url.search} />
 					<br />
 					SearchParams: <JsonData data={page.url.searchParams} />
-				</div>
+				</div> -->
 				{@render children?.()}
 			</div>
 		</div>
