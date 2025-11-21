@@ -152,14 +152,10 @@
 		};
 
 		afterNavigate(async () => {
-			console.log('afterNavigate - toggleScrollspy - node.dataset.pathname:');
-			console.log(node.dataset.pathname);
-			if (thisPage(sidebarLinks[1].pathname)) {
-				await addScrollspy(document.querySelector('#page2-collapse') as HTMLElement);
-				await removeScrollspy(document.querySelector('#page3-collapse') as HTMLElement);
+			if (thisPage(node.dataset.pathname || '')) {
+				await addScrollspy(node);
 			} else {
-				await removeScrollspy(document.querySelector('#page2-collapse') as HTMLElement);
-				await addScrollspy(document.querySelector('#page3-collapse') as HTMLElement);
+				await removeScrollspy(node);
 			}
 		});
 
