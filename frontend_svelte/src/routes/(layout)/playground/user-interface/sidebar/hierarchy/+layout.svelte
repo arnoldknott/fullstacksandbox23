@@ -94,14 +94,33 @@
 	console.log('=== sidebar - hierarchy - sidebarLinks ===');
 	console.log(sidebarLinks);
 
-	$effect(() => {
-		console.log('=== sidebar - hierarchy - current scrollspy ===');
-		console.log(`scrollspy-${page.url.pathname.split('/').at(-1)}`);
-	});
+	// $effect(() => {
+	// 	console.log('=== sidebar - hierarchy - current scrollspy ===');
+	// 	console.log(`scrollspy-${page.url.pathname.split('/').at(-1)}`);
+	// });
 
 	// const activateScrollspy: Action<HTMLElement> = (node) => {
 	// 	initScrollspy(node);
 	// };
+
+	// const activateScrollspy: Action<HTMLElement, string> = (node, path: string) => {
+	// 	initScrollspy(node);
+	// 	if (!thisPage(path)) {
+	// 		node.removeAttribute('data-scrollspy');
+	// 		node.removeAttribute('data-scrollspy-scrollable-parent');
+	// 	} else {
+	// 		node.setAttribute('data-scrollspy', '#scrollspy');
+	// 		node.setAttribute('data-scrollspy-scrollable-parent', '#scrollspy-scrollable-parent');
+	// 	}
+
+	// 	return {
+	// 		destroy() {
+	// 			// Cleanup if necessary when the action is removed
+	// 		}
+	// 	};
+	// };
+	// // on <ul> with initScrollspy:
+	// use:activateScrollspy={sidebarLinks[1].pathname}
 
 	const thisPage = (destinationPathename: string) => {
 		console.log('=== sidebar - hierarchy - thisPage - destinationPathename ===');
@@ -285,10 +304,7 @@
 	</div>
 </nav>
 
-<div
-	id="scrollspy-scrollable-parent-{page.url.pathname.split('/').at(-1)}"
-	class="grid h-screen overflow-y-auto"
->
+<div id="scrollspy-scrollable-parent" class="grid h-screen overflow-y-auto">
 	<aside
 		id="collapsible-mini-sidebar"
 		class="overlay overlay-minified:w-19 overlay-open:translate-x-0 drawer drawer-start border-base-content/20 hidden w-66 border-e pt-50 [--auto-close:sm] sm:absolute sm:z-0 sm:flex sm:translate-x-0 sm:shadow-none"
@@ -346,8 +362,8 @@
 						id="page2-collapse"
 						class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
 						aria-labelledby="page2"
-						data-scrollspy="#scrollspy-page2"
-						data-scrollspy-scrollable-parent="#scrollspy-scrollable-parent-page2"
+						data-scrollspy="#scrollspy"
+						data-scrollspy-scrollable-parent="#scrollspy-scrollable-parent"
 						{@attach initScrollspy}
 					>
 						<li>
@@ -1008,7 +1024,7 @@
 	</aside>
 	<div class="sm:overlay-minified:ps-19 bg-base-100 ps-64 transition-all duration-300 max-sm:ps-0">
 		<div class=" bg-base-100 transition-all duration-300">
-			<div id="scrollspy-{page.url.pathname.split('/').at(-1)}" class="space-y-4 pe-1">
+			<div id="scrollspy" class="space-y-4 pe-1">
 				<div id="page-information">
 					URL: <JsonData data={page.url} />
 					<br />
