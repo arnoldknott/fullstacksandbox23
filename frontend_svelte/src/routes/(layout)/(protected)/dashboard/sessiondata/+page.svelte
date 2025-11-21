@@ -5,8 +5,23 @@
 	import { page } from '$app/state';
 	import HorizontalRule from '$components/HorizontalRule.svelte';
 	import type { PageData } from './$types';
+	import { onMount } from 'svelte';
 	let { data }: { data: PageData } = $props();
-	let navigatorData = $state(navigator);
+	let navigatorData = $state<Record<string, any> | null>(null);
+
+	onMount(() => {
+		navigatorData = {
+			userAgent: navigator.userAgent,
+			language: navigator.language,
+			languages: navigator.languages,
+			onLine: navigator.onLine,
+			platform: navigator.platform,
+			cookieEnabled: navigator.cookieEnabled,
+			hardwareConcurrency: navigator.hardwareConcurrency,
+			maxTouchPoints: (navigator as any).maxTouchPoints
+			// Add more if needed; keep only enumerable primitives/functions you care about
+		};
+	});
 	const logSessionData = (data: object | undefined) => {
 		console.log('=== routes - playground - sessiondata===');
 		console.log(data);
@@ -48,7 +63,7 @@
 
 <HorizontalRule />
 
-<button class="m-4 rounded-sm bg-blue-400 p-2" onclick={() => logSessionData(navigatorData)}
+<button class="m-4 rounded-sm bg-blue-400 p-2" onclick={() => logSessionData(navigator)}
 	>Current navigator -> console</button
 >
 
