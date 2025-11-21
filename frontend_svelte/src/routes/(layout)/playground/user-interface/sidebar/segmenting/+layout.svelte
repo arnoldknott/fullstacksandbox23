@@ -78,6 +78,110 @@
 	</li>
 {/snippet}
 
+<!-- {#snippet sidebarCollapseList(
+	id: string,
+	icon: string,
+	text: string,
+	href?: string,
+	level: number = 0,
+	thisPage: boolean = false
+)}
+	{#if href}
+		<a
+			class="collapse-toggle collapse-open:bg-base-content/10 bg-base-content/10 {thisPage
+				? 'scrollspy-active:italic group'
+				: ''}"
+			{id}
+			data-collapse="#{id}-collapse"
+			{href}
+			{@attach initCollapse}
+		>
+			{#if thisPage}
+				<span
+					class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+				></span>
+			{/if}
+			<span
+				class="icon-[{icon}] size-5 {thisPage
+					? 'group-[.active]:hidden group-[.scrollspy-active]:hidden'
+					: ''}"
+			></span>
+			<span class="overlay-minified:hidden">{text}</span>
+			<span
+				class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"
+			></span>
+		</a>
+	{:else}
+		<button
+			type="button"
+			class="collapse-toggle collapse-open:bg-base-content/10 bg-base-content/10"
+			{id}
+			data-collapse="#{id}-collapse"
+			{@attach initCollapse}
+		>
+			<span class="icon-[{icon}] size-5"></span>
+			<span class="overlay-minified:hidden">{text}</span>
+			<span
+				class="icon-[tabler--chevron-down] collapse-open:rotate-180 {level === 0
+					? 'overlay-minified:hidden'
+					: ''} size-4 transition-all duration-300"
+			></span>
+			{#if level === 0}
+				<span
+					class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:block overlay-minified:rotate-270 hidden size-4 transition-all duration-300"
+					role="button"
+					tabindex="0"
+					onclick={() => openSidebar()}
+					onkeydown={() => openSidebar()}
+				></span>
+			{/if}
+		</button>
+	{/if}
+{/snippet} -->
+
+<!-- {#snippet sidebarListItem(
+	href: string,
+	icon: string,
+	text: string,
+	thisPage: boolean = false,
+	children: SidebarListItemData[] = []
+)}
+	{#if children.length > 0}
+		<li class="space-y-0.5">
+			{@render sidebarCollapseList(href, icon, text, 1, thisPage)}
+			<ul
+				id="{id}-collapse"
+				class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
+				aria-labelledby={id}
+			>
+				{#each children as child}
+					{@render sidebarListItem(
+						child.id,
+						child.icon,
+						child.text,
+						child.level,
+						child.thisPage,
+						child.children
+					)}
+				{/each}
+			</ul>
+		</li>
+	{:else}
+		<li class={thisPage ? 'bg-base-content/10' : ''}>
+			<a {href}>
+				<span class="icon-[{icon}] size-5"></span>
+				<span class="overlay-minified:hidden">{text}</span>
+			</a>
+		</li>
+	{/if}
+	<li>
+		<a {href}>
+			<span class="icon-[{icon}] size-5"></span>
+			<span class="overlay-minified:hidden">{text}</span>
+		</a>
+	</li>
+{/snippet} -->
+
 <nav
 	class="navbar rounded-box bg-base-100 shadow-shadow border-outline-variant relative sticky start-0 top-0 z-1 justify-between border-b shadow-sm md:flex md:items-center"
 >
@@ -195,7 +299,8 @@
 					</a>
 				</li>
 				<li class="space-y-0.5">
-					<a
+					<button
+						type="button"
 						class="collapse-toggle collapse-open:bg-base-content/10"
 						id="menu-this-page"
 						data-collapse="#menu-this-page-collapse"
@@ -213,7 +318,7 @@
 							onclick={() => openSidebar()}
 							onkeydown={() => openSidebar()}
 						></span>
-					</a>
+					</button>
 					<ul
 						id="menu-this-page-collapse"
 						class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
@@ -265,7 +370,9 @@
 									class="icon-[icon-park-outline--page] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
 								></span>
 								Sub Category
-								<span class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4"></span>
+								<span
+									class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"
+								></span>
 							</a>
 							<ul
 								id="sub-menu-category-collapse"
@@ -333,10 +440,11 @@
 					</ul>
 				</li>
 				<li class="space-y-0.5">
-					<a
+					<button
 						class="collapse-toggle collapse-open:bg-base-content/10"
 						id="menu-app"
 						data-collapse="#menu-app-collapse"
+						type="button"
 						{@attach initCollapse}
 					>
 						<span class="icon-[tabler--apps] size-5"></span>
@@ -351,7 +459,7 @@
 							onclick={() => openSidebar()}
 							onkeydown={() => openSidebar()}
 						></span>
-					</a>
+					</button>
 					<ul
 						id="menu-app-collapse"
 						class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
@@ -370,15 +478,19 @@
 							</a>
 						</li>
 						<li class="space-y-0.5">
-							<a
+							<button
 								class="collapse-toggle collapse-open:bg-base-content/10"
 								id="sub-menu-academy"
 								data-collapse="#sub-menu-academy-collapse"
+								type="button"
+								{@attach initCollapse}
 							>
 								<span class="icon-[tabler--book] size-5"></span>
 								Academy
-								<span class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4"></span>
-							</a>
+								<span
+									class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"
+								></span>
+							</button>
 							<ul
 								id="sub-menu-academy-collapse"
 								class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
@@ -398,16 +510,19 @@
 									</a>
 								</li>
 								<li class="space-y-0.5">
-									<a
+									<button
 										class="collapse-toggle collapse-open:bg-base-content/10"
 										id="sub-menu-academy-stats"
 										data-collapse="#sub-menu-academy-stats-collapse"
+										type="button"
+										{@attach initCollapse}
 									>
 										<span class="icon-[tabler--chart-bar] size-5"></span>
 										Stats
-										<span class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4"
+										<span
+											class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"
 										></span>
-									</a>
+									</button>
 									<ul
 										id="sub-menu-academy-stats-collapse"
 										class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
