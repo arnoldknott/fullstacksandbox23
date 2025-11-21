@@ -7,8 +7,9 @@
 	import { Model, type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
 	import ThemePicker from '../../../components/ThemePicker.svelte';
 	import ArtificialIntelligencePicker from '../../../components/ArtificialIntelligencePicker.svelte';
-	import type { Action } from 'svelte/action';
+	import { afterNavigate } from '$app/navigation';
 	import JsonData from '$components/JsonData.svelte';
+	import type { Attachment } from 'svelte/attachments';
 	let { children }: { children: Snippet } = $props();
 
 	let sidebarLinks = [
@@ -91,8 +92,8 @@
 		}
 	];
 
-	console.log('=== sidebar - hierarchy - sidebarLinks ===');
-	console.log(sidebarLinks);
+	// console.log('=== sidebar - hierarchy - sidebarLinks ===');
+	// console.log(sidebarLinks);
 
 	// $effect(() => {
 	// 	console.log('=== sidebar - hierarchy - current scrollspy ===');
@@ -121,6 +122,30 @@
 	// };
 	// // on <ul> with initScrollspy:
 	// use:activateScrollspy={sidebarLinks[1].pathname}
+
+	// afterNavigate(() => {
+	// 	if (thisPage(sidebarLinks[1].pathname))
+	// 		initScrollspy(document.querySelector('#page2-collapse') as HTMLElement);
+	// });
+	const toggleScrollspyAttributes: Attachment<HTMLElement> = (node: HTMLElement) => {
+		afterNavigate(() => {
+			if (!thisPage(sidebarLinks[1].pathname)) {
+				node.removeAttribute('data-scrollspy');
+				node.removeAttribute('data-scrollspy-scrollable-parent');
+				const { element } = window.HSScrollspy.getInstance('#page2-collapse', true);
+				element.destroy();
+			} else {
+				node.setAttribute('data-scrollspy', '#scrollspy');
+				node.setAttribute('data-scrollspy-scrollable-parent', '#scrollspy-scrollable-parent');
+				initScrollspy(node);
+			}
+		});
+		return () => {
+			// Cleanup when the attachment is removed
+			node.removeAttribute('data-scrollspy');
+			node.removeAttribute('data-scrollspy-scrollable-parent');
+		};
+	};
 
 	const thisPage = (destinationPathename: string) => {
 		console.log('=== sidebar - hierarchy - thisPage - destinationPathename ===');
@@ -362,10 +387,30 @@
 						id="page2-collapse"
 						class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
 						aria-labelledby="page2"
-						data-scrollspy="#scrollspy"
-						data-scrollspy-scrollable-parent="#scrollspy-scrollable-parent"
+						{@attach toggleScrollspyAttributes}
 						{@attach initScrollspy}
 					>
+						<!-- <li>
+							<a
+								href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children[0].hash)}
+								class={thisPage(sidebarLinks[1].pathname)
+									? 'group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100'
+									: ''}
+							>
+								{#if thisPage(sidebarLinks[1].pathname)}
+									<span
+										class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+									></span>
+								{/if}
+								<span
+									class="icon-[mdi--text] size-5 {thisPage(sidebarLinks[1].pathname)
+										? 'group-[.active]:hidden group-[.scrollspy-active]:hidden'
+										: ''}"
+								></span>
+								{sidebarLinks[1].children[0].name}
+							</a>
+						</li> -->
+
 						<li>
 							<a
 								href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children[0].hash)}
