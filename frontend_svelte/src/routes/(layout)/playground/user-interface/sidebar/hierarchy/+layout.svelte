@@ -58,6 +58,7 @@
 		{
 			name: 'Page 3',
 			pathname: resolve('/(layout)/playground/user-interface/sidebar/hierarchy/page3'),
+			id: 'page3',
 			children: [
 				{
 					name: 'Loreum 1',
@@ -70,6 +71,7 @@
 				{
 					name: 'Sub category',
 					hash: '#sub-category',
+					id: 'page3-sub-category',
 					children: [
 						{
 							name: 'Loreum 3',
@@ -494,8 +496,8 @@
 						<li data-scrollspy-group="" class="space-y-0.5">
 							<a
 								class="collapse-toggle collapse-open:bg-base-content/10 scrollspy-active:italic group"
-								id="page2-sub-category-control"
-								data-collapse="#page2-sub-category-collapse"
+								id={sidebarLinks![1].children![2].id + '-control'}
+								data-collapse={'#' + sidebarLinks![1].children![2].id + '-collapse'}
 								href={createHref(sidebarLinks[1].pathname, sidebarLinks![1].children![2].hash)}
 								{@attach initCollapse}
 							>
@@ -511,9 +513,9 @@
 								></span>
 							</a>
 							<ul
-								id="page2-sub-category-collapse"
+								id={sidebarLinks![1].children![2].id + '-collapse'}
 								class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
-								aria-labelledby="page2-sub-category-control"
+								aria-labelledby={sidebarLinks![1].children![2].id + '-control'}
 							>
 								<li>
 									<a
