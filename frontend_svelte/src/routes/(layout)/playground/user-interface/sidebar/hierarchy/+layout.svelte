@@ -309,12 +309,12 @@
 					</a>
 				</li>
 				<li class="space-y-0.5">
-					<!--  <button
+					<!-- <button
 						type="button"
 						class="collapse-toggle collapse-open:bg-base-content/10"
 						id="page2"
 						data-collapse="#page2-collapse"
-						{@attach initCollapse}
+						{@attach thisPage(sidebarLinks[1].pathname) ? initCollapse : undefined}
 					>
 						<span class="icon-[icon-park-outline--page] size-5"></span>
 						<span class="overlay-minified:hidden">{sidebarLinks[1].name}</span>
@@ -330,36 +330,36 @@
 						></span>
 					</button>
 					<ul
-							id="page2-collapse"
-							class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
-							aria-labelledby="page2"
-							data-scrollspy={thisPage(sidebarLinks[1].pathname) ? '#scrollspy' : undefined}
-							data-scrollspy-scrollable-parent={thisPage(sidebarLinks[1].pathname)
-								? '#scrollspy-scrollable-parent'
-								: undefined}
-							{@attach thisPage(sidebarLinks[1].pathname) ? initScrollspy : undefined}
-						>
-							<li>
-								<a
-									href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children[0].hash)}
-									class={thisPage(sidebarLinks[1].pathname)
-										? 'group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100'
-										: ''}
-								>
-									{#if thisPage(sidebarLinks[1].pathname)}
-										<span
-											class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
-										></span>
-									{/if}
+						id="page2-collapse"
+						class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
+						aria-labelledby="page2"
+						data-scrollspy={thisPage(sidebarLinks[1].pathname) ? '#scrollspy' : undefined}
+						data-scrollspy-scrollable-parent={thisPage(sidebarLinks[1].pathname)
+							? '#scrollspy-scrollable-parent'
+							: undefined}
+						{@attach thisPage(sidebarLinks[1].pathname) ? initScrollspy : undefined}
+					>
+						<li>
+							<a
+								href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children[0].hash)}
+								class={thisPage(sidebarLinks[1].pathname)
+									? 'group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100'
+									: ''}
+							>
+								{#if thisPage(sidebarLinks[1].pathname)}
 									<span
-										class="icon-[mdi--text] size-5 {thisPage(sidebarLinks[1].pathname)
-											? 'group-[.active]:hidden group-[.scrollspy-active]:hidden'
-											: ''}"
+										class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
 									></span>
-									{sidebarLinks[1].children[0].name}
-								</a>
-							</li>
-							 <li>
+								{/if}
+								<span
+									class="icon-[mdi--text] size-5 {thisPage(sidebarLinks[1].pathname)
+										? 'group-[.active]:hidden group-[.scrollspy-active]:hidden'
+										: ''}"
+								></span>
+								{sidebarLinks[1].children[0].name}
+							</a>
+						</li>
+						<li>
 							<a
 								href="#loreum2"
 								class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
@@ -455,7 +455,7 @@
 								Loreum 6
 							</a>
 						</li>
-                    </ul> -->
+					</ul> -->
 					{#if !thisPage(sidebarLinks[1].pathname)}
 						<button
 							type="button"
@@ -488,102 +488,102 @@
 									{sidebarLinks[1].children[0].name}
 								</a>
 							</li>
-							<!-- <li>
-							<a
-								href="#loreum2"
-								class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
-							>
-								<span
-									class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
-								></span>
-								<span
-									class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
-								></span>
-								Loreum 2
-							</a>
-						</li>
-						<li data-scrollspy-group="" class="space-y-0.5">
-							<a
-								class="collapse-toggle collapse-open:bg-base-content/10 scrollspy-active:italic group"
-								id="page2-sub-category"
-								data-collapse="#page2-sub-category-collapse"
-								href="#sub-category"
-								{@attach initCollapse}
-							>
-								<span
-									class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
-								></span>
-								<span
-									class="icon-[icon-park-outline--page] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
-								></span>
-								Sub category
-								<span
-									class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"
-								></span>
-							</a>
-							<ul
-								id="page2-sub-category-collapse"
-								class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
-								aria-labelledby="page2-sub-category"
-							>
-								<li>
-									<a
-										href="#loreum3"
-										class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
-									>
-										<span
-											class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
-										></span>
-										<span
-											class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
-										></span>
-										Loreum 3
-									</a>
-								</li>
-								<li>
-									<a
-										href="#loreum4"
-										class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
-									>
-										<span
-											class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
-										></span>
-										<span
-											class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
-										></span>
-										Loreum 4
-									</a>
-								</li>
-							</ul>
-						</li>
-						<li>
-							<a
-								href="#loreum5"
-								class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
-							>
-								<span
-									class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
-								></span>
-								<span
-									class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
-								></span>
-								Loreum 5
-							</a>
-						</li>
-						<li>
-							<a
-								href="#loreum6"
-								class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
-							>
-								<span
-									class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
-								></span>
-								<span
-									class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
-								></span>
-								Loreum 6
-							</a>
-						</li> -->
+							<li>
+								<a
+									href="#loreum2"
+									class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
+								>
+									<span
+										class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+									></span>
+									<span
+										class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+									></span>
+									Loreum 2
+								</a>
+							</li>
+							<li data-scrollspy-group="" class="space-y-0.5">
+								<a
+									class="collapse-toggle collapse-open:bg-base-content/10 scrollspy-active:italic group"
+									id="page2-sub-category"
+									data-collapse="#page2-sub-category-collapse"
+									href="#sub-category"
+									{@attach initCollapse}
+								>
+									<span
+										class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+									></span>
+									<span
+										class="icon-[icon-park-outline--page] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+									></span>
+									Sub category
+									<span
+										class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"
+									></span>
+								</a>
+								<ul
+									id="page2-sub-category-collapse"
+									class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
+									aria-labelledby="page2-sub-category"
+								>
+									<li>
+										<a
+											href="#loreum3"
+											class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
+										>
+											<span
+												class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+											></span>
+											<span
+												class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+											></span>
+											Loreum 3
+										</a>
+									</li>
+									<li>
+										<a
+											href="#loreum4"
+											class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
+										>
+											<span
+												class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+											></span>
+											<span
+												class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+											></span>
+											Loreum 4
+										</a>
+									</li>
+								</ul>
+							</li>
+							<li>
+								<a
+									href="#loreum5"
+									class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
+								>
+									<span
+										class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+									></span>
+									<span
+										class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+									></span>
+									Loreum 5
+								</a>
+							</li>
+							<li>
+								<a
+									href="#loreum6"
+									class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
+								>
+									<span
+										class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+									></span>
+									<span
+										class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+									></span>
+									Loreum 6
+								</a>
+							</li>
 						</ul>
 					{:else}
 						<button
@@ -628,102 +628,102 @@
 									{sidebarLinks[1].children[0].name}
 								</a>
 							</li>
-							<!-- <li>
-							<a
-								href="#loreum2"
-								class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
-							>
-								<span
-									class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
-								></span>
-								<span
-									class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
-								></span>
-								Loreum 2
-							</a>
-						</li>
-						<li data-scrollspy-group="" class="space-y-0.5">
-							<a
-								class="collapse-toggle collapse-open:bg-base-content/10 scrollspy-active:italic group"
-								id="page2-sub-category"
-								data-collapse="#page2-sub-category-collapse"
-								href="#sub-category"
-								{@attach initCollapse}
-							>
-								<span
-									class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
-								></span>
-								<span
-									class="icon-[icon-park-outline--page] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
-								></span>
-								Sub category
-								<span
-									class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"
-								></span>
-							</a>
-							<ul
-								id="page2-sub-category-collapse"
-								class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
-								aria-labelledby="page2-sub-category"
-							>
-								<li>
-									<a
-										href="#loreum3"
-										class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
-									>
-										<span
-											class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
-										></span>
-										<span
-											class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
-										></span>
-										Loreum 3
-									</a>
-								</li>
-								<li>
-									<a
-										href="#loreum4"
-										class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
-									>
-										<span
-											class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
-										></span>
-										<span
-											class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
-										></span>
-										Loreum 4
-									</a>
-								</li>
-							</ul>
-						</li>
-						<li>
-							<a
-								href="#loreum5"
-								class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
-							>
-								<span
-									class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
-								></span>
-								<span
-									class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
-								></span>
-								Loreum 5
-							</a>
-						</li>
-						<li>
-							<a
-								href="#loreum6"
-								class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
-							>
-								<span
-									class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
-								></span>
-								<span
-									class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
-								></span>
-								Loreum 6
-							</a>
-						</li> -->
+							<li>
+								<a
+									href="#loreum2"
+									class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
+								>
+									<span
+										class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+									></span>
+									<span
+										class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+									></span>
+									Loreum 2
+								</a>
+							</li>
+							<li data-scrollspy-group="" class="space-y-0.5">
+								<a
+									class="collapse-toggle collapse-open:bg-base-content/10 scrollspy-active:italic group"
+									id="page2-sub-category"
+									data-collapse="#page2-sub-category-collapse"
+									href="#sub-category"
+									{@attach initCollapse}
+								>
+									<span
+										class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+									></span>
+									<span
+										class="icon-[icon-park-outline--page] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+									></span>
+									Sub category
+									<span
+										class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"
+									></span>
+								</a>
+								<ul
+									id="page2-sub-category-collapse"
+									class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
+									aria-labelledby="page2-sub-category"
+								>
+									<li>
+										<a
+											href="#loreum3"
+											class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
+										>
+											<span
+												class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+											></span>
+											<span
+												class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+											></span>
+											Loreum 3
+										</a>
+									</li>
+									<li>
+										<a
+											href="#loreum4"
+											class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
+										>
+											<span
+												class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+											></span>
+											<span
+												class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+											></span>
+											Loreum 4
+										</a>
+									</li>
+								</ul>
+							</li>
+							<li>
+								<a
+									href="#loreum5"
+									class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
+								>
+									<span
+										class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+									></span>
+									<span
+										class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+									></span>
+									Loreum 5
+								</a>
+							</li>
+							<li>
+								<a
+									href="#loreum6"
+									class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
+								>
+									<span
+										class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+									></span>
+									<span
+										class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+									></span>
+									Loreum 6
+								</a>
+							</li>
 						</ul>
 					{/if}
 				</li>
