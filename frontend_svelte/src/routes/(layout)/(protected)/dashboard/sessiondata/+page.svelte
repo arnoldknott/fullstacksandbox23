@@ -7,6 +7,7 @@
 	import type { PageData } from './$types';
 	import { onMount } from 'svelte';
 	let { data }: { data: PageData } = $props();
+	/* eslint-disable @typescript-eslint/no-explicit-any */
 	let navigatorData = $state<Record<string, any> | null>(null);
 
 	onMount(() => {
@@ -18,7 +19,7 @@
 			platform: navigator.platform,
 			cookieEnabled: navigator.cookieEnabled,
 			hardwareConcurrency: navigator.hardwareConcurrency,
-			maxTouchPoints: (navigator as any).maxTouchPoints
+			maxTouchPoints: navigator.maxTouchPoints
 			// Add more if needed; keep only enumerable primitives/functions you care about
 		};
 	});

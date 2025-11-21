@@ -143,6 +143,7 @@
 			try {
 				const { element } = window.HSScrollspy.getInstance(node, true);
 				element.destroy();
+				/* eslint-disable no-empty */
 			} catch {}
 		};
 
