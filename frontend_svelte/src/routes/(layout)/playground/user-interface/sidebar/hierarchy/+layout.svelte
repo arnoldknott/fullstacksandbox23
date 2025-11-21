@@ -8,6 +8,7 @@
 	import ThemePicker from '../../../components/ThemePicker.svelte';
 	import ArtificialIntelligencePicker from '../../../components/ArtificialIntelligencePicker.svelte';
 	import { afterNavigate } from '$app/navigation';
+	import { onMount } from 'svelte';
 	import JsonData from '$components/JsonData.svelte';
 	import type { Attachment } from 'svelte/attachments';
 	let { children }: { children: Snippet } = $props();
@@ -132,8 +133,13 @@
 			if (!thisPage(sidebarLinks[1].pathname)) {
 				node.removeAttribute('data-scrollspy');
 				node.removeAttribute('data-scrollspy-scrollable-parent');
-				const { element } = window.HSScrollspy.getInstance('#page2-collapse', true);
-				element.destroy();
+				// console.log('=== sidebar - hierarchy - toggleScrollspyAttributes - destroy scrollspy ===');
+				// console.log(node.id);
+				// const { element } = window.HSScrollspy.getInstance(node.id, true);
+				try {
+					const { element } = window.HSScrollspy.getInstance('#page2-collapse', true);
+					element.destroy();
+				} catch {}
 			} else {
 				node.setAttribute('data-scrollspy', '#scrollspy');
 				node.setAttribute('data-scrollspy-scrollable-parent', '#scrollspy-scrollable-parent');
