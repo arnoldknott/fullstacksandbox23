@@ -35,6 +35,12 @@
 			url: 'sidebar/merge'
 		},
 		{
+			name: 'Page hierarchy',
+			description:
+				'Adds several hierarchical pages that are linked from sidebar with common sidebar layout and scrollspy within multiple pages.',
+			url: 'sidebar/hierarchy'
+		},
+		{
 			name: 'Segmenting code',
 			description:
 				'Segments the code from navbar and sidebar into snippets and components and parameterizes them for reusability and maintainability.',
