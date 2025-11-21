@@ -131,35 +131,7 @@
 	// 		initScrollspy(document.querySelector('#page2-collapse') as HTMLElement);
 	// });
 	const toggleScrollspy: Attachment<HTMLElement> = (node: HTMLElement) => {
-		const addScrollspy = async (node: HTMLElement) => {
-			node.setAttribute('data-scrollspy', '#scrollspy');
-			node.setAttribute('data-scrollspy-scrollable-parent', '#scrollspy-scrollable-parent');
-			await tick();
-			initScrollspy(node);
-			forceScrollspyActivation();
-		};
-
-		const removeScrollspy = async (node: HTMLElement) => {
-			node.removeAttribute('data-scrollspy');
-			node.removeAttribute('data-scrollspy-scrollable-parent');
-			// If scrollspy was not initialized, calling destroy will throw error
-			await tick();
-			try {
-				const { element } = window.HSScrollspy.getInstance(node, true);
-				element.destroy();
-				/* eslint-disable no-empty */
-			} catch {}
-		};
-
-		afterNavigate(async () => {
-			if (thisPage(node.dataset.pathname || '')) {
-				await addScrollspy(node);
-			} else {
-				await removeScrollspy(node);
-			}
-		});
-
-		function forceScrollspyActivation() {
+		const forceScrollspyActivation = () => {
 			const container = document.querySelector(
 				'#scrollspy-scrollable-parent'
 			) as HTMLElement | null;
@@ -168,16 +140,38 @@
 			container.dispatchEvent(new Event('scroll', { bubbles: true }));
 			window.dispatchEvent(new Event('scroll'));
 			// Nudge scroll position to ensure mutation observers / scroll listeners run even if already at target
-			const original = container.scrollTop;
-			const alt = original === 0 ? 1 : original - 1;
-			container.scrollTop = alt;
-			container.dispatchEvent(new Event('scroll', { bubbles: true }));
-			requestAnimationFrame(() => {
-				container.scrollTop = original;
-				container.dispatchEvent(new Event('scroll', { bubbles: true }));
-				window.dispatchEvent(new Event('scroll'));
-			});
-		}
+			// const original = container.scrollTop;
+			// const alt = original === 0 ? 1 : original - 1;
+			// container.scrollTop = alt;
+			// container.dispatchEvent(new Event('scroll', { bubbles: true }));
+			// requestAnimationFrame(() => {
+			// 	container.scrollTop = original;
+			// 	container.dispatchEvent(new Event('scroll', { bubbles: true }));
+			// 	window.dispatchEvent(new Event('scroll'));
+			// });
+		};
+
+		const addScrollspy = async (node: HTMLElement) => {
+			// const addScrollspy = (node: HTMLElement) => {
+			node.setAttribute('data-scrollspy', '#scrollspy');
+			node.setAttribute('data-scrollspy-scrollable-parent', '#scrollspy-scrollable-parent');
+			// await tick();
+			initScrollspy(node);
+			forceScrollspyActivation();
+		};
+
+		const removeScrollspy = async (node: HTMLElement) => {
+			// const removeScrollspy = (node: HTMLElement) => {
+			node.removeAttribute('data-scrollspy');
+			node.removeAttribute('data-scrollspy-scrollable-parent');
+			// If scrollspy was not initialized, calling destroy will throw error
+			// await tick();
+			try {
+				const { element } = window.HSScrollspy.getInstance(node, true);
+				element.destroy();
+				/* eslint-disable no-empty */
+			} catch {}
+		};
 
 		// Intercept clicks on same-page fragment links that wouldn't move scroll (same offset) and force activation
 		node.addEventListener('click', (e) => {
@@ -200,9 +194,21 @@
 				forceScrollspyActivation();
 			}
 		});
+
+		afterNavigate(async () => {
+			if (thisPage(node.dataset.pathname || '')) {
+				await addScrollspy(node);
+				// addScrollspy(node);
+			} else {
+				await removeScrollspy(node);
+				// removeScrollspy(node);
+			}
+		});
+
 		// Cleanup when the attachment is removed
 		return async () => {
 			await removeScrollspy(node);
+			// removeScrollspy(node);
 		};
 	};
 
