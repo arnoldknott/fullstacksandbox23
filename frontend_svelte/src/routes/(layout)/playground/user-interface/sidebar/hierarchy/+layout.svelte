@@ -2,7 +2,7 @@
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import { initDropdown, initOverlay, initCollapse, initScrollspy } from '$lib/userInterface';
-	import { type Snippet } from 'svelte';
+	import { tick, type Snippet } from 'svelte';
 	import { Variant, type ColorConfig } from '$lib/theming';
 	import { Model, type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
 	import ThemePicker from '../../../components/ThemePicker.svelte';
@@ -128,29 +128,34 @@
 	// 		initScrollspy(document.querySelector('#page2-collapse') as HTMLElement);
 	// });
 	const toggleScrollspy: Attachment<HTMLElement> = (node: HTMLElement) => {
-		afterNavigate(() => {
-			if (!thisPage(sidebarLinks[1].pathname)) {
-				node.removeAttribute('data-scrollspy');
-				node.removeAttribute('data-scrollspy-scrollable-parent');
-				// If scrollspy was not initialized, calling destroy will throw error
-				try {
-					const { element } = window.HSScrollspy.getInstance(node, true);
-					element.destroy();
-				} catch {}
-			} else {
-				node.setAttribute('data-scrollspy', '#scrollspy');
-				node.setAttribute('data-scrollspy-scrollable-parent', '#scrollspy-scrollable-parent');
-				initScrollspy(node);
-			}
-		});
-		return () => {
-			// Cleanup when the attachment is removed
+		const addScrollspy = async () => {
+			node.setAttribute('data-scrollspy', '#scrollspy');
+			node.setAttribute('data-scrollspy-scrollable-parent', '#scrollspy-scrollable-parent');
+			await tick();
+			initScrollspy(node);
+		};
+
+		const removeScrollspy = async () => {
 			node.removeAttribute('data-scrollspy');
 			node.removeAttribute('data-scrollspy-scrollable-parent');
+			// If scrollspy was not initialized, calling destroy will throw error
+			await tick();
 			try {
 				const { element } = window.HSScrollspy.getInstance(node, true);
 				element.destroy();
 			} catch {}
+		};
+
+		afterNavigate(async () => {
+			if (thisPage(sidebarLinks[1].pathname)) {
+				await addScrollspy();
+			} else {
+				await removeScrollspy();
+			}
+		});
+		// Cleanup when the attachment is removed
+		return async () => {
+			await removeScrollspy();
 		};
 	};
 
@@ -391,7 +396,6 @@
 						class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
 						aria-labelledby="page2"
 						{@attach toggleScrollspy}
-						{@attach initScrollspy}
 					>
 						<li>
 							<a
