@@ -7,6 +7,7 @@
 	import { Model, type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
 	import ThemePicker from '../../../components/ThemePicker.svelte';
 	import ArtificialIntelligencePicker from '../../../components/ArtificialIntelligencePicker.svelte';
+	import type { Action } from 'svelte/action';
 	import JsonData from '$components/JsonData.svelte';
 	let { children }: { children: Snippet } = $props();
 
@@ -92,6 +93,15 @@
 
 	console.log('=== sidebar - hierarchy - sidebarLinks ===');
 	console.log(sidebarLinks);
+
+	$effect(() => {
+		console.log('=== sidebar - hierarchy - current scrollspy ===');
+		console.log(`scrollspy-${page.url.pathname.split('/').at(-1)}`);
+	});
+
+	// const activateScrollspy: Action<HTMLElement> = (node) => {
+	// 	initScrollspy(node);
+	// };
 
 	const thisPage = (destinationPathename: string) => {
 		console.log('=== sidebar - hierarchy - thisPage - destinationPathename ===');
@@ -275,7 +285,10 @@
 	</div>
 </nav>
 
-<div id="scrollspy-scrollable-parent" class="grid h-screen overflow-y-auto">
+<div
+	id="scrollspy-scrollable-parent-{page.url.pathname.split('/').at(-1)}"
+	class="grid h-screen overflow-y-auto"
+>
 	<aside
 		id="collapsible-mini-sidebar"
 		class="overlay overlay-minified:w-19 overlay-open:translate-x-0 drawer drawer-start border-base-content/20 hidden w-66 border-e pt-50 [--auto-close:sm] sm:absolute sm:z-0 sm:flex sm:translate-x-0 sm:shadow-none"
@@ -309,6 +322,146 @@
 					</a>
 				</li>
 				<li class="space-y-0.5">
+					<button
+						type="button"
+						class="collapse-toggle collapse-open:bg-base-content/10"
+						id="page2"
+						data-collapse="#page2-collapse"
+						{@attach initCollapse}
+					>
+						<span class="icon-[icon-park-outline--page] size-5"></span>
+						<span class="overlay-minified:hidden">{sidebarLinks[1].name}</span>
+						<span
+							class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:hidden size-4 transition-all duration-300"
+						></span>
+						<span
+							class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:block overlay-minified:rotate-270 hidden size-4 transition-all duration-300"
+							role="button"
+							tabindex="0"
+							onclick={() => openSidebar()}
+							onkeydown={() => openSidebar()}
+						></span>
+					</button>
+					<ul
+						id="page2-collapse"
+						class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
+						aria-labelledby="page2"
+						data-scrollspy="#scrollspy-page2"
+						data-scrollspy-scrollable-parent="#scrollspy-scrollable-parent-page2"
+						{@attach initScrollspy}
+					>
+						<li>
+							<a
+								href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children[0].hash)}
+								class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
+							>
+								<span
+									class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+								></span>
+
+								<span
+									class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+								></span>
+								{sidebarLinks[1].children[0].name}
+							</a>
+						</li>
+						<li>
+							<a
+								href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children[1].hash)}
+								class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
+							>
+								<span
+									class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+								></span>
+								<span
+									class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+								></span>
+								{sidebarLinks[1].children[1].name}
+							</a>
+						</li>
+						<!-- <li data-scrollspy-group="" class="space-y-0.5">
+							<a
+								class="collapse-toggle collapse-open:bg-base-content/10 scrollspy-active:italic group"
+								id="page2-sub-category"
+								data-collapse="#page2-sub-category-collapse"
+								href="#sub-category"
+								{@attach initCollapse}
+							>
+								<span
+									class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+								></span>
+								<span
+									class="icon-[icon-park-outline--page] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+								></span>
+								Sub category
+								<span
+									class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"
+								></span>
+							</a>
+							<ul
+								id="page2-sub-category-collapse"
+								class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
+								aria-labelledby="page2-sub-category"
+							>
+								<li>
+									<a
+										href="#loreum3"
+										class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
+									>
+										<span
+											class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+										></span>
+										<span
+											class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+										></span>
+										Loreum 3
+									</a>
+								</li>
+								<li>
+									<a
+										href="#loreum4"
+										class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
+									>
+										<span
+											class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+										></span>
+										<span
+											class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+										></span>
+										Loreum 4
+									</a>
+								</li>
+							</ul>
+						</li>
+						<li>
+							<a
+								href="#loreum5"
+								class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
+							>
+								<span
+									class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+								></span>
+								<span
+									class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+								></span>
+								Loreum 5
+							</a>
+						</li>
+						<li>
+							<a
+								href="#loreum6"
+								class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 py-0.5 hover:opacity-100"
+							>
+								<span
+									class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+								></span>
+								<span
+									class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+								></span>
+								Loreum 6
+							</a>
+						</li> -->
+					</ul>
 					<!-- <button
 						type="button"
 						class="collapse-toggle collapse-open:bg-base-content/10"
@@ -456,7 +609,7 @@
 							</a>
 						</li>
 					</ul> -->
-					{#if !thisPage(sidebarLinks[1].pathname)}
+					<!-- {#if !thisPage(sidebarLinks[1].pathname)}
 						<button
 							type="button"
 							class="collapse-toggle collapse-open:bg-base-content/10"
@@ -725,7 +878,7 @@
 								</a>
 							</li>
 						</ul>
-					{/if}
+					{/if} -->
 				</li>
 				<li class="space-y-0.5">
 					<button
@@ -855,7 +1008,7 @@
 	</aside>
 	<div class="sm:overlay-minified:ps-19 bg-base-100 ps-64 transition-all duration-300 max-sm:ps-0">
 		<div class=" bg-base-100 transition-all duration-300">
-			<div id="scrollspy" class="space-y-4 pe-1">
+			<div id="scrollspy-{page.url.pathname.split('/').at(-1)}" class="space-y-4 pe-1">
 				<div id="page-information">
 					URL: <JsonData data={page.url} />
 					<br />
