@@ -20,6 +20,7 @@
 		{
 			name: 'Page 2',
 			pathname: resolve('/(layout)/playground/user-interface/sidebar/hierarchy/page2'),
+			id: 'page2',
 			children: [
 				{
 					name: 'Loreum 1',
@@ -32,6 +33,7 @@
 				{
 					name: 'Sub category',
 					hash: '#sub-category',
+					id: 'page2-sub-category',
 					children: [
 						{
 							name: 'Loreum 3',
@@ -417,7 +419,7 @@
 					<button
 						type="button"
 						class="collapse-toggle collapse-open:bg-base-content/10"
-						id="page2"
+						id="page2-control"
 						data-collapse="#page2-collapse"
 						{@attach initCollapse}
 					>
@@ -437,10 +439,25 @@
 					<ul
 						id="page2-collapse"
 						class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
-						aria-labelledby="page2"
+						aria-labelledby="page2-control"
 						{@attach toggleScrollspy}
 					>
 						<li>
+							<a
+								href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children[0].hash)}
+								class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 hover:opacity-100"
+							>
+								<span
+									class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+								></span>
+
+								<span
+									class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+								></span>
+								{sidebarLinks[1].children[0].name}
+							</a>
+						</li>
+						<!-- <li>
 							<a
 								href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children[0].hash)}
 								class={thisPage(sidebarLinks[1].pathname)
@@ -459,23 +476,17 @@
 								></span>
 								{sidebarLinks[1].children[0].name}
 							</a>
-						</li>
+						</li> -->
 						<li>
 							<a
 								href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children[1].hash)}
-								class={thisPage(sidebarLinks[1].pathname)
-									? 'group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 hover:opacity-100'
-									: ''}
+								class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 hover:opacity-100"
 							>
-								{#if thisPage(sidebarLinks[1].pathname)}
-									<span
-										class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
-									></span>
-								{/if}
 								<span
-									class="icon-[mdi--text] size-5 {thisPage(sidebarLinks[1].pathname)
-										? 'group-[.active]:hidden group-[.scrollspy-active]:hidden'
-										: ''}"
+									class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+								></span>
+								<span
+									class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
 								></span>
 								{sidebarLinks[1].children[1].name}
 							</a>
@@ -483,7 +494,7 @@
 						<li data-scrollspy-group="" class="space-y-0.5">
 							<a
 								class="collapse-toggle collapse-open:bg-base-content/10 scrollspy-active:italic group"
-								id="page2-sub-category"
+								id="page2-sub-category-control"
 								data-collapse="#page2-sub-category-collapse"
 								href={createHref(sidebarLinks[1].pathname, sidebarLinks![1].children![2].hash)}
 								{@attach initCollapse}
@@ -502,7 +513,7 @@
 							<ul
 								id="page2-sub-category-collapse"
 								class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
-								aria-labelledby="page2-sub-category"
+								aria-labelledby="page2-sub-category-control"
 							>
 								<li>
 									<a
@@ -510,22 +521,31 @@
 											sidebarLinks[1].pathname,
 											sidebarLinks![1].children![2].children![0].hash
 										)}
-										class={thisPage(sidebarLinks[1].pathname)
-											? 'group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 hover:opacity-100'
-											: ''}
+										class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 hover:opacity-100"
 									>
-										{#if thisPage(sidebarLinks[1].pathname)}
-											<span
-												class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
-											></span>
-										{/if}
 										<span
-											class="icon-[mdi--text] size-5 {thisPage(sidebarLinks[1].pathname)
-												? 'group-[.active]:hidden group-[.scrollspy-active]:hidden'
-												: ''}"
+											class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline"
 										></span>
+
+										<span class="icon-[mdi--text] size-5 group-[.active]:hidden"></span>
 										{sidebarLinks![1].children![2].children![0].name}
 									</a>
+									<!-- <a
+										href={createHref(
+											sidebarLinks[1].pathname,
+											sidebarLinks![1].children![2].children![0].hash
+										)}
+										class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 hover:opacity-100"
+									>
+										<span
+											class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+										></span>
+
+										<span
+											class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+										></span>
+										{sidebarLinks![1].children![2].children![0].name}
+									</a> -->
 								</li>
 								<li>
 									<a
@@ -533,20 +553,13 @@
 											sidebarLinks[1].pathname,
 											sidebarLinks![1].children![2].children![1].hash
 										)}
-										class={thisPage(sidebarLinks[1].pathname)
-											? 'group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 hover:opacity-100'
-											: ''}
+										class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 hover:opacity-100"
 									>
-										{#if thisPage(sidebarLinks[1].pathname)}
-											<span
-												class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
-											></span>
-										{/if}
 										<span
-											class="icon-[mdi--text] size-5 {thisPage(sidebarLinks[1].pathname)
-												? 'group-[.active]:hidden group-[.scrollspy-active]:hidden'
-												: ''}"
+											class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline"
 										></span>
+
+										<span class="icon-[mdi--text] size-5 group-[.active]:hidden"></span>
 										{sidebarLinks![1].children![2].children![1].name}
 									</a>
 								</li>
@@ -611,19 +624,14 @@
 						<li>
 							<a
 								href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children[3].hash)}
-								class={thisPage(sidebarLinks[1].pathname)
-									? 'group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 hover:opacity-100'
-									: ''}
+								class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 hover:opacity-100"
 							>
-								{#if thisPage(sidebarLinks[1].pathname)}
-									<span
-										class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
-									></span>
-								{/if}
 								<span
-									class="icon-[mdi--text] size-5 {thisPage(sidebarLinks[1].pathname)
-										? 'group-[.active]:hidden group-[.scrollspy-active]:hidden'
-										: ''}"
+									class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+								></span>
+
+								<span
+									class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
 								></span>
 								{sidebarLinks[1].children[3].name}
 							</a>
@@ -631,19 +639,13 @@
 						<li>
 							<a
 								href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children[4].hash)}
-								class={thisPage(sidebarLinks[1].pathname)
-									? 'group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 hover:opacity-100'
-									: ''}
+								class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 hover:opacity-100"
 							>
-								{#if thisPage(sidebarLinks[1].pathname)}
-									<span
-										class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
-									></span>
-								{/if}
 								<span
-									class="icon-[mdi--text] size-5 {thisPage(sidebarLinks[1].pathname)
-										? 'group-[.active]:hidden group-[.scrollspy-active]:hidden'
-										: ''}"
+									class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+								></span>
+								<span
+									class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
 								></span>
 								{sidebarLinks[1].children[4].name}
 							</a>
