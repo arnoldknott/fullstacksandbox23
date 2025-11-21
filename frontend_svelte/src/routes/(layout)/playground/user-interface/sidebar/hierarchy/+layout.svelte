@@ -419,8 +419,8 @@
 					<button
 						type="button"
 						class="collapse-toggle collapse-open:bg-base-content/10"
-						id="page2-control"
-						data-collapse="#page2-collapse"
+						id={sidebarLinks[1].id + '-control'}
+						data-collapse={'#' + sidebarLinks[1].id + '-collapse'}
 						{@attach initCollapse}
 					>
 						<span class="icon-[icon-park-outline--page] size-5"></span>
@@ -437,9 +437,9 @@
 						></span>
 					</button>
 					<ul
-						id="page2-collapse"
+						id={sidebarLinks[1].id + '-collapse'}
 						class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
-						aria-labelledby="page2-control"
+						aria-labelledby={sidebarLinks[1].id + '-control'}
 						{@attach toggleScrollspy}
 					>
 						<li>
