@@ -8,7 +8,6 @@
 	import ThemePicker from '../../../components/ThemePicker.svelte';
 	import ArtificialIntelligencePicker from '../../../components/ArtificialIntelligencePicker.svelte';
 	import { afterNavigate } from '$app/navigation';
-	import { onMount } from 'svelte';
 	import JsonData from '$components/JsonData.svelte';
 	import type { Attachment } from 'svelte/attachments';
 	let { children }: { children: Snippet } = $props();
@@ -129,17 +128,10 @@
 	// 		initScrollspy(document.querySelector('#page2-collapse') as HTMLElement);
 	// });
 	const toggleScrollspyAttributes: Attachment<HTMLElement> = (node: HTMLElement) => {
-		// try {
-		//     const { element } = window.HSScrollspy.getInstance(node.id, true);
-		//     element.destroy();
-		// } catch {}
 		afterNavigate(() => {
 			if (!thisPage(sidebarLinks[1].pathname)) {
 				node.removeAttribute('data-scrollspy');
 				node.removeAttribute('data-scrollspy-scrollable-parent');
-				// console.log('=== sidebar - hierarchy - toggleScrollspyAttributes - destroy scrollspy ===');
-				// console.log(node.id);
-				// const { element } = window.HSScrollspy.getInstance(node.id, true);
 				// If scrollspy was not initialized, calling destroy will throw error
 				try {
 					const { element } = window.HSScrollspy.getInstance(node, true);
@@ -159,8 +151,6 @@
 	};
 
 	const thisPage = (destinationPathename: string) => {
-		console.log('=== sidebar - hierarchy - thisPage - destinationPathename ===');
-		console.log(destinationPathename);
 		return destinationPathename === page.url.pathname;
 	};
 	// const thisPage = $derived(destinationPathename === page.url.pathname;)
@@ -170,8 +160,6 @@
 		if (!hash) href = destinationPathname;
 		else if (thisPage(destinationPathname)) href = hash;
 		else href = `${destinationPathname}${hash}`;
-		console.log('=== sidebar - hierarchy - createHref - href ===');
-		console.log(href);
 		return href;
 	};
 
