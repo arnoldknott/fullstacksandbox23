@@ -8,7 +8,6 @@
 	import ThemePicker from '../../../components/ThemePicker.svelte';
 	import ArtificialIntelligencePicker from '../../../components/ArtificialIntelligencePicker.svelte';
 	import { afterNavigate } from '$app/navigation';
-	import JsonData from '$components/JsonData.svelte';
 	import type { Attachment } from 'svelte/attachments';
 	let { children }: { children: Snippet } = $props();
 
@@ -1164,17 +1163,6 @@
 	<div class="sm:overlay-minified:ps-19 bg-base-100 ps-64 transition-all duration-300 max-sm:ps-0">
 		<div class=" bg-base-100 transition-all duration-300">
 			<div id="scrollspy" class="space-y-4 pe-1">
-				<!-- <div id="page-information">
-					URL: <JsonData data={page.url} />
-					<br />
-					Pathname: <JsonData data={page.url.pathname} />
-					<br />
-					Hash: <JsonData data={page.url.hash} />
-					<br />
-					Search: <JsonData data={page.url.search} />
-					<br />
-					SearchParams: <JsonData data={page.url.searchParams} />
-				</div> -->
 				{@render children?.()}
 			</div>
 		</div>
