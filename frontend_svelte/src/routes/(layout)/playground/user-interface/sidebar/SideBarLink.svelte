@@ -10,7 +10,7 @@
 
 	const thisPage = $derived(pathname === page.url.pathname);
 
-	let href = $derived(!hash ? pathname : thisPage ? hash : `${pathname}${hash} `);
+	let href = $derived(!hash ? pathname : thisPage ? hash : `${pathname}${hash}`);
 </script>
 
 <li>

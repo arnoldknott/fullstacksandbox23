@@ -287,7 +287,7 @@
 	});
 
 	const toggleCollapse: Attachment<HTMLElement> = (node: HTMLElement) => {
-		if (page.url.pathname === node.dataset.pathname) {
+		if (page.url.pathname.startsWith(node.dataset.pathname || '')) {
 			const { element } = window.HSCollapse.getInstance(node, true);
 			element.show();
 		}
