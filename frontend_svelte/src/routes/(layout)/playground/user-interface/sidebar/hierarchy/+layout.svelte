@@ -504,7 +504,7 @@
 						data-pathname={sidebarLinks[1].pathname}
 						{@attach toggleScrollspy}
 					>
-						<li>
+						<!-- <li>
 							<a
 								href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children[0].hash)}
 								class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 hover:opacity-100"
@@ -519,29 +519,6 @@
 								{sidebarLinks[1].children[0].name}
 							</a>
 						</li>
-						<!-- <li>
-							<a
-								href={createHref(sidebarLinks[1].pathname, sidebarLinks![1].children![0].hash)}
-								class="text-base-content/80 flex items-center gap-x-2 hover:opacity-100 {thisPage(
-									sidebarLinks[1].pathname
-								)
-									? 'group scrollspy-active:italic'
-									: ''}"
-							>
-								<span
-									class={thisPage(sidebarLinks[1].pathname)
-										? 'icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline'
-										: 'hidden'}
-								></span>
-
-								<span
-									class="icon-[mdi--text] size-5 {thisPage(sidebarLinks[1].pathname)
-										? 'group-[.active]:hidden group-[.scrollspy-active]:hidden'
-										: ''}"
-								></span>
-								{sidebarLinks![1].children![0].name}
-							</a>
-						</li> -->
 						<li>
 							<a
 								href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children[1].hash)}
@@ -555,7 +532,7 @@
 								></span>
 								{sidebarLinks[1].children[1].name}
 							</a>
-						</li>
+						</li> -->
 						<!-- {@render sideBarLink(
 							sidebarLinks[1].pathname,
 							sidebarLinks![1].children![0].hash,
@@ -568,20 +545,19 @@
 							'mdi--text',
 							sidebarLinks![1].children![1].name
 						)} -->
-						<!-- <SideBarLink
+						<SideBarLink
 							href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children[0].hash)}
 							icon="mdi--text"
-							thisPage={thisPage(sidebarLinks[1].pathname)}
 						>
 							{sidebarLinks[1].children[0].name}
 						</SideBarLink>
 						<SideBarLink
 							href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children[1].hash)}
 							icon="mdi--text"
-							thisPage={thisPage(sidebarLinks[1].pathname)}
 						>
 							{sidebarLinks[1].children[1].name}
-						</SideBarLink> -->
+						</SideBarLink>
+
 						<li data-scrollspy-group="" class="space-y-0.5">
 							<a
 								class="collapse-toggle collapse-open:bg-base-content/10 scrollspy-active:italic group"
@@ -606,7 +582,7 @@
 								class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
 								aria-labelledby={sidebarLinks![1].children![2].id + '-control'}
 							>
-								<li>
+								<!-- <li>
 									<a
 										href={createHref(
 											sidebarLinks[1].pathname,
@@ -641,7 +617,7 @@
 										></span>
 										{sidebarLinks![1].children![2].children![1].name}
 									</a>
-								</li>
+								</li> -->
 								<!-- {@render sideBarLink(
 									sidebarLinks[1].pathname,
 									sidebarLinks![1].children![2].children![0].hash,
@@ -654,9 +630,27 @@
 									'mdi--text',
 									sidebarLinks![1].children![2].children![1].name
 								)} -->
+								<SideBarLink
+									href={createHref(
+										sidebarLinks[1].pathname,
+										sidebarLinks[1].children![2].children![0].hash
+									)}
+									icon="mdi--text"
+								>
+									{sidebarLinks[1].children![2].children![0].name}
+								</SideBarLink>
+								<SideBarLink
+									href={createHref(
+										sidebarLinks[1].pathname,
+										sidebarLinks[1].children![2].children![1].hash
+									)}
+									icon="mdi--text"
+								>
+									{sidebarLinks[1].children![2].children![1].name}
+								</SideBarLink>
 							</ul>
 						</li>
-						<li>
+						<!-- <li>
 							<a
 								href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children[3].hash)}
 								class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 hover:opacity-100"
@@ -684,7 +678,7 @@
 								></span>
 								{sidebarLinks[1].children[4].name}
 							</a>
-						</li>
+						</li> -->
 						<!-- {@render sideBarLink(
 							sidebarLinks[1].pathname,
 							sidebarLinks![1].children![3].hash,
@@ -697,6 +691,18 @@
 							'mdi--text',
 							sidebarLinks![1].children![4].name
 						)} -->
+						<SideBarLink
+							href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children![3].hash)}
+							icon="mdi--text"
+						>
+							{sidebarLinks[1].children![3].name}
+						</SideBarLink>
+						<SideBarLink
+							href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children![4].hash)}
+							icon="mdi--text"
+						>
+							{sidebarLinks[1].children![4].name}
+						</SideBarLink>
 					</ul>
 				</li>
 				<!-- Hard coded page 3: -->
@@ -830,7 +836,7 @@
 						data-pathname={sidebarLinks[2].pathname}
 						{@attach toggleScrollspy}
 					>
-						<li>
+						<!-- <li>
 							<a
 								href={createHref(sidebarLinks[2].pathname, sidebarLinks[2].children[0].hash)}
 								class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 hover:opacity-100"
@@ -858,7 +864,7 @@
 								></span>
 								{sidebarLinks[2].children[1].name}
 							</a>
-						</li>
+						</li> -->
 						<!-- {@render sideBarLink(
 							sidebarLinks[2].pathname,
 							sidebarLinks![2].children![0].hash,
@@ -871,6 +877,18 @@
 							'mdi--text',
 							sidebarLinks![2].children![1].name
                         )} -->
+						<SideBarLink
+							href={createHref(sidebarLinks[2].pathname, sidebarLinks[2].children[0].hash)}
+							icon="mdi--text"
+						>
+							{sidebarLinks[2].children[0].name}
+						</SideBarLink>
+						<SideBarLink
+							href={createHref(sidebarLinks[2].pathname, sidebarLinks[2].children[1].hash)}
+							icon="mdi--text"
+						>
+							{sidebarLinks[2].children[1].name}
+						</SideBarLink>
 						<li data-scrollspy-group="" class="space-y-0.5">
 							<a
 								class="collapse-toggle collapse-open:bg-base-content/10 scrollspy-active:italic group"
@@ -895,7 +913,7 @@
 								class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
 								aria-labelledby={sidebarLinks![2].children![2].id + '-control'}
 							>
-								<li>
+								<!-- <li>
 									<a
 										href={createHref(
 											sidebarLinks[2].pathname,
@@ -913,32 +931,6 @@
 										{sidebarLinks![2].children![2].children![0].name}
 									</a>
 								</li>
-								<!-- <li>
-									<a
-										href={createHref(
-											sidebarLinks[2].pathname,
-											sidebarLinks![2].children![2].children![0].hash
-										)}
-										class="text-base-content/80 flex items-center gap-x-2 hover:opacity-100 {thisPage(
-											sidebarLinks[2].pathname
-										)
-											? 'group scrollspy-active:italic'
-											: ''}"
-									>
-										<span
-											class={thisPage(sidebarLinks[2].pathname)
-												? 'icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline'
-												: 'hidden'}
-										></span>
-
-										<span
-											class="icon-[mdi--text] size-5 {thisPage(sidebarLinks[2].pathname)
-												? 'group-[.active]:hidden group-[.scrollspy-active]:hidden'
-												: ''}"
-										></span>
-										{sidebarLinks![2].children![2].children![0].name}
-									</a>
-								</li> -->
 								<li>
 									<a
 										href={createHref(
@@ -956,7 +948,7 @@
 										></span>
 										{sidebarLinks![2].children![2].children![1].name}
 									</a>
-								</li>
+								</li> -->
 								<!-- {@render sideBarLink(
 									sidebarLinks[2].pathname,
 									sidebarLinks![2].children![2].children![0].hash,
@@ -969,9 +961,27 @@
 									'mdi--text',
 									sidebarLinks![2].children![2].children![1].name
 								)} -->
+								<SideBarLink
+									href={createHref(
+										sidebarLinks[2].pathname,
+										sidebarLinks[2].children![2].children![0].hash
+									)}
+									icon="mdi--text"
+								>
+									{sidebarLinks[2].children![2].children![0].name}
+								</SideBarLink>
+								<SideBarLink
+									href={createHref(
+										sidebarLinks[2].pathname,
+										sidebarLinks[2].children![2].children![1].hash
+									)}
+									icon="mdi--text"
+								>
+									{sidebarLinks[2].children![2].children![1].name}
+								</SideBarLink>
 							</ul>
 						</li>
-						<li>
+						<!-- <li>
 							<a
 								href={createHref(sidebarLinks[2].pathname, sidebarLinks[2].children[3].hash)}
 								class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 hover:opacity-100"
@@ -999,7 +1009,7 @@
 								></span>
 								{sidebarLinks[2].children[4].name}
 							</a>
-						</li>
+						</li> -->
 						<!-- {@render sideBarLink(
 							sidebarLinks[2].pathname,
 							sidebarLinks![2].children![3].hash,
@@ -1012,6 +1022,18 @@
 							'mdi--text',
 							sidebarLinks![2].children![4].name
 						)} -->
+						<SideBarLink
+							href={createHref(sidebarLinks[2].pathname, sidebarLinks[2].children![3].hash)}
+							icon="mdi--text"
+						>
+							{sidebarLinks[2].children![3].name}
+						</SideBarLink>
+						<SideBarLink
+							href={createHref(sidebarLinks[2].pathname, sidebarLinks[2].children![4].hash)}
+							icon="mdi--text"
+						>
+							{sidebarLinks[2].children![4].name}
+						</SideBarLink>
 					</ul>
 				</li>
 				<li>
