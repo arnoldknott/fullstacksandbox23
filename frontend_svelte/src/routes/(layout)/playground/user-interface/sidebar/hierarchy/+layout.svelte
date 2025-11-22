@@ -233,10 +233,11 @@
 			if (thisPage(node.dataset.pathname || '')) {
 				await addScrollspy(node);
 				// addScrollspy(node);
-			} else {
-				await removeScrollspy(node);
-				// removeScrollspy(node);
 			}
+			// else {
+			// 	await removeScrollspy(node);
+			// 	// removeScrollspy(node);
+			// }
 		});
 
 		beforeNavigate((navigator) => {
