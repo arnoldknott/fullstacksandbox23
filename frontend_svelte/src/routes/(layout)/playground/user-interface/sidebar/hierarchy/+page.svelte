@@ -37,7 +37,7 @@
 			<NavigationCard title={item.name} href={item.url}>
 				{item.description}
 			</NavigationCard>
-			<Loreum repetition={10} />
+			<Loreum repetition={1} />
 		</div>
 	{/each}
 </div>
