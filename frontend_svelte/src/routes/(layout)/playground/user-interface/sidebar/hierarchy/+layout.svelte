@@ -233,10 +233,11 @@
 			if (thisPage(node.dataset.pathname || '')) {
 				await addScrollspy(node);
 				// addScrollspy(node);
-			} else {
-				await removeScrollspy(node);
-				// removeScrollspy(node);
 			}
+			// else {
+			// 	await removeScrollspy(node);
+			// 	// removeScrollspy(node);
+			// }
 		});
 
 		beforeNavigate((navigator) => {
@@ -284,6 +285,17 @@
 		temperature: 0.7
 		// max_tokens: 2048
 	});
+
+	const toggleCollapse: Attachment<HTMLElement> = (node: HTMLElement) => {
+		if (page.url.pathname === node.dataset.pathname) {
+			const { element } = window.HSCollapse.getInstance(node, true);
+			element.show();
+		}
+		// return () => {
+		// 	const { element } = window.HSCollapse.getInstance(node, true);
+		// 	element.hide();
+		// };
+	};
 
 	let artificialIntelligenceForm = $state<HTMLFormElement | null>(null);
 
@@ -471,10 +483,14 @@
 				<li class="space-y-0.5">
 					<button
 						type="button"
-						class="collapse-toggle collapse-open:bg-base-content/10"
+						class="collapse-toggle {thisPage(sidebarLinks[1].pathname)
+							? 'open'
+							: ''} collapse-open:bg-base-content/10"
 						id={sidebarLinks[1].id + '-control'}
 						data-collapse={'#' + sidebarLinks[1].id + '-collapse'}
+						data-pathname={sidebarLinks[1].pathname}
 						{@attach initCollapse}
+						{@attach toggleCollapse}
 					>
 						<span class="icon-[icon-park-outline--page] size-5"></span>
 						<span class="overlay-minified:hidden">{sidebarLinks[1].name}</span>
@@ -491,7 +507,9 @@
 					</button>
 					<ul
 						id={sidebarLinks[1].id + '-collapse'}
-						class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
+						class="collapse {thisPage(sidebarLinks[1].pathname)
+							? 'open'
+							: 'hidden'} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
 						aria-labelledby={sidebarLinks[1].id + '-control'}
 						data-pathname={sidebarLinks[1].pathname}
 						{@attach toggleScrollspy}
@@ -571,10 +589,14 @@
 				<li class="space-y-0.5">
 					<button
 						type="button"
-						class="collapse-toggle collapse-open:bg-base-content/10"
+						class="collapse-toggle {thisPage(sidebarLinks[2].pathname)
+							? 'open'
+							: ''} collapse-open:bg-base-content/10"
 						id={sidebarLinks[2].id + '-control'}
 						data-collapse={'#' + sidebarLinks[2].id + '-collapse'}
+						data-pathname={sidebarLinks[2].pathname}
 						{@attach initCollapse}
+						{@attach toggleCollapse}
 					>
 						<span class="icon-[icon-park-outline--page] size-5"></span>
 						<span class="overlay-minified:hidden">{sidebarLinks[2].name}</span>
@@ -591,7 +613,9 @@
 					</button>
 					<ul
 						id={sidebarLinks[2].id + '-collapse'}
-						class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
+						class="collapse {thisPage(sidebarLinks[2].pathname)
+							? 'open'
+							: 'hidden'} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
 						aria-labelledby={sidebarLinks[2].id + '-control'}
 						data-pathname={sidebarLinks[2].pathname}
 						{@attach toggleScrollspy}
