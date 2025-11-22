@@ -12,7 +12,7 @@
 	import SideBarLink from './SideBarLink.svelte';
 	let { children }: { children: Snippet } = $props();
 
-	let sidebarLinks = [
+	let sidebarLinks = $state([
 		{
 			name: 'Page 1',
 			pathname: resolve('/(layout)/playground/user-interface/sidebar/hierarchy/page1'),
@@ -94,7 +94,7 @@
 				}
 			]
 		}
-	];
+	]);
 
 	// console.log('=== sidebar - hierarchy - sidebarLinks ===');
 	// console.log(sidebarLinks);
