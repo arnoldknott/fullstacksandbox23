@@ -667,18 +667,17 @@
 					</ul>
 				</li>
 				<li>
-					<a href="./scrollspy/#">
+					<a href="./page4/">
 						<span class="icon-[tabler--mail] size-5"></span>
 						<span class="overlay-minified:hidden">Further Page</span>
 					</a>
 				</li>
-
-				<li>
+				<!-- <li>
 					<a href="./scrollspy/#">
 						<span class="icon-[tabler--shopping-bag] size-5"></span>
 						<span class="overlay-minified:hidden">About</span>
 					</a>
-				</li>
+				</li> -->
 				<li>
 					<button
 						class="btn btn-primary btn-outline shadow-primary mt-4 w-full rounded-full shadow-sm"
