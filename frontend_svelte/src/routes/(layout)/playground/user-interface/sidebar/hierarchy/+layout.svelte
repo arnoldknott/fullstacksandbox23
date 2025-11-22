@@ -132,10 +132,21 @@
 	// });
 	let scrollspyParent: HTMLElement | null = $state(null);
 
-	beforeNavigate((navigator) => {
-		console.log('=== sidebar - hierarchy - beforeNavigate - navigator ===');
-		console.log(navigator);
-	});
+	const forceScrolling = () => {
+		if (scrollspyParent) {
+			scrollspyParent?.dispatchEvent(new Event('scroll', { bubbles: true }));
+		}
+		window.dispatchEvent(new Event('scroll'));
+	};
+
+	// beforeNavigate((navigator) => {
+	// 	console.log('=== sidebar - hierarchy - beforeNavigate - navigator ===');
+	// 	console.log(navigator);
+	// });
+
+	// afterNavigate(() => {
+	// 	forceScrolling();
+	// });
 
 	const toggleScrollspy: Attachment<HTMLElement> = (node: HTMLElement) => {
 		const forceScrollspyActivation = () => {
@@ -149,7 +160,7 @@
 			// // Dispatch a plain scroll event first (some libraries listen to window, some to container)
 			// container.dispatchEvent(new Event('scroll', { bubbles: true }));
 			window.dispatchEvent(new Event('scroll'));
-			// Nudge scroll position to ensure mutation observers / scroll listeners run even if already at target
+			// // Nudge scroll position to ensure mutation observers / scroll listeners run even if already at target
 			// const original = container.scrollTop;
 			// const alt = original === 0 ? 1 : original - 1;
 			// container.scrollTop = alt;
@@ -167,7 +178,8 @@
 			node.setAttribute('data-scrollspy-scrollable-parent', '#scrollspy-scrollable-parent');
 			// await tick();
 			initScrollspy(node);
-			forceScrollspyActivation();
+			// forceScrollspyActivation();
+			forceScrolling();
 		};
 
 		const removeScrollspy = async (node: HTMLElement) => {
@@ -201,7 +213,8 @@
 			const targetScrollTop = container.scrollTop + sectionRect.top - containerRect.top;
 			if (Math.abs(container.scrollTop - targetScrollTop) < 2) {
 				// No effective scroll -> manually trigger activation sequence
-				forceScrollspyActivation();
+				// forceScrollspyActivation();
+				forceScrolling();
 			}
 		});
 
