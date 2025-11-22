@@ -9,7 +9,7 @@
 	import ArtificialIntelligencePicker from '../../../components/ArtificialIntelligencePicker.svelte';
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
 	import type { Attachment } from 'svelte/attachments';
-	import SideBarLink from './SideBarLink.svelte';
+	import SideBarLink from '../SideBarLink.svelte';
 	let { children }: { children: Snippet } = $props();
 
 	let sidebarLinks = $state([
