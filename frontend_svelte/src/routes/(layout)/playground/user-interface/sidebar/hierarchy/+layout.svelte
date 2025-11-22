@@ -240,13 +240,7 @@
 		});
 
 		beforeNavigate((navigator) => {
-			// console.log('=== sidebar - hierarchy - beforeNavigate - navigator.to?.url.pathname ===');
-			// console.log(navigator.to?.url.pathname);
-			// console.log('=== node.dataset.pathname ===');
-			// console.log(node.dataset.pathname);
 			if (!(navigator.to?.url.pathname === node.dataset.pathname)) {
-				// 	addScrollspy(node);
-				// } else {
 				removeScrollspy(node);
 			}
 		});
@@ -341,30 +335,6 @@
 		</a>
 	</li>
 {/snippet}
-
-<!-- {#snippet sideBarLink(pathname: string, hash: string, icon: string, name: string)}
-	<li>
-		<a
-			href={createHref(pathname, hash)}
-			class="text-base-content/80 flex items-center gap-x-2 hover:opacity-100 {thisPage(pathname)
-				? 'group scrollspy-active:italic'
-				: ''}"
-		>
-			<span
-				class={thisPage(pathname)
-					? 'icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline'
-					: 'hidden'}
-			></span>
-
-			<span
-				class="icon-[{icon}] size-5 {thisPage(pathname)
-					? 'group-[.active]:hidden group-[.scrollspy-active]:hidden'
-					: ''}"
-			></span>
-			{name}
-		</a>
-	</li>
-{/snippet} -->
 
 <nav
 	class="navbar rounded-box bg-base-100 shadow-shadow border-outline-variant relative sticky start-0 top-0 z-1 justify-between border-b shadow-sm md:flex md:items-center"
@@ -526,47 +496,6 @@
 						data-pathname={sidebarLinks[1].pathname}
 						{@attach toggleScrollspy}
 					>
-						<!-- <li>
-							<a
-								href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children[0].hash)}
-								class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 hover:opacity-100"
-							>
-								<span
-									class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
-								></span>
-
-								<span
-									class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
-								></span>
-								{sidebarLinks[1].children[0].name}
-							</a>
-						</li>
-						<li>
-							<a
-								href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children[1].hash)}
-								class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 hover:opacity-100"
-							>
-								<span
-									class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
-								></span>
-								<span
-									class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
-								></span>
-								{sidebarLinks[1].children[1].name}
-							</a>
-						</li> -->
-						<!-- {@render sideBarLink(
-							sidebarLinks[1].pathname,
-							sidebarLinks![1].children![0].hash,
-							'mdi--text',
-							sidebarLinks![1].children![0].name
-						)}
-						{@render sideBarLink(
-							sidebarLinks[1].pathname,
-							sidebarLinks![1].children![1].hash,
-							'mdi--text',
-							sidebarLinks![1].children![1].name
-						)} -->
 						<SideBarLink
 							pathname={sidebarLinks[1].pathname}
 							hash={sidebarLinks[1].children[0].hash}
@@ -606,54 +535,6 @@
 								class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
 								aria-labelledby={sidebarLinks![1].children![2].id + '-control'}
 							>
-								<!-- <li>
-									<a
-										href={createHref(
-											sidebarLinks[1].pathname,
-											sidebarLinks![1].children![2].children![0].hash
-										)}
-										class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 hover:opacity-100"
-									>
-										<span
-											class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
-										></span>
-
-										<span
-											class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
-										></span>
-										{sidebarLinks![1].children![2].children![0].name}
-									</a>
-								</li>
-								<li>
-									<a
-										href={createHref(
-											sidebarLinks[1].pathname,
-											sidebarLinks![1].children![2].children![1].hash
-										)}
-										class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 hover:opacity-100"
-									>
-										<span
-											class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
-										></span>
-
-										<span
-											class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
-										></span>
-										{sidebarLinks![1].children![2].children![1].name}
-									</a>
-								</li> -->
-								<!-- {@render sideBarLink(
-									sidebarLinks[1].pathname,
-									sidebarLinks![1].children![2].children![0].hash,
-									'mdi--text',
-									sidebarLinks![1].children![2].children![0].name
-								)}
-								{@render sideBarLink(
-									sidebarLinks[1].pathname,
-									sidebarLinks![1].children![2].children![1].hash,
-									'mdi--text',
-									sidebarLinks![1].children![2].children![1].name
-								)} -->
 								<SideBarLink
 									pathname={sidebarLinks[1].pathname}
 									hash={sidebarLinks[1].children![2].children![0].hash}
@@ -670,47 +551,6 @@
 								</SideBarLink>
 							</ul>
 						</li>
-						<!-- <li>
-							<a
-								href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children[3].hash)}
-								class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 hover:opacity-100"
-							>
-								<span
-									class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
-								></span>
-
-								<span
-									class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
-								></span>
-								{sidebarLinks[1].children[3].name}
-							</a>
-						</li>
-						<li>
-							<a
-								href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children[4].hash)}
-								class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 hover:opacity-100"
-							>
-								<span
-									class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
-								></span>
-								<span
-									class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
-								></span>
-								{sidebarLinks[1].children[4].name}
-							</a>
-						</li> -->
-						<!-- {@render sideBarLink(
-							sidebarLinks[1].pathname,
-							sidebarLinks![1].children![3].hash,
-							'mdi--text',
-							sidebarLinks![1].children![3].name
-						)}
-						{@render sideBarLink(
-							sidebarLinks[1].pathname,
-							sidebarLinks![1].children![4].hash,
-							'mdi--text',
-							sidebarLinks![1].children![4].name
-						)} -->
 						<SideBarLink
 							pathname={sidebarLinks[1].pathname}
 							hash={sidebarLinks[1].children![3].hash}
@@ -727,108 +567,6 @@
 						</SideBarLink>
 					</ul>
 				</li>
-				<!-- Hard coded page 3: -->
-				<!-- <li class="space-y-0.5">
-					<button
-						class="collapse-toggle collapse-open:bg-base-content/10"
-						id="page3"
-						data-collapse="#page3-collapse"
-						type="button"
-						{@attach initCollapse}
-					>
-						<span class="icon-[tabler--apps] size-5"></span>
-						<span class="overlay-minified:hidden">{sidebarLinks[2].name}</span>
-						<span
-							class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:hidden size-4 transition-all duration-300"
-						></span>
-						<span
-							class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:block overlay-minified:rotate-270 hidden size-4 transition-all duration-300"
-							role="button"
-							tabindex="0"
-							onclick={() => openSidebar()}
-							onkeydown={() => openSidebar()}
-						></span>
-					</button>
-					<ul
-						id="page3-collapse"
-						class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
-						aria-labelledby="page3"
-					>
-						<li>
-							<a href={sidebarLinks[2].pathname}>
-								<span class="icon-[tabler--message] size-5"></span>
-								Loreum 1
-							</a>
-						</li>
-						<li>
-							<a href="#loreum4">
-								<span class="icon-[tabler--calendar] size-5"></span>
-								Loreum 2
-							</a>
-						</li>
-						<li class="space-y-0.5">
-							<button
-								class="collapse-toggle collapse-open:bg-base-content/10"
-								id="sub-menu-academy"
-								data-collapse="#sub-menu-academy-collapse"
-								type="button"
-								{@attach initCollapse}
-							>
-								<span class="icon-[tabler--book] size-5"></span>
-								Academy
-								<span
-									class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"
-								></span>
-							</button>
-							<ul
-								id="sub-menu-academy-collapse"
-								class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
-								aria-labelledby="sub-menu-academy"
-								{@attach initCollapse}
-							>
-								<li>
-									<a href="./scrollspy/#">
-										<span class="icon-[tabler--books] size-5"></span>
-										Courses
-									</a>
-								</li>
-								<li>
-									<a href="./scrollspy/#">
-										<span class="icon-[tabler--list-details] size-5"></span>
-										Course details
-									</a>
-								</li>
-								<li class="space-y-0.5">
-									<button
-										class="collapse-toggle collapse-open:bg-base-content/10"
-										id="sub-menu-academy-stats"
-										data-collapse="#sub-menu-academy-stats-collapse"
-										type="button"
-										{@attach initCollapse}
-									>
-										<span class="icon-[tabler--chart-bar] size-5"></span>
-										Stats
-										<span
-											class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"
-										></span>
-									</button>
-									<ul
-										id="sub-menu-academy-stats-collapse"
-										class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
-										aria-labelledby="sub-menu-academy-stats"
-									>
-										<li>
-											<a href="./scrollspy/#">
-												<span class="icon-[tabler--chart-donut] size-5"></span>
-												Intentions
-											</a>
-										</li>
-									</ul>
-								</li>
-							</ul>
-						</li>
-					</ul>
-				</li> -->
 				<!-- Parameterized page 3: -->
 				<li class="space-y-0.5">
 					<button
@@ -858,47 +596,6 @@
 						data-pathname={sidebarLinks[2].pathname}
 						{@attach toggleScrollspy}
 					>
-						<!-- <li>
-							<a
-								href={createHref(sidebarLinks[2].pathname, sidebarLinks[2].children[0].hash)}
-								class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 hover:opacity-100"
-							>
-								<span
-									class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
-								></span>
-
-								<span
-									class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
-								></span>
-								{sidebarLinks[2].children[0].name}
-							</a>
-						</li>
-						<li>
-							<a
-								href={createHref(sidebarLinks[2].pathname, sidebarLinks[2].children[1].hash)}
-								class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 hover:opacity-100"
-							>
-								<span
-									class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
-								></span>
-								<span
-									class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
-								></span>
-								{sidebarLinks[2].children[1].name}
-							</a>
-						</li> -->
-						<!-- {@render sideBarLink(
-							sidebarLinks[2].pathname,
-							sidebarLinks![2].children![0].hash,
-							'mdi--text',
-							sidebarLinks![2].children![0].name
-						)}
-						{@render sideBarLink(
-							sidebarLinks[2].pathname,
-							sidebarLinks![2].children![1].hash,
-							'mdi--text',
-							sidebarLinks![2].children![1].name
-                        )} -->
 						<SideBarLink
 							pathname={sidebarLinks[2].pathname}
 							hash={sidebarLinks[2].children[0].hash}
@@ -937,54 +634,6 @@
 								class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
 								aria-labelledby={sidebarLinks![2].children![2].id + '-control'}
 							>
-								<!-- <li>
-									<a
-										href={createHref(
-											sidebarLinks[2].pathname,
-											sidebarLinks![2].children![2].children![0].hash
-										)}
-										class="text-base-content/80 group scrollspy-active:italic flex items-center gap-x-2 hover:opacity-100"
-									>
-										<span
-											class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
-										></span>
-
-										<span
-											class="icon-[mdi--text] group-[.scrollspy-active]:hidden' size-5 group-[.active]:hidden"
-										></span>
-										{sidebarLinks![2].children![2].children![0].name}
-									</a>
-								</li>
-								<li>
-									<a
-										href={createHref(
-											sidebarLinks[2].pathname,
-											sidebarLinks![2].children![2].children![1].hash
-										)}
-										class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 hover:opacity-100"
-									>
-										<span
-											class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
-										></span>
-
-										<span
-											class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
-										></span>
-										{sidebarLinks![2].children![2].children![1].name}
-									</a>
-								</li> -->
-								<!-- {@render sideBarLink(
-									sidebarLinks[2].pathname,
-									sidebarLinks![2].children![2].children![0].hash,
-									'mdi--text',
-									sidebarLinks![2].children![2].children![0].name
-								)}
-								{@render sideBarLink(
-									sidebarLinks[2].pathname,
-									sidebarLinks![2].children![2].children![1].hash,
-									'mdi--text',
-									sidebarLinks![2].children![2].children![1].name
-								)} -->
 								<SideBarLink
 									pathname={sidebarLinks[2].pathname}
 									hash={sidebarLinks[2].children![2].children![0].hash}
@@ -1001,47 +650,6 @@
 								</SideBarLink>
 							</ul>
 						</li>
-						<!-- <li>
-							<a
-								href={createHref(sidebarLinks[2].pathname, sidebarLinks[2].children[3].hash)}
-								class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 hover:opacity-100"
-							>
-								<span
-									class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
-								></span>
-
-								<span
-									class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
-								></span>
-								{sidebarLinks[1].children[3].name}
-							</a>
-						</li>
-						<li>
-							<a
-								href={createHref(sidebarLinks[2].pathname, sidebarLinks[2].children[4].hash)}
-								class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 hover:opacity-100"
-							>
-								<span
-									class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
-								></span>
-								<span
-									class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
-								></span>
-								{sidebarLinks[2].children[4].name}
-							</a>
-						</li> -->
-						<!-- {@render sideBarLink(
-							sidebarLinks[2].pathname,
-							sidebarLinks![2].children![3].hash,
-							'mdi--text',
-							sidebarLinks![2].children![3].name
-						)}
-						{@render sideBarLink(
-							sidebarLinks[2].pathname,
-							sidebarLinks![2].children![4].hash,
-							'mdi--text',
-							sidebarLinks![2].children![4].name
-						)} -->
 						<SideBarLink
 							pathname={sidebarLinks[2].pathname}
 							hash={sidebarLinks[2].children![3].hash}
