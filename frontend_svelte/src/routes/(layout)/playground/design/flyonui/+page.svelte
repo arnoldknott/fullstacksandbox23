@@ -1899,6 +1899,7 @@
 				<span class="icon-[tabler--ai] size-12"></span>
 				<span class="icon-[tabler--eye] size-12"></span>
 				<span class="icon-[tabler--apps] size-12"></span>
+				<span class="icon-[tabler--arrow-iteration] size-12"></span>
 			</div>
 			<div>
 				<p class="label text-center">
