@@ -28,7 +28,7 @@
 	];
 </script>
 
-<Display>Dummy pages</Display>
+<Display>Hierarchy dummy pages</Display>
 
 <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
 	{#each sidebars as item (item.name)}
