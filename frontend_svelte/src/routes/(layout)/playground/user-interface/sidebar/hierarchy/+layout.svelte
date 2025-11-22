@@ -791,14 +791,22 @@
 											sidebarLinks[2].pathname,
 											sidebarLinks![2].children![2].children![0].hash
 										)}
-										class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 hover:opacity-100"
+										class="text-base-content/80 flex items-center gap-x-2 hover:opacity-100 {thisPage(
+											sidebarLinks[2].pathname
+										)
+											? 'group scrollspy-active:italic'
+											: ''}"
 									>
 										<span
-											class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+											class={thisPage(sidebarLinks[2].pathname)
+												? 'icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline'
+												: 'hidden'}
 										></span>
 
 										<span
-											class="icon-[mdi--text] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+											class="icon-[mdi--text] size-5 {thisPage(sidebarLinks[2].pathname)
+												? 'group-[.active]:hidden group-[.scrollspy-active]:hidden'
+												: ''}"
 										></span>
 										{sidebarLinks![2].children![2].children![0].name}
 									</a>
