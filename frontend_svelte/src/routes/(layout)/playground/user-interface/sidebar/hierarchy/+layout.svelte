@@ -286,6 +286,17 @@
 		// max_tokens: 2048
 	});
 
+	const toggleCollapse: Attachment<HTMLElement> = (node: HTMLElement) => {
+		if (page.url.pathname === node.dataset.pathname) {
+			const { element } = window.HSCollapse.getInstance(node, true);
+			element.show();
+		}
+		// return () => {
+		// 	const { element } = window.HSCollapse.getInstance(node, true);
+		// 	element.hide();
+		// };
+	};
+
 	let artificialIntelligenceForm = $state<HTMLFormElement | null>(null);
 
 	const saveProfileAccount = async () => {
@@ -475,7 +486,9 @@
 						class="collapse-toggle collapse-open:bg-base-content/10"
 						id={sidebarLinks[1].id + '-control'}
 						data-collapse={'#' + sidebarLinks[1].id + '-collapse'}
+						data-pathname={sidebarLinks[1].pathname}
 						{@attach initCollapse}
+						{@attach toggleCollapse}
 					>
 						<span class="icon-[icon-park-outline--page] size-5"></span>
 						<span class="overlay-minified:hidden">{sidebarLinks[1].name}</span>
@@ -575,7 +588,9 @@
 						class="collapse-toggle collapse-open:bg-base-content/10"
 						id={sidebarLinks[2].id + '-control'}
 						data-collapse={'#' + sidebarLinks[2].id + '-collapse'}
+						data-pathname={sidebarLinks[2].pathname}
 						{@attach initCollapse}
+						{@attach toggleCollapse}
 					>
 						<span class="icon-[icon-park-outline--page] size-5"></span>
 						<span class="overlay-minified:hidden">{sidebarLinks[2].name}</span>
