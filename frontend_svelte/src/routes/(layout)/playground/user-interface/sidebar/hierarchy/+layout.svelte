@@ -7,7 +7,7 @@
 	import { Model, type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
 	import ThemePicker from '../../../components/ThemePicker.svelte';
 	import ArtificialIntelligencePicker from '../../../components/ArtificialIntelligencePicker.svelte';
-	import { afterNavigate } from '$app/navigation';
+	import { afterNavigate, beforeNavigate } from '$app/navigation';
 	import type { Attachment } from 'svelte/attachments';
 	let { children }: { children: Snippet } = $props();
 
@@ -130,14 +130,24 @@
 	// 	if (thisPage(sidebarLinks[1].pathname))
 	// 		initScrollspy(document.querySelector('#page2-collapse') as HTMLElement);
 	// });
+	let scrollspyParent: HTMLElement | null = $state(null);
+
+	beforeNavigate((navigator) => {
+		console.log('=== sidebar - hierarchy - beforeNavigate - navigator ===');
+		console.log(navigator);
+	});
+
 	const toggleScrollspy: Attachment<HTMLElement> = (node: HTMLElement) => {
 		const forceScrollspyActivation = () => {
-			const container = document.querySelector(
-				'#scrollspy-scrollable-parent'
-			) as HTMLElement | null;
-			if (!container) return;
-			// Dispatch a plain scroll event first (some libraries listen to window, some to container)
-			container.dispatchEvent(new Event('scroll', { bubbles: true }));
+			if (scrollspyParent) {
+				scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
+			}
+			// const container = document.querySelector(
+			// 	'#scrollspy-scrollable-parent'
+			// ) as HTMLElement | null;
+			// if (!container) return;
+			// // Dispatch a plain scroll event first (some libraries listen to window, some to container)
+			// container.dispatchEvent(new Event('scroll', { bubbles: true }));
 			window.dispatchEvent(new Event('scroll'));
 			// Nudge scroll position to ensure mutation observers / scroll listeners run even if already at target
 			// const original = container.scrollTop;
@@ -390,7 +400,11 @@
 	</div>
 </nav>
 
-<div id="scrollspy-scrollable-parent" class="grid h-screen overflow-y-auto">
+<div
+	id="scrollspy-scrollable-parent"
+	class="grid h-screen overflow-y-auto"
+	bind:this={scrollspyParent}
+>
 	<aside
 		id="collapsible-mini-sidebar"
 		class="overlay overlay-minified:w-19 overlay-open:translate-x-0 drawer drawer-start border-base-content/20 hidden w-66 border-e pt-50 [--auto-close:sm] sm:absolute sm:z-0 sm:flex sm:translate-x-0 sm:shadow-none"
