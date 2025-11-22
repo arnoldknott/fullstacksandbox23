@@ -149,28 +149,28 @@
 	// });
 
 	const toggleScrollspy: Attachment<HTMLElement> = (node: HTMLElement) => {
-		const forceScrollspyActivation = () => {
-			if (scrollspyParent) {
-				scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
-			}
-			// const container = document.querySelector(
-			// 	'#scrollspy-scrollable-parent'
-			// ) as HTMLElement | null;
-			// if (!container) return;
-			// // Dispatch a plain scroll event first (some libraries listen to window, some to container)
-			// container.dispatchEvent(new Event('scroll', { bubbles: true }));
-			window.dispatchEvent(new Event('scroll'));
-			// // Nudge scroll position to ensure mutation observers / scroll listeners run even if already at target
-			// const original = container.scrollTop;
-			// const alt = original === 0 ? 1 : original - 1;
-			// container.scrollTop = alt;
-			// container.dispatchEvent(new Event('scroll', { bubbles: true }));
-			// requestAnimationFrame(() => {
-			// 	container.scrollTop = original;
-			// 	container.dispatchEvent(new Event('scroll', { bubbles: true }));
-			// 	window.dispatchEvent(new Event('scroll'));
-			// });
-		};
+		// const forceScrollspyActivation = () => {
+		// 	if (scrollspyParent) {
+		// 		scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
+		// 	}
+		// 	// const container = document.querySelector(
+		// 	// 	'#scrollspy-scrollable-parent'
+		// 	// ) as HTMLElement | null;
+		// 	// if (!container) return;
+		// 	// // Dispatch a plain scroll event first (some libraries listen to window, some to container)
+		// 	// container.dispatchEvent(new Event('scroll', { bubbles: true }));
+		// 	window.dispatchEvent(new Event('scroll'));
+		// 	// // Nudge scroll position to ensure mutation observers / scroll listeners run even if already at target
+		// 	// const original = container.scrollTop;
+		// 	// const alt = original === 0 ? 1 : original - 1;
+		// 	// container.scrollTop = alt;
+		// 	// container.dispatchEvent(new Event('scroll', { bubbles: true }));
+		// 	// requestAnimationFrame(() => {
+		// 	// 	container.scrollTop = original;
+		// 	// 	container.dispatchEvent(new Event('scroll', { bubbles: true }));
+		// 	// 	window.dispatchEvent(new Event('scroll'));
+		// 	// });
+		// };
 
 		const addScrollspy = async (node: HTMLElement) => {
 			// const addScrollspy = (node: HTMLElement) => {
