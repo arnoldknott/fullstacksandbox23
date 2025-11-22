@@ -1,14 +1,15 @@
 <script lang="ts">
 	import Title from '$components/Title.svelte';
 	import Heading from '$components/Heading.svelte';
-	import Loreum from '../Loreum.svelte';
+	import Loreum from '../../Loreum.svelte';
 	import Display from '$components/Display.svelte';
 </script>
 
-<Display
-	>Changes elements for Sidebar from hard coded to Svelte components and / or Snippets</Display
->
-<p>Probably drop this, as the way from hierarchy to iteration includes this anyways.</p>
+<Display>Page 5</Display>
+
+<p>
+	Page 5 has hierarchial contnent and id's which are linked in main sidebar - same as page 3 so far
+</p>
 
 <Heading id="loreum1"><span class="italic">First</span> Lorem ipsum dolor sit amet...</Heading>
 <Loreum />

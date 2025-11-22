@@ -45,6 +45,12 @@
 			description:
 				'Segments the code from navbar and sidebar into snippets and components and parameterizes them for reusability and maintainability.',
 			url: 'sidebar/segmenting'
+		},
+		{
+			name: 'Iterating sidebars',
+			description:
+				'Iterates the sidebar links from an array of objects in an iterative loop, reusing components to further improve reusability and maintainability.',
+			url: 'sidebar/iteration'
 		}
 	];
 </script>
