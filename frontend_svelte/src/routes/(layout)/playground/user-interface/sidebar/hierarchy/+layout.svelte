@@ -2,7 +2,7 @@
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import { initDropdown, initOverlay, initCollapse, initScrollspy } from '$lib/userInterface';
-	import { type Snippet } from 'svelte';
+	import { type Snippet, tick } from 'svelte';
 	import { Variant, type ColorConfig } from '$lib/theming';
 	import { Model, type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
 	import ThemePicker from '../../../components/ThemePicker.svelte';
@@ -177,7 +177,7 @@
 			// const addScrollspy = (node: HTMLElement) => {
 			node.setAttribute('data-scrollspy', '#scrollspy');
 			node.setAttribute('data-scrollspy-scrollable-parent', '#scrollspy-scrollable-parent');
-			// await tick();
+			await tick();
 			initScrollspy(node);
 			// forceScrollspyActivation();
 			forceScrolling();
@@ -219,6 +219,16 @@
 			}
 		});
 
+		// afterNavigate(async () => {
+		// 	if (thisPage(node.dataset.pathname || '')) {
+		// 		await addScrollspy(node);
+		// 		// addScrollspy(node);
+		// 	} else {
+		// 		await removeScrollspy(node);
+		// 		// removeScrollspy(node);
+		// 	}
+		// });
+
 		afterNavigate(async () => {
 			if (thisPage(node.dataset.pathname || '')) {
 				await addScrollspy(node);
@@ -229,17 +239,29 @@
 			}
 		});
 
+		beforeNavigate((navigator) => {
+			// console.log('=== sidebar - hierarchy - beforeNavigate - navigator.to?.url.pathname ===');
+			// console.log(navigator.to?.url.pathname);
+			// console.log('=== node.dataset.pathname ===');
+			// console.log(node.dataset.pathname);
+			if (!(navigator.to?.url.pathname === node.dataset.pathname)) {
+				// 	addScrollspy(node);
+				// } else {
+				removeScrollspy(node);
+			}
+		});
+
 		// Cleanup when the attachment is removed
 		return async () => {
 			await removeScrollspy(node);
 			// removeScrollspy(node);
 		};
 	};
+	const thisPage = $derived.by(() => (pathname: string) => pathname === page.url.pathname);
 
-	const thisPage = (destinationPathename: string) => {
-		return destinationPathename === page.url.pathname;
-	};
-	// const thisPage = $derived(destinationPathename === page.url.pathname;)
+	// const thisPage = (destinationPathname: string) => {
+	// 	return destinationPathname === page.url.pathname;
+	// };
 
 	const createHref = (destinationPathname: string, hash?: string) => {
 		let href = '';
@@ -320,7 +342,7 @@
 	</li>
 {/snippet}
 
-{#snippet sideBarLink(pathname: string, hash: string, icon: string, name: string)}
+<!-- {#snippet sideBarLink(pathname: string, hash: string, icon: string, name: string)}
 	<li>
 		<a
 			href={createHref(pathname, hash)}
@@ -342,7 +364,7 @@
 			{name}
 		</a>
 	</li>
-{/snippet}
+{/snippet} -->
 
 <nav
 	class="navbar rounded-box bg-base-100 shadow-shadow border-outline-variant relative sticky start-0 top-0 z-1 justify-between border-b shadow-sm md:flex md:items-center"
@@ -546,13 +568,15 @@
 							sidebarLinks![1].children![1].name
 						)} -->
 						<SideBarLink
-							href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children[0].hash)}
+							pathname={sidebarLinks[1].pathname}
+							hash={sidebarLinks[1].children[0].hash}
 							icon="mdi--text"
 						>
 							{sidebarLinks[1].children[0].name}
 						</SideBarLink>
 						<SideBarLink
-							href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children[1].hash)}
+							pathname={sidebarLinks[1].pathname}
+							hash={sidebarLinks[1].children[1].hash}
 							icon="mdi--text"
 						>
 							{sidebarLinks[1].children[1].name}
@@ -582,7 +606,7 @@
 								class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
 								aria-labelledby={sidebarLinks![1].children![2].id + '-control'}
 							>
-								<!-- <li>
+								<li>
 									<a
 										href={createHref(
 											sidebarLinks[1].pathname,
@@ -617,7 +641,7 @@
 										></span>
 										{sidebarLinks![1].children![2].children![1].name}
 									</a>
-								</li> -->
+								</li>
 								<!-- {@render sideBarLink(
 									sidebarLinks[1].pathname,
 									sidebarLinks![1].children![2].children![0].hash,
@@ -630,12 +654,13 @@
 									'mdi--text',
 									sidebarLinks![1].children![2].children![1].name
 								)} -->
-								<SideBarLink
+								<!-- <SideBarLink
 									href={createHref(
 										sidebarLinks[1].pathname,
 										sidebarLinks[1].children![2].children![0].hash
 									)}
 									icon="mdi--text"
+									thisPage={thisPage(sidebarLinks[1].pathname)}
 								>
 									{sidebarLinks[1].children![2].children![0].name}
 								</SideBarLink>
@@ -645,12 +670,13 @@
 										sidebarLinks[1].children![2].children![1].hash
 									)}
 									icon="mdi--text"
+									thisPage={thisPage(sidebarLinks[1].pathname)}
 								>
 									{sidebarLinks[1].children![2].children![1].name}
-								</SideBarLink>
+								</SideBarLink> -->
 							</ul>
 						</li>
-						<!-- <li>
+						<li>
 							<a
 								href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children[3].hash)}
 								class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 hover:opacity-100"
@@ -678,7 +704,7 @@
 								></span>
 								{sidebarLinks[1].children[4].name}
 							</a>
-						</li> -->
+						</li>
 						<!-- {@render sideBarLink(
 							sidebarLinks[1].pathname,
 							sidebarLinks![1].children![3].hash,
@@ -691,18 +717,20 @@
 							'mdi--text',
 							sidebarLinks![1].children![4].name
 						)} -->
-						<SideBarLink
+						<!-- <SideBarLink
 							href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children![3].hash)}
 							icon="mdi--text"
+							thisPage={thisPage(sidebarLinks[1].pathname)}
 						>
 							{sidebarLinks[1].children![3].name}
 						</SideBarLink>
 						<SideBarLink
 							href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children![4].hash)}
 							icon="mdi--text"
+							thisPage={thisPage(sidebarLinks[1].pathname)}
 						>
 							{sidebarLinks[1].children![4].name}
-						</SideBarLink>
+						</SideBarLink> -->
 					</ul>
 				</li>
 				<!-- Hard coded page 3: -->
@@ -836,7 +864,7 @@
 						data-pathname={sidebarLinks[2].pathname}
 						{@attach toggleScrollspy}
 					>
-						<!-- <li>
+						<li>
 							<a
 								href={createHref(sidebarLinks[2].pathname, sidebarLinks[2].children[0].hash)}
 								class="group text-base-content/80 scrollspy-active:italic flex items-center gap-x-2 hover:opacity-100"
@@ -864,7 +892,7 @@
 								></span>
 								{sidebarLinks[2].children[1].name}
 							</a>
-						</li> -->
+						</li>
 						<!-- {@render sideBarLink(
 							sidebarLinks[2].pathname,
 							sidebarLinks![2].children![0].hash,
@@ -877,18 +905,20 @@
 							'mdi--text',
 							sidebarLinks![2].children![1].name
                         )} -->
-						<SideBarLink
+						<!-- <SideBarLink
 							href={createHref(sidebarLinks[2].pathname, sidebarLinks[2].children[0].hash)}
 							icon="mdi--text"
+							thisPage={thisPage(sidebarLinks[2].pathname)}
 						>
 							{sidebarLinks[2].children[0].name}
 						</SideBarLink>
 						<SideBarLink
 							href={createHref(sidebarLinks[2].pathname, sidebarLinks[2].children[1].hash)}
 							icon="mdi--text"
+							thisPage={thisPage(sidebarLinks[2].pathname)}
 						>
 							{sidebarLinks[2].children[1].name}
-						</SideBarLink>
+						</SideBarLink> -->
 						<li data-scrollspy-group="" class="space-y-0.5">
 							<a
 								class="collapse-toggle collapse-open:bg-base-content/10 scrollspy-active:italic group"
@@ -913,7 +943,7 @@
 								class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
 								aria-labelledby={sidebarLinks![2].children![2].id + '-control'}
 							>
-								<!-- <li>
+								<li>
 									<a
 										href={createHref(
 											sidebarLinks[2].pathname,
@@ -948,7 +978,7 @@
 										></span>
 										{sidebarLinks![2].children![2].children![1].name}
 									</a>
-								</li> -->
+								</li>
 								<!-- {@render sideBarLink(
 									sidebarLinks[2].pathname,
 									sidebarLinks![2].children![2].children![0].hash,
@@ -961,12 +991,13 @@
 									'mdi--text',
 									sidebarLinks![2].children![2].children![1].name
 								)} -->
-								<SideBarLink
+								<!-- <SideBarLink
 									href={createHref(
 										sidebarLinks[2].pathname,
 										sidebarLinks[2].children![2].children![0].hash
 									)}
 									icon="mdi--text"
+									thisPage={thisPage(sidebarLinks[2].pathname)}
 								>
 									{sidebarLinks[2].children![2].children![0].name}
 								</SideBarLink>
@@ -976,9 +1007,10 @@
 										sidebarLinks[2].children![2].children![1].hash
 									)}
 									icon="mdi--text"
+									thisPage={thisPage(sidebarLinks[2].pathname)}
 								>
 									{sidebarLinks[2].children![2].children![1].name}
-								</SideBarLink>
+								</SideBarLink> -->
 							</ul>
 						</li>
 						<!-- <li>
@@ -1023,13 +1055,15 @@
 							sidebarLinks![2].children![4].name
 						)} -->
 						<SideBarLink
-							href={createHref(sidebarLinks[2].pathname, sidebarLinks[2].children![3].hash)}
+							pathname={sidebarLinks[2].pathname}
+							hash={sidebarLinks[2].children![3].hash}
 							icon="mdi--text"
 						>
 							{sidebarLinks[2].children![3].name}
 						</SideBarLink>
 						<SideBarLink
-							href={createHref(sidebarLinks[2].pathname, sidebarLinks[2].children![4].hash)}
+							pathname={sidebarLinks[2].pathname}
+							hash={sidebarLinks[2].children![4].hash}
 							icon="mdi--text"
 						>
 							{sidebarLinks[2].children![4].name}
