@@ -97,41 +97,6 @@
 		}
 	]);
 
-	// console.log('=== sidebar - hierarchy - sidebarLinks ===');
-	// console.log(sidebarLinks);
-
-	// $effect(() => {
-	// 	console.log('=== sidebar - hierarchy - current scrollspy ===');
-	// 	console.log(`scrollspy-${page.url.pathname.split('/').at(-1)}`);
-	// });
-
-	// const activateScrollspy: Action<HTMLElement> = (node) => {
-	// 	initScrollspy(node);
-	// };
-
-	// const activateScrollspy: Action<HTMLElement, string> = (node, path: string) => {
-	// 	initScrollspy(node);
-	// 	if (!thisPage(path)) {
-	// 		node.removeAttribute('data-scrollspy');
-	// 		node.removeAttribute('data-scrollspy-scrollable-parent');
-	// 	} else {
-	// 		node.setAttribute('data-scrollspy', '#scrollspy');
-	// 		node.setAttribute('data-scrollspy-scrollable-parent', '#scrollspy-scrollable-parent');
-	// 	}
-
-	// 	return {
-	// 		destroy() {
-	// 			// Cleanup if necessary when the action is removed
-	// 		}
-	// 	};
-	// };
-	// // on <ul> with initScrollspy:
-	// use:activateScrollspy={sidebarLinks[1].pathname}
-
-	// afterNavigate(() => {
-	// 	if (thisPage(sidebarLinks[1].pathname))
-	// 		initScrollspy(document.querySelector('#page2-collapse') as HTMLElement);
-	// });
 	let scrollspyParent: HTMLElement | null = $state(null);
 
 	const forceScrolling = () => {
@@ -148,15 +113,6 @@
 		}
 		window.dispatchEvent(new Event('scroll'));
 	};
-
-	// beforeNavigate((navigator) => {
-	// 	console.log('=== sidebar - hierarchy - beforeNavigate - navigator ===');
-	// 	console.log(navigator);
-	// });
-
-	// afterNavigate(() => {
-	// 	forceScrolling();
-	// });
 
 	const toggleScrollspy: Attachment<HTMLElement> = (node: HTMLElement) => {
 		// const forceScrollspyActivation = () => {
@@ -228,16 +184,6 @@
 			}
 		});
 
-		// afterNavigate(async () => {
-		// 	if (thisPage(node.dataset.pathname || '')) {
-		// 		await addScrollspy(node);
-		// 		// addScrollspy(node);
-		// 	} else {
-		// 		await removeScrollspy(node);
-		// 		// removeScrollspy(node);
-		// 	}
-		// });
-
 		afterNavigate(async () => {
 			if (thisPage(node.dataset.pathname || '')) {
 				await addScrollspy(node);
@@ -262,18 +208,6 @@
 		};
 	};
 	const thisPage = $derived.by(() => (pathname: string) => pathname === page.url.pathname);
-
-	// const thisPage = (destinationPathname: string) => {
-	// 	return destinationPathname === page.url.pathname;
-	// };
-
-	// const createHref = (destinationPathname: string, hash?: string) => {
-	// 	let href = '';
-	// 	if (!hash) href = destinationPathname;
-	// 	else if (thisPage(destinationPathname)) href = hash;
-	// 	else href = `${destinationPathname}${hash}`;
-	// 	return href;
-	// };
 
 	const createHref = $derived.by(() => (destinationPathname: string, hash?: string) => {
 		let href = '';
