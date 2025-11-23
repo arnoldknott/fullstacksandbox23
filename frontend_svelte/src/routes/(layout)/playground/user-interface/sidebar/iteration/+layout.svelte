@@ -8,6 +8,7 @@
 	import ThemePicker from '../../../components/ThemePicker.svelte';
 	import ArtificialIntelligencePicker from '../../../components/ArtificialIntelligencePicker.svelte';
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
+	import { onMount } from 'svelte';
 	import type { Attachment } from 'svelte/attachments';
 	import SideBarLink from '../SideBarLink.svelte';
 	let { children }: { children: Snippet } = $props();
@@ -135,7 +136,15 @@
 
 	const forceScrolling = () => {
 		if (scrollspyParent) {
-			scrollspyParent?.dispatchEvent(new Event('scroll', { bubbles: true }));
+			const original = scrollspyParent.scrollTop;
+			const alt = original === 0 ? 1000 : original - 1000;
+			scrollspyParent.scrollTop = alt;
+			scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
+			requestAnimationFrame(() => {
+				scrollspyParent!.scrollTop = original;
+				scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+				// window.dispatchEvent(new Event('scroll'));
+			});
 		}
 		window.dispatchEvent(new Event('scroll'));
 	};
@@ -258,13 +267,25 @@
 	// 	return destinationPathname === page.url.pathname;
 	// };
 
-	const createHref = (destinationPathname: string, hash?: string) => {
+	// const createHref = (destinationPathname: string, hash?: string) => {
+	// 	let href = '';
+	// 	if (!hash) href = destinationPathname;
+	// 	else if (thisPage(destinationPathname)) href = hash;
+	// 	else href = `${destinationPathname}${hash}`;
+	// 	return href;
+	// };
+
+	const createHref = $derived.by(() => (destinationPathname: string, hash?: string) => {
 		let href = '';
 		if (!hash) href = destinationPathname;
 		else if (thisPage(destinationPathname)) href = hash;
 		else href = `${destinationPathname}${hash}`;
 		return href;
-	};
+	});
+
+	onMount(() => {
+		forceScrolling();
+	});
 
 	const openSidebar = () => {
 		const { element } = window.HSOverlay.getInstance('#collapsible-mini-sidebar', true);
