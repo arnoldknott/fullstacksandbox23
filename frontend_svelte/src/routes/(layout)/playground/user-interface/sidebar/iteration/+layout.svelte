@@ -16,12 +16,12 @@
 	let sidebarLinks = $state([
 		{
 			name: 'Page 1',
-			pathname: resolve('/(layout)/playground/user-interface/sidebar/hierarchy/page1'),
+			pathname: resolve('/(layout)/playground/user-interface/sidebar/iteration/page1'),
 			children: []
 		},
 		{
 			name: 'Page 2',
-			pathname: resolve('/(layout)/playground/user-interface/sidebar/hierarchy/page2'),
+			pathname: resolve('/(layout)/playground/user-interface/sidebar/iteration/page2'),
 			id: 'page2',
 			children: [
 				{
@@ -59,7 +59,7 @@
 		},
 		{
 			name: 'Page 3',
-			pathname: resolve('/(layout)/playground/user-interface/sidebar/hierarchy/page3'),
+			pathname: resolve('/(layout)/playground/user-interface/sidebar/iteration/page3'),
 			id: 'page3',
 			children: [
 				{
@@ -500,8 +500,10 @@
 								class="collapse-toggle collapse-open:bg-base-content/10 scrollspy-active:italic group"
 								id={sidebarLinks![1].children![2].id + '-control'}
 								data-collapse={'#' + sidebarLinks![1].children![2].id + '-collapse'}
+								data-pathname={sidebarLinks[1].pathname}
 								href={createHref(sidebarLinks[1].pathname, sidebarLinks![1].children![2].hash)}
 								{@attach initCollapse}
+								{@attach toggleCollapse}
 							>
 								<span
 									class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
@@ -605,8 +607,10 @@
 								class="collapse-toggle collapse-open:bg-base-content/10 scrollspy-active:italic group"
 								id={sidebarLinks![2].children![2].id + '-control'}
 								data-collapse={'#' + sidebarLinks![2].children![2].id + '-collapse'}
+								data-pathname={sidebarLinks[2].pathname}
 								href={createHref(sidebarLinks[2].pathname, sidebarLinks![2].children![2].hash)}
 								{@attach initCollapse}
+								{@attach toggleCollapse}
 							>
 								<span
 									class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
