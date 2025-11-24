@@ -107,12 +107,15 @@
 	const forceScrolling = () => {
 		if (scrollspyParent) {
 			const original = scrollspyParent.scrollTop;
+			// const originalLeft = scrollspyParent.scrollLeft;
 			// console.log('=== forceScrolling - original scrollTop ===');
 			// console.log(original);
 			// TBD: when calling the page with the # to a specific location, the target is off by 1000 now!
-			const alt = original === 0 ? 1000 : original - 1000;
+			const alt = original < 1000 ? 1000 : original - 1000;
 			scrollspyParent.scrollTop = alt;
 			scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
+			// scrollspyParent.scroll(originalLeft, alt);
+			// scrollspyParent.scroll(originalLeft, original);
 			requestAnimationFrame(() => {
 				scrollspyParent!.scrollTop = original;
 				scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
@@ -205,6 +208,7 @@
 				await addScrollspy(node);
 				// addScrollspy(node);
 			}
+			console.log('=== toggleScrollspy - afterNavigate - ran ===');
 			// else {
 			// 	await removeScrollspy(node);
 			// 	// removeScrollspy(node);
@@ -215,6 +219,7 @@
 			if (!(navigator.to?.url.pathname === node.dataset.pathname)) {
 				removeScrollspy(node);
 			}
+			console.log('=== toggleScrollspy - beforeNavigate - ran ===');
 		});
 
 		// Cleanup when the attachment is removed
@@ -235,6 +240,7 @@
 
 	onMount(() => {
 		forceScrolling();
+		console.log('=== toggleScrollspy - onMount - ran ===');
 	});
 
 	const openSidebar = () => {
