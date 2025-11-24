@@ -105,6 +105,20 @@
 	let scrollspy: HTMLElement | null = $state(null);
 
 	const forceScrolling = () => {
+		// if (scrollspyParent) {
+		// 	const originalTop = scrollspyParent.scrollTop;
+		// 	const originalLeft = scrollspyParent.scrollLeft;
+		// 	console.log('=== forceScrolling - original scrolling ===');
+		// 	console.log(originalTop);
+		// 	console.log(originalLeft);
+		// 	const otherEnd = originalTop === 0 ? scrollspyParent.scrollHeight - originalTop : 0;
+		// 	// scrollspyParent.scrollTo(originalLeft, otherEnd);
+		// 	// scrollspyParent.scrollTo(originalLeft, originalTop);
+		// 	// requestAnimationFrame(() => {
+		// 	// 	scrollspy!.scroll(originalLeft, originalTop);
+		// 	// 	// window.dispatchEvent(new Event('scroll'));
+		// 	// });
+		// }
 		if (scrollspyParent) {
 			const original = scrollspyParent.scrollTop;
 			// const originalLeft = scrollspyParent.scrollLeft;
@@ -208,7 +222,7 @@
 				await addScrollspy(node);
 				// addScrollspy(node);
 			}
-			console.log('=== toggleScrollspy - afterNavigate - ran ===');
+			// console.log('=== toggleScrollspy - afterNavigate - ran ===');
 			// else {
 			// 	await removeScrollspy(node);
 			// 	// removeScrollspy(node);
@@ -219,7 +233,7 @@
 			if (!(navigator.to?.url.pathname === node.dataset.pathname)) {
 				removeScrollspy(node);
 			}
-			console.log('=== toggleScrollspy - beforeNavigate - ran ===');
+			// console.log('=== toggleScrollspy - beforeNavigate - ran ===');
 		});
 
 		// Cleanup when the attachment is removed
@@ -239,8 +253,10 @@
 	});
 
 	onMount(() => {
+		// $effect(() => {
 		forceScrolling();
 		console.log('=== toggleScrollspy - onMount - ran ===');
+		// });
 	});
 
 	const openSidebar = () => {
