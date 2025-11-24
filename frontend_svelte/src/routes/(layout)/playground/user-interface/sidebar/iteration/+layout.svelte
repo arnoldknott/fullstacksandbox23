@@ -498,7 +498,9 @@
 
 						<li data-scrollspy-group="" class="space-y-0.5">
 							<a
-								class="collapse-toggle collapse-open:bg-base-content/10 scrollspy-active:italic group"
+								class="collapse-toggle {thisPage(sidebarLinks[1].pathname)
+									? 'open'
+									: ''} collapse-open:bg-base-content/10 scrollspy-active:italic group"
 								id={sidebarLinks![1].children![2].id + '-control'}
 								data-collapse={'#' + sidebarLinks![1].children![2].id + '-collapse'}
 								data-pathname={sidebarLinks[1].pathname}
@@ -519,7 +521,9 @@
 							</a>
 							<ul
 								id={sidebarLinks![1].children![2].id + '-collapse'}
-								class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
+								class="collapse {thisPage(sidebarLinks[1].pathname)
+									? 'open'
+									: 'hidden'} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
 								aria-labelledby={sidebarLinks![1].children![2].id + '-control'}
 							>
 								<SideBarLink
@@ -605,7 +609,9 @@
 						</SideBarLink>
 						<li data-scrollspy-group="" class="space-y-0.5">
 							<a
-								class="collapse-toggle collapse-open:bg-base-content/10 scrollspy-active:italic group"
+								class="collapse-toggle {thisPage(sidebarLinks[2].pathname)
+									? 'open'
+									: ''} collapse-open:bg-base-content/10 scrollspy-active:italic group"
 								id={sidebarLinks![2].children![2].id + '-control'}
 								data-collapse={'#' + sidebarLinks![2].children![2].id + '-collapse'}
 								data-pathname={sidebarLinks[2].pathname}
@@ -626,7 +632,9 @@
 							</a>
 							<ul
 								id={sidebarLinks![2].children![2].id + '-collapse'}
-								class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
+								class="collapse {thisPage(sidebarLinks[2].pathname)
+									? 'open'
+									: 'hidden'} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
 								aria-labelledby={sidebarLinks![2].children![2].id + '-control'}
 							>
 								<SideBarLink
