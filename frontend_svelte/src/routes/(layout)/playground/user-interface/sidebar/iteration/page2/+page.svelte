@@ -28,5 +28,5 @@
 	<Loreum />
 
 	<Heading id="loreum6"><span class="italic">Sixth</span> Lorem ipsum dolor sit amet...</Heading>
-	<Loreum />
+	<Loreum repetition={20} />
 </div>

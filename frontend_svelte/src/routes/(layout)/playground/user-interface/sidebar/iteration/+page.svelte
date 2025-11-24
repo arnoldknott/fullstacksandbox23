@@ -8,22 +8,22 @@
 		{
 			name: 'Page 1',
 			description: 'First page linked from sidebar.',
-			url: 'hierarchy/page1'
+			url: 'iteration/page1'
 		},
 		{
 			name: 'Page 2',
 			description: 'Second page linked from sidebar.',
-			url: 'hierarchy/page2'
+			url: 'iteration/page2'
 		},
 		{
 			name: 'Page 3',
 			description: 'Third page linked from sidebar.',
-			url: 'hierarchy/page3'
+			url: 'iteration/page3'
 		},
 		{
 			name: 'Page 4',
 			description: 'Fourth page linked from sidebar.',
-			url: 'hierarchy/page4'
+			url: 'iteration/page4'
 		}
 	];
 </script>

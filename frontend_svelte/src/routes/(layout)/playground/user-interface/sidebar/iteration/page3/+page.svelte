@@ -14,19 +14,23 @@
 	<Loreum />
 
 	<Heading id="loreum2"><span class="italic">Second</span> Lorem ipsum dolor sit amet...</Heading>
-	<Loreum />
+	<Loreum repetition={10} />
+
+	<Heading id="loreum2a"><span class="italic">Second A</span> Lorem ipsum dolor sit amet...</Heading
+	>
+	<Loreum repetition={8} />
 
 	<Heading id="sub-category">Sub Category</Heading>
 
-	<Title id="loreum3"><span class="italic">Third</span> Lorem ipsum dolor sit amet...</Title>
+	<Title id="loreum3p1"><span class="italic">3.1</span> Lorem ipsum dolor sit amet...</Title>
 	<Loreum />
 
-	<Title id="loreum4"><span class="italic">Fourth</span> Lorem ipsum dolor sit amet...</Title>
+	<Title id="loreum3p2"><span class="italic">3.2</span> Lorem ipsum dolor sit amet...</Title>
+	<Loreum />
+
+	<Heading id="loreum4"><span class="italic">Fourth</span> Lorem ipsum dolor sit amet...</Heading>
 	<Loreum />
 
 	<Heading id="loreum5"><span class="italic">Fifth</span> Lorem ipsum dolor sit amet...</Heading>
-	<Loreum />
-
-	<Heading id="loreum6"><span class="italic">Sixth</span> Lorem ipsum dolor sit amet...</Heading>
-	<Loreum />
+	<Loreum repetition={20} />
 </div>
