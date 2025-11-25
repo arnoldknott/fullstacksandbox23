@@ -121,8 +121,10 @@
 		// }
 		if (scrollspyParent) {
 			const original = scrollspyParent.scrollTop;
-			// TBD: is 1000 enough, if the first or last element is very tall?
-			const alt = original < 1000 ? 1000 : original - 1000;
+			// TBD: is 1000 enough, if the an element before the first scroll target is very tall => no!
+			// scrolls to the other end of the scroll area and back to force scrollspy to recalculate positions
+			const alt =
+				original < 2 ? scrollspyParent.scrollHeight : original - scrollspyParent.scrollHeight;
 			scrollspyParent.scrollTop = alt;
 			scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
 			// scrollspyParent.scroll(originalLeft, alt);
