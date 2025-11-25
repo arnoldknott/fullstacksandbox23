@@ -11,7 +11,7 @@
 	<p>Page 3 has hierarchial content and id's linked in main sidebar</p>
 
 	<Heading id="loreum1"><span class="italic">First</span> Lorem ipsum dolor sit amet...</Heading>
-	<Loreum />
+	<Loreum repetition={30} />
 
 	<Heading id="loreum2"><span class="italic">Second</span> Lorem ipsum dolor sit amet...</Heading>
 	<Loreum repetition={10} />

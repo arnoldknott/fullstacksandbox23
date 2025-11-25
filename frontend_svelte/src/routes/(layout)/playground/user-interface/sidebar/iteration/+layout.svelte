@@ -121,12 +121,7 @@
 		// }
 		if (scrollspyParent) {
 			const original = scrollspyParent.scrollTop;
-			// const originalLeft = scrollspyParent.scrollLeft;
-			console.log('=== forceScrolling - original scrollTop ===');
-			console.log(original);
-			console.log('=== forceScrolling - scrollHeight ===');
-			console.log(scrollspyParent.scrollHeight);
-			// TBD: when calling the page with the # to a specific location, the target is off by 1000 now!
+			// TBD: is 1000 enough, if the first or last element is very tall?
 			const alt = original < 1000 ? 1000 : original - 1000;
 			scrollspyParent.scrollTop = alt;
 			scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
@@ -262,17 +257,12 @@
 		scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
 		if (page.url.hash) {
 			const target = document.getElementById(page.url.hash.substring(1));
-			console.log('=== forceScrolling - target ===');
-			console.log(target);
 			// TBD: consider opening a potential collapsed parent sections here
 			if (target) {
-				console.log('=== forceScrolling - scrolling to hash target ===');
 				const parentRect = scrollspyParent!.getBoundingClientRect();
 				const targetRect = target.getBoundingClientRect();
 
 				const targetScrollTop = scrollspyParent!.scrollTop + targetRect.top - parentRect.top;
-				console.log('=== forceScrolling - targetScrollTop ===');
-				console.log(targetScrollTop);
 				scrollspyParent!.scrollTop = targetScrollTop;
 				scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
 			}
