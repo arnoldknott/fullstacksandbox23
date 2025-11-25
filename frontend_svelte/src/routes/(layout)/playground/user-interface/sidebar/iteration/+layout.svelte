@@ -122,8 +122,10 @@
 		if (scrollspyParent) {
 			const original = scrollspyParent.scrollTop;
 			// const originalLeft = scrollspyParent.scrollLeft;
-			// console.log('=== forceScrolling - original scrollTop ===');
-			// console.log(original);
+			console.log('=== forceScrolling - original scrollTop ===');
+			console.log(original);
+			console.log('=== forceScrolling - scrollHeight ===');
+			console.log(scrollspyParent.scrollHeight);
 			// TBD: when calling the page with the # to a specific location, the target is off by 1000 now!
 			const alt = original < 1000 ? 1000 : original - 1000;
 			scrollspyParent.scrollTop = alt;
@@ -195,30 +197,32 @@
 		};
 
 		// Intercept clicks on same-page fragment links that wouldn't move scroll (same offset) and force activation
-		node.addEventListener('click', (e) => {
-			const targetEl = (e.target as HTMLElement).closest('a');
-			if (!targetEl) return;
-			const href = targetEl.getAttribute('href');
-			if (!href || !href.startsWith('#')) return; // only local fragments
-			const container = document.querySelector(
-				'#scrollspy-scrollable-parent'
-			) as HTMLElement | null;
-			if (!container) return;
-			const section = document.querySelector(href) as HTMLElement | null;
-			if (!section) return;
-			// Calculate target position relative to container
-			const containerRect = container.getBoundingClientRect();
-			const sectionRect = section.getBoundingClientRect();
-			const targetScrollTop = container.scrollTop + sectionRect.top - containerRect.top;
-			if (Math.abs(container.scrollTop - targetScrollTop) < 2) {
-				// No effective scroll -> manually trigger activation sequence
-				// forceScrollspyActivation();
-				forceScrolling();
-			}
-		});
+		// node.addEventListener('click', (e) => {
+		// 	const targetEl = (e.target as HTMLElement).closest('a');
+		// 	if (!targetEl) return;
+		// 	const href = targetEl.getAttribute('href');
+		// 	if (!href || !href.startsWith('#')) return; // only local fragments
+		// 	const container = document.querySelector(
+		// 		'#scrollspy-scrollable-parent'
+		// 	) as HTMLElement | null;
+		// 	if (!container) return;
+		// 	const section = document.querySelector(href) as HTMLElement | null;
+		// 	if (!section) return;
+		// 	// Calculate target position relative to container
+		// 	const containerRect = container.getBoundingClientRect();
+		// 	const sectionRect = section.getBoundingClientRect();
+		// 	const targetScrollTop = container.scrollTop + sectionRect.top - containerRect.top;
+		// 	if (Math.abs(container.scrollTop - targetScrollTop) < 2) {
+		// 		// No effective scroll -> manually trigger activation sequence
+		// 		// forceScrollspyActivation();
+		// 		console.log('=== toggleScrollspy - click - forceScrolling - ran ===');
+		// 		// forceScrolling();
+		// 	}
+		// });
 
 		afterNavigate(async () => {
 			if (thisPage(node.dataset.pathname || '')) {
+				// await tick();
 				await addScrollspy(node);
 				// addScrollspy(node);
 			}
@@ -254,8 +258,8 @@
 
 	onMount(() => {
 		// $effect(() => {
-		forceScrolling();
-		// console.log('=== toggleScrollspy - onMount - ran ===');
+		// forceScrolling();
+		scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
 		// });
 	});
 
