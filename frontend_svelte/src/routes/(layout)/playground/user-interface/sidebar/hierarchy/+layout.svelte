@@ -10,7 +10,7 @@
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import type { Attachment } from 'svelte/attachments';
-	import SideBarLink from '../SideBarLink.svelte';
+	import SideBarLink from './SideBarLink.svelte';
 	let { children }: { children: Snippet } = $props();
 
 	let sidebarLinks = $state([
