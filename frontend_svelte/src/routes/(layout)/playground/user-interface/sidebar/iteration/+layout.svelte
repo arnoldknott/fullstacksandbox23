@@ -102,90 +102,34 @@
 	]);
 
 	let scrollspyParent: HTMLElement | null = $state(null);
-	let scrollspy: HTMLElement | null = $state(null);
 
 	const forceScrolling = () => {
-		// if (scrollspyParent) {
-		// 	const originalTop = scrollspyParent.scrollTop;
-		// 	const originalLeft = scrollspyParent.scrollLeft;
-		// 	console.log('=== forceScrolling - original scrolling ===');
-		// 	console.log(originalTop);
-		// 	console.log(originalLeft);
-		// 	const otherEnd = originalTop === 0 ? scrollspyParent.scrollHeight - originalTop : 0;
-		// 	// scrollspyParent.scrollTo(originalLeft, otherEnd);
-		// 	// scrollspyParent.scrollTo(originalLeft, originalTop);
-		// 	// requestAnimationFrame(() => {
-		// 	// 	scrollspy!.scroll(originalLeft, originalTop);
-		// 	// 	// window.dispatchEvent(new Event('scroll'));
-		// 	// });
-		// }
 		if (scrollspyParent) {
 			const original = scrollspyParent.scrollTop;
-			// TBD: is 1000 enough, if the an element before the first scroll target is very tall => no!
 			// scrolls to the other end of the scroll area and back to force scrollspy to recalculate positions
 			const alt =
 				original < 2 ? scrollspyParent.scrollHeight : original - scrollspyParent.scrollHeight;
 			scrollspyParent.scrollTop = alt;
 			scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
-			// scrollspyParent.scroll(originalLeft, alt);
-			// scrollspyParent.scroll(originalLeft, original);
 			requestAnimationFrame(() => {
 				scrollspyParent!.scrollTop = original;
 				scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
-				// window.dispatchEvent(new Event('scroll'));
 			});
-			// const newScrolltopParent = scrollspyParent.scrollTop;
-			// console.log('=== forceScrolling - new scrollTop ===');
-			// console.log(newScrolltopParent);
 		}
-		// window.dispatchEvent(new Event('scroll'));
-		// const target = document.getElementById(page.url.hash);
-		// scrollspy?.scroll(
-		// 	scrollspy.getBoundingClientRect().left,
-		// 	target?.getBoundingClientRect().top || 0
-		// );
 	};
 
 	const toggleScrollspy: Attachment<HTMLElement> = (node: HTMLElement) => {
-		// const forceScrollspyActivation = () => {
-		// 	if (scrollspyParent) {
-		// 		scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
-		// 	}
-		// 	// const container = document.querySelector(
-		// 	// 	'#scrollspy-scrollable-parent'
-		// 	// ) as HTMLElement | null;
-		// 	// if (!container) return;
-		// 	// // Dispatch a plain scroll event first (some libraries listen to window, some to container)
-		// 	// container.dispatchEvent(new Event('scroll', { bubbles: true }));
-		// 	window.dispatchEvent(new Event('scroll'));
-		// 	// // Nudge scroll position to ensure mutation observers / scroll listeners run even if already at target
-		// 	// const original = container.scrollTop;
-		// 	// const alt = original === 0 ? 1 : original - 1;
-		// 	// container.scrollTop = alt;
-		// 	// container.dispatchEvent(new Event('scroll', { bubbles: true }));
-		// 	// requestAnimationFrame(() => {
-		// 	// 	container.scrollTop = original;
-		// 	// 	container.dispatchEvent(new Event('scroll', { bubbles: true }));
-		// 	// 	window.dispatchEvent(new Event('scroll'));
-		// 	// });
-		// };
-
 		const addScrollspy = async (node: HTMLElement) => {
-			// const addScrollspy = (node: HTMLElement) => {
 			node.setAttribute('data-scrollspy', '#scrollspy');
 			node.setAttribute('data-scrollspy-scrollable-parent', '#scrollspy-scrollable-parent');
 			await tick();
 			initScrollspy(node);
-			// forceScrollspyActivation();
 			forceScrolling();
 		};
 
-		const removeScrollspy = async (node: HTMLElement) => {
-			// const removeScrollspy = (node: HTMLElement) => {
+		const removeScrollspy = (node: HTMLElement) => {
 			node.removeAttribute('data-scrollspy');
 			node.removeAttribute('data-scrollspy-scrollable-parent');
-			// If scrollspy was not initialized, calling destroy will throw error
-			// await tick();
 			try {
 				const { element } = window.HSScrollspy.getInstance(node, true);
 				element.destroy();
@@ -193,54 +137,21 @@
 			} catch {}
 		};
 
-		// Intercept clicks on same-page fragment links that wouldn't move scroll (same offset) and force activation
-		// node.addEventListener('click', (e) => {
-		// 	const targetEl = (e.target as HTMLElement).closest('a');
-		// 	if (!targetEl) return;
-		// 	const href = targetEl.getAttribute('href');
-		// 	if (!href || !href.startsWith('#')) return; // only local fragments
-		// 	const container = document.querySelector(
-		// 		'#scrollspy-scrollable-parent'
-		// 	) as HTMLElement | null;
-		// 	if (!container) return;
-		// 	const section = document.querySelector(href) as HTMLElement | null;
-		// 	if (!section) return;
-		// 	// Calculate target position relative to container
-		// 	const containerRect = container.getBoundingClientRect();
-		// 	const sectionRect = section.getBoundingClientRect();
-		// 	const targetScrollTop = container.scrollTop + sectionRect.top - containerRect.top;
-		// 	if (Math.abs(container.scrollTop - targetScrollTop) < 2) {
-		// 		// No effective scroll -> manually trigger activation sequence
-		// 		// forceScrollspyActivation();
-		// 		console.log('=== toggleScrollspy - click - forceScrolling - ran ===');
-		// 		// forceScrolling();
-		// 	}
-		// });
-
 		afterNavigate(async () => {
 			if (thisPage(node.dataset.pathname || '')) {
-				// await tick();
 				await addScrollspy(node);
-				// addScrollspy(node);
 			}
-			// console.log('=== toggleScrollspy - afterNavigate - ran ===');
-			// else {
-			// 	await removeScrollspy(node);
-			// 	// removeScrollspy(node);
-			// }
 		});
 
 		beforeNavigate((navigator) => {
 			if (!(navigator.to?.url.pathname === node.dataset.pathname)) {
 				removeScrollspy(node);
 			}
-			// console.log('=== toggleScrollspy - beforeNavigate - ran ===');
 		});
 
 		// Cleanup when the attachment is removed
 		return async () => {
-			await removeScrollspy(node);
-			// removeScrollspy(node);
+			removeScrollspy(node);
 		};
 	};
 	const thisPage = $derived.by(() => (pathname: string) => pathname === page.url.pathname);
@@ -254,8 +165,6 @@
 	});
 
 	onMount(() => {
-		// $effect(() => {
-		// forceScrolling();
 		scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
 		if (page.url.hash) {
 			const target = document.getElementById(page.url.hash.substring(1));
@@ -269,8 +178,6 @@
 				scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
 			}
 		}
-
-		// });
 	});
 
 	const openSidebar = () => {
@@ -753,7 +660,7 @@
 	</aside>
 	<div class="sm:overlay-minified:ps-19 bg-base-100 ps-64 transition-all duration-300 max-sm:ps-0">
 		<div class=" bg-base-100 transition-all duration-300">
-			<div id="scrollspy" class="space-y-4 pe-1" bind:this={scrollspy}>
+			<div id="scrollspy" class="space-y-4 pe-1">
 				{@render children?.()}
 			</div>
 		</div>
