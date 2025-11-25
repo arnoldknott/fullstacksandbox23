@@ -141,7 +141,7 @@
 			// console.log('=== forceScrolling - new scrollTop ===');
 			// console.log(newScrolltopParent);
 		}
-		window.dispatchEvent(new Event('scroll'));
+		// window.dispatchEvent(new Event('scroll'));
 		// const target = document.getElementById(page.url.hash);
 		// scrollspy?.scroll(
 		// 	scrollspy.getBoundingClientRect().left,
@@ -260,6 +260,24 @@
 		// $effect(() => {
 		// forceScrolling();
 		scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+		if (page.url.hash) {
+			const target = document.getElementById(page.url.hash.substring(1));
+			console.log('=== forceScrolling - target ===');
+			console.log(target);
+			// TBD: consider opening a potential collapsed parent sections here
+			if (target) {
+				console.log('=== forceScrolling - scrolling to hash target ===');
+				const parentRect = scrollspyParent!.getBoundingClientRect();
+				const targetRect = target.getBoundingClientRect();
+
+				const targetScrollTop = scrollspyParent!.scrollTop + targetRect.top - parentRect.top;
+				console.log('=== forceScrolling - targetScrollTop ===');
+				console.log(targetScrollTop);
+				scrollspyParent!.scrollTop = targetScrollTop;
+				scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+			}
+		}
+
 		// });
 	});
 
