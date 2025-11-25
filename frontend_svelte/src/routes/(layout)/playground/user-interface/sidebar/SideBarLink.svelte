@@ -1,16 +1,14 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { page } from '$app/state';
 	let {
-		pathname,
-		hash,
+		href,
+		thisPage,
 		icon,
 		children
-	}: { pathname: string; hash?: string; icon: string; children: Snippet } = $props();
+	}: { href: string; thisPage: boolean; icon: string; children: Snippet } = $props();
 
-	const thisPage = $derived(pathname === page.url.pathname);
-
-	let href = $derived(!hash ? pathname : thisPage ? hash : `${pathname}${hash}`);
+	// const thisPage = $derived(pathname === page.url.pathname);
+	// let href = $derived(!hash ? pathname : thisPage ? hash : `${pathname}${hash}`);
 </script>
 
 <li>

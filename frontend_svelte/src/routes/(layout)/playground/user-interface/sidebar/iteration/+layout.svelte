@@ -440,15 +440,15 @@
 						{@attach toggleScrollspy}
 					>
 						<SideBarLink
-							pathname={sidebarLinks[1].pathname}
-							hash={sidebarLinks[1].children[0].hash}
+							href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children[0].hash)}
+							thisPage={thisPage(sidebarLinks[1].pathname)}
 							icon="mdi--text"
 						>
 							{sidebarLinks[1].children[0].name}
 						</SideBarLink>
 						<SideBarLink
-							pathname={sidebarLinks[1].pathname}
-							hash={sidebarLinks[1].children[1].hash}
+							href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children[1].hash)}
+							thisPage={thisPage(sidebarLinks[1].pathname)}
 							icon="mdi--text"
 						>
 							{sidebarLinks[1].children[1].name}
@@ -485,15 +485,21 @@
 								aria-labelledby={sidebarLinks![1].children![2].id + '-control'}
 							>
 								<SideBarLink
-									pathname={sidebarLinks[1].pathname}
-									hash={sidebarLinks[1].children![2].children![0].hash}
+									href={createHref(
+										sidebarLinks[1].pathname,
+										sidebarLinks[1].children![2].children![0].hash
+									)}
+									thisPage={thisPage(sidebarLinks[1].pathname)}
 									icon="mdi--text"
 								>
 									{sidebarLinks[1].children![2].children![0].name}
 								</SideBarLink>
 								<SideBarLink
-									pathname={sidebarLinks[1].pathname}
-									hash={sidebarLinks[1].children![2].children![1].hash}
+									href={createHref(
+										sidebarLinks[1].pathname,
+										sidebarLinks[1].children![2].children![1].hash
+									)}
+									thisPage={thisPage(sidebarLinks[1].pathname)}
 									icon="mdi--text"
 								>
 									{sidebarLinks[1].children![2].children![1].name}
@@ -501,15 +507,15 @@
 							</ul>
 						</li>
 						<SideBarLink
-							pathname={sidebarLinks[1].pathname}
-							hash={sidebarLinks[1].children![3].hash}
+							href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children![3].hash)}
+							thisPage={thisPage(sidebarLinks[1].pathname)}
 							icon="mdi--text"
 						>
 							{sidebarLinks[1].children![3].name}
 						</SideBarLink>
 						<SideBarLink
-							pathname={sidebarLinks[1].pathname}
-							hash={sidebarLinks[1].children![4].hash}
+							href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children![4].hash)}
+							thisPage={thisPage(sidebarLinks[1].pathname)}
 							icon="mdi--text"
 						>
 							{sidebarLinks[1].children![4].name}
@@ -552,22 +558,22 @@
 						{@attach toggleScrollspy}
 					>
 						<SideBarLink
-							pathname={sidebarLinks[2].pathname}
-							hash={sidebarLinks[2].children[0].hash}
+							href={createHref(sidebarLinks[2].pathname, sidebarLinks[2].children[0].hash)}
+							thisPage={thisPage(sidebarLinks[2].pathname)}
 							icon="mdi--text"
 						>
 							{sidebarLinks[2].children[0].name}
 						</SideBarLink>
 						<SideBarLink
-							pathname={sidebarLinks[2].pathname}
-							hash={sidebarLinks[2].children[1].hash}
+							href={createHref(sidebarLinks[2].pathname, sidebarLinks[2].children[1].hash)}
+							thisPage={thisPage(sidebarLinks[2].pathname)}
 							icon="mdi--text"
 						>
 							{sidebarLinks[2].children[1].name}
 						</SideBarLink>
 						<SideBarLink
-							pathname={sidebarLinks[2].pathname}
-							hash={sidebarLinks[2].children[2].hash}
+							href={createHref(sidebarLinks[2].pathname, sidebarLinks[2].children[2].hash)}
+							thisPage={thisPage(sidebarLinks[2].pathname)}
 							icon="mdi--text"
 						>
 							{sidebarLinks[2].children[2].name}
@@ -603,15 +609,21 @@
 								aria-labelledby={sidebarLinks![2].children![3].id + '-control'}
 							>
 								<SideBarLink
-									pathname={sidebarLinks[2].pathname}
-									hash={sidebarLinks[2].children![3].children![0].hash}
+									href={createHref(
+										sidebarLinks[2].pathname,
+										sidebarLinks[2].children![3].children![0].hash
+									)}
+									thisPage={thisPage(sidebarLinks[2].pathname)}
 									icon="mdi--text"
 								>
 									{sidebarLinks[2].children![3].children![0].name}
 								</SideBarLink>
 								<SideBarLink
-									pathname={sidebarLinks[2].pathname}
-									hash={sidebarLinks[2].children![3].children![1].hash}
+									href={createHref(
+										sidebarLinks[2].pathname,
+										sidebarLinks[2].children![3].children![1].hash
+									)}
+									thisPage={thisPage(sidebarLinks[2].pathname)}
 									icon="mdi--text"
 								>
 									{sidebarLinks[2].children![3].children![1].name}
@@ -619,15 +631,15 @@
 							</ul>
 						</li>
 						<SideBarLink
-							pathname={sidebarLinks[2].pathname}
-							hash={sidebarLinks[2].children![4].hash}
+							href={createHref(sidebarLinks[2].pathname, sidebarLinks[2].children![4].hash)}
+							thisPage={thisPage(sidebarLinks[2].pathname)}
 							icon="mdi--text"
 						>
 							{sidebarLinks[2].children![4].name}
 						</SideBarLink>
 						<SideBarLink
-							pathname={sidebarLinks[2].pathname}
-							hash={sidebarLinks[2].children![5].hash}
+							href={createHref(sidebarLinks[2].pathname, sidebarLinks[2].children![5].hash)}
+							thisPage={thisPage(sidebarLinks[2].pathname)}
 							icon="mdi--text"
 						>
 							{sidebarLinks[2].children![5].name}
@@ -659,7 +671,7 @@
 		</div>
 	</aside>
 	<div class="sm:overlay-minified:ps-19 bg-base-100 ps-64 transition-all duration-300 max-sm:ps-0">
-		<div class=" bg-base-100 transition-all duration-300">
+		<div class="bg-base-100 transition-all duration-300">
 			<div id="scrollspy" class="space-y-4 pe-1">
 				{@render children?.()}
 			</div>
