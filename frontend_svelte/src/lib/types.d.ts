@@ -39,7 +39,7 @@ export type SidebarContent = {
 	name: string;
 	pathname: string;
 	icon: string;
-	children: SidebarContentItem[];
+	items: SidebarContentItem[];
 };
 
 type SidebarLinkContent = {
@@ -54,10 +54,10 @@ type SidebarContentItem = SidebarFolderContent | SidebarLinkContent;
 export type SidebarFolderContent = {
 	id: string;
 	name: string;
-	pathname?: string;
+	pathname: string;
 	hash?: string;
 	icon: string;
-	children: SidebarContentItem[];
+	items: SidebarContentItem[];
 };
 
 // Access types:

@@ -74,22 +74,6 @@
 		return href;
 	});
 
-	onMount(() => {
-		scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
-		if (page.url.hash) {
-			const target = document.getElementById(page.url.hash.substring(1));
-			// TBD: consider opening a potential collapsed parent sections here
-			if (target) {
-				const parentRect = scrollspyParent!.getBoundingClientRect();
-				const targetRect = target.getBoundingClientRect();
-
-				const targetScrollTop = scrollspyParent!.scrollTop + targetRect.top - parentRect.top;
-				scrollspyParent!.scrollTop = targetScrollTop;
-				scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
-			}
-		}
-	});
-
 	const openSidebar = () => {
 		const { element } = window.HSOverlay.getInstance('#collapsible-mini-sidebar', true);
 		element.open();
@@ -104,29 +88,29 @@
 	};
 </script>
 
-{#each contentList as navItem (navItem.id)}
-	{#if navItem.children.length === 0}
+{#each contentList as mainItem (mainItem.id)}
+	{#if mainItem.items.length === 0}
 		<li>
-			<a href={navItem.pathname}>
-				<span class="{navItem.icon} size-5"></span>
-				<span class="overlay-minified:hidden">{navItem.name}</span>
+			<a href={mainItem.pathname}>
+				<span class="{mainItem.icon} size-5"></span>
+				<span class="overlay-minified:hidden">{mainItem.name}</span>
 			</a>
 		</li>
 	{:else}
 		<li class="space-y-0.5">
 			<button
 				type="button"
-				class="collapse-toggle {thisPage(navItem.pathname)
+				class="collapse-toggle {thisPage(mainItem.pathname)
 					? 'open'
 					: ''} collapse-open:bg-base-content/10"
-				id={navItem.id + '-control'}
-				data-collapse={'#' + navItem.id + '-collapse'}
-				data-pathname={navItem.pathname}
+				id={mainItem.id + '-control'}
+				data-collapse={'#' + mainItem.id + '-collapse'}
+				data-pathname={mainItem.pathname}
 				{@attach initCollapse}
 				{@attach toggleCollapse}
 			>
-				<span class="{navItem.icon} size-5"></span>
-				<span class="overlay-minified:hidden">{navItem.name}</span>
+				<span class="{mainItem.icon} size-5"></span>
+				<span class="overlay-minified:hidden">{mainItem.name}</span>
 				<span
 					class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:hidden size-4 transition-all duration-300"
 				></span>
@@ -139,34 +123,32 @@
 				></span>
 			</button>
 			<ul
-				id={navItem.id + '-collapse'}
-				class="collapse {thisPage(navItem.pathname)
+				id={mainItem.id + '-collapse'}
+				class="collapse {thisPage(mainItem.pathname)
 					? 'open'
 					: 'hidden'} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
-				aria-labelledby={navItem.id + '-control'}
-				data-pathname={navItem.pathname}
+				aria-labelledby={mainItem.id + '-control'}
+				data-pathname={mainItem.pathname}
 				{@attach toggleScrollspy}
 			>
-				{#each navItem.children as child (child.id)}
-					{#if Object.keys(child).includes('children') === false}
+				{#each mainItem.items as item (item.id)}
+					{#if Object.keys(item).includes('items') === false || (item as SidebarFolderContent).items.length === 0}
 						<SidebarLink
-							href={createHref(child.pathname || navItem.pathname, child.hash)}
-							thisPage={thisPage(child.pathname || navItem.pathname)}
-							icon={child.icon}
+							href={createHref(item.pathname || mainItem.pathname, item.hash)}
+							thisPage={thisPage(item.pathname || mainItem.pathname)}
+							icon={item.icon}
 						>
-							{child.name}
+							{item.name}
 						</SidebarLink>
 					{:else}
 						<SidebarFolder
-							id={child.id}
-							pathname={child.pathname || navItem.pathname}
-							icon={child.icon}
-							name={child.name}
-							children={(child as SidebarFolderContent).children}
+							content={item as SidebarFolderContent}
 							{thisPage}
 							{createHref}
 							{toggleCollapse}
-						/>
+						>
+							{item.name}
+						</SidebarFolder>
 					{/if}
 				{/each}
 			</ul>

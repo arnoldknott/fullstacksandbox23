@@ -20,14 +20,14 @@
 			pathname: resolve('/(layout)/playground/user-interface/sidebar/iteration/page1'),
 			icon: 'icon-[tabler--user]',
 			id: 'page1',
-			children: []
+			items: []
 		},
 		{
 			name: 'Page 2',
 			pathname: resolve('/(layout)/playground/user-interface/sidebar/iteration/page2'),
 			icon: 'icon-[icon-park-outline--page]',
 			id: 'page2',
-			children: [
+			items: [
 				{
 					id: 'page2-loreum1',
 					name: 'Loreum 1',
@@ -45,7 +45,7 @@
 					icon: 'icon-[material-symbols--folder-outline-rounded]',
 					hash: '#sub-category',
 					id: 'page2-sub-category',
-					children: [
+					items: [
 						{
 							id: 'page2-loreum3',
 							name: 'Loreum 3',
@@ -79,7 +79,7 @@
 			pathname: resolve('/(layout)/playground/user-interface/sidebar/iteration/page3'),
 			icon: 'icon-[icon-park-outline--page]',
 			id: 'page3',
-			children: [
+			items: [
 				{
 					id: 'page3-loreum1',
 					name: 'Loreum 1',
@@ -103,7 +103,7 @@
 					icon: 'icon-[material-symbols--folder-outline-rounded]',
 					hash: '#sub-category',
 					id: 'page3-sub-category',
-					children: [
+					items: [
 						{
 							id: 'page3-loreum3p1',
 							name: 'Loreum 3.1',
@@ -297,7 +297,7 @@
 
 <!-- {#snippet sidebarContent(sidebarLinksArray: typeof sidebarLinks)}
 	{#each sidebarLinksArray as page (page.name)}
-		{#if page.children.length === 0}
+		{#if page.items.length === 0}
 			<li>
 				<a href={page.pathname}>
 					<span class="{page.icon} size-5"></span>
@@ -480,7 +480,7 @@
 			</ul>
 			<div class="divider"></div>
 			<ul class="menu p-0">
-				<!-- <SidebarContent contentList={sidebarLinks} {scrollspyParent} /> -->
+				<SidebarContent contentList={sidebarLinks} {scrollspyParent} />
 				<li>
 					<a href={sidebarLinks[0].pathname}>
 						<span class="icon-[tabler--user] size-5"></span>
@@ -523,18 +523,18 @@
 						{@attach toggleScrollspy}
 					>
 						<SidebarLink
-							href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children[0].hash)}
+							href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].items[0].hash)}
 							thisPage={thisPage(sidebarLinks[1].pathname)}
-							icon={sidebarLinks[1].children[0].icon}
+							icon={sidebarLinks[1].items[0].icon}
 						>
-							{sidebarLinks[1].children[0].name}
+							{sidebarLinks[1].items[0].name}
 						</SidebarLink>
 						<SidebarLink
-							href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children[1].hash)}
+							href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].items[1].hash)}
 							thisPage={thisPage(sidebarLinks[1].pathname)}
-							icon={sidebarLinks[1].children[1].icon}
+							icon={sidebarLinks[1].items[1].icon}
 						>
-							{sidebarLinks[1].children[1].name}
+							{sidebarLinks[1].items[1].name}
 						</SidebarLink>
 
 						<li data-scrollspy-group="" class="space-y-0.5">
@@ -542,10 +542,10 @@
 								class="collapse-toggle {thisPage(sidebarLinks[1].pathname)
 									? 'open'
 									: ''} collapse-open:bg-base-content/10 scrollspy-active:italic group"
-								id={sidebarLinks![1].children![2].id + '-control'}
-								data-collapse={'#' + sidebarLinks![1].children![2].id + '-collapse'}
+								id={sidebarLinks![1].items![2].id + '-control'}
+								data-collapse={'#' + sidebarLinks![1].items![2].id + '-collapse'}
 								data-pathname={sidebarLinks[1].pathname}
-								href={createHref(sidebarLinks[1].pathname, sidebarLinks![1].children![2].hash)}
+								href={createHref(sidebarLinks[1].pathname, sidebarLinks![1].items![2].hash)}
 								{@attach initCollapse}
 								{@attach toggleCollapse}
 							>
@@ -553,56 +553,56 @@
 									class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
 								></span>
 								<span
-									class="{sidebarLinks![1].children![2]
+									class="{sidebarLinks![1].items![2]
 										.icon} size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
 								></span>
-								{sidebarLinks![1].children![2].name}
+								{sidebarLinks![1].items![2].name}
 								<span
 									class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"
 								></span>
 							</a>
 							<ul
-								id={sidebarLinks![1].children![2].id + '-collapse'}
+								id={sidebarLinks![1].items![2].id + '-collapse'}
 								class="collapse {thisPage(sidebarLinks[1].pathname)
 									? 'open'
 									: 'hidden'} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
-								aria-labelledby={sidebarLinks![1].children![2].id + '-control'}
+								aria-labelledby={sidebarLinks![1].items![2].id + '-control'}
 							>
 								<SidebarLink
 									href={createHref(
 										sidebarLinks[1].pathname,
-										sidebarLinks[1].children![2].children![0].hash
+										sidebarLinks[1].items![2].items![0].hash
 									)}
 									thisPage={thisPage(sidebarLinks[1].pathname)}
-									icon={sidebarLinks[1].children![2].children![0].icon}
+									icon={sidebarLinks[1].items![2].items![0].icon}
 								>
-									{sidebarLinks[1].children![2].children![0].name}
+									{sidebarLinks[1].items![2].items![0].name}
 								</SidebarLink>
 								<SidebarLink
 									href={createHref(
 										sidebarLinks[1].pathname,
-										sidebarLinks[1].children![2].children![1].hash
+										sidebarLinks[1].items![2].items![1].hash
 									)}
 									thisPage={thisPage(sidebarLinks[1].pathname)}
-									icon={sidebarLinks[1].children![2].children![1].icon}
+									icon={sidebarLinks[1].items![2].items![1].icon}
 								>
-									{sidebarLinks[1].children![2].children![1].name}
+									{sidebarLinks[1].items![2].items![1].name}
 								</SidebarLink>
 							</ul>
 						</li>
 						<SidebarLink
-							href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children![3].hash)}
+							href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].items![3].hash)}
 							thisPage={thisPage(sidebarLinks[1].pathname)}
-							icon={sidebarLinks[1].children![3].icon}
+							icon={sidebarLinks[1].items![3].icon}
 						>
-							{sidebarLinks[1].children![3].name}
+							{sidebarLinks[1].items![3].name}
 						</SidebarLink>
 						<SidebarLink
-							href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children![4].hash)}
+							href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].items![4].hash)}
 							thisPage={thisPage(sidebarLinks[1].pathname)}
-							icon={sidebarLinks[1].children![4].icon}
+							icon={sidebarLinks[1].items![4].icon}
 						>
-							{sidebarLinks[1].children![4].name}
+							{sidebarLinks[1].items![4].name}
 						</SidebarLink>
 					</ul>
 				</li>
@@ -642,35 +642,35 @@
 						{@attach toggleScrollspy}
 					>
 						<SidebarLink
-							href={createHref(sidebarLinks[2].pathname, sidebarLinks[2].children[0].hash)}
+							href={createHref(sidebarLinks[2].pathname, sidebarLinks[2].items[0].hash)}
 							thisPage={thisPage(sidebarLinks[2].pathname)}
-							icon={sidebarLinks[2].children[0].icon}
+							icon={sidebarLinks[2].items[0].icon}
 						>
-							{sidebarLinks[2].children[0].name}
+							{sidebarLinks[2].items[0].name}
 						</SidebarLink>
 						<SidebarLink
-							href={createHref(sidebarLinks[2].pathname, sidebarLinks[2].children[1].hash)}
+							href={createHref(sidebarLinks[2].pathname, sidebarLinks[2].items[1].hash)}
 							thisPage={thisPage(sidebarLinks[2].pathname)}
-							icon={sidebarLinks[2].children[1].icon}
+							icon={sidebarLinks[2].items[1].icon}
 						>
-							{sidebarLinks[2].children[1].name}
+							{sidebarLinks[2].items[1].name}
 						</SidebarLink>
 						<SidebarLink
-							href={createHref(sidebarLinks[2].pathname, sidebarLinks[2].children[2].hash)}
+							href={createHref(sidebarLinks[2].pathname, sidebarLinks[2].items[2].hash)}
 							thisPage={thisPage(sidebarLinks[2].pathname)}
-							icon={sidebarLinks[2].children[2].icon}
+							icon={sidebarLinks[2].items[2].icon}
 						>
-							{sidebarLinks[2].children[2].name}
+							{sidebarLinks[2].items[2].name}
 						</SidebarLink>
 						<li data-scrollspy-group="" class="space-y-0.5">
 							<a
 								class="collapse-toggle {thisPage(sidebarLinks[2].pathname)
 									? 'open'
 									: ''} collapse-open:bg-base-content/10 scrollspy-active:italic group"
-								id={sidebarLinks![2].children![3].id + '-control'}
-								data-collapse={'#' + sidebarLinks![2].children![3].id + '-collapse'}
+								id={sidebarLinks![2].items![3].id + '-control'}
+								data-collapse={'#' + sidebarLinks![2].items![3].id + '-collapse'}
 								data-pathname={sidebarLinks[2].pathname}
-								href={createHref(sidebarLinks[2].pathname, sidebarLinks![2].children![3].hash)}
+								href={createHref(sidebarLinks[2].pathname, sidebarLinks![2].items![3].hash)}
 								{@attach initCollapse}
 								{@attach toggleCollapse}
 							>
@@ -680,53 +680,53 @@
 								<span
 									class="icon-[icon-park-outline--page] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
 								></span>
-								{sidebarLinks![2].children![3].name}
+								{sidebarLinks![2].items![3].name}
 								<span
 									class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"
 								></span>
 							</a>
 							<ul
-								id={sidebarLinks![2].children![3].id + '-collapse'}
+								id={sidebarLinks![2].items![3].id + '-collapse'}
 								class="collapse {thisPage(sidebarLinks[2].pathname)
 									? 'open'
 									: 'hidden'} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
-								aria-labelledby={sidebarLinks![2].children![3].id + '-control'}
+								aria-labelledby={sidebarLinks![2].items![3].id + '-control'}
 							>
 								<SidebarLink
 									href={createHref(
 										sidebarLinks[2].pathname,
-										sidebarLinks[2].children![3].children![0].hash
+										sidebarLinks[2].items![3].items![0].hash
 									)}
 									thisPage={thisPage(sidebarLinks[2].pathname)}
-									icon={sidebarLinks[2].children![3].children![0].icon}
+									icon={sidebarLinks[2].items![3].items![0].icon}
 								>
-									{sidebarLinks[2].children![3].children![0].name}
+									{sidebarLinks[2].items![3].items![0].name}
 								</SidebarLink>
 								<SidebarLink
 									href={createHref(
 										sidebarLinks[2].pathname,
-										sidebarLinks[2].children![3].children![1].hash
+										sidebarLinks[2].items![3].items![1].hash
 									)}
 									thisPage={thisPage(sidebarLinks[2].pathname)}
-									icon={sidebarLinks[2].children![3].children![1].icon}
+									icon={sidebarLinks[2].items![3].items![1].icon}
 								>
-									{sidebarLinks[2].children![3].children![1].name}
+									{sidebarLinks[2].items![3].items![1].name}
 								</SidebarLink>
 							</ul>
 						</li>
 						<SidebarLink
-							href={createHref(sidebarLinks[2].pathname, sidebarLinks[2].children![4].hash)}
+							href={createHref(sidebarLinks[2].pathname, sidebarLinks[2].items![4].hash)}
 							thisPage={thisPage(sidebarLinks[2].pathname)}
-							icon={sidebarLinks[2].children![4].icon}
+							icon={sidebarLinks[2].items![4].icon}
 						>
-							{sidebarLinks[2].children![4].name}
+							{sidebarLinks[2].items![4].name}
 						</SidebarLink>
 						<SidebarLink
-							href={createHref(sidebarLinks[2].pathname, sidebarLinks[2].children![5].hash)}
+							href={createHref(sidebarLinks[2].pathname, sidebarLinks[2].items![5].hash)}
 							thisPage={thisPage(sidebarLinks[2].pathname)}
-							icon={sidebarLinks[2].children![5].icon}
+							icon={sidebarLinks[2].items![5].icon}
 						>
-							{sidebarLinks[2].children![5].name}
+							{sidebarLinks[2].items![5].name}
 						</SidebarLink>
 					</ul>
 				</li>

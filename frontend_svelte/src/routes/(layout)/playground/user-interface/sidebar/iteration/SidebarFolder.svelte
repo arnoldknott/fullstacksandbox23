@@ -1,26 +1,26 @@
 <script lang="ts">
-	import type { SidebarFolderContent } from '$lib/types';
+	import { type Snippet } from 'svelte';
+	import type { SidebarContentItem, SidebarFolderContent } from '$lib/types';
 	import { initCollapse } from '$lib/userInterface';
 	import type { Attachment } from 'svelte/attachments';
+	import SidebarLink from './SidebarLink.svelte';
+	import SidebarFolder from './SidebarFolder.svelte';
+	// change import to receiving SidebarFolderContent
 	let {
-		id,
-		pathname,
-		icon,
-		name,
+		content,
 		children,
 		thisPage,
 		createHref,
 		toggleCollapse
 	}: {
-		id: string;
-		pathname: string;
-		icon: string;
-		name: string;
-		children?: SidebarFolderContent['children'];
+		content: SidebarFolderContent;
+		children: Snippet;
 		thisPage: (pathname: string) => boolean;
 		createHref: (destinationPathname: string, hash?: string) => string;
 		toggleCollapse: Attachment<HTMLElement>;
 	} = $props();
+
+	let { id, pathname, hash, icon, items }: SidebarFolderContent = $derived(content);
 </script>
 
 <!-- TBD: this can be recursive: SidebarFolder -->
@@ -32,7 +32,7 @@
 		id={id + '-control'}
 		data-collapse={'#' + id + '-collapse'}
 		data-pathname={pathname}
-		href={createHref(pathname)}
+		href={createHref(pathname, hash)}
 		{@attach initCollapse}
 		{@attach toggleCollapse}
 	>
@@ -40,7 +40,7 @@
 			class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
 		></span>
 		<span class="{icon} size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"></span>
-		{name}
+		{@render children()}
 		<span
 			class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"
 		></span>
@@ -52,7 +52,25 @@
 			: 'hidden'} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
 		aria-labelledby={id + '-control'}
 	>
-		TBD: either recursive SidebarFolder or SidebarLink here.
-		<!-- depends if child has children! -->
+		{#each items as item (item.id)}
+			{#if Object.keys(item).includes('items') === false || (item as SidebarFolderContent).items.length === 0}
+				<SidebarLink
+					href={createHref(item.pathname || pathname, item.hash)}
+					thisPage={thisPage(item.pathname || pathname)}
+					icon={item.icon}
+				>
+					{item.name}
+				</SidebarLink>
+			{:else}
+				<SidebarFolder
+					content={item as SidebarFolderContent}
+					{thisPage}
+					{createHref}
+					{toggleCollapse}
+				>
+					{content.name}
+				</SidebarFolder>
+			{/if}
+		{/each}
 	</ul>
 </li>
