@@ -50,6 +50,7 @@ type SidebarLinkContent = {
 	icon: string;
 };
 
+type SidebarContentItem = SidebarFolderContent | SidebarLinkContent;
 export type SidebarFolderContent = {
 	id: string;
 	name: string;
@@ -58,8 +59,6 @@ export type SidebarFolderContent = {
 	icon: string;
 	children: SidebarContentItem[];
 };
-
-export type SidebarContentItem = SidebarFolderContent | SidebarLinkContent;
 
 // Access types:
 export interface AccessPolicy {

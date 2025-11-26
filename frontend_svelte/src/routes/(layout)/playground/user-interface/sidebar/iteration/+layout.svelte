@@ -29,11 +29,13 @@
 			id: 'page2',
 			children: [
 				{
+					id: 'page2-loreum1',
 					name: 'Loreum 1',
 					icon: 'icon-[mdi--text]',
 					hash: '#loreum1'
 				},
 				{
+					id: 'page2-loreum2',
 					name: 'Loreum 2',
 					icon: 'icon-[mdi--text]',
 					hash: '#loreum2'
@@ -45,11 +47,13 @@
 					id: 'page2-sub-category',
 					children: [
 						{
+							id: 'page2-loreum3',
 							name: 'Loreum 3',
 							icon: 'icon-[mdi--text]',
 							hash: '#loreum3'
 						},
 						{
+							id: 'page2-loreum4',
 							name: 'Loreum 4',
 							icon: 'icon-[mdi--text]',
 							hash: '#loreum4'
@@ -57,11 +61,13 @@
 					]
 				},
 				{
+					id: 'page2-loreum5',
 					name: 'Loreum 5',
 					icon: 'icon-[mdi--text]',
 					hash: '#loreum5'
 				},
 				{
+					id: 'page2-loreum6',
 					name: 'Loreum 6',
 					icon: 'icon-[mdi--text]',
 					hash: '#loreum6'
@@ -75,16 +81,19 @@
 			id: 'page3',
 			children: [
 				{
+					id: 'page3-loreum1',
 					name: 'Loreum 1',
 					icon: 'icon-[mdi--text]',
 					hash: '#loreum1'
 				},
 				{
+					id: 'page3-loreum2',
 					name: 'Loreum 2',
 					icon: 'icon-[mdi--text]',
 					hash: '#loreum2'
 				},
 				{
+					id: 'page3-loreum2a',
 					name: 'Loreum 2a',
 					icon: 'icon-[mdi--text]',
 					hash: '#loreum2a'
@@ -96,11 +105,13 @@
 					id: 'page3-sub-category',
 					children: [
 						{
+							id: 'page3-loreum3p1',
 							name: 'Loreum 3.1',
 							icon: 'icon-[mdi--text]',
 							hash: '#loreum3p1'
 						},
 						{
+							id: 'page3-loreum3p2',
 							name: 'Loreum 3.2',
 							icon: 'icon-[mdi--text]',
 							hash: '#loreum3p2'
@@ -108,11 +119,13 @@
 					]
 				},
 				{
+					id: 'page3-loreum4',
 					name: 'Loreum 4',
 					icon: 'icon-[mdi--text]',
 					hash: '#loreum4'
 				},
 				{
+					id: 'page3-loreum5',
 					name: 'Loreum 5',
 					icon: 'icon-[mdi--text]',
 					hash: '#loreum5'
@@ -467,7 +480,7 @@
 			</ul>
 			<div class="divider"></div>
 			<ul class="menu p-0">
-				<!-- <SidebarContent contentList={sidebarLinks} scrollspyParent={scrollspyParent} /> -->
+				<!-- <SidebarContent contentList={sidebarLinks} {scrollspyParent} /> -->
 				<li>
 					<a href={sidebarLinks[0].pathname}>
 						<span class="icon-[tabler--user] size-5"></span>
