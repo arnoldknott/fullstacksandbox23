@@ -16,12 +16,13 @@
 	let sidebarLinks = $state([
 		{
 			name: 'Page 1',
-			pathname: resolve('/(layout)/playground/user-interface/sidebar/hierarchy/page1'),
+			pathname: resolve('/(layout)/playground/user-interface/sidebar/hierarchy-scroll/page1'),
+			icon: 'tabler--user',
 			children: []
 		},
 		{
 			name: 'Page 2',
-			pathname: resolve('/(layout)/playground/user-interface/sidebar/hierarchy/page2'),
+			pathname: resolve('/(layout)/playground/user-interface/sidebar/hierarchy-scroll/page2'),
 			id: 'page2',
 			children: [
 				{
@@ -59,7 +60,7 @@
 		},
 		{
 			name: 'Page 3',
-			pathname: resolve('/(layout)/playground/user-interface/sidebar/hierarchy/page3'),
+			pathname: resolve('/(layout)/playground/user-interface/sidebar/hierarchy-scroll/page3'),
 			id: 'page3',
 			children: [
 				{
@@ -71,133 +72,65 @@
 					hash: '#loreum2'
 				},
 				{
+					name: 'Loreum 2a',
+					hash: '#loreum2a'
+				},
+				{
 					name: 'Sub category',
 					hash: '#sub-category',
 					id: 'page3-sub-category',
 					children: [
 						{
-							name: 'Loreum 3',
-							hash: '#loreum3'
+							name: 'Loreum 3.1',
+							hash: '#loreum3p1'
 						},
 						{
-							name: 'Loreum 4',
-							hash: '#loreum4'
+							name: 'Loreum 3.2',
+							hash: '#loreum3p2'
 						}
 					]
 				},
 				{
-					name: 'Loreum 5',
-					hash: '#loreum5'
+					name: 'Loreum 4',
+					hash: '#loreum4'
 				},
 				{
-					name: 'Loreum 6',
-					hash: '#loreum6'
+					name: 'Loreum 5',
+					hash: '#loreum5'
 				}
 			]
 		}
 	]);
 
-	// console.log('=== sidebar - hierarchy - sidebarLinks ===');
-	// console.log(sidebarLinks);
-
-	// $effect(() => {
-	// 	console.log('=== sidebar - hierarchy - current scrollspy ===');
-	// 	console.log(`scrollspy-${page.url.pathname.split('/').at(-1)}`);
-	// });
-
-	// const activateScrollspy: Action<HTMLElement> = (node) => {
-	// 	initScrollspy(node);
-	// };
-
-	// const activateScrollspy: Action<HTMLElement, string> = (node, path: string) => {
-	// 	initScrollspy(node);
-	// 	if (!thisPage(path)) {
-	// 		node.removeAttribute('data-scrollspy');
-	// 		node.removeAttribute('data-scrollspy-scrollable-parent');
-	// 	} else {
-	// 		node.setAttribute('data-scrollspy', '#scrollspy');
-	// 		node.setAttribute('data-scrollspy-scrollable-parent', '#scrollspy-scrollable-parent');
-	// 	}
-
-	// 	return {
-	// 		destroy() {
-	// 			// Cleanup if necessary when the action is removed
-	// 		}
-	// 	};
-	// };
-	// // on <ul> with initScrollspy:
-	// use:activateScrollspy={sidebarLinks[1].pathname}
-
-	// afterNavigate(() => {
-	// 	if (thisPage(sidebarLinks[1].pathname))
-	// 		initScrollspy(document.querySelector('#page2-collapse') as HTMLElement);
-	// });
 	let scrollspyParent: HTMLElement | null = $state(null);
 
 	const forceScrolling = () => {
 		if (scrollspyParent) {
 			const original = scrollspyParent.scrollTop;
-			const alt = original === 0 ? 1000 : original - 1000;
+			// scrolls to the other end of the scroll area and back to force scrollspy to recalculate positions
+			const alt =
+				original < 2 ? scrollspyParent.scrollHeight : original - scrollspyParent.scrollHeight;
 			scrollspyParent.scrollTop = alt;
 			scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
 			requestAnimationFrame(() => {
 				scrollspyParent!.scrollTop = original;
 				scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
-				// window.dispatchEvent(new Event('scroll'));
 			});
 		}
-		window.dispatchEvent(new Event('scroll'));
 	};
 
-	// beforeNavigate((navigator) => {
-	// 	console.log('=== sidebar - hierarchy - beforeNavigate - navigator ===');
-	// 	console.log(navigator);
-	// });
-
-	// afterNavigate(() => {
-	// 	forceScrolling();
-	// });
-
 	const toggleScrollspy: Attachment<HTMLElement> = (node: HTMLElement) => {
-		// const forceScrollspyActivation = () => {
-		// 	if (scrollspyParent) {
-		// 		scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
-		// 	}
-		// 	// const container = document.querySelector(
-		// 	// 	'#scrollspy-scrollable-parent'
-		// 	// ) as HTMLElement | null;
-		// 	// if (!container) return;
-		// 	// // Dispatch a plain scroll event first (some libraries listen to window, some to container)
-		// 	// container.dispatchEvent(new Event('scroll', { bubbles: true }));
-		// 	window.dispatchEvent(new Event('scroll'));
-		// 	// // Nudge scroll position to ensure mutation observers / scroll listeners run even if already at target
-		// 	// const original = container.scrollTop;
-		// 	// const alt = original === 0 ? 1 : original - 1;
-		// 	// container.scrollTop = alt;
-		// 	// container.dispatchEvent(new Event('scroll', { bubbles: true }));
-		// 	// requestAnimationFrame(() => {
-		// 	// 	container.scrollTop = original;
-		// 	// 	container.dispatchEvent(new Event('scroll', { bubbles: true }));
-		// 	// 	window.dispatchEvent(new Event('scroll'));
-		// 	// });
-		// };
-
 		const addScrollspy = async (node: HTMLElement) => {
-			// const addScrollspy = (node: HTMLElement) => {
 			node.setAttribute('data-scrollspy', '#scrollspy');
 			node.setAttribute('data-scrollspy-scrollable-parent', '#scrollspy-scrollable-parent');
 			await tick();
 			initScrollspy(node);
-			// forceScrollspyActivation();
 			forceScrolling();
 		};
 
-		const removeScrollspy = async (node: HTMLElement) => {
-			// const removeScrollspy = (node: HTMLElement) => {
+		const removeScrollspy = (node: HTMLElement) => {
 			node.removeAttribute('data-scrollspy');
 			node.removeAttribute('data-scrollspy-scrollable-parent');
-			// If scrollspy was not initialized, calling destroy will throw error
-			// await tick();
 			try {
 				const { element } = window.HSScrollspy.getInstance(node, true);
 				element.destroy();
@@ -205,48 +138,10 @@
 			} catch {}
 		};
 
-		// Intercept clicks on same-page fragment links that wouldn't move scroll (same offset) and force activation
-		node.addEventListener('click', (e) => {
-			const targetEl = (e.target as HTMLElement).closest('a');
-			if (!targetEl) return;
-			const href = targetEl.getAttribute('href');
-			if (!href || !href.startsWith('#')) return; // only local fragments
-			const container = document.querySelector(
-				'#scrollspy-scrollable-parent'
-			) as HTMLElement | null;
-			if (!container) return;
-			const section = document.querySelector(href) as HTMLElement | null;
-			if (!section) return;
-			// Calculate target position relative to container
-			const containerRect = container.getBoundingClientRect();
-			const sectionRect = section.getBoundingClientRect();
-			const targetScrollTop = container.scrollTop + sectionRect.top - containerRect.top;
-			if (Math.abs(container.scrollTop - targetScrollTop) < 2) {
-				// No effective scroll -> manually trigger activation sequence
-				// forceScrollspyActivation();
-				forceScrolling();
-			}
-		});
-
-		// afterNavigate(async () => {
-		// 	if (thisPage(node.dataset.pathname || '')) {
-		// 		await addScrollspy(node);
-		// 		// addScrollspy(node);
-		// 	} else {
-		// 		await removeScrollspy(node);
-		// 		// removeScrollspy(node);
-		// 	}
-		// });
-
 		afterNavigate(async () => {
 			if (thisPage(node.dataset.pathname || '')) {
 				await addScrollspy(node);
-				// addScrollspy(node);
 			}
-			// else {
-			// 	await removeScrollspy(node);
-			// 	// removeScrollspy(node);
-			// }
 		});
 
 		beforeNavigate((navigator) => {
@@ -257,23 +152,10 @@
 
 		// Cleanup when the attachment is removed
 		return async () => {
-			await removeScrollspy(node);
-			// removeScrollspy(node);
+			removeScrollspy(node);
 		};
 	};
 	const thisPage = $derived.by(() => (pathname: string) => pathname === page.url.pathname);
-
-	// const thisPage = (destinationPathname: string) => {
-	// 	return destinationPathname === page.url.pathname;
-	// };
-
-	// const createHref = (destinationPathname: string, hash?: string) => {
-	// 	let href = '';
-	// 	if (!hash) href = destinationPathname;
-	// 	else if (thisPage(destinationPathname)) href = hash;
-	// 	else href = `${destinationPathname}${hash}`;
-	// 	return href;
-	// };
 
 	const createHref = $derived.by(() => (destinationPathname: string, hash?: string) => {
 		let href = '';
@@ -284,7 +166,19 @@
 	});
 
 	onMount(() => {
-		forceScrolling();
+		scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+		if (page.url.hash) {
+			const target = document.getElementById(page.url.hash.substring(1));
+			// TBD: consider opening a potential collapsed parent sections here
+			if (target) {
+				const parentRect = scrollspyParent!.getBoundingClientRect();
+				const targetRect = target.getBoundingClientRect();
+
+				const targetScrollTop = scrollspyParent!.scrollTop + targetRect.top - parentRect.top;
+				scrollspyParent!.scrollTop = targetScrollTop;
+				scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+			}
+		}
 	});
 
 	const openSidebar = () => {
@@ -389,15 +283,15 @@
 				'hidden lg:block'
 			)} -->
 			{@render navbarPartItem(
-				'/playground/user-interface/sidebar/hierarchy',
+				'/playground/user-interface/sidebar/hierarchy-scroll',
 				'streamline--hierarchy-2',
 				'Hierarchy'
 			)}
-			{@render navbarPartItem(
+			<!-- {@render navbarPartItem(
 				'/playground/user-interface/sidebar/iteration',
 				'tabler--arrow-iteration',
 				'Iteration'
-			)}
+			)} -->
 		</ul>
 	</div>
 	<div class="navbar-center flex flex-row max-sm:scale-50">
@@ -491,17 +385,17 @@
 					'md:hidden'
 				)} -->
 				{@render sidebarPartItem(
-					'/playground/user-interface/sidebar/hierarchy',
+					'/playground/user-interface/sidebar/hierarchy-scroll',
 					'streamline--hierarchy-2',
 					'Hierarchy',
 					'md:hidden'
 				)}
-				{@render sidebarPartItem(
+				<!-- {@render sidebarPartItem(
 					'/playground/user-interface/sidebar/iteration',
 					'tabler--arrow-iteration',
 					'Iteration',
 					'md:hidden'
-				)}
+				)} -->
 			</ul>
 			<div class="divider"></div>
 			<ul class="menu p-0">
@@ -547,15 +441,15 @@
 						{@attach toggleScrollspy}
 					>
 						<SideBarLink
-							pathname={sidebarLinks[1].pathname}
-							hash={sidebarLinks[1].children[0].hash}
+							href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children[0].hash)}
+							thisPage={thisPage(sidebarLinks[1].pathname)}
 							icon="mdi--text"
 						>
 							{sidebarLinks[1].children[0].name}
 						</SideBarLink>
 						<SideBarLink
-							pathname={sidebarLinks[1].pathname}
-							hash={sidebarLinks[1].children[1].hash}
+							href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children[1].hash)}
+							thisPage={thisPage(sidebarLinks[1].pathname)}
 							icon="mdi--text"
 						>
 							{sidebarLinks[1].children[1].name}
@@ -563,11 +457,15 @@
 
 						<li data-scrollspy-group="" class="space-y-0.5">
 							<a
-								class="collapse-toggle collapse-open:bg-base-content/10 scrollspy-active:italic group"
+								class="collapse-toggle {thisPage(sidebarLinks[1].pathname)
+									? 'open'
+									: ''} collapse-open:bg-base-content/10 scrollspy-active:italic group"
 								id={sidebarLinks![1].children![2].id + '-control'}
 								data-collapse={'#' + sidebarLinks![1].children![2].id + '-collapse'}
+								data-pathname={sidebarLinks[1].pathname}
 								href={createHref(sidebarLinks[1].pathname, sidebarLinks![1].children![2].hash)}
 								{@attach initCollapse}
+								{@attach toggleCollapse}
 							>
 								<span
 									class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
@@ -582,19 +480,27 @@
 							</a>
 							<ul
 								id={sidebarLinks![1].children![2].id + '-collapse'}
-								class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
+								class="collapse {thisPage(sidebarLinks[1].pathname)
+									? 'open'
+									: 'hidden'} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
 								aria-labelledby={sidebarLinks![1].children![2].id + '-control'}
 							>
 								<SideBarLink
-									pathname={sidebarLinks[1].pathname}
-									hash={sidebarLinks[1].children![2].children![0].hash}
+									href={createHref(
+										sidebarLinks[1].pathname,
+										sidebarLinks[1].children![2].children![0].hash
+									)}
+									thisPage={thisPage(sidebarLinks[1].pathname)}
 									icon="mdi--text"
 								>
 									{sidebarLinks[1].children![2].children![0].name}
 								</SideBarLink>
 								<SideBarLink
-									pathname={sidebarLinks[1].pathname}
-									hash={sidebarLinks[1].children![2].children![1].hash}
+									href={createHref(
+										sidebarLinks[1].pathname,
+										sidebarLinks[1].children![2].children![1].hash
+									)}
+									thisPage={thisPage(sidebarLinks[1].pathname)}
 									icon="mdi--text"
 								>
 									{sidebarLinks[1].children![2].children![1].name}
@@ -602,15 +508,15 @@
 							</ul>
 						</li>
 						<SideBarLink
-							pathname={sidebarLinks[1].pathname}
-							hash={sidebarLinks[1].children![3].hash}
+							href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children![3].hash)}
+							thisPage={thisPage(sidebarLinks[1].pathname)}
 							icon="mdi--text"
 						>
 							{sidebarLinks[1].children![3].name}
 						</SideBarLink>
 						<SideBarLink
-							pathname={sidebarLinks[1].pathname}
-							hash={sidebarLinks[1].children![4].hash}
+							href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children![4].hash)}
+							thisPage={thisPage(sidebarLinks[1].pathname)}
 							icon="mdi--text"
 						>
 							{sidebarLinks[1].children![4].name}
@@ -653,26 +559,37 @@
 						{@attach toggleScrollspy}
 					>
 						<SideBarLink
-							pathname={sidebarLinks[2].pathname}
-							hash={sidebarLinks[2].children[0].hash}
+							href={createHref(sidebarLinks[2].pathname, sidebarLinks[2].children[0].hash)}
+							thisPage={thisPage(sidebarLinks[2].pathname)}
 							icon="mdi--text"
 						>
 							{sidebarLinks[2].children[0].name}
 						</SideBarLink>
 						<SideBarLink
-							pathname={sidebarLinks[2].pathname}
-							hash={sidebarLinks[2].children[1].hash}
+							href={createHref(sidebarLinks[2].pathname, sidebarLinks[2].children[1].hash)}
+							thisPage={thisPage(sidebarLinks[2].pathname)}
 							icon="mdi--text"
 						>
 							{sidebarLinks[2].children[1].name}
 						</SideBarLink>
+						<SideBarLink
+							href={createHref(sidebarLinks[2].pathname, sidebarLinks[2].children[2].hash)}
+							thisPage={thisPage(sidebarLinks[2].pathname)}
+							icon="mdi--text"
+						>
+							{sidebarLinks[2].children[2].name}
+						</SideBarLink>
 						<li data-scrollspy-group="" class="space-y-0.5">
 							<a
-								class="collapse-toggle collapse-open:bg-base-content/10 scrollspy-active:italic group"
-								id={sidebarLinks![2].children![2].id + '-control'}
-								data-collapse={'#' + sidebarLinks![2].children![2].id + '-collapse'}
-								href={createHref(sidebarLinks[2].pathname, sidebarLinks![2].children![2].hash)}
+								class="collapse-toggle {thisPage(sidebarLinks[2].pathname)
+									? 'open'
+									: ''} collapse-open:bg-base-content/10 scrollspy-active:italic group"
+								id={sidebarLinks![2].children![3].id + '-control'}
+								data-collapse={'#' + sidebarLinks![2].children![3].id + '-collapse'}
+								data-pathname={sidebarLinks[2].pathname}
+								href={createHref(sidebarLinks[2].pathname, sidebarLinks![2].children![3].hash)}
 								{@attach initCollapse}
+								{@attach toggleCollapse}
 							>
 								<span
 									class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
@@ -680,45 +597,53 @@
 								<span
 									class="icon-[icon-park-outline--page] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
 								></span>
-								{sidebarLinks![2].children![2].name}
+								{sidebarLinks![2].children![3].name}
 								<span
 									class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"
 								></span>
 							</a>
 							<ul
-								id={sidebarLinks![2].children![2].id + '-collapse'}
-								class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
-								aria-labelledby={sidebarLinks![2].children![2].id + '-control'}
+								id={sidebarLinks![2].children![3].id + '-collapse'}
+								class="collapse {thisPage(sidebarLinks[2].pathname)
+									? 'open'
+									: 'hidden'} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
+								aria-labelledby={sidebarLinks![2].children![3].id + '-control'}
 							>
 								<SideBarLink
-									pathname={sidebarLinks[2].pathname}
-									hash={sidebarLinks[2].children![2].children![0].hash}
+									href={createHref(
+										sidebarLinks[2].pathname,
+										sidebarLinks[2].children![3].children![0].hash
+									)}
+									thisPage={thisPage(sidebarLinks[2].pathname)}
 									icon="mdi--text"
 								>
-									{sidebarLinks[2].children![2].children![0].name}
+									{sidebarLinks[2].children![3].children![0].name}
 								</SideBarLink>
 								<SideBarLink
-									pathname={sidebarLinks[2].pathname}
-									hash={sidebarLinks[2].children![2].children![1].hash}
+									href={createHref(
+										sidebarLinks[2].pathname,
+										sidebarLinks[2].children![3].children![1].hash
+									)}
+									thisPage={thisPage(sidebarLinks[2].pathname)}
 									icon="mdi--text"
 								>
-									{sidebarLinks[2].children![2].children![1].name}
+									{sidebarLinks[2].children![3].children![1].name}
 								</SideBarLink>
 							</ul>
 						</li>
 						<SideBarLink
-							pathname={sidebarLinks[2].pathname}
-							hash={sidebarLinks[2].children![3].hash}
-							icon="mdi--text"
-						>
-							{sidebarLinks[2].children![3].name}
-						</SideBarLink>
-						<SideBarLink
-							pathname={sidebarLinks[2].pathname}
-							hash={sidebarLinks[2].children![4].hash}
+							href={createHref(sidebarLinks[2].pathname, sidebarLinks[2].children![4].hash)}
+							thisPage={thisPage(sidebarLinks[2].pathname)}
 							icon="mdi--text"
 						>
 							{sidebarLinks[2].children![4].name}
+						</SideBarLink>
+						<SideBarLink
+							href={createHref(sidebarLinks[2].pathname, sidebarLinks[2].children![5].hash)}
+							thisPage={thisPage(sidebarLinks[2].pathname)}
+							icon="mdi--text"
+						>
+							{sidebarLinks[2].children![5].name}
 						</SideBarLink>
 					</ul>
 				</li>
@@ -747,7 +672,7 @@
 		</div>
 	</aside>
 	<div class="sm:overlay-minified:ps-19 bg-base-100 ps-64 transition-all duration-300 max-sm:ps-0">
-		<div class=" bg-base-100 transition-all duration-300">
+		<div class="bg-base-100 transition-all duration-300">
 			<div id="scrollspy" class="space-y-4 pe-1">
 				{@render children?.()}
 			</div>

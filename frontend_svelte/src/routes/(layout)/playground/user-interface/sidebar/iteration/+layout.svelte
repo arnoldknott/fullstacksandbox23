@@ -1,58 +1,72 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
-	import { initDropdown, initOverlay, initCollapse, initScrollspy } from '$lib/userInterface';
-	import { type Snippet, tick } from 'svelte';
+	import { initDropdown, initOverlay } from '$lib/userInterface';
+	import { type Snippet } from 'svelte';
 	import { Variant, type ColorConfig } from '$lib/theming';
 	import { Model, type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
 	import ThemePicker from '../../../components/ThemePicker.svelte';
 	import ArtificialIntelligencePicker from '../../../components/ArtificialIntelligencePicker.svelte';
-	import { afterNavigate, beforeNavigate } from '$app/navigation';
 	import { onMount } from 'svelte';
-	import type { Attachment } from 'svelte/attachments';
-	import SideBarLink from '../SideBarLink.svelte';
+	import SidebarContent from './SidebarContent.svelte';
 	let { children }: { children: Snippet } = $props();
 
 	let sidebarLinks = $state([
 		{
 			name: 'Page 1',
 			pathname: resolve('/(layout)/playground/user-interface/sidebar/iteration/page1'),
-			children: []
+			icon: 'icon-[tabler--user]',
+			id: 'page1',
+			items: []
 		},
 		{
 			name: 'Page 2',
 			pathname: resolve('/(layout)/playground/user-interface/sidebar/iteration/page2'),
+			icon: 'icon-[icon-park-outline--page]',
 			id: 'page2',
-			children: [
+			items: [
 				{
+					id: 'page2-loreum1',
 					name: 'Loreum 1',
+					icon: 'icon-[mdi--text]',
 					hash: '#loreum1'
 				},
 				{
+					id: 'page2-loreum2',
 					name: 'Loreum 2',
+					icon: 'icon-[mdi--text]',
 					hash: '#loreum2'
 				},
 				{
 					name: 'Sub category',
+					icon: 'icon-[material-symbols--folder-outline-rounded]',
 					hash: '#sub-category',
 					id: 'page2-sub-category',
-					children: [
+					items: [
 						{
+							id: 'page2-loreum3',
 							name: 'Loreum 3',
+							icon: 'icon-[mdi--text]',
 							hash: '#loreum3'
 						},
 						{
+							id: 'page2-loreum4',
 							name: 'Loreum 4',
+							icon: 'icon-[mdi--text]',
 							hash: '#loreum4'
 						}
 					]
 				},
 				{
+					id: 'page2-loreum5',
 					name: 'Loreum 5',
+					icon: 'icon-[mdi--text]',
 					hash: '#loreum5'
 				},
 				{
+					id: 'page2-loreum6',
 					name: 'Loreum 6',
+					icon: 'icon-[mdi--text]',
 					hash: '#loreum6'
 				}
 			]
@@ -60,202 +74,74 @@
 		{
 			name: 'Page 3',
 			pathname: resolve('/(layout)/playground/user-interface/sidebar/iteration/page3'),
+			icon: 'icon-[icon-park-outline--page]',
 			id: 'page3',
-			children: [
+			items: [
 				{
+					id: 'page3-loreum1',
 					name: 'Loreum 1',
+					icon: 'icon-[mdi--text]',
 					hash: '#loreum1'
 				},
 				{
+					id: 'page3-loreum2',
 					name: 'Loreum 2',
+					icon: 'icon-[mdi--text]',
 					hash: '#loreum2'
 				},
 				{
+					id: 'page3-loreum2a',
 					name: 'Loreum 2a',
+					icon: 'icon-[mdi--text]',
 					hash: '#loreum2a'
 				},
 				{
 					name: 'Sub category',
+					icon: 'icon-[material-symbols--folder-outline-rounded]',
 					hash: '#sub-category',
 					id: 'page3-sub-category',
-					children: [
+					items: [
 						{
+							id: 'page3-loreum3p1',
 							name: 'Loreum 3.1',
+							icon: 'icon-[mdi--text]',
 							hash: '#loreum3p1'
 						},
 						{
+							id: 'page3-loreum3p2',
 							name: 'Loreum 3.2',
+							icon: 'icon-[mdi--text]',
 							hash: '#loreum3p2'
 						}
 					]
 				},
 				{
+					id: 'page3-loreum4',
 					name: 'Loreum 4',
+					icon: 'icon-[mdi--text]',
 					hash: '#loreum4'
 				},
 				{
+					id: 'page3-loreum5',
 					name: 'Loreum 5',
+					icon: 'icon-[mdi--text]',
 					hash: '#loreum5'
 				}
 			]
+		},
+		{
+			id: 'further-page',
+			name: 'Further Page',
+			pathname: resolve('/(layout)/playground/user-interface/sidebar/iteration/page4'),
+			icon: 'icon-[tabler--mail]',
+
+			items: []
 		}
 	]);
 
-	let scrollspyParent: HTMLElement | null = $state(null);
-	let scrollspy: HTMLElement | null = $state(null);
-
-	const forceScrolling = () => {
-		// if (scrollspyParent) {
-		// 	const originalTop = scrollspyParent.scrollTop;
-		// 	const originalLeft = scrollspyParent.scrollLeft;
-		// 	console.log('=== forceScrolling - original scrolling ===');
-		// 	console.log(originalTop);
-		// 	console.log(originalLeft);
-		// 	const otherEnd = originalTop === 0 ? scrollspyParent.scrollHeight - originalTop : 0;
-		// 	// scrollspyParent.scrollTo(originalLeft, otherEnd);
-		// 	// scrollspyParent.scrollTo(originalLeft, originalTop);
-		// 	// requestAnimationFrame(() => {
-		// 	// 	scrollspy!.scroll(originalLeft, originalTop);
-		// 	// 	// window.dispatchEvent(new Event('scroll'));
-		// 	// });
-		// }
-		if (scrollspyParent) {
-			const original = scrollspyParent.scrollTop;
-			// TBD: is 1000 enough, if the an element before the first scroll target is very tall => no!
-			// scrolls to the other end of the scroll area and back to force scrollspy to recalculate positions
-			const alt =
-				original < 2 ? scrollspyParent.scrollHeight : original - scrollspyParent.scrollHeight;
-			scrollspyParent.scrollTop = alt;
-			scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
-			// scrollspyParent.scroll(originalLeft, alt);
-			// scrollspyParent.scroll(originalLeft, original);
-			requestAnimationFrame(() => {
-				scrollspyParent!.scrollTop = original;
-				scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
-				// window.dispatchEvent(new Event('scroll'));
-			});
-			// const newScrolltopParent = scrollspyParent.scrollTop;
-			// console.log('=== forceScrolling - new scrollTop ===');
-			// console.log(newScrolltopParent);
-		}
-		// window.dispatchEvent(new Event('scroll'));
-		// const target = document.getElementById(page.url.hash);
-		// scrollspy?.scroll(
-		// 	scrollspy.getBoundingClientRect().left,
-		// 	target?.getBoundingClientRect().top || 0
-		// );
-	};
-
-	const toggleScrollspy: Attachment<HTMLElement> = (node: HTMLElement) => {
-		// const forceScrollspyActivation = () => {
-		// 	if (scrollspyParent) {
-		// 		scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
-		// 	}
-		// 	// const container = document.querySelector(
-		// 	// 	'#scrollspy-scrollable-parent'
-		// 	// ) as HTMLElement | null;
-		// 	// if (!container) return;
-		// 	// // Dispatch a plain scroll event first (some libraries listen to window, some to container)
-		// 	// container.dispatchEvent(new Event('scroll', { bubbles: true }));
-		// 	window.dispatchEvent(new Event('scroll'));
-		// 	// // Nudge scroll position to ensure mutation observers / scroll listeners run even if already at target
-		// 	// const original = container.scrollTop;
-		// 	// const alt = original === 0 ? 1 : original - 1;
-		// 	// container.scrollTop = alt;
-		// 	// container.dispatchEvent(new Event('scroll', { bubbles: true }));
-		// 	// requestAnimationFrame(() => {
-		// 	// 	container.scrollTop = original;
-		// 	// 	container.dispatchEvent(new Event('scroll', { bubbles: true }));
-		// 	// 	window.dispatchEvent(new Event('scroll'));
-		// 	// });
-		// };
-
-		const addScrollspy = async (node: HTMLElement) => {
-			// const addScrollspy = (node: HTMLElement) => {
-			node.setAttribute('data-scrollspy', '#scrollspy');
-			node.setAttribute('data-scrollspy-scrollable-parent', '#scrollspy-scrollable-parent');
-			await tick();
-			initScrollspy(node);
-			// forceScrollspyActivation();
-			forceScrolling();
-		};
-
-		const removeScrollspy = async (node: HTMLElement) => {
-			// const removeScrollspy = (node: HTMLElement) => {
-			node.removeAttribute('data-scrollspy');
-			node.removeAttribute('data-scrollspy-scrollable-parent');
-			// If scrollspy was not initialized, calling destroy will throw error
-			// await tick();
-			try {
-				const { element } = window.HSScrollspy.getInstance(node, true);
-				element.destroy();
-				/* eslint-disable no-empty */
-			} catch {}
-		};
-
-		// Intercept clicks on same-page fragment links that wouldn't move scroll (same offset) and force activation
-		// node.addEventListener('click', (e) => {
-		// 	const targetEl = (e.target as HTMLElement).closest('a');
-		// 	if (!targetEl) return;
-		// 	const href = targetEl.getAttribute('href');
-		// 	if (!href || !href.startsWith('#')) return; // only local fragments
-		// 	const container = document.querySelector(
-		// 		'#scrollspy-scrollable-parent'
-		// 	) as HTMLElement | null;
-		// 	if (!container) return;
-		// 	const section = document.querySelector(href) as HTMLElement | null;
-		// 	if (!section) return;
-		// 	// Calculate target position relative to container
-		// 	const containerRect = container.getBoundingClientRect();
-		// 	const sectionRect = section.getBoundingClientRect();
-		// 	const targetScrollTop = container.scrollTop + sectionRect.top - containerRect.top;
-		// 	if (Math.abs(container.scrollTop - targetScrollTop) < 2) {
-		// 		// No effective scroll -> manually trigger activation sequence
-		// 		// forceScrollspyActivation();
-		// 		console.log('=== toggleScrollspy - click - forceScrolling - ran ===');
-		// 		// forceScrolling();
-		// 	}
-		// });
-
-		afterNavigate(async () => {
-			if (thisPage(node.dataset.pathname || '')) {
-				// await tick();
-				await addScrollspy(node);
-				// addScrollspy(node);
-			}
-			// console.log('=== toggleScrollspy - afterNavigate - ran ===');
-			// else {
-			// 	await removeScrollspy(node);
-			// 	// removeScrollspy(node);
-			// }
-		});
-
-		beforeNavigate((navigator) => {
-			if (!(navigator.to?.url.pathname === node.dataset.pathname)) {
-				removeScrollspy(node);
-			}
-			// console.log('=== toggleScrollspy - beforeNavigate - ran ===');
-		});
-
-		// Cleanup when the attachment is removed
-		return async () => {
-			await removeScrollspy(node);
-			// removeScrollspy(node);
-		};
-	};
-	const thisPage = $derived.by(() => (pathname: string) => pathname === page.url.pathname);
-
-	const createHref = $derived.by(() => (destinationPathname: string, hash?: string) => {
-		let href = '';
-		if (!hash) href = destinationPathname;
-		else if (thisPage(destinationPathname)) href = hash;
-		else href = `${destinationPathname}${hash}`;
-		return href;
-	});
+	let scrollspyParent: HTMLDivElement | null = $state(null);
 
 	onMount(() => {
-		// $effect(() => {
-		// forceScrolling();
 		scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
 		if (page.url.hash) {
 			const target = document.getElementById(page.url.hash.substring(1));
@@ -269,15 +155,7 @@
 				scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
 			}
 		}
-
-		// });
 	});
-
-	const openSidebar = () => {
-		const { element } = window.HSOverlay.getInstance('#collapsible-mini-sidebar', true);
-		element.open();
-		window.HSStaticMethods.autoInit();
-	};
 
 	let themeConfiguration: ColorConfig = $state({
 		sourceColor: '#941ff4', // <= That's a good color!// '#353c6e' // '#769CDF',
@@ -292,17 +170,6 @@
 		temperature: 0.7
 		// max_tokens: 2048
 	});
-
-	const toggleCollapse: Attachment<HTMLElement> = (node: HTMLElement) => {
-		if (page.url.pathname.startsWith(node.dataset.pathname || '')) {
-			const { element } = window.HSCollapse.getInstance(node, true);
-			element.show();
-		}
-		// return () => {
-		// 	const { element } = window.HSCollapse.getInstance(node, true);
-		// 	element.hide();
-		// };
-	};
 
 	let artificialIntelligenceForm = $state<HTMLFormElement | null>(null);
 
@@ -340,7 +207,7 @@
 {#snippet navbarPartItem(href: string, icon: string, text: string, textClasses?: string)}
 	<li class="text-primary hidden items-center md:flex">
 		<a {href} aria-label={text} class="flex items-center gap-1"
-			><span class="icon-[{icon}] size-6"></span>
+			><span class="{icon} size-6"></span>
 			<span class={textClasses}>{text}</span>
 		</a>
 	</li>
@@ -349,7 +216,7 @@
 {#snippet sidebarPartItem(href: string, icon: string, text: string, listItemClasses?: string)}
 	<li class="text-primary {listItemClasses}">
 		<a {href}>
-			<span class="icon-[{icon}] size-5"></span>
+			<span class="{icon} size-5"></span>
 			<span class="overlay-minified:hidden">{text}</span>
 		</a>
 	</li>
@@ -366,22 +233,22 @@
 			{@render sidebarToggleButton('sm:hidden', {
 				'data-overlay': '#collapsible-mini-sidebar'
 			})}
-			<!-- {@render navbarPartItem('/features', 'mdi--feature-highlight', 'Features')}
-			{@render navbarPartItem('/apps', 'tabler--apps', 'Apps')}
+			<!-- {@render navbarPartItem('/features', 'icon-[mdi--feature-highlight]', 'Features')}
+			{@render navbarPartItem('/apps', 'icon-[tabler--apps]', 'Apps')}
 			{@render navbarPartItem(
 				'/construction',
-				'maki--construction',
+				'icon-[maki--construction]',
 				'Construction',
 				'hidden lg:block'
 			)} -->
-			{@render navbarPartItem(
+			<!-- {@render navbarPartItem(
 				'/playground/user-interface/sidebar/hierarchy',
-				'streamline--hierarchy-2',
+				'icon-[streamline--hierarchy-2]',
 				'Hierarchy'
-			)}
+			)} -->
 			{@render navbarPartItem(
 				'/playground/user-interface/sidebar/iteration',
-				'tabler--arrow-iteration',
+				'icon-[tabler--arrow-iteration]',
 				'Iteration'
 			)}
 		</ul>
@@ -443,7 +310,7 @@
 				</li>
 			</ul>
 		</div>
-		<div class="flex items-center md:ml-2">
+		<div class="hidden items-center sm:flex md:ml-2">
 			<button
 				class="btn btn-primary btn-outline shadow-primary ml-2 rounded-full shadow-sm"
 				aria-label="LogInOut"
@@ -467,293 +334,47 @@
 	>
 		<div class="drawer-body px-2 pt-4">
 			<ul class="menu p-0">
-				{@render sidebarPartItem('/', 'material-symbols--home-outline-rounded', 'Home')}
-				<!-- {@render sidebarPartItem('/features', 'mdi--feature-highlight', 'Features', 'md:hidden')}
-				{@render sidebarPartItem('/apps', 'tabler--apps', 'Apps', 'md:hidden')}
+				{@render sidebarPartItem('/', 'icon-[material-symbols--home-outline-rounded]', 'Home')}
+				<!-- {@render sidebarPartItem('/features', 'icon-[mdi--feature-highlight]', 'Features', 'md:hidden')}
+				{@render sidebarPartItem('/apps', 'icon-[tabler--apps]', 'Apps', 'md:hidden')}
 				{@render sidebarPartItem(
 					'/construction',
-					'maki--construction',
+					'icon-[maki--construction]',
 					'Construction',
 					'md:hidden'
 				)} -->
-				{@render sidebarPartItem(
+				<!-- {@render sidebarPartItem(
 					'/playground/user-interface/sidebar/hierarchy',
-					'streamline--hierarchy-2',
+					'icon-[streamline--hierarchy-2]',
 					'Hierarchy',
 					'md:hidden'
-				)}
+				)} -->
 				{@render sidebarPartItem(
 					'/playground/user-interface/sidebar/iteration',
-					'tabler--arrow-iteration',
+					'icon-[tabler--arrow-iteration]',
 					'Iteration',
 					'md:hidden'
 				)}
 			</ul>
 			<div class="divider"></div>
 			<ul class="menu p-0">
+				<SidebarContent contentList={sidebarLinks} {scrollspyParent} />
 				<li>
-					<a href={sidebarLinks[0].pathname}>
-						<span class="icon-[tabler--user] size-5"></span>
-						<span class="overlay-minified:hidden">{sidebarLinks[0].name}</span>
-					</a>
-				</li>
-				<!-- Parameterized page 2: -->
-				<li class="space-y-0.5">
-					<button
-						type="button"
-						class="collapse-toggle {thisPage(sidebarLinks[1].pathname)
-							? 'open'
-							: ''} collapse-open:bg-base-content/10"
-						id={sidebarLinks[1].id + '-control'}
-						data-collapse={'#' + sidebarLinks[1].id + '-collapse'}
-						data-pathname={sidebarLinks[1].pathname}
-						{@attach initCollapse}
-						{@attach toggleCollapse}
-					>
-						<span class="icon-[icon-park-outline--page] size-5"></span>
-						<span class="overlay-minified:hidden">{sidebarLinks[1].name}</span>
-						<span
-							class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:hidden size-4 transition-all duration-300"
-						></span>
-						<span
-							class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:block overlay-minified:rotate-270 hidden size-4 transition-all duration-300"
-							role="button"
-							tabindex="0"
-							onclick={() => openSidebar()}
-							onkeydown={() => openSidebar()}
-						></span>
-					</button>
-					<ul
-						id={sidebarLinks[1].id + '-collapse'}
-						class="collapse {thisPage(sidebarLinks[1].pathname)
-							? 'open'
-							: 'hidden'} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
-						aria-labelledby={sidebarLinks[1].id + '-control'}
-						data-pathname={sidebarLinks[1].pathname}
-						{@attach toggleScrollspy}
-					>
-						<SideBarLink
-							pathname={sidebarLinks[1].pathname}
-							hash={sidebarLinks[1].children[0].hash}
-							icon="mdi--text"
+					<div class="items-center sm:hidden md:ml-2">
+						<button
+							class="btn btn-primary btn-outline shadow-primary ml-2 rounded-full shadow-sm"
+							aria-label="LogInOut"
 						>
-							{sidebarLinks[1].children[0].name}
-						</SideBarLink>
-						<SideBarLink
-							pathname={sidebarLinks[1].pathname}
-							hash={sidebarLinks[1].children[1].hash}
-							icon="mdi--text"
-						>
-							{sidebarLinks[1].children[1].name}
-						</SideBarLink>
-
-						<li data-scrollspy-group="" class="space-y-0.5">
-							<a
-								class="collapse-toggle {thisPage(sidebarLinks[1].pathname)
-									? 'open'
-									: ''} collapse-open:bg-base-content/10 scrollspy-active:italic group"
-								id={sidebarLinks![1].children![2].id + '-control'}
-								data-collapse={'#' + sidebarLinks![1].children![2].id + '-collapse'}
-								data-pathname={sidebarLinks[1].pathname}
-								href={createHref(sidebarLinks[1].pathname, sidebarLinks![1].children![2].hash)}
-								{@attach initCollapse}
-								{@attach toggleCollapse}
-							>
-								<span
-									class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
-								></span>
-								<span
-									class="icon-[icon-park-outline--page] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
-								></span>
-								{sidebarLinks![1].children![2].name}
-								<span
-									class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"
-								></span>
-							</a>
-							<ul
-								id={sidebarLinks![1].children![2].id + '-collapse'}
-								class="collapse {thisPage(sidebarLinks[1].pathname)
-									? 'open'
-									: 'hidden'} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
-								aria-labelledby={sidebarLinks![1].children![2].id + '-control'}
-							>
-								<SideBarLink
-									pathname={sidebarLinks[1].pathname}
-									hash={sidebarLinks[1].children![2].children![0].hash}
-									icon="mdi--text"
-								>
-									{sidebarLinks[1].children![2].children![0].name}
-								</SideBarLink>
-								<SideBarLink
-									pathname={sidebarLinks[1].pathname}
-									hash={sidebarLinks[1].children![2].children![1].hash}
-									icon="mdi--text"
-								>
-									{sidebarLinks[1].children![2].children![1].name}
-								</SideBarLink>
-							</ul>
-						</li>
-						<SideBarLink
-							pathname={sidebarLinks[1].pathname}
-							hash={sidebarLinks[1].children![3].hash}
-							icon="mdi--text"
-						>
-							{sidebarLinks[1].children![3].name}
-						</SideBarLink>
-						<SideBarLink
-							pathname={sidebarLinks[1].pathname}
-							hash={sidebarLinks[1].children![4].hash}
-							icon="mdi--text"
-						>
-							{sidebarLinks[1].children![4].name}
-						</SideBarLink>
-					</ul>
-				</li>
-				<!-- Parameterized page 3: -->
-				<li class="space-y-0.5">
-					<button
-						type="button"
-						class="collapse-toggle {thisPage(sidebarLinks[2].pathname)
-							? 'open'
-							: ''} collapse-open:bg-base-content/10"
-						id={sidebarLinks[2].id + '-control'}
-						data-collapse={'#' + sidebarLinks[2].id + '-collapse'}
-						data-pathname={sidebarLinks[2].pathname}
-						{@attach initCollapse}
-						{@attach toggleCollapse}
-					>
-						<span class="icon-[icon-park-outline--page] size-5"></span>
-						<span class="overlay-minified:hidden">{sidebarLinks[2].name}</span>
-						<span
-							class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:hidden size-4 transition-all duration-300"
-						></span>
-						<span
-							class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:block overlay-minified:rotate-270 hidden size-4 transition-all duration-300"
-							role="button"
-							tabindex="0"
-							onclick={() => openSidebar()}
-							onkeydown={() => openSidebar()}
-						></span>
-					</button>
-					<ul
-						id={sidebarLinks[2].id + '-collapse'}
-						class="collapse {thisPage(sidebarLinks[2].pathname)
-							? 'open'
-							: 'hidden'} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
-						aria-labelledby={sidebarLinks[2].id + '-control'}
-						data-pathname={sidebarLinks[2].pathname}
-						{@attach toggleScrollspy}
-					>
-						<SideBarLink
-							pathname={sidebarLinks[2].pathname}
-							hash={sidebarLinks[2].children[0].hash}
-							icon="mdi--text"
-						>
-							{sidebarLinks[2].children[0].name}
-						</SideBarLink>
-						<SideBarLink
-							pathname={sidebarLinks[2].pathname}
-							hash={sidebarLinks[2].children[1].hash}
-							icon="mdi--text"
-						>
-							{sidebarLinks[2].children[1].name}
-						</SideBarLink>
-						<SideBarLink
-							pathname={sidebarLinks[2].pathname}
-							hash={sidebarLinks[2].children[2].hash}
-							icon="mdi--text"
-						>
-							{sidebarLinks[2].children[2].name}
-						</SideBarLink>
-						<li data-scrollspy-group="" class="space-y-0.5">
-							<a
-								class="collapse-toggle {thisPage(sidebarLinks[2].pathname)
-									? 'open'
-									: ''} collapse-open:bg-base-content/10 scrollspy-active:italic group"
-								id={sidebarLinks![2].children![3].id + '-control'}
-								data-collapse={'#' + sidebarLinks![2].children![3].id + '-collapse'}
-								data-pathname={sidebarLinks[2].pathname}
-								href={createHref(sidebarLinks[2].pathname, sidebarLinks![2].children![3].hash)}
-								{@attach initCollapse}
-								{@attach toggleCollapse}
-							>
-								<span
-									class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
-								></span>
-								<span
-									class="icon-[icon-park-outline--page] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
-								></span>
-								{sidebarLinks![2].children![3].name}
-								<span
-									class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"
-								></span>
-							</a>
-							<ul
-								id={sidebarLinks![2].children![3].id + '-collapse'}
-								class="collapse {thisPage(sidebarLinks[2].pathname)
-									? 'open'
-									: 'hidden'} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
-								aria-labelledby={sidebarLinks![2].children![3].id + '-control'}
-							>
-								<SideBarLink
-									pathname={sidebarLinks[2].pathname}
-									hash={sidebarLinks[2].children![3].children![0].hash}
-									icon="mdi--text"
-								>
-									{sidebarLinks[2].children![3].children![0].name}
-								</SideBarLink>
-								<SideBarLink
-									pathname={sidebarLinks[2].pathname}
-									hash={sidebarLinks[2].children![3].children![1].hash}
-									icon="mdi--text"
-								>
-									{sidebarLinks[2].children![3].children![1].name}
-								</SideBarLink>
-							</ul>
-						</li>
-						<SideBarLink
-							pathname={sidebarLinks[2].pathname}
-							hash={sidebarLinks[2].children![4].hash}
-							icon="mdi--text"
-						>
-							{sidebarLinks[2].children![4].name}
-						</SideBarLink>
-						<SideBarLink
-							pathname={sidebarLinks[2].pathname}
-							hash={sidebarLinks[2].children![5].hash}
-							icon="mdi--text"
-						>
-							{sidebarLinks[2].children![5].name}
-						</SideBarLink>
-					</ul>
-				</li>
-				<li>
-					<a href="./page4/">
-						<span class="icon-[tabler--mail] size-5"></span>
-						<span class="overlay-minified:hidden">Further Page</span>
-					</a>
-				</li>
-				<!-- <li>
-					<a href="./scrollspy/#">
-						<span class="icon-[tabler--shopping-bag] size-5"></span>
-						<span class="overlay-minified:hidden">About</span>
-					</a>
-				</li> -->
-				<li>
-					<button
-						class="btn btn-primary btn-outline shadow-primary mt-4 w-full rounded-full shadow-sm"
-						aria-label="Console log page"
-						onclick={() => console.log($state.snapshot(page))}
-					>
-						Console log page
-					</button>
+							<a href="#top">LogInOut</a>
+						</button>
+					</div>
 				</li>
 			</ul>
 		</div>
 	</aside>
 	<div class="sm:overlay-minified:ps-19 bg-base-100 ps-64 transition-all duration-300 max-sm:ps-0">
-		<div class=" bg-base-100 transition-all duration-300">
-			<div id="scrollspy" class="space-y-4 pe-1" bind:this={scrollspy}>
+		<div class="bg-base-100 transition-all duration-300">
+			<div id="scrollspy" class="space-y-4 pe-1">
 				{@render children?.()}
 			</div>
 		</div>
