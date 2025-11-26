@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { initDropdown } from '$lib/userInterface';
 	let mode: 'light' | 'dark' = $state('dark');
 	const toggleMode = () => {
 		mode = mode === 'dark' ? 'light' : 'dark';
@@ -27,7 +28,7 @@
 <div class="h-4"></div>
 
 <nav
-	class="navbar rounded-box bg-base-100 sticky start-0 top-[50px] z-1 shadow-sm md:flex md:items-stretch"
+	class="navbar rounded-box bg-base-100 shadow-shadow border-outline-variant sticky start-0 top-[50px] z-1 border-b shadow-sm md:flex md:items-stretch"
 >
 	<div class="w-full md:flex md:items-center md:gap-2">
 		<div class="flex items-center justify-between">
@@ -67,13 +68,14 @@
 	</div>
 	<div class="navbar-center flex flex-col justify-center">
 		<div class="title-small text-primary italic" style="line-height: 1;">Fullstack</div>
-		<div class="title-small text-secondary font-bold tracking-widest" style="line-height: 1">
-			Sandbox
+		<div class="title-small text-secondary font-bold tracking-wide" style="line-height: 1">
+			Platform
 		</div>
 	</div>
 	<div class="heading-large navbar-center text-accent ml-1 flex items-center">23</div>
 	<div
 		class="dropdown navbar-end flex items-center [--auto-close:inside] rtl:[--placement:bottom-end]"
+		{@attach initDropdown}
 	>
 		<span
 			id="dropdown-menu-icon-user"
@@ -192,7 +194,7 @@
 <div class="h-96"></div>
 
 <nav
-	class="navbar rounded-box bg-base-100 sticky start-0 top-[800px] z-1 justify-between shadow-sm md:flex md:items-stretch"
+	class="navbar rounded-box bg-base-100 shadow-shadow border-outline-variant sticky start-0 top-[800px] z-1 justify-between border-b shadow-sm md:flex md:items-stretch"
 >
 	<div class="dropdown navbar-start relative inline-flex md:hidden rtl:[--placement:bottom-end]">
 		<button
@@ -276,14 +278,17 @@
 	<div class="navbar-center flex flex-row">
 		<div class="flex flex-col justify-center">
 			<div class="title-small text-primary italic" style="line-height: 1;">Fullstack</div>
-			<div class="title-small text-secondary font-bold tracking-widest" style="line-height: 1">
-				Sandbox
+			<div class="title-small text-secondary font-bold tracking-wide" style="line-height: 1">
+				Platform
 			</div>
 		</div>
 		<div class="heading-large navbar-center text-accent ml-1 flex items-center">23</div>
 	</div>
 	<div class="navbar-end">
-		<div class="dropdown flex items-center [--auto-close:inside] rtl:[--placement:bottom-end]">
+		<div
+			class="dropdown flex items-center [--auto-close:inside] rtl:[--placement:bottom-end]"
+			{@attach initDropdown}
+		>
 			<span
 				id="dropdown-menu-icon-user"
 				class="dropdown-toggle icon-[fa6-solid--user] size-6"

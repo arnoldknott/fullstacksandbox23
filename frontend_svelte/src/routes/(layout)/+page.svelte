@@ -7,7 +7,7 @@
 			class="heading-large text-secondary font-bold tracking-wide md:tracking-widest"
 			style="line-height: 1"
 		>
-			Sandbox
+			Platform
 		</div>
 	</div>
 	<div class="text-accent ml-3 flex items-center text-[116px]">23</div>

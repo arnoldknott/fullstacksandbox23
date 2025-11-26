@@ -1,16 +1,13 @@
 <script lang="ts">
-	import { type SubmitFunction } from '@sveltejs/kit';
 	import { enhance } from '$app/forms';
 	import type { ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
 
 	let {
 		artificialIntelligenceForm = $bindable<HTMLFormElement | null>(),
-		updateProfileAccount,
 		saveProfileAccount,
 		artificialIntelligenceConfiguration = $bindable()
 	}: {
 		artificialIntelligenceForm: HTMLFormElement | null;
-		updateProfileAccount: SubmitFunction;
 		saveProfileAccount: () => void;
 		artificialIntelligenceConfiguration: ArtificialIntelligenceConfig;
 	} = $props();
@@ -25,19 +22,19 @@
 	class="align-between flex h-full flex-col"
 	action="/?/putme"
 	id="ai-form"
-	use:enhance={updateProfileAccount}
+	use:enhance
 	bind:this={artificialIntelligenceForm}
 >
 	<li class="flex grow items-center gap-2">
-		<span class="icon-[mingcute--ai-fill] bg-neutral size-6"></span>
-		<span class="text-neutral grow">Artificial Intelligence</span>
+		<span class="icon-[mingcute--ai-fill] bg-secondary size-6"></span>
+		<span class="text-secondary grow">Artificial Intelligence</span>
 	</li>
 	<li class="grow">
 		<div class="flex w-full flex-row pt-2">
 			<label class="label label-text text-base" for="ai-enabled">off</label>
 			<input
 				type="checkbox"
-				class="switch switch-neutral"
+				class="switch switch-secondary"
 				onchange={() => saveProfileAccount()}
 				bind:checked={artificialIntelligenceConfiguration.enabled}
 				id="ai-enabled"

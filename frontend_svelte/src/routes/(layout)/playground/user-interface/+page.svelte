@@ -6,13 +6,23 @@
 		{
 			name: 'Top Navbar',
 			description:
-				'The top navigation bar across the application for top level application navigation and user login and logout.',
-			url: '/playground/user-interface/navbar'
+				'across the upper part of the screent for top level application navigation and user login and logout.',
+			url: 'user-interface/navbar'
 		},
 		{
 			name: 'Sidebar',
-			description: 'The sidebar navigation for secondary application navigation.',
-			url: '/playground/user-interface/sidebar'
+			description: 'on the side of the screen for navigation for secondary application navigation.',
+			url: 'user-interface/sidebar'
+		},
+		{
+			name: 'Panes',
+			description: 'sectioning the screen for displaying content in a split view.',
+			url: 'user-interface/panes'
+		},
+		{
+			name: 'Tabs',
+			description: 'switching to different aspects of a specific content.',
+			url: 'user-interface/tabs'
 		}
 	];
 </script>
@@ -23,15 +33,42 @@
 </svelte:head>
 
 <Display>User Interface Elements</Display>
-<Heading class="mx-5 md:mx-35" id="navigation-elements">Navigation Elements</Heading>
-<div class="mb-5 grid grid-cols-1 gap-8 md:mx-30 md:grid-cols-2">
-	{#each navigation as item (item.name)}
-		<NavigationCard title={item.name} href={item.url}>
-			{item.description}
-		</NavigationCard>
-	{/each}
+
+<div class="mx-5 my-5 grid grid-cols-12 gap-5">
+	<div
+		class="col-span-12 md:col-start-2 md:col-end-11 xl:col-span-6 xl:col-start-1 xl:col-end-7 2xl:col-start-2 2xl:col-end-6"
+	>
+		<Heading id="navigation-elements">Navigation Elements</Heading>
+		<div class="grid grid-cols-1 gap-8 md:grid-cols-2">
+			{#each navigation as item (item.name)}
+				<NavigationCard title={item.name} href={item.url}>
+					{item.description}
+				</NavigationCard>
+			{/each}
+		</div>
+	</div>
+
+	<div
+		class="col-span-12 md:col-start-2 md:col-end-11 xl:col-span-6 xl:col-start-7 xl:col-end-12 xl:mt-30 2xl:col-start-8 2xl:col-end-11"
+	>
+		<Heading id="components">Components</Heading>
+		<div>Components coming here.</div>
+	</div>
+
+	<div
+		class="col-span-12 md:col-start-2 md:col-end-11 xl:col-span-6 xl:col-start-1 xl:col-end-7 xl:mt-30 2xl:col-start-2 2xl:col-end-6"
+	>
+		<Heading id="services">Design</Heading>
+		<div>Theming of color, typography and spacing coming here.</div>
+	</div>
+
+	<div
+		class="col-span-12 md:col-start-2 md:col-end-11 xl:col-span-6 xl:col-start-7 xl:col-end-12 xl:mt-30 2xl:col-start-8 2xl:col-end-11"
+	>
+		<Heading id="components">Services</Heading>
+		<div>
+			Integrations, interfaces, identity management and content handling coming here. TBD: move
+			somewhere else or rename user interface.
+		</div>
+	</div>
 </div>
-
-<Heading class="mx-5 md:mx-35" id="components">Components</Heading>
-
-<Heading class="mx-5 md:mx-35" id="services">Services</Heading>
