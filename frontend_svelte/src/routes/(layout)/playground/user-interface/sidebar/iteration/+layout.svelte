@@ -131,6 +131,14 @@
 					hash: '#loreum5'
 				}
 			]
+		},
+		{
+			id: 'further-page',
+			name: 'Further Page',
+			pathname: resolve('/(layout)/playground/user-interface/sidebar/iteration/page4'),
+			icon: 'icon-[tabler--mail]',
+
+			items: []
 		}
 	]);
 
@@ -481,14 +489,14 @@
 			<div class="divider"></div>
 			<ul class="menu p-0">
 				<SidebarContent contentList={sidebarLinks} {scrollspyParent} />
-				<li>
+				<!-- <li>
 					<a href={sidebarLinks[0].pathname}>
 						<span class="icon-[tabler--user] size-5"></span>
 						<span class="overlay-minified:hidden">{sidebarLinks[0].name}</span>
 					</a>
-				</li>
+				</li> -->
 				<!-- Parameterized page 2: -->
-				<li class="space-y-0.5">
+				<!-- <li class="space-y-0.5">
 					<button
 						type="button"
 						class="collapse-toggle {thisPage(sidebarLinks[1].pathname)
@@ -605,9 +613,9 @@
 							{sidebarLinks[1].items![4].name}
 						</SidebarLink>
 					</ul>
-				</li>
+				</li> -->
 				<!-- Parameterized page 3: -->
-				<li class="space-y-0.5">
+				<!-- <li class="space-y-0.5">
 					<button
 						type="button"
 						class="collapse-toggle {thisPage(sidebarLinks[2].pathname)
@@ -729,13 +737,13 @@
 							{sidebarLinks[2].items![5].name}
 						</SidebarLink>
 					</ul>
-				</li>
-				<li>
+				</li> -->
+				<!-- <li>
 					<a href="./page4/">
 						<span class="icon-[tabler--mail] size-5"></span>
 						<span class="overlay-minified:hidden">Further Page</span>
 					</a>
-				</li>
+				</li> -->
 				<!-- <li>
 					<a href="./scrollspy/#">
 						<span class="icon-[tabler--shopping-bag] size-5"></span>

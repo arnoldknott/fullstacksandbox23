@@ -54,7 +54,7 @@ type SidebarContentItem = SidebarFolderContent | SidebarLinkContent;
 export type SidebarFolderContent = {
 	id: string;
 	name: string;
-	pathname: string;
+	pathname?: string;
 	hash?: string;
 	icon: string;
 	items: SidebarContentItem[];

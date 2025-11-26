@@ -20,7 +20,7 @@
 		toggleCollapse: Attachment<HTMLElement>;
 	} = $props();
 
-	let { id, pathname, hash, icon, items }: SidebarFolderContent = $derived(content);
+	let { id, , hash, icon, items }: SidebarFolderContent = $derived(content);
 </script>
 
 <!-- TBD: this can be recursive: SidebarFolder -->
