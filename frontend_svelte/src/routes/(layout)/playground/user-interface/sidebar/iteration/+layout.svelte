@@ -10,52 +10,60 @@
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import type { Attachment } from 'svelte/attachments';
-	import SideBarLink from './SideBarLink.svelte';
+	import SidebarLink from './SidebarLink.svelte';
+	import SidebarContent from './SidebarContent.svelte';
 	let { children }: { children: Snippet } = $props();
 
 	let sidebarLinks = $state([
 		{
 			name: 'Page 1',
 			pathname: resolve('/(layout)/playground/user-interface/sidebar/iteration/page1'),
-			icon: 'tabler--user',
+			icon: 'icon-[tabler--user]',
 			id: 'page1',
 			children: []
 		},
 		{
 			name: 'Page 2',
 			pathname: resolve('/(layout)/playground/user-interface/sidebar/iteration/page2'),
-			icon: 'icon-park-outline--page',
+			icon: 'icon-[icon-park-outline--page]',
 			id: 'page2',
 			children: [
 				{
 					name: 'Loreum 1',
+					icon: 'icon-[mdi--text]',
 					hash: '#loreum1'
 				},
 				{
 					name: 'Loreum 2',
+					icon: 'icon-[mdi--text]',
 					hash: '#loreum2'
 				},
 				{
 					name: 'Sub category',
+					icon: 'icon-[material-symbols--folder-outline-rounded]',
 					hash: '#sub-category',
 					id: 'page2-sub-category',
 					children: [
 						{
 							name: 'Loreum 3',
+							icon: 'icon-[mdi--text]',
 							hash: '#loreum3'
 						},
 						{
 							name: 'Loreum 4',
+							icon: 'icon-[mdi--text]',
 							hash: '#loreum4'
 						}
 					]
 				},
 				{
 					name: 'Loreum 5',
+					icon: 'icon-[mdi--text]',
 					hash: '#loreum5'
 				},
 				{
 					name: 'Loreum 6',
+					icon: 'icon-[mdi--text]',
 					hash: '#loreum6'
 				}
 			]
@@ -63,49 +71,57 @@
 		{
 			name: 'Page 3',
 			pathname: resolve('/(layout)/playground/user-interface/sidebar/iteration/page3'),
-			icon: 'icon-park-outline--page',
+			icon: 'icon-[icon-park-outline--page]',
 			id: 'page3',
 			children: [
 				{
 					name: 'Loreum 1',
+					icon: 'icon-[mdi--text]',
 					hash: '#loreum1'
 				},
 				{
 					name: 'Loreum 2',
+					icon: 'icon-[mdi--text]',
 					hash: '#loreum2'
 				},
 				{
 					name: 'Loreum 2a',
+					icon: 'icon-[mdi--text]',
 					hash: '#loreum2a'
 				},
 				{
 					name: 'Sub category',
+					icon: 'icon-[material-symbols--folder-outline-rounded]',
 					hash: '#sub-category',
 					id: 'page3-sub-category',
 					children: [
 						{
 							name: 'Loreum 3.1',
+							icon: 'icon-[mdi--text]',
 							hash: '#loreum3p1'
 						},
 						{
 							name: 'Loreum 3.2',
+							icon: 'icon-[mdi--text]',
 							hash: '#loreum3p2'
 						}
 					]
 				},
 				{
 					name: 'Loreum 4',
+					icon: 'icon-[mdi--text]',
 					hash: '#loreum4'
 				},
 				{
 					name: 'Loreum 5',
+					icon: 'icon-[mdi--text]',
 					hash: '#loreum5'
 				}
 			]
 		}
 	]);
 
-	let scrollspyParent: HTMLElement | null = $state(null);
+	let scrollspyParent: HTMLDivElement | null = $state(null);
 
 	const forceScrolling = () => {
 		if (scrollspyParent) {
@@ -251,7 +267,7 @@
 {#snippet navbarPartItem(href: string, icon: string, text: string, textClasses?: string)}
 	<li class="text-primary hidden items-center md:flex">
 		<a {href} aria-label={text} class="flex items-center gap-1"
-			><span class="icon-[{icon}] size-6"></span>
+			><span class="{icon} size-6"></span>
 			<span class={textClasses}>{text}</span>
 		</a>
 	</li>
@@ -260,18 +276,18 @@
 {#snippet sidebarPartItem(href: string, icon: string, text: string, listItemClasses?: string)}
 	<li class="text-primary {listItemClasses}">
 		<a {href}>
-			<span class="icon-[{icon}] size-5"></span>
+			<span class="{icon} size-5"></span>
 			<span class="overlay-minified:hidden">{text}</span>
 		</a>
 	</li>
 {/snippet}
 
-{#snippet sidebarContent(sidebarLinksArray: typeof sidebarLinks)}
+<!-- {#snippet sidebarContent(sidebarLinksArray: typeof sidebarLinks)}
 	{#each sidebarLinksArray as page (page.name)}
 		{#if page.children.length === 0}
 			<li>
 				<a href={page.pathname}>
-					<span class="icon-[{page.icon}] size-5"></span>
+					<span class="{page.icon} size-5"></span>
 					<span class="overlay-minified:hidden">{page.name}</span>
 				</a>
 			</li>
@@ -288,7 +304,7 @@
 					{@attach initCollapse}
 					{@attach toggleCollapse}
 				>
-					<span class="icon-[{page.icon}] size-5"></span>
+					<span class="{page.icon} size-5"></span>
 					<span class="overlay-minified:hidden">{page.name}</span>
 					<span
 						class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:hidden size-4 transition-all duration-300"
@@ -313,7 +329,7 @@
 			</li>
 		{/if}
 	{/each}
-{/snippet}
+{/snippet} -->
 
 <nav
 	class="navbar rounded-box bg-base-100 shadow-shadow border-outline-variant relative sticky start-0 top-0 z-1 justify-between border-b shadow-sm md:flex md:items-center"
@@ -326,22 +342,22 @@
 			{@render sidebarToggleButton('sm:hidden', {
 				'data-overlay': '#collapsible-mini-sidebar'
 			})}
-			<!-- {@render navbarPartItem('/features', 'mdi--feature-highlight', 'Features')}
-			{@render navbarPartItem('/apps', 'tabler--apps', 'Apps')}
+			<!-- {@render navbarPartItem('/features', 'icon-[mdi--feature-highlight]', 'Features')}
+			{@render navbarPartItem('/apps', 'icon-[tabler--apps]', 'Apps')}
 			{@render navbarPartItem(
 				'/construction',
-				'maki--construction',
+				'icon-[maki--construction]',
 				'Construction',
 				'hidden lg:block'
 			)} -->
 			<!-- {@render navbarPartItem(
 				'/playground/user-interface/sidebar/hierarchy',
-				'streamline--hierarchy-2',
+				'icon-[streamline--hierarchy-2]',
 				'Hierarchy'
 			)} -->
 			{@render navbarPartItem(
 				'/playground/user-interface/sidebar/iteration',
-				'tabler--arrow-iteration',
+				'icon-[tabler--arrow-iteration]',
 				'Iteration'
 			)}
 		</ul>
@@ -427,30 +443,31 @@
 	>
 		<div class="drawer-body px-2 pt-4">
 			<ul class="menu p-0">
-				{@render sidebarPartItem('/', 'material-symbols--home-outline-rounded', 'Home')}
-				<!-- {@render sidebarPartItem('/features', 'mdi--feature-highlight', 'Features', 'md:hidden')}
-				{@render sidebarPartItem('/apps', 'tabler--apps', 'Apps', 'md:hidden')}
+				{@render sidebarPartItem('/', 'icon-[material-symbols--home-outline-rounded]', 'Home')}
+				<!-- {@render sidebarPartItem('/features', 'icon-[mdi--feature-highlight]', 'Features', 'md:hidden')}
+				{@render sidebarPartItem('/apps', 'icon-[tabler--apps]', 'Apps', 'md:hidden')}
 				{@render sidebarPartItem(
 					'/construction',
-					'maki--construction',
+					'icon-[maki--construction]',
 					'Construction',
 					'md:hidden'
 				)} -->
 				<!-- {@render sidebarPartItem(
 					'/playground/user-interface/sidebar/hierarchy',
-					'streamline--hierarchy-2',
+					'icon-[streamline--hierarchy-2]',
 					'Hierarchy',
 					'md:hidden'
 				)} -->
 				{@render sidebarPartItem(
 					'/playground/user-interface/sidebar/iteration',
-					'tabler--arrow-iteration',
+					'icon-[tabler--arrow-iteration]',
 					'Iteration',
 					'md:hidden'
 				)}
 			</ul>
 			<div class="divider"></div>
 			<ul class="menu p-0">
+				<!-- <SidebarContent contentList={sidebarLinks} scrollspyParent={scrollspyParent} /> -->
 				<li>
 					<a href={sidebarLinks[0].pathname}>
 						<span class="icon-[tabler--user] size-5"></span>
@@ -492,20 +509,20 @@
 						data-pathname={sidebarLinks[1].pathname}
 						{@attach toggleScrollspy}
 					>
-						<SideBarLink
+						<SidebarLink
 							href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children[0].hash)}
 							thisPage={thisPage(sidebarLinks[1].pathname)}
-							icon="mdi--text"
+							icon={sidebarLinks[1].children[0].icon}
 						>
 							{sidebarLinks[1].children[0].name}
-						</SideBarLink>
-						<SideBarLink
+						</SidebarLink>
+						<SidebarLink
 							href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children[1].hash)}
 							thisPage={thisPage(sidebarLinks[1].pathname)}
-							icon="mdi--text"
+							icon={sidebarLinks[1].children[1].icon}
 						>
 							{sidebarLinks[1].children[1].name}
-						</SideBarLink>
+						</SidebarLink>
 
 						<li data-scrollspy-group="" class="space-y-0.5">
 							<a
@@ -523,7 +540,8 @@
 									class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
 								></span>
 								<span
-									class="icon-[icon-park-outline--page] size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
+									class="{sidebarLinks![1].children![2]
+										.icon} size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"
 								></span>
 								{sidebarLinks![1].children![2].name}
 								<span
@@ -537,42 +555,42 @@
 									: 'hidden'} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
 								aria-labelledby={sidebarLinks![1].children![2].id + '-control'}
 							>
-								<SideBarLink
+								<SidebarLink
 									href={createHref(
 										sidebarLinks[1].pathname,
 										sidebarLinks[1].children![2].children![0].hash
 									)}
 									thisPage={thisPage(sidebarLinks[1].pathname)}
-									icon="mdi--text"
+									icon={sidebarLinks[1].children![2].children![0].icon}
 								>
 									{sidebarLinks[1].children![2].children![0].name}
-								</SideBarLink>
-								<SideBarLink
+								</SidebarLink>
+								<SidebarLink
 									href={createHref(
 										sidebarLinks[1].pathname,
 										sidebarLinks[1].children![2].children![1].hash
 									)}
 									thisPage={thisPage(sidebarLinks[1].pathname)}
-									icon="mdi--text"
+									icon={sidebarLinks[1].children![2].children![1].icon}
 								>
 									{sidebarLinks[1].children![2].children![1].name}
-								</SideBarLink>
+								</SidebarLink>
 							</ul>
 						</li>
-						<SideBarLink
+						<SidebarLink
 							href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children![3].hash)}
 							thisPage={thisPage(sidebarLinks[1].pathname)}
-							icon="mdi--text"
+							icon={sidebarLinks[1].children![3].icon}
 						>
 							{sidebarLinks[1].children![3].name}
-						</SideBarLink>
-						<SideBarLink
+						</SidebarLink>
+						<SidebarLink
 							href={createHref(sidebarLinks[1].pathname, sidebarLinks[1].children![4].hash)}
 							thisPage={thisPage(sidebarLinks[1].pathname)}
-							icon="mdi--text"
+							icon={sidebarLinks[1].children![4].icon}
 						>
 							{sidebarLinks[1].children![4].name}
-						</SideBarLink>
+						</SidebarLink>
 					</ul>
 				</li>
 				<!-- Parameterized page 3: -->
@@ -610,27 +628,27 @@
 						data-pathname={sidebarLinks[2].pathname}
 						{@attach toggleScrollspy}
 					>
-						<SideBarLink
+						<SidebarLink
 							href={createHref(sidebarLinks[2].pathname, sidebarLinks[2].children[0].hash)}
 							thisPage={thisPage(sidebarLinks[2].pathname)}
-							icon="mdi--text"
+							icon={sidebarLinks[2].children[0].icon}
 						>
 							{sidebarLinks[2].children[0].name}
-						</SideBarLink>
-						<SideBarLink
+						</SidebarLink>
+						<SidebarLink
 							href={createHref(sidebarLinks[2].pathname, sidebarLinks[2].children[1].hash)}
 							thisPage={thisPage(sidebarLinks[2].pathname)}
-							icon="mdi--text"
+							icon={sidebarLinks[2].children[1].icon}
 						>
 							{sidebarLinks[2].children[1].name}
-						</SideBarLink>
-						<SideBarLink
+						</SidebarLink>
+						<SidebarLink
 							href={createHref(sidebarLinks[2].pathname, sidebarLinks[2].children[2].hash)}
 							thisPage={thisPage(sidebarLinks[2].pathname)}
-							icon="mdi--text"
+							icon={sidebarLinks[2].children[2].icon}
 						>
 							{sidebarLinks[2].children[2].name}
-						</SideBarLink>
+						</SidebarLink>
 						<li data-scrollspy-group="" class="space-y-0.5">
 							<a
 								class="collapse-toggle {thisPage(sidebarLinks[2].pathname)
@@ -661,42 +679,42 @@
 									: 'hidden'} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
 								aria-labelledby={sidebarLinks![2].children![3].id + '-control'}
 							>
-								<SideBarLink
+								<SidebarLink
 									href={createHref(
 										sidebarLinks[2].pathname,
 										sidebarLinks[2].children![3].children![0].hash
 									)}
 									thisPage={thisPage(sidebarLinks[2].pathname)}
-									icon="mdi--text"
+									icon={sidebarLinks[2].children![3].children![0].icon}
 								>
 									{sidebarLinks[2].children![3].children![0].name}
-								</SideBarLink>
-								<SideBarLink
+								</SidebarLink>
+								<SidebarLink
 									href={createHref(
 										sidebarLinks[2].pathname,
 										sidebarLinks[2].children![3].children![1].hash
 									)}
 									thisPage={thisPage(sidebarLinks[2].pathname)}
-									icon="mdi--text"
+									icon={sidebarLinks[2].children![3].children![1].icon}
 								>
 									{sidebarLinks[2].children![3].children![1].name}
-								</SideBarLink>
+								</SidebarLink>
 							</ul>
 						</li>
-						<SideBarLink
+						<SidebarLink
 							href={createHref(sidebarLinks[2].pathname, sidebarLinks[2].children![4].hash)}
 							thisPage={thisPage(sidebarLinks[2].pathname)}
-							icon="mdi--text"
+							icon={sidebarLinks[2].children![4].icon}
 						>
 							{sidebarLinks[2].children![4].name}
-						</SideBarLink>
-						<SideBarLink
+						</SidebarLink>
+						<SidebarLink
 							href={createHref(sidebarLinks[2].pathname, sidebarLinks[2].children![5].hash)}
 							thisPage={thisPage(sidebarLinks[2].pathname)}
-							icon="mdi--text"
+							icon={sidebarLinks[2].children![5].icon}
 						>
 							{sidebarLinks[2].children![5].name}
-						</SideBarLink>
+						</SidebarLink>
 					</ul>
 				</li>
 				<li>

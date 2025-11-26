@@ -32,6 +32,35 @@ export type ClientSession = {
 	microsoftProfile: MicrosoftProfile;
 };
 
+// Sidebar:
+
+export type SidebarContent = {
+	id: string;
+	name: string;
+	pathname: string;
+	icon: string;
+	children: SidebarContentItem[];
+};
+
+type SidebarLinkContent = {
+	id: string;
+	name: string;
+	pathname?: string;
+	hash?: string;
+	icon: string;
+};
+
+export type SidebarFolderContent = {
+	id: string;
+	name: string;
+	pathname?: string;
+	hash?: string;
+	icon: string;
+	children: SidebarContentItem[];
+};
+
+export type SidebarContentItem = SidebarFolderContent | SidebarLinkContent;
+
 // Access types:
 export interface AccessPolicy {
 	resource_id: string;

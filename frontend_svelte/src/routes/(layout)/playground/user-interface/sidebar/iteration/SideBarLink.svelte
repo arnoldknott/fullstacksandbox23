@@ -25,7 +25,7 @@
 		></span>
 
 		<span
-			class="icon-[{icon}] size-5 {thisPage
+			class="{icon} size-5 {thisPage
 				? 'group-[.active]:hidden group-[.scrollspy-active]:hidden'
 				: ''}"
 		></span>

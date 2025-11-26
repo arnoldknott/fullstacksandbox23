@@ -1910,6 +1910,7 @@
 				<span class="icon-[material-symbols--home-outline-rounded] size-12"></span>
 				<span class="icon-[material-symbols--person-outline-rounded] size-12"></span>
 				<span class="icon-[material-symbols--edit-outline-rounded] size-12"></span>
+				<span class="icon-[material-symbols--folder-outline-rounded] size-12"></span>
 				<p class="label text-center">
 					Extension library <span class="label-prominent badge min-h-fit"
 						>Google Material Icons</span
@@ -1923,6 +1924,7 @@
 					>
 				</p>
 				<span class="icon-[mdi--feature-highlight] size-12"></span>
+				<span class="icon-[mdi--text] size-12"></span>
 			</div>
 			<div>
 				<p class="label text-center">
