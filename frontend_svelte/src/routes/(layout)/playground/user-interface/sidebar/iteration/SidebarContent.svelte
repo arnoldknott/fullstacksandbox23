@@ -191,14 +191,6 @@
 							{item.name}
 						</SidebarLink>
 					{:else}
-						<!-- <SidebarFolder
-							content={item as SidebarFolderContent}
-							{thisPage}
-							{createHref}
-							{toggleCollapse}
-						>
-							{item.name}
-						</SidebarFolder> -->
 						{@render sidebarFolder({
 							...item,
 							pathname: item.pathname || mainItem.pathname
