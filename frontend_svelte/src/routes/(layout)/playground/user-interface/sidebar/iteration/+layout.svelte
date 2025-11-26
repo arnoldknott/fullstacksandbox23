@@ -432,7 +432,7 @@
 				</li>
 			</ul>
 		</div>
-		<div class="flex items-center md:ml-2">
+		<div class="hidden items-center sm:flex md:ml-2">
 			<button
 				class="btn btn-primary btn-outline shadow-primary ml-2 rounded-full shadow-sm"
 				aria-label="LogInOut"
@@ -743,13 +743,21 @@
 					</a>
 				</li> -->
 				<li>
-					<button
+					<!-- <button
 						class="btn btn-primary btn-outline shadow-primary mt-4 w-full rounded-full shadow-sm"
 						aria-label="Console log page"
 						onclick={() => console.log($state.snapshot(page))}
 					>
 						Console log page
-					</button>
+					</button> -->
+					<div class="items-center sm:hidden md:ml-2">
+						<button
+							class="btn btn-primary btn-outline shadow-primary ml-2 rounded-full shadow-sm"
+							aria-label="LogInOut"
+						>
+							<a href="#top">LogInOut</a>
+						</button>
+					</div>
 				</li>
 			</ul>
 		</div>
