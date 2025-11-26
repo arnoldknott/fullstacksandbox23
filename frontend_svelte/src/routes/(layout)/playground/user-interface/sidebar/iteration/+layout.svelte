@@ -18,11 +18,13 @@
 			name: 'Page 1',
 			pathname: resolve('/(layout)/playground/user-interface/sidebar/iteration/page1'),
 			icon: 'tabler--user',
+			id: 'page1',
 			children: []
 		},
 		{
 			name: 'Page 2',
 			pathname: resolve('/(layout)/playground/user-interface/sidebar/iteration/page2'),
+			icon: 'icon-park-outline--page',
 			id: 'page2',
 			children: [
 				{
@@ -61,6 +63,7 @@
 		{
 			name: 'Page 3',
 			pathname: resolve('/(layout)/playground/user-interface/sidebar/iteration/page3'),
+			icon: 'icon-park-outline--page',
 			id: 'page3',
 			children: [
 				{
@@ -261,6 +264,55 @@
 			<span class="overlay-minified:hidden">{text}</span>
 		</a>
 	</li>
+{/snippet}
+
+{#snippet sidebarContent(sidebarLinksArray: typeof sidebarLinks)}
+	{#each sidebarLinksArray as page (page.name)}
+		{#if page.children.length === 0}
+			<li>
+				<a href={page.pathname}>
+					<span class="icon-[{page.icon}] size-5"></span>
+					<span class="overlay-minified:hidden">{page.name}</span>
+				</a>
+			</li>
+		{:else}
+			<li class="space-y-0.5">
+				<button
+					type="button"
+					class="collapse-toggle {thisPage(page.pathname)
+						? 'open'
+						: ''} collapse-open:bg-base-content/10"
+					id={page.id + '-control'}
+					data-collapse={'#' + page.id + '-collapse'}
+					data-pathname={page.pathname}
+					{@attach initCollapse}
+					{@attach toggleCollapse}
+				>
+					<span class="icon-[{page.icon}] size-5"></span>
+					<span class="overlay-minified:hidden">{page.name}</span>
+					<span
+						class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:hidden size-4 transition-all duration-300"
+					></span>
+					<span
+						class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:block overlay-minified:rotate-270 hidden size-4 transition-all duration-300"
+						role="button"
+						tabindex="0"
+						onclick={() => openSidebar()}
+						onkeydown={() => openSidebar()}
+					></span>
+				</button>
+				<ul
+					id={page.id + '-collapse'}
+					class="collapse {thisPage(page.pathname)
+						? 'open'
+						: 'hidden'} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
+					aria-labelledby={page.id + '-control'}
+					data-pathname={page.pathname}
+					{@attach toggleScrollspy}
+				></ul>
+			</li>
+		{/if}
+	{/each}
 {/snippet}
 
 <nav
