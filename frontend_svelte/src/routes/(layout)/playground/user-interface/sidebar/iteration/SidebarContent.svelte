@@ -2,11 +2,10 @@
 	import type { SidebarContent, SidebarFolderContent } from '$lib/types';
 	import { page } from '$app/state';
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
-	import { onMount, tick } from 'svelte';
+	import { tick } from 'svelte';
 	import type { Attachment } from 'svelte/attachments';
 	import { initCollapse, initScrollspy } from '$lib/userInterface';
 	import SidebarLink from './SidebarLink.svelte';
-	// import SidebarFolder from './SidebarFolder.svelte';
 
 	let {
 		contentList,

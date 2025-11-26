@@ -263,7 +263,7 @@
 	</li>
 {/snippet}
 
-{#snippet sidebarContent(sidebarLinksArray: typeof sidebarLinks)}
+<!-- {#snippet sidebarContent(sidebarLinksArray: typeof sidebarLinks)}
 	{#each sidebarLinksArray as page (page.name)}
 		{#if page.children.length === 0}
 			<li>
@@ -276,7 +276,7 @@
 			<li>The one with the button here!</li>
 		{/if}
 	{/each}
-{/snippet}
+{/snippet} -->
 
 <nav
 	class="navbar rounded-box bg-base-100 shadow-shadow border-outline-variant relative sticky start-0 top-0 z-1 justify-between border-b shadow-sm md:flex md:items-center"

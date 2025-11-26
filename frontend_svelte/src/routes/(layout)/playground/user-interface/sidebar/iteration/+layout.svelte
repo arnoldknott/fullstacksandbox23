@@ -1,16 +1,13 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
-	import { initDropdown, initOverlay, initCollapse, initScrollspy } from '$lib/userInterface';
-	import { type Snippet, tick } from 'svelte';
+	import { initDropdown, initOverlay } from '$lib/userInterface';
+	import { type Snippet } from 'svelte';
 	import { Variant, type ColorConfig } from '$lib/theming';
 	import { Model, type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
 	import ThemePicker from '../../../components/ThemePicker.svelte';
 	import ArtificialIntelligencePicker from '../../../components/ArtificialIntelligencePicker.svelte';
-	import { afterNavigate, beforeNavigate } from '$app/navigation';
 	import { onMount } from 'svelte';
-	import type { Attachment } from 'svelte/attachments';
-	import SidebarLink from './SidebarLink.svelte';
 	import SidebarContent from './SidebarContent.svelte';
 	let { children }: { children: Snippet } = $props();
 
@@ -144,66 +141,66 @@
 
 	let scrollspyParent: HTMLDivElement | null = $state(null);
 
-	const forceScrolling = () => {
-		if (scrollspyParent) {
-			const original = scrollspyParent.scrollTop;
-			// scrolls to the other end of the scroll area and back to force scrollspy to recalculate positions
-			const alt =
-				original < 2 ? scrollspyParent.scrollHeight : original - scrollspyParent.scrollHeight;
-			scrollspyParent.scrollTop = alt;
-			scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
-			requestAnimationFrame(() => {
-				scrollspyParent!.scrollTop = original;
-				scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
-			});
-		}
-	};
+	// const forceScrolling = () => {
+	// 	if (scrollspyParent) {
+	// 		const original = scrollspyParent.scrollTop;
+	// 		// scrolls to the other end of the scroll area and back to force scrollspy to recalculate positions
+	// 		const alt =
+	// 			original < 2 ? scrollspyParent.scrollHeight : original - scrollspyParent.scrollHeight;
+	// 		scrollspyParent.scrollTop = alt;
+	// 		scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
+	// 		requestAnimationFrame(() => {
+	// 			scrollspyParent!.scrollTop = original;
+	// 			scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+	// 		});
+	// 	}
+	// };
 
-	const toggleScrollspy: Attachment<HTMLElement> = (node: HTMLElement) => {
-		const addScrollspy = async (node: HTMLElement) => {
-			node.setAttribute('data-scrollspy', '#scrollspy');
-			node.setAttribute('data-scrollspy-scrollable-parent', '#scrollspy-scrollable-parent');
-			await tick();
-			initScrollspy(node);
-			forceScrolling();
-		};
+	// const toggleScrollspy: Attachment<HTMLElement> = (node: HTMLElement) => {
+	// 	const addScrollspy = async (node: HTMLElement) => {
+	// 		node.setAttribute('data-scrollspy', '#scrollspy');
+	// 		node.setAttribute('data-scrollspy-scrollable-parent', '#scrollspy-scrollable-parent');
+	// 		await tick();
+	// 		initScrollspy(node);
+	// 		forceScrolling();
+	// 	};
 
-		const removeScrollspy = (node: HTMLElement) => {
-			node.removeAttribute('data-scrollspy');
-			node.removeAttribute('data-scrollspy-scrollable-parent');
-			try {
-				const { element } = window.HSScrollspy.getInstance(node, true);
-				element.destroy();
-				/* eslint-disable no-empty */
-			} catch {}
-		};
+	// 	const removeScrollspy = (node: HTMLElement) => {
+	// 		node.removeAttribute('data-scrollspy');
+	// 		node.removeAttribute('data-scrollspy-scrollable-parent');
+	// 		try {
+	// 			const { element } = window.HSScrollspy.getInstance(node, true);
+	// 			element.destroy();
+	// 			/* eslint-disable no-empty */
+	// 		} catch {}
+	// 	};
 
-		afterNavigate(async () => {
-			if (thisPage(node.dataset.pathname || '')) {
-				await addScrollspy(node);
-			}
-		});
+	// 	afterNavigate(async () => {
+	// 		if (thisPage(node.dataset.pathname || '')) {
+	// 			await addScrollspy(node);
+	// 		}
+	// 	});
 
-		beforeNavigate((navigator) => {
-			if (!(navigator.to?.url.pathname === node.dataset.pathname)) {
-				removeScrollspy(node);
-			}
-		});
+	// 	beforeNavigate((navigator) => {
+	// 		if (!(navigator.to?.url.pathname === node.dataset.pathname)) {
+	// 			removeScrollspy(node);
+	// 		}
+	// 	});
 
-		// Cleanup when the attachment is removed
-		return async () => {
-			removeScrollspy(node);
-		};
-	};
-	const thisPage = $derived.by(() => (pathname: string) => pathname === page.url.pathname);
-
-	const createHref = $derived.by(() => (destinationPathname: string, hash?: string) => {
-		let href = '';
-		if (!hash) href = destinationPathname;
-		else if (thisPage(destinationPathname)) href = hash;
-		else href = `${destinationPathname}${hash}`;
-		return href;
-	});
+	// 	// Cleanup when the attachment is removed
+	// 	return async () => {
+	// 		removeScrollspy(node);
+	// 	};
+	// };
+	// const thisPage = $derived.by(() => (pathname: string) => pathname === page.url.pathname);
+	//
+	// const createHref = $derived.by(() => (destinationPathname: string, hash?: string) => {
+	// 	let href = '';
+	// 	if (!hash) href = destinationPathname;
+	// 	else if (thisPage(destinationPathname)) href = hash;
+	// 	else href = `${destinationPathname}${hash}`;
+	// 	return href;
+	// });
 
 	onMount(() => {
 		scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
@@ -221,11 +218,22 @@
 		}
 	});
 
-	const openSidebar = () => {
-		const { element } = window.HSOverlay.getInstance('#collapsible-mini-sidebar', true);
-		element.open();
-		window.HSStaticMethods.autoInit();
-	};
+	// const openSidebar = () => {
+	// 	const { element } = window.HSOverlay.getInstance('#collapsible-mini-sidebar', true);
+	// 	element.open();
+	// 	window.HSStaticMethods.autoInit();
+	// };
+
+	// const toggleCollapse: Attachment<HTMLElement> = (node: HTMLElement) => {
+	// 	if (page.url.pathname.startsWith(node.dataset.pathname || '')) {
+	// 		const { element } = window.HSCollapse.getInstance(node, true);
+	// 		element.show();
+	// 	}
+	// 	// return () => {
+	// 	// 	const { element } = window.HSCollapse.getInstance(node, true);
+	// 	// 	element.hide();
+	// 	// };
+	// };
 
 	let themeConfiguration: ColorConfig = $state({
 		sourceColor: '#941ff4', // <= That's a good color!// '#353c6e' // '#769CDF',
@@ -240,17 +248,6 @@
 		temperature: 0.7
 		// max_tokens: 2048
 	});
-
-	const toggleCollapse: Attachment<HTMLElement> = (node: HTMLElement) => {
-		if (page.url.pathname.startsWith(node.dataset.pathname || '')) {
-			const { element } = window.HSCollapse.getInstance(node, true);
-			element.show();
-		}
-		// return () => {
-		// 	const { element } = window.HSCollapse.getInstance(node, true);
-		// 	element.hide();
-		// };
-	};
 
 	let artificialIntelligenceForm = $state<HTMLFormElement | null>(null);
 
