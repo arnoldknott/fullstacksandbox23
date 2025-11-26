@@ -40,11 +40,16 @@
 				'Adds several hierarchical pages that are linked from sidebar with common sidebar layout and scrollspy within multiple pages.',
 			url: 'sidebar/hierarchy'
 		},
+		// {
+		// 	name: 'Segmenting code',
+		// 	description:
+		// 		'Segments the code from navbar and sidebar into snippets and components and parameterizes them for reusability and maintainability.',
+		// 	url: 'sidebar/segmenting'
+		// },
 		{
-			name: 'Segmenting code',
-			description:
-				'Segments the code from navbar and sidebar into snippets and components and parameterizes them for reusability and maintainability.',
-			url: 'sidebar/segmenting'
+			name: 'Hierarchy and scroll',
+			description: 'Combines the hierarchy in the sidebar with scrolling in the main content area.',
+			url: 'sidebar/hierarchy-scroll'
 		},
 		{
 			name: 'Iterating sidebars',

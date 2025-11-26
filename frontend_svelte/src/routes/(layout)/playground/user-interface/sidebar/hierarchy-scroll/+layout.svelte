@@ -16,13 +16,13 @@
 	let sidebarLinks = $state([
 		{
 			name: 'Page 1',
-			pathname: resolve('/(layout)/playground/user-interface/sidebar/iteration/page1'),
+			pathname: resolve('/(layout)/playground/user-interface/sidebar/hierarchy-scroll/page1'),
 			icon: 'tabler--user',
 			children: []
 		},
 		{
 			name: 'Page 2',
-			pathname: resolve('/(layout)/playground/user-interface/sidebar/iteration/page2'),
+			pathname: resolve('/(layout)/playground/user-interface/sidebar/hierarchy-scroll/page2'),
 			id: 'page2',
 			children: [
 				{
@@ -60,7 +60,7 @@
 		},
 		{
 			name: 'Page 3',
-			pathname: resolve('/(layout)/playground/user-interface/sidebar/iteration/page3'),
+			pathname: resolve('/(layout)/playground/user-interface/sidebar/hierarchy-scroll/page3'),
 			id: 'page3',
 			children: [
 				{
@@ -263,6 +263,21 @@
 	</li>
 {/snippet}
 
+{#snippet sidebarContent(sidebarLinksArray: typeof sidebarLinks)}
+	{#each sidebarLinksArray as page (page.name)}
+		{#if page.children.length === 0}
+			<li>
+				<a href={page.pathname}>
+					<span class="icon-[{page.icon}] size-5"></span>
+					<span class="overlay-minified:hidden">{page.name}</span>
+				</a>
+			</li>
+		{:else}
+			<li>The one with the button here!</li>
+		{/if}
+	{/each}
+{/snippet}
+
 <nav
 	class="navbar rounded-box bg-base-100 shadow-shadow border-outline-variant relative sticky start-0 top-0 z-1 justify-between border-b shadow-sm md:flex md:items-center"
 >
@@ -282,16 +297,16 @@
 				'Construction',
 				'hidden lg:block'
 			)} -->
-			<!-- {@render navbarPartItem(
-				'/playground/user-interface/sidebar/hierarchy',
+			{@render navbarPartItem(
+				'/playground/user-interface/sidebar/hierarchy-scroll',
 				'streamline--hierarchy-2',
 				'Hierarchy'
-			)} -->
-			{@render navbarPartItem(
+			)}
+			<!-- {@render navbarPartItem(
 				'/playground/user-interface/sidebar/iteration',
 				'tabler--arrow-iteration',
 				'Iteration'
-			)}
+			)} -->
 		</ul>
 	</div>
 	<div class="navbar-center flex flex-row max-sm:scale-50">
@@ -384,18 +399,18 @@
 					'Construction',
 					'md:hidden'
 				)} -->
-				<!-- {@render sidebarPartItem(
-					'/playground/user-interface/sidebar/hierarchy',
+				{@render sidebarPartItem(
+					'/playground/user-interface/sidebar/hierarchy-scroll',
 					'streamline--hierarchy-2',
 					'Hierarchy',
 					'md:hidden'
-				)} -->
-				{@render sidebarPartItem(
+				)}
+				<!-- {@render sidebarPartItem(
 					'/playground/user-interface/sidebar/iteration',
 					'tabler--arrow-iteration',
 					'Iteration',
 					'md:hidden'
-				)}
+				)} -->
 			</ul>
 			<div class="divider"></div>
 			<ul class="menu p-0">
