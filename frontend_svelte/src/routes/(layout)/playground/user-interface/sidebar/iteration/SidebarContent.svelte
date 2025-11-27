@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { SidebarContent, SidebarFolderContent } from '$lib/types';
 	import { page } from '$app/state';
-	import { afterNavigate, beforeNavigate } from '$app/navigation';
+	import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
 	import { tick } from 'svelte';
 	import type { Attachment } from 'svelte/attachments';
 	import { initCollapse, initScrollspy } from '$lib/userInterface';
@@ -11,6 +11,8 @@
 		contentList,
 		scrollspyParent
 	}: { contentList: SidebarContent[]; scrollspyParent: HTMLDivElement } = $props();
+
+	// let sidebarList: HTMLUListElement | null = $state(null);
 
 	const forceScrolling = () => {
 		if (scrollspyParent) {
@@ -26,6 +28,22 @@
 			});
 		}
 	};
+
+	// const addScrollspy = (node: HTMLElement) => {
+	// 	node.setAttribute('data-scrollspy', '#scrollspy');
+	// 	node.setAttribute('data-scrollspy-scrollable-parent', '#scrollspy-scrollable-parent');
+	// 	// await tick();
+	// 	initScrollspy(node);
+	// 	forceScrolling();
+	// };
+
+	// $effect(() => {
+	// 	let scrollspy = document.getElementById('scrollspy') as HTMLDivElement;
+	// 	if (scrollspy) {
+	// 		initScrollspy(sidebarList!);
+	// 		forceScrolling();
+	// 	}
+	// });
 
 	const toggleScrollspy: Attachment<HTMLElement> = (node: HTMLElement) => {
 		const addScrollspy = async (node: HTMLElement) => {
@@ -81,10 +99,21 @@
 
 	const toggleCollapse: Attachment<HTMLElement> = (node: HTMLElement) => {
 		if (page.url.pathname.startsWith(node.dataset.pathname || '')) {
+			// if (page.url.pathname === node.dataset.pathname) {
 			const { element } = window.HSCollapse.getInstance(node, true);
 			element.show();
 		}
 	};
+
+	// const toggleCollapseFolder: Attachment<HTMLElement> = (node: HTMLElement) => {
+	// 	// if (page.url.pathname.startsWith(node.dataset.pathname || '')) {
+	// 	const { element } = window.HSCollapse.getInstance(node, true);
+	// 	if (page.url.pathname === node.dataset.pathname) {
+	// 		element.show();
+	// 	} else {
+	// 		element.hide();
+	// 	}
+	// };
 </script>
 
 {#snippet sidebarFolder(content: SidebarFolderContent)}
@@ -118,15 +147,27 @@
 				: 'hidden'} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
 			aria-labelledby={id + '-control'}
 		>
+			<!-- data-pathname={pathname}
+			{@attach toggleScrollspy} -->
 			{#each items as item (item.id)}
 				{#if Object.keys(item).includes('items') === false || (item as SidebarFolderContent).items.length === 0}
-					<SidebarLink
-						href={createHref(item.pathname || pathname!, item.hash)}
-						thisPage={thisPage(item.pathname || pathname!)}
-						icon={item.icon}
-					>
-						{item.name}
-					</SidebarLink>
+					{#if item.pathname && item.pathname !== pathname}
+						<!-- TBD: add an attach, that activates the scrollspy on the parent ul. -->
+						<li>
+							<button type="button" onclick={() => goto(createHref(item.pathname!, item.hash))}>
+								<span class="{item.icon} size-5"></span>
+								<span class="overlay-minified:hidden">{item.name}</span>
+							</button>
+						</li>
+					{:else}
+						<SidebarLink
+							href={createHref(pathname!, item.hash)}
+							thisPage={thisPage(pathname || pathname!)}
+							icon={item.icon}
+						>
+							{item.name}
+						</SidebarLink>
+					{/if}
 				{:else}
 					{@render sidebarFolder({
 						...item,
@@ -181,15 +222,25 @@
 				data-pathname={mainItem.pathname}
 				{@attach toggleScrollspy}
 			>
+				<!-- bind:this={sidebarList} -->
 				{#each mainItem.items as item (item.id)}
 					{#if Object.keys(item).includes('items') === false || (item as SidebarFolderContent).items.length === 0}
-						<SidebarLink
-							href={createHref(item.pathname || mainItem.pathname, item.hash)}
-							thisPage={thisPage(item.pathname || mainItem.pathname)}
-							icon={item.icon}
-						>
-							{item.name}
-						</SidebarLink>
+						{#if item.pathname && item.pathname !== mainItem.pathname}
+							<li>
+								<button type="button" onclick={() => goto(createHref(item.pathname!, item.hash))}>
+									<span class="{item.icon} size-5"></span>
+									<span class="overlay-minified:hidden">{item.name}</span>
+								</button>
+							</li>
+						{:else}
+							<SidebarLink
+								href={createHref(mainItem.pathname, item.hash)}
+								thisPage={thisPage(mainItem.pathname)}
+								icon={item.icon}
+							>
+								{item.name}
+							</SidebarLink>
+						{/if}
 					{:else}
 						{@render sidebarFolder({
 							...item,

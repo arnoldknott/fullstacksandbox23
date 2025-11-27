@@ -98,7 +98,7 @@
 				{
 					name: 'Sub category',
 					icon: 'icon-[material-symbols--folder-outline-rounded]',
-					hash: '#sub-category',
+					hash: '#sub-category-page3',
 					id: 'page3-sub-category',
 					items: [
 						{
@@ -134,8 +134,90 @@
 			name: 'Further Page',
 			pathname: resolve('/(layout)/playground/user-interface/sidebar/iteration/page4'),
 			icon: 'icon-[tabler--mail]',
-
-			items: []
+			items: [
+				{
+					id: 'page4-loreum1',
+					name: 'Loreum 1',
+					icon: 'icon-[mdi--text]',
+					hash: '#loreum1'
+				},
+				{
+					id: 'page4-loreum2',
+					name: 'Loreum 2',
+					icon: 'icon-[mdi--text]',
+					hash: '#loreum2'
+				},
+				{
+					name: 'Sub category',
+					icon: 'icon-[material-symbols--folder-outline-rounded]',
+					hash: '#sub-category-page4',
+					id: 'page4-sub-category',
+					items: [
+						{
+							id: 'page4-loreum3',
+							name: 'Loreum 3',
+							icon: 'icon-[mdi--text]',
+							hash: '#loreum3'
+						},
+						{
+							id: 'page4-loreum4',
+							name: 'Loreum 4',
+							icon: 'icon-[mdi--text]',
+							hash: '#loreum4'
+						}
+					]
+				},
+				{
+					name: 'Sub-pages',
+					icon: 'icon-[material-symbols--folder-outline-rounded]',
+					hash: '#page4-sub-pages-section',
+					id: 'page4-sub-pages-section',
+					items: [
+						{
+							id: 'page4p1-loreum1',
+							name: 'Loreum 1 pg4.1',
+							icon: 'icon-[mdi--text]',
+							pathname: resolve(
+								'/(layout)/playground/user-interface/sidebar/iteration/page4/page4-1'
+							),
+							hash: '#loreum1'
+						},
+						{
+							id: 'page4p1-loreum2',
+							name: 'Loreum 2 pg4.2',
+							icon: 'icon-[mdi--text]',
+							pathname: resolve(
+								'/(layout)/playground/user-interface/sidebar/iteration/page4/page4-1'
+							),
+							hash: '#loreum2'
+						},
+						{
+							id: 'page4p2-loreum1',
+							name: 'Loreum 1 pg4.2',
+							icon: 'icon-[mdi--text]',
+							pathname: resolve(
+								'/(layout)/playground/user-interface/sidebar/iteration/page4/page4-2'
+							),
+							hash: '#loreum1'
+						},
+						{
+							id: 'page4p2-loreum2',
+							name: 'Loreum 2 pg4.2',
+							icon: 'icon-[mdi--text]',
+							pathname: resolve(
+								'/(layout)/playground/user-interface/sidebar/iteration/page4/page4-2'
+							),
+							hash: '#loreum2'
+						}
+					]
+				},
+				{
+					id: 'page4-loreum6',
+					name: 'Loreum 6',
+					icon: 'icon-[mdi--text]',
+					hash: '#loreum6'
+				}
+			]
 		}
 	]);
 
