@@ -45,25 +45,36 @@
 	// 	}
 	// });
 
+	const addScrollspy = async (node: HTMLElement) => {
+		console.log('=== addScrollspy - node ===');
+		console.log(node);
+		node.setAttribute('data-scrollspy', '#scrollspy');
+		node.setAttribute('data-scrollspy-scrollable-parent', '#scrollspy-scrollable-parent');
+		await tick();
+		initScrollspy(node);
+		forceScrolling();
+	};
+
+	const removeScrollspy = (node: HTMLElement) => {
+		node.removeAttribute('data-scrollspy');
+		node.removeAttribute('data-scrollspy-scrollable-parent');
+		try {
+			const { element } = window.HSScrollspy.getInstance(node, true);
+			element.destroy();
+			/* eslint-disable no-empty */
+		} catch {}
+	};
+
+	const thisPage = $derived.by(() => (pathname: string) => pathname === page.url.pathname);
+	const createHref = $derived.by(() => (destinationPathname: string, hash?: string) => {
+		let href = '';
+		if (!hash) href = destinationPathname;
+		else if (thisPage(destinationPathname)) href = hash;
+		else href = `${destinationPathname}${hash}`;
+		return href;
+	});
+
 	const toggleScrollspy: Attachment<HTMLElement> = (node: HTMLElement) => {
-		const addScrollspy = async (node: HTMLElement) => {
-			node.setAttribute('data-scrollspy', '#scrollspy');
-			node.setAttribute('data-scrollspy-scrollable-parent', '#scrollspy-scrollable-parent');
-			await tick();
-			initScrollspy(node);
-			forceScrolling();
-		};
-
-		const removeScrollspy = (node: HTMLElement) => {
-			node.removeAttribute('data-scrollspy');
-			node.removeAttribute('data-scrollspy-scrollable-parent');
-			try {
-				const { element } = window.HSScrollspy.getInstance(node, true);
-				element.destroy();
-				/* eslint-disable no-empty */
-			} catch {}
-		};
-
 		afterNavigate(async () => {
 			if (thisPage(node.dataset.pathname || '')) {
 				await addScrollspy(node);
@@ -81,15 +92,27 @@
 			removeScrollspy(node);
 		};
 	};
-	const thisPage = $derived.by(() => (pathname: string) => pathname === page.url.pathname);
 
-	const createHref = $derived.by(() => (destinationPathname: string, hash?: string) => {
-		let href = '';
-		if (!hash) href = destinationPathname;
-		else if (thisPage(destinationPathname)) href = hash;
-		else href = `${destinationPathname}${hash}`;
-		return href;
-	});
+	const toggleScrollspyOnParent = (node: HTMLElement) => {
+		const parent = node.parentElement?.parentElement?.parentElement as HTMLElement;
+		console.log('=== toggleScrollspyOnParent ===');
+		console.log(parent);
+		if (!parent) return;
+		// afterNavigate(async () => {
+		// if (thisPage(node.dataset.pathname || '')) {
+		addScrollspy(parent);
+		// }
+		// });
+		// beforeNavigate((navigator) => {
+		// 	if (!(navigator.to?.url.pathname === node.dataset.pathname)) {
+		// 		removeScrollspy(parent);
+		// 	}
+		// });
+		// Cleanup when the attachment is removed
+		// return async () => {
+		// 	removeScrollspy(parent);
+		// };
+	};
 
 	const openSidebar = () => {
 		const { element } = window.HSOverlay.getInstance('#collapsible-mini-sidebar', true);
@@ -150,19 +173,27 @@
 			<!-- data-pathname={pathname}
 			{@attach toggleScrollspy} -->
 			{#each items as item (item.id)}
-				{#if Object.keys(item).includes('items') === false || (item as SidebarFolderContent).items.length === 0}
+				{#if Object.keys(item).includes('items') === false || (item as SidebarFolderContent).items.length > 0}
 					{#if item.pathname && item.pathname !== pathname}
 						<!-- TBD: add an attach, that activates the scrollspy on the parent ul. -->
 						<li>
-							<button type="button" onclick={() => goto(createHref(item.pathname!, item.hash))}>
+							<!-- {#await toggleScrollspyOnParent(target as HTMLElement)} -->
+							<button
+								type="button"
+								onclick={(event) => {
+									goto(createHref(item.pathname!, item.hash));
+									toggleScrollspyOnParent(event.target as HTMLElement);
+								}}
+							>
 								<span class="{item.icon} size-5"></span>
 								<span class="overlay-minified:hidden">{item.name}</span>
 							</button>
+							<!-- {/await} -->
 						</li>
 					{:else}
 						<SidebarLink
 							href={createHref(pathname!, item.hash)}
-							thisPage={thisPage(pathname || pathname!)}
+							thisPage={thisPage(pathname!)}
 							icon={item.icon}
 						>
 							{item.name}
@@ -226,7 +257,7 @@
 				{#each mainItem.items as item (item.id)}
 					{#if Object.keys(item).includes('items') === false || (item as SidebarFolderContent).items.length === 0}
 						{#if item.pathname && item.pathname !== mainItem.pathname}
-							<li>
+							<li data-pathname={item.pathname}>
 								<button type="button" onclick={() => goto(createHref(item.pathname!, item.hash))}>
 									<span class="{item.icon} size-5"></span>
 									<span class="overlay-minified:hidden">{item.name}</span>
