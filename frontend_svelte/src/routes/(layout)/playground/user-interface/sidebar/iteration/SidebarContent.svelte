@@ -258,6 +258,9 @@
 			>
 				<!-- bind:this={sidebarList} -->
 				{#each mainItem.items as item (item.id)}
+					<!-- Refactor into SidebarItem (component or snippet)
+					 where a SidebarItem is wither a SidebarFolder or SidebarLink.
+					 If the pathname changes, it has to be a folder first -->
 					{#if Object.keys(item).includes('items') === false || (item as SidebarFolderContent).items.length === 0}
 						{#if item.pathname && item.pathname !== mainItem.pathname}
 							<li data-pathname={item.pathname}>
