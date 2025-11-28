@@ -68,8 +68,9 @@
 			{@attach toggleScrollspy} -->
 		{#each items as item (item.id)}
 			{#if Object.keys(item).includes('items') === false || (item as SidebarFolderContent).items.length > 0}
-				{#if item.pathname && item.pathname !== pathname}
+				{#if item.pathname && item.pathname !== page.url.pathname}
 					<!-- TBD: add an attach, that activates the scrollspy on the parent ul. -->
+					<!-- Repeats code from above. -->
 					<li>
 						<!-- {#await toggleScrollspyOnParent(target as HTMLElement)} -->
 						<button type="button" onclick={() => goto(createHref(item.pathname!, item.hash))}>
