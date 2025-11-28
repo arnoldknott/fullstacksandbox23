@@ -50,15 +50,18 @@ type SidebarLinkContent = {
 	icon: string;
 };
 
-type SidebarItemContent = SidebarFolderContent | SidebarLinkContent;
-export type SidebarFolderContent = {
-	id: string;
-	name: string;
-	pathname?: string;
-	hash?: string;
-	icon: string;
+export type SidebarFolderContent = SidebarLinkContent & {
 	items: SidebarItemContent[];
 };
+// export type SidebarFolderContent = {
+// 	id: string;
+// 	name: string;
+// 	pathname?: string;
+// 	hash?: string;
+// 	icon: string;
+// 	items: SidebarItemContent[];
+// };
+type SidebarItemContent = SidebarFolderContent | SidebarLinkContent;
 
 // Access types:
 export interface AccessPolicy {
