@@ -6,7 +6,8 @@
 	import { goto } from '$app/navigation';
 	import SidebarLink from './SidebarLink.svelte';
 	import SidebarFolder from './SidebarFolder.svelte';
-	let { content }: { content: SidebarFolderContent } = $props();
+	let { content, topLevel = false }: { content: SidebarFolderContent; topLevel?: boolean } =
+		$props();
 	let { id, name, pathname, hash, icon, items } = $derived({ ...content });
 
 	const thisPage = $derived.by(() => (pathname: string) => pathname === page.url.pathname);

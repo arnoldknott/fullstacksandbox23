@@ -46,8 +46,8 @@
 	// });
 
 	const addScrollspy = async (node: HTMLElement) => {
-		console.log('=== addScrollspy - node ===');
-		console.log(node);
+		// console.log('=== addScrollspy - node ===');
+		// console.log(node);
 		node.setAttribute('data-scrollspy', '#scrollspy');
 		node.setAttribute('data-scrollspy-scrollable-parent', '#scrollspy-scrollable-parent');
 		await tick();
