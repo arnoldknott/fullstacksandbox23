@@ -30,6 +30,16 @@
 		// forceScrolling();
 	};
 
+	const removeScrollspy = (node: HTMLElement) => {
+		node.removeAttribute('data-scrollspy');
+		node.removeAttribute('data-scrollspy-scrollable-parent');
+		try {
+			const { element } = window.HSScrollspy.getInstance(node, true);
+			element.destroy();
+			/* eslint-disable no-empty */
+		} catch {}
+	};
+
 	const toggleScrollspyOnParent = (node: HTMLElement) => {
 		const parent = node.parentElement as HTMLElement;
 		// if (!parent) return;
@@ -46,11 +56,11 @@
 			// 		removeScrollspy(parent);
 			// 	}
 			// });
-			// Cleanup when the attachment is removed
-			// return async () => {
-			// 	removeScrollspy(parent);
-			// };
 		}
+		// Cleanup when the attachment is removed
+		return async () => {
+			removeScrollspy(parent);
+		};
 	};
 
 	const toggleCollapse: Attachment<HTMLElement> = (node: HTMLElement) => {
@@ -93,7 +103,7 @@
 			<span
 				class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:block {topLevel
 					? 'overlay-minified:rotate-270'
-					: ''} size-4 transition-all duration-300"
+					: 'hidden '} size-4 transition-all duration-300"
 				role="button"
 				tabindex="0"
 				onclick={() => openSidebar()}
