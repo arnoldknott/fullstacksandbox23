@@ -260,7 +260,10 @@
 				{#each mainItem.items as item (item.id)}
 					<!-- Refactor into SidebarItem (component or snippet)
 					 where a SidebarItem is wither a SidebarFolder or SidebarLink.
-					 If the pathname changes, it has to be a folder first -->
+					 If the pathname changes, it has to be a folder first.
+					 No: there are also the simple pages, that don't have sub-id's.
+					 They need to stay a direct link. 
+					 Soooo: If a page has hash links, it needs to have a folder first (dropdwon without navigate?) -->
 					{#if Object.keys(item).includes('items') === false || (item as SidebarFolderContent).items.length === 0}
 						{#if item.pathname && item.pathname !== mainItem.pathname}
 							<li data-pathname={item.pathname}>
