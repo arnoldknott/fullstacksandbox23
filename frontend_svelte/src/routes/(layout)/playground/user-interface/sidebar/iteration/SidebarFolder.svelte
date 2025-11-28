@@ -1,7 +1,8 @@
 <script lang="ts">
 	import type { SidebarFolderContent } from '$lib/types';
 	import { page } from '$app/state';
-	import { initCollapse } from '$lib/userInterface';
+	import { initCollapse, initScrollspy } from '$lib/userInterface';
+	import { tick } from 'svelte';
 	import type { Attachment } from 'svelte/attachments';
 	import { goto } from '$app/navigation';
 	import SidebarLink from './SidebarLink.svelte';
@@ -18,6 +19,39 @@
 		else href = `${destinationPathname}${hash}`;
 		return href;
 	});
+
+	const addScrollspy = async (node: HTMLElement) => {
+		// console.log('=== addScrollspy - node ===');
+		// console.log(node);
+		node.setAttribute('data-scrollspy', '#scrollspy');
+		node.setAttribute('data-scrollspy-scrollable-parent', '#scrollspy-scrollable-parent');
+		await tick();
+		initScrollspy(node);
+		// forceScrolling();
+	};
+
+	const toggleScrollspyOnParent = (node: HTMLElement) => {
+		const parent = node.parentElement as HTMLElement;
+		// if (!parent) return;
+		if (parent && parent.dataset.pathname === page.url.pathname) {
+			// afterNavigate(async () => {
+			// if (thisPage(node.dataset.pathname || '')) {
+			console.log('=== toggleScrollspyOnParent ===');
+			console.log(parent);
+			addScrollspy(parent);
+			// }
+			// });
+			// beforeNavigate((navigator) => {
+			// 	if (!(navigator.to?.url.pathname === node.dataset.pathname)) {
+			// 		removeScrollspy(parent);
+			// 	}
+			// });
+			// Cleanup when the attachment is removed
+			// return async () => {
+			// 	removeScrollspy(parent);
+			// };
+		}
+	};
 
 	const toggleCollapse: Attachment<HTMLElement> = (node: HTMLElement) => {
 		if (page.url.pathname.startsWith(node.dataset.pathname || '')) {
@@ -92,6 +126,7 @@
 			? 'open'
 			: 'hidden'} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
 		aria-labelledby={id + '-control'}
+		data-pathname={pathname}
 	>
 		<!-- data-pathname={pathname}
 			{@attach toggleScrollspy} -->
@@ -109,13 +144,15 @@
 						<!-- {/await} -->
 					</li>
 				{:else}
-					<SidebarLink
-						href={createHref(pathname!, item.hash)}
-						thisPage={thisPage(pathname!)}
-						icon={item.icon}
-					>
-						{item.name}
-					</SidebarLink>
+					<div {@attach toggleScrollspyOnParent}>
+						<SidebarLink
+							href={createHref(pathname!, item.hash)}
+							thisPage={thisPage(pathname!)}
+							icon={item.icon}
+						>
+							{item.name}
+						</SidebarLink>
+					</div>
 				{/if}
 			{:else}
 				<SidebarFolder
