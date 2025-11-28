@@ -6,6 +6,7 @@
 	import type { Attachment } from 'svelte/attachments';
 	import { initCollapse, initScrollspy } from '$lib/userInterface';
 	import SidebarLink from './SidebarLink.svelte';
+	import SidebarFolder from './SidebarFolder.svelte';
 
 	let {
 		contentList,
@@ -282,10 +283,16 @@
 							</SidebarLink>
 						{/if}
 					{:else}
-						{@render sidebarFolder({
+						<SidebarFolder
+							content={{
+								...item,
+								pathname: item.pathname || mainItem.pathname
+							} as SidebarFolderContent}
+						/>
+						<!-- {@render sidebarFolder({
 							...item,
 							pathname: item.pathname || mainItem.pathname
-						} as SidebarFolderContent)}
+						} as SidebarFolderContent)} -->
 					{/if}
 				{/each}
 			</ul>
