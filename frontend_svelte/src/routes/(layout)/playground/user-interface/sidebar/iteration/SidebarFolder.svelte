@@ -91,7 +91,9 @@
 				class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:hidden size-4 transition-all duration-300"
 			></span>
 			<span
-				class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:block overlay-minified:rotate-270 hidden size-4 transition-all duration-300"
+				class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:block {topLevel
+					? 'overlay-minified:rotate-270'
+					: ''} size-4 transition-all duration-300"
 				role="button"
 				tabindex="0"
 				onclick={() => openSidebar()}

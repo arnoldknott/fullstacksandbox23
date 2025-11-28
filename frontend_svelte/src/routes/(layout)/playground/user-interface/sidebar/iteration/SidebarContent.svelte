@@ -94,27 +94,27 @@
 		};
 	};
 
-	// toggleScrollspyOnParent(event.target as HTMLElement);
-	const toggleScrollspyOnParent = (node: HTMLElement) => {
-		const parent = node.parentElement?.parentElement?.parentElement as HTMLElement;
-		console.log('=== toggleScrollspyOnParent ===');
-		console.log(parent);
-		if (!parent) return;
-		// afterNavigate(async () => {
-		// if (thisPage(node.dataset.pathname || '')) {
-		addScrollspy(parent);
-		// }
-		// });
-		// beforeNavigate((navigator) => {
-		// 	if (!(navigator.to?.url.pathname === node.dataset.pathname)) {
-		// 		removeScrollspy(parent);
-		// 	}
-		// });
-		// Cleanup when the attachment is removed
-		// return async () => {
-		// 	removeScrollspy(parent);
-		// };
-	};
+	// // toggleScrollspyOnParent(event.target as HTMLElement);
+	// const toggleScrollspyOnParent = (node: HTMLElement) => {
+	// 	const parent = node.parentElement?.parentElement?.parentElement as HTMLElement;
+	// 	console.log('=== toggleScrollspyOnParent ===');
+	// 	console.log(parent);
+	// 	if (!parent) return;
+	// 	// afterNavigate(async () => {
+	// 	// if (thisPage(node.dataset.pathname || '')) {
+	// 	addScrollspy(parent);
+	// 	// }
+	// 	// });
+	// 	// beforeNavigate((navigator) => {
+	// 	// 	if (!(navigator.to?.url.pathname === node.dataset.pathname)) {
+	// 	// 		removeScrollspy(parent);
+	// 	// 	}
+	// 	// });
+	// 	// Cleanup when the attachment is removed
+	// 	// return async () => {
+	// 	// 	removeScrollspy(parent);
+	// 	// };
+	// };
 
 	const openSidebar = () => {
 		const { element } = window.HSOverlay.getInstance('#collapsible-mini-sidebar', true);
