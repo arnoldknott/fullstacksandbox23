@@ -141,79 +141,6 @@
 	// };
 </script>
 
-{#snippet sidebarFolder(content: SidebarFolderContent)}
-	{@const { id, name, pathname, hash, icon, items } = content}
-
-	<li data-scrollspy-group="" class="space-y-0.5">
-		{#if pathname && pathname !== page.url.pathname}
-			<!-- TBD: add an attach, that activates the scrollspy on the parent ul. -->
-			<button type="button" onclick={() => goto(createHref(pathname!, hash))}>
-				<span class="{icon} size-5"></span>
-				<span class="overlay-minified:hidden">{name}</span>
-			</button>
-		{:else}
-			<a
-				class="collapse-toggle {thisPage(pathname!)
-					? 'open'
-					: ''} collapse-open:bg-base-content/10 scrollspy-active:italic group"
-				id={id + '-control'}
-				data-collapse={'#' + id + '-collapse'}
-				data-pathname={pathname}
-				href={createHref(pathname!, hash)}
-				{@attach initCollapse}
-				{@attach toggleCollapse}
-			>
-				<span
-					class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
-				></span>
-				<span class="{icon} size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"></span>
-				{name}
-				<span
-					class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"
-				></span>
-			</a>
-		{/if}
-		<ul
-			id={id + '-collapse'}
-			class="collapse {thisPage(pathname!)
-				? 'open'
-				: 'hidden'} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
-			aria-labelledby={id + '-control'}
-		>
-			<!-- data-pathname={pathname}
-			{@attach toggleScrollspy} -->
-			{#each items as item (item.id)}
-				{#if Object.keys(item).includes('items') === false || (item as SidebarFolderContent).items.length > 0}
-					{#if item.pathname && item.pathname !== pathname}
-						<!-- TBD: add an attach, that activates the scrollspy on the parent ul. -->
-						<li>
-							<!-- {#await toggleScrollspyOnParent(target as HTMLElement)} -->
-							<button type="button" onclick={() => goto(createHref(item.pathname!, item.hash))}>
-								<span class="{item.icon} size-5"></span>
-								<span class="overlay-minified:hidden">{item.name}</span>
-							</button>
-							<!-- {/await} -->
-						</li>
-					{:else}
-						<SidebarLink
-							href={createHref(pathname!, item.hash)}
-							thisPage={thisPage(pathname!)}
-							icon={item.icon}
-						>
-							{item.name}
-						</SidebarLink>
-					{/if}
-				{:else}
-					{@render sidebarFolder({
-						...item,
-						pathname: item.pathname || pathname
-					} as SidebarFolderContent)}
-				{/if}
-			{/each}
-		</ul>
-	</li>
-{/snippet}
-
 {#each contentList as mainItem (mainItem.id)}
 	{#if mainItem.items.length === 0}
 		<li>
@@ -266,7 +193,7 @@
 					 They need to stay a direct link. 
 					 Soooo: If a page has hash links, it needs to have a folder first (dropdwon without navigate?) -->
 					{#if Object.keys(item).includes('items') === false || (item as SidebarFolderContent).items.length === 0}
-						{#if item.pathname && item.pathname !== mainItem.pathname}
+						{#if item.pathname && item.pathname !== page.url.pathname}
 							<li data-pathname={item.pathname}>
 								<button type="button" onclick={() => goto(createHref(item.pathname!, item.hash))}>
 									<span class="{item.icon} size-5"></span>
@@ -289,10 +216,6 @@
 								pathname: item.pathname || mainItem.pathname
 							} as SidebarFolderContent}
 						/>
-						<!-- {@render sidebarFolder({
-							...item,
-							pathname: item.pathname || mainItem.pathname
-						} as SidebarFolderContent)} -->
 					{/if}
 				{/each}
 			</ul>

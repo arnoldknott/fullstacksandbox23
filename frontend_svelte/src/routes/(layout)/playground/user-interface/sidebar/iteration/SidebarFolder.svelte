@@ -26,14 +26,43 @@
 			element.show();
 		}
 	};
+
+	const openSidebar = () => {
+		const { element } = window.HSOverlay.getInstance('#collapsible-mini-sidebar', true);
+		element.open();
+		window.HSStaticMethods.autoInit();
+	};
 </script>
 
 <li data-scrollspy-group="" class="space-y-0.5">
-	{#if pathname && pathname !== page.url.pathname}
+	{#if items.length === 0}
 		<!-- TBD: add an attach, that activates the scrollspy on the parent ul. -->
 		<button type="button" onclick={() => goto(createHref(pathname!, hash))}>
 			<span class="{icon} size-5"></span>
 			<span class="overlay-minified:hidden">{name}</span>
+		</button>
+	{:else if pathname && pathname !== page.url.pathname}
+		<button
+			type="button"
+			class="collapse-toggle {thisPage(pathname) ? 'open' : ''} collapse-open:bg-base-content/10"
+			id={id + '-control'}
+			data-collapse={'#' + id + '-collapse'}
+			data-pathname={pathname}
+			{@attach initCollapse}
+			{@attach toggleCollapse}
+		>
+			<span class="{icon} size-5"></span>
+			<span class="overlay-minified:hidden">{name}</span>
+			<span
+				class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:hidden size-4 transition-all duration-300"
+			></span>
+			<span
+				class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:block overlay-minified:rotate-270 hidden size-4 transition-all duration-300"
+				role="button"
+				tabindex="0"
+				onclick={() => openSidebar()}
+				onkeydown={() => openSidebar()}
+			></span>
 		</button>
 	{:else}
 		<a
@@ -95,10 +124,6 @@
 						pathname: item.pathname || pathname
 					} as SidebarFolderContent}
 				/>
-				<!-- {@render sidebarFolder({
-						...item,
-						pathname: item.pathname || pathname
-					} as SidebarFolderContent)} -->
 			{/if}
 		{/each}
 	</ul>
