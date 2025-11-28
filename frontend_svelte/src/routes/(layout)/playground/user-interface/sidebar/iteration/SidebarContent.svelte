@@ -93,6 +93,7 @@
 		};
 	};
 
+	// toggleScrollspyOnParent(event.target as HTMLElement);
 	const toggleScrollspyOnParent = (node: HTMLElement) => {
 		const parent = node.parentElement?.parentElement?.parentElement as HTMLElement;
 		console.log('=== toggleScrollspyOnParent ===');
@@ -143,26 +144,34 @@
 	{@const { id, name, pathname, hash, icon, items } = content}
 
 	<li data-scrollspy-group="" class="space-y-0.5">
-		<a
-			class="collapse-toggle {thisPage(pathname!)
-				? 'open'
-				: ''} collapse-open:bg-base-content/10 scrollspy-active:italic group"
-			id={id + '-control'}
-			data-collapse={'#' + id + '-collapse'}
-			data-pathname={pathname}
-			href={createHref(pathname!, hash)}
-			{@attach initCollapse}
-			{@attach toggleCollapse}
-		>
-			<span
-				class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
-			></span>
-			<span class="{icon} size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"></span>
-			{name}
-			<span
-				class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"
-			></span>
-		</a>
+		{#if pathname && pathname !== page.url.pathname}
+			<!-- TBD: add an attach, that activates the scrollspy on the parent ul. -->
+			<button type="button" onclick={() => goto(createHref(pathname!, hash))}>
+				<span class="{icon} size-5"></span>
+				<span class="overlay-minified:hidden">{name}</span>
+			</button>
+		{:else}
+			<a
+				class="collapse-toggle {thisPage(pathname!)
+					? 'open'
+					: ''} collapse-open:bg-base-content/10 scrollspy-active:italic group"
+				id={id + '-control'}
+				data-collapse={'#' + id + '-collapse'}
+				data-pathname={pathname}
+				href={createHref(pathname!, hash)}
+				{@attach initCollapse}
+				{@attach toggleCollapse}
+			>
+				<span
+					class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+				></span>
+				<span class="{icon} size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"></span>
+				{name}
+				<span
+					class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"
+				></span>
+			</a>
+		{/if}
 		<ul
 			id={id + '-collapse'}
 			class="collapse {thisPage(pathname!)
@@ -178,13 +187,7 @@
 						<!-- TBD: add an attach, that activates the scrollspy on the parent ul. -->
 						<li>
 							<!-- {#await toggleScrollspyOnParent(target as HTMLElement)} -->
-							<button
-								type="button"
-								onclick={(event) => {
-									goto(createHref(item.pathname!, item.hash));
-									toggleScrollspyOnParent(event.target as HTMLElement);
-								}}
-							>
+							<button type="button" onclick={() => goto(createHref(item.pathname!, item.hash))}>
 								<span class="{item.icon} size-5"></span>
 								<span class="overlay-minified:hidden">{item.name}</span>
 							</button>
