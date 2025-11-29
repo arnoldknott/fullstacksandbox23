@@ -149,6 +149,7 @@
 				<span class="overlay-minified:hidden">{mainItem.name}</span>
 			</a>
 		</li>
+		<!-- {:else if mainItem.pathname && mainItem.pathname !== page.url.pathname}	 -->
 	{:else}
 		<li class="space-y-0.5">
 			<button
@@ -175,51 +176,76 @@
 					onkeydown={() => openSidebar()}
 				></span>
 			</button>
-			<ul
-				id={mainItem.id + '-collapse'}
-				class="collapse {thisPage(mainItem.pathname)
-					? 'open'
-					: 'hidden'} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
-				aria-labelledby={mainItem.id + '-control'}
-				data-pathname={mainItem.pathname}
-				{@attach toggleScrollspy}
-			>
-				<!-- bind:this={sidebarList} -->
-				{#each mainItem.items as item (item.id)}
-					<!-- Refactor into SidebarItem (component or snippet)
+		</li>
+		<!-- {:else}
+		<a
+			class="collapse-toggle {thisPage(mainItem.pathname)
+				? 'open'
+				: ''} collapse-open:bg-base-content/10 scrollspy-active:italic group"
+			id={mainItem.id + '-control'}
+			data-collapse={'#' + mainItem.id + '-collapse'}
+			data-pathname={mainItem.pathname}
+			href={createHref(mainItem.pathname, mainItem.hash)}
+						{@attach initCollapse}
+			{@attach toggleCollapse}
+		>
+			<span class="{mainItem.icon} size-5"></span>
+			<span class="overlay-minified:hidden">{mainItem.name}</span>
+			<span
+				class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:hidden size-4 transition-all duration-300"
+			></span>
+			<span
+				class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:block overlay-minified:rotate-270 hidden size-4 transition-all duration-300"
+				role="button"
+				tabindex="0"
+				onclick={() => openSidebar()}
+				onkeydown={() => openSidebar()}
+			></span>
+		</a> -->
+	{/if}
+	<ul
+		id={mainItem.id + '-collapse'}
+		class="collapse {thisPage(mainItem.pathname)
+			? 'open'
+			: 'hidden'} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
+		aria-labelledby={mainItem.id + '-control'}
+		data-pathname={mainItem.pathname}
+		{@attach toggleScrollspy}
+	>
+		<!-- bind:this={sidebarList} -->
+		{#each mainItem.items as item (item.id)}
+			<!-- Refactor into SidebarItem (component or snippet)
 					 where a SidebarItem is wither a SidebarFolder or SidebarLink.
 					 If the pathname changes, it has to be a folder first.
 					 No: there are also the simple pages, that don't have sub-id's.
 					 They need to stay a direct link. 
 					 Soooo: If a page has hash links, it needs to have a folder first (dropdwon without navigate?) -->
-					{#if Object.keys(item).includes('items') === false || (item as SidebarFolderContent).items.length === 0}
-						{#if item.pathname && item.pathname !== page.url.pathname}
-							<li data-pathname={item.pathname}>
-								<button type="button" onclick={() => goto(createHref(item.pathname!, item.hash))}>
-									<span class="{item.icon} size-5"></span>
-									<span class="overlay-minified:hidden">{item.name}</span>
-								</button>
-							</li>
-						{:else}
-							<SidebarLink
-								href={createHref(mainItem.pathname, item.hash)}
-								thisPage={thisPage(mainItem.pathname)}
-								icon={item.icon}
-							>
-								{item.name}
-							</SidebarLink>
-						{/if}
-					{:else}
-						<SidebarFolder
-							content={{
-								...item,
-								pathname: item.pathname || mainItem.pathname
-							} as SidebarFolderContent}
-							{scrollspyParent}
-						/>
-					{/if}
-				{/each}
-			</ul>
-		</li>
-	{/if}
+			{#if Object.keys(item).includes('items') === false || (item as SidebarFolderContent).items.length === 0}
+				{#if item.pathname && item.pathname !== page.url.pathname}
+					<li data-pathname={item.pathname}>
+						<button type="button" onclick={() => goto(createHref(item.pathname!, item.hash))}>
+							<span class="{item.icon} size-5"></span>
+							<span class="overlay-minified:hidden">{item.name}</span>
+						</button>
+					</li>
+				{:else}
+					<SidebarLink
+						href={createHref(mainItem.pathname, item.hash)}
+						thisPage={thisPage(mainItem.pathname)}
+						icon={item.icon}
+					>
+						{item.name}
+					</SidebarLink>
+				{/if}
+			{:else}
+				<SidebarFolder
+					content={{
+						...item,
+						pathname: item.pathname || mainItem.pathname
+					} as SidebarFolderContent}
+					{scrollspyParent}
+				/>
+			{/if}
+		{/each}
+	</ul>
 {/each}

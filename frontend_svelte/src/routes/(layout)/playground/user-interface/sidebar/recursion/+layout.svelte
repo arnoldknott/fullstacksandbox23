@@ -8,20 +8,21 @@
 	import ThemePicker from '../../../components/ThemePicker.svelte';
 	import ArtificialIntelligencePicker from '../../../components/ArtificialIntelligencePicker.svelte';
 	import { onMount } from 'svelte';
-	import SidebarContent from './SidebarContent.svelte';
+	import type { SidebarItemContent } from '$lib/types';
+	import SidebarItem from './SidebarItem.svelte';
 	let { children }: { children: Snippet } = $props();
 
-	let sidebarLinks = $state([
+	let sidebarLinks: SidebarItemContent[] = $state([
 		{
 			name: 'Page 1',
-			pathname: resolve('/(layout)/playground/user-interface/sidebar/iteration/page1'),
+			pathname: resolve('/(layout)/playground/user-interface/sidebar/recursion/page1'),
 			icon: 'icon-[tabler--user]',
 			id: 'page1',
 			items: []
 		},
 		{
 			name: 'Page 2',
-			pathname: resolve('/(layout)/playground/user-interface/sidebar/iteration/page2'),
+			pathname: resolve('/(layout)/playground/user-interface/sidebar/recursion/page2'),
 			icon: 'icon-[icon-park-outline--page]',
 			id: 'page2',
 			items: [
@@ -73,7 +74,7 @@
 		},
 		{
 			name: 'Page 3',
-			pathname: resolve('/(layout)/playground/user-interface/sidebar/iteration/page3'),
+			pathname: resolve('/(layout)/playground/user-interface/sidebar/recursion/page3'),
 			icon: 'icon-[icon-park-outline--page]',
 			id: 'page3',
 			items: [
@@ -132,7 +133,7 @@
 		{
 			id: 'further-page',
 			name: 'Further Page',
-			pathname: resolve('/(layout)/playground/user-interface/sidebar/iteration/page4'),
+			pathname: resolve('/(layout)/playground/user-interface/sidebar/recursion/page4'),
 			icon: 'icon-[tabler--mail]',
 			items: [
 				{
@@ -176,7 +177,7 @@
 				{
 					name: 'Sub-page 4.1',
 					icon: 'icon-[mingcute--directory-line]',
-					pathname: resolve('/(layout)/playground/user-interface/sidebar/iteration/page4/page4-1'),
+					pathname: resolve('/(layout)/playground/user-interface/sidebar/recursion/page4/page4-1'),
 					id: 'page4p1',
 					items: [
 						{
@@ -184,7 +185,7 @@
 							name: 'Loreum 1 pg4.1',
 							icon: 'icon-[mdi--text]',
 							pathname: resolve(
-								'/(layout)/playground/user-interface/sidebar/iteration/page4/page4-1'
+								'/(layout)/playground/user-interface/sidebar/recursion/page4/page4-1'
 							),
 							hash: '#loreum1'
 						},
@@ -193,7 +194,7 @@
 							name: 'Loreum 2 pg4.2',
 							icon: 'icon-[mdi--text]',
 							pathname: resolve(
-								'/(layout)/playground/user-interface/sidebar/iteration/page4/page4-1'
+								'/(layout)/playground/user-interface/sidebar/recursion/page4/page4-1'
 							),
 							hash: '#loreum2'
 						}
@@ -202,7 +203,7 @@
 				{
 					name: 'Sub-page 4.2',
 					icon: 'icon-[material-symbols--folder-outline-rounded]',
-					pathname: resolve('/(layout)/playground/user-interface/sidebar/iteration/page4/page4-2'),
+					pathname: resolve('/(layout)/playground/user-interface/sidebar/recursion/page4/page4-2'),
 					id: 'page4p2',
 					items: [
 						{
@@ -210,7 +211,7 @@
 							name: 'Loreum 1 pg4.2',
 							icon: 'icon-[mdi--text]',
 							pathname: resolve(
-								'/(layout)/playground/user-interface/sidebar/iteration/page4/page4-2'
+								'/(layout)/playground/user-interface/sidebar/recursion/page4/page4-2'
 							),
 							hash: '#loreum1'
 						},
@@ -219,7 +220,7 @@
 							name: 'Loreum 2 pg4.2',
 							icon: 'icon-[mdi--text]',
 							pathname: resolve(
-								'/(layout)/playground/user-interface/sidebar/iteration/page4/page4-2'
+								'/(layout)/playground/user-interface/sidebar/recursion/page4/page4-2'
 							),
 							hash: '#loreum2'
 						}
@@ -235,7 +236,7 @@
 		},
 		{
 			name: 'Page 5',
-			pathname: resolve('/(layout)/playground/user-interface/sidebar/iteration/page5'),
+			pathname: resolve('/(layout)/playground/user-interface/sidebar/recursion/page5'),
 			icon: 'icon-[tabler--user]',
 			id: 'page5',
 			items: [
@@ -257,7 +258,7 @@
 	let page5Content = $state([
 		{
 			name: 'Page 6',
-			pathname: resolve('/(layout)/playground/user-interface/sidebar/iteration/page6'),
+			pathname: resolve('/(layout)/playground/user-interface/sidebar/recursion/page6'),
 			icon: 'icon-[solar--structure-linear]',
 			id: 'page6',
 			items: [
@@ -417,25 +418,23 @@
 				'Hierarchy'
 			)} -->
 			{@render navbarPartItem(
-				'/playground/user-interface/sidebar/iteration',
-				'icon-[tabler--arrow-iteration]',
-				'Iteration'
+				'/playground/user-interface/sidebar/recursion',
+				'icon-[stash--arrows-switch]',
+				'Recursion'
 			)}
-			<li class="text-primary items-center">
-				<button
-					class="btn btn-primary btn-gradient max-sm:btn-circle md:rounded-full"
-					onclick={() =>
-						sidebarLinks.length === 5 ? sidebarLinks.push(...page5Content) : sidebarLinks.pop()}
-				>
-					{#if sidebarLinks.length === 5}
-						<span class="icon-[tabler--plus] size-5"></span>
-						<div class="hidden md:block">add page 6</div>
-					{:else if sidebarLinks.length === 6}
-						<span class="icon-[tabler--minus] size-5"></span>
-						<div class="hidden md:block">remove page 6</div>
-					{/if}
-				</button>
-			</li>
+			<button
+				class="btn btn-primary btn-gradient max-sm:btn-circle max-sm:ml-2 md:rounded-full"
+				onclick={() =>
+					sidebarLinks.length === 5 ? sidebarLinks.push(...page5Content) : sidebarLinks.pop()}
+			>
+				{#if sidebarLinks.length === 5}
+					<span class="icon-[tabler--plus] size-5"></span>
+					<div class="hidden md:block">add page 6</div>
+				{:else if sidebarLinks.length === 6}
+					<span class="icon-[tabler--minus] size-5"></span>
+					<div class="hidden md:block">remove page 6</div>
+				{/if}
+			</button>
 		</ul>
 	</div>
 	<div class="navbar-center flex flex-row max-sm:scale-50">
@@ -535,15 +534,21 @@
 					'md:hidden'
 				)} -->
 				{@render sidebarPartItem(
-					'/playground/user-interface/sidebar/iteration',
-					'icon-[tabler--arrow-iteration]',
-					'Iteration',
+					'/playground/user-interface/sidebar/recursion',
+					'icon-[stash--arrows-switch]',
+					'Recursion',
 					'md:hidden'
 				)}
 			</ul>
 			<div class="divider"></div>
 			<ul class="menu p-0">
-				<SidebarContent contentList={sidebarLinks} {scrollspyParent} />
+				{#each sidebarLinks as mainItem (mainItem.id)}
+					<SidebarItem
+						content={{ ...mainItem, pathname: mainItem.pathname || page.url.pathname }}
+						topLevel={true}
+						{scrollspyParent}
+					/>
+				{/each}
 				<li>
 					<div class="items-center sm:hidden md:ml-2">
 						<button

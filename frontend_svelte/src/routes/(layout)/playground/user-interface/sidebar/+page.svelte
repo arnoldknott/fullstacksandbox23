@@ -56,6 +56,12 @@
 			description:
 				'Iterates the sidebar links from an array of objects in an iterative loop, reusing components to further improve reusability and maintainability.',
 			url: 'sidebar/iteration'
+		},
+		{
+			name: 'Recursion in sidebar',
+			description:
+				'Creates recursive sidebar items which can either be links or folders containing more sidebar items.',
+			url: 'sidebar/recursion'
 		}
 	];
 </script>
