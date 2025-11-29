@@ -2,7 +2,6 @@
 	import type { SidebarFolderContent } from '$lib/types';
 	import { page } from '$app/state';
 	import { initCollapse, initScrollspy } from '$lib/userInterface';
-	import { tick } from 'svelte';
 	import type { Attachment } from 'svelte/attachments';
 	import { beforeNavigate, goto } from '$app/navigation';
 	import SidebarLink from './SidebarLink.svelte';
@@ -42,12 +41,11 @@
 		}
 	};
 
-	const addScrollspy = async (node: HTMLElement) => {
+	const addScrollspy = (node: HTMLElement) => {
 		// console.log('=== addScrollspy - node ===');
 		// console.log(node);
 		node.setAttribute('data-scrollspy', '#scrollspy');
 		node.setAttribute('data-scrollspy-scrollable-parent', '#scrollspy-scrollable-parent');
-		await tick();
 		initScrollspy(node);
 		forceScrolling();
 	};
@@ -67,9 +65,9 @@
 		// if (!parent) return;
 		if (parent && parent.dataset.pathname === page.url.pathname) {
 			// afterNavigate(async () => {
-			// if (thisPage(node.dataset.pathname || '')) {
+			// 	if (thisPage(node.dataset.pathname || '')) {
 			addScrollspy(parent);
-			// }
+			// 	}
 			// });
 			beforeNavigate((navigator) => {
 				if (!(navigator.to?.url.pathname === node.dataset.pathname)) {
@@ -84,8 +82,8 @@
 	};
 
 	const toggleCollapse: Attachment<HTMLElement> = (node: HTMLElement) => {
-		if (page.url.pathname.startsWith(node.dataset.pathname || '')) {
-			// if (page.url.pathname === node.dataset.pathname) {
+		// if (page.url.pathname.startsWith(node.dataset.pathname || '')) {
+		if (page.url.pathname === node.dataset.pathname) {
 			const { element } = window.HSCollapse.getInstance(node, true);
 			element.show();
 		}
@@ -98,6 +96,7 @@
 	};
 </script>
 
+<!-- TBD: declutter the recursivity -->
 <li data-scrollspy-group="" class="space-y-0.5">
 	{#if items.length === 0}
 		<!-- TBD: add an attach, that activates the scrollspy on the parent ul. -->
