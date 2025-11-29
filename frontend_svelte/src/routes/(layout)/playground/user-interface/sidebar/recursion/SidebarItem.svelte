@@ -5,12 +5,12 @@
 	import SidebarLink from './SidebarLink.svelte';
 	let {
 		content,
-		topLevel = false,
-		scrollspyParent
+		topLevel = false
+		// scrollspyParent
 	}: {
 		content: SidebarItemContent;
 		topLevel?: boolean;
-		scrollspyParent: HTMLDivElement;
+		// scrollspyParent: HTMLDivElement;
 	} = $props();
 	let { name, pathname, hash, icon } = $derived({ ...content });
 
@@ -28,13 +28,7 @@
 {#if Object.keys(content).includes('items') === false || (content as SidebarFolderContent).items.length === 0}
 	<!-- It's a Link -->
 	<!-- {@debug content} -->
-	<SidebarLink
-		href={createHref(pathname!, hash)}
-		thisPage={thisPage(pathname!)}
-		{icon}
-		{scrollspyParent}
-		{topLevel}
-	>
+	<SidebarLink href={createHref(pathname!, hash)} thisPage={thisPage(pathname!)} {icon} {topLevel}>
 		{name}
 	</SidebarLink>
 {:else}
@@ -45,6 +39,5 @@
 			pathname: pathname || ''
 		} as SidebarFolderContent}
 		{topLevel}
-		{scrollspyParent}
 	/>
 {/if}

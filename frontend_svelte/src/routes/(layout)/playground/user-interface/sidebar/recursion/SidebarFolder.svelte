@@ -7,12 +7,12 @@
 	import SidebarItem from './SidebarItem.svelte';
 	let {
 		content,
-		topLevel = false,
-		scrollspyParent
+		topLevel = false
+		// scrollspyParent
 	}: {
 		content: SidebarFolderContent;
 		topLevel?: boolean;
-		scrollspyParent: HTMLDivElement;
+		// scrollspyParent: HTMLDivElement;
 	} = $props();
 	let { id, name, pathname, hash, icon, items } = $derived({ ...content });
 
@@ -55,7 +55,6 @@
 					...item,
 					pathname: item.pathname || pathname
 				} as SidebarFolderContent}
-				{scrollspyParent}
 			/>
 		{/each}
 	</ul>

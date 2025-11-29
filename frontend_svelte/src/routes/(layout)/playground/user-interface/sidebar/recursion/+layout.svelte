@@ -7,7 +7,7 @@
 	import { Model, type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
 	import ThemePicker from '../../../components/ThemePicker.svelte';
 	import ArtificialIntelligencePicker from '../../../components/ArtificialIntelligencePicker.svelte';
-	import { afterNavigate } from '$app/navigation';
+	// import { afterNavigate } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import type { SidebarItemContent } from '$lib/types';
 	import SidebarItem from './SidebarItem.svelte';
@@ -556,7 +556,6 @@
 					<SidebarItem
 						content={{ ...mainItem, pathname: mainItem.pathname || page.url.pathname }}
 						topLevel={true}
-						{scrollspyParent}
 					/>
 				{/each}
 				<li>

@@ -7,14 +7,14 @@
 		href,
 		thisPage,
 		icon,
-		scrollspyParent,
+		// scrollspyParent,
 		topLevel = false,
 		children
 	}: {
 		href: string;
 		thisPage: boolean;
 		icon: string;
-		scrollspyParent: HTMLDivElement;
+		// scrollspyParent: HTMLDivElement;
 		topLevel?: boolean;
 		children: Snippet;
 	} = $props();
