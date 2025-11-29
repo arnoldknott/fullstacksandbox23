@@ -7,6 +7,7 @@
 	import { Model, type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
 	import ThemePicker from '../../../components/ThemePicker.svelte';
 	import ArtificialIntelligencePicker from '../../../components/ArtificialIntelligencePicker.svelte';
+	// import { afterNavigate } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import type { SidebarItemContent } from '$lib/types';
 	import SidebarItem from './SidebarItem.svelte';
@@ -312,6 +313,15 @@
 
 	let scrollspyParent: HTMLDivElement | null = $state(null);
 
+	// afterNavigate((navigator) => {
+	// 	if (navigator.to?.url.hash !== '' && scrollspyParent) {
+	// 		console.log('=== afterNavigate - scroll to top ===');
+	// 		// scrollspyParent.scrollTop = 0;
+	// 		// scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
+	// 		scrollspyParent.scrollTo(scrollspyParent.scrollLeft, 0);
+	// 	}
+	// });
+
 	onMount(() => {
 		scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
 		if (page.url.hash) {
@@ -396,8 +406,8 @@
 <nav
 	class="navbar rounded-box bg-base-100 shadow-shadow border-outline-variant relative sticky start-0 top-0 z-1 justify-between border-b shadow-sm md:flex md:items-center"
 >
-	<div class="navbar-start">
-		<ul class="menu menu-horizontal ml-4 flex flex-nowrap items-center">
+	<div class="navbar-start rtl:[--placement:bottom-end]">
+		<ul class="menu menu-horizontal flex flex-nowrap items-center">
 			{@render sidebarToggleButton('hidden sm:flex', {
 				'data-overlay-minifier': '#collapsible-mini-sidebar'
 			})}
@@ -546,7 +556,6 @@
 					<SidebarItem
 						content={{ ...mainItem, pathname: mainItem.pathname || page.url.pathname }}
 						topLevel={true}
-						{scrollspyParent}
 					/>
 				{/each}
 				<li>
