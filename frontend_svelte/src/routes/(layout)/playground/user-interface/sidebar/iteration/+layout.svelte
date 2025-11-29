@@ -232,7 +232,9 @@
 					hash: '#loreum6'
 				}
 			]
-		},
+		}
+	]);
+	let page5Content = $state([
 		{
 			name: 'Page 5',
 			pathname: resolve('/(layout)/playground/user-interface/sidebar/iteration/page5'),
@@ -399,6 +401,21 @@
 				'icon-[tabler--arrow-iteration]',
 				'Iteration'
 			)}
+			<li class="text-primary items-center">
+				<button
+					class="btn btn-primary max-sm:btn-circle md:rounded-full"
+					onclick={() =>
+						sidebarLinks.length === 4 ? sidebarLinks.push(...page5Content) : sidebarLinks.pop()}
+				>
+					{#if sidebarLinks.length === 4}
+						<span class="icon-[tabler--plus] size-5"></span>
+						<div class="hidden md:block">page 5</div>
+					{:else if sidebarLinks.length === 5}
+						<span class="icon-[tabler--minus] size-5"></span>
+						<div class="hidden md:block">page 5</div>
+					{/if}
+				</button>
+			</li>
 		</ul>
 	</div>
 	<div class="navbar-center flex flex-row max-sm:scale-50">
