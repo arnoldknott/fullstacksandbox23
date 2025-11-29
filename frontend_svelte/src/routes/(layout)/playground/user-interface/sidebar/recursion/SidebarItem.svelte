@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { SidebarFolderContent } from '$lib/types';
+	import type { SidebarItemContent, SidebarFolderContent } from '$lib/types';
 	import { page } from '$app/state';
 	import SidebarFolder from './SidebarFolder.svelte';
 	import SidebarLink from './SidebarLink.svelte';
@@ -8,11 +8,16 @@
 		topLevel = false,
 		scrollspyParent
 	}: {
-		content: SidebarFolderContent;
+		content: SidebarItemContent;
 		topLevel?: boolean;
 		scrollspyParent: HTMLDivElement;
 	} = $props();
-	let { id, name, pathname, hash, icon, items } = $derived({ ...content });
+	let { name, pathname, hash, icon } = $derived({ ...content });
+
+	// console.log('=== SidebarItem - content ===');
+	// console.log(content);
+	// console.log('=== SidebarItem - topLevel ===');
+	// console.log(topLevel);
 
 	const thisPage = $derived.by(() => (pathname: string) => pathname === page.url.pathname);
 	const createHref = $derived.by(() => (destinationPathname: string, hash?: string) => {
@@ -25,9 +30,16 @@
 </script>
 
 <!-- Is the SidebarItem a Link or a Folder? -->
-{#if items.length === 0}
+{#if Object.keys(content).includes('items') === false || (content as SidebarFolderContent).items.length === 0}
 	<!-- It's a Link -->
-	<SidebarLink href={createHref(pathname!, hash)} thisPage={thisPage(pathname!)} {icon}>
+	<!-- {@debug content} -->
+	<SidebarLink
+		href={createHref(pathname!, hash)}
+		thisPage={thisPage(pathname!)}
+		{icon}
+		{scrollspyParent}
+		{topLevel}
+	>
 		{name}
 	</SidebarLink>
 {:else}

@@ -1,38 +1,109 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { page } from '$app/state';
+	import { initScrollspy } from '$lib/userInterface';
+	import { beforeNavigate, goto } from '$app/navigation';
 	let {
 		href,
 		thisPage,
 		icon,
-		toplevel = false,
+		scrollspyParent,
+		topLevel = false,
 		children
 	}: {
 		href: string;
 		thisPage: boolean;
 		icon: string;
-		toplevel?: boolean;
+		scrollspyParent: HTMLDivElement;
+		topLevel?: boolean;
 		children: Snippet;
 	} = $props();
+
+	const forceScrolling = () => {
+		if (scrollspyParent) {
+			const original = scrollspyParent.scrollTop;
+			// scrolls to the other end of the scroll area and back to force scrollspy to recalculate positions
+			const alt =
+				original < 2 ? scrollspyParent.scrollHeight : original - scrollspyParent.scrollHeight;
+			scrollspyParent.scrollTop = alt;
+			scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
+			requestAnimationFrame(() => {
+				scrollspyParent!.scrollTop = original;
+				scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+			});
+		}
+	};
+
+	const addScrollspy = (node: HTMLElement) => {
+		// console.log('=== addScrollspy - node ===');
+		// console.log(node);
+		node.setAttribute('data-scrollspy', '#scrollspy');
+		node.setAttribute('data-scrollspy-scrollable-parent', '#scrollspy-scrollable-parent');
+		initScrollspy(node);
+		forceScrolling();
+	};
+
+	const removeScrollspy = (node: HTMLElement) => {
+		node.removeAttribute('data-scrollspy');
+		node.removeAttribute('data-scrollspy-scrollable-parent');
+		try {
+			const { element } = window.HSScrollspy.getInstance(node, true);
+			element.destroy();
+			/* eslint-disable no-empty */
+		} catch {}
+	};
+
+	const toggleScrollspyOnParent = (node: HTMLElement) => {
+		const parent = node.parentElement as HTMLElement;
+		// if (!parent) return;
+		if (parent && parent.dataset.pathname === page.url.pathname) {
+			// afterNavigate(async () => {
+			// 	if (thisPage(node.dataset.pathname || '')) {
+			addScrollspy(parent);
+			// 	}
+			// });
+			beforeNavigate((navigator) => {
+				if (!(navigator.to?.url.pathname === node.dataset.pathname)) {
+					removeScrollspy(parent);
+				}
+			});
+		}
+		// Cleanup when the attachment is removed
+		return async () => {
+			removeScrollspy(parent);
+		};
+	};
 </script>
 
-<li>
-	<a
-		{href}
-		class="text-base-content/80 flex items-center gap-x-2 hover:opacity-100 {thisPage
-			? 'group scrollspy-active:italic'
-			: ''}"
-	>
-		<span
-			class={thisPage && !toplevel
-				? 'icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline'
-				: 'hidden'}
-		></span>
-
-		<span
-			class="{icon} size-5 {thisPage && !toplevel
-				? 'group-[.active]:hidden group-[.scrollspy-active]:hidden'
+{#if thisPage}
+	<li {@attach toggleScrollspyOnParent}>
+		<a
+			{href}
+			class="text-base-content/80 flex items-center gap-x-2 hover:opacity-100 {thisPage
+				? 'group scrollspy-active:italic'
 				: ''}"
-		></span>
-		<span class="overlay-minified:hidden">{@render children?.()}</span>
-	</a>
-</li>
+		>
+			<span
+				class={topLevel
+					? 'hidden'
+					: 'icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline'}
+			></span>
+
+			<span
+				class="{icon} size-5 {topLevel
+					? ''
+					: 'group-[.active]:hidden group-[.scrollspy-active]:hidden'}"
+			></span>
+			<span class="overlay-minified:hidden">{@render children?.()}</span>
+		</a>
+	</li>
+{:else}
+	<li>
+		<!-- {#await toggleScrollspyOnParent(target as HTMLElement)} -->
+		<button type="button" onclick={() => goto(href)}>
+			<span class="{icon} size-5"></span>
+			<span class="overlay-minified:hidden">{@render children?.()}</span>
+		</button>
+		<!-- {/await} -->
+	</li>
+{/if}

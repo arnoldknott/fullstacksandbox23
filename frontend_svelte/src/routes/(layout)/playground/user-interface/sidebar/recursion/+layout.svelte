@@ -8,10 +8,12 @@
 	import ThemePicker from '../../../components/ThemePicker.svelte';
 	import ArtificialIntelligencePicker from '../../../components/ArtificialIntelligencePicker.svelte';
 	import { onMount } from 'svelte';
+	import type { SidebarItemContent } from '$lib/types';
 	import SidebarContent from './SidebarContent.svelte';
+	import SidebarItem from './SidebarItem.svelte';
 	let { children }: { children: Snippet } = $props();
 
-	let sidebarLinks = $state([
+	let sidebarLinks: SidebarItemContent[] = $state([
 		{
 			name: 'Page 1',
 			pathname: resolve('/(layout)/playground/user-interface/sidebar/recursion/page1'),
@@ -543,7 +545,15 @@
 			</ul>
 			<div class="divider"></div>
 			<ul class="menu p-0">
-				<SidebarContent contentList={sidebarLinks} {scrollspyParent} />
+				<!-- <SidebarContent contentList={sidebarLinks} {scrollspyParent} /> -->
+				{#each sidebarLinks as mainItem (mainItem.id)}
+					<SidebarItem
+						content={{ ...mainItem, pathname: mainItem.pathname || page.url.pathname }}
+						topLevel={true}
+						{scrollspyParent}
+					/>
+				{/each}
+
 				<li>
 					<div class="items-center sm:hidden md:ml-2">
 						<button
