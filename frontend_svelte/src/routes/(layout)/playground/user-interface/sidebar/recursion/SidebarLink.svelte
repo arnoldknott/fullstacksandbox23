@@ -57,8 +57,8 @@
 		const parent = node.parentElement as HTMLElement;
 		// if (!parent) return;
 		if (parent && parent.dataset.pathname === page.url.pathname) {
-			// afterNavigate(async () => {
-			// 	if (thisPage(node.dataset.pathname || '')) {
+			// afterNavigate(() => {
+			// 	if (thisPage) {
 			addScrollspy(parent);
 			// 	}
 			// });
@@ -83,17 +83,14 @@
 				? 'group scrollspy-active:italic'
 				: ''}"
 		>
-			<span
-				class={topLevel
-					? 'hidden'
-					: 'icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline'}
-			></span>
-
-			<span
-				class="{icon} size-5 {topLevel
-					? ''
-					: 'group-[.active]:hidden group-[.scrollspy-active]:hidden'}"
-			></span>
+			{#if topLevel}
+				<span class="{icon} size-5"></span>
+			{:else}
+				<span
+					class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+				></span>
+				<span class="{icon} size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"></span>
+			{/if}
 			<span class="overlay-minified:hidden">{@render children?.()}</span>
 		</a>
 	</li>
