@@ -95,8 +95,31 @@
 	};
 </script>
 
-<li data-scrollspy-group="" class="space-y-0.5">
-	{#if topLevel || (pathname && pathname !== page.url.pathname)}
+{#snippet collapseList()}
+	<ul
+		id={id + '-collapse'}
+		class="collapse {thisPage(pathname!)
+			? 'open'
+			: 'hidden'} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
+		aria-labelledby={id + '-control'}
+		data-pathname={pathname}
+	>
+		<!-- data-pathname={pathname}
+			{@attach toggleScrollspy} -->
+		{#each items as item (item.id)}
+			<SidebarItem
+				content={{
+					...item,
+					pathname: item.pathname || pathname
+				} as SidebarFolderContent}
+				{scrollspyParent}
+			/>
+		{/each}
+	</ul>
+{/snippet}
+
+{#if topLevel || (pathname && pathname !== page.url.pathname)}
+	<li data-scrollspy-group="" class="space-y-0.5">
 		<button
 			type="button"
 			class="collapse-toggle {thisPage(pathname!) ? 'open' : ''} collapse-open:bg-base-content/10"
@@ -121,7 +144,10 @@
 				onkeydown={() => openSidebar()}
 			></span>
 		</button>
-	{:else}
+		{@render collapseList()}
+	</li>
+{:else}
+	<li class="space-y-0.5">
 		<a
 			class="collapse-toggle {thisPage(pathname!)
 				? 'open'
@@ -142,25 +168,6 @@
 				class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"
 			></span>
 		</a>
-	{/if}
-	<ul
-		id={id + '-collapse'}
-		class="collapse {thisPage(pathname!)
-			? 'open'
-			: 'hidden'} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
-		aria-labelledby={id + '-control'}
-		data-pathname={pathname}
-	>
-		<!-- data-pathname={pathname}
-			{@attach toggleScrollspy} -->
-		{#each items as item (item.id)}
-			<SidebarItem
-				content={{
-					...item,
-					pathname: item.pathname || pathname
-				} as SidebarFolderContent}
-				{scrollspyParent}
-			/>
-		{/each}
-	</ul>
-</li>
+		{@render collapseList()}
+	</li>
+{/if}
