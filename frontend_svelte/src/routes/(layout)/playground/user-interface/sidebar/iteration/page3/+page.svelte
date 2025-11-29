@@ -21,7 +21,7 @@
 	>
 	<Loreum repetition={8} />
 
-	<Heading id="sub-category">Sub Category</Heading>
+	<Heading id="sub-category-page3">Sub Category</Heading>
 
 	<Title id="loreum3p1"><span class="italic">3.1</span> Lorem ipsum dolor sit amet...</Title>
 	<Loreum />
