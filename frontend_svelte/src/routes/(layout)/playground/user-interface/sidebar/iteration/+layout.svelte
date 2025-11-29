@@ -232,6 +232,58 @@
 					hash: '#loreum6'
 				}
 			]
+		},
+		{
+			name: 'Page 5',
+			pathname: resolve('/(layout)/playground/user-interface/sidebar/iteration/page5'),
+			icon: 'icon-[solar--structure-linear]',
+			id: 'page5',
+			items: [
+				{
+					id: 'page5-loreum1',
+					name: 'Loreum 1',
+					icon: 'icon-[mdi--text]',
+					hash: '#loreum1'
+				},
+				{
+					id: 'page5-loreum2',
+					name: 'Loreum 2',
+					icon: 'icon-[fe--picture]',
+					hash: '#loreum2'
+				},
+				{
+					name: 'Sub category',
+					icon: 'icon-[material-symbols--folder-outline-rounded]',
+					hash: '#sub-category',
+					id: 'page5-sub-category',
+					items: [
+						{
+							id: 'page5-loreum3',
+							name: 'Loreum 3',
+							icon: 'icon-[mdi--text]',
+							hash: '#loreum3'
+						},
+						{
+							id: 'page5-loreum4',
+							name: 'Loreum 4',
+							icon: 'icon-[fluent--document-24-regular]',
+							hash: '#loreum4'
+						}
+					]
+				},
+				{
+					id: 'page5-loreum5',
+					name: 'Loreum 5',
+					icon: 'icon-[fe--picture]',
+					hash: '#loreum5'
+				},
+				{
+					id: 'page5-loreum6',
+					name: 'Loreum 6',
+					icon: 'icon-[fe--picture]',
+					hash: '#loreum6'
+				}
+			]
 		}
 	]);
 

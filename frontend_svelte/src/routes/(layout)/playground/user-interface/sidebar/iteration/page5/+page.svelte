@@ -5,13 +5,10 @@
 	import Display from '$components/Display.svelte';
 </script>
 
-<div class="bg-neutral-container/70 rounded-xl p-4">
+<div class="bg-accent-container/70 rounded-xl p-4">
 	<Display>Page 5</Display>
 
-	<p>
-		Page 5 has hierarchial contnent and id's which are linked in main sidebar - very similar to page
-		2 so far
-	</p>
+	<p>Page 5 has hierarchial contnent and id's which are linked in main sidebar - same as page2</p>
 
 	<Heading id="loreum1"><span class="italic">First</span> Lorem ipsum dolor sit amet...</Heading>
 	<Loreum />
