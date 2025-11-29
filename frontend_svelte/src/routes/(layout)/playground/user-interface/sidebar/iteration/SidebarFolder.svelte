@@ -4,11 +4,18 @@
 	import { initCollapse, initScrollspy } from '$lib/userInterface';
 	import { tick } from 'svelte';
 	import type { Attachment } from 'svelte/attachments';
-	import { goto } from '$app/navigation';
+	import { beforeNavigate, goto } from '$app/navigation';
 	import SidebarLink from './SidebarLink.svelte';
 	import SidebarFolder from './SidebarFolder.svelte';
-	let { content, topLevel = false }: { content: SidebarFolderContent; topLevel?: boolean } =
-		$props();
+	let {
+		content,
+		topLevel = false,
+		scrollspyParent
+	}: {
+		content: SidebarFolderContent;
+		topLevel?: boolean;
+		scrollspyParent: HTMLDivElement;
+	} = $props();
 	let { id, name, pathname, hash, icon, items } = $derived({ ...content });
 
 	const thisPage = $derived.by(() => (pathname: string) => pathname === page.url.pathname);
@@ -20,6 +27,21 @@
 		return href;
 	});
 
+	const forceScrolling = () => {
+		if (scrollspyParent) {
+			const original = scrollspyParent.scrollTop;
+			// scrolls to the other end of the scroll area and back to force scrollspy to recalculate positions
+			const alt =
+				original < 2 ? scrollspyParent.scrollHeight : original - scrollspyParent.scrollHeight;
+			scrollspyParent.scrollTop = alt;
+			scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
+			requestAnimationFrame(() => {
+				scrollspyParent!.scrollTop = original;
+				scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+			});
+		}
+	};
+
 	const addScrollspy = async (node: HTMLElement) => {
 		// console.log('=== addScrollspy - node ===');
 		// console.log(node);
@@ -27,7 +49,7 @@
 		node.setAttribute('data-scrollspy-scrollable-parent', '#scrollspy-scrollable-parent');
 		await tick();
 		initScrollspy(node);
-		// forceScrolling();
+		forceScrolling();
 	};
 
 	const removeScrollspy = (node: HTMLElement) => {
@@ -46,16 +68,14 @@
 		if (parent && parent.dataset.pathname === page.url.pathname) {
 			// afterNavigate(async () => {
 			// if (thisPage(node.dataset.pathname || '')) {
-			console.log('=== toggleScrollspyOnParent ===');
-			console.log(parent);
 			addScrollspy(parent);
 			// }
 			// });
-			// beforeNavigate((navigator) => {
-			// 	if (!(navigator.to?.url.pathname === node.dataset.pathname)) {
-			// 		removeScrollspy(parent);
-			// 	}
-			// });
+			beforeNavigate((navigator) => {
+				if (!(navigator.to?.url.pathname === node.dataset.pathname)) {
+					removeScrollspy(parent);
+				}
+			});
 		}
 		// Cleanup when the attachment is removed
 		return async () => {
@@ -172,6 +192,7 @@
 						...item,
 						pathname: item.pathname || pathname
 					} as SidebarFolderContent}
+					{scrollspyParent}
 				/>
 			{/if}
 		{/each}

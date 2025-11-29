@@ -215,6 +215,7 @@
 								...item,
 								pathname: item.pathname || mainItem.pathname
 							} as SidebarFolderContent}
+							{scrollspyParent}
 						/>
 					{/if}
 				{/each}
