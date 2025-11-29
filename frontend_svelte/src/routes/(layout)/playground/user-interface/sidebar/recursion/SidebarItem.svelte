@@ -14,11 +14,6 @@
 	} = $props();
 	let { name, pathname, hash, icon } = $derived({ ...content });
 
-	// console.log('=== SidebarItem - content ===');
-	// console.log(content);
-	// console.log('=== SidebarItem - topLevel ===');
-	// console.log(topLevel);
-
 	const thisPage = $derived.by(() => (pathname: string) => pathname === page.url.pathname);
 	const createHref = $derived.by(() => (destinationPathname: string, hash?: string) => {
 		let href = '';
@@ -53,11 +48,3 @@
 		{scrollspyParent}
 	/>
 {/if}
-
-<!--
-    Inside the Link & Folder components:
-    Are we on toplevel? ...
-    Are we on the same page, as the link's / folder's pathname is pointing to?
-    => yes: use <a> and enable scrollspy
-    => no: use <button>
--->

@@ -422,7 +422,6 @@
 				'icon-[stash--arrows-switch]',
 				'Recursion'
 			)}
-			<!-- <li class="text-primary items-center"> -->
 			<button
 				class="btn btn-primary btn-gradient max-sm:btn-circle max-sm:ml-2 md:rounded-full"
 				onclick={() =>
@@ -436,7 +435,6 @@
 					<div class="hidden md:block">remove page 6</div>
 				{/if}
 			</button>
-			<!-- </li> -->
 		</ul>
 	</div>
 	<div class="navbar-center flex flex-row max-sm:scale-50">
@@ -544,7 +542,6 @@
 			</ul>
 			<div class="divider"></div>
 			<ul class="menu p-0">
-				<!-- <SidebarContent contentList={sidebarLinks} {scrollspyParent} /> -->
 				{#each sidebarLinks as mainItem (mainItem.id)}
 					<SidebarItem
 						content={{ ...mainItem, pathname: mainItem.pathname || page.url.pathname }}
@@ -552,7 +549,6 @@
 						{scrollspyParent}
 					/>
 				{/each}
-
 				<li>
 					<div class="items-center sm:hidden md:ml-2">
 						<button

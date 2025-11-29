@@ -35,8 +35,6 @@
 	};
 
 	const addScrollspy = (node: HTMLElement) => {
-		// console.log('=== addScrollspy - node ===');
-		// console.log(node);
 		node.setAttribute('data-scrollspy', '#scrollspy');
 		node.setAttribute('data-scrollspy-scrollable-parent', '#scrollspy-scrollable-parent');
 		// await tick();
@@ -56,7 +54,6 @@
 
 	const toggleScrollspyOnParent = (node: HTMLElement) => {
 		const parent = node.parentElement as HTMLUListElement;
-		// if (!parent) return;
 		if (
 			parent &&
 			parent.dataset.pathname === page.url.pathname &&
@@ -101,11 +98,9 @@
 	</li>
 {:else}
 	<li>
-		<!-- {#await toggleScrollspyOnParent(target as HTMLElement)} -->
 		<button type="button" onclick={() => goto(href)}>
 			<span class="{icon} size-5"></span>
 			<span class="overlay-minified:hidden">{@render children?.()}</span>
 		</button>
-		<!-- {/await} -->
 	</li>
 {/if}

@@ -25,61 +25,6 @@
 		return href;
 	});
 
-	// const forceScrolling = () => {
-	// 	if (scrollspyParent) {
-	// 		const original = scrollspyParent.scrollTop;
-	// 		// scrolls to the other end of the scroll area and back to force scrollspy to recalculate positions
-	// 		const alt =
-	// 			original < 2 ? scrollspyParent.scrollHeight : original - scrollspyParent.scrollHeight;
-	// 		scrollspyParent.scrollTop = alt;
-	// 		scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
-	// 		requestAnimationFrame(() => {
-	// 			scrollspyParent!.scrollTop = original;
-	// 			scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
-	// 		});
-	// 	}
-	// };
-
-	// const addScrollspy = (node: HTMLElement) => {
-	// 	// console.log('=== addScrollspy - node ===');
-	// 	// console.log(node);
-	// 	node.setAttribute('data-scrollspy', '#scrollspy');
-	// 	node.setAttribute('data-scrollspy-scrollable-parent', '#scrollspy-scrollable-parent');
-	// 	initScrollspy(node);
-	// 	forceScrolling();
-	// };
-
-	// const removeScrollspy = (node: HTMLElement) => {
-	// 	node.removeAttribute('data-scrollspy');
-	// 	node.removeAttribute('data-scrollspy-scrollable-parent');
-	// 	try {
-	// 		const { element } = window.HSScrollspy.getInstance(node, true);
-	// 		element.destroy();
-	// 		/* eslint-disable no-empty */
-	// 	} catch {}
-	// };
-
-	// const toggleScrollspyOnParent = (node: HTMLElement) => {
-	// 	const parent = node.parentElement as HTMLElement;
-	// 	// if (!parent) return;
-	// 	if (parent && parent.dataset.pathname === page.url.pathname) {
-	// 		// afterNavigate(async () => {
-	// 		// 	if (thisPage(node.dataset.pathname || '')) {
-	// 		addScrollspy(parent);
-	// 		// 	}
-	// 		// });
-	// 		beforeNavigate((navigator) => {
-	// 			if (!(navigator.to?.url.pathname === node.dataset.pathname)) {
-	// 				removeScrollspy(parent);
-	// 			}
-	// 		});
-	// 	}
-	// 	// Cleanup when the attachment is removed
-	// 	return async () => {
-	// 		removeScrollspy(parent);
-	// 	};
-	// };
-
 	const toggleCollapse: Attachment<HTMLElement> = (node: HTMLElement) => {
 		// if (page.url.pathname.startsWith(node.dataset.pathname || '')) {
 		if (page.url.pathname === node.dataset.pathname) {
@@ -104,8 +49,6 @@
 		aria-labelledby={id + '-control'}
 		data-pathname={pathname}
 	>
-		<!-- data-pathname={pathname}
-			{@attach toggleScrollspy} -->
 		{#each items as item (item.id)}
 			<SidebarItem
 				content={{
