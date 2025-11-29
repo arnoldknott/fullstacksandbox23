@@ -1,9 +1,9 @@
 <script lang="ts">
 	import type { SidebarFolderContent } from '$lib/types';
 	import { page } from '$app/state';
-	import { initCollapse, initScrollspy } from '$lib/userInterface';
+	import { initCollapse } from '$lib/userInterface';
 	import type { Attachment } from 'svelte/attachments';
-	import { beforeNavigate, goto } from '$app/navigation';
+	// import { beforeNavigate, goto } from '$app/navigation';
 	import SidebarItem from './SidebarItem.svelte';
 	let {
 		content,

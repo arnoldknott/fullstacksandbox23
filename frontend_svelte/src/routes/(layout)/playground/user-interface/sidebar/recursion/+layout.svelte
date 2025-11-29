@@ -9,7 +9,6 @@
 	import ArtificialIntelligencePicker from '../../../components/ArtificialIntelligencePicker.svelte';
 	import { onMount } from 'svelte';
 	import type { SidebarItemContent } from '$lib/types';
-	import SidebarContent from './SidebarContent.svelte';
 	import SidebarItem from './SidebarItem.svelte';
 	let { children }: { children: Snippet } = $props();
 
