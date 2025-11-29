@@ -419,24 +419,24 @@
 			)} -->
 			{@render navbarPartItem(
 				'/playground/user-interface/sidebar/recursion',
-				'icon-[fa7-solid--arrows-rotate]',
+				'icon-[stash--arrows-switch]',
 				'Recursion'
 			)}
-			<li class="text-primary items-center">
-				<button
-					class="btn btn-primary btn-gradient max-sm:btn-circle md:rounded-full"
-					onclick={() =>
-						sidebarLinks.length === 5 ? sidebarLinks.push(...page5Content) : sidebarLinks.pop()}
-				>
-					{#if sidebarLinks.length === 5}
-						<span class="icon-[tabler--plus] size-5"></span>
-						<div class="hidden md:block">add page 6</div>
-					{:else if sidebarLinks.length === 6}
-						<span class="icon-[tabler--minus] size-5"></span>
-						<div class="hidden md:block">remove page 6</div>
-					{/if}
-				</button>
-			</li>
+			<!-- <li class="text-primary items-center"> -->
+			<button
+				class="btn btn-primary btn-gradient max-sm:btn-circle max-sm:ml-2 md:rounded-full"
+				onclick={() =>
+					sidebarLinks.length === 5 ? sidebarLinks.push(...page5Content) : sidebarLinks.pop()}
+			>
+				{#if sidebarLinks.length === 5}
+					<span class="icon-[tabler--plus] size-5"></span>
+					<div class="hidden md:block">add page 6</div>
+				{:else if sidebarLinks.length === 6}
+					<span class="icon-[tabler--minus] size-5"></span>
+					<div class="hidden md:block">remove page 6</div>
+				{/if}
+			</button>
+			<!-- </li> -->
 		</ul>
 	</div>
 	<div class="navbar-center flex flex-row max-sm:scale-50">
@@ -537,7 +537,7 @@
 				)} -->
 				{@render sidebarPartItem(
 					'/playground/user-interface/sidebar/recursion',
-					'icon-[fa7-solid--arrows-rotate]',
+					'icon-[stash--arrows-switch]',
 					'Recursion',
 					'md:hidden'
 				)}
