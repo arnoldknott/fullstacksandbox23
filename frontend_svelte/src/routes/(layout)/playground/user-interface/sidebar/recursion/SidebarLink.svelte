@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte';
+	import { type Snippet } from 'svelte';
 	import { page } from '$app/state';
 	import { initScrollspy } from '$lib/userInterface';
 	import { beforeNavigate, goto } from '$app/navigation';
@@ -39,6 +39,7 @@
 		// console.log(node);
 		node.setAttribute('data-scrollspy', '#scrollspy');
 		node.setAttribute('data-scrollspy-scrollable-parent', '#scrollspy-scrollable-parent');
+		// await tick();
 		initScrollspy(node);
 		forceScrolling();
 	};
@@ -54,13 +55,17 @@
 	};
 
 	const toggleScrollspyOnParent = (node: HTMLElement) => {
-		const parent = node.parentElement as HTMLElement;
+		const parent = node.parentElement as HTMLUListElement;
 		// if (!parent) return;
-		if (parent && parent.dataset.pathname === page.url.pathname) {
-			// afterNavigate(() => {
-			// 	if (thisPage) {
-			addScrollspy(parent);
-			// 	}
+		if (
+			parent &&
+			parent.dataset.pathname === page.url.pathname &&
+			parent.getAttribute('data-scrollspy') !== '#scrollspy'
+		) {
+			// afterNavigate(async () => {
+			if (thisPage) {
+				addScrollspy(parent);
+			}
 			// });
 			beforeNavigate((navigator) => {
 				if (!(navigator.to?.url.pathname === node.dataset.pathname)) {

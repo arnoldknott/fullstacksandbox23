@@ -119,7 +119,7 @@
 {/snippet}
 
 {#if topLevel || (pathname && pathname !== page.url.pathname)}
-	<li data-scrollspy-group="" class="space-y-0.5">
+	<li class="space-y-0.5">
 		<button
 			type="button"
 			class="collapse-toggle {thisPage(pathname!) ? 'open' : ''} collapse-open:bg-base-content/10"
@@ -147,7 +147,7 @@
 		{@render collapseList()}
 	</li>
 {:else}
-	<li class="space-y-0.5">
+	<li data-scrollspy-group="" class="space-y-0.5">
 		<a
 			class="collapse-toggle {thisPage(pathname!)
 				? 'open'
