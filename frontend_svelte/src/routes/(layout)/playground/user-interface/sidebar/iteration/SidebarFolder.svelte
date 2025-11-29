@@ -104,7 +104,7 @@
 		<!-- TBD: add an attach, that activates the scrollspy on the parent ul. -->
 		<button type="button" onclick={() => goto(createHref(pathname!, hash))}>
 			<span class="{icon} size-5"></span>
-			<span class="overlay-minified:hidden">S: {name}</span>
+			<span class="overlay-minified:hidden">{name}</span>
 		</button>
 	{:else if topLevel || (pathname && pathname !== page.url.pathname)}
 		<button
@@ -172,7 +172,7 @@
 						<!-- {#await toggleScrollspyOnParent(target as HTMLElement)} -->
 						<button type="button" onclick={() => goto(createHref(item.pathname!, item.hash))}>
 							<span class="{item.icon} size-5"></span>
-							<span class="overlay-minified:hidden">E: {item.name}</span>
+							<span class="overlay-minified:hidden">{item.name}</span>
 						</button>
 						<!-- {/await} -->
 					</li>
