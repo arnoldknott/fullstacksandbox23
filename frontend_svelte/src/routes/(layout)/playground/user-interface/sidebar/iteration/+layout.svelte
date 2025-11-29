@@ -232,13 +232,11 @@
 					hash: '#loreum6'
 				}
 			]
-		}
-	]);
-	let page5Content = $state([
+		},
 		{
 			name: 'Page 5',
 			pathname: resolve('/(layout)/playground/user-interface/sidebar/iteration/page5'),
-			icon: 'icon-[solar--structure-linear]',
+			icon: 'icon-[tabler--user]',
 			id: 'page5',
 			items: [
 				{
@@ -250,6 +248,28 @@
 				{
 					id: 'page5-loreum2',
 					name: 'Loreum 2',
+					icon: 'icon-[mdi--text]',
+					hash: '#loreum2'
+				}
+			]
+		}
+	]);
+	let page5Content = $state([
+		{
+			name: 'Page 6',
+			pathname: resolve('/(layout)/playground/user-interface/sidebar/iteration/page6'),
+			icon: 'icon-[solar--structure-linear]',
+			id: 'page6',
+			items: [
+				{
+					id: 'page6-loreum1',
+					name: 'Loreum 1',
+					icon: 'icon-[mdi--text]',
+					hash: '#loreum1'
+				},
+				{
+					id: 'page6-loreum2',
+					name: 'Loreum 2',
 					icon: 'icon-[fe--picture]',
 					hash: '#loreum2'
 				},
@@ -257,16 +277,16 @@
 					name: 'Sub category',
 					icon: 'icon-[material-symbols--folder-outline-rounded]',
 					hash: '#sub-category',
-					id: 'page5-sub-category',
+					id: 'page6-sub-category',
 					items: [
 						{
-							id: 'page5-loreum3',
+							id: 'page6-loreum3',
 							name: 'Loreum 3',
 							icon: 'icon-[mdi--text]',
 							hash: '#loreum3'
 						},
 						{
-							id: 'page5-loreum4',
+							id: 'page6-loreum4',
 							name: 'Loreum 4',
 							icon: 'icon-[fluent--document-24-regular]',
 							hash: '#loreum4'
@@ -274,13 +294,13 @@
 					]
 				},
 				{
-					id: 'page5-loreum5',
+					id: 'page6-loreum5',
 					name: 'Loreum 5',
 					icon: 'icon-[fe--picture]',
 					hash: '#loreum5'
 				},
 				{
-					id: 'page5-loreum6',
+					id: 'page6-loreum6',
 					name: 'Loreum 6',
 					icon: 'icon-[fe--picture]',
 					hash: '#loreum6'
@@ -405,14 +425,14 @@
 				<button
 					class="btn btn-primary btn-gradient max-sm:btn-circle md:rounded-full"
 					onclick={() =>
-						sidebarLinks.length === 4 ? sidebarLinks.push(...page5Content) : sidebarLinks.pop()}
+						sidebarLinks.length === 5 ? sidebarLinks.push(...page5Content) : sidebarLinks.pop()}
 				>
-					{#if sidebarLinks.length === 4}
+					{#if sidebarLinks.length === 5}
 						<span class="icon-[tabler--plus] size-5"></span>
-						<div class="hidden md:block">page 5</div>
-					{:else if sidebarLinks.length === 5}
+						<div class="hidden md:block">add page 6</div>
+					{:else if sidebarLinks.length === 6}
 						<span class="icon-[tabler--minus] size-5"></span>
-						<div class="hidden md:block">page 5</div>
+						<div class="hidden md:block">remove page 6</div>
 					{/if}
 				</button>
 			</li>

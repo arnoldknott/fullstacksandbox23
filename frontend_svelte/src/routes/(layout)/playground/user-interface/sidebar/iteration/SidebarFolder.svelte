@@ -99,15 +99,17 @@
 <!-- TBD: declutter the recursivity -->
 <li data-scrollspy-group="" class="space-y-0.5">
 	{#if items.length === 0}
+		<!-- Does not get used: if items.length === 0, then it's not a folder! -->
+		<!-- Might get relevant though on toplevel -->
 		<!-- TBD: add an attach, that activates the scrollspy on the parent ul. -->
 		<button type="button" onclick={() => goto(createHref(pathname!, hash))}>
 			<span class="{icon} size-5"></span>
-			<span class="overlay-minified:hidden">{name}</span>
+			<span class="overlay-minified:hidden">S: {name}</span>
 		</button>
-	{:else if pathname && pathname !== page.url.pathname}
+	{:else if topLevel || (pathname && pathname !== page.url.pathname)}
 		<button
 			type="button"
-			class="collapse-toggle {thisPage(pathname) ? 'open' : ''} collapse-open:bg-base-content/10"
+			class="collapse-toggle {thisPage(pathname!) ? 'open' : ''} collapse-open:bg-base-content/10"
 			id={id + '-control'}
 			data-collapse={'#' + id + '-collapse'}
 			data-pathname={pathname}
@@ -170,7 +172,7 @@
 						<!-- {#await toggleScrollspyOnParent(target as HTMLElement)} -->
 						<button type="button" onclick={() => goto(createHref(item.pathname!, item.hash))}>
 							<span class="{item.icon} size-5"></span>
-							<span class="overlay-minified:hidden">{item.name}</span>
+							<span class="overlay-minified:hidden">E: {item.name}</span>
 						</button>
 						<!-- {/await} -->
 					</li>
@@ -181,7 +183,7 @@
 							thisPage={thisPage(pathname!)}
 							icon={item.icon}
 						>
-							{item.name}
+							S: {item.name}
 						</SidebarLink>
 					</div>
 				{/if}
