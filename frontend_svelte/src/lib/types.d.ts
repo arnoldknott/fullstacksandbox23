@@ -39,7 +39,7 @@ export type SidebarContent = {
 	name: string;
 	pathname: string;
 	icon: string;
-	items: SidebarContentItem[];
+	items: SidebarItemContent[];
 };
 
 type SidebarLinkContent = {
@@ -50,15 +50,18 @@ type SidebarLinkContent = {
 	icon: string;
 };
 
-type SidebarContentItem = SidebarFolderContent | SidebarLinkContent;
-export type SidebarFolderContent = {
-	id: string;
-	name: string;
-	pathname?: string;
-	hash?: string;
-	icon: string;
-	items: SidebarContentItem[];
+export type SidebarFolderContent = SidebarLinkContent & {
+	items: SidebarItemContent[];
 };
+// export type SidebarFolderContent = {
+// 	id: string;
+// 	name: string;
+// 	pathname?: string;
+// 	hash?: string;
+// 	icon: string;
+// 	items: SidebarItemContent[];
+// };
+type SidebarItemContent = SidebarFolderContent | SidebarLinkContent;
 
 // Access types:
 export interface AccessPolicy {
