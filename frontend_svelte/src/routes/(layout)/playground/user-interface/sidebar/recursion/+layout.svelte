@@ -397,7 +397,7 @@
 	class="navbar rounded-box bg-base-100 shadow-shadow border-outline-variant relative sticky start-0 top-0 z-1 justify-between border-b shadow-sm md:flex md:items-center"
 >
 	<div class="navbar-start">
-		<ul class="menu menu-horizontal ml-4 flex flex-nowrap items-center">
+		<ul class="menu menu-horizontal flex flex-nowrap items-center">
 			{@render sidebarToggleButton('hidden sm:flex', {
 				'data-overlay-minifier': '#collapsible-mini-sidebar'
 			})}
