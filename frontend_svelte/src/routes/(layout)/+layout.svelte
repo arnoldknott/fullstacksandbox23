@@ -1,17 +1,10 @@
 <script lang="ts">
 	import type { LayoutData } from './$types';
 	import { SessionStatus } from '$lib/session';
-	import {
-		Variant,
-		Theming,
-		// extendingFlyonUIwithAdditionalMaterialDesignColors,
-		type ColorConfig
-	} from '$lib/theming';
+	import { Variant, Theming, type ColorConfig } from '$lib/theming';
 	import { Model, type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
 
 	import type { Action } from 'svelte/action';
-	// import NavButton from '$components/NavButton.svelte';
-	// import UserButton from '$components/UserButton.svelte';
 	import { onMount, type Snippet } from 'svelte';
 	import { page } from '$app/state';
 	import Guard from '$components/Guard.svelte';
@@ -38,15 +31,6 @@
 		if (userUnregistered) {
 			window.HSOverlay.open(welcomeModal);
 		}
-		// if (welcomeModal) {
-		// 	const { element } = window.HSOverlay.getInstance(welcomeModal, true);
-		// 	element.on('close', () => {
-		// 		userUnregistered = false;
-		// 	});
-		// 	element.on('open', () => {
-		// 		userUnregistered = true;
-		// 	});
-		// }
 	});
 
 	let artificialIntelligenceConfiguration: ArtificialIntelligenceConfig = $state({
@@ -60,23 +44,6 @@
 
 	const theming = $state(new Theming());
 
-	// let themeConfiguration: ColorConfig = $state({
-	// 	sourceColor: '#941ff4', // <= That's a good color!// '#353c6e' // '#769CDF',
-	// 	variant: Variant.TONAL_SPOT, // Variant.FIDELITY,//
-	// 	contrast: 0.0
-	// });
-	// $effect(() => {
-	// 	if (page.data.session) {
-	// 		console.log('=== layout - page.data.session.currentUser ===');
-	// 		console.log(page.data.session);
-	// 		console.log('=== layout - page.form ===');
-	// 		console.log(page.form);
-	// 		themeConfiguration.sourceColor = page.data.session.currentUser.user_profile.theme_color;
-	// 		themeConfiguration.variant = page.data.session.currentUser.user_profile.theme_variant;
-	// 		themeConfiguration.contrast = page.data.session.currentUser.user_profile.contrast;
-	// 	}
-	// });
-
 	// TBD: refactor this to decently use the reactivity of Svelte - potentially use $derived!
 	let themeConfiguration: ColorConfig = $state({
 		sourceColor: data?.session?.currentUser?.user_profile.theme_color || '#941ff4', // <= That's a good color!// '#353c6e' // '#769CDF',
@@ -86,15 +53,11 @@
 	// TBD: consider using onMount here!
 	$effect(() => {
 		if (data.session?.currentUser?.user_profile) {
-			// console.log('=== layout - data.session.currentUser.user_profile ===');
-			// console.log(data.session.currentUser.user_profile);
 			data.session.currentUser.user_profile.theme_color = themeConfiguration.sourceColor;
 			data.session.currentUser.user_profile.theme_variant = themeConfiguration.variant;
 			data.session.currentUser.user_profile.contrast = themeConfiguration.contrast;
 		}
 	});
-
-	// let { children }: { children: Snippet } = $props();
 
 	let mainContent: HTMLDivElement;
 	let systemDark = $state(false);
@@ -104,56 +67,7 @@
 		systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 		mode = systemDark ? 'dark' : 'light';
 
-		// TBD: ensure that the material design tokens are not necessary any more.
-		// Should be handled by TailwindCSS extension now in tailwind.config.js!
-		// theming.ts creates the tokens and applies them to the DOM.
-		// Refactor: Since FlyonUI2 and TailwindCSS4 not necessary any more:
-		// extendingFlyonUIwithAdditionalMaterialDesignColors.forEach(
-		// 	(utilityClass, materialDesignToken) => {
-		// 		const tokenKebabCase = materialDesignToken
-		// 			.replace(/([a-z])([A-Z])/g, '$1-$2')
-		// 			.toLowerCase();
-		// 		Theming.addStyle(`.text-${utilityClass}`, [
-		// 			`color: var(--md-sys-color-${tokenKebabCase});`
-		// 		]);
-		// 		// TBD: check .ring
-		// 		Theming.addStyle(`.fill-${utilityClass}`, [`fill: var(--md-sys-color-${tokenKebabCase});`]);
-		// 		Theming.addStyle(`.caret-${utilityClass}`, [
-		// 			`caret-color: var(--md-sys-color-${tokenKebabCase});`
-		// 		]);
-		// 		Theming.addStyle(`.stroke-${utilityClass}`, [
-		// 			`stroke: var(--md-sys-color-${tokenKebabCase});`
-		// 		]);
-		// 		Theming.addStyle(`.border-${utilityClass}`, [
-		// 			`border-color: var(--md-sys-color-${tokenKebabCase});`
-		// 		]);
-		// 		Theming.addStyle(`.accent-${utilityClass}`, [
-		// 			`accent-color: var(--md-sys-color-${tokenKebabCase});`
-		// 		]);
-		// 		// TBD: check shadow!
-		// 		// TBD: check possibilities for applying opacity to those colors!
-		// 		Theming.addStyle(`.accent-${utilityClass}`, [
-		// 			`accent-color: var(--md-sys-color-${tokenKebabCase});`
-		// 		]);
-		// 		Theming.addStyle(`.decoration-${utilityClass}`, [
-		// 			`text-decoration-color: var(--md-sys-color-${tokenKebabCase});`
-		// 		]);
-
-		// 		// // TBD: causes trouble on all browsers on iPad
-		// 		// Theming.addStyle(`.placeholder:text-${utilityClass}`, [
-		// 		// 	`color: var(--md-sys-color-${tokenKebabCase});`
-		// 		// ]);
-		// 		// TBD: check .ring-offset
-		// 	}
-		// );
-
 		let theme = $derived(theming.applyTheme(themeConfiguration, mode));
-
-		// page.data.session.currentUser.user_profile.theme_color = themeConfiguration.sourceColor;
-		// page.data.session.currentUser.user_profile.theme_variant = themeConfiguration.variant;
-		// page.data.session.currentUser.user_profile.contrast = themeConfiguration.contrast;
-		// console.log('=== layout - applyTheming - page.data.session.currentUser.user_profile ===');
-		// console.log(page.data.session.currentUser.user_profile);
 
 		// TBD: consider useing onMount here!
 		$effect(() => {
@@ -173,31 +87,6 @@
 			console.log($state.snapshot(themeConfiguration));
 		}
 	};
-
-	// const { session } = page.data;
-
-	// let userPictureURL: URL | undefined = $state(undefined);
-	// onMount(async () => {
-	// 	// this call does not have any authentication - remove it!
-	// 	const response = await fetch('/api/v1/user/me/picture', { method: 'GET' });
-	// 	if (!response.ok && response.status !== 200) {
-	// 		console.log('layout - userPictureURL - response not ok');
-	// 		console.log(response);
-	// 	} else {
-	// 		const pictureBlob = await response.blob();
-	// 		// console.log('layout - userPictureURL - pictureBlob');
-	// 		// console.log(pictureBlob);
-	// 		if (pictureBlob.size === 0) {
-	// 			console.log('layout - userPictureURL - no User picture available');
-	// 			console.log(pictureBlob);
-	// 		} else {
-	// 			userPictureURL = URL.createObjectURL(pictureBlob);
-	// 			// console.log('layout - userPictureURL');
-	// 			// console.log(userPictureURL);
-	// 		}
-	// 	}
-	// });
-	// export const currentTheme = () => theme;
 </script>
 
 <!-- style="--p: 0.45 .2 125" -->
