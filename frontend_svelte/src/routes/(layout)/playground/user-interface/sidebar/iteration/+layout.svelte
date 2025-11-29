@@ -403,7 +403,7 @@
 			)}
 			<li class="text-primary items-center">
 				<button
-					class="btn btn-primary max-sm:btn-circle md:rounded-full"
+					class="btn btn-primary btn-gradient max-sm:btn-circle md:rounded-full"
 					onclick={() =>
 						sidebarLinks.length === 4 ? sidebarLinks.push(...page5Content) : sidebarLinks.pop()}
 				>
