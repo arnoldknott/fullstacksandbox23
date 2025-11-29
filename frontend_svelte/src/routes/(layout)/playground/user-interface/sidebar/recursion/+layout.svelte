@@ -7,6 +7,7 @@
 	import { Model, type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
 	import ThemePicker from '../../../components/ThemePicker.svelte';
 	import ArtificialIntelligencePicker from '../../../components/ArtificialIntelligencePicker.svelte';
+	import { afterNavigate } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import type { SidebarItemContent } from '$lib/types';
 	import SidebarItem from './SidebarItem.svelte';
@@ -311,6 +312,15 @@
 	]);
 
 	let scrollspyParent: HTMLDivElement | null = $state(null);
+
+	// afterNavigate((navigator) => {
+	// 	if (navigator.to?.url.hash !== '' && scrollspyParent) {
+	// 		console.log('=== afterNavigate - scroll to top ===');
+	// 		// scrollspyParent.scrollTop = 0;
+	// 		// scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
+	// 		scrollspyParent.scrollTo(scrollspyParent.scrollLeft, 0);
+	// 	}
+	// });
 
 	onMount(() => {
 		scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
