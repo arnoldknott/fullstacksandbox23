@@ -199,32 +199,32 @@
 						}
 					]
 				},
-				// {
-				// 	name: 'Sub-page 4.2',
-				// 	icon: 'icon-[material-symbols--folder-outline-rounded]',
-				// 	pathname: resolve('/(layout)/playground/user-interface/sidebar/iteration/page4/page4-2'),
-				// 	id: 'page4p2',
-				// 	items: [
-				// 		{
-				// 			id: 'page4p2-loreum1',
-				// 			name: 'Loreum 1 pg4.2',
-				// 			icon: 'icon-[mdi--text]',
-				// 			pathname: resolve(
-				// 				'/(layout)/playground/user-interface/sidebar/iteration/page4/page4-2'
-				// 			),
-				// 			hash: '#loreum1'
-				// 		},
-				// 		{
-				// 			id: 'page4p2-loreum2',
-				// 			name: 'Loreum 2 pg4.2',
-				// 			icon: 'icon-[mdi--text]',
-				// 			pathname: resolve(
-				// 				'/(layout)/playground/user-interface/sidebar/iteration/page4/page4-2'
-				// 			),
-				// 			hash: '#loreum2'
-				// 		}
-				// 	]
-				// },
+				{
+					name: 'Sub-page 4.2',
+					icon: 'icon-[material-symbols--folder-outline-rounded]',
+					pathname: resolve('/(layout)/playground/user-interface/sidebar/iteration/page4/page4-2'),
+					id: 'page4p2',
+					items: [
+						{
+							id: 'page4p2-loreum1',
+							name: 'Loreum 1 pg4.2',
+							icon: 'icon-[mdi--text]',
+							pathname: resolve(
+								'/(layout)/playground/user-interface/sidebar/iteration/page4/page4-2'
+							),
+							hash: '#loreum1'
+						},
+						{
+							id: 'page4p2-loreum2',
+							name: 'Loreum 2 pg4.2',
+							icon: 'icon-[mdi--text]',
+							pathname: resolve(
+								'/(layout)/playground/user-interface/sidebar/iteration/page4/page4-2'
+							),
+							hash: '#loreum2'
+						}
+					]
+				},
 				{
 					id: 'page4-loreum6',
 					name: 'Loreum 6',
