@@ -7,7 +7,7 @@
 	import { Model, type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
 	import ThemePicker from '../../../components/ThemePicker.svelte';
 	import ArtificialIntelligencePicker from '../../../components/ArtificialIntelligencePicker.svelte';
-	// import { afterNavigate } from '$app/navigation';
+	import { afterNavigate } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import type { SidebarItemContent } from '$lib/types';
 	import SidebarItem from './SidebarItem.svelte';
@@ -321,6 +321,13 @@
 	// 		scrollspyParent.scrollTo(scrollspyParent.scrollLeft, 0);
 	// 	}
 	// });
+	afterNavigate(({ to }) => {
+		// reset scrolltop to zero, if no dedicated hash destination:
+		if (scrollspyParent && !to?.url.hash) {
+			scrollspyParent.scrollTop = 0;
+			scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
+		}
+	});
 
 	onMount(() => {
 		scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
