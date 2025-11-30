@@ -335,6 +335,16 @@
 				scrollspyParent!.scrollTop = targetScrollTop;
 				scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
 			}
+			// const original = scrollspyParent.scrollTop;
+			// 		// scrolls to the other end of the scroll area and back to force scrollspy to recalculate positions
+			// 		const alt =
+			// 			original < 2 ? scrollspyParent.scrollHeight : original - scrollspyParent.scrollHeight;
+			// 		scrollspyParent.scrollTop = alt;
+			// 		scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
+			// 		requestAnimationFrame(() => {
+			// 			scrollspyParent!.scrollTop = original;
+			// 			scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+			// 		});
 		}
 	});
 

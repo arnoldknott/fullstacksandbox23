@@ -32,8 +32,8 @@
 	>
 	<Loreum repetition={2} />
 	<div class="grid grid-cols-1 gap-8 md:grid-cols-2">
-		<NavigationCard title="Page 4.1" href="./page4/page4-1">Go to Page 4.1</NavigationCard>
-		<NavigationCard title="Page 4.2" href="./page4/page4-2">Go to Page 4.2</NavigationCard>
+		<NavigationCard title="Page 4.1" href="page4/page4-1">Go to Page 4.1</NavigationCard>
+		<NavigationCard title="Page 4.2" href="page4/page4-2">Go to Page 4.2</NavigationCard>
 	</div>
 
 	<Heading id="loreum6"><span class="italic">Sixth</span> Lorem ipsum dolor sit amet...</Heading>
