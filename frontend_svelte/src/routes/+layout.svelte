@@ -9,6 +9,6 @@
 	setContext('backendAPIConfiguration', page.data.backendAPIConfiguration);
 </script>
 
-<main class="h-screen">
+<main class="h-screen w-screen overflow-x-scroll overflow-y-hidden">
 	{@render children?.()}
 </main>
