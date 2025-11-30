@@ -93,6 +93,7 @@
 		// console.log('=== layout - updateProfileAccount - formData ===');
 		// console.log(formData);
 
+		// Prevents page from updating/reloading:
 		return () => {};
 	};
 </script>

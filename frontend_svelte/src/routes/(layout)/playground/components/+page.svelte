@@ -275,7 +275,7 @@
 	// shared for artificial intelligence and theme picker:
 	const saveProfileAccount = async () => {
 		// if (page.data.session?.loggedIn) {
-		themeForm?.requestSubmit();
+		// themeForm?.requestSubmit();
 		console.log('=== layout - saveProfileAccount - themeConfiguration ===');
 		console.log($state.snapshot(themeConfiguration));
 		// }
