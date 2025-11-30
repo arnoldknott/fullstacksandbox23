@@ -18,6 +18,7 @@
 	import WelcomeModal from './WelcomeModal.svelte';
 	import type { SidebarItemContent } from '$lib/types';
 	import SidebarItem from './SidebarItem.svelte';
+	import LoginOutButton from './LoginOutButton.svelte';
 
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
 
@@ -102,10 +103,10 @@
 	// Sidebar:
 	let sidebarLinks: SidebarItemContent[] = $state([
 		{
-			name: 'Page 1',
-			pathname: resolve('/(layout)/playground/user-interface/sidebar/recursion/page1'),
-			icon: 'icon-[tabler--user]',
-			id: 'page1',
+			name: 'Components',
+			pathname: resolve('/(layout)/playground/components'),
+			icon: 'icon-[tabler--components]',
+			id: 'components',
 			items: []
 		}
 	]);
@@ -183,7 +184,6 @@
 					'hidden lg:block'
 				)}
 				<Guard>
-					<hr class="border-outline -mx-2 my-3" />
 					{@render navbarPartItem(
 						'/dashboard',
 						'icon-[material-symbols--dashboard-outline-rounded]',
@@ -290,7 +290,8 @@
 				</ul>
 			</div>
 			<div class="hidden items-center sm:flex md:ml-2">
-				{#if !loggedIn}
+				<LoginOutButton {loggedIn} />
+				<!-- {#if !loggedIn}
 					<button
 						class="btn btn-neutral shadow-neutral ml-2 rounded-full shadow-sm"
 						aria-label="Log In"
@@ -304,7 +305,7 @@
 					>
 						<a href="/logout">Log out</a>
 					</button>
-				{/if}
+				{/if} -->
 			</div>
 		</div>
 	</nav>
@@ -468,13 +469,29 @@
 	>
 		<aside
 			id="collapsible-mini-sidebar"
-			class="overlay overlay-minified:w-19 overlay-open:translate-x-0 drawer drawer-start border-base-content/20 hidden w-66 border-e pt-50 [--auto-close:sm] sm:absolute sm:z-0 sm:flex sm:translate-x-0 sm:shadow-none"
+			class="overlay overlay-minified:w-19 overlay-open:translate-x-0 drawer drawer-start border-base-content/20 hidden w-66 border-e pt-26 [--auto-close:sm] sm:absolute sm:z-0 sm:flex sm:translate-x-0 sm:shadow-none"
 			tabindex="-1"
 			{@attach initOverlay}
 		>
 			<div class="drawer-body px-2 pt-4">
 				<ul class="menu p-0">
 					{@render sidebarPartItem('/', 'icon-[material-symbols--home-outline-rounded]', 'Home')}
+					{@render sidebarPartItem('/docs', 'icon-[oui--documentation]', 'Docs', 'md:hidden')}
+					{@render sidebarPartItem(
+						'/playground',
+						'icon-[mdi--playground-seesaw]',
+						'Playground',
+						'md:hidden'
+					)}
+					<Guard>
+						<!-- <hr class="border-outline -mx-2 my-3" /> -->
+						{@render sidebarPartItem(
+							'/dashboard',
+							'icon-[material-symbols--dashboard-outline-rounded]',
+							'Dashboard',
+							'md:hidden'
+						)}
+					</Guard>
 					<!-- {@render sidebarPartItem('/features', 'icon-[mdi--feature-highlight]', 'Features', 'md:hidden')}
 				{@render sidebarPartItem('/apps', 'icon-[tabler--apps]', 'Apps', 'md:hidden')}
 				{@render sidebarPartItem(
@@ -489,12 +506,6 @@
 					'Hierarchy',
 					'md:hidden'
 				)} -->
-					{@render sidebarPartItem(
-						'/playground/user-interface/sidebar/recursion',
-						'icon-[stash--arrows-switch]',
-						'Recursion',
-						'md:hidden'
-					)}
 				</ul>
 				<div class="divider"></div>
 				<ul class="menu p-0">
@@ -506,12 +517,7 @@
 					{/each}
 					<li>
 						<div class="items-center sm:hidden md:ml-2">
-							<button
-								class="btn btn-primary btn-outline shadow-primary ml-2 rounded-full shadow-sm"
-								aria-label="LogInOut"
-							>
-								<a href="#top">LogInOut</a>
-							</button>
+							<LoginOutButton {loggedIn} />
 						</div>
 					</li>
 				</ul>
