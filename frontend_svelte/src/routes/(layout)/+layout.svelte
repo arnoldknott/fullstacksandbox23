@@ -13,7 +13,7 @@
 	import ArtificialIntelligencePicker from './playground/components/ArtificialIntelligencePicker.svelte';
 	import { themeStore } from '$lib/stores';
 	import { type SubmitFunction } from '@sveltejs/kit';
-	import { enhance } from '$app/forms';
+	// import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
 	import WelcomeModal from './WelcomeModal.svelte';
 

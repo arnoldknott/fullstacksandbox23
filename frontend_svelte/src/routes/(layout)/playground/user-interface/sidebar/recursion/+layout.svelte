@@ -380,6 +380,7 @@
 		);
 		console.log($state.snapshot(artificialIntelligenceConfiguration));
 	};
+
 	const updateProfileAccount: SubmitFunction = async () => {
 		// console.log('=== layout - updateProfileAccount - formData ===');
 		// console.log(formData);

@@ -6,7 +6,7 @@
 	import { page } from '$app/state';
 	import { enhance } from '$app/forms';
 	import { type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
-	import { Theming, type ColorConfig } from '$lib/theming';
+	import { type ColorConfig } from '$lib/theming';
 	import ArtificialIntelligencePicker from './playground/components/ArtificialIntelligencePicker.svelte';
 	import ThemePicker from './playground/components/ThemePicker.svelte';
 	let {
@@ -39,8 +39,6 @@
 
 	let artificialIntelligenceForm = $state<HTMLFormElement | null>(null);
 
-	const theming = $state(new Theming());
-
 	// TBD: consider using onMount here!
 	$effect(() => {
 		if (session?.currentUser?.user_profile) {
@@ -52,21 +50,6 @@
 
 	// Write theming to database:
 	let themeForm = $state<HTMLFormElement | null>(null);
-
-	// const saveProfileAccount = async () => {
-	// 	if (page.data.session?.loggedIn) {
-	// 		themeForm?.requestSubmit();
-	// 		console.log('=== layout - saveProfileAccount - themeConfiguration ===');
-	// 		console.log($state.snapshot(themeConfiguration));
-	// 	}
-	// };
-
-	// const updateProfileAccount: SubmitFunction = async () => {
-	// 	// console.log('=== layout - updateProfileAccount - formData ===');
-	// 	// console.log(formData);
-
-	// 	return () => {};
-	// };
 </script>
 
 <div
