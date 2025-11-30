@@ -3,11 +3,12 @@
 	import { resolve } from '$app/paths';
 	import { initDropdown, initOverlay } from '$lib/userInterface';
 	import { type Snippet } from 'svelte';
+	import { type SubmitFunction } from '@sveltejs/kit';
 	import { Variant, type ColorConfig } from '$lib/theming';
 	import { Model, type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
 	import ThemePicker from '../../../components/ThemePicker.svelte';
 	import ArtificialIntelligencePicker from '../../../components/ArtificialIntelligencePicker.svelte';
-	// import { afterNavigate } from '$app/navigation';
+	import { afterNavigate } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import type { SidebarItemContent } from '$lib/types';
 	import SidebarItem from './SidebarItem.svelte';
@@ -321,6 +322,13 @@
 	// 		scrollspyParent.scrollTo(scrollspyParent.scrollLeft, 0);
 	// 	}
 	// });
+	afterNavigate(({ to }) => {
+		// reset scrolltop to zero, if no dedicated hash destination:
+		if (scrollspyParent && !to?.url.hash) {
+			scrollspyParent.scrollTop = 0;
+			scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
+		}
+	});
 
 	onMount(() => {
 		scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
@@ -335,6 +343,16 @@
 				scrollspyParent!.scrollTop = targetScrollTop;
 				scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
 			}
+			// const original = scrollspyParent.scrollTop;
+			// 		// scrolls to the other end of the scroll area and back to force scrollspy to recalculate positions
+			// 		const alt =
+			// 			original < 2 ? scrollspyParent.scrollHeight : original - scrollspyParent.scrollHeight;
+			// 		scrollspyParent.scrollTop = alt;
+			// 		scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
+			// 		requestAnimationFrame(() => {
+			// 			scrollspyParent!.scrollTop = original;
+			// 			scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+			// 		});
 		}
 	});
 
@@ -361,6 +379,14 @@
 			'=== sidebar - segmenting - saveProfileAccount - artificialIntelligenceConfiguration ==='
 		);
 		console.log($state.snapshot(artificialIntelligenceConfiguration));
+	};
+
+	const updateProfileAccount: SubmitFunction = async () => {
+		// console.log('=== layout - updateProfileAccount - formData ===');
+		// console.log(formData);
+
+		// Prevents page from updating/reloading:
+		return () => {};
 	};
 
 	// for theme picker:
@@ -487,6 +513,7 @@
 				aria-labelledby="dropdown-menu-icon-user"
 			>
 				<ArtificialIntelligencePicker
+					{updateProfileAccount}
 					{saveProfileAccount}
 					bind:artificialIntelligenceForm
 					bind:artificialIntelligenceConfiguration
@@ -494,7 +521,13 @@
 				<li>
 					<hr class="border-outline -mx-2 my-5" />
 				</li>
-				<ThemePicker {saveProfileAccount} bind:themeForm bind:mode bind:themeConfiguration />
+				<ThemePicker
+					{updateProfileAccount}
+					{saveProfileAccount}
+					bind:themeForm
+					bind:mode
+					bind:themeConfiguration
+				/>
 				<li>
 					<hr class="border-outline -mx-2 my-5" />
 				</li>
@@ -571,11 +604,11 @@
 			</ul>
 		</div>
 	</aside>
-	<div class="sm:overlay-minified:ps-19 bg-base-100 ps-64 transition-all duration-300 max-sm:ps-0">
-		<div class="bg-base-100 transition-all duration-300">
-			<div id="scrollspy" class="space-y-4 pe-1">
-				{@render children?.()}
-			</div>
-		</div>
+	<!-- TBD: how many div's inside each other are necessary here? Consider cleaning up! -->
+	<div
+		id="scrollspy"
+		class="sm:overlay-minified:ps-19 bg-base-100 space-y-4 ps-64 pe-1 transition-all duration-300 max-sm:ps-0"
+	>
+		{@render children?.()}
 	</div>
 </div>

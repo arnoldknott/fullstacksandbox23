@@ -15,6 +15,11 @@
 			url: 'user-interface/sidebar'
 		},
 		{
+			name: 'In page links',
+			description: 'for navigating to different pages from within a page.',
+			url: 'user-interface/in-page'
+		},
+		{
 			name: 'Panes',
 			description: 'sectioning the screen for displaying content in a split view.',
 			url: 'user-interface/panes'

@@ -891,6 +891,10 @@ export class Theming {
 		mode: 'light' | 'dark',
 		targetElement: HTMLElement = document.documentElement
 	): AppTheme {
+		// console.log('=== lib - theming - Applying theme - colorConfig ===');
+		// console.log(colorConfig);
+		// console.log('=== lib - theming - Applying theme - colorConfig.sourceColor ===');
+		// console.log(colorConfig.sourceColor);
 		const colorization = new Colorization(
 			colorConfig.sourceColor,
 			colorConfig.variant,
