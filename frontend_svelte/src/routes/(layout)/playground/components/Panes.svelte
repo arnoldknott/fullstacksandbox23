@@ -21,7 +21,8 @@
 		// In case not all panes have initialRelativeWidth defined,
 		// distribute remaining width equally
 		// and prevent total relative width from exceeding 1.
-		console.log(panesData.length);
+		// console.log('=== Panes data length ===');
+		// console.log(panesData.length);
 		const allRelativeWidths = panesData.reduce(
 			(sum, pane) => sum + (pane.initialRelativeWidth ?? 1 / panesData.length),
 			0
