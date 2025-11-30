@@ -8,5 +8,5 @@
 
 	<p>Page 1 has no hierarchy and id's, just content</p>
 
-	<Loreum repetition={20} />
+	<Loreum repetition={60} />
 </div>
