@@ -10,8 +10,8 @@
 	<p>Page 4.1 is a subpage to page 4</p>
 
 	<Heading id="loreum1"><span class="italic">First</span> Lorem ipsum dolor sit amet...</Heading>
-	<Loreum />
+	<Loreum repetition={30} />
 
 	<Heading id="loreum2"><span class="italic">Second</span> Lorem ipsum dolor sit amet...</Heading>
-	<Loreum />
+	<Loreum repetition={30} />
 </div>
