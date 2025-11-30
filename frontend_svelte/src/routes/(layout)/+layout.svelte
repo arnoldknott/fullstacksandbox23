@@ -108,6 +108,56 @@
 			icon: 'icon-[tabler--components]',
 			id: 'components',
 			items: []
+		},
+		{
+			name: 'Design',
+			pathname: resolve('/(layout)/playground/design'),
+			icon: 'icon-[fluent--design-ideas-20-regular]',
+			id: 'design',
+			items: [
+				{
+					name: 'Backgrounds',
+					icon: 'icon-[mdi--palette-outline]',
+					hash: '#backgrounds-and-surfaces',
+					id: 'backgrounds'
+				},
+				{
+					name: 'Foregrounds',
+					icon: 'icon-[mdi--palette-outline]',
+					hash: '#foregrounds',
+					id: 'foregrounds'
+				},
+				{
+					name: 'Components',
+					icon: 'icon-[mdi--palette-outline]',
+					hash: '#components',
+					id: 'components'
+				},
+				{
+					name: 'Playground',
+					icon: 'icon-[mdi--playground-seesaw]',
+					hash: '#playground',
+					id: 'playground'
+				},
+				{
+					name: 'FlyonUI',
+					icon: 'icon-[mingcute--arrows-up-fill]',
+					pathname: resolve('/(layout)/playground/design/flyonui'),
+					id: 'flyonui'
+				},
+				{
+					name: 'Material Design',
+					icon: 'icon-[mdi--material-design]',
+					pathname: resolve('/(layout)/playground/design/materialdesign'),
+					id: 'material-design'
+				},
+				{
+					name: 'Svelte',
+					icon: 'icon-[tabler--brand-svelte]',
+					pathname: resolve('/(layout)/playground/design/svelte'),
+					id: 'svelte'
+				}
+			]
 		}
 	]);
 
