@@ -12,6 +12,7 @@
 	import ThemePicker from './playground/components/ThemePicker.svelte';
 	import ArtificialIntelligencePicker from './playground/components/ArtificialIntelligencePicker.svelte';
 	import { themeStore } from '$lib/stores';
+	import { type SubmitFunction } from '@sveltejs/kit';
 	import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
 	// import WelcomeModal from './WelcomeModal.svelte';
@@ -51,7 +52,7 @@
 		variant: data?.session?.currentUser?.user_profile.theme_variant || Variant.TONAL_SPOT, // Variant.FIDELITY,//
 		contrast: data?.session?.currentUser?.user_profile.contrast || 0.0
 	});
-	// TBD: consider using onMount here!
+
 	$effect(() => {
 		if (data.session?.currentUser?.user_profile) {
 			data.session.currentUser.user_profile.theme_color = themeConfiguration.sourceColor;
@@ -70,7 +71,6 @@
 
 		let theme = $derived(theming.applyTheme(themeConfiguration, mode));
 
-		// TBD: consider useing onMount here!
 		$effect(() => {
 			themeStore.set(theme);
 		});
@@ -84,9 +84,16 @@
 	const saveProfileAccount = async () => {
 		if (page.data.session?.loggedIn) {
 			themeForm?.requestSubmit();
-			console.log('=== layout - saveProfileAccount - themeConfiguration ===');
-			console.log($state.snapshot(themeConfiguration));
+			// console.log('=== layout - saveProfileAccount - themeConfiguration ===');
+			// console.log($state.snapshot(themeConfiguration));
 		}
+	};
+
+	const updateProfileAccount: SubmitFunction = async () => {
+		// console.log('=== layout - updateProfileAccount - formData ===');
+		// console.log(formData);
+
+		return () => {};
 	};
 </script>
 
@@ -193,6 +200,7 @@
 					aria-labelledby="dropdown-menu-icon-user"
 				>
 					<ArtificialIntelligencePicker
+						{updateProfileAccount}
 						{saveProfileAccount}
 						bind:artificialIntelligenceForm
 						bind:artificialIntelligenceConfiguration
@@ -200,7 +208,13 @@
 					<li>
 						<hr class="border-outline -mx-2 my-5" />
 					</li>
-					<ThemePicker {saveProfileAccount} bind:themeForm bind:mode bind:themeConfiguration />
+					<ThemePicker
+						{updateProfileAccount}
+						{saveProfileAccount}
+						bind:themeForm
+						bind:mode
+						bind:themeConfiguration
+					/>
 					<li>
 						<hr class="border-outline -mx-2 my-5" />
 					</li>
@@ -304,6 +318,7 @@
 							aria-labelledby="dropdown-menu-icon-user"
 						>
 							<ArtificialIntelligencePicker
+								{updateProfileAccount}
 								{saveProfileAccount}
 								bind:artificialIntelligenceForm
 								bind:artificialIntelligenceConfiguration
@@ -315,7 +330,13 @@
 							aria-orientation="vertical"
 							aria-labelledby="dropdown-menu-icon-user"
 						>
-							<ThemePicker {saveProfileAccount} bind:themeForm bind:mode bind:themeConfiguration />
+							<ThemePicker
+								{updateProfileAccount}
+								{saveProfileAccount}
+								bind:themeForm
+								bind:mode
+								bind:themeConfiguration
+							/>
 						</ul>
 					</div>
 				</div>
@@ -336,6 +357,7 @@
 							input.formData.append('color-picker', themeConfiguration.sourceColor);
 							input.formData.append('variant-picker', themeConfiguration.variant);
 							input.formData.append('contrast', themeConfiguration.contrast.toString());
+							updateProfileAccount(input);
 						}}
 					>
 						<button

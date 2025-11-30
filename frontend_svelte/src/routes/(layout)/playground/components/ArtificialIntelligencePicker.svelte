@@ -1,13 +1,16 @@
 <script lang="ts">
+	import { type SubmitFunction } from '@sveltejs/kit';
 	import { enhance } from '$app/forms';
 	import type { ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
 
 	let {
 		artificialIntelligenceForm = $bindable<HTMLFormElement | null>(),
+		updateProfileAccount,
 		saveProfileAccount,
 		artificialIntelligenceConfiguration = $bindable()
 	}: {
 		artificialIntelligenceForm: HTMLFormElement | null;
+		updateProfileAccount: SubmitFunction;
 		saveProfileAccount: () => void;
 		artificialIntelligenceConfiguration: ArtificialIntelligenceConfig;
 	} = $props();
@@ -22,7 +25,7 @@
 	class="align-between flex h-full flex-col"
 	action="/?/putme"
 	id="ai-form"
-	use:enhance
+	use:enhance={updateProfileAccount}
 	bind:this={artificialIntelligenceForm}
 >
 	<li class="flex grow items-center gap-2">
