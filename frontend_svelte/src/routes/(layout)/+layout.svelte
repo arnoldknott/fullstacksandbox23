@@ -14,6 +14,7 @@
 	import { themeStore } from '$lib/stores';
 	import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
+	// import WelcomeModal from './WelcomeModal.svelte';
 
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
 
@@ -241,6 +242,12 @@
 	</nav>
 
 	<!-- TBD: put welcome modal into component -->
+	<!-- <WelcomeModal
+		bind:session={data.session}
+		bind:artificialIntelligenceConfiguration
+		bind:themeConfiguration
+		bind:mode
+	/> -->
 	<div
 		id="welcome-modal"
 		class="overlay modal overlay-open:opacity-100 overlay-open:duration-300 modal-middle hidden [--body-scroll:true] [--overlay-backdrop:static]"
@@ -264,16 +271,10 @@
 						aria-label="Close"
 						data-overlay="#welcome-modal"
 					>
-						<!-- onclick={() => welcomeModal?.close()} -->
 						<span class="icon-[tabler--x] size-4"></span>
 					</button>
 				</div>
 				<div class="modal-body flex flex-wrap justify-between">
-					<!-- <div class="w-full"> -->
-					<!-- <div
-							class="m-1 h-full w-full bg-[url(/starnberger-see-unset-20230807.jpg)] mask-y-from-75% mask-y-to-100% mask-x-from-95% mask-x-to-100% bg-cover bg-center p-4 opacity-40"
-						></div> -->
-
 					<div class="align-center flex grow flex-row justify-center">
 						<div class="flex flex-col justify-center">
 							<div class="title-small text-primary italic" style="line-height: 1;">Fullstack</div>
@@ -294,14 +295,7 @@
 					<div class="m-1 h-full w-full content-center p-4 text-justify font-semibold">
 						Adjust your settings for Artificial Intelligence and Theme configuration now or later by
 						clicking at your user icon in the top right corner.
-						<!-- <p
-								class="from-primary via-secondary to-accent text-label w-fit bg-linear-to-b bg-clip-text px-5 text-justify font-semibold text-transparent"
-							>
-								Adjust your settings for Artificial Intelligence and Theme configuration in the tabs
-								now or later by clicking at your user icon in the top right corner.
-							</p> -->
 					</div>
-					<!-- </div> -->
 					<div class="grid grid-cols-1 gap-2 max-sm:w-full sm:grid-cols-2">
 						<ul
 							class="shadow-outline bg-base-250 m-1 h-[257px] w-full rounded rounded-xl p-4 shadow-inner"
@@ -324,73 +318,6 @@
 							<ThemePicker {saveProfileAccount} bind:themeForm bind:mode bind:themeConfiguration />
 						</ul>
 					</div>
-					<!-- <div
-						class="tabs tabs-bordered tabs-vertical w-[130px]"
-						aria-label="Tabs"
-						role="tablist"
-						data-tabs-vertical="true"
-						aria-orientation="horizontal"
-					>
-						<button
-							type="button"
-							class="tab active-tab:tab-active active py-14 text-left"
-							id="welcome-item-ai"
-							data-tab="#welcome-ai"
-							aria-controls="welcome-ai"
-							role="tab"
-							aria-selected="false"
-						>
-							Artificial Intelligence
-						</button>
-						<button
-							type="button"
-							class="tab active-tab:tab-active py-14 text-left"
-							id="welcome-item-theme"
-							data-tab="#welcome-theme"
-							aria-controls="welcome-theme"
-							role="tab"
-							aria-selected="false"
-						>
-							Theme Configuration
-						</button>
-					</div>
-
-					<div class="h-[245px] w-[264px]">
-						<div id="welcome-ai" role="tabpanel" aria-labelledby="welcome-item-ai">
-							<ul
-								class="m-1 h-full w-full p-4"
-								role="menu"
-								aria-orientation="vertical"
-								aria-labelledby="dropdown-menu-icon-user"
-							>
-								<ArtificialIntelligencePicker
-									{saveProfileAccount}
-									bind:artificialIntelligenceForm
-									bind:artificialIntelligenceConfiguration
-								/>
-							</ul>
-						</div>
-						<div
-							id="welcome-theme"
-							class="hidden"
-							role="tabpanel"
-							aria-labelledby="welcome-item-theme"
-						>
-							<ul
-								class="m-1 w-fit p-4"
-								role="menu"
-								aria-orientation="vertical"
-								aria-labelledby="dropdown-menu-icon-user"
-							>
-								<ThemePicker
-									{saveProfileAccount}
-									bind:themeForm
-									bind:mode
-									bind:themeConfiguration
-								/>
-							</ul>
-						</div>
-					</div> -->
 				</div>
 				<div class="modal-footer">
 					<form
