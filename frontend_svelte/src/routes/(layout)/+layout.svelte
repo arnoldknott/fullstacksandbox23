@@ -15,7 +15,7 @@
 	import { type SubmitFunction } from '@sveltejs/kit';
 	import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
-	// import WelcomeModal from './WelcomeModal.svelte';
+	import WelcomeModal from './WelcomeModal.svelte';
 
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
 
@@ -256,13 +256,15 @@
 	</nav>
 
 	<!-- TBD: put welcome modal into component -->
-	<!-- <WelcomeModal
+	<WelcomeModal
 		bind:session={data.session}
 		bind:artificialIntelligenceConfiguration
 		bind:themeConfiguration
 		bind:mode
-	/> -->
-	<div
+		{updateProfileAccount}
+		{saveProfileAccount}
+	/>
+	<!-- <div
 		id="welcome-modal"
 		class="overlay modal overlay-open:opacity-100 overlay-open:duration-300 modal-middle hidden [--body-scroll:true] [--overlay-backdrop:static]"
 		data-overlay-keyboard="false"
@@ -373,7 +375,7 @@
 				</div>
 			</div>
 		</div>
-	</div>
+	</div> -->
 
 	<div class="mt-5">
 		{@render children?.()}

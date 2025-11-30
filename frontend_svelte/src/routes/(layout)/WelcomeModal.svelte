@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Session } from '$lib/types';
+	import { type SubmitFunction } from '@sveltejs/kit';
 	import { SessionStatus } from '$lib/session';
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
@@ -12,12 +13,16 @@
 		session = $bindable(),
 		artificialIntelligenceConfiguration = $bindable(),
 		themeConfiguration = $bindable(),
-		mode = $bindable()
+		mode = $bindable(),
+		updateProfileAccount,
+		saveProfileAccount
 	}: {
 		session: Session | undefined;
 		artificialIntelligenceConfiguration: ArtificialIntelligenceConfig;
 		themeConfiguration: ColorConfig;
 		mode: 'light' | 'dark';
+		updateProfileAccount: SubmitFunction;
+		saveProfileAccount: () => void;
 	} = $props();
 
 	let welcomeModal: HTMLDivElement | null = $state(null);
@@ -48,13 +53,20 @@
 	// Write theming to database:
 	let themeForm = $state<HTMLFormElement | null>(null);
 
-	const saveProfileAccount = async () => {
-		if (page.data.session?.loggedIn) {
-			themeForm?.requestSubmit();
-			console.log('=== layout - saveProfileAccount - themeConfiguration ===');
-			console.log($state.snapshot(themeConfiguration));
-		}
-	};
+	// const saveProfileAccount = async () => {
+	// 	if (page.data.session?.loggedIn) {
+	// 		themeForm?.requestSubmit();
+	// 		console.log('=== layout - saveProfileAccount - themeConfiguration ===');
+	// 		console.log($state.snapshot(themeConfiguration));
+	// 	}
+	// };
+
+	// const updateProfileAccount: SubmitFunction = async () => {
+	// 	// console.log('=== layout - updateProfileAccount - formData ===');
+	// 	// console.log(formData);
+
+	// 	return () => {};
+	// };
 </script>
 
 <div
@@ -123,6 +135,7 @@
 						aria-labelledby="dropdown-menu-icon-user"
 					>
 						<ArtificialIntelligencePicker
+							{updateProfileAccount}
 							{saveProfileAccount}
 							bind:artificialIntelligenceForm
 							bind:artificialIntelligenceConfiguration
@@ -134,7 +147,13 @@
 						aria-orientation="vertical"
 						aria-labelledby="dropdown-menu-icon-user"
 					>
-						<ThemePicker {saveProfileAccount} bind:themeForm bind:mode bind:themeConfiguration />
+						<ThemePicker
+							{updateProfileAccount}
+							{saveProfileAccount}
+							bind:themeForm
+							bind:mode
+							bind:themeConfiguration
+						/>
 					</ul>
 				</div>
 				<!-- <div
