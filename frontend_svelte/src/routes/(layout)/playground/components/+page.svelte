@@ -10,6 +10,7 @@
 	// import { afterNavigate } from '$app/navigation';
 	import Card from '$components/Card.svelte';
 	import { Variant, type ColorConfig } from '$lib/theming';
+	import { type SubmitFunction } from '@sveltejs/kit';
 	import { enhance } from '$app/forms';
 	import ShareItem from './ShareItem.svelte';
 	// import type { PageProps } from '../$types';
@@ -274,10 +275,13 @@
 	// shared for artificial intelligence and theme picker:
 	const saveProfileAccount = async () => {
 		// if (page.data.session?.loggedIn) {
-		themeForm?.requestSubmit();
+		// themeForm?.requestSubmit();
 		console.log('=== layout - saveProfileAccount - themeConfiguration ===');
 		console.log($state.snapshot(themeConfiguration));
 		// }
+	};
+	const updateProfileAccount: SubmitFunction = async () => {
+		return () => {};
 	};
 
 	// for diff component:
@@ -1396,7 +1400,13 @@
 			aria-orientation="vertical"
 			aria-labelledby="dropdown-menu-icon-user"
 		>
-			<ThemePicker {saveProfileAccount} bind:themeForm bind:mode {themeConfiguration} />
+			<ThemePicker
+				{updateProfileAccount}
+				{saveProfileAccount}
+				bind:themeForm
+				bind:mode
+				{themeConfiguration}
+			/>
 		</ul>
 		<HorizontalRule />
 	</div>
@@ -1581,6 +1591,7 @@
 						aria-labelledby="dropdown-menu-icon-user"
 					>
 						<ArtificialIntelligencePicker
+							{updateProfileAccount}
 							{saveProfileAccount}
 							bind:artificialIntelligenceForm
 							bind:artificialIntelligenceConfiguration
@@ -1599,7 +1610,13 @@
 						aria-orientation="vertical"
 						aria-labelledby="dropdown-menu-icon-user"
 					>
-						<ThemePicker {saveProfileAccount} bind:themeForm bind:mode bind:themeConfiguration />
+						<ThemePicker
+							{updateProfileAccount}
+							{saveProfileAccount}
+							bind:themeForm
+							bind:mode
+							bind:themeConfiguration
+						/>
 					</ul>
 				</div>
 			</div>

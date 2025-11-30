@@ -3,6 +3,7 @@
 	import { resolve } from '$app/paths';
 	import { initDropdown, initOverlay, initCollapse, initScrollspy } from '$lib/userInterface';
 	import { type Snippet, tick } from 'svelte';
+	import { type SubmitFunction } from '@sveltejs/kit';
 	import { Variant, type ColorConfig } from '$lib/theming';
 	import { Model, type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
 	import ThemePicker from '../../../components/ThemePicker.svelte';
@@ -329,6 +330,14 @@
 		console.log($state.snapshot(artificialIntelligenceConfiguration));
 	};
 
+	const updateProfileAccount: SubmitFunction = async () => {
+		// console.log('=== layout - updateProfileAccount - formData ===');
+		// console.log(formData);
+
+		// Prevents page from updating/reloading:
+		return () => {};
+	};
+
 	// for theme picker:
 	let mode: 'light' | 'dark' = $state('dark');
 </script>
@@ -440,6 +449,7 @@
 				aria-labelledby="dropdown-menu-icon-user"
 			>
 				<ArtificialIntelligencePicker
+					{updateProfileAccount}
 					{saveProfileAccount}
 					bind:artificialIntelligenceForm
 					bind:artificialIntelligenceConfiguration
@@ -447,7 +457,13 @@
 				<li>
 					<hr class="border-outline -mx-2 my-5" />
 				</li>
-				<ThemePicker {saveProfileAccount} bind:themeForm bind:mode bind:themeConfiguration />
+				<ThemePicker
+					{updateProfileAccount}
+					{saveProfileAccount}
+					bind:themeForm
+					bind:mode
+					bind:themeConfiguration
+				/>
 				<li>
 					<hr class="border-outline -mx-2 my-5" />
 				</li>
