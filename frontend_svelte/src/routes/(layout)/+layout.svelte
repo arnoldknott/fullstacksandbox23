@@ -16,6 +16,7 @@
 	// import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
 	import WelcomeModal from './WelcomeModal.svelte';
+	import { afterNavigate } from '$app/navigation';
 	import type { SidebarItemContent } from '$lib/types';
 	import SidebarItem from './SidebarItem.svelte';
 	import LoginOutButton from './LoginOutButton.svelte';
@@ -162,6 +163,40 @@
 	]);
 
 	let scrollspyParent: HTMLDivElement | null = $state(null);
+
+	afterNavigate(({ to }) => {
+		// reset scrolltop to zero, if no dedicated hash destination:
+		if (scrollspyParent && !to?.url.hash) {
+			scrollspyParent.scrollTop = 0;
+			scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
+		}
+	});
+
+	onMount(() => {
+		scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+		if (page.url.hash) {
+			const target = document.getElementById(page.url.hash.substring(1));
+			// TBD: consider opening a potential collapsed parent sections here
+			if (target) {
+				const parentRect = scrollspyParent!.getBoundingClientRect();
+				const targetRect = target.getBoundingClientRect();
+
+				const targetScrollTop = scrollspyParent!.scrollTop + targetRect.top - parentRect.top;
+				scrollspyParent!.scrollTop = targetScrollTop;
+				scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+			}
+			// const original = scrollspyParent.scrollTop;
+			// 		// scrolls to the other end of the scroll area and back to force scrollspy to recalculate positions
+			// 		const alt =
+			// 			original < 2 ? scrollspyParent.scrollHeight : original - scrollspyParent.scrollHeight;
+			// 		scrollspyParent.scrollTop = alt;
+			// 		scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
+			// 		requestAnimationFrame(() => {
+			// 			scrollspyParent!.scrollTop = original;
+			// 			scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+			// 		});
+		}
+	});
 </script>
 
 <!-- style="--p: 0.45 .2 125" -->
