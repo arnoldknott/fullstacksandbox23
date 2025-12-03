@@ -448,6 +448,13 @@ resource "azurerm_container_app" "redisContainer" {
   resource_group_name          = azurerm_resource_group.resourceGroup.name
   revision_mode                = "Single"
 
+  identity {
+    type = "UserAssigned"
+    identity_ids = [
+      azurerm_user_assigned_identity.redisIdentity.id,
+    ]
+  }
+
   template {
     container {
       name    = "redis"
