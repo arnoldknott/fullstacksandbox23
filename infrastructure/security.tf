@@ -426,12 +426,12 @@ resource "azurerm_key_vault_secret" "developer-clients-secret" {
 # }
 
 # Container apps need to have the secrets in the key vault to be able to use them.
-data "azurerm_key_vault_secrets" "keyVaultAllSecrets" {
-  key_vault_id = azurerm_key_vault.keyVault.id
-}
+# data "azurerm_key_vault_secrets" "keyVaultAllSecrets" {
+#   key_vault_id = azurerm_key_vault.keyVault.id
+# }
 
-data "azurerm_key_vault_secret" "keyVaultSecret" {
-  for_each     = toset(data.azurerm_key_vault_secrets.keyVaultAllSecrets.names)
-  name         = each.key
-  key_vault_id = azurerm_key_vault.keyVault.id
-}
+# data "azurerm_key_vault_secret" "keyVaultSecret" {
+#   for_each     = toset(data.azurerm_key_vault_secrets.keyVaultAllSecrets.names)
+#   name         = each.key
+#   key_vault_id = azurerm_key_vault.keyVault.id
+# }
