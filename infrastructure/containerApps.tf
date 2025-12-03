@@ -269,14 +269,14 @@ resource "azurerm_container_app" "BackendAPIContainer" {
 
   secret {
     name  = "postgres-password"
-    value = "fromTerraformChangedInGithubActions"
-    # value = data.azurerm_key_vault_secret.keyVaultSecret["postgres-password"].value
+    # value = "fromTerraformChangedInGithubActions"
+    value = data.azurerm_key_vault_secret.keyVaultSecret["postgres-password"].value
   }
 
   secret {
     name  = "postgres-user"
-    value = "fromTerraformChangedInGithubActions"
-    # value = data.azurerm_key_vault_secret.keyVaultSecret["postgres-user"].value
+    # value = "fromTerraformChangedInGithubActions"
+    value = data.azurerm_key_vault_secret.keyVaultSecret["postgres-user"].value
   }
 
   secret {
@@ -293,8 +293,8 @@ resource "azurerm_container_app" "BackendAPIContainer" {
 
   secret {
     name  = "keyvault-health"
-    value = "fromTerraformChangedInGithubActions"
-    # value = data.azurerm_key_vault_secret.keyVaultSecret["keyvault-health"].value
+    # value = "fromTerraformChangedInGithubActions"
+    value = data.azurerm_key_vault_secret.keyVaultSecret["keyvault-health"].value
   }
 
   tags = {
