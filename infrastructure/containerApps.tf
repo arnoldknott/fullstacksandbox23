@@ -269,22 +269,22 @@ resource "azurerm_container_app" "BackendAPIContainer" {
 
   secret {
     name  = "postgres-password"
-    # value = data.azurerm_key_vault_secret.keyVaultSecret["postgres-password"].value
-    value = azurerm_key_vault_secret.postgresPassword.value
+    value = data.azurerm_key_vault_secret.keyVaultSecret["postgres-password"].value
+    # value = azurerm_key_vault_secret.postgresPassword.value
   }
 
   secret {
     name  = "postgres-user"
-    # value = data.azurerm_key_vault_secret.keyVaultSecret["postgres-user"].value
-    value = azurerm_key_vault_secret.postgresUser.value
+    value = data.azurerm_key_vault_secret.keyVaultSecret["postgres-user"].value
+    # value = azurerm_key_vault_secret.postgresUser.value
   }
 
 
-  secret {
-    name  = "keyvault-health"
-    # value = data.azurerm_key_vault_secret.keyVaultSecret["keyvault-health"].value
-    value = azurerm_key_vault_secret.keyvaultHealth.value
-  }
+  # secret {
+  #   name  = "keyvault-health"
+  #   value = data.azurerm_key_vault_secret.keyVaultSecret["keyvault-health"].value
+  #   # value = azurerm_key_vault_secret.keyvaultHealth.value
+  # }
 
   tags = {
     Costcenter  = var.costcenter
@@ -395,20 +395,22 @@ resource "azurerm_container_app" "BackendWorkerContainer" {
   secret {
     name = "postgres-password"
     # value = "fromTerraformChangedInGithubActions"
-    value = azurerm_key_vault_secret.postgresPassword.value
+    # value = azurerm_key_vault_secret.postgresPassword.value
+    value = data.azurerm_key_vault_secret.keyVaultSecret["postgres-password"].value
   }
 
   secret {
     name = "postgres-user"
     # value = "fromTerraformChangedInGithubActions"
-    value = azurerm_key_vault_secret.postgresUser.value
+    # value = azurerm_key_vault_secret.postgresUser.value
+    value = data.azurerm_key_vault_secret.keyVaultSecret["postgres-user"].value
   }
 
-  secret {
-    name = "postgres-host"
-    # value = "fromTerraformChangedInGithubActions"
-    value = azurerm_postgresql_flexible_server.postgresServer.fqdn
-  }
+  # secret {
+  #   name = "postgres-host"
+  #   # value = "fromTerraformChangedInGithubActions"
+  #   value = azurerm_postgresql_flexible_server.postgresServer.fqdn
+  # }
 
 
   tags = {
@@ -524,19 +526,23 @@ resource "azurerm_container_app" "redisContainer" {
 
   secret {
     name  = "redis-password"
-    value = azurerm_key_vault_secret.redisPassword.value
+    # value = azurerm_key_vault_secret.redisPassword.value
+    value = data.azurerm_key_vault_secret.keyVaultSecret["redis-password"].value
   }
   secret {
     name  = "redis-session-password"
-    value = azurerm_key_vault_secret.redisSessionPassword.value
+    # value = azurerm_key_vault_secret.redisSessionPassword.value
+    value = data.azurerm_key_vault_secret.keyVaultSecret["redis-session-password"].value
   }
   secret {
     name  = "redis-socketio-password"
-    value = azurerm_key_vault_secret.redisSocketioPassword.value
+    # value = azurerm_key_vault_secret.redisSocketioPassword.value
+    value = data.azurerm_key_vault_secret.keyVaultSecret["redis-socketio-password"].value
   }
   secret {
     name  = "redis-celery-password"
-    value = azurerm_key_vault_secret.redisCeleryPassword.value
+    # value = azurerm_key_vault_secret.redisCeleryPassword.value
+    value = data.azurerm_key_vault_secret.keyVaultSecret["redis-celery-password"].value
   }
 
   # TBD: check what this is needed for in the other containers!
