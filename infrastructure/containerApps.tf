@@ -269,18 +269,21 @@ resource "azurerm_container_app" "BackendAPIContainer" {
 
   secret {
     name  = "postgres-password"
-    value = data.azurerm_key_vault_secret.keyVaultSecret["postgres-password"].value
+    # value = data.azurerm_key_vault_secret.keyVaultSecret["postgres-password"].value
+    value = azurerm_key_vault_secret.postgresPassword.value
   }
 
   secret {
     name  = "postgres-user"
-    value = data.azurerm_key_vault_secret.keyVaultSecret["postgres-user"].value
+    # value = data.azurerm_key_vault_secret.keyVaultSecret["postgres-user"].value
+    value = azurerm_key_vault_secret.postgresUser.value
   }
 
 
   secret {
     name  = "keyvault-health"
-    value = data.azurerm_key_vault_secret.keyVaultSecret["keyvault-health"].value
+    # value = data.azurerm_key_vault_secret.keyVaultSecret["keyvault-health"].value
+    value = azurerm_key_vault_secret.keyvaultHealth.value
   }
 
   tags = {
