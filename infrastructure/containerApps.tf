@@ -64,7 +64,7 @@ resource "azurerm_container_app" "FrontendSvelteContainer" {
 
   # Never change the imaage of the container, as this is done in github actions!
   lifecycle {
-    ignore_changes = [template[0].container[0].image, secret] #  ingress
+    ignore_changes = [template[0].container[0].image] # secret, ingress
   }
 
   template {
@@ -148,7 +148,7 @@ resource "azurerm_container_app" "BackendAPIContainer" {
 
   # TBD: get back in, when environment variables are set azure: 
   lifecycle {
-    ignore_changes = [template[0].container[0].image, secret, ingress] # TBD: get this back in once run on prod - to add volume mounts!
+    ignore_changes = [template[0].container[0].image] #  , secret, ingress TBD: get this back in once run on prod - to add volume mounts!
   }
   revision_mode = "Single"
 
@@ -314,7 +314,7 @@ resource "azurerm_container_app" "BackendWorkerContainer" {
 
   # TBD: get back in, when environment variables are set azure: 
   lifecycle {
-    ignore_changes = [template[0].container[0].image, ingress] # TBD: get this back in once run on prod - to add volume mounts!
+    ignore_changes = [template[0].container[0].image] # ingress TBD: get this back in once run on prod - to add volume mounts!
   }
 
   revision_mode = "Single"
