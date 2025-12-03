@@ -148,7 +148,7 @@ resource "azurerm_container_app" "BackendAPIContainer" {
 
   # TBD: get back in, when environment variables are set azure: 
   lifecycle {
-    ignore_changes = [template[0].container[0].image, secret.value] #  , secret, ingress TBD: get this back in once run on prod - to add volume mounts!
+    ignore_changes = [template[0].container[0].image] # ignore secret diffs; ingress TBD when adding mounts
   }
   revision_mode = "Single"
 
@@ -272,7 +272,7 @@ resource "azurerm_container_app" "BackendAPIContainer" {
     identity = azurerm_user_assigned_identity.backendIdentity.id
     key_vault_secret_id = azurerm_key_vault_secret.postgresPassword.id
     # value = data.azurerm_key_vault_secret.keyVaultSecret["postgres-password"].value
-    value = azurerm_key_vault_secret.postgresPassword.value
+    # value = azurerm_key_vault_secret.postgresPassword.value
   }
 
   secret {
@@ -280,7 +280,7 @@ resource "azurerm_container_app" "BackendAPIContainer" {
     identity = azurerm_user_assigned_identity.backendIdentity.id
     key_vault_secret_id = azurerm_key_vault_secret.postgresUser.id
     # value = data.azurerm_key_vault_secret.keyVaultSecret["postgres-user"].value
-    value = azurerm_key_vault_secret.postgresUser.value
+    # value = azurerm_key_vault_secret.postgresUser.value
   }
 
 
@@ -307,7 +307,7 @@ resource "azurerm_container_app" "BackendWorkerContainer" {
 
   # TBD: get back in, when environment variables are set azure: 
   lifecycle {
-    ignore_changes = [template[0].container[0].image, secret.value] # ingress TBD: get this back in once run on prod - to add volume mounts!
+    ignore_changes = [template[0].container[0].image] # ingress TBD when adding mounts
   }
 
   revision_mode = "Single"
@@ -410,7 +410,7 @@ resource "azurerm_container_app" "BackendWorkerContainer" {
     identity = azurerm_user_assigned_identity.workerIdentity.id
     key_vault_secret_id = azurerm_key_vault_secret.postgresUser.id
     # value = "fromTerraformChangedInGithubActions"
-    value = azurerm_key_vault_secret.postgresUser.value
+    # value = azurerm_key_vault_secret.postgresUser.value
     # value = data.azurerm_key_vault_secret.keyVaultSecret["postgres-user"].value
   }
 
@@ -447,10 +447,6 @@ resource "azurerm_container_app" "redisContainer" {
   container_app_environment_id = azurerm_container_app_environment.ContainerEnvironment.id
   resource_group_name          = azurerm_resource_group.resourceGroup.name
   revision_mode                = "Single"
-
-  lifecycle {
-    ignore_changes = [secret.value]
-  }
 
   template {
     container {
@@ -591,7 +587,7 @@ resource "azurerm_container_app" "redisContainer" {
 #   resource_group_name          = azurerm_resource_group.resourceGroup.name
 
 #   lifecycle {
-#     ignore_changes = [secret.value, ingress]
+#     ignore_changes = [ingress]
 #   }
 #   revision_mode = "Single"
 
