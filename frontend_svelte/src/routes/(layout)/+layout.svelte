@@ -20,6 +20,7 @@
 	import type { SidebarItemContent } from '$lib/types';
 	import SidebarItem from './SidebarItem.svelte';
 	import LoginOutButton from './LoginOutButton.svelte';
+	import Loreum from './Loreum.svelte';
 
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
 
@@ -65,7 +66,7 @@
 		}
 	});
 
-	let mainContent: HTMLDivElement;
+	// let mainContent: HTMLDivElement;
 	let systemDark = $state(false);
 	let mode: 'light' | 'dark' = $state('dark');
 
@@ -162,7 +163,7 @@
 		}
 	]);
 
-	let scrollspyParent: HTMLDivElement | null = $state(null);
+	let scrollspyParent: HTMLElement | null = $state(null);
 
 	afterNavigate(({ to }) => {
 		// reset scrolltop to zero, if no dedicated hash destination:
@@ -182,7 +183,7 @@
 				const targetRect = target.getBoundingClientRect();
 
 				const targetScrollTop = scrollspyParent!.scrollTop + targetRect.top - parentRect.top;
-				scrollspyParent!.scrollTop = targetScrollTop;
+				scrollspyParent!.scrollTop = targetScrollTop - 85; // offset for sticky navbar
 				scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
 			}
 			// const original = scrollspyParent.scrollTop;
@@ -248,7 +249,8 @@
 	</li>
 {/snippet}
 
-<div bind:this={mainContent} class="mx-5 mt-5 h-full" use:applyTheming>
+<main bind:this={scrollspyParent} id="scrollspy-scrollable-parent" class="h-screen w-screen overflow-x-scroll overflow-y-auto">
+<div  class="mx-5 mt-5 h-full" use:applyTheming>
 	<!-- TBD: put navbar into component -->
 	<nav
 		class="navbar rounded-box bg-base-100 shadow-shadow border-outline-variant sticky start-0 top-0 z-1 justify-between border-b shadow-sm md:flex md:items-center"
@@ -547,74 +549,71 @@
 		{saveProfileAccount}
 	/>
 
-	<div
-		id="scrollspy-scrollable-parent"
-		class="grid h-screen overflow-y-auto"
-		bind:this={scrollspyParent}
+	<aside
+		id="collapsible-mini-sidebar"
+		class="overlay overlay-minified:w-19 overlay-open:translate-x-0 drawer drawer-start border-base-content/20 hidden w-66 border-e pt-26 [--auto-close:sm] sm:absolute sm:z-0 sm:flex sm:translate-x-0 sm:shadow-none"
+		tabindex="-1"
+		{@attach initOverlay}
 	>
-		<aside
-			id="collapsible-mini-sidebar"
-			class="overlay overlay-minified:w-19 overlay-open:translate-x-0 drawer drawer-start border-base-content/20 hidden w-66 border-e pt-26 [--auto-close:sm] sm:absolute sm:z-0 sm:flex sm:translate-x-0 sm:shadow-none"
-			tabindex="-1"
-			{@attach initOverlay}
-		>
-			<div class="drawer-body px-2 pt-4">
-				<ul class="menu p-0">
-					{@render sidebarPartItem('/', 'icon-[material-symbols--home-outline-rounded]', 'Home')}
-					{@render sidebarPartItem('/docs', 'icon-[oui--documentation]', 'Docs', 'md:hidden')}
+		<div class="drawer-body px-2 pt-4">
+			<ul class="menu p-0">
+				{@render sidebarPartItem('/', 'icon-[material-symbols--home-outline-rounded]', 'Home')}
+				{@render sidebarPartItem('/docs', 'icon-[oui--documentation]', 'Docs', 'md:hidden')}
+				{@render sidebarPartItem(
+					'/playground',
+					'icon-[mdi--playground-seesaw]',
+					'Playground',
+					'md:hidden'
+				)}
+				<Guard>
+					<!-- <hr class="border-outline -mx-2 my-3" /> -->
 					{@render sidebarPartItem(
-						'/playground',
-						'icon-[mdi--playground-seesaw]',
-						'Playground',
+						'/dashboard',
+						'icon-[material-symbols--dashboard-outline-rounded]',
+						'Dashboard',
 						'md:hidden'
 					)}
-					<Guard>
-						<!-- <hr class="border-outline -mx-2 my-3" /> -->
-						{@render sidebarPartItem(
-							'/dashboard',
-							'icon-[material-symbols--dashboard-outline-rounded]',
-							'Dashboard',
-							'md:hidden'
-						)}
-					</Guard>
-					<!-- {@render sidebarPartItem('/features', 'icon-[mdi--feature-highlight]', 'Features', 'md:hidden')}
-				{@render sidebarPartItem('/apps', 'icon-[tabler--apps]', 'Apps', 'md:hidden')}
-				{@render sidebarPartItem(
-					'/construction',
-					'icon-[maki--construction]',
-					'Construction',
-					'md:hidden'
-				)} -->
-					<!-- {@render sidebarPartItem(
-					'/playground/user-interface/sidebar/hierarchy',
-					'icon-[streamline--hierarchy-2]',
-					'Hierarchy',
-					'md:hidden'
-				)} -->
-				</ul>
-				<div class="divider"></div>
-				<ul class="menu p-0">
-					{#each sidebarLinks as mainItem (mainItem.id)}
-						<SidebarItem
-							content={{ ...mainItem, pathname: mainItem.pathname || page.url.pathname }}
-							topLevel={true}
-						/>
-					{/each}
-					<li>
-						<div class="items-center sm:hidden md:ml-2">
-							<LoginOutButton {loggedIn} />
-						</div>
-					</li>
-				</ul>
-			</div>
-		</aside>
-
-		<div
-			id="scrollspy"
-			class="sm:overlay-minified:ps-19 bg-base-100 space-y-4 ps-64 pe-1 transition-all duration-300 max-sm:ps-0"
-		>
-			{@render children?.()}
+				</Guard>
+				<!-- {@render sidebarPartItem('/features', 'icon-[mdi--feature-highlight]', 'Features', 'md:hidden')}
+			{@render sidebarPartItem('/apps', 'icon-[tabler--apps]', 'Apps', 'md:hidden')}
+			{@render sidebarPartItem(
+				'/construction',
+				'icon-[maki--construction]',
+				'Construction',
+				'md:hidden'
+			)} -->
+				<!-- {@render sidebarPartItem(
+				'/playground/user-interface/sidebar/hierarchy',
+				'icon-[streamline--hierarchy-2]',
+				'Hierarchy',
+				'md:hidden'
+			)} -->
+				<li>
+					<div class="items-center sm:hidden md:ml-2">
+						<LoginOutButton {loggedIn} />
+					</div>
+				</li>
+			</ul>
+			<div class="divider"></div>
+			<ul class="menu p-0">
+				{#each sidebarLinks as mainItem (mainItem.id)}
+					<SidebarItem
+						content={{ ...mainItem, pathname: mainItem.pathname || page.url.pathname }}
+						topLevel={true}
+					/>
+				{/each}
+				<Loreum repetition={2} />
+			</ul>
 		</div>
+	</aside>
+
+
+
+	<div
+		id="scrollspy"
+		class="sm:overlay-minified:ps-19 bg-base-100 space-y-4 overlay-open:ps-0 mt-5 ps-0 sm:ps-66 pe-1 transition-all duration-300  [--scrollspy-offset:85] "
+	>
+		{@render children?.()}
 	</div>
 
 	<!-- <div class="mt-5">
@@ -623,3 +622,4 @@
 
 	<!-- <JsonData data={theme}></JsonData> -->
 </div>
+</main>

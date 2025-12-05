@@ -10,12 +10,14 @@
 		},
 		{
 			name: 'Layout before sidebar',
-			description: 'Replicates the layout and scrolling behavior before sidebar was added and breaks out of current layout including theming.',
+			description:
+				'Replicates the layout and scrolling behavior before sidebar was added and breaks out of current layout including theming.',
 			url: 'navbar/before-sidebar'
 		},
 		{
 			name: 'Adds sidebar',
-			description: 'Adds a dummy sidebar and reorganizes the layout to fit with scrolling behavior.',
+			description:
+				'Adds a dummy sidebar and reorganizes the layout to fit with scrolling behavior.',
 			url: 'navbar/with-sidebar'
 		}
 	];

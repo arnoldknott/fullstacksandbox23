@@ -12,7 +12,6 @@
 			<div class="navbar-center">NAVBAR</div>
 			<div class="navbar-end">RIGHT</div>
 		</nav>
-	
 
 		<div class="mt-5">
 			<Loreum />
