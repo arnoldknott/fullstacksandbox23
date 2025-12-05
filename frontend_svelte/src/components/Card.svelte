@@ -19,7 +19,7 @@
 
 {#if showCard}
 	<div
-		class="card border-outline-variant bg-base-250 shadow-outline-variant w-full rounded-xl border-[1px] shadow-md {extraClasses}"
+		class="card border-outline-variant bg-base-200 shadow-outline-variant w-full rounded-xl border-[1px] shadow-md {extraClasses}"
 		{id}
 	>
 		{#if header}
