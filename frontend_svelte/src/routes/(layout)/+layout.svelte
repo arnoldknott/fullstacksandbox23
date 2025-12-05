@@ -20,6 +20,7 @@
 	import SidebarItem from './SidebarItem.svelte';
 	import LoginOutButton from './LoginOutButton.svelte';
 	import Loreum from './Loreum.svelte';
+	import Logo from './Logo.svelte';
 
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
 
@@ -264,15 +265,7 @@
 					)} -->
 				</ul>
 			</div>
-			<div class="navbar-center flex flex-row max-sm:scale-50">
-				<div class="flex flex-col justify-center">
-					<div class="title-small text-primary italic" style="line-height: 1;">Fullstack</div>
-					<div class="title-small text-secondary font-bold tracking-wide" style="line-height: 1">
-						Platform
-					</div>
-				</div>
-				<div class="heading-large navbar-center text-accent ml-1 flex items-center">23</div>
-			</div>
+			<Logo />
 			<div class="navbar-end">
 				<button
 					class="btn btn-sm btn-text btn-circle text-primary size-8.5 md:hidden"
@@ -380,10 +373,23 @@
 		<!-- TBD: put sidebar into component -->
 		<aside
 			id="collapsible-mini-sidebar"
-			class="overlay overlay-minified:w-19 overlay-open:translate-x-0 drawer drawer-start bg-base-150 border-base-content/20 hidden w-66 border-e pt-26 [--auto-close:sm] sm:absolute sm:z-0 sm:flex sm:translate-x-0 sm:shadow-none"
+			class="overlay overlay-minified:w-19 overlay-open:translate-x-0 drawer drawer-start bg-base-150 border-base-content/20 hidden w-66 border-e  [--auto-close:sm] sm:absolute sm:z-0 sm:flex sm:translate-x-0 sm:shadow-none"
 			tabindex="-1"
 			{@attach initOverlay}
 		>
+			<div class="h-26 pt-7 mx-7 flex flex-row items-center justify-between">
+				<!-- <div class=" sm:hidden"> -->
+					
+				<!-- </div> -->
+				<div class="hidden sm:block">
+										{@render sidebarToggleButton('hidden sm:flex', {
+						'data-overlay-minifier': '#collapsible-mini-sidebar'
+					})}
+				</div>
+				<div class="overlay-minified:hidden">
+					<Logo />
+				</div>
+			</div>
 			<div class="drawer-body px-2 pt-4">
 				<ul class="menu p-0">
 					{@render sidebarPartItem('/', 'icon-[material-symbols--home-outline-rounded]', 'Home')}
