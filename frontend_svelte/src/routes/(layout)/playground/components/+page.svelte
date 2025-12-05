@@ -637,7 +637,7 @@
 			{/snippet}
 			<Card id="chatCard" extraClasses="md:w-4/5" header={headerChat} footer={footerChat}>
 				<div
-					class="bg-base-150 shadow-outline max-h-96 min-h-44 overflow-y-auto rounded-lg p-2 shadow-inner"
+					class="bg-base-200 shadow-outline max-h-96 min-h-44 overflow-y-auto rounded-lg p-2 shadow-inner"
 				>
 					<div class="chat chat-receiver">
 						<div class="avatar chat-avatar">
@@ -824,7 +824,7 @@
 			{/snippet}
 			<Card id="cardEdit" extraClasses="md:w-4/5" header={headerEdit}>
 				<div
-					class="bg-base-150 shadow-outline max-h-96 min-h-44 overflow-y-auto rounded-lg p-2 shadow-inner"
+					class="bg-base-200 shadow-outline max-h-96 min-h-44 overflow-y-auto rounded-lg p-2 shadow-inner"
 				>
 					Some text
 				</div>

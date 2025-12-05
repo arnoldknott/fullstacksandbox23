@@ -37,7 +37,7 @@
 		{
 			name: 'Playground',
 			description: 'Play with the colors and some components below to get a preview of the design',
-			url: '#playground'
+			url: '#design-playground'
 		}
 	];
 
@@ -340,7 +340,7 @@
 
 <div
 	class="mt-5 grid h-screen min-h-fit w-full grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4"
-	id="playground"
+	id="design-playground"
 >
 	<div class="heading col-span-full w-full grow">Playground to preview color combinations</div>
 	{#each playgrounds as playground, i (i)}
