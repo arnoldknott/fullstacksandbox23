@@ -2,6 +2,7 @@
     // Recreates scrolling from 6b33032 and adds sidebar
     import Loreum from '../../Loreum.svelte';
     import { initOverlay } from '$lib/userInterface';
+
 </script>
 
 {#snippet sidebarToggleButton(classes: string, overlayModifier: object)}
@@ -22,7 +23,7 @@
 	</button>
 {/snippet}
 
-<main class="h-screen overflow-scroll">
+<main data-theme="light" class="h-screen overflow-scroll">
 	<div id="mainContent" class="mx-5 mt-5 h-full">
 		<nav
 			class="navbar rounded-box bg-base-100 shadow-shadow border-outline-variant sticky start-0 top-0 z-1 justify-between border-b shadow-sm md:flex md:items-center"
