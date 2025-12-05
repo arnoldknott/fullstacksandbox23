@@ -9,9 +9,9 @@
 			url: 'navbar/development'
 		},
 		{
-			name: 'Debugging scrolling',
-			description: 'Develps the sticky scroll behavior of the navbar on small screens.',
-			url: 'navbar/scrolling'
+			name: 'Layout before sidebar',
+			description: 'Replicates the layout and scrolling behavior before sidebar was added and breaks out of current layout including theming.',
+			url: 'navbar/before-sidebar'
 		}
 	];
 </script>
