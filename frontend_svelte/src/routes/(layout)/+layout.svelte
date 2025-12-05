@@ -250,7 +250,7 @@
 	<div class="bg-base-100 mx-5 mt-5 h-full" use:applyTheming>
 		<!-- TBD: put navbar into component -->
 		<nav
-			class="navbar rounded-box bg-base-200 shadow-shadow border-outline-variant sticky start-0 top-0 z-1 justify-between border-b shadow-sm md:flex md:items-center"
+			class="navbar rounded-box bg-base-200 shadow-shadow border-outline-variant sticky start-0 top-0 z-1 justify-between border-1 border-b shadow-md md:flex md:items-center"
 		>
 			<div class="navbar-start rtl:[--placement:bottom-end]">
 				<ul class="menu menu-horizontal flex flex-nowrap items-center">
