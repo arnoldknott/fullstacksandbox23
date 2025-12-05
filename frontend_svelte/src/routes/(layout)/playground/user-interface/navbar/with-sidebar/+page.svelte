@@ -1,6 +1,6 @@
 <script lang="ts">
-	// Recreates scrolling from 6b33032 and adds sidebar
-	import Loreum from '../../Loreum.svelte';
+    // Recreates scrolling from 6b33032 and adds sidebar
+    import Loreum from '../../Loreum.svelte';
     import { initOverlay } from '$lib/userInterface';
 </script>
 
@@ -55,12 +55,13 @@
                     <li>Sidebar Item 1</li>
                     <li>Sidebar Item 2</li>
                     <li>Sidebar Item 3</li>
+                    <Loreum repetition={2}/>
+                    <li>Sidebar Item 4</li>
                 </ul>
             </div>
         </aside>
 
-		<div class="mt-5 overlay-minified:pl-19  overlay-open:pl-0 pl-0 sm:pl-66">
-            
+    <div class="mt-5 sm:overlay-minified:ps-19 overlay-open:ps-0 ps-0 sm:ps-66">             
 			<Loreum />
 		</div>
 	</div>
