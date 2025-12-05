@@ -97,77 +97,86 @@
 
 	// Sidebar:
 	let sidebarLinks: SidebarItemContent[] = $state([
-		// {
-		// 	name: "Features",
-		// 	pathname: resolve('/(layout)/features'),
-		// 	icon: 'icon-[mdi--feature-highlight]',
-		// 	id: 'features',
-		// 	items: []
-		// },
-		// {
-		// 	name: 'Apps',
-		// 	pathname: resolve('/(layout)/apps'),
-		// 	icon: 'icon-[tabler--apps]',
-		// 	id: 'apps',
-		// 	items: []
-		// },
 		{
-			name: 'Components',
-			pathname: resolve('/(layout)/playground/components'),
-			icon: 'icon-[tabler--components]',
-			id: 'components',
+			name: 'Docs',
+			pathname: resolve('/(plain)/docs'),
+			icon: 'icon-[oui--documentation]',
+			id: 'docs',
 			items: []
 		},
 		{
-			name: 'Design',
-			pathname: resolve('/(layout)/playground/design'),
-			icon: 'icon-[fluent--design-ideas-20-regular]',
-			id: 'design',
+			name: 'Playground',
+			pathname: resolve('/(layout)/playground'),
+			icon: 'icon-[mdi--playground-seesaw]',
+			id: 'playground',
 			items: [
-				{
-					name: 'Backgrounds',
-					icon: 'icon-[mdi--palette-outline]',
-					hash: '#backgrounds-and-surfaces',
-					id: 'backgrounds'
-				},
-				{
-					name: 'Foregrounds',
-					icon: 'icon-[mdi--palette-outline]',
-					hash: '#foregrounds',
-					id: 'foregrounds'
-				},
+				// { name: 'Overview', pathname: resolve('/(layout)/playground'), icon: 'icon-[mdi--playground-seesaw]', hash: '#top', id: 'overview' },
 				{
 					name: 'Components',
-					icon: 'icon-[mdi--palette-outline]',
-					hash: '#components',
-					id: 'components'
+					pathname: resolve('/(layout)/playground/components'),
+					icon: 'icon-[tabler--components]',
+					id: 'components',
+					items: []
 				},
 				{
-					name: 'Playground',
-					icon: 'icon-[mdi--playground-seesaw]',
-					hash: '#playground',
-					id: 'playground'
-				},
-				{
-					name: 'FlyonUI',
-					icon: 'icon-[mingcute--arrows-up-fill]',
-					pathname: resolve('/(layout)/playground/design/flyonui'),
-					id: 'flyonui'
-				},
-				{
-					name: 'Material Design',
-					icon: 'icon-[mdi--material-design]',
-					pathname: resolve('/(layout)/playground/design/materialdesign'),
-					id: 'material-design'
-				},
-				{
-					name: 'Svelte',
-					icon: 'icon-[tabler--brand-svelte]',
-					pathname: resolve('/(layout)/playground/design/svelte'),
-					id: 'svelte'
+					name: 'Design',
+					pathname: resolve('/(layout)/playground/design'),
+					icon: 'icon-[fluent--design-ideas-20-regular]',
+					id: 'design',
+					items: [
+						{
+							name: 'Backgrounds',
+							icon: 'icon-[mdi--palette-outline]',
+							hash: '#backgrounds-and-surfaces',
+							id: 'backgrounds'
+						},
+						{
+							name: 'Foregrounds',
+							icon: 'icon-[mdi--palette-outline]',
+							hash: '#foregrounds',
+							id: 'foregrounds'
+						},
+						{
+							name: 'Components',
+							icon: 'icon-[mdi--palette-outline]',
+							hash: '#components',
+							id: 'components'
+						},
+						// {
+						// 	name: 'Playground',
+						// 	icon: 'icon-[mdi--playground-seesaw]',
+						// 	hash: '#design-playground',
+						// 	id: 'design-playground'
+						// },
+						{
+							name: 'FlyonUI',
+							icon: 'icon-[mingcute--arrows-up-fill]',
+							pathname: resolve('/(layout)/playground/design/flyonui'),
+							id: 'flyonui'
+						},
+						{
+							name: 'Material Design',
+							icon: 'icon-[mdi--material-design]',
+							pathname: resolve('/(layout)/playground/design/materialdesign'),
+							id: 'material-design'
+						},
+						{
+							name: 'Svelte',
+							icon: 'icon-[tabler--brand-svelte]',
+							pathname: resolve('/(layout)/playground/design/svelte'),
+							id: 'svelte'
+						}
+					]
 				}
 			]
 		}
+		// {
+		// 	name: 'Apps',
+		// 	pathname: resolve('/(layout)/(protected)/dashboard'),
+		// 	icon: 'icon-[material-symbols--dashboard-outline-rounded]',
+		// 	id: 'apps',
+		// 	items: []
+		// },
 	]);
 
 	let scrollspyParent: HTMLElement | null = $state(null);
@@ -263,21 +272,21 @@
 							'/dashboard',
 							'icon-[material-symbols--dashboard-outline-rounded]',
 							'Dashboard',
-							'hidden lg:block'
+							'hidden xl:block'
 						)}
 					</Guard>
-					<!-- {@render navbarPartItem('/features', 'icon-[mdi--feature-highlight]', 'Features')}
-					{@render navbarPartItem('/apps', 'icon-[tabler--apps]', 'Apps')}
+					<!-- {@render navbarPartItem(
+						'/features',
+						'icon-[mdi--feature-highlight]',
+						'Features',
+						'hidden xl:block'
+					)}
+					{@render navbarPartItem('/apps', 'icon-[tabler--apps]', 'Apps', 'hidden xl:block')}
 					{@render navbarPartItem(
 						'/construction',
 						'icon-[maki--construction]',
 						'Construction',
-						'hidden lg:block'
-					)} -->
-					<!-- {@render navbarPartItem(
-						'/playground/user-interface/sidebar/hierarchy',
-						'icon-[streamline--hierarchy-2]',
-						'Hierarchy'
+						'hidden xl:block'
 					)} -->
 				</ul>
 			</div>
@@ -425,20 +434,19 @@
 							'md:hidden'
 						)}
 					</Guard>
-					<!-- {@render sidebarPartItem('/features', 'icon-[mdi--feature-highlight]', 'Features', 'md:hidden')}
-				{@render sidebarPartItem('/apps', 'icon-[tabler--apps]', 'Apps', 'md:hidden')}
-				{@render sidebarPartItem(
-					'/construction',
-					'icon-[maki--construction]',
-					'Construction',
-					'md:hidden'
-				)} -->
 					<!-- {@render sidebarPartItem(
-					'/playground/user-interface/sidebar/hierarchy',
-					'icon-[streamline--hierarchy-2]',
-					'Hierarchy',
-					'md:hidden'
-				)} -->
+						'/features',
+						'icon-[mdi--feature-highlight]',
+						'Features',
+						'md:hidden'
+					)}
+					{@render sidebarPartItem('/apps', 'icon-[tabler--apps]', 'Apps', 'md:hidden')}
+					{@render sidebarPartItem(
+						'/construction',
+						'icon-[maki--construction]',
+						'Construction',
+						'md:hidden'
+					)} -->
 					<li>
 						<div class="items-center sm:hidden md:ml-2">
 							<LoginOutButton {loggedIn} />
