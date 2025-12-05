@@ -1,6 +1,6 @@
 <script lang="ts">
 	// Recreates scrolling from 6b33032
-	import Loreum from './Loreum.svelte';
+	import Loreum from '../../Loreum.svelte';
 </script>
 
 <main class="h-screen overflow-scroll">
