@@ -9,5 +9,4 @@
 	setContext('backendAPIConfiguration', page.data.backendAPIConfiguration);
 </script>
 
-
 {@render children?.()}

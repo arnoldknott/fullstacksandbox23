@@ -19,7 +19,6 @@
 	import type { SidebarItemContent } from '$lib/types';
 	import SidebarItem from './SidebarItem.svelte';
 	import LoginOutButton from './LoginOutButton.svelte';
-	import Loreum from './Loreum.svelte';
 	import Logo from './Logo.svelte';
 
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
@@ -98,6 +97,20 @@
 
 	// Sidebar:
 	let sidebarLinks: SidebarItemContent[] = $state([
+		// {
+		// 	name: "Features",
+		// 	pathname: resolve('/(layout)/features'),
+		// 	icon: 'icon-[mdi--feature-highlight]',
+		// 	id: 'features',
+		// 	items: []
+		// },
+		// {
+		// 	name: 'Apps',
+		// 	pathname: resolve('/(layout)/apps'),
+		// 	icon: 'icon-[tabler--apps]',
+		// 	id: 'apps',
+		// 	items: []
+		// },
 		{
 			name: 'Components',
 			pathname: resolve('/(layout)/playground/components'),
@@ -184,7 +197,6 @@
 	});
 </script>
 
-
 {#snippet sidebarToggleButton(classes: string, overlayModifier: object)}
 	<button
 		type="button"
@@ -221,8 +233,12 @@
 	</li>
 {/snippet}
 
-<main bind:this={scrollspyParent} id="scrollspy-scrollable-parent" class="h-screen w-screen overflow-x-scroll overflow-y-auto">
-	<div class="mx-5 mt-5 h-full bg-base-100" use:applyTheming>
+<main
+	bind:this={scrollspyParent}
+	id="scrollspy-scrollable-parent"
+	class="h-screen w-screen overflow-x-scroll overflow-y-auto"
+>
+	<div class="bg-base-100 mx-5 mt-5 h-full" use:applyTheming>
 		<!-- TBD: put navbar into component -->
 		<nav
 			class="navbar rounded-box bg-base-200 shadow-shadow border-outline-variant sticky start-0 top-0 z-1 justify-between border-b shadow-sm md:flex md:items-center"
@@ -373,16 +389,16 @@
 		<!-- TBD: put sidebar into component -->
 		<aside
 			id="collapsible-mini-sidebar"
-			class="overlay overlay-minified:w-19 overlay-open:translate-x-0 drawer drawer-start bg-base-150 border-base-content/20 hidden w-66 border-e  [--auto-close:sm] sm:absolute sm:z-0 sm:flex sm:translate-x-0 sm:shadow-none"
+			class="overlay overlay-minified:w-19 overlay-open:translate-x-0 drawer drawer-start bg-base-150 border-base-content/20 hidden w-66 border-e [--auto-close:sm] sm:absolute sm:z-0 sm:flex sm:translate-x-0 sm:shadow-none"
 			tabindex="-1"
 			{@attach initOverlay}
 		>
-			<div class="h-26 pt-7 mx-7 flex flex-row items-center justify-between">
+			<div class="mx-7 flex h-26 flex-row items-center justify-between pt-7">
 				<!-- <div class=" sm:hidden"> -->
-					
+
 				<!-- </div> -->
 				<div class="hidden sm:block">
-										{@render sidebarToggleButton('hidden sm:flex', {
+					{@render sidebarToggleButton('hidden sm:flex', {
 						'data-overlay-minifier': '#collapsible-mini-sidebar'
 					})}
 				</div>
@@ -443,7 +459,7 @@
 
 		<div
 			id="scrollspy"
-			class="sm:overlay-minified:ps-19 space-y-4 overlay-open:ps-0 mt-5 ps-0 sm:ps-66 pe-1 transition-all duration-300  [--scrollspy-offset:85] "
+			class="sm:overlay-minified:ps-19 overlay-open:ps-0 mt-5 space-y-4 ps-0 pe-1 transition-all duration-300 [--scrollspy-offset:85] sm:ps-66"
 		>
 			{@render children?.()}
 		</div>
