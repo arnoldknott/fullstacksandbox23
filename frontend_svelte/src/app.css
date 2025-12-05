@@ -22,7 +22,8 @@
 	name: 'materialdesign';
 	default: true;
 	prefersdark: true;
-	color-scheme: dark;
+	/* if this is light, there's a flash of white background at load - however potential 404 and other default error pages are visible */
+	color-scheme: light;
 	--color-base-100: rgb(var(--md-rgb-color-surface-container-lowest));
 	--color-base-200: rgb(var(--md-rgb-color-surface-container));
 	--color-base-300: rgb(var(--md-rgb-color-surface-container-highest));

@@ -51,7 +51,7 @@ jobs:
       # TF_LOG: DEBUG
       # Object ID's of all instances running infrastructure script:
       DEVELOPER_LOCALHOST_OBJECT_ID: ${{ secrets.DEVELOPER_LOCALHOST_OBJECT_ID }}
-      MANAGED_IDENTITY_GITHUB_ACTIONS_OBJECT_ID: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_SP_OBJECT_ID }}
+      MANAGED_IDENTITY_GITHUB_ACTIONS_OBJECT_ID: ${{ secrets.MANAGED_IDENTITY_GITHUB_ACTIONS_OBJECT_ID }}
       # Project specific variables:
       PROJECT_NAME: ${{ vars.PROJECT_NAME }}
       PROJECT_SHORT_NAME: ${{ vars.PROJECT_SHORT_NAME }}
@@ -60,7 +60,7 @@ jobs:
       OWNER_NAME: ${{ secrets.OWNER_NAME }}
       BUDGET_NOTIFICATION_EMAIL: ${{ secrets.BUDGET_NOTIFICATION_EMAIL }}
       OWNER_OBJECT_ID: ${{ secrets.OWNER_OBJECT_ID }}
-      ARM_OBJECT_ID: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_SP_OBJECT_ID }}
+      ARM_OBJECT_ID: ${{ secrets.MANAGED_IDENTITY_GITHUB_ACTIONS_OBJECT_ID }}
       # Postgres settings:
       POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
       # Redis settings:

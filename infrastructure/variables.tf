@@ -1,4 +1,4 @@
-# Provider configuration - no longer necessary, passed via environment variables ARM_*
+# Provider configuration - only needed in github actions, on localhost passed via environment variables ARM_*
 variable "azure_client_id" {
   description = "Service principle client ID"
   type        = string
