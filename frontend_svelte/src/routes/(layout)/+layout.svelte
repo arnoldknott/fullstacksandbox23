@@ -113,7 +113,7 @@
 				// { name: 'Overview', pathname: resolve('/(layout)/playground'), icon: 'icon-[mdi--playground-seesaw]', hash: '#top', id: 'overview' },
 				{
 					name: 'Components',
-					pathname: resolve('/(layout)/playground/components'),
+					pathname: resolve('/(layout)/playground/components') + '?prod=false&develop=true',
 					icon: 'icon-[tabler--components]',
 					id: 'components',
 					items: []
@@ -182,14 +182,59 @@
 	let scrollspyParent: HTMLElement | null = $state(null);
 
 	afterNavigate(({ to }) => {
+		console.log('=== layout - afterNavigate - to.url ===');
+		console.log(to?.url);
 		// reset scrolltop to zero, if no dedicated hash destination:
 		if (scrollspyParent && !to?.url.hash) {
 			scrollspyParent.scrollTop = 0;
 			scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
 		}
+				// if (scrollspyParent && !to?.url.hash) {
+		// 	scrollspyParent.scrollTop = 0;
+		// 	scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
+		// }
+		// console.log("=== layout - afterNavigate ===")
+		// if (scrollspyParent) {
+		// 	if (to?.url.hash){
+		// 		const target = document.getElementById(page.url.hash.substring(1));
+		// 	// TBD: consider opening a potential collapsed parent sections here
+		// 		if (target) {
+		// 			const parentRect = scrollspyParent!.getBoundingClientRect();
+		// 			const targetRect = target.getBoundingClientRect();
+
+		// 			const targetScrollTop = scrollspyParent!.scrollTop + targetRect.top - parentRect.top;
+		// 			scrollspyParent!.scrollTop = targetScrollTop - 185 ; // offset for sticky navbar
+		// 			scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+		// 		}
+		// 	} else {
+		// 		console.log('=== layout - afterNavigate - updateScroll - no target ===');
+		// 		scrollspyParent.scrollTop = 0;
+		// 		scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
+		// 	}
+		// }
+		// if (scrollspyParent && to && to?.url.hash) {
+			
+		// 	const target = document.getElementById(to.url.hash.substring(1));
+		// 	if (target) {
+		// 		console.log('=== layout - afterNavigate - updateScroll - with target ===');
+		// 		const parentRect = scrollspyParent!.getBoundingClientRect();
+		// 		const targetRect = target.getBoundingClientRect();
+
+		// 		// const targetScrollTop = scrollspyParent!.scrollTop + targetRect.top - parentRect.top;
+		// 		const targetScrollTop = scrollspyParent!.scrollTop - targetRect.top;
+		// 		scrollspyParent!.scrollTop = targetScrollTop - 85; // offset for sticky navbar
+		// 		scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+		// 	} else {
+		// 		console.log('=== layout - afterNavigate - updateScroll - no target ===');
+		// 		scrollspyParent.scrollTop = 0;
+		// 		scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
+		// 	}
+		// }
 	});
 
 	onMount(() => {
+		console.log('=== layout - onMount - page.url.hash ===');
+		console.log(page.url.hash);
 		scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
 		if (page.url.hash) {
 			const target = document.getElementById(page.url.hash.substring(1));
