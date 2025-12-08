@@ -1,5 +1,5 @@
 <script lang="ts">
-	let { repetition = 45 }: { repetition?: number } = $props();
+	let { repetition = 25 }: { repetition?: number } = $props();
 </script>
 
 {#each Array(repetition) as _, index (index)}

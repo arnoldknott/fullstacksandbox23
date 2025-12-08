@@ -473,9 +473,9 @@
 		// }
 	});
 
-	const adjustScrollForStickyNavbar = (event: Event) => {
+	const adjustScrollForStickyNavbar = (_event: Event) => {
 		// console.log('=== layout - adjustScrollForStickyNavbar - event ===');
-		console.log(event);
+		// console.log(event);
 		if	(navBar) {
 			navBarBottom = navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
 		}
@@ -483,15 +483,15 @@
 			navBarBottom = 0;
 		}
 		// console.log('=== layout - adjustScrollForStickyNavbar - navBarBottom ===');
-		console.log(navBarBottom);
+		// console.log(navBarBottom);
 		// console.log('=== layout - adjustScrollForStickyNavbar - navBar ===');
 		// console.log(navBar);
 		// console.log('=== layout - adjustScrollForStickyNavbar - contentArea ===');
 		// console.log(contentArea);
 		if (contentArea) {
 			const contentAreaTop = contentArea.getBoundingClientRect().top;
-			console.log('=== layout - adjustScrollForStickyNavbar - contentAreaTop ===');
-			console.log(contentAreaTop);
+			// console.log('=== layout - adjustScrollForStickyNavbar - contentAreaTop ===');
+			// console.log(contentAreaTop);
 			// if (contentAreaTop < navBarBottom) {
 			// 	scrollspyParent!.scrollTop = contentAreaTop +  navBarBottom;
 			// 	scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
