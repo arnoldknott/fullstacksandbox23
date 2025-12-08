@@ -540,9 +540,9 @@
 		data-overlay-options={ JSON.stringify({ "backdropClasses": "overlay-backdrop transition duration-300 fixed inset-0 bg-base-300/60 overflow-y-auto", "backdropParent": "#scrollspy" }) } -->
 		<!-- <div id="collapsible-mini-sidebar-backdrop" data-overlay-backdrop-template="overlay-backdrop transition duration-300 fixed inset-0 bg-base-300/60 overflow-y-auto" style="z-index: 79;" class=""></div> -->
 		<span
-			class="icon-[material-symbols--menu-open-rounded] overlay-minified:hidden flex size-6 max-sm:hidden"
+			class="icon-[material-symbols--menu-open-rounded] overlay-minified:hidden flex size-5 max-sm:hidden"
 		></span>
-		<span class="icon-[material-symbols--menu] overlay-minified:flex hidden size-6 max-sm:flex"
+		<span class="icon-[material-symbols--menu] overlay-minified:flex hidden size-5 max-sm:flex"
 		></span>
 	</button>
 {/snippet}
@@ -571,10 +571,11 @@
 	class="h-screen w-screen overflow-x-scroll overflow-y-auto"
 	onscrollend={adjustScrollForStickyNavbar}
 >
-	<div class="bg-base-100 mx-5 mt-5" use:applyTheming>
+	<div class="bg-base-100 mx-5 mt-5 sm:h-full" use:applyTheming>
 		<!-- TBD: put navbar into component -->
+		 <!-- <div class="h-full"> -->
 		<nav
-			class="navbar rounded-box bg-base-200 shadow-shadow border-outline-variant sticky start-0 top-0 z-1 flex justify-between border-1 border-b shadow-md md:items-center"
+			class="navbar max-sm:h-14 rounded-box bg-base-200 shadow-shadow border-outline-variant sticky start-0 top-0 z-1 flex justify-between border-1 border-b shadow-md md:items-center"
 			bind:this={navBar}
 		>
 			<div class="navbar-start rtl:[--placement:bottom-end]">
@@ -710,6 +711,7 @@
 				</div>
 			</div>
 		</nav>
+		<!-- </div> -->
 
 		<WelcomeModal
 			bind:session={data.session}
