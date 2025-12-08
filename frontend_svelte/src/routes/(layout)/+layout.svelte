@@ -550,7 +550,7 @@
 {#snippet navbarPartItem(href: string, icon: string, text: string, textClasses?: string)}
 	<li class="text-primary hidden items-center md:flex">
 		<a {href} aria-label={text} class="flex items-center gap-1"
-			><span class="{icon} size-6"></span>
+			><span class="{icon} size-5"></span>
 			<span class={textClasses}>{text}</span>
 		</a>
 	</li>
@@ -573,9 +573,9 @@
 >
 	<div class="bg-base-100 mx-5 mt-5 sm:h-full" use:applyTheming>
 		<!-- TBD: put navbar into component -->
-		 <!-- <div class="h-full"> -->
+		<!-- <div class="h-full"> -->
 		<nav
-			class="navbar max-sm:h-14 rounded-box bg-base-200 shadow-shadow border-outline-variant sticky start-0 top-0 z-1 flex justify-between border-1 border-b shadow-md md:items-center"
+			class="navbar rounded-box bg-base-200 shadow-shadow border-outline-variant sticky start-0 top-0 z-1 flex justify-between border-1 border-b shadow-md max-sm:h-14 max-sm:px-3 md:items-center"
 			bind:this={navBar}
 		>
 			<div class="navbar-start rtl:[--placement:bottom-end]">
@@ -622,7 +622,7 @@
 					class="btn btn-sm btn-text btn-circle text-primary size-8.5 md:hidden"
 					aria-label="Search"
 				>
-					<span class="icon-[tabler--search] size-5.5"></span>
+					<span class="icon-[tabler--search] size-5"></span>
 				</button>
 				<div class="input mx-2 max-w-56 rounded-full max-md:hidden">
 					<span class="icon-[tabler--search] text-base-content/80 my-auto me-3 size-5 shrink-0"
@@ -636,7 +636,7 @@
 				>
 					<span
 						id="dropdown-menu-icon-user"
-						class="dropdown-toggle {!loggedIn ? 'icon-[fa6-solid--user] bg-secondary size-6' : ''}"
+						class="dropdown-toggle {!loggedIn ? 'icon-[fa6-solid--user] bg-secondary size-5' : ''}"
 						role="button"
 						aria-haspopup="menu"
 						aria-expanded="false"
@@ -685,7 +685,7 @@
 								aria-controls="welcome-modal"
 								data-overlay="#welcome-modal"
 							>
-								<span class="icon-[tabler--eye] bg-secondary size-6"></span>
+								<span class="icon-[tabler--eye] bg-secondary size-5"></span>
 								<span class="text-secondary grow">Show welcome modal</span>
 							</button>
 						</li>
