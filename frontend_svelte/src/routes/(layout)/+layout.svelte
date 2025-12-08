@@ -473,10 +473,34 @@
 		// }
 	});
 
-const adjustScrollForStickyNavbar = (event: Event) => {
-	console.log('=== layout - adjustScrollForStickyNavbar - event ===');
-	console.log(event);
-}
+	const adjustScrollForStickyNavbar = (event: Event) => {
+		// console.log('=== layout - adjustScrollForStickyNavbar - event ===');
+		// console.log(event);
+		if	(navBar) {
+			navBarBottom = navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
+		}
+		else{
+			navBarBottom = 0;
+		}
+		console.log('=== layout - adjustScrollForStickyNavbar - navBarBottom ===');
+		console.log(navBarBottom);
+	}
+	let navBar: HTMLElement | null = $state(null);
+	let navBarBottom: number = $state (0);
+
+	// let navBarBottom = $derived.by(() => {
+	// 	if	(navBar) {
+	// 		return navBar.getBoundingClientRect().bottom
+	// 	}
+	// 	else{
+	// 		return 0;
+	// 	}
+	// });
+
+	$effect(() => {
+
+
+	});
 
 	onMount(() => {
 		// console.log('=== layout - onMount - page.url.hash ===');
@@ -541,12 +565,13 @@ const adjustScrollForStickyNavbar = (event: Event) => {
 	bind:this={scrollspyParent}
 	id="scrollspy-scrollable-parent"
 	class="h-screen w-screen overflow-x-scroll overflow-y-auto"
-	onscrollend={adjustScrollForStickyNavbar}
+	onscroll={adjustScrollForStickyNavbar}
 >
 	<div class="bg-base-100 mx-5 mt-5 h-full" use:applyTheming>
 		<!-- TBD: put navbar into component -->
 		<nav
 			class="navbar rounded-box bg-base-200 shadow-shadow border-outline-variant sticky start-0 top-0 z-1 justify-between border-1 border-b shadow-md md:flex md:items-center"
+			bind:this={navBar}
 		>
 			<div class="navbar-start rtl:[--placement:bottom-end]">
 				<ul class="menu menu-horizontal flex flex-nowrap items-center">
