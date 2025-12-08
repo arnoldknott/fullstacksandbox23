@@ -544,6 +544,9 @@
 		aria-label="Toggle Sidebar"
 		{...overlayModifier}
 	>
+	<!-- data-overlay="#collapsible-mini-sidebar"
+		data-overlay-options={ JSON.stringify({ "backdropClasses": "overlay-backdrop transition duration-300 fixed inset-0 bg-base-300/60 overflow-y-auto", "backdropParent": "#scrollspy" }) } -->
+	<!-- <div id="collapsible-mini-sidebar-backdrop" data-overlay-backdrop-template="overlay-backdrop transition duration-300 fixed inset-0 bg-base-300/60 overflow-y-auto" style="z-index: 79;" class=""></div> -->
 		<span
 			class="icon-[material-symbols--menu-open-rounded] overlay-minified:hidden flex size-6 max-sm:hidden"
 		></span>
@@ -576,7 +579,7 @@
 	class="h-screen w-screen overflow-x-scroll overflow-y-auto"
 	onscrollend={adjustScrollForStickyNavbar}
 >
-	<div class="bg-base-100 mx-5 mt-5 h-full" use:applyTheming>
+	<div class="bg-base-100 mx-5 mt-5" use:applyTheming>
 		<!-- TBD: put navbar into component -->
 		<nav
 			class="navbar rounded-box bg-base-200 shadow-shadow border-outline-variant sticky start-0 top-0 z-1 justify-between border-1 border-b shadow-md flex md:items-center"
@@ -792,6 +795,35 @@
 			</div>
 			NavBarBottom: {navBarBottom}
 		</aside>
+		<!-- <aside
+			id="collapsible-mini-sidebar"
+			class="overlay [--auto-close:sm] sm:shadow-none overlay-open:translate-x-0 drawer drawer-start hidden max-w-64  sm:flex sm:translate-x-0 pt-16"
+			tabindex="-1"
+		>
+			<div class="drawer-body px-2 pt-4">
+				<ul class="menu p-0">
+				<li>
+					<a href="#top">
+					<span class="icon-[tabler--home] size-5"></span>
+					Home
+					</a>
+				</li>
+				<li>
+					<a href="/playground/page3#loreum1">
+					<span class="icon-[tabler--user] size-5"></span>
+					Page 3 - Loreum 1
+					</a>
+				</li>
+				<li>
+					<a href="/playground/page3#loreum2">
+					<span class="icon-[tabler--message] size-5"></span>
+					Page 3 - Loreum 2
+					</a>
+				</li>
+				</ul>
+			</div>
+		</aside> -->
+
 
 		<div
 			id="scrollspy"
