@@ -60,14 +60,14 @@
 			parent.dataset.pathname === page.url.pathname &&
 			parent.getAttribute('data-scrollspy') !== '#scrollspy'
 		) {
-			// afterNavigate((navigator) => {
+			// afterNavigate((_navigator) => {
 			if (thisPage) {
 				addScrollspy(parent);
 			}
-			// 	if (navigator.to?.url.hash !== '') {
-			// 		scrollspyParent.scrollTop = 0;
-			// 		scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
-			// 	}
+				// if (navigator.to?.url.hash !== '') {
+				// 	scrollspyParent.scrollTop = 0;
+				// 	scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
+				// }
 			// });
 			beforeNavigate((navigator) => {
 				if (!(navigator.to?.url.pathname === node.dataset.pathname)) {

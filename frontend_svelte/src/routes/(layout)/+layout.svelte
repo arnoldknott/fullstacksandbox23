@@ -170,7 +170,7 @@
 				}
 			]
 		},
-						{
+		{
 			name: 'Page 1',
 			pathname: resolve('/(layout)/playground/page1'),
 			icon: 'icon-[tabler--user]',
@@ -579,7 +579,7 @@
 	<div class="bg-base-100 mx-5 mt-5 h-full" use:applyTheming>
 		<!-- TBD: put navbar into component -->
 		<nav
-			class="navbar rounded-box bg-base-200 shadow-shadow border-outline-variant sticky start-0 top-0 z-1 justify-between border-1 border-b shadow-md md:flex md:items-center"
+			class="navbar rounded-box bg-base-200 shadow-shadow border-outline-variant sticky start-0 top-0 z-1 justify-between border-1 border-b shadow-md flex md:items-center"
 			bind:this={navBar}
 		>
 			<div class="navbar-start rtl:[--placement:bottom-end]">
@@ -733,9 +733,6 @@
 			{@attach initOverlay}
 		>
 			<div class="mx-7 flex h-26 flex-row items-center justify-between pt-7">
-				<!-- <div class=" sm:hidden"> -->
-
-				<!-- </div> -->
 				<div class="hidden sm:block">
 					{@render sidebarToggleButton('hidden sm:flex', {
 						'data-overlay-minifier': '#collapsible-mini-sidebar'
@@ -798,7 +795,7 @@
 
 		<div
 			id="scrollspy"
-			class="sm:overlay-minified:ps-19 overlay-open:ps-0 mt-5 space-y-4 ps-0 pe-1 transition-all duration-300 sm:ps-66"
+			class="overlay-minified:ps-19 mt-5 space-y-4 ps-0 pe-1 transition-all duration-300 sm:ps-66"
 			bind:this={contentArea}
 		>
 			{@render children?.()}

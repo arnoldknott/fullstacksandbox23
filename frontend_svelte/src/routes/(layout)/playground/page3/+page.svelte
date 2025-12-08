@@ -6,7 +6,7 @@
 </script>
 
 <div class="bg-error-container/70 rounded-xl p-4">
-	<Loreum repetition={30} />
+	<Loreum repetition={3} />
 	<Display>Page 3</Display>
 
 	<p>Page 3 has hierarchial content and id's linked in main sidebar</p>
