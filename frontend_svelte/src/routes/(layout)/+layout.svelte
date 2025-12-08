@@ -423,7 +423,7 @@
 	let scrollspyParent: HTMLElement | null = $state(null);
 
 	afterNavigate(({ to }) => {
-		// console.log('=== layout - afterNavigate - to.url ===');
+		console.log('=== layout - afterNavigate - to.url ===');
 		// console.log(to?.url);
 		// reset scrolltop to zero, if no dedicated hash destination:
 		if (scrollspyParent && !to?.url.hash) {
@@ -475,17 +475,31 @@
 
 	const adjustScrollForStickyNavbar = (event: Event) => {
 		// console.log('=== layout - adjustScrollForStickyNavbar - event ===');
-		// console.log(event);
+		console.log(event);
 		if	(navBar) {
 			navBarBottom = navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
 		}
 		else{
 			navBarBottom = 0;
 		}
-		console.log('=== layout - adjustScrollForStickyNavbar - navBarBottom ===');
+		// console.log('=== layout - adjustScrollForStickyNavbar - navBarBottom ===');
 		console.log(navBarBottom);
+		// console.log('=== layout - adjustScrollForStickyNavbar - navBar ===');
+		// console.log(navBar);
+		// console.log('=== layout - adjustScrollForStickyNavbar - contentArea ===');
+		// console.log(contentArea);
+		if (contentArea) {
+			const contentAreaTop = contentArea.getBoundingClientRect().top;
+			console.log('=== layout - adjustScrollForStickyNavbar - contentAreaTop ===');
+			console.log(contentAreaTop);
+			// if (contentAreaTop < navBarBottom) {
+			// 	scrollspyParent!.scrollTop = contentAreaTop +  navBarBottom;
+			// 	scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+			// }
+		}
 	}
 	let navBar: HTMLElement | null = $state(null);
+	let contentArea: HTMLElement | null = $state(null);
 	let navBarBottom: number = $state (0);
 
 	// let navBarBottom = $derived.by(() => {
@@ -496,11 +510,6 @@
 	// 		return 0;
 	// 	}
 	// });
-
-	$effect(() => {
-
-
-	});
 
 	onMount(() => {
 		// console.log('=== layout - onMount - page.url.hash ===');
@@ -565,7 +574,7 @@
 	bind:this={scrollspyParent}
 	id="scrollspy-scrollable-parent"
 	class="h-screen w-screen overflow-x-scroll overflow-y-auto"
-	onscroll={adjustScrollForStickyNavbar}
+	onscrollend={adjustScrollForStickyNavbar}
 >
 	<div class="bg-base-100 mx-5 mt-5 h-full" use:applyTheming>
 		<!-- TBD: put navbar into component -->
@@ -784,11 +793,13 @@
 					{/each}
 				</ul>
 			</div>
+			NavBarBottom: {navBarBottom}
 		</aside>
 
 		<div
 			id="scrollspy"
-			class="sm:overlay-minified:ps-19 overlay-open:ps-0 mt-5 space-y-4 ps-0 pe-1 transition-all duration-300  sm:ps-66"
+			class="sm:overlay-minified:ps-19 overlay-open:ps-0 mt-5 space-y-4 ps-0 pe-1 transition-all duration-300 sm:ps-66"
+			bind:this={contentArea}
 		>
 			{@render children?.()}
 		</div>
