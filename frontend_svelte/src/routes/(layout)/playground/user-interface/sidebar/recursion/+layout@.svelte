@@ -257,7 +257,7 @@
 			]
 		}
 	]);
-	let page5Content = $state([
+	let page6Content = $state([
 		{
 			name: 'Page 6',
 			pathname: resolve('/(layout)/playground/user-interface/sidebar/recursion/page6'),
@@ -461,7 +461,7 @@
 			<button
 				class="btn btn-primary btn-gradient max-sm:btn-circle max-sm:ml-2 md:rounded-full"
 				onclick={() =>
-					sidebarLinks.length === 5 ? sidebarLinks.push(...page5Content) : sidebarLinks.pop()}
+					sidebarLinks.length === 5 ? sidebarLinks.push(...page6Content) : sidebarLinks.pop()}
 			>
 				{#if sidebarLinks.length === 5}
 					<span class="icon-[tabler--plus] size-5"></span>
