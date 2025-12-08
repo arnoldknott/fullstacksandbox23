@@ -795,7 +795,7 @@
 
 		<div
 			id="scrollspy"
-			class="overlay-minified:ps-19 mt-5 space-y-4 ps-0 pe-1 transition-all duration-300 sm:ps-66"
+			class="sm:overlay-minified:ps-19 overlay-open:ps-0 mt-5 space-y-4 ps-0 pe-1 transition-all duration-300 sm:ps-66"
 			bind:this={contentArea}
 		>
 			{@render children?.()}
