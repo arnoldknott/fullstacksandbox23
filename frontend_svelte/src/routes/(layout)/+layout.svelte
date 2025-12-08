@@ -341,18 +341,14 @@
 							id: 'page4p1-loreum1',
 							name: 'Loreum 1 pg4.1',
 							icon: 'icon-[mdi--text]',
-							pathname: resolve(
-								'/(layout)/playground/page4/page4-1'
-							),
+							pathname: resolve('/(layout)/playground/page4/page4-1'),
 							hash: '#loreum1'
 						},
 						{
 							id: 'page4p1-loreum2',
 							name: 'Loreum 2 pg4.2',
 							icon: 'icon-[mdi--text]',
-							pathname: resolve(
-								'/(layout)/playground/page4/page4-1'
-							),
+							pathname: resolve('/(layout)/playground/page4/page4-1'),
 							hash: '#loreum2'
 						}
 					]
@@ -367,18 +363,14 @@
 							id: 'page4p2-loreum1',
 							name: 'Loreum 1 pg4.2',
 							icon: 'icon-[mdi--text]',
-							pathname: resolve(
-								'/(layout)/playground/page4/page4-2'
-							),
+							pathname: resolve('/(layout)/playground/page4/page4-2'),
 							hash: '#loreum1'
 						},
 						{
 							id: 'page4p2-loreum2',
 							name: 'Loreum 2 pg4.2',
 							icon: 'icon-[mdi--text]',
-							pathname: resolve(
-								'/(layout)/playground/page4/page4-2'
-							),
+							pathname: resolve('/(layout)/playground/page4/page4-2'),
 							hash: '#loreum2'
 						}
 					]
@@ -430,7 +422,7 @@
 			scrollspyParent.scrollTop = 0;
 			scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
 		}
-				// if (scrollspyParent && !to?.url.hash) {
+		// if (scrollspyParent && !to?.url.hash) {
 		// 	scrollspyParent.scrollTop = 0;
 		// 	scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
 		// }
@@ -454,7 +446,7 @@
 		// 	}
 		// }
 		// if (scrollspyParent && to && to?.url.hash) {
-			
+
 		// 	const target = document.getElementById(to.url.hash.substring(1));
 		// 	if (target) {
 		// 		console.log('=== layout - afterNavigate - updateScroll - with target ===');
@@ -476,10 +468,10 @@
 	const adjustScrollForStickyNavbar = (_event: Event) => {
 		// console.log('=== layout - adjustScrollForStickyNavbar - event ===');
 		// console.log(event);
-		if	(navBar) {
-			navBarBottom = navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
-		}
-		else{
+		if (navBar) {
+			navBarBottom =
+				navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
+		} else {
 			navBarBottom = 0;
 		}
 		// console.log('=== layout - adjustScrollForStickyNavbar - navBarBottom ===');
@@ -490,17 +482,17 @@
 		// console.log(contentArea);
 		if (contentArea) {
 			const contentAreaTop = contentArea.getBoundingClientRect().top;
-			// console.log('=== layout - adjustScrollForStickyNavbar - contentAreaTop ===');
-			// console.log(contentAreaTop);
+			console.log('=== layout - adjustScrollForStickyNavbar - contentAreaTop ===');
+			console.log(contentAreaTop);
 			// if (contentAreaTop < navBarBottom) {
 			// 	scrollspyParent!.scrollTop = contentAreaTop +  navBarBottom;
 			// 	scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
 			// }
 		}
-	}
+	};
 	let navBar: HTMLElement | null = $state(null);
 	let contentArea: HTMLElement | null = $state(null);
-	let navBarBottom: number = $state (0);
+	let navBarBottom: number = $state(0);
 
 	// let navBarBottom = $derived.by(() => {
 	// 	if	(navBar) {
@@ -525,7 +517,7 @@
 				// console.log(targetRect.top);
 				// console.log('=== layout - onMount - document.documentElement.clientHeight ===');
 				// console.log(document.documentElement.clientHeight);
-				
+
 				const targetScrollTop = scrollspyParent!.scrollTop + targetRect.top - parentRect.top;
 				scrollspyParent!.scrollTop = targetScrollTop;
 				scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
@@ -544,9 +536,9 @@
 		aria-label="Toggle Sidebar"
 		{...overlayModifier}
 	>
-	<!-- data-overlay="#collapsible-mini-sidebar"
+		<!-- data-overlay="#collapsible-mini-sidebar"
 		data-overlay-options={ JSON.stringify({ "backdropClasses": "overlay-backdrop transition duration-300 fixed inset-0 bg-base-300/60 overflow-y-auto", "backdropParent": "#scrollspy" }) } -->
-	<!-- <div id="collapsible-mini-sidebar-backdrop" data-overlay-backdrop-template="overlay-backdrop transition duration-300 fixed inset-0 bg-base-300/60 overflow-y-auto" style="z-index: 79;" class=""></div> -->
+		<!-- <div id="collapsible-mini-sidebar-backdrop" data-overlay-backdrop-template="overlay-backdrop transition duration-300 fixed inset-0 bg-base-300/60 overflow-y-auto" style="z-index: 79;" class=""></div> -->
 		<span
 			class="icon-[material-symbols--menu-open-rounded] overlay-minified:hidden flex size-6 max-sm:hidden"
 		></span>
@@ -582,7 +574,7 @@
 	<div class="bg-base-100 mx-5 mt-5" use:applyTheming>
 		<!-- TBD: put navbar into component -->
 		<nav
-			class="navbar rounded-box bg-base-200 shadow-shadow border-outline-variant sticky start-0 top-0 z-1 justify-between border-1 border-b shadow-md flex md:items-center"
+			class="navbar rounded-box bg-base-200 shadow-shadow border-outline-variant sticky start-0 top-0 z-1 flex justify-between border-1 border-b shadow-md md:items-center"
 			bind:this={navBar}
 		>
 			<div class="navbar-start rtl:[--placement:bottom-end]">
@@ -823,7 +815,6 @@
 				</ul>
 			</div>
 		</aside> -->
-
 
 		<div
 			id="scrollspy"
