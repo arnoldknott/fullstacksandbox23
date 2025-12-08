@@ -423,8 +423,8 @@
 	let scrollspyParent: HTMLElement | null = $state(null);
 
 	afterNavigate(({ to }) => {
-		console.log('=== layout - afterNavigate - to.url ===');
-		console.log(to?.url);
+		// console.log('=== layout - afterNavigate - to.url ===');
+		// console.log(to?.url);
 		// reset scrolltop to zero, if no dedicated hash destination:
 		if (scrollspyParent && !to?.url.hash) {
 			scrollspyParent.scrollTop = 0;
@@ -473,9 +473,14 @@
 		// }
 	});
 
+const adjustScrollForStickyNavbar = (event: Event) => {
+	console.log('=== layout - adjustScrollForStickyNavbar - event ===');
+	console.log(event);
+}
+
 	onMount(() => {
-		console.log('=== layout - onMount - page.url.hash ===');
-		console.log(page.url.hash);
+		// console.log('=== layout - onMount - page.url.hash ===');
+		// console.log(page.url.hash);
 		scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
 		if (page.url.hash) {
 			const target = document.getElementById(page.url.hash.substring(1));
@@ -483,9 +488,13 @@
 			if (target) {
 				const parentRect = scrollspyParent!.getBoundingClientRect();
 				const targetRect = target.getBoundingClientRect();
-
+				// console.log('=== layout - onMount - targetRect.top ===');
+				// console.log(targetRect.top);
+				// console.log('=== layout - onMount - document.documentElement.clientHeight ===');
+				// console.log(document.documentElement.clientHeight);
+				
 				const targetScrollTop = scrollspyParent!.scrollTop + targetRect.top - parentRect.top;
-				scrollspyParent!.scrollTop = targetScrollTop - 85; // offset for sticky navbar
+				scrollspyParent!.scrollTop = targetScrollTop;
 				scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
 			}
 		}
@@ -532,6 +541,7 @@
 	bind:this={scrollspyParent}
 	id="scrollspy-scrollable-parent"
 	class="h-screen w-screen overflow-x-scroll overflow-y-auto"
+	onscrollend={adjustScrollForStickyNavbar}
 >
 	<div class="bg-base-100 mx-5 mt-5 h-full" use:applyTheming>
 		<!-- TBD: put navbar into component -->
@@ -753,7 +763,7 @@
 
 		<div
 			id="scrollspy"
-			class="sm:overlay-minified:ps-19 overlay-open:ps-0 mt-5 space-y-4 ps-0 pe-1 transition-all duration-300 [--scrollspy-offset:85] sm:ps-66"
+			class="sm:overlay-minified:ps-19 overlay-open:ps-0 mt-5 space-y-4 ps-0 pe-1 transition-all duration-300  sm:ps-66"
 		>
 			{@render children?.()}
 		</div>

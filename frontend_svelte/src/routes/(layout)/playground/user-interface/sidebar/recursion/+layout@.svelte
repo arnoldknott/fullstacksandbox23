@@ -607,7 +607,7 @@
 	<!-- TBD: how many div's inside each other are necessary here? Consider cleaning up! -->
 	<div
 		id="scrollspy"
-		class="sm:overlay-minified:ps-19 bg-base-100 space-y-4 ps-64 pe-1 transition-all duration-300 max-sm:ps-0"
+		class="sm:overlay-minified:ps-19 bg-base-100 space-y-4 ps-66 pe-1 transition-all duration-300 max-sm:ps-0"
 	>
 		{@render children?.()}
 	</div>

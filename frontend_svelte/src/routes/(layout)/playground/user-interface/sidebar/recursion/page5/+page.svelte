@@ -4,7 +4,7 @@
 	import Display from '$components/Display.svelte';
 </script>
 
-<div class="bg-info-container/70 rounded-xl p-4">
+<div class="bg-info-container/50 rounded-xl p-4">
 	<Display>Page 5</Display>
 
 	<p>Page 5 has no children - only links within page</p>
