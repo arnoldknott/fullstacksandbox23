@@ -571,11 +571,11 @@
 	class="h-screen w-screen overflow-x-scroll overflow-y-auto"
 	onscrollend={adjustScrollForStickyNavbar}
 >
-	<div class="bg-base-100 mx-2 mt-2 xs:mx-5 xs:mt-5 sm:h-full" use:applyTheming>
+	<div class="bg-base-100 w-screen px-2 mt-2 xs:mx-5 xs:mt-5 sm:h-full" use:applyTheming>
 		<!-- TBD: put navbar into component -->
 		<!-- <div class="h-full"> -->
 		<nav
-			class="navbar rounded-box bg-base-200 shadow-shadow border-outline-variant max-sm:p-1 sticky start-0 top-0 z-1 flex justify-between border-1 border-b shadow-md max-sm:h-14 max-sm:px-3 md:items-center"
+			class="navbar rounded-box bg-base-200 shadow-shadow border-outline-variant sticky start-0 top-0 z-1 flex justify-between border-1 border-b shadow-md max-sm:h-14 max-sm:px-3 md:items-center"
 			bind:this={navBar}
 		>
 			<div class="navbar-start rtl:[--placement:bottom-end]">
