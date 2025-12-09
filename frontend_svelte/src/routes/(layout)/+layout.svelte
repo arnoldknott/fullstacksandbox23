@@ -415,33 +415,34 @@
 
 	let scrollspyParent: HTMLElement | null = $state(null);
 
-	afterNavigate(({to}) => {
-		if (to?.url.hash) {
-			// console.log('=== layout - afterNavigate - to.url.hash ===');
-			// console.log(to.url.hash);
-			const navigationTarget = document.getElementById(to.url.hash.substring(1));
-			if (navigationTarget) {
-				internalNavigationTarget = navigationTarget.getBoundingClientRect().top + window.scrollY;
-				// console.log('=== layout - afterNavigate - internalNavigationTarget ===');
-				// console.log(internalNavigationTarget);
-			}
-		}
-		if (navBar) {
-			navBarBottom =
-				navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
-			// console.log('=== layout - beforeNavigate - navBarBottom ===');
-			// console.log(navBarBottom);
-		}
-	})
+	// afterNavigate(({to}) => {
+	// 	if (to?.url.hash) {
+	// 		// console.log('=== layout - afterNavigate - to.url.hash ===');
+	// 		// console.log(to.url.hash);
+	// 		const navigationTarget = document.getElementById(to.url.hash.substring(1));
+	// 		if (navigationTarget) {
+	// 			internalNavigationTarget = navigationTarget.getBoundingClientRect().top + window.scrollY;
+	// 			// console.log('=== layout - afterNavigate - internalNavigationTarget ===');
+	// 			// console.log(internalNavigationTarget);
+	// 		}
+	// 	}
+	// 	if (navBar) {
+	// 		navBarBottom =
+	// 			navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
+	// 		// console.log('=== layout - beforeNavigate - navBarBottom ===');
+	// 		// console.log(navBarBottom);
+	// 	}
+	// })
 
 	afterNavigate(({ to }) => {
-		console.log('=== layout - afterNavigate - to.url ===');
-		if (navBar) {
-			navBarBottom =
-				navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
-			// console.log('=== layout - afterNavigate - navBarBottom ===');
-			// console.log(navBarBottom);
-		}
+		// console.log('=== layout - afterNavigate - to.url ===');
+		// if (navBar) {
+		// 	navBarBottomPrevious = navBarBottom;
+		// 	navBarBottom =
+		// 		navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
+		// 	// console.log('=== layout - afterNavigate - navBarBottom ===');
+		// 	// console.log(navBarBottom);
+		// }
 		// console.log(to?.url);
 		// reset scrolltop to zero, if no dedicated hash destination:
 		if (scrollspyParent && !to?.url.hash) {
@@ -449,6 +450,40 @@
 			scrollspyParent.scrollTop = 0;
 			scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
 		}
+
+				// from onMount: // Frame-synced correction to account for sticky navbar appearing
+				// requestAnimationFrame(() => {
+				// 	if (navBar) {
+				// 		navBarBottom = navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
+				// 	}
+				// 	// Use a second frame to ensure layout is settled
+				// 	requestAnimationFrame(() => {
+				// 		const parentRect2 = scrollspyParent!.getBoundingClientRect();
+				// 		const targetRect2 = target.getBoundingClientRect();
+				// 		const correctedTop = scrollspyParent!.scrollTop + targetRect2.top - parentRect2.top - navBarBottom;
+				// 		scrollspyParent!.scrollTop = Math.max(correctedTop, 0);
+				// 		scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+				// 	});
+				// });
+
+		// // If hash navigation happened, apply frame-synced correction too
+		// if (scrollspyParent && to?.url.hash) {
+		// 	const target = document.getElementById(to.url.hash.substring(1));
+		// 	if (target) {
+		// 		requestAnimationFrame(() => {
+		// 			if (navBar) {
+		// 				navBarBottom = navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
+		// 			}
+		// 			requestAnimationFrame(() => {
+		// 				const parentRect = scrollspyParent!.getBoundingClientRect();
+		// 				const targetRect = target.getBoundingClientRect();
+		// 				const correctedTop = scrollspyParent!.scrollTop + targetRect.top - parentRect.top - navBarBottom;
+		// 				scrollspyParent!.scrollTop = Math.max(correctedTop, 0);
+		// 				scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+		// 			});
+		// 		});
+		// 	}
+		// }
 		// if (scrollspyParent && !to?.url.hash) {
 		// 	scrollspyParent.scrollTop = 0;
 		// 	scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
@@ -497,15 +532,19 @@
 		// 	return;
 		// }
 		// event.preventDefault();
-		console.log('=== layout - adjustScrollForStickyNavbar - event ===');
-		console.log(event);
+		// console.log('=== layout - adjustScrollForStickyNavbar - event ===');
+		// console.log(event);
 		if (navBar) {
-			navBarBottom =
-				navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
+			console.log('=== layout - adjustScrollForStickyNavbar - navBarBottomPrevious ===');
+			console.log(navBarBottomPrevious);
 			console.log('=== layout - adjustScrollForStickyNavbar - navBarBottom ===');
 			console.log(navBarBottom);
-		} else {
-			navBarBottom = 0;
+			navBarBottomPrevious = navBarBottom;
+			
+			navBarBottom =
+				navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
+			// console.log('=== layout - adjustScrollForStickyNavbar - navBarBottom ===');
+			// console.log(navBarBottom);
 		}
 		// console.log('=== layout - adjustScrollForStickyNavbar - navBarBottom ===');
 		// console.log(navBarBottom);
@@ -525,9 +564,48 @@
 		// if (navBarBottom > 0) {
 		// }
 	};
+
+	$effect(() => {
+		if (navBarBottomPrevious !== navBarBottom) {
+		console.log('=== layout - afterNavigate - effect - navBarBottom changed ===');
+		requestAnimationFrame(() => {
+			// const parentRect = scrollspyParent!.getBoundingClientRect();
+			// const targetRect = target.getBoundingClientRect();
+			// const correctedTop = scrollspyParent!.scrollTop + targetRect.top - parentRect.top - navBarBottom;
+			// const correctedTop = scrollspyParent!.scrollTop + navBarBottomPrevious - navBarBottom;
+			console.log('=== layout - afterNavigate - effect - navBarBottomPrevious ===');
+			console.log(navBarBottomPrevious);
+			// scrollspyParent!.scrollTop = Math.max(correctedTop, 0);
+			scrollspyParent!.scrollTop -= navBarBottomPrevious;
+			scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+		});
+		navBarBottomPrevious = navBarBottom;
+		}
+		// if (scrollspyParent && page.url.hash) {
+		// 	const target = document.getElementById(page.url.hash.substring(1));
+		// 	if (target) {
+		// 		requestAnimationFrame(() => {
+		// 			if (navBar) {
+		// 				navBarBottom = navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
+		// 			}
+		// 			requestAnimationFrame(() => {
+		// 				const parentRect = scrollspyParent!.getBoundingClientRect();
+		// 				const targetRect = target.getBoundingClientRect();
+		// 				const correctedTop = scrollspyParent!.scrollTop + targetRect.top - parentRect.top - navBarBottom;
+		// 				console.log('=== layout - afterNavigate - effect - correctedTop ===');
+		// 				console.log(correctedTop);
+		// 				scrollspyParent!.scrollTop = Math.max(correctedTop, 0);
+		// 				scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+		// 			});
+		// 		});
+		// 	}
+		// }
+	})
+
 	let navBar: HTMLElement | null = $state(null);
 	let navBarBottom: number = $state(0);
-	let internalNavigationTarget = $state(0);
+	let navBarBottomPrevious: number = $state(0);
+	// let internalNavigationTarget = $state(0);
 	let contentArea: HTMLElement | null = $state(null);
 	let contentAreaTop: number = $state(0);
 
@@ -540,21 +618,21 @@
 	// 	}
 	// });
 
-	const updateNavbarBottom: Attachment = (node) => {
-		console.log('=== layout - updateNavbarBottom - on attach ===');
-		navBarBottom =
-			node.getBoundingClientRect().bottom > 0 ? node.getBoundingClientRect().bottom : 0;
-		console.log('=== layout - updateNavbarBottom - navBarBottom ===');
-		console.log(navBarBottom);
-	};
+	// const updateNavbarBottom: Attachment = (node) => {
+	// 	console.log('=== layout - updateNavbarBottom - on attach ===');
+	// 	navBarBottom =
+	// 		node.getBoundingClientRect().bottom > 0 ? node.getBoundingClientRect().bottom : 0;
+	// 	console.log('=== layout - updateNavbarBottom - navBarBottom ===');
+	// 	console.log(navBarBottom);
+	// };
 
 	onMount(() => {
-		if (navBar) {
-		navBarBottom =
-				navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
-		}
-		console.log('=== layout - onMount - navBarBottom ===');
-		console.log(navBarBottom);
+		// if (navBar) {
+		// navBarBottom =
+		// 		navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
+		// }
+		// console.log('=== layout - onMount - navBarBottom ===');
+		// console.log(navBarBottom);
 	});
 
 	$effect(() => {
@@ -634,7 +712,8 @@
 	bind:this={scrollspyParent}
 	id="scrollspy-scrollable-parent"
 	class="h-screen w-screen overflow-x-scroll overflow-y-auto"
-	onscrollend={adjustScrollForStickyNavbar}
+	style:scroll-padding-top={`${navBarBottom}px`}
+	onscrollend={adjustScrollForStickyNavbar}	
 >
 	<!-- onscrollend={adjustScrollForStickyNavbar} -->
 	<div class="bg-base-100 w-screen px-2 mt-2 xs:mx-5 xs:mt-5 sm:h-full" use:applyTheming>
@@ -643,8 +722,9 @@
 		<nav
 			class="navbar rounded-box bg-base-200 shadow-shadow border-outline-variant sticky start-0 top-0 z-1 flex justify-between border-1 border-b shadow-md max-sm:h-14 max-sm:px-3 md:items-center"
 			bind:this={navBar}
-			{@attach updateNavbarBottom}
+			
 		>
+		<!-- {@attach updateNavbarBottom} -->
 			<div class="navbar-start rtl:[--placement:bottom-end]">
 				<ul class="menu menu-horizontal flex flex-nowrap items-center">
 					{@render sidebarToggleButton('hidden sm:flex', {
@@ -894,7 +974,7 @@
 		<div
 			id="scrollspy"
 			class="sm:overlay-minified:ps-19 overlay-open:ps-0 pt-2 sm:mx-2 sm:mt-2 space-y-4 transition-all duration-300 sm:ps-66"
-
+			style="--nav-offset: {navBarBottom}px"
 			bind:this={contentArea}
 		>
 			{@render children?.()}
@@ -902,9 +982,8 @@
 	</div>
 </main>
 
-<!-- style="--nav-offset: {navBarBottom}pt"
 <style>
 	:global(#scrollspy [id]) {
-	scroll-margin-top: var(--nav-offset, 0pt);
+		scroll-margin-top: var(--nav-offset, 0px);
 	}
-</style> -->
+</style>

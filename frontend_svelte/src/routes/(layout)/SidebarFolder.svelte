@@ -18,8 +18,8 @@
 	} = $props();
 	let { id, name, pathname, hash, icon, items } = $derived({ ...content });
 
-	console.log("=== SidebarFolder.svelte - topoffset ===");
-	console.log(topoffset);
+	// console.log("=== SidebarFolder.svelte - topoffset ===");
+	// console.log(topoffset);
 
 	const thisPage = $derived.by(() => (pathname: string) => pathname === page.url.pathname);
 	const createHref = $derived.by(() => (destinationPathname: string, hash?: string) => {
@@ -54,6 +54,7 @@
 		aria-labelledby={id + '-control'}
 		data-pathname={pathname}
 	>
+	<!-- {`[--scrollspy-offset:${topoffset}]`.toString()} -->
 	<!-- {topoffset} -->
 	<!-- add [--scrollspy-offset:86] here conditionally with number being navbarBottom variable from layout. -->
 		{#each items as item (item.id)}
