@@ -712,9 +712,9 @@
 	bind:this={scrollspyParent}
 	id="scrollspy-scrollable-parent"
 	class="h-screen w-screen overflow-x-scroll overflow-y-auto"
-	style:scroll-padding-top={`${navBarBottom}px`}
 	onscrollend={adjustScrollForStickyNavbar}	
 >
+	<!-- style:scroll-padding-top={`${navBarBottom}px`} -->
 	<!-- onscrollend={adjustScrollForStickyNavbar} -->
 	<div class="bg-base-100 w-screen px-2 mt-2 xs:mx-5 xs:mt-5 sm:h-full" use:applyTheming>
 		<!-- TBD: put navbar into component -->
@@ -974,7 +974,6 @@
 		<div
 			id="scrollspy"
 			class="sm:overlay-minified:ps-19 overlay-open:ps-0 pt-2 sm:mx-2 sm:mt-2 space-y-4 transition-all duration-300 sm:ps-66"
-			style="--nav-offset: {navBarBottom}px"
 			bind:this={contentArea}
 		>
 			{@render children?.()}
@@ -982,8 +981,9 @@
 	</div>
 </main>
 
+<!-- style="--nav-offset: {navBarBottom}px"
 <style>
 	:global(#scrollspy [id]) {
 		scroll-margin-top: var(--nav-offset, 0px);
 	}
-</style>
+</style> -->
