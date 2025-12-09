@@ -15,11 +15,12 @@
 	import { type SubmitFunction } from '@sveltejs/kit';
 	import { resolve } from '$app/paths';
 	import WelcomeModal from './WelcomeModal.svelte';
-	import { afterNavigate } from '$app/navigation';
+	import { afterNavigate, beforeNavigate } from '$app/navigation';
 	import type { SidebarItemContent } from '$lib/types';
 	import SidebarItem from './SidebarItem.svelte';
 	import LoginOutButton from './LoginOutButton.svelte';
 	import Logo from './Logo.svelte';
+	import type { Attachment } from 'svelte/attachments';
 
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
 
@@ -414,11 +415,37 @@
 
 	let scrollspyParent: HTMLElement | null = $state(null);
 
+	afterNavigate(({to}) => {
+		if (to?.url.hash) {
+			// console.log('=== layout - afterNavigate - to.url.hash ===');
+			// console.log(to.url.hash);
+			const navigationTarget = document.getElementById(to.url.hash.substring(1));
+			if (navigationTarget) {
+				internalNavigationTarget = navigationTarget.getBoundingClientRect().top + window.scrollY;
+				// console.log('=== layout - afterNavigate - internalNavigationTarget ===');
+				// console.log(internalNavigationTarget);
+			}
+		}
+		if (navBar) {
+			navBarBottom =
+				navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
+			// console.log('=== layout - beforeNavigate - navBarBottom ===');
+			// console.log(navBarBottom);
+		}
+	})
+
 	afterNavigate(({ to }) => {
 		console.log('=== layout - afterNavigate - to.url ===');
+		if (navBar) {
+			navBarBottom =
+				navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
+			// console.log('=== layout - afterNavigate - navBarBottom ===');
+			// console.log(navBarBottom);
+		}
 		// console.log(to?.url);
 		// reset scrolltop to zero, if no dedicated hash destination:
 		if (scrollspyParent && !to?.url.hash) {
+			// scrollspyParent.scrollTop = navBarBottom;
 			scrollspyParent.scrollTop = 0;
 			scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
 		}
@@ -465,12 +492,18 @@
 		// }
 	});
 
-	const adjustScrollForStickyNavbar = (_event: Event) => {
-		// console.log('=== layout - adjustScrollForStickyNavbar - event ===');
-		// console.log(event);
+	const adjustScrollForStickyNavbar = (event: Event) => {
+		// if ((event as CustomEvent).detail) {
+		// 	return;
+		// }
+		// event.preventDefault();
+		console.log('=== layout - adjustScrollForStickyNavbar - event ===');
+		console.log(event);
 		if (navBar) {
 			navBarBottom =
 				navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
+			console.log('=== layout - adjustScrollForStickyNavbar - navBarBottom ===');
+			console.log(navBarBottom);
 		} else {
 			navBarBottom = 0;
 		}
@@ -481,18 +514,22 @@
 		// console.log('=== layout - adjustScrollForStickyNavbar - contentArea ===');
 		// console.log(contentArea);
 		if (contentArea) {
-			const contentAreaTop = contentArea.getBoundingClientRect().top;
-			console.log('=== layout - adjustScrollForStickyNavbar - contentAreaTop ===');
-			console.log(contentAreaTop);
+			contentAreaTop = contentArea.getBoundingClientRect().top;
+			// console.log('=== layout - adjustScrollForStickyNavbar - contentAreaTop ===');
+			// console.log(contentAreaTop);
 			// if (contentAreaTop < navBarBottom) {
 			// 	scrollspyParent!.scrollTop = contentAreaTop +  navBarBottom;
-			// 	scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+			// 	scrollspyParent!.dispatchEvent(new CustomEvent('scroll', { bubbles: true, detail: true }));
 			// }
 		}
+		// if (navBarBottom > 0) {
+		// }
 	};
 	let navBar: HTMLElement | null = $state(null);
-	let contentArea: HTMLElement | null = $state(null);
 	let navBarBottom: number = $state(0);
+	let internalNavigationTarget = $state(0);
+	let contentArea: HTMLElement | null = $state(null);
+	let contentAreaTop: number = $state(0);
 
 	// let navBarBottom = $derived.by(() => {
 	// 	if	(navBar) {
@@ -502,6 +539,32 @@
 	// 		return 0;
 	// 	}
 	// });
+
+	const updateNavbarBottom: Attachment = (node) => {
+		console.log('=== layout - updateNavbarBottom - on attach ===');
+		navBarBottom =
+			node.getBoundingClientRect().bottom > 0 ? node.getBoundingClientRect().bottom : 0;
+		console.log('=== layout - updateNavbarBottom - navBarBottom ===');
+		console.log(navBarBottom);
+	};
+
+	onMount(() => {
+		if (navBar) {
+		navBarBottom =
+				navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
+		}
+		console.log('=== layout - onMount - navBarBottom ===');
+		console.log(navBarBottom);
+	});
+
+	$effect(() => {
+		// if (navBar) {
+		// 	navBarBottom =
+		// 		navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
+		// } else {
+		// 	navBarBottom = 0;
+		// }
+	})
 
 	onMount(() => {
 		// console.log('=== layout - onMount - page.url.hash ===');
@@ -520,6 +583,7 @@
 
 				const targetScrollTop = scrollspyParent!.scrollTop + targetRect.top - parentRect.top;
 				scrollspyParent!.scrollTop = targetScrollTop;
+				// scrollspyParent!.scrollTop = targetScrollTop - navBarBottom + 8 ;
 				scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
 			}
 		}
@@ -565,18 +629,21 @@
 	</li>
 {/snippet}
 
+<!-- style:scroll-padding-top={`${navBarBottom}pt`} -->
 <main
 	bind:this={scrollspyParent}
 	id="scrollspy-scrollable-parent"
 	class="h-screen w-screen overflow-x-scroll overflow-y-auto"
 	onscrollend={adjustScrollForStickyNavbar}
 >
+	<!-- onscrollend={adjustScrollForStickyNavbar} -->
 	<div class="bg-base-100 w-screen px-2 mt-2 xs:mx-5 xs:mt-5 sm:h-full" use:applyTheming>
 		<!-- TBD: put navbar into component -->
 		<!-- <div class="h-full"> -->
 		<nav
 			class="navbar rounded-box bg-base-200 shadow-shadow border-outline-variant sticky start-0 top-0 z-1 flex justify-between border-1 border-b shadow-md max-sm:h-14 max-sm:px-3 md:items-center"
 			bind:this={navBar}
+			{@attach updateNavbarBottom}
 		>
 			<div class="navbar-start rtl:[--placement:bottom-end]">
 				<ul class="menu menu-horizontal flex flex-nowrap items-center">
@@ -783,11 +850,17 @@
 						<SidebarItem
 							content={{ ...mainItem, pathname: mainItem.pathname || page.url.pathname }}
 							topLevel={true}
+							topoffset={navBarBottom}
 						/>
+						<!-- topoffset={internalNavigationTarget} -->
+						<!-- topoffset={navBarBottom} -->
+						<!-- topoffset={`[--scrollspy-offset:${navBarBottom + 8}]`} -->
 					{/each}
 				</ul>
 			</div>
 			NavBarBottom: {navBarBottom}
+			<br />
+			ContentAreaTop: {contentAreaTop}
 		</aside>
 		<!-- <aside
 			id="collapsible-mini-sidebar"
@@ -821,9 +894,17 @@
 		<div
 			id="scrollspy"
 			class="sm:overlay-minified:ps-19 overlay-open:ps-0 pt-2 sm:mx-2 sm:mt-2 space-y-4 transition-all duration-300 sm:ps-66"
+
 			bind:this={contentArea}
 		>
 			{@render children?.()}
 		</div>
 	</div>
 </main>
+
+<!-- style="--nav-offset: {navBarBottom}pt"
+<style>
+	:global(#scrollspy [id]) {
+	scroll-margin-top: var(--nav-offset, 0pt);
+	}
+</style> -->

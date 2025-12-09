@@ -7,14 +7,19 @@
 	import SidebarItem from './SidebarItem.svelte';
 	let {
 		content,
-		topLevel = false
+		topLevel = false,
+		topoffset
 		// scrollspyParent
 	}: {
 		content: SidebarFolderContent;
 		topLevel?: boolean;
+		topoffset: number;
 		// scrollspyParent: HTMLDivElement;
 	} = $props();
 	let { id, name, pathname, hash, icon, items } = $derived({ ...content });
+
+	console.log("=== SidebarFolder.svelte - topoffset ===");
+	console.log(topoffset);
 
 	const thisPage = $derived.by(() => (pathname: string) => pathname === page.url.pathname);
 	const createHref = $derived.by(() => (destinationPathname: string, hash?: string) => {
@@ -45,16 +50,19 @@
 		id={id + '-collapse'}
 		class="collapse {thisPage(pathname!)
 			? 'open'
-			: 'hidden'} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
+			: 'hidden'} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300 {`[--scrollspy-offset:${topoffset}]`.toString()}"
 		aria-labelledby={id + '-control'}
 		data-pathname={pathname}
 	>
+	<!-- {topoffset} -->
+	<!-- add [--scrollspy-offset:86] here conditionally with number being navbarBottom variable from layout. -->
 		{#each items as item (item.id)}
 			<SidebarItem
 				content={{
 					...item,
 					pathname: item.pathname || pathname
 				} as SidebarFolderContent}
+				{topoffset}
 			/>
 		{/each}
 	</ul>
@@ -72,7 +80,7 @@
 			{@attach toggleCollapse}
 		>
 			<span class="{icon} size-5"></span>
-			<span class="overlay-minified:hidden">{name}</span>
+			<span class="overlay-minified:hidden">{name}, to: {topoffset}</span>
 			<span
 				class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:hidden size-4 transition-all duration-300"
 			></span>
