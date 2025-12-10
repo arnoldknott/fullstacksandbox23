@@ -15,12 +15,13 @@
 	import { type SubmitFunction } from '@sveltejs/kit';
 	import { resolve } from '$app/paths';
 	import WelcomeModal from './WelcomeModal.svelte';
-	import { afterNavigate, beforeNavigate } from '$app/navigation';
+	import { afterNavigate } from '$app/navigation';
 	import type { SidebarItemContent } from '$lib/types';
 	import SidebarItem from './SidebarItem.svelte';
 	import LoginOutButton from './LoginOutButton.svelte';
 	import Logo from './Logo.svelte';
-	import type { Attachment } from 'svelte/attachments';
+	// import type { Attachment } from 'svelte/attachments';
+	// import { scrollY } from 'svelte/reactivity/window';
 
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
 
@@ -415,6 +416,10 @@
 
 	let scrollspyParent: HTMLElement | null = $state(null);
 
+
+	// TBD: potential useful features to encaspulate the scroll into:
+	// onMount, afterNavigate $effect, (beforeNavigate), Attachment, onscrollend, ...?
+
 	// afterNavigate(({to}) => {
 	// 	if (to?.url.hash) {
 	// 		// console.log('=== layout - afterNavigate - to.url.hash ===');
@@ -435,7 +440,7 @@
 	// })
 
 	afterNavigate(({ to }) => {
-		// console.log('=== layout - afterNavigate - to.url ===');
+		console.log('=== layout - afterNavigate ===');
 		// if (navBar) {
 		// 	navBarBottomPrevious = navBarBottom;
 		// 	navBarBottom =
@@ -444,11 +449,15 @@
 		// 	// console.log(navBarBottom);
 		// }
 		// console.log(to?.url);
+		
+
+		// TBD: is this necessary any more?
 		// reset scrolltop to zero, if no dedicated hash destination:
 		if (scrollspyParent && !to?.url.hash) {
 			// scrollspyParent.scrollTop = navBarBottom;
 			scrollspyParent.scrollTop = 0;
-			scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
+			// scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
+			scrollspyParent.scrollTo(scrollspyParent.scrollLeft, scrollspyParent.scrollTop);
 		}
 
 				// from onMount: // Frame-synced correction to account for sticky navbar appearing
@@ -528,6 +537,7 @@
 	});
 
 	const adjustScrollForStickyNavbar = (event: Event) => {
+		console.log('=== layout - onscrollend ===');
 		// if ((event as CustomEvent).detail) {
 		// 	return;
 		// }
@@ -535,11 +545,11 @@
 		// console.log('=== layout - adjustScrollForStickyNavbar - event ===');
 		// console.log(event);
 		if (navBar) {
-			console.log('=== layout - adjustScrollForStickyNavbar - navBarBottomPrevious ===');
-			console.log(navBarBottomPrevious);
-			console.log('=== layout - adjustScrollForStickyNavbar - navBarBottom ===');
-			console.log(navBarBottom);
-			navBarBottomPrevious = navBarBottom;
+			// console.log('=== layout - adjustScrollForStickyNavbar - navBarBottomPrevious ===');
+			// console.log(navBarBottomPrevious);
+			// console.log('=== layout - adjustScrollForStickyNavbar - navBarBottom ===');
+			// console.log(navBarBottom);
+			// navBarBottomPrevious = navBarBottom;
 			
 			navBarBottom =
 				navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
@@ -563,11 +573,23 @@
 		}
 		// if (navBarBottom > 0) {
 		// }
+		// await tick();
+		// scrollspyParent!.scrollTop -= navBarBottom;
+		// scrollspyParent?.scrollTo(scrollspyParent.scrollLeft, scrollspyParent.scrollTop);
 	};
 
 	$effect(() => {
+		console.log('=== layout - effect ===');
 		if (navBarBottomPrevious !== navBarBottom) {
-		console.log('=== layout - afterNavigate - effect - navBarBottom changed ===');
+		// console.log('=== layout - effect - navBarBottom changed ===')
+		console.log('=== navbarBopttom - before --- after ===');
+		console.log(navBarBottomPrevious + ' --- ' + navBarBottom);
+		if ( navBarBottomPrevious > 0 && navBarBottom === 0) {
+			console.log('=== layout - effect - navbar collapsed ===');
+			// scrollspyParent!.scrollTop -= navBarBottomPrevious;
+			scrollspyParent!.scrollTop += navBarBottomPrevious;
+			scrollspyParent?.scrollTo(scrollspyParent.scrollLeft, scrollspyParent.scrollTop);
+		}else{
 		requestAnimationFrame(() => {
 			// const parentRect = scrollspyParent!.getBoundingClientRect();
 			// const targetRect = target.getBoundingClientRect();
@@ -577,8 +599,31 @@
 			console.log(navBarBottomPrevious);
 			// scrollspyParent!.scrollTop = Math.max(correctedTop, 0);
 			scrollspyParent!.scrollTop -= navBarBottomPrevious;
-			scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+			// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+			scrollspyParent?.scrollTo(scrollspyParent.scrollLeft, scrollspyParent.scrollTop);
+
+			// requestAnimationFrame(() => {
+			// 	if (navBarBottom === 0) {
+			// 		console.log('=== layout - effect - navbar collapsed ===');
+			// 		const target = document.getElementById(page.url.hash.substring(1));
+			// 	console.log('=== layout - effect - target ===');
+			// 	console.log(target);
+			// 	if (target) {
+			// 		// const parentRect = scrollspyParent!.getBoundingClientRect();
+			// 		// const targetRect = target.getBoundingClientRect();
+			// 		// scrollspyParent!.scrollTop += targetRect.top;
+			// 		// scrollspyParent!.scrollTop += targetRect.top - parentRect.top - navBarBottomPrevious
+			// 		// scrollspyParent?.scrollTo(scrollspyParent.scrollLeft, scrollspyParent.scrollTop);
+			// 	}
+			// 		// scrollspyParent!.scrollTop -= navBarBottomPrevious;
+			// 		// scrollspyParent?.scrollTo(scrollspyParent.scrollLeft, scrollspyParent.scrollTop);
+
+			// 	}
+			// 	// console.log('=== layout - afterNavigate - effect - Svelte scrollY.current 2nd frame ===');
+			// 	// console.log(scrollY.current);
+			// });
 		});
+		}
 		navBarBottomPrevious = navBarBottom;
 		}
 		// if (scrollspyParent && page.url.hash) {
@@ -601,6 +646,12 @@
 		// 	}
 		// }
 	})
+
+
+
+
+
+
 
 	let navBar: HTMLElement | null = $state(null);
 	let navBarBottom: number = $state(0);
@@ -644,8 +695,9 @@
 		// }
 	})
 
+	// TBD: could this be an attachemnt to main instead?
 	onMount(() => {
-		// console.log('=== layout - onMount - page.url.hash ===');
+		console.log('=== layout - onMount ===');
 		// console.log(page.url.hash);
 		scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
 		if (page.url.hash) {
@@ -659,10 +711,13 @@
 				// console.log('=== layout - onMount - document.documentElement.clientHeight ===');
 				// console.log(document.documentElement.clientHeight);
 
+				// This one prevents scrollspy dispatchEvent error on mount:
 				const targetScrollTop = scrollspyParent!.scrollTop + targetRect.top - parentRect.top;
 				scrollspyParent!.scrollTop = targetScrollTop;
 				// scrollspyParent!.scrollTop = targetScrollTop - navBarBottom + 8 ;
+				// scrollspyParent!.scrollTop -= navBarBottom + 8 ;
 				scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+				// scrollspyParent?.scrollTo(scrollspyParent.scrollLeft, scrollspyParent.scrollTop);
 			}
 		}
 	});
@@ -714,6 +769,7 @@
 	class="h-screen w-screen overflow-x-scroll overflow-y-auto"
 	onscrollend={adjustScrollForStickyNavbar}	
 >
+	<!-- style="--nav-offset: {navBarBottom}px" -->
 	<!-- style:scroll-padding-top={`${navBarBottom}px`} -->
 	<!-- onscrollend={adjustScrollForStickyNavbar} -->
 	<div class="bg-base-100 w-screen px-2 mt-2 xs:mx-5 xs:mt-5 sm:h-full" use:applyTheming>
