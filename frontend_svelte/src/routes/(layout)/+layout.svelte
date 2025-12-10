@@ -20,7 +20,7 @@
 	import SidebarItem from './SidebarItem.svelte';
 	import LoginOutButton from './LoginOutButton.svelte';
 	import Logo from './Logo.svelte';
-	// import type { Attachment } from 'svelte/attachments';
+	import type { Attachment } from 'svelte/attachments';
 	// import { scrollY } from 'svelte/reactivity/window';
 
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
@@ -416,7 +416,6 @@
 
 	let scrollspyParent: HTMLElement | null = $state(null);
 
-
 	// TBD: potential useful features to encaspulate the scroll into:
 	// onMount, afterNavigate $effect, (beforeNavigate), Attachment, onscrollend, derived.by(), ...?
 
@@ -425,35 +424,51 @@
 		// reset scrolltop to zero, if no dedicated hash destination:
 		if (scrollspyParent && !to?.url.hash) {
 			scrollspyParent.scrollTop = 0;
-			scrollspyParent.scrollTo({left: scrollspyParent.scrollLeft, top: scrollspyParent.scrollTop, behavior: 'instant' });
+			scrollspyParent.scrollTo({
+				left: scrollspyParent.scrollLeft,
+				top: scrollspyParent.scrollTop,
+				behavior: 'instant'
+			});
 		}
 	});
 
-	const adjustScrollForStickyNavbar = (event: Event) => {
+	const adjustScrollForStickyNavbar = (_event: Event) => {
 		console.log('=== layout - onscrollend ===');
 		if (navBar) {
 			navBarBottom =
 				navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
 		}
+		contentAreaTop = contentArea ? contentArea.getBoundingClientRect().top : 0;
+	};
+
+	const mainAttachment: Attachment<HTMLElement> = (_node: HTMLElement) => {
+		console.log('=== layout - mainAttachment ===');
+	};
+
+	const contentAreaAttachment: Attachment<HTMLElement> = (_node: HTMLElement) => {
+		console.log('=== layout - contentAreaAttachment ===');
 	};
 
 	$effect(() => {
 		console.log('=== layout - effect ===');
 		if (navBarBottomPrevious !== navBarBottom) {
-		if ( navBarBottomPrevious > 0 && navBarBottom === 0) {
-			console.log('=== layout - effect - navbar collapsed ===');
-			scrollspyParent!.scrollTop += navBarBottomPrevious;
-			scrollspyParent?.scrollTo({left: scrollspyParent.scrollLeft, top: scrollspyParent.scrollTop, behavior: 'instant' });
-		}else{
-		requestAnimationFrame(() => {
-			scrollspyParent!.scrollTop -= navBarBottomPrevious;
-			scrollspyParent?.scrollTo({left: scrollspyParent.scrollLeft, top: scrollspyParent.scrollTop, behavior: 'instant' });
-		});
+			if (navBarBottomPrevious > 0 && navBarBottom === 0) {
+				console.log('=== layout - effect - navbar collapsed ===');
+				// scrollspyParent!.scrollTop += navBarBottomPrevious;
+				// scrollspyParent?.scrollTo({left: scrollspyParent.scrollLeft, top: scrollspyParent.scrollTop, behavior: 'instant' });
+			} else {
+				requestAnimationFrame(() => {
+					scrollspyParent!.scrollTop -= navBarBottomPrevious;
+					scrollspyParent?.scrollTo({
+						left: scrollspyParent.scrollLeft,
+						top: scrollspyParent.scrollTop,
+						behavior: 'instant'
+					});
+				});
+			}
+			navBarBottomPrevious = navBarBottom;
 		}
-		navBarBottomPrevious = navBarBottom;
-		}
-	})
-
+	});
 
 	let navBar: HTMLElement | null = $state(null);
 	let navBarBottom: number = $state(0);
@@ -525,20 +540,20 @@
 	bind:this={scrollspyParent}
 	id="scrollspy-scrollable-parent"
 	class="h-screen w-screen overflow-x-scroll overflow-y-auto"
-	onscrollend={adjustScrollForStickyNavbar}	
+	onscrollend={adjustScrollForStickyNavbar}
+	{@attach mainAttachment}
 >
 	<!-- style="--nav-offset: {navBarBottom}px" -->
 	<!-- style:scroll-padding-top={`${navBarBottom}px`} -->
 	<!-- onscrollend={adjustScrollForStickyNavbar} -->
-	<div class="bg-base-100 w-screen px-2 mt-2 xs:mx-5 xs:mt-5 sm:h-full" use:applyTheming>
+	<div class="bg-base-100 xs:mx-5 xs:mt-5 mt-2 w-screen px-2 sm:h-full" use:applyTheming>
 		<!-- TBD: put navbar into component -->
 		<!-- <div class="h-full"> -->
 		<nav
 			class="navbar rounded-box bg-base-200 shadow-shadow border-outline-variant sticky start-0 top-0 z-1 flex justify-between border-1 border-b shadow-md max-sm:h-14 max-sm:px-3 md:items-center"
 			bind:this={navBar}
-			
 		>
-		<!-- {@attach updateNavbarBottom} -->
+			<!-- {@attach updateNavbarBottom} -->
 			<div class="navbar-start rtl:[--placement:bottom-end]">
 				<ul class="menu menu-horizontal flex flex-nowrap items-center">
 					{@render sidebarToggleButton('hidden sm:flex', {
@@ -787,8 +802,9 @@
 
 		<div
 			id="scrollspy"
-			class="sm:overlay-minified:ps-19 overlay-open:ps-0 pt-2 sm:mx-2 sm:mt-2 space-y-4 transition-all duration-300 sm:ps-66"
+			class="sm:overlay-minified:ps-19 overlay-open:ps-0 space-y-4 pt-2 transition-all duration-300 sm:mx-2 sm:mt-2 sm:ps-66"
 			bind:this={contentArea}
+			{@attach contentAreaAttachment}
 		>
 			{@render children?.()}
 		</div>

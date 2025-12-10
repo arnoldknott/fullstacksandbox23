@@ -50,13 +50,13 @@
 		id={id + '-collapse'}
 		class="collapse {thisPage(pathname!)
 			? 'open'
-			: 'hidden'} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300 {`[--scrollspy-offset:${topoffset}]`.toString()}"
+			: 'hidden'} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
 		aria-labelledby={id + '-control'}
 		data-pathname={pathname}
 	>
-	<!-- {`[--scrollspy-offset:${topoffset}]`.toString()} -->
-	<!-- {topoffset} -->
-	<!-- add [--scrollspy-offset:86] here conditionally with number being navbarBottom variable from layout. -->
+		<!-- {`[--scrollspy-offset:${topoffset}]`.toString()} -->
+		<!-- {topoffset} -->
+		<!-- add [--scrollspy-offset:86] here conditionally with number being navbarBottom variable from layout. -->
 		{#each items as item (item.id)}
 			<SidebarItem
 				content={{
