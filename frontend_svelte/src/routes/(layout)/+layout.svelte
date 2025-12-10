@@ -457,7 +457,7 @@
 			// scrollspyParent.scrollTop = navBarBottom;
 			scrollspyParent.scrollTop = 0;
 			// scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
-			scrollspyParent.scrollTo(scrollspyParent.scrollLeft, scrollspyParent.scrollTop);
+			scrollspyParent.scrollTo({left: scrollspyParent.scrollLeft, top: scrollspyParent.scrollTop, behavior: 'instant' });
 		}
 
 				// from onMount: // Frame-synced correction to account for sticky navbar appearing
@@ -588,7 +588,8 @@
 			console.log('=== layout - effect - navbar collapsed ===');
 			// scrollspyParent!.scrollTop -= navBarBottomPrevious;
 			scrollspyParent!.scrollTop += navBarBottomPrevious;
-			scrollspyParent?.scrollTo(scrollspyParent.scrollLeft, scrollspyParent.scrollTop);
+			// scrollspyParent?.scrollTo(scrollspyParent.scrollLeft, scrollspyParent.scrollTop);
+			scrollspyParent?.scrollTo({left: scrollspyParent.scrollLeft, top: scrollspyParent.scrollTop, behavior: 'instant' });
 		}else{
 		requestAnimationFrame(() => {
 			// const parentRect = scrollspyParent!.getBoundingClientRect();
@@ -600,7 +601,8 @@
 			// scrollspyParent!.scrollTop = Math.max(correctedTop, 0);
 			scrollspyParent!.scrollTop -= navBarBottomPrevious;
 			// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
-			scrollspyParent?.scrollTo(scrollspyParent.scrollLeft, scrollspyParent.scrollTop);
+			// scrollspyParent?.scrollTo(scrollspyParent.scrollLeft, scrollspyParent.scrollTop);
+			scrollspyParent?.scrollTo({left: scrollspyParent.scrollLeft, top: scrollspyParent.scrollTop, behavior: 'instant' });
 
 			// requestAnimationFrame(() => {
 			// 	if (navBarBottom === 0) {
