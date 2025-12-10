@@ -418,289 +418,52 @@
 
 
 	// TBD: potential useful features to encaspulate the scroll into:
-	// onMount, afterNavigate $effect, (beforeNavigate), Attachment, onscrollend, ...?
-
-	// afterNavigate(({to}) => {
-	// 	if (to?.url.hash) {
-	// 		// console.log('=== layout - afterNavigate - to.url.hash ===');
-	// 		// console.log(to.url.hash);
-	// 		const navigationTarget = document.getElementById(to.url.hash.substring(1));
-	// 		if (navigationTarget) {
-	// 			internalNavigationTarget = navigationTarget.getBoundingClientRect().top + window.scrollY;
-	// 			// console.log('=== layout - afterNavigate - internalNavigationTarget ===');
-	// 			// console.log(internalNavigationTarget);
-	// 		}
-	// 	}
-	// 	if (navBar) {
-	// 		navBarBottom =
-	// 			navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
-	// 		// console.log('=== layout - beforeNavigate - navBarBottom ===');
-	// 		// console.log(navBarBottom);
-	// 	}
-	// })
+	// onMount, afterNavigate $effect, (beforeNavigate), Attachment, onscrollend, derived.by(), ...?
 
 	afterNavigate(({ to }) => {
 		console.log('=== layout - afterNavigate ===');
-		// if (navBar) {
-		// 	navBarBottomPrevious = navBarBottom;
-		// 	navBarBottom =
-		// 		navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
-		// 	// console.log('=== layout - afterNavigate - navBarBottom ===');
-		// 	// console.log(navBarBottom);
-		// }
-		// console.log(to?.url);
-		
-
-		// TBD: is this necessary any more?
 		// reset scrolltop to zero, if no dedicated hash destination:
 		if (scrollspyParent && !to?.url.hash) {
-			// scrollspyParent.scrollTop = navBarBottom;
 			scrollspyParent.scrollTop = 0;
-			// scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
 			scrollspyParent.scrollTo({left: scrollspyParent.scrollLeft, top: scrollspyParent.scrollTop, behavior: 'instant' });
 		}
-
-				// from onMount: // Frame-synced correction to account for sticky navbar appearing
-				// requestAnimationFrame(() => {
-				// 	if (navBar) {
-				// 		navBarBottom = navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
-				// 	}
-				// 	// Use a second frame to ensure layout is settled
-				// 	requestAnimationFrame(() => {
-				// 		const parentRect2 = scrollspyParent!.getBoundingClientRect();
-				// 		const targetRect2 = target.getBoundingClientRect();
-				// 		const correctedTop = scrollspyParent!.scrollTop + targetRect2.top - parentRect2.top - navBarBottom;
-				// 		scrollspyParent!.scrollTop = Math.max(correctedTop, 0);
-				// 		scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
-				// 	});
-				// });
-
-		// // If hash navigation happened, apply frame-synced correction too
-		// if (scrollspyParent && to?.url.hash) {
-		// 	const target = document.getElementById(to.url.hash.substring(1));
-		// 	if (target) {
-		// 		requestAnimationFrame(() => {
-		// 			if (navBar) {
-		// 				navBarBottom = navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
-		// 			}
-		// 			requestAnimationFrame(() => {
-		// 				const parentRect = scrollspyParent!.getBoundingClientRect();
-		// 				const targetRect = target.getBoundingClientRect();
-		// 				const correctedTop = scrollspyParent!.scrollTop + targetRect.top - parentRect.top - navBarBottom;
-		// 				scrollspyParent!.scrollTop = Math.max(correctedTop, 0);
-		// 				scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
-		// 			});
-		// 		});
-		// 	}
-		// }
-		// if (scrollspyParent && !to?.url.hash) {
-		// 	scrollspyParent.scrollTop = 0;
-		// 	scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
-		// }
-		// console.log("=== layout - afterNavigate ===")
-		// if (scrollspyParent) {
-		// 	if (to?.url.hash){
-		// 		const target = document.getElementById(page.url.hash.substring(1));
-		// 	// TBD: consider opening a potential collapsed parent sections here
-		// 		if (target) {
-		// 			const parentRect = scrollspyParent!.getBoundingClientRect();
-		// 			const targetRect = target.getBoundingClientRect();
-
-		// 			const targetScrollTop = scrollspyParent!.scrollTop + targetRect.top - parentRect.top;
-		// 			scrollspyParent!.scrollTop = targetScrollTop - 185 ; // offset for sticky navbar
-		// 			scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
-		// 		}
-		// 	} else {
-		// 		console.log('=== layout - afterNavigate - updateScroll - no target ===');
-		// 		scrollspyParent.scrollTop = 0;
-		// 		scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
-		// 	}
-		// }
-		// if (scrollspyParent && to && to?.url.hash) {
-
-		// 	const target = document.getElementById(to.url.hash.substring(1));
-		// 	if (target) {
-		// 		console.log('=== layout - afterNavigate - updateScroll - with target ===');
-		// 		const parentRect = scrollspyParent!.getBoundingClientRect();
-		// 		const targetRect = target.getBoundingClientRect();
-
-		// 		// const targetScrollTop = scrollspyParent!.scrollTop + targetRect.top - parentRect.top;
-		// 		const targetScrollTop = scrollspyParent!.scrollTop - targetRect.top;
-		// 		scrollspyParent!.scrollTop = targetScrollTop - 85; // offset for sticky navbar
-		// 		scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
-		// 	} else {
-		// 		console.log('=== layout - afterNavigate - updateScroll - no target ===');
-		// 		scrollspyParent.scrollTop = 0;
-		// 		scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
-		// 	}
-		// }
 	});
 
 	const adjustScrollForStickyNavbar = (event: Event) => {
 		console.log('=== layout - onscrollend ===');
-		// if ((event as CustomEvent).detail) {
-		// 	return;
-		// }
-		// event.preventDefault();
-		// console.log('=== layout - adjustScrollForStickyNavbar - event ===');
-		// console.log(event);
 		if (navBar) {
-			// console.log('=== layout - adjustScrollForStickyNavbar - navBarBottomPrevious ===');
-			// console.log(navBarBottomPrevious);
-			// console.log('=== layout - adjustScrollForStickyNavbar - navBarBottom ===');
-			// console.log(navBarBottom);
-			// navBarBottomPrevious = navBarBottom;
-			
 			navBarBottom =
 				navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
-			// console.log('=== layout - adjustScrollForStickyNavbar - navBarBottom ===');
-			// console.log(navBarBottom);
 		}
-		// console.log('=== layout - adjustScrollForStickyNavbar - navBarBottom ===');
-		// console.log(navBarBottom);
-		// console.log('=== layout - adjustScrollForStickyNavbar - navBar ===');
-		// console.log(navBar);
-		// console.log('=== layout - adjustScrollForStickyNavbar - contentArea ===');
-		// console.log(contentArea);
-		if (contentArea) {
-			contentAreaTop = contentArea.getBoundingClientRect().top;
-			// console.log('=== layout - adjustScrollForStickyNavbar - contentAreaTop ===');
-			// console.log(contentAreaTop);
-			// if (contentAreaTop < navBarBottom) {
-			// 	scrollspyParent!.scrollTop = contentAreaTop +  navBarBottom;
-			// 	scrollspyParent!.dispatchEvent(new CustomEvent('scroll', { bubbles: true, detail: true }));
-			// }
-		}
-		// if (navBarBottom > 0) {
-		// }
-		// await tick();
-		// scrollspyParent!.scrollTop -= navBarBottom;
-		// scrollspyParent?.scrollTo(scrollspyParent.scrollLeft, scrollspyParent.scrollTop);
 	};
 
 	$effect(() => {
 		console.log('=== layout - effect ===');
 		if (navBarBottomPrevious !== navBarBottom) {
-		// console.log('=== layout - effect - navBarBottom changed ===')
-		console.log('=== navbarBopttom - before --- after ===');
-		console.log(navBarBottomPrevious + ' --- ' + navBarBottom);
 		if ( navBarBottomPrevious > 0 && navBarBottom === 0) {
 			console.log('=== layout - effect - navbar collapsed ===');
-			// scrollspyParent!.scrollTop -= navBarBottomPrevious;
 			scrollspyParent!.scrollTop += navBarBottomPrevious;
-			// scrollspyParent?.scrollTo(scrollspyParent.scrollLeft, scrollspyParent.scrollTop);
 			scrollspyParent?.scrollTo({left: scrollspyParent.scrollLeft, top: scrollspyParent.scrollTop, behavior: 'instant' });
 		}else{
 		requestAnimationFrame(() => {
-			// const parentRect = scrollspyParent!.getBoundingClientRect();
-			// const targetRect = target.getBoundingClientRect();
-			// const correctedTop = scrollspyParent!.scrollTop + targetRect.top - parentRect.top - navBarBottom;
-			// const correctedTop = scrollspyParent!.scrollTop + navBarBottomPrevious - navBarBottom;
-			console.log('=== layout - afterNavigate - effect - navBarBottomPrevious ===');
-			console.log(navBarBottomPrevious);
-			// scrollspyParent!.scrollTop = Math.max(correctedTop, 0);
 			scrollspyParent!.scrollTop -= navBarBottomPrevious;
-			// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
-			// scrollspyParent?.scrollTo(scrollspyParent.scrollLeft, scrollspyParent.scrollTop);
 			scrollspyParent?.scrollTo({left: scrollspyParent.scrollLeft, top: scrollspyParent.scrollTop, behavior: 'instant' });
-
-			// requestAnimationFrame(() => {
-			// 	if (navBarBottom === 0) {
-			// 		console.log('=== layout - effect - navbar collapsed ===');
-			// 		const target = document.getElementById(page.url.hash.substring(1));
-			// 	console.log('=== layout - effect - target ===');
-			// 	console.log(target);
-			// 	if (target) {
-			// 		// const parentRect = scrollspyParent!.getBoundingClientRect();
-			// 		// const targetRect = target.getBoundingClientRect();
-			// 		// scrollspyParent!.scrollTop += targetRect.top;
-			// 		// scrollspyParent!.scrollTop += targetRect.top - parentRect.top - navBarBottomPrevious
-			// 		// scrollspyParent?.scrollTo(scrollspyParent.scrollLeft, scrollspyParent.scrollTop);
-			// 	}
-			// 		// scrollspyParent!.scrollTop -= navBarBottomPrevious;
-			// 		// scrollspyParent?.scrollTo(scrollspyParent.scrollLeft, scrollspyParent.scrollTop);
-
-			// 	}
-			// 	// console.log('=== layout - afterNavigate - effect - Svelte scrollY.current 2nd frame ===');
-			// 	// console.log(scrollY.current);
-			// });
 		});
 		}
 		navBarBottomPrevious = navBarBottom;
 		}
-		// if (scrollspyParent && page.url.hash) {
-		// 	const target = document.getElementById(page.url.hash.substring(1));
-		// 	if (target) {
-		// 		requestAnimationFrame(() => {
-		// 			if (navBar) {
-		// 				navBarBottom = navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
-		// 			}
-		// 			requestAnimationFrame(() => {
-		// 				const parentRect = scrollspyParent!.getBoundingClientRect();
-		// 				const targetRect = target.getBoundingClientRect();
-		// 				const correctedTop = scrollspyParent!.scrollTop + targetRect.top - parentRect.top - navBarBottom;
-		// 				console.log('=== layout - afterNavigate - effect - correctedTop ===');
-		// 				console.log(correctedTop);
-		// 				scrollspyParent!.scrollTop = Math.max(correctedTop, 0);
-		// 				scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
-		// 			});
-		// 		});
-		// 	}
-		// }
 	})
-
-
-
-
-
 
 
 	let navBar: HTMLElement | null = $state(null);
 	let navBarBottom: number = $state(0);
 	let navBarBottomPrevious: number = $state(0);
-	// let internalNavigationTarget = $state(0);
 	let contentArea: HTMLElement | null = $state(null);
 	let contentAreaTop: number = $state(0);
-
-	// let navBarBottom = $derived.by(() => {
-	// 	if	(navBar) {
-	// 		return navBar.getBoundingClientRect().bottom
-	// 	}
-	// 	else{
-	// 		return 0;
-	// 	}
-	// });
-
-	// const updateNavbarBottom: Attachment = (node) => {
-	// 	console.log('=== layout - updateNavbarBottom - on attach ===');
-	// 	navBarBottom =
-	// 		node.getBoundingClientRect().bottom > 0 ? node.getBoundingClientRect().bottom : 0;
-	// 	console.log('=== layout - updateNavbarBottom - navBarBottom ===');
-	// 	console.log(navBarBottom);
-	// };
-
-	onMount(() => {
-		// if (navBar) {
-		// navBarBottom =
-		// 		navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
-		// }
-		// console.log('=== layout - onMount - navBarBottom ===');
-		// console.log(navBarBottom);
-	});
-
-	$effect(() => {
-		// if (navBar) {
-		// 	navBarBottom =
-		// 		navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
-		// } else {
-		// 	navBarBottom = 0;
-		// }
-	})
 
 	// TBD: could this be an attachemnt to main instead?
 	onMount(() => {
 		console.log('=== layout - onMount ===');
-		// console.log(page.url.hash);
 		scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
 		if (page.url.hash) {
 			const target = document.getElementById(page.url.hash.substring(1));
@@ -708,18 +471,11 @@
 			if (target) {
 				const parentRect = scrollspyParent!.getBoundingClientRect();
 				const targetRect = target.getBoundingClientRect();
-				// console.log('=== layout - onMount - targetRect.top ===');
-				// console.log(targetRect.top);
-				// console.log('=== layout - onMount - document.documentElement.clientHeight ===');
-				// console.log(document.documentElement.clientHeight);
-
 				// This one prevents scrollspy dispatchEvent error on mount:
 				const targetScrollTop = scrollspyParent!.scrollTop + targetRect.top - parentRect.top;
 				scrollspyParent!.scrollTop = targetScrollTop;
-				// scrollspyParent!.scrollTop = targetScrollTop - navBarBottom + 8 ;
-				// scrollspyParent!.scrollTop -= navBarBottom + 8 ;
 				scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
-				// scrollspyParent?.scrollTo(scrollspyParent.scrollLeft, scrollspyParent.scrollTop);
+				// scrollspyParent?.scrollTo({left: scrollspyParent.scrollLeft, top: scrollspyParent.scrollTop, behavior: 'instant' });
 			}
 		}
 	});
