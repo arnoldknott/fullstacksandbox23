@@ -5,7 +5,7 @@
 	import { Model, type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
 
 	import type { Action } from 'svelte/action';
-	import { onMount, type Snippet } from 'svelte';
+	import { onMount, tick, type Snippet } from 'svelte';
 	import { page } from '$app/state';
 	import Guard from '$components/Guard.svelte';
 	import { initDropdown, initOverlay } from '$lib/userInterface';
@@ -15,7 +15,7 @@
 	import { type SubmitFunction } from '@sveltejs/kit';
 	import { resolve } from '$app/paths';
 	import WelcomeModal from './WelcomeModal.svelte';
-	import { afterNavigate } from '$app/navigation';
+	import { afterNavigate, onNavigate, beforeNavigate, replaceState, pushState } from '$app/navigation';
 	import type { SidebarItemContent } from '$lib/types';
 	import SidebarItem from './SidebarItem.svelte';
 	import LoginOutButton from './LoginOutButton.svelte';
@@ -419,56 +419,173 @@
 	// TBD: potential useful features to encaspulate the scroll into:
 	// onMount, afterNavigate $effect, (beforeNavigate), Attachment, onscrollend, derived.by(), ...?
 
-	afterNavigate(({ to }) => {
+	// const adjustContentAreaOffset = () => {
+	// 	navBarBottom = navBar && navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
+	// 	contentAreaTop = contentArea ? contentArea.getBoundingClientRect().top : 0;
+	// 	if (navBarBottom > 0 && contentAreaTop < navBarBottom)
+	// 	{
+	// 		contentAreaOffset = navBarBottom;
+	// 	}
+	// };
+
+	// beforeNavigate(({to}) =>{
+	// 	if(to && to.url) {
+	// 		pushState(to.url, page.state);
+	// 	}
+	// })
+
+	afterNavigate(async ({ from, to }) => {
 		console.log('=== layout - afterNavigate ===');
-		// reset scrolltop to zero, if no dedicated hash destination:
-		if (scrollspyParent && !to?.url.hash) {
-			scrollspyParent.scrollTop = 0;
-			scrollspyParent.scrollTo({
-				left: scrollspyParent.scrollLeft,
-				top: scrollspyParent.scrollTop,
-				behavior: 'instant'
-			});
-		}
-	});
-
-	const adjustScrollForStickyNavbar = (_event: Event) => {
-		console.log('=== layout - onscrollend ===');
-		if (navBar) {
-			navBarBottom =
-				navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
-		}
-		contentAreaTop = contentArea ? contentArea.getBoundingClientRect().top : 0;
-	};
-
-	const mainAttachment: Attachment<HTMLElement> = (_node: HTMLElement) => {
-		console.log('=== layout - mainAttachment ===');
-	};
-
-	const contentAreaAttachment: Attachment<HTMLElement> = (_node: HTMLElement) => {
-		console.log('=== layout - contentAreaAttachment ===');
-	};
-
-	$effect(() => {
-		console.log('=== layout - effect ===');
-		if (navBarBottomPrevious !== navBarBottom) {
-			if (navBarBottomPrevious > 0 && navBarBottom === 0) {
-				console.log('=== layout - effect - navbar collapsed ===');
-				// scrollspyParent!.scrollTop += navBarBottomPrevious;
-				// scrollspyParent?.scrollTo({left: scrollspyParent.scrollLeft, top: scrollspyParent.scrollTop, behavior: 'instant' });
-			} else {
+		if (from?.url.pathname === to?.url.pathname) {
+			const targetFrom = document.getElementById(from!.url.hash.substring(1));
+			// TBD: consider opening a potential collapsed parent sections here
+			if (targetFrom) {
+				const targetRectFrom = targetFrom.getBoundingClientRect();
+				// This one prevents scrollspy dispatchEvent error on mount:
 				requestAnimationFrame(() => {
-					scrollspyParent!.scrollTop -= navBarBottomPrevious;
+					const targetScrollTop = targetRectFrom.top;
+					scrollspyParent!.scrollTop = targetScrollTop;
+					// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
 					scrollspyParent?.scrollTo({
 						left: scrollspyParent.scrollLeft,
 						top: scrollspyParent.scrollTop,
 						behavior: 'instant'
 					});
-				});
+				})
 			}
-			navBarBottomPrevious = navBarBottom;
+			const targetTo = document.getElementById(to!.url.hash.substring(1));
+			// TBD: consider opening a potential collapsed parent sections here
+			if (targetTo) {
+				const targetRectTo = targetTo.getBoundingClientRect();
+				// This one prevents scrollspy dispatchEvent error on mount:
+				requestAnimationFrame(() => {
+					const targetScrollTop = targetRectTo.top;
+					scrollspyParent!.scrollTop = targetScrollTop;
+					// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+					console.log('=== layout - afterNavigate - scroll to hash - SMOOTHLY ===');
+					scrollspyParent?.scrollTo({
+						left: scrollspyParent.scrollLeft,
+						top: scrollspyParent.scrollTop,
+						behavior: 'smooth'
+					});
+				})
+			}
 		}
+
+		navBarBottom = navBar && navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
+		contentAreaTop = contentArea ? contentArea.getBoundingClientRect().top : 0;
+		// console.log("=== layout - afterNavigate - old navBarBottom ===");
+		// console.log(navBarBottom);
+		// contentAreaOffset = contentAreaTop - navBarBottom;
+		// adjustContentAreaOffset();
+		// reset scrolling to zero, on internal navigation, if no hash is present:
+		if (!to?.url.hash) {
+			console.log('=== layout - afterNavigate - scroll to TOP ===');
+			scrollspyParent!.scrollTop = 0;
+			scrollspyParent!.scrollTo({
+				left: scrollspyParent!.scrollLeft,
+				top: scrollspyParent!.scrollTop,
+				behavior: 'smooth'
+			});
+		}
+		else {
+			const target = document.getElementById(to!.url.hash.substring(1));
+			// TBD: consider opening a potential collapsed parent sections here
+			if (target) {
+				const targetRect = target.getBoundingClientRect();
+				// This one prevents scrollspy dispatchEvent error on mount:
+				console.log('=== layout - afterNavigate - scroll to hash ===');
+				requestAnimationFrame(() => {
+					const targetScrollTop = targetRect.top;
+					scrollspyParent!.scrollTop = targetScrollTop;
+					// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+					scrollspyParent?.scrollTo({
+						left: scrollspyParent.scrollLeft,
+						top: scrollspyParent.scrollTop,
+						behavior: 'smooth'
+					});
+				})
+				// navBarBottomPrevious = navBarBottom;
+				
+				await tick()
+				requestAnimationFrame(() => {
+					navBarBottom = navBar && navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
+					console.log("=== layout - afterNavigate - new navBarBottom ===");
+					console.log(navBarBottom);
+					if (navBarBottom > 0) {
+						scrollspyParent!.scrollTop += navBarBottom;
+						scrollspyParent?.scrollTo({
+							left: scrollspyParent.scrollLeft,
+							top: scrollspyParent.scrollTop,
+							behavior: 'smooth'
+						});
+				}
+				});
+
+			}
+		}
+		// else{
+		// 	const target = document.getElementById(to!.url.hash.substring(1));
+		// 	// TBD: consider opening a potential collapsed parent sections here
+		// 	if (target) {
+		// 		// const parentRect = scrollspyParent!.getBoundingClientRect();
+		// 		const targetRect = target.getBoundingClientRect();
+		// 		// This one prevents scrollspy dispatchEvent error on mount:
+		// 		console.log('=== layout - afterNavigate - scroll to hash ===');
+		// 		const targetScrollTop = scrollspyParent!.scrollTop + targetRect.top  + navBarBottom;
+		// 		scrollspyParent!.scrollTop = targetScrollTop;
+		// 		// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+		// 		scrollspyParent?.scrollTo({
+		// 			left: scrollspyParent.scrollLeft,
+		// 			top: scrollspyParent.scrollTop,
+		// 			behavior: 'instant'
+		// 		});
+		// 	}
+		// }
 	});
+
+	const mainScrollEnd = (_event: Event) => {
+		console.log('=== layout - onscrollend ===');
+		// if (navBar) {
+		// 	navBarBottom =
+		// 		navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
+		// }
+		navBarBottom = navBar && navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
+		contentAreaTop = contentArea ? contentArea.getBoundingClientRect().top : 0;
+	};
+
+	const mainAttachment: Attachment<HTMLElement> = (_node: HTMLElement) => {
+		// console.log('=== layout - mainAttachment ===');
+	};
+
+	const contentAreaAttachment: Attachment<HTMLElement> = (_node: HTMLElement) => {
+		// console.log('=== layout - contentAreaAttachment ===');
+	};
+
+
+
+	// $effect(() => {
+	// 	console.log('=== layout - effect ===');
+	// 	if (navBarBottomPrevious !== navBarBottom) {
+	// 		if (navBarBottomPrevious > 0 && navBarBottom === 0) {
+	// 			console.log('=== layout - effect - navbar collapsed ===');
+	// 			requestAnimationFrame(() => {
+	// 				scrollspyParent!.scrollTop += navBarBottomPrevious;
+	// 				scrollspyParent?.scrollTo({left: scrollspyParent.scrollLeft, top: scrollspyParent.scrollTop, behavior: 'instant' });
+	// 			});
+	// 		} else {
+	// 			requestAnimationFrame(() => {
+	// 				scrollspyParent!.scrollTop -= navBarBottomPrevious;
+	// 				scrollspyParent?.scrollTo({
+	// 					left: scrollspyParent.scrollLeft,
+	// 					top: scrollspyParent.scrollTop,
+	// 					behavior: 'instant'
+	// 				});
+	// 			});
+	// 		}
+	// 		navBarBottomPrevious = navBarBottom;
+	// 	}
+	// });
 
 	let navBar: HTMLElement | null = $state(null);
 	let navBarBottom: number = $state(0);
@@ -476,10 +593,21 @@
 	let contentArea: HTMLElement | null = $state(null);
 	let contentAreaTop: number = $state(0);
 
+	let contentAreaOffset: number = $state(0)
+
 	// TBD: could this be an attachemnt to main instead?
 	onMount(() => {
 		console.log('=== layout - onMount ===');
-		scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+		// navBarBottom = navBar && navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
+		// contentAreaTop = contentArea ? contentArea.getBoundingClientRect().top : 0;
+		// contentAreaOffset = contentAreaTop - navBarBottom;
+		// adjustContentAreaOffset();
+
+		// TBD: change into scrollTo with behavior instant?
+		// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+
+		// Scrolling triggered by server changes, potential server side navigation (redirect?) and initial hash handling:
+		scrollspyParent!.scrollTo({ left: scrollspyParent!.scrollLeft, top: scrollspyParent!.scrollTop, behavior: 'smooth' });
 		if (page.url.hash) {
 			const target = document.getElementById(page.url.hash.substring(1));
 			// TBD: consider opening a potential collapsed parent sections here
@@ -489,8 +617,8 @@
 				// This one prevents scrollspy dispatchEvent error on mount:
 				const targetScrollTop = scrollspyParent!.scrollTop + targetRect.top - parentRect.top;
 				scrollspyParent!.scrollTop = targetScrollTop;
-				scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
-				// scrollspyParent?.scrollTo({left: scrollspyParent.scrollLeft, top: scrollspyParent.scrollTop, behavior: 'instant' });
+				// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+				scrollspyParent?.scrollTo({left: scrollspyParent.scrollLeft, top: scrollspyParent.scrollTop, behavior: 'smooth' });
 			}
 		}
 	});
@@ -540,9 +668,93 @@
 	bind:this={scrollspyParent}
 	id="scrollspy-scrollable-parent"
 	class="h-screen w-screen overflow-x-scroll overflow-y-auto"
-	onscrollend={adjustScrollForStickyNavbar}
+	onscrollend={mainScrollEnd}
 	{@attach mainAttachment}
 >
+		<WelcomeModal
+			bind:session={data.session}
+			bind:artificialIntelligenceConfiguration
+			bind:themeConfiguration
+			bind:mode
+			{updateProfileAccount}
+			{saveProfileAccount}
+		/>
+
+		<!-- TBD: put sidebar into component -->
+		<aside
+			id="collapsible-mini-sidebar"
+			class="overlay  overlay-minified:w-19 overlay-open:translate-x-0 drawer drawer-start bg-base-150 border-base-content/20 hidden w-66 border-e [--auto-close:sm] sm:absolute sm:z-0 sm:flex sm:translate-x-0 sm:shadow-none"
+			tabindex="-1"
+			{@attach initOverlay}
+		>
+			<div class="mx-7 flex h-26 flex-row items-center justify-between pt-7">
+				<div class="hidden sm:block">
+					{@render sidebarToggleButton('hidden sm:flex', {
+						'data-overlay-minifier': '#collapsible-mini-sidebar'
+					})}
+				</div>
+				<div class="overlay-minified:hidden">
+					<Logo />
+				</div>
+			</div>
+			<div class="drawer-body px-2 pt-4">
+				<ul class="menu p-0">
+					{@render sidebarPartItem('/', 'icon-[material-symbols--home-outline-rounded]', 'Home')}
+					{@render sidebarPartItem('/docs', 'icon-[oui--documentation]', 'Docs', 'md:hidden')}
+					{@render sidebarPartItem(
+						'/playground',
+						'icon-[mdi--playground-seesaw]',
+						'Playground',
+						'md:hidden'
+					)}
+					<Guard>
+						<!-- <hr class="border-outline -mx-2 my-3" /> -->
+						{@render sidebarPartItem(
+							'/dashboard',
+							'icon-[material-symbols--dashboard-outline-rounded]',
+							'Dashboard',
+							'md:hidden'
+						)}
+					</Guard>
+					<!-- {@render sidebarPartItem(
+						'/features',
+						'icon-[mdi--feature-highlight]',
+						'Features',
+						'md:hidden'
+					)}
+					{@render sidebarPartItem('/apps', 'icon-[tabler--apps]', 'Apps', 'md:hidden')}
+					{@render sidebarPartItem(
+						'/construction',
+						'icon-[maki--construction]',
+						'Construction',
+						'md:hidden'
+					)} -->
+					<li>
+						<div class="items-center sm:hidden md:ml-2">
+							<LoginOutButton {loggedIn} />
+						</div>
+					</li>
+				</ul>
+				<div class="divider"></div>
+				<ul class="menu p-0">
+					{#each sidebarLinks as mainItem (mainItem.id)}
+						<SidebarItem
+							content={{ ...mainItem, pathname: mainItem.pathname || page.url.pathname }}
+							topLevel={true}
+							topoffset={navBarBottom}
+						/>
+						<!-- topoffset={internalNavigationTarget} -->
+						<!-- topoffset={navBarBottom} -->
+						<!-- topoffset={`[--scrollspy-offset:${navBarBottom + 8}]`} -->
+					{/each}
+				</ul>
+			</div>
+			NavBarBottom: {navBarBottom}
+			<br />
+			ContentAreaTop: {contentAreaTop}
+			<br />
+			ContentAreaOffset: {contentAreaOffset}
+		</aside>
 	<!-- style="--nav-offset: {navBarBottom}px" -->
 	<!-- style:scroll-padding-top={`${navBarBottom}px`} -->
 	<!-- onscrollend={adjustScrollForStickyNavbar} -->
@@ -689,88 +901,7 @@
 		</nav>
 		<!-- </div> -->
 
-		<WelcomeModal
-			bind:session={data.session}
-			bind:artificialIntelligenceConfiguration
-			bind:themeConfiguration
-			bind:mode
-			{updateProfileAccount}
-			{saveProfileAccount}
-		/>
 
-		<!-- TBD: put sidebar into component -->
-		<aside
-			id="collapsible-mini-sidebar"
-			class="overlay overlay-minified:w-19 overlay-open:translate-x-0 drawer drawer-start bg-base-150 border-base-content/20 hidden w-66 border-e [--auto-close:sm] sm:absolute sm:z-0 sm:flex sm:translate-x-0 sm:shadow-none"
-			tabindex="-1"
-			{@attach initOverlay}
-		>
-			<div class="mx-7 flex h-26 flex-row items-center justify-between pt-7">
-				<div class="hidden sm:block">
-					{@render sidebarToggleButton('hidden sm:flex', {
-						'data-overlay-minifier': '#collapsible-mini-sidebar'
-					})}
-				</div>
-				<div class="overlay-minified:hidden">
-					<Logo />
-				</div>
-			</div>
-			<div class="drawer-body px-2 pt-4">
-				<ul class="menu p-0">
-					{@render sidebarPartItem('/', 'icon-[material-symbols--home-outline-rounded]', 'Home')}
-					{@render sidebarPartItem('/docs', 'icon-[oui--documentation]', 'Docs', 'md:hidden')}
-					{@render sidebarPartItem(
-						'/playground',
-						'icon-[mdi--playground-seesaw]',
-						'Playground',
-						'md:hidden'
-					)}
-					<Guard>
-						<!-- <hr class="border-outline -mx-2 my-3" /> -->
-						{@render sidebarPartItem(
-							'/dashboard',
-							'icon-[material-symbols--dashboard-outline-rounded]',
-							'Dashboard',
-							'md:hidden'
-						)}
-					</Guard>
-					<!-- {@render sidebarPartItem(
-						'/features',
-						'icon-[mdi--feature-highlight]',
-						'Features',
-						'md:hidden'
-					)}
-					{@render sidebarPartItem('/apps', 'icon-[tabler--apps]', 'Apps', 'md:hidden')}
-					{@render sidebarPartItem(
-						'/construction',
-						'icon-[maki--construction]',
-						'Construction',
-						'md:hidden'
-					)} -->
-					<li>
-						<div class="items-center sm:hidden md:ml-2">
-							<LoginOutButton {loggedIn} />
-						</div>
-					</li>
-				</ul>
-				<div class="divider"></div>
-				<ul class="menu p-0">
-					{#each sidebarLinks as mainItem (mainItem.id)}
-						<SidebarItem
-							content={{ ...mainItem, pathname: mainItem.pathname || page.url.pathname }}
-							topLevel={true}
-							topoffset={navBarBottom}
-						/>
-						<!-- topoffset={internalNavigationTarget} -->
-						<!-- topoffset={navBarBottom} -->
-						<!-- topoffset={`[--scrollspy-offset:${navBarBottom + 8}]`} -->
-					{/each}
-				</ul>
-			</div>
-			NavBarBottom: {navBarBottom}
-			<br />
-			ContentAreaTop: {contentAreaTop}
-		</aside>
 		<!-- <aside
 			id="collapsible-mini-sidebar"
 			class="overlay [--auto-close:sm] sm:shadow-none overlay-open:translate-x-0 drawer drawer-start hidden max-w-64  sm:flex sm:translate-x-0 pt-16"
@@ -803,6 +934,7 @@
 		<div
 			id="scrollspy"
 			class="sm:overlay-minified:ps-19 overlay-open:ps-0 space-y-4 pt-2 transition-all duration-300 sm:mx-2 sm:mt-2 sm:ps-66"
+			
 			bind:this={contentArea}
 			{@attach contentAreaAttachment}
 		>
@@ -811,6 +943,9 @@
 	</div>
 </main>
 
+<!-- style:padding-top={`${contentAreaOffset + 2}pt`} -->
+<!-- style:scroll-margin-top="150pt" -->
+<!-- style:padding-top={`${contentAreaOffset + 2}pt`} -->
 <!-- style="--nav-offset: {navBarBottom}px"
 <style>
 	:global(#scrollspy [id]) {

@@ -5,9 +5,11 @@
 	import type { Attachment } from 'svelte/attachments';
 	// import { beforeNavigate, goto } from '$app/navigation';
 	import SidebarItem from './SidebarItem.svelte';
+	import { goto, replaceState, pushState } from '$app/navigation';
 	let {
 		content,
 		topLevel = false,
+		// TBD: remove topoffset if scrollspy-offset is unnecessary!
 		topoffset
 		// scrollspyParent
 	}: {
@@ -29,6 +31,7 @@
 		else href = `${destinationPathname}${hash}`;
 		return href;
 	});
+	let href = $derived(createHref(pathname!, hash));
 
 	const toggleCollapse: Attachment<HTMLElement> = (node: HTMLElement) => {
 		// if (page.url.pathname.startsWith(node.dataset.pathname || '')) {
@@ -81,7 +84,7 @@
 			{@attach toggleCollapse}
 		>
 			<span class="{icon} size-5"></span>
-			<span class="overlay-minified:hidden">{name}, to: {topoffset}</span>
+			<span class="overlay-minified:hidden">{name}</span>
 			<span
 				class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:hidden size-4 transition-all duration-300"
 			></span>
@@ -106,10 +109,33 @@
 			id={id + '-control'}
 			data-collapse={'#' + id + '-collapse'}
 			data-pathname={pathname}
-			href={createHref(pathname!, hash)}
+			{href}
+			onclick={(event) => {
+				event.preventDefault();
+				pushState(href, page.state);
+				goto(href);
+			}}
 			{@attach initCollapse}
 			{@attach toggleCollapse}
 		>
+			<!-- 
+			No more smooth scrolling inside page with this one:
+			onclick={(event) => {
+				event.preventDefault();
+				replaceState(href, page.state);
+				goto(href);
+			}}-->
+			<!-- onclick={(event) => {
+				if (!thisPage)
+				{ 
+					event.preventDefault();
+					pushState(href, page.state);
+					goto(href)
+				}
+				else{
+					pushState(href, page.state);
+				};
+			}} -->
 			<span
 				class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
 			></span>

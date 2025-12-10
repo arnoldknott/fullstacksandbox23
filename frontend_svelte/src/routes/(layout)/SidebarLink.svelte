@@ -2,7 +2,8 @@
 	import { type Snippet } from 'svelte';
 	import { page } from '$app/state';
 	import { initScrollspy } from '$lib/userInterface';
-	import { beforeNavigate, goto } from '$app/navigation';
+	import { beforeNavigate, goto, pushState, replaceState } from '$app/navigation';
+
 	let {
 		href,
 		thisPage,
@@ -70,9 +71,9 @@
 			// }
 			// });
 			beforeNavigate((navigator) => {
-				if (!(navigator.to?.url.pathname === node.dataset.pathname)) {
+				// if (!(navigator.to?.url.pathname === node.dataset.pathname)) {
 					removeScrollspy(parent);
-				}
+				// }
 			});
 		}
 		// Cleanup when the attachment is removed
@@ -86,10 +87,26 @@
 	<li {@attach toggleScrollspyOnParent}>
 		<a
 			{href}
+			onclick={(event) => {
+				event.preventDefault();
+				pushState(href, page.state);
+				goto(href);
+			}}
 			class="text-base-content/80 flex items-center gap-x-2 hover:opacity-100 {thisPage
 				? 'group scrollspy-active:italic'
 				: ''}"
 		>
+			<!-- onclick={(event) => {
+				if (!thisPage)
+				{ 
+					event.preventDefault();
+					pushState(href, page.state);
+					goto(href)
+				}
+				else{
+					pushState(href, page.state);
+				};
+			}} -->
 			{#if topLevel}
 				<span class="{icon} size-5"></span>
 			{:else}
@@ -103,7 +120,9 @@
 	</li>
 {:else}
 	<li>
-		<button type="button" onclick={() => goto(href)}>
+		<button type="button" onclick={() => {
+			pushState(href, page.state);
+			goto(href)} }>
 			<span class="{icon} size-5"></span>
 			<span class="overlay-minified:hidden">{@render children?.()}</span>
 		</button>
