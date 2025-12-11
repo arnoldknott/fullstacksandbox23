@@ -87,15 +87,15 @@
 	<li {@attach toggleScrollspyOnParent}>
 		<a
 			{href}
-			onclick={(event) => {
-				event.preventDefault();
-				pushState(href, page.state);
-				goto(href);
-			}}
 			class="text-base-content/80 flex items-center gap-x-2 hover:opacity-100 {thisPage
 				? 'group scrollspy-active:italic'
 				: ''}"
 		>
+			<!-- onclick={(event) => {
+				event.preventDefault();
+				// pushState(href, page.state);
+				goto(href, {noScroll: true, replaceState: false, state: page.state});
+			}} -->
 			<!-- onclick={(event) => {
 				if (!thisPage)
 				{ 
@@ -120,9 +120,10 @@
 	</li>
 {:else}
 	<li>
-		<button type="button" onclick={() => {
-			pushState(href, page.state);
-			goto(href)} }>
+		<button type="button" onclick={() => { goto(href);
+			// pushState(href, page.state);
+			// goto(href, {noScroll: true, replaceState: false, state: page.state})}
+			}}>
 			<span class="{icon} size-5"></span>
 			<span class="overlay-minified:hidden">{@render children?.()}</span>
 		</button>

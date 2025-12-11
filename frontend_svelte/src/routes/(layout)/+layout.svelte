@@ -15,7 +15,7 @@
 	import { type SubmitFunction } from '@sveltejs/kit';
 	import { resolve } from '$app/paths';
 	import WelcomeModal from './WelcomeModal.svelte';
-	import { afterNavigate, onNavigate, beforeNavigate, replaceState, pushState } from '$app/navigation';
+	import { afterNavigate, onNavigate, beforeNavigate, replaceState, pushState, goto } from '$app/navigation';
 	import type { SidebarItemContent } from '$lib/types';
 	import SidebarItem from './SidebarItem.svelte';
 	import LoginOutButton from './LoginOutButton.svelte';
@@ -434,121 +434,159 @@
 	// 	}
 	// })
 
-	afterNavigate(async ({ from, to }) => {
-		console.log('=== layout - afterNavigate ===');
-		if (from?.url.pathname === to?.url.pathname) {
-			const targetFrom = document.getElementById(from!.url.hash.substring(1));
-			// TBD: consider opening a potential collapsed parent sections here
-			if (targetFrom) {
-				const targetRectFrom = targetFrom.getBoundingClientRect();
-				// This one prevents scrollspy dispatchEvent error on mount:
-				requestAnimationFrame(() => {
-					const targetScrollTop = targetRectFrom.top;
-					scrollspyParent!.scrollTop = targetScrollTop;
-					// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
-					scrollspyParent?.scrollTo({
-						left: scrollspyParent.scrollLeft,
-						top: scrollspyParent.scrollTop,
-						behavior: 'instant'
-					});
-				})
-			}
-			const targetTo = document.getElementById(to!.url.hash.substring(1));
-			// TBD: consider opening a potential collapsed parent sections here
-			if (targetTo) {
-				const targetRectTo = targetTo.getBoundingClientRect();
-				// This one prevents scrollspy dispatchEvent error on mount:
-				requestAnimationFrame(() => {
-					const targetScrollTop = targetRectTo.top;
-					scrollspyParent!.scrollTop = targetScrollTop;
-					// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
-					console.log('=== layout - afterNavigate - scroll to hash - SMOOTHLY ===');
-					scrollspyParent?.scrollTo({
-						left: scrollspyParent.scrollLeft,
-						top: scrollspyParent.scrollTop,
-						behavior: 'smooth'
-					});
-				})
-			}
-		}
+	// afterNavigate(async ({ from, to }) => {
+	// 	console.log('=== layout - afterNavigate ===');
+	// 	// reset scrolling to zero, on internal navigation, if no hash is present:
+	// 	if (!to?.url.hash) {
+	// 		// console.log('=== layout - afterNavigate - scroll to TOP ===');
+	// 		scrollspyParent!.scrollTop = 0;
+	// 		scrollspyParent!.scrollTo({
+	// 			left: scrollspyParent!.scrollLeft,
+	// 			top: scrollspyParent!.scrollTop,
+	// 			behavior: 'smooth'
+	// 		});
+	// 	}
+	// 	else if (from?.url.pathname === to?.url.pathname) {
+	// 		// console.log('=== layout - afterNavigate - hash-FROM ===');
+	// 		// console.log(from!.url.hash.substring(1));
+	// 		const targetFrom = document.getElementById(from!.url.hash.substring(1));
+	// 		// TBD: consider opening a potential collapsed parent sections here
+	// 		if (targetFrom) {
+	// 			const targetRectFrom = targetFrom.getBoundingClientRect();
+	// 			// This one prevents scrollspy dispatchEvent error on mount:
+	// 			requestAnimationFrame(() => {
+	// 				const targetScrollTop = targetRectFrom.top;
+	// 				scrollspyParent!.scrollTop = targetScrollTop;
+	// 				// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+	// 				scrollspyParent?.scrollTo({
+	// 					left: scrollspyParent.scrollLeft,
+	// 					top: scrollspyParent.scrollTop,
+	// 					behavior: 'instant'
+	// 				});
+	// 			})
+	// 		}
+	// 		await tick()
+	// 		// console.log('=== layout - afterNavigate - hash-TO ===');
+	// 		// console.log(to!.url.hash.substring(1));
+	// 		const targetTo = document.getElementById(to!.url.hash.substring(1));
+	// 		// TBD: consider opening a potential collapsed parent sections here
+	// 		if (targetTo) {
+	// 			const targetRectTo = targetTo.getBoundingClientRect();
+	// 			// This one prevents scrollspy dispatchEvent error on mount:
+	// 			requestAnimationFrame(() => {
+	// 				const targetScrollTop = targetRectTo.top;
+	// 				scrollspyParent!.scrollTop = targetScrollTop;
+	// 				// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+	// 				// console.log('=== layout - afterNavigate - scroll to hash - SMOOTHLY ===');
+	// 				scrollspyParent?.scrollTo({
+	// 					left: scrollspyParent.scrollLeft,
+	// 					top: scrollspyParent.scrollTop,
+	// 					behavior: 'smooth'
+	// 				});
+	// 			})
+	// 		}
+	// 	}
 
-		navBarBottom = navBar && navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
-		contentAreaTop = contentArea ? contentArea.getBoundingClientRect().top : 0;
-		// console.log("=== layout - afterNavigate - old navBarBottom ===");
-		// console.log(navBarBottom);
-		// contentAreaOffset = contentAreaTop - navBarBottom;
-		// adjustContentAreaOffset();
-		// reset scrolling to zero, on internal navigation, if no hash is present:
-		if (!to?.url.hash) {
-			console.log('=== layout - afterNavigate - scroll to TOP ===');
-			scrollspyParent!.scrollTop = 0;
-			scrollspyParent!.scrollTo({
-				left: scrollspyParent!.scrollLeft,
-				top: scrollspyParent!.scrollTop,
-				behavior: 'smooth'
-			});
-		}
-		else {
-			const target = document.getElementById(to!.url.hash.substring(1));
-			// TBD: consider opening a potential collapsed parent sections here
-			if (target) {
-				const targetRect = target.getBoundingClientRect();
-				// This one prevents scrollspy dispatchEvent error on mount:
-				console.log('=== layout - afterNavigate - scroll to hash ===');
-				requestAnimationFrame(() => {
-					const targetScrollTop = targetRect.top;
-					scrollspyParent!.scrollTop = targetScrollTop;
-					// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
-					scrollspyParent?.scrollTo({
-						left: scrollspyParent.scrollLeft,
-						top: scrollspyParent.scrollTop,
-						behavior: 'smooth'
-					});
-				})
-				// navBarBottomPrevious = navBarBottom;
+	// 	// navBarBottom = navBar && navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
+	// 	// contentAreaTop = contentArea ? contentArea.getBoundingClientRect().top : 0;
+	// 	// console.log("=== layout - afterNavigate - old navBarBottom ===");
+	// 	// console.log(navBarBottom);
+	// 	// contentAreaOffset = contentAreaTop - navBarBottom;
+	// 	// adjustContentAreaOffset();
+
+	// 	// else {
+	// 	// 	const target = document.getElementById(to!.url.hash.substring(1));
+	// 	// 	// TBD: consider opening a potential collapsed parent sections here
+	// 	// 	if (target) {
+	// 	// 		const targetRect = target.getBoundingClientRect();
+	// 	// 		// This one prevents scrollspy dispatchEvent error on mount:
+	// 	// 		console.log('=== layout - afterNavigate - scroll to hash ===');
+	// 	// 		requestAnimationFrame(() => {
+	// 	// 			const targetScrollTop = targetRect.top;
+	// 	// 			scrollspyParent!.scrollTop = targetScrollTop;
+	// 	// 			// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+	// 	// 			scrollspyParent?.scrollTo({
+	// 	// 				left: scrollspyParent.scrollLeft,
+	// 	// 				top: scrollspyParent.scrollTop,
+	// 	// 				behavior: 'smooth'
+	// 	// 			});
+	// 	// 		})
+	// 	// 		// navBarBottomPrevious = navBarBottom;
 				
-				await tick()
-				requestAnimationFrame(() => {
-					navBarBottom = navBar && navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
-					console.log("=== layout - afterNavigate - new navBarBottom ===");
-					console.log(navBarBottom);
-					if (navBarBottom > 0) {
-						scrollspyParent!.scrollTop += navBarBottom;
-						scrollspyParent?.scrollTo({
-							left: scrollspyParent.scrollLeft,
-							top: scrollspyParent.scrollTop,
-							behavior: 'smooth'
-						});
-				}
-				});
+	// 	// 		await tick()
+	// 	// 		requestAnimationFrame(() => {
+	// 	// 			navBarBottom = navBar && navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
+	// 	// 			console.log("=== layout - afterNavigate - new navBarBottom ===");
+	// 	// 			console.log(navBarBottom);
+	// 	// 			if (navBarBottom > 0) {
+	// 	// 				scrollspyParent!.scrollTop += navBarBottom;
+	// 	// 				scrollspyParent?.scrollTo({
+	// 	// 					left: scrollspyParent.scrollLeft,
+	// 	// 					top: scrollspyParent.scrollTop,
+	// 	// 					behavior: 'smooth'
+	// 	// 				});
+	// 	// 		}
+	// 	// 		});
 
-			}
-		}
-		// else{
-		// 	const target = document.getElementById(to!.url.hash.substring(1));
-		// 	// TBD: consider opening a potential collapsed parent sections here
-		// 	if (target) {
-		// 		// const parentRect = scrollspyParent!.getBoundingClientRect();
-		// 		const targetRect = target.getBoundingClientRect();
-		// 		// This one prevents scrollspy dispatchEvent error on mount:
-		// 		console.log('=== layout - afterNavigate - scroll to hash ===');
-		// 		const targetScrollTop = scrollspyParent!.scrollTop + targetRect.top  + navBarBottom;
-		// 		scrollspyParent!.scrollTop = targetScrollTop;
-		// 		// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
-		// 		scrollspyParent?.scrollTo({
-		// 			left: scrollspyParent.scrollLeft,
-		// 			top: scrollspyParent.scrollTop,
-		// 			behavior: 'instant'
-		// 		});
-		// 	}
-		// }
-	});
+	// 	// 	}
+	// 	// }
+	// 	// // else{
+	// 	// // 	const target = document.getElementById(to!.url.hash.substring(1));
+	// 	// // 	// TBD: consider opening a potential collapsed parent sections here
+	// 	// // 	if (target) {
+	// 	// // 		// const parentRect = scrollspyParent!.getBoundingClientRect();
+	// 	// // 		const targetRect = target.getBoundingClientRect();
+	// 	// // 		// This one prevents scrollspy dispatchEvent error on mount:
+	// 	// // 		console.log('=== layout - afterNavigate - scroll to hash ===');
+	// 	// // 		const targetScrollTop = scrollspyParent!.scrollTop + targetRect.top  + navBarBottom;
+	// 	// // 		scrollspyParent!.scrollTop = targetScrollTop;
+	// 	// // 		// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+	// 	// // 		scrollspyParent?.scrollTo({
+	// 	// // 			left: scrollspyParent.scrollLeft,
+	// 	// // 			top: scrollspyParent.scrollTop,
+	// 	// // 			behavior: 'instant'
+	// 	// // 		});
+	// 	// // 	}
+	// 	// // }
+	// });
+
+	let navBar: HTMLElement | null = $state(null);
+	let navBarBottom: number = $state(0);
+	// let navBarBottomPrevious: number = $state(0);
+	let contentArea: HTMLElement | null = $state(null);
+	let contentAreaTop: number = $state(0);
+
+	let contentAreaOffset: number = $state(0)
+	// let scrollTarget = $derived(document.getElementById(page.url.hash.substring(1)) || contentArea);
+	let scrollTarget: number = $state(0);
 
 	const mainScrollEnd = (_event: Event) => {
 		console.log('=== layout - onscrollend ===');
 		// if (navBar) {
 		// 	navBarBottom =
 		// 		navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
+		// }
+		const navBarBottomPrevious = navBar && navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
+		scrollTarget = page.url.hash ? document.getElementById(page.url.hash.substring(1))?.getBoundingClientRect().top || 0 : contentArea?.getBoundingClientRect().top || 0;
+		// TBD: add an "afterNavigate" here, so this is not trigggered on a user scroll action?
+		if (navBarBottomPrevious !== navBarBottom) {
+			console.log('=== layout - onscrollend - navBarBottom changed ===');
+			requestAnimationFrame(() => {
+				scrollspyParent!.scrollTop -= navBarBottom;
+				// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+				scrollspyParent?.scrollTo({
+					left: scrollspyParent.scrollLeft,
+					top: scrollspyParent.scrollTop,
+					behavior: 'instant'
+				});
+			})
+		}
+		// const targetRect = scrollTarget!.getBoundingClientRect();
+		
+		// })
+		// const currentNavBarBottom = navBar && navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
+		// if (navBarBottomPrevious !== currentNavBarBottom) {
+		// 	console.log('=== layout - effect - navBarBottom changed ===');
 		// }
 		navBarBottom = navBar && navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
 		contentAreaTop = contentArea ? contentArea.getBoundingClientRect().top : 0;
@@ -563,6 +601,19 @@
 	};
 
 
+
+	$effect(() => {
+		console.log('=== layout - effect ===');
+		requestAnimationFrame(() => {
+			scrollspyParent!.scrollTop = scrollTarget;
+			// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+			scrollspyParent?.scrollTo({
+				left: scrollspyParent.scrollLeft,
+				top: scrollspyParent.scrollTop,
+				behavior: 'smooth'
+			});
+		})
+	})
 
 	// $effect(() => {
 	// 	console.log('=== layout - effect ===');
@@ -587,13 +638,85 @@
 	// 	}
 	// });
 
-	let navBar: HTMLElement | null = $state(null);
-	let navBarBottom: number = $state(0);
-	let navBarBottomPrevious: number = $state(0);
-	let contentArea: HTMLElement | null = $state(null);
-	let contentAreaTop: number = $state(0);
 
-	let contentAreaOffset: number = $state(0)
+	// $effect(() =>  {
+		// console.log('=== layout - effect  ===');
+
+		// const navBarBottomPrevious = navBar && navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
+		// const scrollTarget = page.url.hash ? document.getElementById(page.url.hash.substring(1)) : contentArea;
+		// const targetRect = scrollTarget!.getBoundingClientRect();
+		// requestAnimationFrame(() => {
+		// 	const targetScrollTop = targetRect.top;
+		// 	scrollspyParent!.scrollTop = targetScrollTop;
+		// 	// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+		// 	scrollspyParent?.scrollTo({
+		// 		left: scrollspyParent.scrollLeft,
+		// 		top: scrollspyParent.scrollTop,
+		// 		behavior: 'smooth'
+		// 	});
+		// })
+		// const currentNavBarBottom = navBar && navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
+		// if (navBarBottomPrevious !== currentNavBarBottom) {
+		// 	console.log('=== layout - effect - navBarBottom changed ===');
+		// }
+		
+		
+		
+		// // reset scrolling to zero, on internal navigation, if no hash is present:
+		// if (!page.url.hash) {
+		// 	console.log('=== layout - effect - scroll to TOP ===');
+		// 	scrollspyParent!.scrollTop = 0;
+		// 	scrollspyParent!.scrollTo({
+		// 		left: scrollspyParent!.scrollLeft,
+		// 		top: scrollspyParent!.scrollTop,
+		// 		behavior: 'smooth'
+		// 	});
+		// }
+		// else{
+		// 	console.log('=== layout - effect - scroll to HASH ===');
+		// 	const target = document.getElementById(page.url.hash.substring(1));
+		// 	// TBD: consider opening a potential collapsed parent sections here
+		// 	// const navBarBottomPrevious = $state.snapshot(navBarBottom);
+		// 	const navBarBottomPrevious = navBar && navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
+		// 	if (target) {
+		// 		const targetRect = target.getBoundingClientRect();
+		// 		// This one prevents scrollspy dispatchEvent error on mount:
+		// 		requestAnimationFrame(() => {
+		// 			const targetScrollTop = targetRect.top;
+		// 			scrollspyParent!.scrollTop = targetScrollTop;
+		// 			// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+		// 			scrollspyParent?.scrollTo({
+		// 				left: scrollspyParent.scrollLeft,
+		// 				top: scrollspyParent.scrollTop,
+		// 				behavior: 'smooth'
+		// 			});
+		// 		})
+		// 	}
+		// 	const currentNavBarBottom = navBar && navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
+		// 	if (navBarBottomPrevious !== currentNavBarBottom) {
+		// 		console.log('=== layout - effect - navBarBottom changed ===');
+		// 		// if (navBarBottomPrevious > 0 && currentNavBarBottom === 0) {
+		// 		// 	console.log('=== layout - effect - navbar collapsed ===');
+		// 		// 	requestAnimationFrame(() => {
+		// 		// 		scrollspyParent!.scrollTop += currentNavBarBottom;
+		// 		// 		scrollspyParent?.scrollTo({left: scrollspyParent.scrollLeft, top: scrollspyParent.scrollTop, behavior: 'instant' });
+		// 		// 	});
+		// 		// } else {
+		// 		// 	requestAnimationFrame(() => {
+		// 		// 		scrollspyParent!.scrollTop -= currentNavBarBottom;
+		// 		// 		scrollspyParent?.scrollTo({
+		// 		// 			left: scrollspyParent.scrollLeft,
+		// 		// 			top: scrollspyParent.scrollTop,
+		// 		// 			behavior: 'instant'
+		// 		// 		});
+		// 		// 	});
+		// 		// }
+		// 	// 	navBarBottomPrevious = navBarBottom;
+		// 	}
+		// }
+	// })
+
+
 
 	// TBD: could this be an attachemnt to main instead?
 	onMount(() => {
@@ -607,20 +730,24 @@
 		// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
 
 		// Scrolling triggered by server changes, potential server side navigation (redirect?) and initial hash handling:
-		scrollspyParent!.scrollTo({ left: scrollspyParent!.scrollLeft, top: scrollspyParent!.scrollTop, behavior: 'smooth' });
-		if (page.url.hash) {
-			const target = document.getElementById(page.url.hash.substring(1));
-			// TBD: consider opening a potential collapsed parent sections here
-			if (target) {
-				const parentRect = scrollspyParent!.getBoundingClientRect();
-				const targetRect = target.getBoundingClientRect();
-				// This one prevents scrollspy dispatchEvent error on mount:
-				const targetScrollTop = scrollspyParent!.scrollTop + targetRect.top - parentRect.top;
-				scrollspyParent!.scrollTop = targetScrollTop;
-				// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
-				scrollspyParent?.scrollTo({left: scrollspyParent.scrollLeft, top: scrollspyParent.scrollTop, behavior: 'smooth' });
-			}
-		}
+		// for now just trigger a afterNavigate manually:
+		// goto(page.url, { replaceState: true, noScroll: true, state: page.state });
+
+		// that one looked good: 
+		// scrollspyParent!.scrollTo({ left: scrollspyParent!.scrollLeft, top: scrollspyParent!.scrollTop, behavior: 'smooth' });
+		// if (page.url.hash) {
+		// 	const target = document.getElementById(page.url.hash.substring(1));
+		// 	// TBD: consider opening a potential collapsed parent sections here
+		// 	if (target) {
+		// 		const parentRect = scrollspyParent!.getBoundingClientRect();
+		// 		const targetRect = target.getBoundingClientRect();
+		// 		// This one prevents scrollspy dispatchEvent error on mount:
+		// 		// const targetScrollTop = scrollspyParent!.scrollTop + targetRect.top - parentRect.top;
+		// 		scrollspyParent!.scrollTop += targetRect.top - parentRect.top;
+		// 		// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+		// 		scrollspyParent?.scrollTo({left: scrollspyParent.scrollLeft, top: scrollspyParent.scrollTop, behavior: 'smooth' });
+		// 	}
+		// }
 	});
 </script>
 

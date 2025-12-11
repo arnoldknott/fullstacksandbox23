@@ -110,14 +110,15 @@
 			data-collapse={'#' + id + '-collapse'}
 			data-pathname={pathname}
 			{href}
-			onclick={(event) => {
-				event.preventDefault();
-				pushState(href, page.state);
-				goto(href);
-			}}
+
 			{@attach initCollapse}
 			{@attach toggleCollapse}
 		>
+			<!-- onclick={(event) => {
+				event.preventDefault();
+				// pushState(href, page.state);
+				goto(href, {noScroll: true, replaceState: true, state: page.state});
+			}} -->
 			<!-- 
 			No more smooth scrolling inside page with this one:
 			onclick={(event) => {
