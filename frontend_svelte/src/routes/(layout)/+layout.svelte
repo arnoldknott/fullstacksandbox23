@@ -424,7 +424,7 @@
 	let scrollspyParent: HTMLElement | null = $state(null);
 
 	// TBD: potential useful features to encaspulate the scroll into:
-	// onMount, afterNavigate $effect, (beforeNavigate), Attachment, onscrollend, derived.by(), ...?
+	// onMount, afterNavigate $effect, (beforeNavigate), (onNavigate), Attachment, onscrollend, derived, derived.by(), ...?
 
 	// const adjustContentAreaOffset = () => {
 	// 	navBarBottom = navBar && navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
