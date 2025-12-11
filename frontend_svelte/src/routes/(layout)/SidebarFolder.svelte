@@ -5,7 +5,7 @@
 	import type { Attachment } from 'svelte/attachments';
 	// import { beforeNavigate, goto } from '$app/navigation';
 	import SidebarItem from './SidebarItem.svelte';
-	import { goto, replaceState, pushState } from '$app/navigation';
+	// import { goto, replaceState, pushState } from '$app/navigation';
 	let {
 		content,
 		topLevel = false,
@@ -110,7 +110,6 @@
 			data-collapse={'#' + id + '-collapse'}
 			data-pathname={pathname}
 			{href}
-
 			{@attach initCollapse}
 			{@attach toggleCollapse}
 		>

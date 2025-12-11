@@ -2,7 +2,12 @@
 	import { type Snippet } from 'svelte';
 	import { page } from '$app/state';
 	import { initScrollspy } from '$lib/userInterface';
-	import { beforeNavigate, goto, pushState, replaceState } from '$app/navigation';
+	import {
+		beforeNavigate,
+		goto
+		// pushState,
+		// replaceState
+	} from '$app/navigation';
 	// import { SvelteURL } from 'svelte/reactivity';
 
 	let {
@@ -71,9 +76,9 @@
 			// 	scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
 			// }
 			// });
-			beforeNavigate((navigator) => {
+			beforeNavigate((_navigator) => {
 				// if (!(navigator.to?.url.pathname === node.dataset.pathname)) {
-					removeScrollspy(parent);
+				removeScrollspy(parent);
 				// }
 			});
 		}
@@ -92,12 +97,12 @@
 				? 'group scrollspy-active:italic'
 				: ''}"
 		>
-					<!-- onclick={(event) => {
+			<!-- onclick={(event) => {
 				console.log("=== SidebarLink.svelte - onclick ===");
 				event.preventDefault();
 				// goto(href, {noScroll: true, replaceState: true, state: page.state});
 			}}  -->
-					 <!-- onclick={(event) => {
+			<!-- onclick={(event) => {
 				// event.preventDefault();
 				goto(new SvelteURL(href), {noScroll: true, replaceState: true, state: page.state});
 			}}  -->
@@ -130,10 +135,14 @@
 	</li>
 {:else}
 	<li>
-		<button type="button" onclick={() => { goto(href);
-			// pushState(href, page.state);
-			// goto(href, {noScroll: true, replaceState: false, state: page.state})}
-			}}>
+		<button
+			type="button"
+			onclick={() => {
+				goto(href);
+				// pushState(href, page.state);
+				// goto(href, {noScroll: true, replaceState: false, state: page.state})}
+			}}
+		>
 			<span class="{icon} size-5"></span>
 			<span class="overlay-minified:hidden">{@render children?.()}</span>
 		</button>

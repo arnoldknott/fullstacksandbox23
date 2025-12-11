@@ -5,9 +5,8 @@
 	import { Model, type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
 
 	import type { Action } from 'svelte/action';
-	import { onMount, tick, type Snippet } from 'svelte';
+	import { onMount, type Snippet } from 'svelte';
 	import { page } from '$app/state';
-	import { page as pageStore } from '$app/stores';
 	import Guard from '$components/Guard.svelte';
 	import { initDropdown, initOverlay } from '$lib/userInterface';
 	import ThemePicker from './playground/components/ThemePicker.svelte';
@@ -16,7 +15,14 @@
 	import { type SubmitFunction } from '@sveltejs/kit';
 	import { resolve } from '$app/paths';
 	import WelcomeModal from './WelcomeModal.svelte';
-	import { afterNavigate, onNavigate, beforeNavigate, replaceState, pushState, goto } from '$app/navigation';
+	import {
+		afterNavigate
+		// onNavigate,
+		// beforeNavigate,
+		// replaceState,
+		// pushState,
+		// goto
+	} from '$app/navigation';
 	import type { SidebarItemContent } from '$lib/types';
 	import SidebarItem from './SidebarItem.svelte';
 	import LoginOutButton from './LoginOutButton.svelte';
@@ -513,7 +519,7 @@
 	// 	// 			});
 	// 	// 		})
 	// 	// 		// navBarBottomPrevious = navBarBottom;
-				
+
 	// 	// 		await tick()
 	// 	// 		requestAnimationFrame(() => {
 	// 	// 			navBarBottom = navBar && navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
@@ -558,7 +564,7 @@
 	let contentArea: HTMLElement | null = $state(null);
 	let contentAreaTop: number = $state(0);
 
-	let contentAreaOffset: number = $state(0)
+	let contentAreaOffset: number = $state(0);
 	// let scrollTarget = $derived(document.getElementById(page.url.hash.substring(1)) || contentArea);
 	let scrollTarget: number = $state(0);
 	// let locationHash: string | null = $derived.by(() => {if(location && location.hash) {return location.hash } else { return null }});
@@ -572,7 +578,7 @@
 		console.log('=== layout - afterNavigate ===');
 		// console.log({ href: page.url.href, pathname: page.url.pathname, hash: page.url.hash});
 		locationHash = location.hash;
-	})
+	});
 
 	$effect(() => {
 		console.log('=== layout - effect - tracking location.hash ===');
@@ -590,7 +596,7 @@
 		// console.log('=== layout - effect - location ===');
 
 		// console.log(location.hash);
-	})
+	});
 
 	const mainScrollEnd = (_event: Event) => {
 		console.log('=== layout - onscrollend ===');
@@ -602,8 +608,13 @@
 			console.log('=== layout - onscrollend - location.hash changed ===');
 			locationHash = location.hash;
 		}
-		const navBarBottomPrevious = navBar && navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
-		scrollTarget = page.url.hash ? document.getElementById(page.url.hash.substring(1))?.getBoundingClientRect().top || 0 : contentArea?.getBoundingClientRect().top || 0;
+		const navBarBottomPrevious =
+			navBar && navBar.getBoundingClientRect().bottom > 0
+				? navBar.getBoundingClientRect().bottom
+				: 0;
+		scrollTarget = page.url.hash
+			? document.getElementById(page.url.hash.substring(1))?.getBoundingClientRect().top || 0
+			: contentArea?.getBoundingClientRect().top || 0;
 		// TBD: add an "afterNavigate" here, so this is not trigggered on a user scroll action?
 		if (navBarBottomPrevious !== navBarBottom) {
 			console.log('=== layout - onscrollend - navBarBottom changed ===');
@@ -615,16 +626,19 @@
 					top: scrollspyParent.scrollTop,
 					behavior: 'smooth'
 				});
-			})
+			});
 		}
 		// const targetRect = scrollTarget!.getBoundingClientRect();
-		
+
 		// })
 		// const currentNavBarBottom = navBar && navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
 		// if (navBarBottomPrevious !== currentNavBarBottom) {
 		// 	console.log('=== layout - effect - navBarBottom changed ===');
 		// }
-		navBarBottom = navBar && navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
+		navBarBottom =
+			navBar && navBar.getBoundingClientRect().bottom > 0
+				? navBar.getBoundingClientRect().bottom
+				: 0;
 		contentAreaTop = contentArea ? contentArea.getBoundingClientRect().top : 0;
 	};
 
@@ -636,8 +650,6 @@
 		// console.log('=== layout - contentAreaAttachment ===');
 	};
 
-
-
 	$effect(() => {
 		console.log('=== layout - effect ===');
 		requestAnimationFrame(() => {
@@ -648,8 +660,8 @@
 				top: scrollspyParent.scrollTop,
 				behavior: 'smooth'
 			});
-		})
-	})
+		});
+	});
 
 	// $effect(() => {
 	// 	console.log('=== layout - effect ===');
@@ -674,82 +686,79 @@
 	// 	}
 	// });
 
-
 	// $effect(() =>  {
-		// console.log('=== layout - effect  ===');
+	// console.log('=== layout - effect  ===');
 
-		// const navBarBottomPrevious = navBar && navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
-		// const scrollTarget = page.url.hash ? document.getElementById(page.url.hash.substring(1)) : contentArea;
-		// const targetRect = scrollTarget!.getBoundingClientRect();
-		// requestAnimationFrame(() => {
-		// 	const targetScrollTop = targetRect.top;
-		// 	scrollspyParent!.scrollTop = targetScrollTop;
-		// 	// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
-		// 	scrollspyParent?.scrollTo({
-		// 		left: scrollspyParent.scrollLeft,
-		// 		top: scrollspyParent.scrollTop,
-		// 		behavior: 'smooth'
-		// 	});
-		// })
-		// const currentNavBarBottom = navBar && navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
-		// if (navBarBottomPrevious !== currentNavBarBottom) {
-		// 	console.log('=== layout - effect - navBarBottom changed ===');
-		// }
-		
-		
-		
-		// // reset scrolling to zero, on internal navigation, if no hash is present:
-		// if (!page.url.hash) {
-		// 	console.log('=== layout - effect - scroll to TOP ===');
-		// 	scrollspyParent!.scrollTop = 0;
-		// 	scrollspyParent!.scrollTo({
-		// 		left: scrollspyParent!.scrollLeft,
-		// 		top: scrollspyParent!.scrollTop,
-		// 		behavior: 'smooth'
-		// 	});
-		// }
-		// else{
-		// 	console.log('=== layout - effect - scroll to HASH ===');
-		// 	const target = document.getElementById(page.url.hash.substring(1));
-		// 	// TBD: consider opening a potential collapsed parent sections here
-		// 	// const navBarBottomPrevious = $state.snapshot(navBarBottom);
-		// 	const navBarBottomPrevious = navBar && navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
-		// 	if (target) {
-		// 		const targetRect = target.getBoundingClientRect();
-		// 		// This one prevents scrollspy dispatchEvent error on mount:
-		// 		requestAnimationFrame(() => {
-		// 			const targetScrollTop = targetRect.top;
-		// 			scrollspyParent!.scrollTop = targetScrollTop;
-		// 			// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
-		// 			scrollspyParent?.scrollTo({
-		// 				left: scrollspyParent.scrollLeft,
-		// 				top: scrollspyParent.scrollTop,
-		// 				behavior: 'smooth'
-		// 			});
-		// 		})
-		// 	}
-		// 	const currentNavBarBottom = navBar && navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
-		// 	if (navBarBottomPrevious !== currentNavBarBottom) {
-		// 		console.log('=== layout - effect - navBarBottom changed ===');
-		// 		// if (navBarBottomPrevious > 0 && currentNavBarBottom === 0) {
-		// 		// 	console.log('=== layout - effect - navbar collapsed ===');
-		// 		// 	requestAnimationFrame(() => {
-		// 		// 		scrollspyParent!.scrollTop += currentNavBarBottom;
-		// 		// 		scrollspyParent?.scrollTo({left: scrollspyParent.scrollLeft, top: scrollspyParent.scrollTop, behavior: 'instant' });
-		// 		// 	});
-		// 		// } else {
-		// 		// 	requestAnimationFrame(() => {
-		// 		// 		scrollspyParent!.scrollTop -= currentNavBarBottom;
-		// 		// 		scrollspyParent?.scrollTo({
-		// 		// 			left: scrollspyParent.scrollLeft,
-		// 		// 			top: scrollspyParent.scrollTop,
-		// 		// 			behavior: 'instant'
-		// 		// 		});
-		// 		// 	});
-		// 		// }
-		// 	// 	navBarBottomPrevious = navBarBottom;
-		// 	}
-		// }
+	// const navBarBottomPrevious = navBar && navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
+	// const scrollTarget = page.url.hash ? document.getElementById(page.url.hash.substring(1)) : contentArea;
+	// const targetRect = scrollTarget!.getBoundingClientRect();
+	// requestAnimationFrame(() => {
+	// 	const targetScrollTop = targetRect.top;
+	// 	scrollspyParent!.scrollTop = targetScrollTop;
+	// 	// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+	// 	scrollspyParent?.scrollTo({
+	// 		left: scrollspyParent.scrollLeft,
+	// 		top: scrollspyParent.scrollTop,
+	// 		behavior: 'smooth'
+	// 	});
+	// })
+	// const currentNavBarBottom = navBar && navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
+	// if (navBarBottomPrevious !== currentNavBarBottom) {
+	// 	console.log('=== layout - effect - navBarBottom changed ===');
+	// }
+
+	// // reset scrolling to zero, on internal navigation, if no hash is present:
+	// if (!page.url.hash) {
+	// 	console.log('=== layout - effect - scroll to TOP ===');
+	// 	scrollspyParent!.scrollTop = 0;
+	// 	scrollspyParent!.scrollTo({
+	// 		left: scrollspyParent!.scrollLeft,
+	// 		top: scrollspyParent!.scrollTop,
+	// 		behavior: 'smooth'
+	// 	});
+	// }
+	// else{
+	// 	console.log('=== layout - effect - scroll to HASH ===');
+	// 	const target = document.getElementById(page.url.hash.substring(1));
+	// 	// TBD: consider opening a potential collapsed parent sections here
+	// 	// const navBarBottomPrevious = $state.snapshot(navBarBottom);
+	// 	const navBarBottomPrevious = navBar && navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
+	// 	if (target) {
+	// 		const targetRect = target.getBoundingClientRect();
+	// 		// This one prevents scrollspy dispatchEvent error on mount:
+	// 		requestAnimationFrame(() => {
+	// 			const targetScrollTop = targetRect.top;
+	// 			scrollspyParent!.scrollTop = targetScrollTop;
+	// 			// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+	// 			scrollspyParent?.scrollTo({
+	// 				left: scrollspyParent.scrollLeft,
+	// 				top: scrollspyParent.scrollTop,
+	// 				behavior: 'smooth'
+	// 			});
+	// 		})
+	// 	}
+	// 	const currentNavBarBottom = navBar && navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
+	// 	if (navBarBottomPrevious !== currentNavBarBottom) {
+	// 		console.log('=== layout - effect - navBarBottom changed ===');
+	// 		// if (navBarBottomPrevious > 0 && currentNavBarBottom === 0) {
+	// 		// 	console.log('=== layout - effect - navbar collapsed ===');
+	// 		// 	requestAnimationFrame(() => {
+	// 		// 		scrollspyParent!.scrollTop += currentNavBarBottom;
+	// 		// 		scrollspyParent?.scrollTo({left: scrollspyParent.scrollLeft, top: scrollspyParent.scrollTop, behavior: 'instant' });
+	// 		// 	});
+	// 		// } else {
+	// 		// 	requestAnimationFrame(() => {
+	// 		// 		scrollspyParent!.scrollTop -= currentNavBarBottom;
+	// 		// 		scrollspyParent?.scrollTo({
+	// 		// 			left: scrollspyParent.scrollLeft,
+	// 		// 			top: scrollspyParent.scrollTop,
+	// 		// 			behavior: 'instant'
+	// 		// 		});
+	// 		// 	});
+	// 		// }
+	// 	// 	navBarBottomPrevious = navBarBottom;
+	// 	}
+	// }
 	// })
 
 	// TBD: could this be an attachemnt to main instead?
@@ -768,7 +777,7 @@
 		// for now just trigger a afterNavigate manually:
 		// goto(page.url, { replaceState: true, noScroll: true, state: page.state });
 
-		// that one looked good: 
+		// that one looked good:
 		// scrollspyParent!.scrollTo({ left: scrollspyParent!.scrollLeft, top: scrollspyParent!.scrollTop, behavior: 'smooth' });
 		// if (page.url.hash) {
 		// 	const target = document.getElementById(page.url.hash.substring(1));
@@ -835,94 +844,94 @@
 	onscrollend={mainScrollEnd}
 	{@attach mainAttachment}
 >
-		<WelcomeModal
-			bind:session={data.session}
-			bind:artificialIntelligenceConfiguration
-			bind:themeConfiguration
-			bind:mode
-			{updateProfileAccount}
-			{saveProfileAccount}
-		/>
+	<WelcomeModal
+		bind:session={data.session}
+		bind:artificialIntelligenceConfiguration
+		bind:themeConfiguration
+		bind:mode
+		{updateProfileAccount}
+		{saveProfileAccount}
+	/>
 
-		<!-- TBD: put sidebar into component -->
-		<aside
-			id="collapsible-mini-sidebar"
-			class="overlay  overlay-minified:w-19 overlay-open:translate-x-0 drawer drawer-start bg-base-150 border-base-content/20 hidden w-66 border-e [--auto-close:sm] sm:absolute sm:z-0 sm:flex sm:translate-x-0 sm:shadow-none"
-			tabindex="-1"
-			{@attach initOverlay}
-		>
-			<div class="mx-7 flex h-26 flex-row items-center justify-between pt-7">
-				<div class="hidden sm:block">
-					{@render sidebarToggleButton('hidden sm:flex', {
-						'data-overlay-minifier': '#collapsible-mini-sidebar'
-					})}
-				</div>
-				<div class="overlay-minified:hidden">
-					<Logo />
-				</div>
+	<!-- TBD: put sidebar into component -->
+	<aside
+		id="collapsible-mini-sidebar"
+		class="overlay overlay-minified:w-19 overlay-open:translate-x-0 drawer drawer-start bg-base-150 border-base-content/20 hidden w-66 border-e [--auto-close:sm] sm:absolute sm:z-0 sm:flex sm:translate-x-0 sm:shadow-none"
+		tabindex="-1"
+		{@attach initOverlay}
+	>
+		<div class="mx-7 flex h-26 flex-row items-center justify-between pt-7">
+			<div class="hidden sm:block">
+				{@render sidebarToggleButton('hidden sm:flex', {
+					'data-overlay-minifier': '#collapsible-mini-sidebar'
+				})}
 			</div>
-			<div class="drawer-body px-2 pt-4">
-				<ul class="menu p-0">
-					{@render sidebarPartItem('/', 'icon-[material-symbols--home-outline-rounded]', 'Home')}
-					{@render sidebarPartItem('/docs', 'icon-[oui--documentation]', 'Docs', 'md:hidden')}
+			<div class="overlay-minified:hidden">
+				<Logo />
+			</div>
+		</div>
+		<div class="drawer-body px-2 pt-4">
+			<ul class="menu p-0">
+				{@render sidebarPartItem('/', 'icon-[material-symbols--home-outline-rounded]', 'Home')}
+				{@render sidebarPartItem('/docs', 'icon-[oui--documentation]', 'Docs', 'md:hidden')}
+				{@render sidebarPartItem(
+					'/playground',
+					'icon-[mdi--playground-seesaw]',
+					'Playground',
+					'md:hidden'
+				)}
+				<Guard>
+					<!-- <hr class="border-outline -mx-2 my-3" /> -->
 					{@render sidebarPartItem(
-						'/playground',
-						'icon-[mdi--playground-seesaw]',
-						'Playground',
+						'/dashboard',
+						'icon-[material-symbols--dashboard-outline-rounded]',
+						'Dashboard',
 						'md:hidden'
 					)}
-					<Guard>
-						<!-- <hr class="border-outline -mx-2 my-3" /> -->
-						{@render sidebarPartItem(
-							'/dashboard',
-							'icon-[material-symbols--dashboard-outline-rounded]',
-							'Dashboard',
-							'md:hidden'
-						)}
-					</Guard>
-					<!-- {@render sidebarPartItem(
-						'/features',
-						'icon-[mdi--feature-highlight]',
-						'Features',
-						'md:hidden'
-					)}
-					{@render sidebarPartItem('/apps', 'icon-[tabler--apps]', 'Apps', 'md:hidden')}
-					{@render sidebarPartItem(
-						'/construction',
-						'icon-[maki--construction]',
-						'Construction',
-						'md:hidden'
-					)} -->
-					<li>
-						<div class="items-center sm:hidden md:ml-2">
-							<LoginOutButton {loggedIn} />
-						</div>
-					</li>
-				</ul>
-				<div class="divider"></div>
-				<ul class="menu p-0">
-					{#each sidebarLinks as mainItem (mainItem.id)}
-						<SidebarItem
-							content={{ ...mainItem, pathname: mainItem.pathname || page.url.pathname }}
-							topLevel={true}
-							topoffset={navBarBottom}
-						/>
-						<!-- topoffset={internalNavigationTarget} -->
-						<!-- topoffset={navBarBottom} -->
-						<!-- topoffset={`[--scrollspy-offset:${navBarBottom + 8}]`} -->
-					{/each}
-				</ul>
-			</div>
-			NavBarBottom: {navBarBottom}
-			<br />
-			ContentAreaTop: {contentAreaTop}
-			<br />
-			ContentAreaOffset: {contentAreaOffset}
-			<br />
-			Pathname: {page.url.pathname}
-			<br />
-			Hash: {page.url.hash}
-		</aside>
+				</Guard>
+				<!-- {@render sidebarPartItem(
+					'/features',
+					'icon-[mdi--feature-highlight]',
+					'Features',
+					'md:hidden'
+				)}
+				{@render sidebarPartItem('/apps', 'icon-[tabler--apps]', 'Apps', 'md:hidden')}
+				{@render sidebarPartItem(
+					'/construction',
+					'icon-[maki--construction]',
+					'Construction',
+					'md:hidden'
+				)} -->
+				<li>
+					<div class="items-center sm:hidden md:ml-2">
+						<LoginOutButton {loggedIn} />
+					</div>
+				</li>
+			</ul>
+			<div class="divider"></div>
+			<ul class="menu p-0">
+				{#each sidebarLinks as mainItem (mainItem.id)}
+					<SidebarItem
+						content={{ ...mainItem, pathname: mainItem.pathname || page.url.pathname }}
+						topLevel={true}
+						topoffset={navBarBottom}
+					/>
+					<!-- topoffset={internalNavigationTarget} -->
+					<!-- topoffset={navBarBottom} -->
+					<!-- topoffset={`[--scrollspy-offset:${navBarBottom + 8}]`} -->
+				{/each}
+			</ul>
+		</div>
+		NavBarBottom: {navBarBottom}
+		<br />
+		ContentAreaTop: {contentAreaTop}
+		<br />
+		ContentAreaOffset: {contentAreaOffset}
+		<br />
+		Pathname: {page.url.pathname}
+		<br />
+		Hash: {page.url.hash}
+	</aside>
 	<!-- style="--nav-offset: {navBarBottom}px" -->
 	<!-- style:scroll-padding-top={`${navBarBottom}px`} -->
 	<!-- onscrollend={adjustScrollForStickyNavbar} -->
@@ -1069,7 +1078,6 @@
 		</nav>
 		<!-- </div> -->
 
-
 		<!-- <aside
 			id="collapsible-mini-sidebar"
 			class="overlay [--auto-close:sm] sm:shadow-none overlay-open:translate-x-0 drawer drawer-start hidden max-w-64  sm:flex sm:translate-x-0 pt-16"
@@ -1102,7 +1110,6 @@
 		<div
 			id="scrollspy"
 			class="sm:overlay-minified:ps-19 overlay-open:ps-0 space-y-4 pt-2 transition-all duration-300 sm:mx-2 sm:mt-2 sm:ps-66"
-			
 			bind:this={contentArea}
 			{@attach contentAreaAttachment}
 		>
