@@ -562,6 +562,7 @@
 	// let scrollTarget = $derived(document.getElementById(page.url.hash.substring(1)) || contentArea);
 	let scrollTarget: number = $state(0);
 	// let locationHash: string | null = $derived.by(() => {if(location && location.hash) {return location.hash } else { return null }});
+	let locationHash: string | null = $state(null);
 
 	// onMount(()=> {
 	// 	windowElement = window;
@@ -569,23 +570,26 @@
 
 	afterNavigate(() => {
 		console.log('=== layout - afterNavigate ===');
-		console.log({ href: page.url.href, pathname: page.url.pathname, hash: page.url.hash});
+		// console.log({ href: page.url.href, pathname: page.url.pathname, hash: page.url.hash});
+		locationHash = location.hash;
 	})
 
 	$effect(() => {
-		console.log('=== layout - effect tracking page ===');
-		console.log({ href: page.url.href, pathname: page.url.pathname, hash: page.url.hash});
-		console.log('=== layout - effect - page ===');
-		console.log(page);
-		console.log('=== layout - effect - page.url.searchParams ===');
-		console.log(page.url.searchParams.get("page"));
-		console.log("=== layout - effect - pageStore ===");
-		console.log($pageStore.url.hash);
-		// console.log("=== layout - effect - window ===");
-		// console.log(windowElement?.onhashchange);
-		console.log('=== layout - effect - location ===');
+		console.log('=== layout - effect - tracking location.hash ===');
+		console.log(locationHash);
+		// console.log('=== layout - effect tracking page ===');
+		// console.log({ href: page.url.href, pathname: page.url.pathname, hash: page.url.hash});
+		// console.log('=== layout - effect - page ===');
+		// console.log(page);
+		// console.log('=== layout - effect - page.url.searchParams ===');
+		// console.log(page.url.searchParams.get("page"));
+		// console.log("=== layout - effect - pageStore ===");
+		// console.log($pageStore.url.hash);
+		// // console.log("=== layout - effect - window ===");
+		// // console.log(windowElement?.onhashchange);
+		// console.log('=== layout - effect - location ===');
 
-		console.log(location.hash);
+		// console.log(location.hash);
 	})
 
 	const mainScrollEnd = (_event: Event) => {
@@ -594,6 +598,10 @@
 		// 	navBarBottom =
 		// 		navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
 		// }
+		if (locationHash !== location.hash) {
+			console.log('=== layout - onscrollend - location.hash changed ===');
+			locationHash = location.hash;
+		}
 		const navBarBottomPrevious = navBar && navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
 		scrollTarget = page.url.hash ? document.getElementById(page.url.hash.substring(1))?.getBoundingClientRect().top || 0 : contentArea?.getBoundingClientRect().top || 0;
 		// TBD: add an "afterNavigate" here, so this is not trigggered on a user scroll action?
@@ -605,7 +613,7 @@
 				scrollspyParent?.scrollTo({
 					left: scrollspyParent.scrollLeft,
 					top: scrollspyParent.scrollTop,
-					behavior: 'instant'
+					behavior: 'smooth'
 				});
 			})
 		}
@@ -744,11 +752,10 @@
 		// }
 	// })
 
-
-
 	// TBD: could this be an attachemnt to main instead?
 	onMount(() => {
 		console.log('=== layout - onMount ===');
+		locationHash = location.hash ? location.hash : null;
 		// navBarBottom = navBar && navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
 		// contentAreaTop = contentArea ? contentArea.getBoundingClientRect().top : 0;
 		// contentAreaOffset = contentAreaTop - navBarBottom;

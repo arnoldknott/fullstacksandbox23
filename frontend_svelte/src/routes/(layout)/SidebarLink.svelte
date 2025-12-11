@@ -3,7 +3,7 @@
 	import { page } from '$app/state';
 	import { initScrollspy } from '$lib/userInterface';
 	import { beforeNavigate, goto, pushState, replaceState } from '$app/navigation';
-	import { SvelteURL } from 'svelte/reactivity';
+	// import { SvelteURL } from 'svelte/reactivity';
 
 	let {
 		href,
@@ -88,7 +88,6 @@
 	<li {@attach toggleScrollspyOnParent}>
 		<a
 			{href}
-
 			class="text-base-content/80 flex items-center gap-x-2 hover:opacity-100 {thisPage
 				? 'group scrollspy-active:italic'
 				: ''}"
