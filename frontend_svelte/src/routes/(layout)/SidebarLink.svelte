@@ -3,6 +3,7 @@
 	import { page } from '$app/state';
 	import { initScrollspy } from '$lib/userInterface';
 	import { beforeNavigate, goto, pushState, replaceState } from '$app/navigation';
+	import { SvelteURL } from 'svelte/reactivity';
 
 	let {
 		href,
@@ -87,10 +88,20 @@
 	<li {@attach toggleScrollspyOnParent}>
 		<a
 			{href}
+
 			class="text-base-content/80 flex items-center gap-x-2 hover:opacity-100 {thisPage
 				? 'group scrollspy-active:italic'
 				: ''}"
 		>
+					<!-- onclick={(event) => {
+				console.log("=== SidebarLink.svelte - onclick ===");
+				event.preventDefault();
+				// goto(href, {noScroll: true, replaceState: true, state: page.state});
+			}}  -->
+					 <!-- onclick={(event) => {
+				// event.preventDefault();
+				goto(new SvelteURL(href), {noScroll: true, replaceState: true, state: page.state});
+			}}  -->
 			<!-- onclick={(event) => {
 				event.preventDefault();
 				// pushState(href, page.state);

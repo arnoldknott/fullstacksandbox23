@@ -7,6 +7,7 @@
 	import type { Action } from 'svelte/action';
 	import { onMount, tick, type Snippet } from 'svelte';
 	import { page } from '$app/state';
+	import { page as pageStore } from '$app/stores';
 	import Guard from '$components/Guard.svelte';
 	import { initDropdown, initOverlay } from '$lib/userInterface';
 	import ThemePicker from './playground/components/ThemePicker.svelte';
@@ -550,6 +551,7 @@
 	// 	// // }
 	// });
 
+	// let windowElement: Window | null= $state(null);
 	let navBar: HTMLElement | null = $state(null);
 	let navBarBottom: number = $state(0);
 	// let navBarBottomPrevious: number = $state(0);
@@ -559,6 +561,32 @@
 	let contentAreaOffset: number = $state(0)
 	// let scrollTarget = $derived(document.getElementById(page.url.hash.substring(1)) || contentArea);
 	let scrollTarget: number = $state(0);
+	// let locationHash: string | null = $derived.by(() => {if(location && location.hash) {return location.hash } else { return null }});
+
+	// onMount(()=> {
+	// 	windowElement = window;
+	// })
+
+	afterNavigate(() => {
+		console.log('=== layout - afterNavigate ===');
+		console.log({ href: page.url.href, pathname: page.url.pathname, hash: page.url.hash});
+	})
+
+	$effect(() => {
+		console.log('=== layout - effect tracking page ===');
+		console.log({ href: page.url.href, pathname: page.url.pathname, hash: page.url.hash});
+		console.log('=== layout - effect - page ===');
+		console.log(page);
+		console.log('=== layout - effect - page.url.searchParams ===');
+		console.log(page.url.searchParams.get("page"));
+		console.log("=== layout - effect - pageStore ===");
+		console.log($pageStore.url.hash);
+		// console.log("=== layout - effect - window ===");
+		// console.log(windowElement?.onhashchange);
+		console.log('=== layout - effect - location ===');
+
+		console.log(location.hash);
+	})
 
 	const mainScrollEnd = (_event: Event) => {
 		console.log('=== layout - onscrollend ===');
@@ -751,6 +779,8 @@
 	});
 </script>
 
+<!-- <svelte:window onhashchange={() => console.log("hash changed")} /> -->
+
 {#snippet sidebarToggleButton(classes: string, overlayModifier: object)}
 	<button
 		type="button"
@@ -881,6 +911,10 @@
 			ContentAreaTop: {contentAreaTop}
 			<br />
 			ContentAreaOffset: {contentAreaOffset}
+			<br />
+			Pathname: {page.url.pathname}
+			<br />
+			Hash: {page.url.hash}
 		</aside>
 	<!-- style="--nav-offset: {navBarBottom}px" -->
 	<!-- style:scroll-padding-top={`${navBarBottom}px`} -->
