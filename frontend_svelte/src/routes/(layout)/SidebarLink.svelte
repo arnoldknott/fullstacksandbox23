@@ -4,8 +4,8 @@
 	import { initScrollspy } from '$lib/userInterface';
 	import {
 		beforeNavigate,
-		goto,
-		pushState
+		goto
+		// pushState
 		// pushState,
 		// replaceState
 	} from '$app/navigation';

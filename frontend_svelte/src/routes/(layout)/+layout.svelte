@@ -582,10 +582,10 @@
 		const nativePush = History.prototype.pushState;
 		const nativeReplace = History.prototype.replaceState;
 		let bypassNativeOverride = false;
-		history.pushState = function (state: any, title: string, url?: string | URL | null) {
+		history.pushState = (state: unknown, title: string, url?: string | URL | null) => {
 			if (bypassNativeOverride) {
 				// Call the native prototype directly to avoid warning wrappers
-				return nativePush.call(history, state, title, url as any);
+				return nativePush.call(history, state, title, url ?? '');
 			}
 			const nextUrl = url instanceof URL ? url.toString() : typeof url === 'string' ? url : null;
 			if (nextUrl) {
@@ -597,13 +597,13 @@
 				}
 			} else {
 				// Fallback to native method to avoid warnings
-				nativePush.call(history, state, title, url as any);
+				nativePush.call(history, state, title, url ?? '');
 			}
-		} as typeof history.pushState;
-		history.replaceState = function (state: any, title: string, url?: string | URL | null) {
+		};
+		history.replaceState = (state: unknown, title: string, url?: string | URL | null) => {
 			if (bypassNativeOverride) {
 				// Call the native prototype directly to avoid warning wrappers
-				return nativeReplace.call(history, state, title, url as any);
+				return nativeReplace.call(history, state, title, url ?? '');
 			}
 			const nextUrl = url instanceof URL ? url.toString() : typeof url === 'string' ? url : null;
 			if (nextUrl) {
@@ -615,24 +615,47 @@
 				}
 			} else {
 				// Fallback to native method to avoid warnings
-				nativeReplace.call(history, state, title, url as any);
+				nativeReplace.call(history, state, title, url ?? '');
 			}
-		} as typeof history.replaceState;
+		};
 
 		return () => {
 			history.pushState = originalPush;
 			history.replaceState = originalReplace;
 		};
-	})
+	});
 
 	afterNavigate(() => {
 		console.log('=== layout - afterNavigate ===');
 		// console.log({ href: page.url.href, pathname: page.url.pathname, hash: page.url.hash});
 		locationHash = location.hash;
 		navBarBottom =
-		navBar && navBar.getBoundingClientRect().bottom > 0
-			? navBar.getBoundingClientRect().bottom
-			: 0;
+			navBar && navBar.getBoundingClientRect().bottom > 0
+				? navBar.getBoundingClientRect().bottom
+				: 0;
+		if (!locationHash) {
+			// console.log('=== layout - afterNavigate - scroll to TOP ===');
+			requestAnimationFrame(() => {
+				scrollspyParent!.scrollTop = 0;
+				// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+				scrollspyParent?.scrollTo({
+					left: scrollspyParent.scrollLeft,
+					top: scrollspyParent.scrollTop,
+					behavior: 'smooth'
+				});
+			});
+		} else {
+			// console.log('=== layout - afterNavigate - scroll to hash ===');
+			requestAnimationFrame(() => {
+				scrollspyParent!.scrollTop -= navBarBottom;
+				// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+				scrollspyParent?.scrollTo({
+					left: scrollspyParent.scrollLeft,
+					top: scrollspyParent.scrollTop,
+					behavior: 'smooth'
+				});
+			});
+		}
 		// console.log('=== layout - afterNavigate - navBarBottom ===');
 		// console.log(navBarBottom);
 		// if (navBarBottom > 0 && window.innerWidth >= 640 ) {
@@ -647,15 +670,36 @@
 		// 		behavior: 'smooth'
 		// 	});
 		// }
-		requestAnimationFrame(() => {
-			scrollspyParent!.scrollTop -= navBarBottom;
-			// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
-			scrollspyParent?.scrollTo({
-				left: scrollspyParent.scrollLeft,
-				top: scrollspyParent.scrollTop,
-				behavior: 'smooth'
-			});
-		});
+		// if (locationHash) {
+		// 	// console.log('=== layout - afterNavigate - scroll to hash ===');
+		// 	const target = document.getElementById(locationHash);
+		// 	// TBD: consider opening a potential collapsed parent sections here
+		// 	if (target) {
+		// 		const targetRect = target.getBoundingClientRect();
+		// 		const parentRect = scrollspyParent!.getBoundingClientRect();
+		// 		// This one prevents scrollspy dispatchEvent error on mount:
+		// 		requestAnimationFrame(() => {
+		// 			const targetScrollTop = targetRect.top - parentRect.top - navBarBottom -1000;
+		// 			scrollspyParent!.scrollTop = targetScrollTop;
+		// 			// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+		// 			scrollspyParent?.scrollTo({
+		// 				left: scrollspyParent.scrollLeft,
+		// 				top: scrollspyParent.scrollTop,
+		// 				behavior: 'instant'
+		// 			});
+		// 		});
+		// 	}
+		// } else {
+		// 	// console.log('=== layout - afterNavigate - scroll to TOP ===');
+		// 	requestAnimationFrame(() => {
+		// 		scrollspyParent!.scrollTop = -navBarBottom;
+		// 		scrollspyParent!.scrollTo({
+		// 			left: scrollspyParent!.scrollLeft,
+		// 			top: scrollspyParent!.scrollTop,
+		// 			behavior: 'smooth'
+		// 		});
+		// 	});
+		// }
 	});
 
 	$effect(() => {
@@ -682,16 +726,16 @@
 		// 	navBarBottom =
 		// 		navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
 		// }
-		if (locationHash !== location.hash && window.innerWidth >= 640 ) {
+		if (locationHash !== location.hash && window.innerWidth >= 640) {
 			console.log('=== layout - onscrollend - location.hash changed ===');
 			locationHash = location.hash;
 			// console.log("=== layout - onscrollend - page ===");
 			// console.log(page);
 			// pushState(page.url.href, page);
 			navBarBottom =
-			navBar && navBar.getBoundingClientRect().bottom > 0
-				? navBar.getBoundingClientRect().bottom
-				: 0;
+				navBar && navBar.getBoundingClientRect().bottom > 0
+					? navBar.getBoundingClientRect().bottom
+					: 0;
 			requestAnimationFrame(() => {
 				scrollspyParent!.scrollTop -= navBarBottom;
 				// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
@@ -874,7 +918,11 @@
 		// goto(page.url, { replaceState: true, noScroll: true, state: page.state });
 
 		// that one looked good:
-		scrollspyParent!.scrollTo({ left: scrollspyParent!.scrollLeft, top: scrollspyParent!.scrollTop, behavior: 'smooth' });
+		scrollspyParent!.scrollTo({
+			left: scrollspyParent!.scrollLeft,
+			top: scrollspyParent!.scrollTop,
+			behavior: 'smooth'
+		});
 		if (page.url.hash) {
 			const target = document.getElementById(page.url.hash.substring(1));
 			// TBD: consider opening a potential collapsed parent sections here
@@ -885,7 +933,11 @@
 				// const targetScrollTop = scrollspyParent!.scrollTop + targetRect.top - parentRect.top;
 				scrollspyParent!.scrollTop += targetRect.top - parentRect.top;
 				// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
-				scrollspyParent?.scrollTo({left: scrollspyParent.scrollLeft, top: scrollspyParent.scrollTop, behavior: 'smooth' });
+				scrollspyParent?.scrollTo({
+					left: scrollspyParent.scrollLeft,
+					top: scrollspyParent.scrollTop,
+					behavior: 'smooth'
+				});
 			}
 		}
 	});
