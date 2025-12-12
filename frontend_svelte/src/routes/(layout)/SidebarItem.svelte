@@ -5,11 +5,13 @@
 	import SidebarLink from './SidebarLink.svelte';
 	let {
 		content,
-		topLevel = false
+		topLevel = false,
+		topoffset
 		// scrollspyParent
 	}: {
 		content: SidebarItemContent;
 		topLevel?: boolean;
+		topoffset: number;
 		// scrollspyParent: HTMLDivElement;
 	} = $props();
 	let { name, pathname, hash, icon } = $derived({ ...content });
@@ -39,5 +41,6 @@
 			pathname: pathname || ''
 		} as SidebarFolderContent}
 		{topLevel}
+		{topoffset}
 	/>
 {/if}

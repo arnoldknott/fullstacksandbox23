@@ -2,7 +2,15 @@
 	import { type Snippet } from 'svelte';
 	import { page } from '$app/state';
 	import { initScrollspy } from '$lib/userInterface';
-	import { beforeNavigate, goto } from '$app/navigation';
+	import {
+		beforeNavigate,
+		goto
+		// pushState
+		// pushState,
+		// replaceState
+	} from '$app/navigation';
+	// import { SvelteURL } from 'svelte/reactivity';
+
 	let {
 		href,
 		thisPage,
@@ -60,19 +68,19 @@
 			parent.dataset.pathname === page.url.pathname &&
 			parent.getAttribute('data-scrollspy') !== '#scrollspy'
 		) {
-			// afterNavigate((navigator) => {
+			// afterNavigate((_navigator) => {
 			if (thisPage) {
 				addScrollspy(parent);
 			}
-			// 	if (navigator.to?.url.hash !== '') {
-			// 		scrollspyParent.scrollTop = 0;
-			// 		scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
-			// 	}
+			// if (navigator.to?.url.hash !== '') {
+			// 	scrollspyParent.scrollTop = 0;
+			// 	scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
+			// }
 			// });
-			beforeNavigate((navigator) => {
-				if (!(navigator.to?.url.pathname === node.dataset.pathname)) {
-					removeScrollspy(parent);
-				}
+			beforeNavigate((_navigator) => {
+				// if (!(navigator.to?.url.pathname === node.dataset.pathname)) {
+				removeScrollspy(parent);
+				// }
 			});
 		}
 		// Cleanup when the attachment is removed
@@ -90,6 +98,40 @@
 				? 'group scrollspy-active:italic'
 				: ''}"
 		>
+			<!-- 			onclick={() => {
+				const target = document.getElementById(href)
+				if (target) {
+					console.log("=== SidebarLink.svelte - onclick - before scroll ===");
+					pushState(href, page.state);
+					target.scrollIntoView({ behavior: 'smooth' });
+					console.log("=== SidebarLink.svelte - onclick - after scroll ===");
+				}
+				}} -->
+			<!-- onclick={(event) => {
+				console.log("=== SidebarLink.svelte - onclick ===");
+				event.preventDefault();
+				// goto(href, {noScroll: true, replaceState: true, state: page.state});
+			}}  -->
+			<!-- onclick={(event) => {
+				// event.preventDefault();
+				goto(new SvelteURL(href), {noScroll: true, replaceState: true, state: page.state});
+			}}  -->
+			<!-- onclick={(event) => {
+				event.preventDefault();
+				// pushState(href, page.state);
+				goto(href, {noScroll: true, replaceState: false, state: page.state});
+			}} -->
+			<!-- onclick={(event) => {
+				if (!thisPage)
+				{ 
+					event.preventDefault();
+					pushState(href, page.state);
+					goto(href)
+				}
+				else{
+					pushState(href, page.state);
+				};
+			}} -->
 			{#if topLevel}
 				<span class="{icon} size-5"></span>
 			{:else}
@@ -103,7 +145,14 @@
 	</li>
 {:else}
 	<li>
-		<button type="button" onclick={() => goto(href)}>
+		<button
+			type="button"
+			onclick={() => {
+				goto(href);
+				// pushState(href, page.state);
+				// goto(href, {noScroll: true, replaceState: false, state: page.state})}
+			}}
+		>
 			<span class="{icon} size-5"></span>
 			<span class="overlay-minified:hidden">{@render children?.()}</span>
 		</button>

@@ -3,18 +3,23 @@
 	import { page } from '$app/state';
 	import { initCollapse } from '$lib/userInterface';
 	import type { Attachment } from 'svelte/attachments';
-	// import { beforeNavigate, goto } from '$app/navigation';
 	import SidebarItem from './SidebarItem.svelte';
 	let {
 		content,
-		topLevel = false
+		topLevel = false,
+		// TBD: remove topoffset if scrollspy-offset is unnecessary!
+		topoffset
 		// scrollspyParent
 	}: {
 		content: SidebarFolderContent;
 		topLevel?: boolean;
+		topoffset: number;
 		// scrollspyParent: HTMLDivElement;
 	} = $props();
 	let { id, name, pathname, hash, icon, items } = $derived({ ...content });
+
+	// console.log("=== SidebarFolder.svelte - topoffset ===");
+	// console.log(topoffset);
 
 	const thisPage = $derived.by(() => (pathname: string) => pathname === page.url.pathname);
 	const createHref = $derived.by(() => (destinationPathname: string, hash?: string) => {
@@ -24,6 +29,7 @@
 		else href = `${destinationPathname}${hash}`;
 		return href;
 	});
+	let href = $derived(createHref(pathname!, hash));
 
 	const toggleCollapse: Attachment<HTMLElement> = (node: HTMLElement) => {
 		// if (page.url.pathname.startsWith(node.dataset.pathname || '')) {
@@ -45,16 +51,20 @@
 		id={id + '-collapse'}
 		class="collapse {thisPage(pathname!)
 			? 'open'
-			: 'hidden'} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
+			: 'hidden'} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300 max-sm:[--scrollspy-offset:56px]"
 		aria-labelledby={id + '-control'}
 		data-pathname={pathname}
 	>
+		<!-- {`[--scrollspy-offset:${topoffset}]`.toString()} -->
+		<!-- {topoffset} -->
+		<!-- add [--scrollspy-offset:86] here conditionally with number being navbarBottom variable from layout. -->
 		{#each items as item (item.id)}
 			<SidebarItem
 				content={{
 					...item,
 					pathname: item.pathname || pathname
 				} as SidebarFolderContent}
+				{topoffset}
 			/>
 		{/each}
 	</ul>
@@ -97,10 +107,33 @@
 			id={id + '-control'}
 			data-collapse={'#' + id + '-collapse'}
 			data-pathname={pathname}
-			href={createHref(pathname!, hash)}
+			{href}
 			{@attach initCollapse}
 			{@attach toggleCollapse}
 		>
+			<!-- onclick={(event) => {
+				event.preventDefault();
+				// pushState(href, page.state);
+				goto(href, {noScroll: true, replaceState: true, state: page.state});
+			}} -->
+			<!-- 
+			No more smooth scrolling inside page with this one:
+			onclick={(event) => {
+				event.preventDefault();
+				replaceState(href, page.state);
+				goto(href);
+			}}-->
+			<!-- onclick={(event) => {
+				if (!thisPage)
+				{ 
+					event.preventDefault();
+					pushState(href, page.state);
+					goto(href)
+				}
+				else{
+					pushState(href, page.state);
+				};
+			}} -->
 			<span
 				class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
 			></span>
