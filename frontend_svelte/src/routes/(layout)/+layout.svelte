@@ -607,9 +607,20 @@
 			}
 			const nextUrl = url instanceof URL ? url.toString() : typeof url === 'string' ? url : null;
 			if (nextUrl) {
+				// Detect FlyonUI scrollspy hash-only updates and convert to pushState
+				const current = new URL(location.href);
+				const next = new URL(nextUrl, location.href);
+				const isSamePath = current.pathname === next.pathname && current.search === next.search;
+				const isHashChange = current.hash !== next.hash;
+				
 				bypassNativeOverride = true;
 				try {
-					replaceState(nextUrl, page.state);
+					// FlyonUI scrollspy calls replaceState for hash changes - convert to pushState for history
+					if (isSamePath && isHashChange) {
+						pushState(nextUrl, page.state);
+					} else {
+						replaceState(nextUrl, page.state);
+					}
 				} finally {
 					bypassNativeOverride = false;
 				}
