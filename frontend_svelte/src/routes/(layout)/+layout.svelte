@@ -1315,13 +1315,13 @@
 			{@attach contentAreaAttachment}
 		>
 			{@render children?.()}
-					NavBarBottom: {navBarBottom}
-		<br />
-		ContentAreaTop: {contentAreaTop}
-		<br />
-		ContentAreaOffset: {contentAreaOffset}
-		<br />
-		locationHash: {locationHash}
+			NavBarBottom: {navBarBottom}
+			<br />
+			ContentAreaTop: {contentAreaTop}
+			<br />
+			ContentAreaOffset: {contentAreaOffset}
+			<br />
+			locationHash: {locationHash}
 		</div>
 	</div>
 </main>
