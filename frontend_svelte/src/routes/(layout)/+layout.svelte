@@ -16,11 +16,11 @@
 	import { resolve } from '$app/paths';
 	import WelcomeModal from './WelcomeModal.svelte';
 	import {
-		afterNavigate
+		afterNavigate,
+		replaceState,
+		pushState
 		// onNavigate,
 		// beforeNavigate,
-		// replaceState,
-		// pushState,
 		// goto
 	} from '$app/navigation';
 	import type { SidebarItemContent } from '$lib/types';
@@ -46,6 +46,33 @@
 		if (userUnregistered) {
 			window.HSOverlay.open(welcomeModal);
 		}
+
+		// // Delegate native history updates to SvelteKit to avoid router conflicts
+		// const originalPush = history.pushState.bind(history);
+		// const originalReplace = history.replaceState.bind(history);
+		// history.pushState = function (state: any, title: string, url?: string | URL | null) {
+		// 	if (typeof url === 'string') {
+		// 		pushState(url, page.state);
+		// 	} else if (url instanceof URL) {
+		// 		pushState(url.toString(), page.state);
+		// 	} else {
+		// 		originalPush(state, title, url as any);
+		// 	}
+		// } as typeof history.pushState;
+		// history.replaceState = function (state: any, title: string, url?: string | URL | null) {
+		// 	if (typeof url === 'string') {
+		// 		replaceState(url, page.state);
+		// 	} else if (url instanceof URL) {
+		// 		replaceState(url.toString(), page.state);
+		// 	} else {
+		// 		originalReplace(state, title, url as any);
+		// 	}
+		// } as typeof history.replaceState;
+
+		// return () => {
+		// 	history.pushState = originalPush;
+		// 	history.replaceState = originalReplace;
+		// };
 	});
 
 	let artificialIntelligenceConfiguration: ArtificialIntelligenceConfig = $state({
@@ -778,20 +805,20 @@
 		// goto(page.url, { replaceState: true, noScroll: true, state: page.state });
 
 		// that one looked good:
-		// scrollspyParent!.scrollTo({ left: scrollspyParent!.scrollLeft, top: scrollspyParent!.scrollTop, behavior: 'smooth' });
-		// if (page.url.hash) {
-		// 	const target = document.getElementById(page.url.hash.substring(1));
-		// 	// TBD: consider opening a potential collapsed parent sections here
-		// 	if (target) {
-		// 		const parentRect = scrollspyParent!.getBoundingClientRect();
-		// 		const targetRect = target.getBoundingClientRect();
-		// 		// This one prevents scrollspy dispatchEvent error on mount:
-		// 		// const targetScrollTop = scrollspyParent!.scrollTop + targetRect.top - parentRect.top;
-		// 		scrollspyParent!.scrollTop += targetRect.top - parentRect.top;
-		// 		// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
-		// 		scrollspyParent?.scrollTo({left: scrollspyParent.scrollLeft, top: scrollspyParent.scrollTop, behavior: 'smooth' });
-		// 	}
-		// }
+		scrollspyParent!.scrollTo({ left: scrollspyParent!.scrollLeft, top: scrollspyParent!.scrollTop, behavior: 'smooth' });
+		if (page.url.hash) {
+			const target = document.getElementById(page.url.hash.substring(1));
+			// TBD: consider opening a potential collapsed parent sections here
+			if (target) {
+				const parentRect = scrollspyParent!.getBoundingClientRect();
+				const targetRect = target.getBoundingClientRect();
+				// This one prevents scrollspy dispatchEvent error on mount:
+				// const targetScrollTop = scrollspyParent!.scrollTop + targetRect.top - parentRect.top;
+				scrollspyParent!.scrollTop += targetRect.top - parentRect.top;
+				// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+				scrollspyParent?.scrollTo({left: scrollspyParent.scrollLeft, top: scrollspyParent.scrollTop, behavior: 'smooth' });
+			}
+		}
 	});
 </script>
 

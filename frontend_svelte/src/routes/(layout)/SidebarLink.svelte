@@ -4,7 +4,8 @@
 	import { initScrollspy } from '$lib/userInterface';
 	import {
 		beforeNavigate,
-		goto
+		goto,
+		pushState
 		// pushState,
 		// replaceState
 	} from '$app/navigation';
@@ -93,16 +94,19 @@
 	<li {@attach toggleScrollspyOnParent}>
 		<a
 			{href}
-			onclick={() => {
-				const target = document.getElementById(href)
-				if (target) {
-					target.scrollIntoView({ behavior: 'smooth' });
-				}
-				}}
 			class="text-base-content/80 flex items-center gap-x-2 hover:opacity-100 {thisPage
 				? 'group scrollspy-active:italic'
 				: ''}"
 		>
+			<!-- 			onclick={() => {
+				const target = document.getElementById(href)
+				if (target) {
+					console.log("=== SidebarLink.svelte - onclick - before scroll ===");
+					pushState(href, page.state);
+					target.scrollIntoView({ behavior: 'smooth' });
+					console.log("=== SidebarLink.svelte - onclick - after scroll ===");
+				}
+				}} -->
 			<!-- onclick={(event) => {
 				console.log("=== SidebarLink.svelte - onclick ===");
 				event.preventDefault();

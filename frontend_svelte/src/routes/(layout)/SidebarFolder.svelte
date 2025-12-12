@@ -3,9 +3,7 @@
 	import { page } from '$app/state';
 	import { initCollapse } from '$lib/userInterface';
 	import type { Attachment } from 'svelte/attachments';
-	// import { beforeNavigate, goto } from '$app/navigation';
 	import SidebarItem from './SidebarItem.svelte';
-	// import { goto, replaceState, pushState } from '$app/navigation';
 	let {
 		content,
 		topLevel = false,
