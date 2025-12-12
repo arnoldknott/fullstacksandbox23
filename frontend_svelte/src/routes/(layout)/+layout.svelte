@@ -717,6 +717,43 @@
 	$effect(() => {
 		console.log('=== layout - effect - tracking location.hash ===');
 		console.log(locationHash);
+		// scroll to this hash position, adjusted for navBarBottom:
+
+		// Doesn't hit it's marks, but reacts on the correct changes - all of them: server side reload, navigation through browser history, internal navigation:
+		// if (locationHash && scrollspyParent) {
+		// 	const targetId = locationHash.substring(1); // Remove the # prefix
+		// 	const target = document.getElementById(targetId);
+
+		// 	if (target) {
+		// 		// Wait for layout to settle, then scroll with navbar offset
+		// 		requestAnimationFrame(() => {
+		// 			requestAnimationFrame(() => {
+		// 				const parentRect = scrollspyParent!.getBoundingClientRect();
+		// 				const targetRect = target.getBoundingClientRect();
+		// 				const currentNavBarBottom = navBar?.getBoundingClientRect().bottom ?? 0;
+
+		// 				// Calculate scroll position: target position relative to parent, minus navbar height
+		// 				const scrollTop = scrollspyParent!.scrollTop + targetRect.top - parentRect.top - currentNavBarBottom;
+
+		// 				scrollspyParent!.scrollTo({
+		// 					left: scrollspyParent!.scrollLeft,
+		// 					top: scrollTop,
+		// 					behavior: 'smooth'
+		// 				});
+		// 			});
+		// 		});
+		// 	}
+		// } else if (!locationHash && scrollspyParent) {
+		// 	// No hash means scroll to top
+		// 	requestAnimationFrame(() => {
+		// 		scrollspyParent!.scrollTo({
+		// 			left: scrollspyParent!.scrollLeft,
+		// 			top: 0,
+		// 			behavior: 'smooth'
+		// 		});
+		// 	});
+		// }
+
 		// console.log('=== layout - effect tracking page ===');
 		// console.log({ href: page.url.href, pathname: page.url.pathname, hash: page.url.hash});
 		// console.log('=== layout - effect - page ===');
@@ -738,6 +775,10 @@
 		// 	navBarBottom =
 		// 		navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
 		// }
+
+		// locationHash = location.hash;
+
+		// That one looked very good for a while:
 		if (locationHash !== location.hash && window.innerWidth >= 640) {
 			console.log('=== layout - onscrollend - location.hash changed ===');
 			locationHash = location.hash;
@@ -758,6 +799,7 @@
 				});
 			});
 		}
+
 		// const navBarBottomPrevious =
 		// 	navBar && navBar.getBoundingClientRect().bottom > 0
 		// 		? navBar.getBoundingClientRect().bottom
@@ -954,12 +996,10 @@
 		}
 	});
 
-
 	const windowHashChangeHandler = () => {
-		console.log("=== 🪟 - hash changed ===")
+		console.log('=== 🪟 - hash changed ===');
 		locationHash = location.hash;
 	};
-
 </script>
 
 <svelte:window onhashchange={() => windowHashChangeHandler()} />
