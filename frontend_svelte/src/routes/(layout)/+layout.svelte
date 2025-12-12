@@ -661,19 +661,10 @@
 			// console.log("=== layout - onscrollend - page ===");
 			// console.log(page);
 			// pushState(page.url.href, page);
-		}
-		const navBarBottomPrevious =
+			navBarBottom =
 			navBar && navBar.getBoundingClientRect().bottom > 0
 				? navBar.getBoundingClientRect().bottom
 				: 0;
-		// scrollTarget = page.url.hash
-		// 	? document.getElementById(page.url.hash.substring(1))?.getBoundingClientRect().top || 0
-		// 	: contentArea?.getBoundingClientRect().top || 0;
-		// TBD: add an "afterNavigate" here, so this is not trigggered on a user scroll action?
-		if (navBarBottomPrevious !== navBarBottom) {
-			console.log('=== layout - onscrollend - navBarBottom changed ===');
-			// const target = document.getElementById(page.url.hash.substring(1)) || contentArea;
-			// target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 			requestAnimationFrame(() => {
 				scrollspyParent!.scrollTop -= navBarBottom;
 				// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
@@ -684,17 +675,39 @@
 				});
 			});
 		}
-		// const targetRect = scrollTarget!.getBoundingClientRect();
-
-		// })
-		// const currentNavBarBottom = navBar && navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
-		// if (navBarBottomPrevious !== currentNavBarBottom) {
-		// 	console.log('=== layout - effect - navBarBottom changed ===');
+		// const navBarBottomPrevious =
+		// 	navBar && navBar.getBoundingClientRect().bottom > 0
+		// 		? navBar.getBoundingClientRect().bottom
+		// 		: 0;
+		// // scrollTarget = page.url.hash
+		// // 	? document.getElementById(page.url.hash.substring(1))?.getBoundingClientRect().top || 0
+		// // 	: contentArea?.getBoundingClientRect().top || 0;
+		// // TBD: add an "afterNavigate" here, so this is not trigggered on a user scroll action?
+		// if (navBarBottomPrevious !== navBarBottom) {
+		// 	console.log('=== layout - onscrollend - navBarBottom changed ===');
+		// 	// const target = document.getElementById(page.url.hash.substring(1)) || contentArea;
+		// 	// target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+		// 	requestAnimationFrame(() => {
+		// 		scrollspyParent!.scrollTop -= navBarBottom;
+		// 		// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+		// 		scrollspyParent?.scrollTo({
+		// 			left: scrollspyParent.scrollLeft,
+		// 			top: scrollspyParent.scrollTop,
+		// 			behavior: 'smooth'
+		// 		});
+		// 	});
 		// }
-		navBarBottom =
-			navBar && navBar.getBoundingClientRect().bottom > 0
-				? navBar.getBoundingClientRect().bottom
-				: 0;
+		// // const targetRect = scrollTarget!.getBoundingClientRect();
+
+		// // })
+		// // const currentNavBarBottom = navBar && navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
+		// // if (navBarBottomPrevious !== currentNavBarBottom) {
+		// // 	console.log('=== layout - effect - navBarBottom changed ===');
+		// // }
+		// navBarBottom =
+		// 	navBar && navBar.getBoundingClientRect().bottom > 0
+		// 		? navBar.getBoundingClientRect().bottom
+		// 		: 0;
 		contentAreaTop = contentArea ? contentArea.getBoundingClientRect().top : 0;
 	};
 
