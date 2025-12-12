@@ -668,8 +668,6 @@
 		// 	navBarBottom =
 		// 		navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
 		// }
-		console.log('=== layout - onscrollend - window.innerWidth ===');
-		console.log(window.innerWidth);
 		if (locationHash !== location.hash && window.innerWidth >= 640 ) {
 			console.log('=== layout - onscrollend - location.hash changed ===');
 			locationHash = location.hash;
