@@ -93,6 +93,12 @@
 	<li {@attach toggleScrollspyOnParent}>
 		<a
 			{href}
+			onclick={() => {
+				const target = document.getElementById(href)
+				if (target) {
+					target.scrollIntoView({ behavior: 'smooth' });
+				}
+				}}
 			class="text-base-content/80 flex items-center gap-x-2 hover:opacity-100 {thisPage
 				? 'group scrollspy-active:italic'
 				: ''}"
