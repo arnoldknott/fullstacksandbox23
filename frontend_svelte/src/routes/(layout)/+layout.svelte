@@ -629,6 +629,19 @@
 		console.log('=== layout - afterNavigate ===');
 		// console.log({ href: page.url.href, pathname: page.url.pathname, hash: page.url.hash});
 		locationHash = location.hash;
+		navBarBottom =
+		navBar && navBar.getBoundingClientRect().bottom > 0
+			? navBar.getBoundingClientRect().bottom
+			: 0;
+		requestAnimationFrame(() => {
+			scrollspyParent!.scrollTop -= navBarBottom;
+			// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+			scrollspyParent?.scrollTo({
+				left: scrollspyParent.scrollLeft,
+				top: scrollspyParent.scrollTop,
+				behavior: 'smooth'
+			});
+		});
 	});
 
 	$effect(() => {
@@ -655,7 +668,9 @@
 		// 	navBarBottom =
 		// 		navBar.getBoundingClientRect().bottom > 0 ? navBar.getBoundingClientRect().bottom : 0;
 		// }
-		if (locationHash !== location.hash) {
+		console.log('=== layout - onscrollend - window.innerWidth ===');
+		console.log(window.innerWidth);
+		if (locationHash !== location.hash && window.innerWidth >= 640 ) {
 			console.log('=== layout - onscrollend - location.hash changed ===');
 			locationHash = location.hash;
 			// console.log("=== layout - onscrollend - page ===");

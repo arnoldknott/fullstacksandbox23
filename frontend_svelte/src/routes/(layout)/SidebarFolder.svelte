@@ -51,7 +51,7 @@
 		id={id + '-collapse'}
 		class="collapse {thisPage(pathname!)
 			? 'open'
-			: 'hidden'} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
+			: 'hidden'} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300 max-sm:[--scrollspy-offset:56px]"
 		aria-labelledby={id + '-control'}
 		data-pathname={pathname}
 	>
