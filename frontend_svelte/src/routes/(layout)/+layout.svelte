@@ -607,13 +607,13 @@
 			}
 			const nextUrl = url instanceof URL ? url.toString() : typeof url === 'string' ? url : null;
 			if (nextUrl) {
+				bypassNativeOverride = true;
+
 				// Detect FlyonUI scrollspy hash-only updates and convert to pushState
 				const current = new URL(location.href);
 				const next = new URL(nextUrl, location.href);
 				const isSamePath = current.pathname === next.pathname && current.search === next.search;
 				const isHashChange = current.hash !== next.hash;
-				
-				bypassNativeOverride = true;
 				try {
 					// FlyonUI scrollspy calls replaceState for hash changes - convert to pushState for history
 					if (isSamePath && isHashChange) {
@@ -636,8 +636,9 @@
 		};
 	});
 
-	afterNavigate(() => {
-		console.log('=== layout - afterNavigate ===');
+	afterNavigate((navigation) => {
+		console.log('=== layout - afterNavigate - navigation ===');
+		console.log(navigation);
 		// console.log({ href: page.url.href, pathname: page.url.pathname, hash: page.url.hash});
 		locationHash = location.hash;
 		navBarBottom =
@@ -952,9 +953,16 @@
 			}
 		}
 	});
+
+
+	const windowHashChangeHandler = () => {
+		console.log("=== 🪟 - hash changed ===")
+		locationHash = location.hash;
+	};
+
 </script>
 
-<!-- <svelte:window onhashchange={() => console.log("hash changed")} /> -->
+<svelte:window onhashchange={() => windowHashChangeHandler()} />
 
 {#snippet sidebarToggleButton(classes: string, overlayModifier: object)}
 	<button
