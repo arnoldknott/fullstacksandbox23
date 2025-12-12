@@ -46,33 +46,6 @@
 		if (userUnregistered) {
 			window.HSOverlay.open(welcomeModal);
 		}
-
-		// // Delegate native history updates to SvelteKit to avoid router conflicts
-		// const originalPush = history.pushState.bind(history);
-		// const originalReplace = history.replaceState.bind(history);
-		// history.pushState = function (state: any, title: string, url?: string | URL | null) {
-		// 	if (typeof url === 'string') {
-		// 		pushState(url, page.state);
-		// 	} else if (url instanceof URL) {
-		// 		pushState(url.toString(), page.state);
-		// 	} else {
-		// 		originalPush(state, title, url as any);
-		// 	}
-		// } as typeof history.pushState;
-		// history.replaceState = function (state: any, title: string, url?: string | URL | null) {
-		// 	if (typeof url === 'string') {
-		// 		replaceState(url, page.state);
-		// 	} else if (url instanceof URL) {
-		// 		replaceState(url.toString(), page.state);
-		// 	} else {
-		// 		originalReplace(state, title, url as any);
-		// 	}
-		// } as typeof history.replaceState;
-
-		// return () => {
-		// 	history.pushState = originalPush;
-		// 	history.replaceState = originalReplace;
-		// };
 	});
 
 	let artificialIntelligenceConfiguration: ArtificialIntelligenceConfig = $state({
@@ -593,13 +566,64 @@
 
 	let contentAreaOffset: number = $state(0);
 	// let scrollTarget = $derived(document.getElementById(page.url.hash.substring(1)) || contentArea);
-	let scrollTarget: number = $state(0);
+	// let scrollTarget: number = $state(0);
 	// let locationHash: string | null = $derived.by(() => {if(location && location.hash) {return location.hash } else { return null }});
 	let locationHash: string | null = $state(null);
 
 	// onMount(()=> {
 	// 	windowElement = window;
 	// })
+
+	onMount(() => {
+		// Reroute native history updates to SvelteKit to avoid router conflicts
+		const originalPush = history.pushState.bind(history);
+		const originalReplace = history.replaceState.bind(history);
+		// Capture native prototype methods to bypass SvelteKit's patched wrappers
+		const nativePush = History.prototype.pushState;
+		const nativeReplace = History.prototype.replaceState;
+		let bypassNativeOverride = false;
+		history.pushState = function (state: any, title: string, url?: string | URL | null) {
+			if (bypassNativeOverride) {
+				// Call the native prototype directly to avoid warning wrappers
+				return nativePush.call(history, state, title, url as any);
+			}
+			const nextUrl = url instanceof URL ? url.toString() : typeof url === 'string' ? url : null;
+			if (nextUrl) {
+				bypassNativeOverride = true;
+				try {
+					pushState(nextUrl, page.state);
+				} finally {
+					bypassNativeOverride = false;
+				}
+			} else {
+				// Fallback to native method to avoid warnings
+				nativePush.call(history, state, title, url as any);
+			}
+		} as typeof history.pushState;
+		history.replaceState = function (state: any, title: string, url?: string | URL | null) {
+			if (bypassNativeOverride) {
+				// Call the native prototype directly to avoid warning wrappers
+				return nativeReplace.call(history, state, title, url as any);
+			}
+			const nextUrl = url instanceof URL ? url.toString() : typeof url === 'string' ? url : null;
+			if (nextUrl) {
+				bypassNativeOverride = true;
+				try {
+					replaceState(nextUrl, page.state);
+				} finally {
+					bypassNativeOverride = false;
+				}
+			} else {
+				// Fallback to native method to avoid warnings
+				nativeReplace.call(history, state, title, url as any);
+			}
+		} as typeof history.replaceState;
+
+		return () => {
+			history.pushState = originalPush;
+			history.replaceState = originalReplace;
+		};
+	})
 
 	afterNavigate(() => {
 		console.log('=== layout - afterNavigate ===');
@@ -634,17 +658,22 @@
 		if (locationHash !== location.hash) {
 			console.log('=== layout - onscrollend - location.hash changed ===');
 			locationHash = location.hash;
+			// console.log("=== layout - onscrollend - page ===");
+			// console.log(page);
+			// pushState(page.url.href, page);
 		}
 		const navBarBottomPrevious =
 			navBar && navBar.getBoundingClientRect().bottom > 0
 				? navBar.getBoundingClientRect().bottom
 				: 0;
-		scrollTarget = page.url.hash
-			? document.getElementById(page.url.hash.substring(1))?.getBoundingClientRect().top || 0
-			: contentArea?.getBoundingClientRect().top || 0;
+		// scrollTarget = page.url.hash
+		// 	? document.getElementById(page.url.hash.substring(1))?.getBoundingClientRect().top || 0
+		// 	: contentArea?.getBoundingClientRect().top || 0;
 		// TBD: add an "afterNavigate" here, so this is not trigggered on a user scroll action?
 		if (navBarBottomPrevious !== navBarBottom) {
 			console.log('=== layout - onscrollend - navBarBottom changed ===');
+			// const target = document.getElementById(page.url.hash.substring(1)) || contentArea;
+			// target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 			requestAnimationFrame(() => {
 				scrollspyParent!.scrollTop -= navBarBottom;
 				// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
@@ -677,18 +706,18 @@
 		// console.log('=== layout - contentAreaAttachment ===');
 	};
 
-	$effect(() => {
-		console.log('=== layout - effect ===');
-		requestAnimationFrame(() => {
-			scrollspyParent!.scrollTop = scrollTarget;
-			// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
-			scrollspyParent?.scrollTo({
-				left: scrollspyParent.scrollLeft,
-				top: scrollspyParent.scrollTop,
-				behavior: 'smooth'
-			});
-		});
-	});
+	// $effect(() => {
+	// 	console.log('=== layout - effect ===');
+	// 	requestAnimationFrame(() => {
+	// 		scrollspyParent!.scrollTop = scrollTarget;
+	// 		// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+	// 		scrollspyParent?.scrollTo({
+	// 			left: scrollspyParent.scrollLeft,
+	// 			top: scrollspyParent.scrollTop,
+	// 			behavior: 'smooth'
+	// 		});
+	// 	});
+	// });
 
 	// $effect(() => {
 	// 	console.log('=== layout - effect ===');
