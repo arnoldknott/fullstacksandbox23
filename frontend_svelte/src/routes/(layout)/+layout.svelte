@@ -1129,15 +1129,9 @@
 				{/each}
 			</ul>
 		</div>
-		NavBarBottom: {navBarBottom}
+		{navBarBottom}, {contentAreaTop}, {contentAreaOffset},
 		<br />
-		ContentAreaTop: {contentAreaTop}
-		<br />
-		ContentAreaOffset: {contentAreaOffset}
-		<br />
-		Pathname: {page.url.pathname}
-		<br />
-		Hash: {page.url.hash}
+		{locationHash}
 	</aside>
 	<!-- style="--nav-offset: {navBarBottom}px" -->
 	<!-- style:scroll-padding-top={`${navBarBottom}px`} -->
@@ -1321,6 +1315,13 @@
 			{@attach contentAreaAttachment}
 		>
 			{@render children?.()}
+					NavBarBottom: {navBarBottom}
+		<br />
+		ContentAreaTop: {contentAreaTop}
+		<br />
+		ContentAreaOffset: {contentAreaOffset}
+		<br />
+		locationHash: {locationHash}
 		</div>
 	</div>
 </main>
