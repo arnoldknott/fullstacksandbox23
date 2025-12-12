@@ -1079,6 +1079,7 @@
 		</div>
 		<div class="drawer-body px-2 pt-4">
 			<ul class="menu p-0">
+				<a href={resolve('/(layout)/playground/page2') + "#loreum1"}>Debug Navigation</a>
 				{@render sidebarPartItem('/', 'icon-[material-symbols--home-outline-rounded]', 'Home')}
 				{@render sidebarPartItem('/docs', 'icon-[oui--documentation]', 'Docs', 'md:hidden')}
 				{@render sidebarPartItem(
