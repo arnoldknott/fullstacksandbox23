@@ -633,6 +633,20 @@
 		navBar && navBar.getBoundingClientRect().bottom > 0
 			? navBar.getBoundingClientRect().bottom
 			: 0;
+		// console.log('=== layout - afterNavigate - navBarBottom ===');
+		// console.log(navBarBottom);
+		// if (navBarBottom > 0 && window.innerWidth >= 640 ) {
+		// 	console.log('=== layout - afterNavigate - scroll adjustment ===');
+		// 	console.log('=== layout - afterNavigate - scrollspyParent!.scrollTop ===');
+		// 	console.log(scrollspyParent!.scrollTop);
+		// 	scrollspyParent!.scrollTop -= navBarBottom;
+		// 	// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+		// 	scrollspyParent?.scrollTo({
+		// 		left: scrollspyParent.scrollLeft,
+		// 		top: scrollspyParent.scrollTop,
+		// 		behavior: 'smooth'
+		// 	});
+		// }
 		requestAnimationFrame(() => {
 			scrollspyParent!.scrollTop -= navBarBottom;
 			// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
