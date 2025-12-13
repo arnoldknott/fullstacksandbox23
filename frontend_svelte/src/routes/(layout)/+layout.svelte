@@ -638,7 +638,7 @@
 
 	afterNavigate((navigation) => {
 		console.log('=== afterNavigate - navigation ===');
-		console.log(navigation);
+		// console.log(navigation);
 		// console.log({ href: page.url.href, pathname: page.url.pathname, hash: page.url.hash});
 		// locationHash = location.hash;
 		navBarBottom =
@@ -659,15 +659,15 @@
 		} else {
 			console.log('=== afterNavigate - scroll to hash ===');
 			const target = document.getElementById(location.hash.substring(1));
-			console.log({target});
+			// console.log({target});
 			// TBD: consider opening a potential collapsed parent sections here
 			if (target) {
 				const parentRect = scrollspyParent!.getBoundingClientRect();
 				const targetRect = target.getBoundingClientRect();
-				console.log('=== afterNavigate - target.top & parent.top ===');
-				console.log({target: target.scrollTop, parent: scrollspyParent!.scrollTop});
-				console.log("=== afterNavigate - navBarBottom ===");
-				console.log(navBarBottom);
+				// console.log('=== afterNavigate - target.top & parent.top ===');
+				// console.log({target: target.scrollTop, parent: scrollspyParent!.scrollTop});
+				// console.log("=== afterNavigate - navBarBottom ===");
+				// console.log(navBarBottom);
 				requestAnimationFrame(() => {
 					scrollspyParent!.scrollTop -= navBarBottom;
 					// This one prevents scrollspy dispatchEvent error on mount:
@@ -681,6 +681,7 @@
 					});
 				})
 			}
+			adjustScrollTopForNavBar();
 
 			// requestAnimationFrame(() => {
 			// 	scrollspyParent!.scrollTop -= navBarBottom;
@@ -795,6 +796,25 @@
 		// console.log(location.hash);
 	});
 
+	const adjustScrollTopForNavBar = () => {
+		console.log('=== adjustScrollTopForNavBar ===');
+		navBarBottom =
+			navBar && navBar.getBoundingClientRect().bottom > 0
+				? navBar.getBoundingClientRect().bottom
+				: 0;
+		requestAnimationFrame(() => {
+			console.log('=== adjustScrollTopForNavBar - scrollspyParent.scrollTop & navbarBottom ===');
+			console.log({scrollspyParent: scrollspyParent!.scrollTop, navbarBottom:  navBarBottom});
+			scrollspyParent!.scrollTop -= navBarBottom;
+			// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+			scrollspyParent?.scrollTo({
+				left: scrollspyParent.scrollLeft,
+				top: scrollspyParent.scrollTop,
+				behavior: 'smooth'
+			});
+		});
+	}
+
 	const mainScrollEnd = (_event: Event) => {
 		console.log('=== onscrollend ===');
 		// if (navBar) {
@@ -811,21 +831,7 @@
 			// console.log("=== onscrollend - page ===");
 			// console.log(page);
 			// pushState(page.url.href, page);
-			navBarBottom =
-				navBar && navBar.getBoundingClientRect().bottom > 0
-					? navBar.getBoundingClientRect().bottom
-					: 0;
-			requestAnimationFrame(() => {
-				console.log('=== onscrollend - scrollspyParent.scrollTop & navbarBottom ===');
-				console.log({scrollspyParent: scrollspyParent!.scrollTop, navbarBottom:  navBarBottom});
-				scrollspyParent!.scrollTop -= navBarBottom;
-				// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
-				scrollspyParent?.scrollTo({
-					left: scrollspyParent.scrollLeft,
-					top: scrollspyParent.scrollTop,
-					behavior: 'smooth'
-				});
-			});
+			adjustScrollTopForNavBar();
 		}
 
 		// const navBarBottomPrevious =
