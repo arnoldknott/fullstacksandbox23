@@ -647,6 +647,7 @@
 				: 0;
 		if (!location.hash) {
 			console.log('=== afterNavigate - scroll to TOP ===');
+			locationHash = '';
 			requestAnimationFrame(() => {
 				scrollspyParent!.scrollTop = 0;
 				// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
@@ -657,31 +658,34 @@
 				});
 			});
 		} else {
-			console.log('=== afterNavigate - scroll to hash ===');
-			const target = document.getElementById(location.hash.substring(1));
-			// console.log({target});
-			// TBD: consider opening a potential collapsed parent sections here
-			if (target) {
-				const parentRect = scrollspyParent!.getBoundingClientRect();
-				const targetRect = target.getBoundingClientRect();
-				// console.log('=== afterNavigate - target.top & parent.top ===');
-				// console.log({target: target.scrollTop, parent: scrollspyParent!.scrollTop});
-				// console.log("=== afterNavigate - navBarBottom ===");
-				// console.log(navBarBottom);
-				requestAnimationFrame(() => {
-					scrollspyParent!.scrollTop -= navBarBottom;
-					// This one prevents scrollspy dispatchEvent error on mount:
-					// const targetScrollTop = scrollspyParent!.scrollTop + targetRect.top - parentRect.top;
-					// scrollspyParent!.scrollTop += targetRect.top - parentRect.top;
-					// // scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
-					scrollspyParent?.scrollTo({
-						left: scrollspyParent.scrollLeft,
-						top: scrollspyParent.scrollTop,
-						behavior: 'smooth'
-					});
-				})
-			}
-			adjustScrollTopForNavBar();
+			// Did this do anything at all - or is the browser naturally scrolling to target?
+			// console.log('=== afterNavigate - scroll to hash ===');
+			// const target = document.getElementById(location.hash.substring(1));
+			// // console.log({target});
+			// // TBD: consider opening a potential collapsed parent sections here
+			// if (target) {
+			// 	const parentRect = scrollspyParent!.getBoundingClientRect();
+			// 	const targetRect = target.getBoundingClientRect();
+			// 	// console.log('=== afterNavigate - target.top & parent.top ===');
+			// 	// console.log({target: target.scrollTop, parent: scrollspyParent!.scrollTop});
+			// 	// console.log("=== afterNavigate - navBarBottom ===");
+			// 	// console.log(navBarBottom);
+			// 	requestAnimationFrame(() => {
+			// 		scrollspyParent!.scrollTop -= navBarBottom;
+			// 		// This one prevents scrollspy dispatchEvent error on mount:
+			// 		// const targetScrollTop = scrollspyParent!.scrollTop + targetRect.top - parentRect.top;
+			// 		// scrollspyParent!.scrollTop += targetRect.top - parentRect.top;
+			// 		// // scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+			// 		scrollspyParent?.scrollTo({
+			// 			left: scrollspyParent.scrollLeft,
+			// 			top: scrollspyParent.scrollTop,
+			// 			behavior: 'smooth'
+			// 		});
+			// 	})
+			// // Don't update locationHash yet - let onscrollend detect the change and adjust
+			// // This ensures adjustment happens once after browser scrolls to anchor
+			// }
+			// adjustScrollTopForNavBar();
 
 			// requestAnimationFrame(() => {
 			// 	scrollspyParent!.scrollTop -= navBarBottom;
@@ -796,21 +800,28 @@
 		// console.log(location.hash);
 	});
 
+
 	const adjustScrollTopForNavBar = () => {
 		console.log('=== adjustScrollTopForNavBar ===');
-		navBarBottom =
-			navBar && navBar.getBoundingClientRect().bottom > 0
-				? navBar.getBoundingClientRect().bottom
-				: 0;
+		// Double requestAnimationFrame ensures layout has fully settled
 		requestAnimationFrame(() => {
-			console.log('=== adjustScrollTopForNavBar - scrollspyParent.scrollTop & navbarBottom ===');
-			console.log({scrollspyParent: scrollspyParent!.scrollTop, navbarBottom:  navBarBottom});
-			scrollspyParent!.scrollTop -= navBarBottom;
-			// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
-			scrollspyParent?.scrollTo({
-				left: scrollspyParent.scrollLeft,
-				top: scrollspyParent.scrollTop,
-				behavior: 'smooth'
+			console.log('=== adjustScrollTopForNavBar - window.screenTop ===');
+			console.log(window.screenTop);
+			requestAnimationFrame(() => {
+				// Re-measure navbar height after layout settles
+				navBarBottom =
+					navBar && navBar.getBoundingClientRect().bottom > 0
+						? navBar.getBoundingClientRect().bottom
+						: 0;
+				console.log('=== adjustScrollTopForNavBar - scrollspyParent.scrollTop & navbarBottom ===');
+				console.log({scrollspyParent: scrollspyParent!.scrollTop, navbarBottom:  navBarBottom});
+				
+				scrollspyParent!.scrollTop -= navBarBottom;
+				scrollspyParent?.scrollTo({
+					left: scrollspyParent.scrollLeft,
+					top: scrollspyParent.scrollTop,
+					behavior: 'smooth'
+				});
 			});
 		});
 	}
