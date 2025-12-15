@@ -27,7 +27,7 @@
 	import SidebarItem from './SidebarItem.svelte';
 	import LoginOutButton from './LoginOutButton.svelte';
 	import Logo from './Logo.svelte';
-	import type { Attachment } from 'svelte/attachments';
+	import { type Attachment } from 'svelte/attachments';
 	// import { scrollY } from 'svelte/reactivity/window';
 
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
@@ -196,31 +196,31 @@
 					id: 'page2-loreum1',
 					name: 'Loreum 1',
 					icon: 'icon-[mdi--text]',
-					hash: '#loreum1'
+					hash: '#pg2loreum1'
 				},
 				{
 					id: 'page2-loreum2',
 					name: 'Loreum 2',
 					icon: 'icon-[mdi--text]',
-					hash: '#loreum2'
+					hash: '#pg2loreum2'
 				},
 				{
 					name: 'Sub category',
 					icon: 'icon-[material-symbols--folder-outline-rounded]',
-					hash: '#sub-category',
+					hash: '#pg2sub-category',
 					id: 'page2-sub-category',
 					items: [
 						{
 							id: 'page2-loreum3',
 							name: 'Loreum 3',
 							icon: 'icon-[mdi--text]',
-							hash: '#loreum3'
+							hash: '#pg2loreum3'
 						},
 						{
 							id: 'page2-loreum4',
 							name: 'Loreum 4',
 							icon: 'icon-[mdi--text]',
-							hash: '#loreum4'
+							hash: '#pg2loreum4'
 						}
 					]
 				},
@@ -228,13 +228,13 @@
 					id: 'page2-loreum5',
 					name: 'Loreum 5',
 					icon: 'icon-[mdi--text]',
-					hash: '#loreum5'
+					hash: '#pg2loreum5'
 				},
 				{
 					id: 'page2-loreum6',
 					name: 'Loreum 6',
 					icon: 'icon-[mdi--text]',
-					hash: '#loreum6'
+					hash: '#pg2loreum6'
 				}
 			]
 		},
@@ -248,37 +248,37 @@
 					id: 'page3-loreum1',
 					name: 'Loreum 1',
 					icon: 'icon-[mdi--text]',
-					hash: '#loreum1'
+					hash: '#pg3loreum1'
 				},
 				{
 					id: 'page3-loreum2',
 					name: 'Loreum 2',
 					icon: 'icon-[mdi--text]',
-					hash: '#loreum2'
+					hash: '#pg3loreum2'
 				},
 				{
 					id: 'page3-loreum2a',
 					name: 'Loreum 2a',
 					icon: 'icon-[mdi--text]',
-					hash: '#loreum2a'
+					hash: '#pg3loreum2a'
 				},
 				{
 					name: 'Sub category',
 					icon: 'icon-[material-symbols--folder-outline-rounded]',
-					hash: '#sub-category-page3',
-					id: 'page3-sub-category',
+					hash: '#pg3sub-category',
+					id: 'pg3sub-category',
 					items: [
 						{
 							id: 'page3-loreum3p1',
 							name: 'Loreum 3.1',
 							icon: 'icon-[mdi--text]',
-							hash: '#loreum3p1'
+							hash: '#pg3loreum3p1'
 						},
 						{
 							id: 'page3-loreum3p2',
 							name: 'Loreum 3.2',
 							icon: 'icon-[mdi--text]',
-							hash: '#loreum3p2'
+							hash: '#pg3loreum3p2'
 						}
 					]
 				},
@@ -286,13 +286,13 @@
 					id: 'page3-loreum4',
 					name: 'Loreum 4',
 					icon: 'icon-[mdi--text]',
-					hash: '#loreum4'
+					hash: '#pg3loreum4'
 				},
 				{
 					id: 'page3-loreum5',
 					name: 'Loreum 5',
 					icon: 'icon-[mdi--text]',
-					hash: '#loreum5'
+					hash: '#pg3loreum5'
 				}
 			]
 		},
@@ -568,7 +568,12 @@
 	// let scrollTarget = $derived(document.getElementById(page.url.hash.substring(1)) || contentArea);
 	// let scrollTarget: number = $state(0);
 	// let locationHash: string | null = $derived.by(() => {if(location && location.hash) {return location.hash } else { return null }});
-	let locationHash: string | null = $state(null);
+	let locationHash: string = $state('');
+	// type LocationPageAndHash = {
+	// 	page: string;
+	// 	hash: string;
+	// };
+	// let locationPageAndHash: LocationPageAndHash | null = $state(null);
 
 	// onMount(()=> {
 	// 	windowElement = window;
@@ -636,7 +641,7 @@
 		};
 	});
 
-	afterNavigate((navigation) => {
+	afterNavigate((_navigation) => {
 		console.log('=== afterNavigate - navigation ===');
 		// console.log(navigation);
 		// console.log({ href: page.url.href, pathname: page.url.pathname, hash: page.url.hash});
@@ -648,6 +653,10 @@
 		if (!location.hash) {
 			console.log('=== afterNavigate - scroll to TOP ===');
 			locationHash = '';
+			// locationPageAndHash = {
+			// 	page: navigation.to?.url.pathname || '',
+			// 	hash: ''
+			// };
 			requestAnimationFrame(() => {
 				scrollspyParent!.scrollTop = 0;
 				// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
@@ -658,6 +667,12 @@
 				});
 			});
 		} else {
+			// console.log('=== afterNavigate - from & to ===');
+			// console.log(navigation.from);
+			// console.log(navigation.to);
+			// if (navigation.from?.url.pathname !== navigation.to?.url.pathname && location.hash !== '') {
+			// 	adjustScrollTopForNavBar();
+			// }
 			// Did this do anything at all - or is the browser naturally scrolling to target?
 			// console.log('=== afterNavigate - scroll to hash ===');
 			// const target = document.getElementById(location.hash.substring(1));
@@ -686,7 +701,6 @@
 			// // This ensures adjustment happens once after browser scrolls to anchor
 			// }
 			// adjustScrollTopForNavBar();
-
 			// requestAnimationFrame(() => {
 			// 	scrollspyParent!.scrollTop -= navBarBottom;
 			// 	// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
@@ -747,12 +761,10 @@
 		// console.log('=== effect - tracking location.hash ===');
 		// console.log(locationHash);
 		// scroll to this hash position, adjusted for navBarBottom:
-
 		// Doesn't hit it's marks, but reacts on the correct changes - all of them: server side reload, navigation through browser history, internal navigation:
 		// if (location.hash && scrollspyParent) {
 		// 	const targetId = location.hash.substring(1); // Remove the # prefix
 		// 	const target = document.getElementById(targetId);
-
 		// 	if (target) {
 		// 		// Wait for layout to settle, then scroll with navbar offset
 		// 		requestAnimationFrame(() => {
@@ -760,10 +772,8 @@
 		// 				const parentRect = scrollspyParent!.getBoundingClientRect();
 		// 				const targetRect = target.getBoundingClientRect();
 		// 				const currentNavBarBottom = navBar?.getBoundingClientRect().bottom ?? 0;
-
 		// 				// Calculate scroll position: target position relative to parent, minus navbar height
 		// 				const scrollTop = scrollspyParent!.scrollTop + targetRect.top - parentRect.top - currentNavBarBottom;
-
 		// 				scrollspyParent!.scrollTo({
 		// 					left: scrollspyParent!.scrollLeft,
 		// 					top: scrollTop,
@@ -782,9 +792,6 @@
 		// 		});
 		// 	});
 		// }
-
-
-
 		// console.log('=== effect tracking page ===');
 		// console.log({ href: page.url.href, pathname: page.url.pathname, hash: page.url.hash});
 		// console.log('=== effect - page ===');
@@ -796,17 +803,13 @@
 		// // console.log("=== effect - window ===");
 		// // console.log(windowElement?.onhashchange);
 		// console.log('=== effect - location ===');
-
 		// console.log(location.hash);
 	});
-
 
 	const adjustScrollTopForNavBar = () => {
 		console.log('=== adjustScrollTopForNavBar ===');
 		// Double requestAnimationFrame ensures layout has fully settled
 		requestAnimationFrame(() => {
-			console.log('=== adjustScrollTopForNavBar - window.screenTop ===');
-			console.log(window.screenTop);
 			requestAnimationFrame(() => {
 				// Re-measure navbar height after layout settles
 				navBarBottom =
@@ -814,8 +817,8 @@
 						? navBar.getBoundingClientRect().bottom
 						: 0;
 				console.log('=== adjustScrollTopForNavBar - scrollspyParent.scrollTop & navbarBottom ===');
-				console.log({scrollspyParent: scrollspyParent!.scrollTop, navbarBottom:  navBarBottom});
-				
+				console.log({ scrollspyParent: scrollspyParent!.scrollTop, navbarBottom: navBarBottom });
+
 				scrollspyParent!.scrollTop -= navBarBottom;
 				scrollspyParent?.scrollTo({
 					left: scrollspyParent.scrollLeft,
@@ -824,7 +827,7 @@
 				});
 			});
 		});
-	}
+	};
 
 	const mainScrollEnd = (_event: Event) => {
 		console.log('=== onscrollend ===');
@@ -836,6 +839,9 @@
 		// locationHash = location.hash;
 
 		// That one looked very good for a while:
+		// TBD: fix for small screens - note: the SidebarFolder has "max-sm:[--scrollspy-offset:56px]", which also affects the scrollspy offset calculation!
+		// TBD: caveat: if two pages have the same hash, but different content navbar heights for tha anchor, this will not fire, but should!
+		// e.g., navigating from /page5#loreum1 to /page4#loreum1
 		if (locationHash !== location.hash && window.innerWidth >= 640) {
 			console.log('=== onscrollend - location.hash changed ===');
 			locationHash = location.hash;
@@ -844,6 +850,18 @@
 			// pushState(page.url.href, page);
 			adjustScrollTopForNavBar();
 		}
+		// const thisPageandHash: LocationPageAndHash = {
+		// 	page: page.url.pathname,
+		// 	hash: location.hash
+		// };
+		// if (locationPageAndHash !== thisPageandHash && window.innerWidth >= 640) {
+		// 	console.log('=== onscrollend - locationPageAndHash.hash changed ===');
+		// 	locationPageAndHash = thisPageandHash;
+		// 	// console.log("=== onscrollend - page ===");
+		// 	// console.log(page);
+		// 	// pushState(page.url.href, page.state);
+		// 	adjustScrollTopForNavBar();
+		// }
 
 		// const navBarBottomPrevious =
 		// 	navBar && navBar.getBoundingClientRect().bottom > 0
@@ -891,31 +909,30 @@
 		// 	console.log('=== contentAreaAttachment - afterNavigate ===');
 		// 	if (locationHash){
 		// 		console.log('=== contentAreaAttachment -  afterNavigate - scroll to hash ===');
-
-				// Latest addition:
-				// const target = document.getElementById(locationHash.substring(1));
-				// console.log({target});
-				// // TBD: consider opening a potential collapsed parent sections here
-				// if (target) {
-				// 	const parentRect = scrollspyParent!.getBoundingClientRect();
-				// 	const targetRect = target.getBoundingClientRect();
-				// 	console.log('=== afterNavigate - target.top & parent.top ===');
-				// 	console.log({target: target.scrollTop, parent: scrollspyParent!.scrollTop});
-				// 	console.log("=== afterNavigate - navBarBottom ===");
-				// 	console.log(navBarBottom);
-				// 	requestAnimationFrame(() => {
-				// 		scrollspyParent!.scrollTop -= navBarBottom;
-				// 		// This one prevents scrollspy dispatchEvent error on mount:
-				// 		// const targetScrollTop = scrollspyParent!.scrollTop + targetRect.top - parentRect.top;
-				// 		// scrollspyParent!.scrollTop += targetRect.top - parentRect.top;
-				// 		// // scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
-				// 		scrollspyParent?.scrollTo({
-				// 			left: scrollspyParent.scrollLeft,
-				// 			top: scrollspyParent.scrollTop,
-				// 			behavior: 'smooth'
-				// 		});
-				// 	})
-				// }
+		// Latest addition:
+		// const target = document.getElementById(locationHash.substring(1));
+		// console.log({target});
+		// // TBD: consider opening a potential collapsed parent sections here
+		// if (target) {
+		// 	const parentRect = scrollspyParent!.getBoundingClientRect();
+		// 	const targetRect = target.getBoundingClientRect();
+		// 	console.log('=== afterNavigate - target.top & parent.top ===');
+		// 	console.log({target: target.scrollTop, parent: scrollspyParent!.scrollTop});
+		// 	console.log("=== afterNavigate - navBarBottom ===");
+		// 	console.log(navBarBottom);
+		// 	requestAnimationFrame(() => {
+		// 		scrollspyParent!.scrollTop -= navBarBottom;
+		// 		// This one prevents scrollspy dispatchEvent error on mount:
+		// 		// const targetScrollTop = scrollspyParent!.scrollTop + targetRect.top - parentRect.top;
+		// 		// scrollspyParent!.scrollTop += targetRect.top - parentRect.top;
+		// 		// // scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+		// 		scrollspyParent?.scrollTo({
+		// 			left: scrollspyParent.scrollLeft,
+		// 			top: scrollspyParent.scrollTop,
+		// 			behavior: 'smooth'
+		// 		});
+		// 	})
+		// }
 		// 	}
 		// });
 	};
@@ -1071,7 +1088,6 @@
 			}
 		}
 
-
 		// compare to this one from afterNavigate:
 		// navBarBottom =
 		// 	navBar && navBar.getBoundingClientRect().bottom > 0
@@ -1200,9 +1216,9 @@
 		<div class="drawer-body px-2 pt-4">
 			<ul class="menu p-0">
 				<li><a href={resolve('/(layout)/playground/page2')}>Page 2 - top</a></li>
-				<li><a href={resolve('/(layout)/playground/page2') + "#loreum1"}>Page 2 - Lor. 1</a></li>
-				<li><a href={resolve('/(layout)/playground/page2') + "#loreum2"}>Page 2 - Lor. 2</a></li>
-				<li><a href={resolve('/(layout)/playground/page2') + "#loreum4"}>Page 2 - Lor. 4</a></li>
+				<li><a href={resolve('/(layout)/playground/page2') + '#loreum1'}>Page 2 - Lor. 1</a></li>
+				<li><a href={resolve('/(layout)/playground/page2') + '#loreum2'}>Page 2 - Lor. 2</a></li>
+				<li><a href={resolve('/(layout)/playground/page2') + '#loreum4'}>Page 2 - Lor. 4</a></li>
 				{@render sidebarPartItem('/', 'icon-[material-symbols--home-outline-rounded]', 'Home')}
 				{@render sidebarPartItem('/docs', 'icon-[oui--documentation]', 'Docs', 'md:hidden')}
 				{@render sidebarPartItem(
@@ -1255,6 +1271,7 @@
 		</div>
 		{navBarBottom}, {contentAreaTop}, {contentAreaOffset},
 		<br />
+		<!-- {locationPageAndHash} -->
 		{locationHash}
 	</aside>
 	<!-- style="--nav-offset: {navBarBottom}px" -->
@@ -1445,7 +1462,8 @@
 			<br />
 			ContentAreaOffset: {contentAreaOffset}
 			<br />
-			locationHash: {locationHash}
+			<!-- locationPageHash: {locationPageAndHash} -->
+			locationPageHash: {locationHash}
 		</div>
 	</div>
 </main>
