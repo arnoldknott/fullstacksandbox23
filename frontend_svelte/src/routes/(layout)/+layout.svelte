@@ -19,11 +19,8 @@
 		afterNavigate,
 		replaceState,
 		pushState,
-
 		beforeNavigate,
-
 		onNavigate
-
 
 		// onNavigate,
 		// beforeNavigate,
@@ -575,6 +572,7 @@
 	// let scrollTarget: number = $state(0);
 	// let locationHash: string | null = $derived.by(() => {if(location && location.hash) {return location.hash } else { return null }});
 	// let locationHash: string = $state('');
+	// TBD: include search parameters?
 	type LocationPageAndHash = {
 		page: string;
 		hash: string;
@@ -685,36 +683,36 @@
 					behavior: 'smooth'
 				});
 			});
-		// } else if (navigation.type === 'popstate' && navigation.from?.url.pathname === navigation.to?.url.pathname) {
-		// 	// Handle back/forward navigation within the same page with hash
-		// 	console.log('=== afterNavigate - popstate with hash ===');
-		// 	// locationHash = location.hash;
-		// 	locationPageAndHash = {
-		// 		page: navigation.to?.url.pathname || '',
-		// 		hash: location.hash
-		// 	};
-		// 	const target = document.getElementById(location.hash.substring(1));
-		// 	// TBD: consider opening a potential collapsed parent sections here
-		// 	if (target) {
-		// 		const parentRect = scrollspyParent!.getBoundingClientRect();
-		// 		const targetRect = target.getBoundingClientRect();
-		// 		// console.log('=== afterNavigate - target.top & parent.top ===');
-		// 		// console.log({target: target.scrollTop, parent: scrollspyParent!.scrollTop});
-		// 		// console.log("=== afterNavigate - navBarBottom ===");
-		// 		// console.log(navBarBottom);
-		// 		requestAnimationFrame(() => {
-		// 			scrollspyParent!.scrollTop += targetRect.top - parentRect.top - navBarBottom;
-		// 			// This one prevents scrollspy dispatchEvent error on mount:
-		// 			// const targetScrollTop = scrollspyParent!.scrollTop + targetRect.top - parentRect.top;
-		// 			// scrollspyParent!.scrollTop += targetRect.top - parentRect.top;
-		// 			// // scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
-		// 			scrollspyParent?.scrollTo({
-		// 				left: scrollspyParent.scrollLeft,
-		// 				top: scrollspyParent.scrollTop,
-		// 				behavior: 'smooth'
-		// 			});
-		// 		});
-		// 	}
+			// } else if (navigation.type === 'popstate' && navigation.from?.url.pathname === navigation.to?.url.pathname) {
+			// 	// Handle back/forward navigation within the same page with hash
+			// 	console.log('=== afterNavigate - popstate with hash ===');
+			// 	// locationHash = location.hash;
+			// 	locationPageAndHash = {
+			// 		page: navigation.to?.url.pathname || '',
+			// 		hash: location.hash
+			// 	};
+			// 	const target = document.getElementById(location.hash.substring(1));
+			// 	// TBD: consider opening a potential collapsed parent sections here
+			// 	if (target) {
+			// 		const parentRect = scrollspyParent!.getBoundingClientRect();
+			// 		const targetRect = target.getBoundingClientRect();
+			// 		// console.log('=== afterNavigate - target.top & parent.top ===');
+			// 		// console.log({target: target.scrollTop, parent: scrollspyParent!.scrollTop});
+			// 		// console.log("=== afterNavigate - navBarBottom ===");
+			// 		// console.log(navBarBottom);
+			// 		requestAnimationFrame(() => {
+			// 			scrollspyParent!.scrollTop += targetRect.top - parentRect.top - navBarBottom;
+			// 			// This one prevents scrollspy dispatchEvent error on mount:
+			// 			// const targetScrollTop = scrollspyParent!.scrollTop + targetRect.top - parentRect.top;
+			// 			// scrollspyParent!.scrollTop += targetRect.top - parentRect.top;
+			// 			// // scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+			// 			scrollspyParent?.scrollTo({
+			// 				left: scrollspyParent.scrollLeft,
+			// 				top: scrollspyParent.scrollTop,
+			// 				behavior: 'smooth'
+			// 			});
+			// 		});
+			// 	}
 		} else {
 			// console.log('=== afterNavigate - from & to ===');
 			// console.log(navigation.from);
@@ -1189,7 +1187,7 @@
 		// }
 	});
 
-	const windowHashChangeHandler = (event: HashChangeEvent) => {
+	const windowHashChangeHandler = (_event: HashChangeEvent) => {
 		console.log('=== 🪟 - hash changed ===');
 		// console.log(page.url.pathname + page.url.hash);
 		// console.log("=== hash change event ===");
@@ -1197,12 +1195,12 @@
 		// locationHash = location.hash;
 	};
 
-	const windowPopstateHandler = (event: PopStateEvent) => {
+	const windowPopstateHandler = (_event: PopStateEvent) => {
 		console.log('=== 🪟 - popstate ===');
 		// console.log(page.url.pathname + page.url.hash);
-		console.log(location.hash);
-		console.log("=== popstate event ===");
-		console.log(event);
+		// console.log(location.hash);
+		// console.log('=== popstate event ===');
+		// console.log(event);
 		if (page.url.hash) {
 			const target = document.getElementById(location.hash.substring(1));
 			// TBD: consider opening a potential collapsed parent sections here
@@ -1224,7 +1222,10 @@
 	};
 </script>
 
-<svelte:window onhashchange={(event) => windowHashChangeHandler(event)} onpopstate={(event) => windowPopstateHandler(event)} />
+<svelte:window
+	onhashchange={(event) => windowHashChangeHandler(event)}
+	onpopstate={(event) => windowPopstateHandler(event)}
+/>
 
 {#snippet sidebarToggleButton(classes: string, overlayModifier: object)}
 	<button

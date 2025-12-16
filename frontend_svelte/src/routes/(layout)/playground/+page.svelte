@@ -58,9 +58,7 @@
 
 <div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-3">
 	{#each links as link (link.name)}
-		<NavigationCard title={link.name} href={link.url}
-			>{link.description}</NavigationCard
-		>
+		<NavigationCard title={link.name} href={link.url}>{link.description}</NavigationCard>
 	{/each}
 </div>
 
