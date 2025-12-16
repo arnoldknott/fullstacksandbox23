@@ -1219,9 +1219,9 @@
 		<div class="drawer-body px-2 pt-4">
 			<ul class="menu p-0">
 				<li><a href={resolve('/(layout)/playground/page2')}>Page 2 - top</a></li>
-				<li><a href={resolve('/(layout)/playground/page2') + '#loreum1'}>Page 2 - Lor. 1</a></li>
-				<li><a href={resolve('/(layout)/playground/page2') + '#loreum2'}>Page 2 - Lor. 2</a></li>
-				<li><a href={resolve('/(layout)/playground/page2') + '#loreum4'}>Page 2 - Lor. 4</a></li>
+				<li><a href={resolve('/(layout)/playground/page2') + '#pg2loreum1'}>Page 2 - Lor. 1</a></li>
+				<li><a href={resolve('/(layout)/playground/page2') + '#pg2loreum2'}>Page 2 - Lor. 2</a></li>
+				<li><a href={resolve('/(layout)/playground/page2') + '#pg2loreum4'}>Page 2 - Lor. 4</a></li>
 				{@render sidebarPartItem('/', 'icon-[material-symbols--home-outline-rounded]', 'Home')}
 				{@render sidebarPartItem('/docs', 'icon-[oui--documentation]', 'Docs', 'md:hidden')}
 				{@render sidebarPartItem(
