@@ -568,12 +568,12 @@
 	// let scrollTarget = $derived(document.getElementById(page.url.hash.substring(1)) || contentArea);
 	// let scrollTarget: number = $state(0);
 	// let locationHash: string | null = $derived.by(() => {if(location && location.hash) {return location.hash } else { return null }});
-	let locationHash: string = $state('');
-	// type LocationPageAndHash = {
-	// 	page: string;
-	// 	hash: string;
-	// };
-	// let locationPageAndHash: LocationPageAndHash | null = $state(null);
+	// let locationHash: string = $state('');
+	type LocationPageAndHash = {
+		page: string;
+		hash: string;
+	};
+	let locationPageAndHash: LocationPageAndHash | null = $state(null);
 
 	// onMount(()=> {
 	// 	windowElement = window;
@@ -643,7 +643,7 @@
 		};
 	});
 
-	afterNavigate((_navigation) => {
+	afterNavigate((navigation) => {
 		console.log('=== afterNavigate - navigation ===');
 		// console.log(navigation);
 		// console.log({ href: page.url.href, pathname: page.url.pathname, hash: page.url.hash});
@@ -654,11 +654,11 @@
 				: 0;
 		if (!location.hash) {
 			console.log('=== afterNavigate - scroll to TOP ===');
-			locationHash = '';
-			// locationPageAndHash = {
-			// 	page: navigation.to?.url.pathname || '',
-			// 	hash: ''
-			// };
+			// locationHash = '';
+			locationPageAndHash = {
+				page: navigation.to?.url.pathname || '',
+				hash: ''
+			};
 			requestAnimationFrame(() => {
 				scrollspyParent!.scrollTop = 0;
 				// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
@@ -844,26 +844,34 @@
 		// TBD: fix for small screens - note: the SidebarFolder has "max-sm:[--scrollspy-offset:56px]", which also affects the scrollspy offset calculation!
 		// TBD: caveat: if two pages have the same hash, but different content navbar heights for tha anchor, this will not fire, but should!
 		// e.g., navigating from /page5#loreum1 to /page4#loreum1
-		if (locationHash !== location.hash && window.innerWidth >= 640) {
-			console.log('=== onscrollend - location.hash changed ===');
-			locationHash = location.hash;
-			// console.log("=== onscrollend - page ===");
-			// console.log(page);
-			// pushState(page.url.href, page);
-			adjustScrollTopForNavBar();
-		}
-		// const thisPageandHash: LocationPageAndHash = {
-		// 	page: page.url.pathname,
-		// 	hash: location.hash
-		// };
-		// if (locationPageAndHash !== thisPageandHash && window.innerWidth >= 640) {
-		// 	console.log('=== onscrollend - locationPageAndHash.hash changed ===');
-		// 	locationPageAndHash = thisPageandHash;
+		// exclude small screens: && window.innerWidth >= 640
+		// if (locationHash !== location.hash && window.innerWidth >= 640) {
+		// 	console.log('=== onscrollend - location.hash changed ===');
+		// 	locationHash = location.hash;
 		// 	// console.log("=== onscrollend - page ===");
 		// 	// console.log(page);
-		// 	// pushState(page.url.href, page.state);
+		// 	// pushState(page.url.href, page);
 		// 	adjustScrollTopForNavBar();
 		// }
+		const thisPageandHash: LocationPageAndHash = {
+			page: page.url.pathname,
+			hash: location.hash
+		};
+		if (locationPageAndHash?.hash !== thisPageandHash.hash && window.innerWidth >= 640) {
+			console.log('=== onscrollend - locationPageAndHash.hash changed ===');
+			locationPageAndHash = thisPageandHash;
+			// console.log("=== onscrollend - page ===");
+			// console.log(page);
+			// pushState(page.url.href, page.state);
+			adjustScrollTopForNavBar();
+		} else if (locationPageAndHash?.page !== thisPageandHash.page) {
+			console.log('=== onscrollend - locationPageAndHash.page changed ===');
+			locationPageAndHash = thisPageandHash;
+			// console.log("=== onscrollend - page ===");
+			// console.log(page);
+			// pushState(page.url.href, page.state);
+			adjustScrollTopForNavBar();
+		}
 
 		// const navBarBottomPrevious =
 		// 	navBar && navBar.getBoundingClientRect().bottom > 0
@@ -1274,8 +1282,8 @@
 		</div>
 		{navBarBottom}, {contentAreaTop}, {contentAreaOffset},
 		<br />
-		<!-- {locationPageAndHash} -->
-		{locationHash}
+		{locationPageAndHash}
+		<!-- {locationHash} -->
 	</aside>
 	<!-- style="--nav-offset: {navBarBottom}px" -->
 	<!-- style:scroll-padding-top={`${navBarBottom}px`} -->
@@ -1465,8 +1473,8 @@
 			<br />
 			ContentAreaOffset: {contentAreaOffset}
 			<br />
-			<!-- locationPageHash: {locationPageAndHash} -->
-			locationPageHash: {locationHash}
+			locationPageHash: {locationPageAndHash}
+			<!-- locationPageHash: {locationHash} -->
 		</div>
 	</div>
 </main>
