@@ -1358,7 +1358,8 @@
 		</div>
 		{navBarBottom}, {contentAreaTop}, {contentAreaOffset},
 		<br />
-		{locationPageAndHash}
+		{locationPageAndHash?.page}{locationPageAndHash?.hash}
+		<br />
 		<!-- {locationHash} -->
 	</aside>
 	<!-- style="--nav-offset: {navBarBottom}px" -->
@@ -1549,7 +1550,7 @@
 			<br />
 			ContentAreaOffset: {contentAreaOffset}
 			<br />
-			locationPageHash: {locationPageAndHash}
+			locationPageHash: {locationPageAndHash?.page}{locationPageAndHash?.hash}
 			<!-- locationPageHash: {locationHash} -->
 		</div>
 	</div>
