@@ -581,30 +581,32 @@
 
 	onMount(() => {
 		// Reroute native history updates to SvelteKit to avoid router conflicts
-		const originalPush = history.pushState.bind(history);
+		// const originalPush = history.pushState.bind(history);
 		const originalReplace = history.replaceState.bind(history);
 		// Capture native prototype methods to bypass SvelteKit's patched wrappers
-		const nativePush = History.prototype.pushState;
+		// const nativePush = History.prototype.pushState;
 		const nativeReplace = History.prototype.replaceState;
 		let bypassNativeOverride = false;
-		history.pushState = (state: unknown, title: string, url?: string | URL | null) => {
-			if (bypassNativeOverride) {
-				// Call the native prototype directly to avoid warning wrappers
-				return nativePush.call(history, state, title, url ?? '');
-			}
-			const nextUrl = url instanceof URL ? url.toString() : typeof url === 'string' ? url : null;
-			if (nextUrl) {
-				bypassNativeOverride = true;
-				try {
-					pushState(nextUrl, page.state);
-				} finally {
-					bypassNativeOverride = false;
-				}
-			} else {
-				// Fallback to native method to avoid warnings
-				nativePush.call(history, state, title, url ?? '');
-			}
-		};
+		// TBD: check if tyhis is needed at all?
+		// history.pushState = (state: unknown, title: string, url?: string | URL | null) => {
+		// 	if (bypassNativeOverride) {
+		// 		// Call the native prototype directly to avoid warning wrappers
+		// 		return nativePush.call(history, state, title, url ?? '');
+		// 	}
+		// 	const nextUrl = url instanceof URL ? url.toString() : typeof url === 'string' ? url : null;
+		// 	if (nextUrl) {
+		// 		bypassNativeOverride = true;
+		// 		try {
+		// 			pushState(nextUrl, page.state);
+		// 		} finally {
+		// 			bypassNativeOverride = false;
+		// 		}
+		// 	} else {
+		// 		// Fallback to native method to avoid warnings
+		// 		nativePush.call(history, state, title, url ?? '');
+		// 	}
+		// };
+		// TBD: only catch navigation from scrollspy / FlyonUI here!
 		history.replaceState = (state: unknown, title: string, url?: string | URL | null) => {
 			if (bypassNativeOverride) {
 				// Call the native prototype directly to avoid warning wrappers
@@ -636,7 +638,7 @@
 		};
 
 		return () => {
-			history.pushState = originalPush;
+			// history.pushState = originalPush;
 			history.replaceState = originalReplace;
 		};
 	});
