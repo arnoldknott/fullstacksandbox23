@@ -1136,6 +1136,7 @@
 
 	const windowHashChangeHandler = () => {
 		console.log('=== 🪟 - hash changed ===');
+		console.log(page.url.pathname + page.url.hash);
 		// locationHash = location.hash;
 	};
 </script>
