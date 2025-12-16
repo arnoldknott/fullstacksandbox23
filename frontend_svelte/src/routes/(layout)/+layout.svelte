@@ -584,6 +584,40 @@
 	// })
 
 	onMount(() => {
+		// Polyfill for scrollend event (Safari doesn't support it yet)
+		let scrollEndTimer: ReturnType<typeof setTimeout> | null = null;
+		let cleanupScrollEndPolyfill: (() => void) | null = null;
+		
+		// Wait for scrollspyParent to be available
+		if (scrollspyParent) {
+			// Check if scrollend is supported
+			const supportsScrollEnd = 'onscrollend' in scrollspyParent;
+			
+			if (!supportsScrollEnd) {
+				console.log('=== scrollend not supported - using polyfill ===');
+				
+				const handleScroll = () => {
+					if (scrollEndTimer) {
+						clearTimeout(scrollEndTimer);
+					}
+					scrollEndTimer = setTimeout(() => {
+						const scrollEndEvent = new Event('scrollend', { bubbles: true });
+						scrollspyParent?.dispatchEvent(scrollEndEvent);
+					}, 150); // 150ms after scroll stops (slightly longer for reliability)
+				};
+				
+				scrollspyParent.addEventListener('scroll', handleScroll, { passive: true });
+				
+				cleanupScrollEndPolyfill = () => {
+					scrollspyParent?.removeEventListener('scroll', handleScroll);
+					if (scrollEndTimer) {
+						clearTimeout(scrollEndTimer);
+						scrollEndTimer = null;
+					}
+				};
+			}
+		}
+
 		// Reroute native history updates to SvelteKit to avoid router conflicts
 		// const originalPush = history.pushState.bind(history);
 		const originalReplace = history.replaceState.bind(history);
@@ -643,6 +677,9 @@
 		};
 
 		return () => {
+			if (cleanupScrollEndPolyfill) {
+				cleanupScrollEndPolyfill();
+			}
 			// history.pushState = originalPush;
 			history.replaceState = originalReplace;
 		};
