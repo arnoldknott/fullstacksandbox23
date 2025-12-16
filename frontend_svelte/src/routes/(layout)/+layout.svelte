@@ -18,7 +18,13 @@
 	import {
 		afterNavigate,
 		replaceState,
-		pushState
+		pushState,
+
+		beforeNavigate,
+
+		onNavigate
+
+
 		// onNavigate,
 		// beforeNavigate,
 		// goto
@@ -624,6 +630,7 @@
 				try {
 					// FlyonUI scrollspy calls replaceState for hash changes - convert to pushState for history
 					if (isSamePath && isHashChange) {
+						// console.log('=== history.replaceState converted to pushState for hash change ===');
 						pushState(nextUrl, page.state);
 					} else {
 						replaceState(nextUrl, page.state);
@@ -643,9 +650,19 @@
 		};
 	});
 
+	beforeNavigate((navigation) => {
+		console.log('=== beforeNavigate ===');
+		console.log(navigation);
+	});
+
+	onNavigate((navigation) => {
+		console.log('=== onNavigate ===');
+		console.log(navigation);
+	});
+
 	afterNavigate((navigation) => {
 		console.log('=== afterNavigate - navigation ===');
-		// console.log(navigation);
+		console.log(navigation);
 		// console.log({ href: page.url.href, pathname: page.url.pathname, hash: page.url.hash});
 		// locationHash = location.hash;
 		navBarBottom =
@@ -668,6 +685,36 @@
 					behavior: 'smooth'
 				});
 			});
+		// } else if (navigation.type === 'popstate' && navigation.from?.url.pathname === navigation.to?.url.pathname) {
+		// 	// Handle back/forward navigation within the same page with hash
+		// 	console.log('=== afterNavigate - popstate with hash ===');
+		// 	// locationHash = location.hash;
+		// 	locationPageAndHash = {
+		// 		page: navigation.to?.url.pathname || '',
+		// 		hash: location.hash
+		// 	};
+		// 	const target = document.getElementById(location.hash.substring(1));
+		// 	// TBD: consider opening a potential collapsed parent sections here
+		// 	if (target) {
+		// 		const parentRect = scrollspyParent!.getBoundingClientRect();
+		// 		const targetRect = target.getBoundingClientRect();
+		// 		// console.log('=== afterNavigate - target.top & parent.top ===');
+		// 		// console.log({target: target.scrollTop, parent: scrollspyParent!.scrollTop});
+		// 		// console.log("=== afterNavigate - navBarBottom ===");
+		// 		// console.log(navBarBottom);
+		// 		requestAnimationFrame(() => {
+		// 			scrollspyParent!.scrollTop += targetRect.top - parentRect.top - navBarBottom;
+		// 			// This one prevents scrollspy dispatchEvent error on mount:
+		// 			// const targetScrollTop = scrollspyParent!.scrollTop + targetRect.top - parentRect.top;
+		// 			// scrollspyParent!.scrollTop += targetRect.top - parentRect.top;
+		// 			// // scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+		// 			scrollspyParent?.scrollTo({
+		// 				left: scrollspyParent.scrollLeft,
+		// 				top: scrollspyParent.scrollTop,
+		// 				behavior: 'smooth'
+		// 			});
+		// 		});
+		// 	}
 		} else {
 			// console.log('=== afterNavigate - from & to ===');
 			// console.log(navigation.from);
@@ -818,8 +865,8 @@
 					navBar && navBar.getBoundingClientRect().bottom > 0
 						? navBar.getBoundingClientRect().bottom
 						: 0;
-				console.log('=== adjustScrollTopForNavBar - scrollspyParent.scrollTop & navbarBottom ===');
-				console.log({ scrollspyParent: scrollspyParent!.scrollTop, navbarBottom: navBarBottom });
+				// console.log('=== adjustScrollTopForNavBar - scrollspyParent.scrollTop & navbarBottom ===');
+				// console.log({ scrollspyParent: scrollspyParent!.scrollTop, navbarBottom: navBarBottom });
 
 				scrollspyParent!.scrollTop -= navBarBottom;
 				scrollspyParent?.scrollTo({
@@ -858,14 +905,14 @@
 			hash: location.hash
 		};
 		if (locationPageAndHash?.hash !== thisPageandHash.hash && window.innerWidth >= 640) {
-			console.log('=== onscrollend - locationPageAndHash.hash changed ===');
+			// console.log('=== onscrollend - locationPageAndHash.hash changed ===');
 			locationPageAndHash = thisPageandHash;
 			// console.log("=== onscrollend - page ===");
 			// console.log(page);
 			// pushState(page.url.href, page.state);
 			adjustScrollTopForNavBar();
 		} else if (locationPageAndHash?.page !== thisPageandHash.page) {
-			console.log('=== onscrollend - locationPageAndHash.page changed ===');
+			// console.log('=== onscrollend - locationPageAndHash.page changed ===');
 			locationPageAndHash = thisPageandHash;
 			// console.log("=== onscrollend - page ===");
 			// console.log(page);
@@ -1142,14 +1189,42 @@
 		// }
 	});
 
-	const windowHashChangeHandler = () => {
+	const windowHashChangeHandler = (event: HashChangeEvent) => {
 		console.log('=== 🪟 - hash changed ===');
-		console.log(page.url.pathname + page.url.hash);
+		// console.log(page.url.pathname + page.url.hash);
+		// console.log("=== hash change event ===");
+		// console.log(event);
+		// locationHash = location.hash;
+	};
+
+	const windowPopstateHandler = (event: PopStateEvent) => {
+		console.log('=== 🪟 - popstate ===');
+		// console.log(page.url.pathname + page.url.hash);
+		console.log(location.hash);
+		console.log("=== popstate event ===");
+		console.log(event);
+		if (page.url.hash) {
+			const target = document.getElementById(location.hash.substring(1));
+			// TBD: consider opening a potential collapsed parent sections here
+			if (target) {
+				const parentRect = scrollspyParent!.getBoundingClientRect();
+				const targetRect = target.getBoundingClientRect();
+				// This one prevents scrollspy dispatchEvent error on mount:
+				// const targetScrollTop = scrollspyParent!.scrollTop + targetRect.top - parentRect.top;
+				scrollspyParent!.scrollTop += targetRect.top - parentRect.top;
+				// scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
+				scrollspyParent?.scrollTo({
+					left: scrollspyParent.scrollLeft,
+					top: scrollspyParent.scrollTop,
+					behavior: 'smooth'
+				});
+			}
+		}
 		// locationHash = location.hash;
 	};
 </script>
 
-<svelte:window onhashchange={() => windowHashChangeHandler()} />
+<svelte:window onhashchange={(event) => windowHashChangeHandler(event)} onpopstate={(event) => windowPopstateHandler(event)} />
 
 {#snippet sidebarToggleButton(classes: string, overlayModifier: object)}
 	<button
