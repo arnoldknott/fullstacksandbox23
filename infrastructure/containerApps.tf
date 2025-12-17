@@ -651,7 +651,7 @@ resource "azurerm_container_app" "PostgresAdmin" {
   identity {
     type = "UserAssigned"
     identity_ids = [
-      azurerm_user_assigned_identity.postgresAdmin.id,
+      azurerm_user_assigned_identity.pgadminIdentity.id,
     ]
   }
 
