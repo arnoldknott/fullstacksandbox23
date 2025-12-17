@@ -611,7 +611,7 @@ resource "azurerm_container_app" "PostgresAdmin" {
 
   template {
     container {
-      name   = "backend"
+      name   = "pgadmin"
       image  = "dpage/pgadmin4:9.11.0"
       cpu    = 0.25
       memory = "0.5Gi"
