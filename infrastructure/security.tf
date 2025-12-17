@@ -269,13 +269,13 @@ resource "azurerm_key_vault_access_policy" "pgadminAccessPolicy" {
   tenant_id    = var.azure_tenant_id
   object_id    = azurerm_user_assigned_identity.pgadminIdentity[0].principal_id
 
-  # certificate_permissions = [
-  #   "Get"
-  # ]
+  certificate_permissions = [
+    "Get"
+  ]
 
-  # key_permissions = [
-  #   "Get"
-  # ]
+  key_permissions = [
+    "Get"
+  ]
 
   secret_permissions = [
     "Get"
