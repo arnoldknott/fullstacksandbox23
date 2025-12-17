@@ -61,7 +61,7 @@ resource "azurerm_container_app_environment_storage" "adminDataConnect" {
   container_app_environment_id = azurerm_container_app_environment.ContainerEnvironment.id
   account_name                 = azurerm_storage_account.storage.name
   access_key                   = azurerm_storage_account.storage.primary_access_key
-  share_name                   = azurerm_storage_share.adminData.name
+  share_name                   = azurerm_storage_share.adminData[0].name
   access_mode                  = "ReadWrite"
 }
 

@@ -267,7 +267,7 @@ resource "azurerm_key_vault_access_policy" "pgadminAccessPolicy" {
   count        = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
   key_vault_id = azurerm_key_vault.keyVault.id
   tenant_id    = var.azure_tenant_id
-  object_id    = azurerm_user_assigned_identity.pgadminIdentity.principal_id
+  object_id    = azurerm_user_assigned_identity.pgadminIdentity[0].principal_id
 
   # certificate_permissions = [
   #   "Get"
