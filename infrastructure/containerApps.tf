@@ -616,7 +616,7 @@ resource "azurerm_container_app" "PostgresAdmin" {
       memory = "0.5Gi"
       volume_mounts {
         name = "${terraform.workspace}-admin-data"
-        path = "/data"
+        path = "/var/lib/pgadmin"
       }
       env {
         name  = "PGADMIN_DEFAULT_EMAIL"
