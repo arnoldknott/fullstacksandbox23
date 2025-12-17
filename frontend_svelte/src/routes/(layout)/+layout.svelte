@@ -111,7 +111,7 @@
 			icon: 'icon-[mdi--playground-seesaw]',
 			id: 'playground',
 			items: [
-				// { name: 'Overview', pathname: resolve('/(layout)/playground'), icon: 'icon-[mdi--playground-seesaw]', hash: '#top', id: 'overview' },
+				{ name: 'Overview', pathname: resolve('/(layout)/playground') + "#top", icon: 'icon-[mdi--playground-seesaw]', id: 'overview' },
 				{
 					name: 'Components',
 					pathname: resolve('/(layout)/playground/components') + '?prod=false&develop=true',
