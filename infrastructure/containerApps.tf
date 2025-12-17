@@ -55,6 +55,15 @@ resource "azurerm_container_app_environment_storage" "applicationDataConnect" {
   access_mode                  = "ReadWrite"
 }
 
+resource "azurerm_container_app_environment_storage" "adminDataConnect" {
+  name                         = "${var.project_short_name}-admindataconnect-${terraform.workspace}"
+  container_app_environment_id = azurerm_container_app_environment.ContainerEnvironment.id
+  account_name                 = azurerm_storage_account.storage.name
+  access_key                   = azurerm_storage_account.storage.primary_access_key
+  share_name                   = azurerm_storage_share.adminData.name
+  access_mode                  = "ReadWrite"
+}
+
 # stalled on 2024-01-12 in stage: https://fssb23-frontend-stage.gentlefield-715ad89b.northeurope.azurecontainerapps.io
 resource "azurerm_container_app" "FrontendSvelteContainer" {
   name                         = "${var.project_short_name}-frontend-${terraform.workspace}"
@@ -587,79 +596,85 @@ resource "azurerm_container_app" "redisContainer" {
 # Container not starting up:
 # sudo: The "no new privileges" flag is set, which prevents sudo from running as root.
 # sudo: If sudo is running in a container, you may need to adjust the container configuration to disable the flag.
-# resource "azurerm_container_app" "PostgresAdmin" {
-#   count = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
-#   name                         = "${var.project_short_name}-postgresadmin-${terraform.workspace}"
-#   container_app_environment_id = azurerm_container_app_environment.ContainerEnvironment.id
-#   resource_group_name          = azurerm_resource_group.resourceGroup.name
+resource "azurerm_container_app" "PostgresAdmin" {
+  count = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  name                         = "${var.project_short_name}-pgadmin-${terraform.workspace}"
+  container_app_environment_id = azurerm_container_app_environment.ContainerEnvironment.id
+  resource_group_name          = azurerm_resource_group.resourceGroup.name
 
-#   lifecycle {
-#     ignore_changes = [ingress]
-#   }
-#   revision_mode = "Single"
+  lifecycle {
+    ignore_changes = [ingress]
+  }
+  revision_mode = "Single"
 
-#   template {
-#     container {
-#       name   = "backend"
-#       image  = "dpage/pgadmin4:8"
-#       cpu    = 0.25
-#       memory = "0.5Gi"
-#       volume_mounts {
-#         name = "${terraform.workspace}-application-data"
-#         path = "/data"
-#       }
-#       env {
-#         name  = "PGADMIN_DEFAULT_EMAIL"
-#         secret_name = "pgadmin-default-email"
-#       }
-#       env {
-#         name  = "PGADMIN_DEFAULT_PASSWORD"
-#         secret_name = "pgadmin-default-password"
-#       }
-#     }
-#     volume {
-#       name         = "${terraform.workspace}-application-data"
-#       storage_name = azurerm_container_app_environment_storage.applicationDataConnect.name
-#       storage_type = "AzureFile"
-#     }
-#   }
+  template {
+    container {
+      name   = "backend"
+      image  = "dpage/pgadmin4:9.11.0"
+      cpu    = 0.25
+      memory = "0.5Gi"
+      volume_mounts {
+        name = "${terraform.workspace}-admin-data"
+        path = "/data"
+      }
+      env {
+        name  = "PGADMIN_DEFAULT_EMAIL"
+        secret_name = "pgadmin-default-email"
+      }
+      env {
+        name  = "PGADMIN_DEFAULT_PASSWORD"
+        secret_name = "pgadmin-default-password"
+      }
+    }
+    volume {
+      name         = "${terraform.workspace}-admin-data"
+      storage_name = azurerm_container_app_environment_storage.adminDataConnect.name
+      storage_type = "AzureFile"
+    }
+    min_replicas = 0
+    max_replicas = 1
+  }
 
-#   ingress {
-#     target_port      = 80
-#     external_enabled = true
-#     # allow_insecure_connections = false # consider adding this
-#     traffic_weight {
-#       percentage = 100
-#       # TBD: remove when using single after this bug is fixed:
-#       # https://github.com/hashicorp/terraform-provider-azurerm/issues/20435
-#       latest_revision = true
-#     }
-#   }
+  ingress {
+    target_port      = 80
+    external_enabled = true
+    # allow_insecure_connections = false # consider adding this
+    traffic_weight {
+      percentage = 100
+      # TBD: remove when using single after this bug is fixed:
+      # https://github.com/hashicorp/terraform-provider-azurerm/issues/20435
+      latest_revision = true
+    }
+  }
 
-#   # identity {
-#   #   type = "UserAssigned"
-#   #   identity_ids = [
-#   #     azurerm_user_assigned_identity.postgresAdmin.id,
-#   #   ]
-#   # }
+  # identity {
+  #   type = "UserAssigned"
+  #   identity_ids = [
+  #     azurerm_user_assigned_identity.postgresAdmin.id,
+  #   ]
+  # }
 
 
-#   secret {
-#     name  = "pgadmin-default-email"
-#     value = azurerm_key_vault_secret.pgadminDefaultEmail[0].value
-#   }
+  secret {
+    name  = "pgadmin-default-email"
+    identity = azurerm_user_assigned_identity.redisIdentity.id
+    key_vault_secret_id = azurerm_key_vault_secret.pgadminDefaultEmail.id
+    # value = azurerm_key_vault_secret.pgadminDefaultEmail[0].value
+  }
 
-#   secret {
-#     name  = "pgadmin-default-password"
-#     value = azurerm_key_vault_secret.pgadminDefaultPassword[0].value
-#   }
+  secret {
+    name  = "pgadmin-default-password"
+    identity = azurerm_user_assigned_identity.redisIdentity.id
+    key_vault_secret_id = azurerm_key_vault_secret.pgadminDefaultPassword.id
+    # value = azurerm_key_vault_secret.pgadminDefaultPassword[0].value
+  }
 
-#   tags = {
-#     Costcenter  = var.costcenter
-#     Owner       = var.owner_name
-#     Environment = terraform.workspace
-#   }
-# }
+  tags = {
+    Costcenter  = var.costcenter
+    Owner       = var.owner_name
+    Environment = terraform.workspace
+  }
+}
 
 # resource "azurerm_container_app" "postgresContainer" {
 #   name                         = "${var.project_short_name}-postgres-${terraform.workspace}"

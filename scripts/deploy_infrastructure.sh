@@ -184,6 +184,7 @@ tofu plan -out=${WORKSPACE}.tfplan \
         -var "budget_notification_email=${BUDGET_NOTIFICATION_EMAIL}" \
         -var "owner_object_id=${OWNER_OBJECT_ID}" \
         -var "postgres_port=${POSTGRES_PORT}" \
+        -var "pgadmin_default_email=${PGADMIN_DEFAULT_EMAIL}" \
         -var "redis_port=${REDIS_PORT}" \
         -var "redis_insight_port=${REDIS_INSIGHT_PORT}" \
         -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}"'

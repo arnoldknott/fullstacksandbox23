@@ -406,24 +406,24 @@ resource "azurerm_key_vault_secret" "developer-clients-secret" {
   key_vault_id = azurerm_key_vault.keyVault.id
 }
 
-# resource "azurerm_key_vault_secret" "pgadminDefaultEmail" {
-#   count = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
-#   name         = "pgadmin-default-email"
-#   value        = var.owner
-#   key_vault_id = azurerm_key_vault.keyVault.id
-# }
+resource "azurerm_key_vault_secret" "pgadminDefaultEmail" {
+  count = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  name         = "pgadmin-default-email"
+  value        = var.pgadmin_default_email
+  key_vault_id = azurerm_key_vault.keyVault.id
+}
 
-# resource "random_password" "pgadminDefaultPassword" {
-#   count = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
-#   length  = 24
-#   special = false
-# }
-# resource "azurerm_key_vault_secret" "pgadminDefaultPassword" {
-#   count = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
-#   name         = "pgadmin-default-password"
-#   value        = random_password.pgadminDefaultPassword[0].result
-#   key_vault_id = azurerm_key_vault.keyVault.id
-# }
+resource "random_password" "pgadminDefaultPassword" {
+  count = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  length  = 24
+  special = false
+}
+resource "azurerm_key_vault_secret" "pgadminDefaultPassword" {
+  count = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  name         = "pgadmin-default-password"
+  value        = random_password.pgadminDefaultPassword[0].result
+  key_vault_id = azurerm_key_vault.keyVault.id
+}
 
 # Container apps need to have the secrets in the key vault to be able to use them.
 # data "azurerm_key_vault_secrets" "keyVaultAllSecrets" {

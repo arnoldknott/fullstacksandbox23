@@ -86,6 +86,12 @@ variable "postgres_port" {
   type        = number
 }
 
+# PGAdmin configuration:
+variable "pgadmin_default_email" {
+  description = "Default email for PGAdmin login"
+  type        = string
+}
+
 # Redis configuration:
 variable "redis_port" {
   description = "Port number for Redis cache"
