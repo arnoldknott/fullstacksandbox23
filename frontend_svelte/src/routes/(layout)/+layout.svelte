@@ -443,7 +443,7 @@
 			const supportsScrollEnd = 'onscrollend' in scrollspyParent;
 
 			if (!supportsScrollEnd) {
-				console.log('=== scrollend not supported - using polyfill ===');
+				// console.log('=== scrollend not supported - using polyfill ===');
 
 				const handleScroll = () => {
 					if (scrollEndTimer) {
@@ -535,13 +535,13 @@
 	});
 
 	afterNavigate((navigation) => {
-		console.log('=== afterNavigate - navigation ===');
+		// console.log('=== afterNavigate - navigation ===');
 		navBarBottom =
 			navBar && navBar.getBoundingClientRect().bottom > 0
 				? navBar.getBoundingClientRect().bottom
 				: 0;
 		if (!location.hash) {
-			console.log('=== afterNavigate - scroll to TOP ===');
+			// console.log('=== afterNavigate - scroll to TOP ===');
 			locationPageAndHash = {
 				page: navigation.to?.url.pathname || '',
 				hash: ''
@@ -558,7 +558,7 @@
 	});
 
 	const adjustScrollTopForNavBar = () => {
-		console.log('=== adjustScrollTopForNavBar ===');
+		// console.log('=== adjustScrollTopForNavBar ===');
 		// Double requestAnimationFrame ensures layout has fully settled
 		requestAnimationFrame(() => {
 			requestAnimationFrame(() => {
@@ -578,7 +578,7 @@
 	};
 
 	const mainScrollEnd = (_event: Event) => {
-		console.log('=== onscrollend ===');
+		// console.log('=== onscrollend ===');
 		// note: the SidebarFolder has "max-sm:[--scrollspy-offset:56px]",
 		// which also affects the scrollspy offset calculation!
 		const thisPageandHash: LocationPageAndHash = {
@@ -596,8 +596,7 @@
 	};
 
 	onMount(() => {
-		console.log('=== onMount ===');
-
+		// console.log('=== onMount ===');
 		scrollspyParent!.scrollTo({
 			left: scrollspyParent!.scrollLeft,
 			top: scrollspyParent!.scrollTop,
@@ -620,7 +619,7 @@
 	});
 
 	const windowPopstateHandler = (_event: PopStateEvent) => {
-		console.log('=== 🪟 - popstate ===');
+		// console.log('=== 🪟 - popstate ===');
 		if (page.url.hash) {
 			const target = document.getElementById(location.hash.substring(1));
 			// TBD: consider opening a potential collapsed parent sections here
