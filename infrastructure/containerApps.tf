@@ -596,6 +596,7 @@ resource "azurerm_container_app" "redisContainer" {
 # Container not starting up:
 # sudo: The "no new privileges" flag is set, which prevents sudo from running as root.
 # sudo: If sudo is running in a container, you may need to adjust the container configuration to disable the flag.
+# TBD: configure OAuth for pgadmin container in config.py, config_local.py or config_system.py
 resource "azurerm_container_app" "PostgresAdmin" {
   count = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
   name                         = "${var.project_short_name}-pgadmin-${terraform.workspace}"
@@ -657,14 +658,14 @@ resource "azurerm_container_app" "PostgresAdmin" {
 
   secret {
     name  = "pgadmin-default-email"
-    identity = azurerm_user_assigned_identity.redisIdentity.id
+    identity = azurerm_user_assigned_identity.pgadminIdentity.id
     key_vault_secret_id = azurerm_key_vault_secret.pgadminDefaultEmail[0].id
     # value = azurerm_key_vault_secret.pgadminDefaultEmail[0].value
   }
 
   secret {
     name  = "pgadmin-default-password"
-    identity = azurerm_user_assigned_identity.redisIdentity.id
+    identity = azurerm_user_assigned_identity.pgadminIdentity.id
     key_vault_secret_id = azurerm_key_vault_secret.pgadminDefaultPassword[0].id
     # value = azurerm_key_vault_secret.pgadminDefaultPassword[0].value
   }
