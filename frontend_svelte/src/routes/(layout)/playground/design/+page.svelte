@@ -496,7 +496,7 @@
 	>
 </div>
 
-<div id="building-blocks">
+<div id="design-building-blocks">
 	<Heading>🚧 Building blocks - for design experiments 🚧</Heading>
 </div>
 
