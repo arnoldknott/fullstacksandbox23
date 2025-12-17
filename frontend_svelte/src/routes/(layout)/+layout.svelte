@@ -40,7 +40,7 @@
 				: true
 	);
 
-	let session: Session | undefined= $state(data.session);
+	let session: Session | undefined = $state(data.session);
 
 	let welcomeModal: HTMLDivElement | null = $state(null);
 
@@ -121,7 +121,12 @@
 			icon: 'icon-[mdi--playground-seesaw]',
 			id: 'playground',
 			items: [
-				{ name: 'Overview', pathname: resolve('/(layout)/playground') + "#top", icon: 'icon-[mdi--playground-seesaw]', id: 'overview' },
+				{
+					name: 'Overview',
+					pathname: resolve('/(layout)/playground') + '#top',
+					icon: 'icon-[mdi--playground-seesaw]',
+					id: 'overview'
+				},
 				{
 					name: 'User Interface',
 					pathname: resolve('/(layout)/playground/user-interface'),
@@ -191,42 +196,41 @@
 									id: 'svelte'
 								}
 							]
-						},
-
+						}
 					]
 				},
 				{
 					name: 'Data Flow & Navigation',
 					pathname: resolve('/(layout)/playground/dataflow'),
 					icon: 'icon-[iconoir--data-transfer-both]',
-					id: 'dataflow',
+					id: 'dataflow'
 				},
 				{
 					name: 'Backend Schema',
 					pathname: resolve('/(layout)/playground/backend-schema'),
 					icon: 'icon-[file-icons--openapi]',
-					id: 'backend-schema',
+					id: 'backend-schema'
 				},
 				{
 					name: 'Counter',
 					pathname: resolve('/(layout)/playground/counter'),
 					icon: 'icon-[mdi--counter]',
-					id: 'counter',
+					id: 'counter'
 				},
 				{
 					name: 'Core',
 					pathname: resolve('/(layout)/playground/core'),
 					icon: 'icon-[streamline-ultimate--computer-chip-core]',
-					id: 'core',
+					id: 'core'
 				},
 				{
 					name: 'Websockets',
 					pathname: resolve('/(layout)/playground/websockets'),
 					icon: 'icon-[solar--socket-linear]',
-					id: 'websockets',
+					id: 'websockets'
 				}
 			]
-		},
+		}
 		// {
 		// 	name: 'Apps',
 		// 	pathname: resolve('/(layout)/(protected)/dashboard'),
@@ -236,79 +240,77 @@
 		// },
 	]);
 
-	let protectedSidebarLinks: SidebarItemContent[] = $state(
-		[
-			{
-				name: 'Dashboard',
-				pathname: resolve('/(layout)/(protected)/dashboard'),
-				icon: 'icon-[material-symbols--dashboard-outline-rounded]',
-				id: 'dashboard',
-				items: [
-					{
-						name: 'Overview',
-						pathname: resolve('/(layout)/(protected)/dashboard') + '#top',
-						icon: 'icon-[material-symbols--dashboard-outline-rounded]',
-						id: 'overview'
-					},
-					{
-						name: 'Demo Resources',
-						pathname: resolve('/(layout)/(protected)/dashboard/backend-demo-resource'),
-						icon: 'icon-[grommet-icons--resources]',
-						id: 'demo-resource',
-						items: [
-							{
-								name: 'Rest API',
-								pathname: resolve('/(layout)/(protected)/dashboard/backend-demo-resource/restapi'),
-								icon: 'icon-[dashicons--rest-api]',
-								id: 'demo-resource-restapi'
-							},
-							{
-								name: 'Socket IO',
-								pathname: resolve('/(layout)/(protected)/dashboard/backend-demo-resource/socketio'),
-								icon: 'icon-[tabler--brand-socket-io]',
-								id: 'demo-resource-socketio'
-							}
-						]
-					},
-					{
-						name: 'Hierarchical Resources',		
-						pathname: resolve('/(layout)/(protected)/dashboard/backend-protected-hierarchy'),
-						icon: 'icon-[fluent-mdl2--family]',
-						id: 'hierarchical-resources',
-					},
-					{
-						name: 'Identities',
-						// pathname: resolve('/(layout)/(protected)/dashboard/identities'),
-						icon: 'icon-[material-symbols--identity-platform-outline-rounded]',
-						id: 'identities',
-						items: [
-							{
-								name: 'All identities',
-								pathname: resolve('/(layout)/(protected)/dashboard/identities'),
-								icon: 'icon-[mdi--account-multiple-outline]',
-								id: 'identities-all'
-							},
-							{
-								name: 'Microsoft',
-								pathname: resolve('/(layout)/(protected)/dashboard/msgraph'),
-								icon: 'icon-[fluent--person-20-filled]',
-								id: 'identities-microsoft'
-							}
-						]
-					},
-					{
-						name: 'Socket.IO',
-						pathname: resolve('/(layout)/(protected)/dashboard/socketio'),
-						icon: 'icon-[tabler--brand-socket-io]',
-						id: 'socketio',
-					}
-				]
-			}
+	let protectedSidebarLinks: SidebarItemContent[] = $state([
+		{
+			name: 'Dashboard',
+			pathname: resolve('/(layout)/(protected)/dashboard'),
+			icon: 'icon-[material-symbols--dashboard-outline-rounded]',
+			id: 'dashboard',
+			items: [
+				{
+					name: 'Overview',
+					pathname: resolve('/(layout)/(protected)/dashboard') + '#top',
+					icon: 'icon-[material-symbols--dashboard-outline-rounded]',
+					id: 'overview'
+				},
+				{
+					name: 'Demo Resources',
+					pathname: resolve('/(layout)/(protected)/dashboard/backend-demo-resource'),
+					icon: 'icon-[grommet-icons--resources]',
+					id: 'demo-resource',
+					items: [
+						{
+							name: 'Rest API',
+							pathname: resolve('/(layout)/(protected)/dashboard/backend-demo-resource/restapi'),
+							icon: 'icon-[dashicons--rest-api]',
+							id: 'demo-resource-restapi'
+						},
+						{
+							name: 'Socket IO',
+							pathname: resolve('/(layout)/(protected)/dashboard/backend-demo-resource/socketio'),
+							icon: 'icon-[tabler--brand-socket-io]',
+							id: 'demo-resource-socketio'
+						}
+					]
+				},
+				{
+					name: 'Hierarchical Resources',
+					pathname: resolve('/(layout)/(protected)/dashboard/backend-protected-hierarchy'),
+					icon: 'icon-[fluent-mdl2--family]',
+					id: 'hierarchical-resources'
+				},
+				{
+					name: 'Identities',
+					// pathname: resolve('/(layout)/(protected)/dashboard/identities'),
+					icon: 'icon-[material-symbols--identity-platform-outline-rounded]',
+					id: 'identities',
+					items: [
+						{
+							name: 'All identities',
+							pathname: resolve('/(layout)/(protected)/dashboard/identities'),
+							icon: 'icon-[mdi--account-multiple-outline]',
+							id: 'identities-all'
+						},
+						{
+							name: 'Microsoft',
+							pathname: resolve('/(layout)/(protected)/dashboard/msgraph'),
+							icon: 'icon-[fluent--person-20-filled]',
+							id: 'identities-microsoft'
+						}
+					]
+				},
+				{
+					name: 'Socket.IO',
+					pathname: resolve('/(layout)/(protected)/dashboard/socketio'),
+					icon: 'icon-[tabler--brand-socket-io]',
+					id: 'socketio'
+				}
+			]
+		}
 	]);
 
-	let debugSidebarLinks: SidebarItemContent[] = $state(
-		[
-					{
+	let debugSidebarLinks: SidebarItemContent[] = $state([
+		{
 			name: 'Page 1',
 			pathname: resolve('/(layout)/playground/page1'),
 			icon: 'icon-[tabler--user]',
@@ -541,8 +543,7 @@
 				}
 			]
 		}
-		]
-	);
+	]);
 
 	let scrollspyParent: HTMLElement | null = $state(null);
 
@@ -770,9 +771,7 @@
 	};
 </script>
 
-<svelte:window
-	onpopstate={(event) => windowPopstateHandler(event)}
-/>
+<svelte:window onpopstate={(event) => windowPopstateHandler(event)} />
 
 {#snippet sidebarToggleButton(classes: string, overlayModifier: object)}
 	<button
@@ -821,7 +820,7 @@
 >
 	<!-- bind:session={data.session} -->
 	<WelcomeModal
-		bind:session={session}
+		bind:session
 		bind:artificialIntelligenceConfiguration
 		bind:themeConfiguration
 		bind:mode
@@ -903,7 +902,10 @@
 				<Guard>
 					{#each protectedSidebarLinks as protectedSidebarItem (protectedSidebarItem.id)}
 						<SidebarItem
-							content={{ ...protectedSidebarItem, pathname: protectedSidebarItem.pathname || page.url.pathname }}
+							content={{
+								...protectedSidebarItem,
+								pathname: protectedSidebarItem.pathname || page.url.pathname
+							}}
 							topLevel={true}
 							topoffset={navBarBottom}
 						/>
@@ -912,7 +914,10 @@
 				{#if debug}
 					{#each debugSidebarLinks as debugSidebarItem (debugSidebarItem.id)}
 						<SidebarItem
-							content={{ ...debugSidebarItem, pathname: debugSidebarItem.pathname || page.url.pathname }}
+							content={{
+								...debugSidebarItem,
+								pathname: debugSidebarItem.pathname || page.url.pathname
+							}}
 							topLevel={true}
 							topoffset={navBarBottom}
 						/>
@@ -920,7 +925,7 @@
 				{/if}
 			</ul>
 		</div>
-				<div class="mb-2 flex items-center gap-1">
+		<div class="mb-2 flex items-center gap-1">
 			<label class="label label-text text-base" for="debugSwitcher">Debug: </label>
 			<input
 				type="checkbox"
