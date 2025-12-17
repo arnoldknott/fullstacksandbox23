@@ -61,6 +61,7 @@ services:
     environment:
       - PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION=False
       - MASTER_PASSWORD_REQUIRED=False
+      - GUNICORN_ACCESS_LOGFILE=/dev/null
     ports:
       - "5533:80"
     volumes:
