@@ -15,17 +15,11 @@
 	import { type SubmitFunction } from '@sveltejs/kit';
 	import { resolve } from '$app/paths';
 	import WelcomeModal from './WelcomeModal.svelte';
-	import {
-		afterNavigate,
-		replaceState,
-		pushState,
-	} from '$app/navigation';
+	import { afterNavigate, replaceState, pushState } from '$app/navigation';
 	import type { SidebarItemContent } from '$lib/types';
 	import SidebarItem from './SidebarItem.svelte';
 	import LoginOutButton from './LoginOutButton.svelte';
 	import Logo from './Logo.svelte';
-	import { type Attachment } from 'svelte/attachments';
-	// import { scrollY } from 'svelte/reactivity/window';
 
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
 
@@ -425,11 +419,11 @@
 
 	let navBar: HTMLElement | null = $state(null);
 	let navBarBottom: number = $state(0);
-	
+
 	// let contentArea: HTMLElement | null = $state(null);
 	// let contentAreaTop: number = $state(0);
 	// let contentAreaOffset: number = $state(0);
-	
+
 	// let locationHash: string = $state('');
 	// TBD: include search parameters?
 	type LocationPageAndHash = {
@@ -442,15 +436,15 @@
 		// Polyfill for scrollend event (Safari doesn't support it yet)
 		let scrollEndTimer: ReturnType<typeof setTimeout> | null = null;
 		let cleanupScrollEndPolyfill: (() => void) | null = null;
-		
+
 		// Wait for scrollspyParent to be available
 		if (scrollspyParent) {
 			// Check if scrollend is supported
 			const supportsScrollEnd = 'onscrollend' in scrollspyParent;
-			
+
 			if (!supportsScrollEnd) {
 				console.log('=== scrollend not supported - using polyfill ===');
-				
+
 				const handleScroll = () => {
 					if (scrollEndTimer) {
 						clearTimeout(scrollEndTimer);
@@ -460,9 +454,9 @@
 						scrollspyParent?.dispatchEvent(scrollEndEvent);
 					}, 150); // 150ms after scroll stops (slightly longer for reliability)
 				};
-				
+
 				scrollspyParent.addEventListener('scroll', handleScroll, { passive: true });
-				
+
 				cleanupScrollEndPolyfill = () => {
 					scrollspyParent?.removeEventListener('scroll', handleScroll);
 					if (scrollEndTimer) {
@@ -563,7 +557,6 @@
 		}
 	});
 
-
 	const adjustScrollTopForNavBar = () => {
 		console.log('=== adjustScrollTopForNavBar ===');
 		// Double requestAnimationFrame ensures layout has fully settled
@@ -601,7 +594,6 @@
 		}
 		// contentAreaTop = contentArea ? contentArea.getBoundingClientRect().top : 0;
 	};
-
 
 	onMount(() => {
 		console.log('=== onMount ===');
@@ -915,7 +907,6 @@
 			</div>
 		</nav>
 		<!-- </div> -->
-
 
 		<div
 			id="scrollspy"

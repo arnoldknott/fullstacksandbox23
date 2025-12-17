@@ -27,22 +27,6 @@
 		children: Snippet;
 	} = $props();
 
-	// TBD: seems no longer necessary to force scrolling
-	// const forceScrolling = () => {
-	// 	if (scrollspyParent) {
-	// 		const original = scrollspyParent.scrollTop;
-	// 		// scrolls to the other end of the scroll area and back to force scrollspy to recalculate positions
-	// 		const alt =
-	// 			original < 2 ? scrollspyParent.scrollHeight : original - scrollspyParent.scrollHeight;
-	// 		scrollspyParent.scrollTop = alt;
-	// 		scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
-	// 		requestAnimationFrame(() => {
-	// 			scrollspyParent!.scrollTop = original;
-	// 			scrollspyParent!.dispatchEvent(new Event('scroll', { bubbles: true }));
-	// 		});
-	// 	}
-	// };
-
 	const addScrollspy = (node: HTMLElement) => {
 		node.setAttribute('data-scrollspy', '#scrollspy');
 		node.setAttribute('data-scrollspy-scrollable-parent', '#scrollspy-scrollable-parent');
