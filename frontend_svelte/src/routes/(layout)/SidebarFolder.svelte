@@ -55,7 +55,6 @@
 		aria-labelledby={id + '-control'}
 		data-pathname={pathname}
 	>
-		<!-- max-sm:[--scrollspy-offset:56px] -->
 		<!-- {`[--scrollspy-offset:${topoffset}]`.toString()} -->
 		<!-- {topoffset} -->
 		<!-- add [--scrollspy-offset:86] here conditionally with number being navbarBottom variable from layout. -->
