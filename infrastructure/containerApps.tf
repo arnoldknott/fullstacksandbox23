@@ -627,8 +627,8 @@ resource "azurerm_container_app" "PostgresAdmin" {
         name        = "PGADMIN_DEFAULT_PASSWORD"
         secret_name = "pgadmin-default-password"
       }
-      env{
-        name = GUNICORN_ACCESS_LOGFILE
+      env {
+        name  = "GUNICORN_ACCESS_LOGFILE"
         value = "/dev/null"
       }
     }
