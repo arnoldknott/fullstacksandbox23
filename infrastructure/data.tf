@@ -186,6 +186,7 @@ resource "azurerm_storage_share" "applicationData" {
 }
 
 resource "azurerm_storage_share" "adminData" {
+  count              = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
   name               = "${var.project_short_name}-admindata-${terraform.workspace}"
   storage_account_id = azurerm_storage_account.storage.id
   quota              = 10 #TBD: increase for production and keep an eye on cost!
