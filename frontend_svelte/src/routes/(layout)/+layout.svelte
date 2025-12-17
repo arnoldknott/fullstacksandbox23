@@ -619,10 +619,6 @@
 		}
 	});
 
-	const windowHashChangeHandler = (_event: HashChangeEvent) => {
-		console.log('=== 🪟 - hash changed ===');
-	};
-
 	const windowPopstateHandler = (_event: PopStateEvent) => {
 		console.log('=== 🪟 - popstate ===');
 		if (page.url.hash) {
@@ -644,7 +640,6 @@
 </script>
 
 <svelte:window
-	onhashchange={(event) => windowHashChangeHandler(event)}
 	onpopstate={(event) => windowPopstateHandler(event)}
 />
 
