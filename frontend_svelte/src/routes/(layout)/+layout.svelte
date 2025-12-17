@@ -3,7 +3,6 @@
 	import { SessionStatus } from '$lib/session';
 	import { Variant, Theming, type ColorConfig } from '$lib/theming';
 	import { Model, type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
-
 	import type { Action } from 'svelte/action';
 	import { onMount, type Snippet } from 'svelte';
 	import { page } from '$app/state';
@@ -16,7 +15,7 @@
 	import { resolve } from '$app/paths';
 	import WelcomeModal from './WelcomeModal.svelte';
 	import { afterNavigate, replaceState, pushState } from '$app/navigation';
-	import type { SidebarItemContent } from '$lib/types';
+	import type { SidebarItemContent, Session } from '$lib/types';
 	import SidebarItem from './SidebarItem.svelte';
 	import LoginOutButton from './LoginOutButton.svelte';
 	import Logo from './Logo.svelte';
@@ -30,6 +29,8 @@
 				? false
 				: true
 	);
+
+	let session: Session | undefined= $state(data.session);
 
 	let welcomeModal: HTMLDivElement | null = $state(null);
 
@@ -687,8 +688,9 @@
 	class="h-screen w-screen overflow-x-scroll overflow-y-auto"
 	onscrollend={mainScrollEnd}
 >
+	<!-- bind:session={data.session} -->
 	<WelcomeModal
-		bind:session={data.session}
+		bind:session={session}
 		bind:artificialIntelligenceConfiguration
 		bind:themeConfiguration
 		bind:mode
