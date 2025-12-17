@@ -656,20 +656,20 @@ resource "azurerm_container_app" "PostgresAdmin" {
   identity {
     type = "UserAssigned"
     identity_ids = [
-      azurerm_user_assigned_identity.pgadminIdentity[0].id,
+      azurerm_user_assigned_identity.pgadminIdentity.id,
     ]
   }
 
   secret {
     name                = "pgadmin-default-email"
-    identity            = azurerm_user_assigned_identity.pgadminIdentity[0].id
+    identity            = azurerm_user_assigned_identity.pgadminIdentity.id
     key_vault_secret_id = azurerm_key_vault_secret.pgadminDefaultEmail[0].id
     # value = azurerm_key_vault_secret.pgadminDefaultEmail[0].value
   }
 
   secret {
     name                = "pgadmin-default-password"
-    identity            = azurerm_user_assigned_identity.pgadminIdentity[0].id
+    identity            = azurerm_user_assigned_identity.pgadminIdentity.id
     key_vault_secret_id = azurerm_key_vault_secret.pgadminDefaultPassword[0].id
     # value = azurerm_key_vault_secret.pgadminDefaultPassword[0].value
   }
