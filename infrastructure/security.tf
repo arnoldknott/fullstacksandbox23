@@ -206,13 +206,13 @@ resource "azurerm_key_vault" "keyVault" {
     tenant_id = var.azure_tenant_id
     object_id = azurerm_user_assigned_identity.pgadminIdentity.principal_id
 
-    certificate_permissions = [
-      "Get"
-    ]
+    # certificate_permissions = [
+    #   "Get"
+    # ]
 
-    key_permissions = [
-      "Get"
-    ]
+    # key_permissions = [
+    #   "Get"
+    # ]
 
     secret_permissions = [
       "Get"
@@ -436,19 +436,19 @@ resource "azurerm_key_vault_secret" "developer-clients-secret" {
 }
 
 resource "azurerm_key_vault_secret" "pgadminDefaultEmail" {
-  count = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  count        = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
   name         = "pgadmin-default-email"
   value        = var.pgadmin_default_email
   key_vault_id = azurerm_key_vault.keyVault.id
 }
 
 resource "random_password" "pgadminDefaultPassword" {
-  count = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  count   = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
   length  = 24
   special = false
 }
 resource "azurerm_key_vault_secret" "pgadminDefaultPassword" {
-  count = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  count        = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
   name         = "pgadmin-default-password"
   value        = random_password.pgadminDefaultPassword[0].result
   key_vault_id = azurerm_key_vault.keyVault.id

@@ -55,14 +55,15 @@ resource "azurerm_container_app_environment_storage" "applicationDataConnect" {
   access_mode                  = "ReadWrite"
 }
 
-resource "azurerm_container_app_environment_storage" "adminDataConnect" {
-  name                         = "${var.project_short_name}-admindataconnect-${terraform.workspace}"
-  container_app_environment_id = azurerm_container_app_environment.ContainerEnvironment.id
-  account_name                 = azurerm_storage_account.storage.name
-  access_key                   = azurerm_storage_account.storage.primary_access_key
-  share_name                   = azurerm_storage_share.adminData.name
-  access_mode                  = "ReadWrite"
-}
+# resource "azurerm_container_app_environment_storage" "adminDataConnect" {
+#   count                        = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+#   name                         = "${var.project_short_name}-admindataconnect-${terraform.workspace}"
+#   container_app_environment_id = azurerm_container_app_environment.ContainerEnvironment.id
+#   account_name                 = azurerm_storage_account.storage.name
+#   access_key                   = azurerm_storage_account.storage.primary_access_key
+#   share_name                   = azurerm_storage_share.adminData[0].name
+#   access_mode                  = "ReadWrite"
+# }
 
 # stalled on 2024-01-12 in stage: https://fssb23-frontend-stage.gentlefield-715ad89b.northeurope.azurecontainerapps.io
 resource "azurerm_container_app" "FrontendSvelteContainer" {
@@ -277,16 +278,16 @@ resource "azurerm_container_app" "BackendAPIContainer" {
 
 
   secret {
-    name  = "postgres-password"
-    identity = azurerm_user_assigned_identity.backendIdentity.id
+    name                = "postgres-password"
+    identity            = azurerm_user_assigned_identity.backendIdentity.id
     key_vault_secret_id = azurerm_key_vault_secret.postgresPassword.id
     # value = data.azurerm_key_vault_secret.keyVaultSecret["postgres-password"].value
     # value = azurerm_key_vault_secret.postgresPassword.value
   }
 
   secret {
-    name  = "postgres-user"
-    identity = azurerm_user_assigned_identity.backendIdentity.id
+    name                = "postgres-user"
+    identity            = azurerm_user_assigned_identity.backendIdentity.id
     key_vault_secret_id = azurerm_key_vault_secret.postgresUser.id
     # value = data.azurerm_key_vault_secret.keyVaultSecret["postgres-user"].value
     # value = azurerm_key_vault_secret.postgresUser.value
@@ -295,8 +296,8 @@ resource "azurerm_container_app" "BackendAPIContainer" {
 
   # secret {
   #   name  = "keyvault-health"
-    # value = data.azurerm_key_vault_secret.keyVaultSecret["keyvault-health"].value
-    # value = azurerm_key_vault_secret.keyvaultHealth.value
+  # value = data.azurerm_key_vault_secret.keyVaultSecret["keyvault-health"].value
+  # value = azurerm_key_vault_secret.keyvaultHealth.value
   # }
 
   tags = {
@@ -406,8 +407,8 @@ resource "azurerm_container_app" "BackendWorkerContainer" {
   }
 
   secret {
-    name = "postgres-password"
-    identity = azurerm_user_assigned_identity.workerIdentity.id
+    name                = "postgres-password"
+    identity            = azurerm_user_assigned_identity.workerIdentity.id
     key_vault_secret_id = azurerm_key_vault_secret.postgresPassword.id
     # value = "fromTerraformChangedInGithubActions"
     # value = azurerm_key_vault_secret.postgresPassword.value
@@ -415,8 +416,8 @@ resource "azurerm_container_app" "BackendWorkerContainer" {
   }
 
   secret {
-    name = "postgres-user"
-    identity = azurerm_user_assigned_identity.workerIdentity.id
+    name                = "postgres-user"
+    identity            = azurerm_user_assigned_identity.workerIdentity.id
     key_vault_secret_id = azurerm_key_vault_secret.postgresUser.id
     # value = "fromTerraformChangedInGithubActions"
     # value = azurerm_key_vault_secret.postgresUser.value
@@ -549,29 +550,29 @@ resource "azurerm_container_app" "redisContainer" {
   }
 
   secret {
-    name  = "redis-password"
-    identity = azurerm_user_assigned_identity.redisIdentity.id
+    name                = "redis-password"
+    identity            = azurerm_user_assigned_identity.redisIdentity.id
     key_vault_secret_id = azurerm_key_vault_secret.redisPassword.id
     # value = azurerm_key_vault_secret.redisPassword.value
     # value = data.azurerm_key_vault_secret.keyVaultSecret["redis-password"].value
   }
   secret {
-    name  = "redis-session-password"
-    identity = azurerm_user_assigned_identity.redisIdentity.id
+    name                = "redis-session-password"
+    identity            = azurerm_user_assigned_identity.redisIdentity.id
     key_vault_secret_id = azurerm_key_vault_secret.redisSessionPassword.id
     # value = azurerm_key_vault_secret.redisSessionPassword.value
     # value = data.azurerm_key_vault_secret.keyVaultSecret["redis-session-password"].value
   }
   secret {
-    name  = "redis-socketio-password"
-    identity = azurerm_user_assigned_identity.redisIdentity.id
+    name                = "redis-socketio-password"
+    identity            = azurerm_user_assigned_identity.redisIdentity.id
     key_vault_secret_id = azurerm_key_vault_secret.redisSocketioPassword.id
     # value = azurerm_key_vault_secret.redisSocketioPassword.value
     # value = data.azurerm_key_vault_secret.keyVaultSecret["redis-socketio-password"].value
   }
   secret {
-    name  = "redis-celery-password"
-    identity = azurerm_user_assigned_identity.redisIdentity.id
+    name                = "redis-celery-password"
+    identity            = azurerm_user_assigned_identity.redisIdentity.id
     key_vault_secret_id = azurerm_key_vault_secret.redisCeleryPassword.id
     # value = azurerm_key_vault_secret.redisCeleryPassword.value
     # value = data.azurerm_key_vault_secret.keyVaultSecret["redis-celery-password"].value
@@ -598,7 +599,7 @@ resource "azurerm_container_app" "redisContainer" {
 # sudo: If sudo is running in a container, you may need to adjust the container configuration to disable the flag.
 # TBD: configure OAuth for pgadmin container in config.py, config_local.py or config_system.py
 resource "azurerm_container_app" "PostgresAdmin" {
-  count = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  count                        = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
   name                         = "${var.project_short_name}-pgadmin-${terraform.workspace}"
   container_app_environment_id = azurerm_container_app_environment.ContainerEnvironment.id
   resource_group_name          = azurerm_resource_group.resourceGroup.name
@@ -610,28 +611,32 @@ resource "azurerm_container_app" "PostgresAdmin" {
 
   template {
     container {
-      name   = "backend"
+      name   = "pgadmin"
       image  = "dpage/pgadmin4:9.11.0"
       cpu    = 0.25
       memory = "0.5Gi"
-      volume_mounts {
-        name = "${terraform.workspace}-admin-data"
-        path = "/data"
-      }
+      # volume_mounts {
+      #   name = "${terraform.workspace}-admin-data"
+      #   path = "/var/lib/pgadmin"
+      # }
       env {
-        name  = "PGADMIN_DEFAULT_EMAIL"
+        name        = "PGADMIN_DEFAULT_EMAIL"
         secret_name = "pgadmin-default-email"
       }
       env {
-        name  = "PGADMIN_DEFAULT_PASSWORD"
+        name        = "PGADMIN_DEFAULT_PASSWORD"
         secret_name = "pgadmin-default-password"
       }
+      # env {
+      #   name  = "GUNICORN_ACCESS_LOGFILE"
+      #   value = "/dev/null"
+      # }
     }
-    volume {
-      name         = "${terraform.workspace}-admin-data"
-      storage_name = azurerm_container_app_environment_storage.adminDataConnect.name
-      storage_type = "AzureFile"
-    }
+    # volume {
+    #   name         = "${terraform.workspace}-admin-data"
+    #   storage_name = azurerm_container_app_environment_storage.adminDataConnect[0].name
+    #   storage_type = "AzureFile"
+    # }
     min_replicas = 0
     max_replicas = 1
   }
@@ -656,15 +661,15 @@ resource "azurerm_container_app" "PostgresAdmin" {
   }
 
   secret {
-    name  = "pgadmin-default-email"
-    identity = azurerm_user_assigned_identity.pgadminIdentity.id
+    name                = "pgadmin-default-email"
+    identity            = azurerm_user_assigned_identity.pgadminIdentity.id
     key_vault_secret_id = azurerm_key_vault_secret.pgadminDefaultEmail[0].id
     # value = azurerm_key_vault_secret.pgadminDefaultEmail[0].value
   }
 
   secret {
-    name  = "pgadmin-default-password"
-    identity = azurerm_user_assigned_identity.pgadminIdentity.id
+    name                = "pgadmin-default-password"
+    identity            = azurerm_user_assigned_identity.pgadminIdentity.id
     key_vault_secret_id = azurerm_key_vault_secret.pgadminDefaultPassword[0].id
     # value = azurerm_key_vault_secret.pgadminDefaultPassword[0].value
   }
