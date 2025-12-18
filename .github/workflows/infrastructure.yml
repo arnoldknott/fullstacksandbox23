@@ -181,6 +181,7 @@ jobs:
         id: tofu_plan
         run: |
           tofu plan -out=${WORKSPACE}_${COMMIT_SHA}.tfplan \
+            -no-color \
             -detailed-exitcode \
             -var "azure_client_id=${GITHUBACTIONS_MANAGEDIDENTITY_CLIENT_ID}" \
             -var "azure_subscription_id=${AZURE_SUBSCRIPTION_ID}" \
@@ -198,8 +199,8 @@ jobs:
             -var "pgadmin_default_email=${PGADMIN_DEFAULT_EMAIL}" \
             -var "redis_port=${REDIS_PORT}" \
             -var "redis_insight_port=${REDIS_INSIGHT_PORT}" \
-            -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}" > ${WORKSPACE}_${COMMIT_SHA}.log
-          less ${WORKSPACE}_${COMMIT_SHA}.log
+            -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}" | tee ${WORKSPACE}_${COMMIT_SHA}.log
+          cat ${WORKSPACE}_${COMMIT_SHA}.log
 
       # - name: Monitor the output file from tofu plan
       #   run: |
