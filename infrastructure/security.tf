@@ -35,7 +35,6 @@ resource "azurerm_user_assigned_identity" "backendIdentity" {
 # }
 
 resource "azurerm_user_assigned_identity" "pgadminIdentity" {
-  count               = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
   name                = "${var.project_name}-pgadminIdentity-${terraform.workspace}"
   resource_group_name = azurerm_resource_group.resourceGroup.name
   location            = azurerm_resource_group.resourceGroup.location
@@ -204,6 +203,23 @@ resource "azurerm_key_vault" "keyVault" {
   # }
 
   access_policy {
+    tenant_id    = var.azure_tenant_id
+    object_id    = azurerm_user_assigned_identity.pgadminIdentity.principal_id
+
+    # certificate_permissions = [
+    #   "Get"
+    # ]
+
+    # key_permissions = [
+    #   "Get"
+    # ]
+
+    secret_permissions = [
+      "Get"
+    ]
+  } 
+
+  access_policy {
     tenant_id = var.azure_tenant_id
     object_id = azurerm_user_assigned_identity.redisIdentity.principal_id
 
@@ -261,25 +277,6 @@ resource "azurerm_key_vault" "keyVault" {
     Environment = terraform.workspace
   }
 
-}
-
-resource "azurerm_key_vault_access_policy" "pgadminAccessPolicy" {
-  count        = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
-  key_vault_id = azurerm_key_vault.keyVault.id
-  tenant_id    = var.azure_tenant_id
-  object_id    = azurerm_user_assigned_identity.pgadminIdentity[0].principal_id
-
-  certificate_permissions = [
-    "Get"
-  ]
-
-  key_permissions = [
-    "Get"
-  ]
-
-  secret_permissions = [
-    "Get"
-  ]
 }
 
 resource "azurerm_key_vault_secret" "keyvaultHealth" {

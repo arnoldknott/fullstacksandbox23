@@ -55,15 +55,15 @@ resource "azurerm_container_app_environment_storage" "applicationDataConnect" {
   access_mode                  = "ReadWrite"
 }
 
-resource "azurerm_container_app_environment_storage" "adminDataConnect" {
-  count                        = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
-  name                         = "${var.project_short_name}-admindataconnect-${terraform.workspace}"
-  container_app_environment_id = azurerm_container_app_environment.ContainerEnvironment.id
-  account_name                 = azurerm_storage_account.storage.name
-  access_key                   = azurerm_storage_account.storage.primary_access_key
-  share_name                   = azurerm_storage_share.adminData[0].name
-  access_mode                  = "ReadWrite"
-}
+# resource "azurerm_container_app_environment_storage" "adminDataConnect" {
+#   count                        = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+#   name                         = "${var.project_short_name}-admindataconnect-${terraform.workspace}"
+#   container_app_environment_id = azurerm_container_app_environment.ContainerEnvironment.id
+#   account_name                 = azurerm_storage_account.storage.name
+#   access_key                   = azurerm_storage_account.storage.primary_access_key
+#   share_name                   = azurerm_storage_share.adminData[0].name
+#   access_mode                  = "ReadWrite"
+# }
 
 # stalled on 2024-01-12 in stage: https://fssb23-frontend-stage.gentlefield-715ad89b.northeurope.azurecontainerapps.io
 resource "azurerm_container_app" "FrontendSvelteContainer" {
@@ -611,14 +611,14 @@ resource "azurerm_container_app" "PostgresAdmin" {
 
   template {
     container {
-      name   = "backend"
+      name   = "pgadmin"
       image  = "dpage/pgadmin4:9.11.0"
       cpu    = 0.25
       memory = "0.5Gi"
-      volume_mounts {
-        name = "${terraform.workspace}-admin-data"
-        path = "/var/lib/pgadmin"
-      }
+      # volume_mounts {
+      #   name = "${terraform.workspace}-admin-data"
+      #   path = "/var/lib/pgadmin"
+      # }
       env {
         name        = "PGADMIN_DEFAULT_EMAIL"
         secret_name = "pgadmin-default-email"
@@ -627,16 +627,16 @@ resource "azurerm_container_app" "PostgresAdmin" {
         name        = "PGADMIN_DEFAULT_PASSWORD"
         secret_name = "pgadmin-default-password"
       }
-      env {
-        name  = "GUNICORN_ACCESS_LOGFILE"
-        value = "/dev/null"
-      }
+      # env {
+      #   name  = "GUNICORN_ACCESS_LOGFILE"
+      #   value = "/dev/null"
+      # }
     }
-    volume {
-      name         = "${terraform.workspace}-admin-data"
-      storage_name = azurerm_container_app_environment_storage.adminDataConnect[0].name
-      storage_type = "AzureFile"
-    }
+    # volume {
+    #   name         = "${terraform.workspace}-admin-data"
+    #   storage_name = azurerm_container_app_environment_storage.adminDataConnect[0].name
+    #   storage_type = "AzureFile"
+    # }
     min_replicas = 0
     max_replicas = 1
   }
@@ -656,20 +656,20 @@ resource "azurerm_container_app" "PostgresAdmin" {
   identity {
     type = "UserAssigned"
     identity_ids = [
-      azurerm_user_assigned_identity.pgadminIdentity[0].id,
+      azurerm_user_assigned_identity.pgadminIdentity.id,
     ]
   }
 
   secret {
     name                = "pgadmin-default-email"
-    identity            = azurerm_user_assigned_identity.pgadminIdentity[0].id
+    identity            = azurerm_user_assigned_identity.pgadminIdentity.id
     key_vault_secret_id = azurerm_key_vault_secret.pgadminDefaultEmail[0].id
     # value = azurerm_key_vault_secret.pgadminDefaultEmail[0].value
   }
 
   secret {
     name                = "pgadmin-default-password"
-    identity            = azurerm_user_assigned_identity.pgadminIdentity[0].id
+    identity            = azurerm_user_assigned_identity.pgadminIdentity.id
     key_vault_secret_id = azurerm_key_vault_secret.pgadminDefaultPassword[0].id
     # value = azurerm_key_vault_secret.pgadminDefaultPassword[0].value
   }
