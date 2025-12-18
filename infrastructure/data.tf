@@ -248,7 +248,8 @@ resource "local_file" "pgAdminServersJson" {
 
 resource "azurerm_storage_share_file" "pgAdminServers" {
   count            = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
-  name             = "pgadmin/servers.json"
+  name             = "servers.json"
+  path             = "pgadmin"
   storage_share_url = azurerm_storage_share.adminData[0].url
   source           = local_file.pgAdminServersJson[0].filename
 
