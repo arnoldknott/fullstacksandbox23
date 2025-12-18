@@ -203,8 +203,8 @@ resource "azurerm_key_vault" "keyVault" {
   # }
 
   access_policy {
-    tenant_id    = var.azure_tenant_id
-    object_id    = azurerm_user_assigned_identity.pgadminIdentity.principal_id
+    tenant_id = var.azure_tenant_id
+    object_id = azurerm_user_assigned_identity.pgadminIdentity.principal_id
 
     # certificate_permissions = [
     #   "Get"
@@ -217,7 +217,7 @@ resource "azurerm_key_vault" "keyVault" {
     secret_permissions = [
       "Get"
     ]
-  } 
+  }
 
   access_policy {
     tenant_id = var.azure_tenant_id
