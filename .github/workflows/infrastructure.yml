@@ -164,8 +164,7 @@ jobs:
             -backend-config="resource_group_name=${AZ_RESOURCE_GROUP_NAME}" \
             -backend-config="storage_account_name=${AZ_STORAGE_ACCOUNT_NAME}" \
             -backend-config="container_name=${AZ_CONTAINER_NAME}" \
-            -backend-config="key=${AZ_BACKEND_STATE_KEY}" \
-            -upgrade
+            -backend-config="key=${AZ_BACKEND_STATE_KEY}"
 
       # commit the lock file to the repository - if changed?
       - name: Commit .terraform.lock.hcl file
