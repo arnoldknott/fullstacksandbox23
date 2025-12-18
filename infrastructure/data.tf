@@ -112,7 +112,7 @@ resource "terraform_data" "redisEntrypoint_hash" {
 
 resource "azurerm_storage_share_file" "redisEntrypoint" {
   name             = "entrypoint.sh"
-  storage_share_id = azurerm_storage_share.redisData.url
+  storage_share_url = azurerm_storage_share.redisData.url
   source           = "../cache/entrypoint.sh"
   lifecycle {
     replace_triggered_by = [
@@ -129,7 +129,7 @@ resource "terraform_data" "redisConf_hash" {
 
 resource "azurerm_storage_share_file" "redisConf" {
   name             = "redis.conf"
-  storage_share_id = azurerm_storage_share.redisData.url
+  storage_share_url = azurerm_storage_share.redisData.url
   source           = "../cache/redis.conf"
   lifecycle {
     replace_triggered_by = [
@@ -146,7 +146,7 @@ resource "terraform_data" "redisConfFull_hash" {
 
 resource "azurerm_storage_share_file" "redisConfFull" {
   name             = "redis-full.conf"
-  storage_share_id = azurerm_storage_share.redisData.url
+  storage_share_url = azurerm_storage_share.redisData.url
   source           = "../cache/redis-full.conf"
   lifecycle {
     replace_triggered_by = [
@@ -163,7 +163,7 @@ resource "terraform_data" "redisUsersTemplate_hash" {
 
 resource "azurerm_storage_share_file" "redisUsersTemplate" {
   name             = "users_template.acl"
-  storage_share_id = azurerm_storage_share.redisData.url
+  storage_share_url = azurerm_storage_share.redisData.url
   source           = "../cache/users_template.acl"
   lifecycle {
     replace_triggered_by = [
@@ -185,12 +185,82 @@ resource "azurerm_storage_share" "applicationData" {
   quota              = 100 #TBD: increase for production and keep an eye on cost!
 }
 
-# resource "azurerm_storage_share" "adminData" {
-#   count              = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
-#   name               = "${var.project_short_name}-admindata-${terraform.workspace}"
-#   storage_account_id = azurerm_storage_account.storage.id
-#   quota              = 10 #TBD: increase for production and keep an eye on cost!
-# }
+resource "azurerm_storage_share" "adminData" {
+  count              = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  name               = "${var.project_short_name}-admindata-${terraform.workspace}"
+  storage_account_id = azurerm_storage_account.storage.id
+  quota              = 1
+}
+
+resource "azurerm_storage_share_directory" "pgAdminDirectory" {
+  count             = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  name              = "pgadmin"
+  storage_share_url = azurerm_storage_share.adminData[0].url
+}
+
+locals {
+  pgadmin_servers_json = jsonencode({
+    "Servers" : {
+      "1" : {
+        "Name" : "${var.project_short_name}-${terraform.workspace}-azure",
+        "Group" : "Servers",
+        "Host" : "${var.project_short_name}-postgres-${terraform.workspace}.postgres.database.azure.com",
+        "Port" : 5432,
+        "MaintenanceDB" : "postgres",
+        "Username" : "${random_string.postgresUser.result}",
+        "DBRestrictionType" : "databases",
+        "UseSSHTunnel" : 0,
+        "TunnelPort" : "22",
+        "TunnelAuthentication" : 0,
+        "TunnelPromptPassword" : 0,
+        "TunnelKeepAlive" : 0,
+        "KerberosAuthentication" : false,
+        "ConnectionParameters" : {
+          "sslmode" : "prefer",
+          "connect_timeout" : 10,
+          "sslcert" : "<STORAGE_DIR>/.postgresql/postgresql.crt",
+          "sslkey" : "<STORAGE_DIR>/.postgresql/postgresql.key"
+        },
+        "Tags" : []
+      }
+    }
+  })
+}
+
+resource "terraform_data" "pgAdminServersJsonHash" {
+  count = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  triggers_replace = {
+    sha256 = sha256(local.pgadmin_servers_json)
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      mkdir -p ${path.module}/.generated
+      cat > ${path.module}/.generated/servers.json <<'EOF'
+${local.pgadmin_servers_json}
+EOF
+    EOT
+  }
+}
+
+resource "azurerm_storage_share_file" "pgAdminServers" {
+  count             = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  name              = "servers.json"
+  path              = "pgadmin"
+  storage_share_url = azurerm_storage_share.adminData[0].url
+  source            = "${path.module}/.generated/servers.json"
+
+  depends_on = [
+    azurerm_storage_share_directory.pgAdminDirectory,
+    terraform_data.pgAdminServersJsonHash
+  ]
+
+  lifecycle {
+    replace_triggered_by = [
+      terraform_data.pgAdminServersJsonHash[0],
+    ]
+  }
+}
 
 # Backup:
 

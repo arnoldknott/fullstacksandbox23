@@ -49,5 +49,8 @@ terraform.rc
 # ignore public ssh keys:
 **.pub
 
+# Ignore generated files
+.generated/
+
 # Ignore azure account files
 .azure/*
