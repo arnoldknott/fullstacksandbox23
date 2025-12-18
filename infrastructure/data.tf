@@ -232,28 +232,28 @@ resource "terraform_data" "pgAdminServersJsonHash" {
   triggers_replace = {
     sha256 = sha256(local.pgadmin_servers_json)
   }
-}
 
-
-resource "local_file" "pgAdminServersJson" {
-  count    = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
-  filename = "${path.module}/.generated/servers.json"
-  content  = local.pgadmin_servers_json
-  lifecycle {
-    replace_triggered_by = [
-      terraform_data.pgAdminServersJsonHash[0],
-    ]
+  provisioner "local-exec" {
+    command = <<-EOT
+      mkdir -p ${path.module}/.generated
+      cat > ${path.module}/.generated/servers.json <<'EOF'
+${local.pgadmin_servers_json}
+EOF
+    EOT
   }
 }
 
 resource "azurerm_storage_share_file" "pgAdminServers" {
-  count            = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
-  name             = "servers.json"
-  path             = "pgadmin"
+  count             = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  name              = "servers.json"
+  path              = "pgadmin"
   storage_share_url = azurerm_storage_share.adminData[0].url
-  source           = local_file.pgAdminServersJson[0].filename
+  source            = "${path.module}/.generated/servers.json"
 
-  depends_on = [azurerm_storage_share_directory.pgAdminDirectory]
+  depends_on = [
+    azurerm_storage_share_directory.pgAdminDirectory,
+    terraform_data.pgAdminServersJsonHash
+  ]
 
   lifecycle {
     replace_triggered_by = [
