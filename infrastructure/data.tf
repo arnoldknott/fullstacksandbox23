@@ -198,38 +198,52 @@ resource "azurerm_storage_share_directory" "pgAdminDirectory" {
   storage_share_url = azurerm_storage_share.adminData[0].url
 }
 
+locals {
+  pgadmin_servers_json = jsonencode({
+    "Servers" : {
+      "1" : {
+        "Name" : "${var.project_short_name}-${terraform.workspace}-azure",
+        "Group" : "Servers",
+        "Host" : "${var.project_short_name}-postgres-${terraform.workspace}.postgres.database.azure.com",
+        "Port" : 5432,
+        "MaintenanceDB" : "postgres",
+        "Username" : "${random_string.postgresUser.result}",
+        "DBRestrictionType" : "databases",
+        "UseSSHTunnel" : 0,
+        "TunnelPort" : "22",
+        "TunnelAuthentication" : 0,
+        "TunnelPromptPassword" : 0,
+        "TunnelKeepAlive" : 0,
+        "KerberosAuthentication" : false,
+        "ConnectionParameters" : {
+          "sslmode" : "prefer",
+          "connect_timeout" : 10,
+          "sslcert" : "<STORAGE_DIR>/.postgresql/postgresql.crt",
+          "sslkey" : "<STORAGE_DIR>/.postgresql/postgresql.key"
+        },
+        "Tags" : []
+      }
+    }
+  })
+}
+
+resource "terraform_data" "pgAdminServersJsonHash" {
+  count = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  triggers_replace = {
+    sha256 = sha256(local.pgadmin_servers_json)
+  }
+}
+
 
 resource "local_file" "pgAdminServersJson" {
   count    = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
   filename = "${path.module}/.generated/servers.json"
-  content = jsonencode(
-    {
-      "Servers" : {
-        "1" : {
-          "Name" : "${var.project_short_name}-${terraform.workspace}-azure",
-          "Group" : "Servers",
-          "Host" : "${var.project_short_name}-postgres-${terraform.workspace}.postgres.database.azure.com",
-          "Port" : 5432,
-          "MaintenanceDB" : "postgres",
-          "Username" : random_string.postgresUser.result,
-          "DBRestrictionType" : "databases",
-          "UseSSHTunnel" : 0,
-          "TunnelPort" : "22",
-          "TunnelAuthentication" : 0,
-          "TunnelPromptPassword" : 0,
-          "TunnelKeepAlive" : 0,
-          "KerberosAuthentication" : false,
-          "ConnectionParameters" : {
-            "sslmode" : "prefer",
-            "connect_timeout" : 10,
-            "sslcert" : "<STORAGE_DIR>/.postgresql/postgresql.crt",
-            "sslkey" : "<STORAGE_DIR>/.postgresql/postgresql.key"
-          },
-          "Tags" : []
-        }
-      }
-    }
-  )
+  content  = local.pgadmin_servers_json
+  lifecycle {
+    replace_triggered_by = [
+      terraform_data.pgAdminServersJsonHash[0],
+    ]
+  }
 }
 
 resource "azurerm_storage_share_file" "pgAdminServers" {
@@ -237,7 +251,14 @@ resource "azurerm_storage_share_file" "pgAdminServers" {
   name             = "pgadmin/servers.json"
   storage_share_url = azurerm_storage_share.adminData[0].url
   source           = local_file.pgAdminServersJson[0].filename
+
   depends_on = [azurerm_storage_share_directory.pgAdminDirectory]
+
+  lifecycle {
+    replace_triggered_by = [
+      terraform_data.pgAdminServersJsonHash[0],
+    ]
+  }
 }
 
 # Backup:
