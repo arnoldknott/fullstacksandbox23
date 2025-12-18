@@ -28,7 +28,7 @@
 FROM alpine:3.22.1
 # Get installation script
 
-ARG OPENTOFU_VERSION=1.10.6
+ARG OPENTOFU_VERSION=1.11.1
 
 # Get installation script and install OpenTofu (standalone)
 RUN apk add --no-cache ca-certificates curl gnupg bash && \
