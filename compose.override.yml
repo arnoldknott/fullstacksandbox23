@@ -60,8 +60,13 @@ services:
       - ./backend/src/.env
     environment:
       - PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION=False
-      - MASTER_PASSWORD_REQUIRED=False
+      - PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED=True
+      # or
+      # - MASTER_PASSWORD_REQUIRED=True
+      # - LOG_LEVEL=10
       - GUNICORN_ACCESS_LOGFILE=/dev/null
+      - PGADMIN_CONFIG_AUTHENTICATION_SOURCES=['oauth2', 'internal']
+      - PGADMIN_CONFIG_OAUTH2_AUTO_CREATE_USER=True
     ports:
       - "5533:80"
     volumes:
