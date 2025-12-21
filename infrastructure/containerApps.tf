@@ -594,11 +594,16 @@ resource "azurerm_container_app" "redisContainer" {
   }
 }
 
+moved {
+  from = azurerm_container_app.PostgresAdmin
+  to   = azurerm_container_app.postgresAdmin
+}
+
 # Container not starting up:
 # sudo: The "no new privileges" flag is set, which prevents sudo from running as root.
 # sudo: If sudo is running in a container, you may need to adjust the container configuration to disable the flag.
 # TBD: configure OAuth for pgadmin container in config.py, config_local.py or config_system.py
-resource "azurerm_container_app" "PostgresAdmin" {
+resource "azurerm_container_app" "postgresAdmin" {
   count                        = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
   name                         = "${var.project_short_name}-pgadmin-${terraform.workspace}"
   container_app_environment_id = azurerm_container_app_environment.ContainerEnvironment.id
@@ -621,6 +626,7 @@ resource "azurerm_container_app" "PostgresAdmin" {
         # path = "/var/lib/pgadmin"
         path = "/data"
       }
+      # Default user name and password authentication:
       env {
         name        = "PGADMIN_DEFAULT_EMAIL"
         secret_name = "pgadmin-default-email"
@@ -629,13 +635,38 @@ resource "azurerm_container_app" "PostgresAdmin" {
         name        = "PGADMIN_DEFAULT_PASSWORD"
         secret_name = "pgadmin-default-password"
       }
+      # Preconfigure database servers inside pgadmin:
       env {
         name  = "PGADMIN_SERVER_JSON_FILE"
         value = "/data/pgadmin/servers.json"
       }
+      # Silence Gunicorn webserver - otherwise all HTTP requests are printed to container app logs:
       env {
         name  = "GUNICORN_ACCESS_LOGFILE"
         value = "/dev/null"
+      }
+      env {
+        name = "CONSOLE_LOG_LEVEL"
+        value = "10"
+      }
+      # Configure authentication for pgadmin:
+      env {
+        name = "PGADMIN_CONFIG_AUTHENTICATION_SOURCES"
+        # TBD: remove "internal" when OAuth is working!
+        value = "['oauth2', 'internal']"
+      }
+      env {
+        name = "PGADMIN_CONFIG_OAUTH2_AUTO_CREATE_USER"
+        value = "True"
+      }
+      env {
+        name  = "PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED"
+        value = "True"
+      }
+      # Configure OAuth with Azure AD:
+      env {
+        name = "PGADMIN_CONFIG_OAUTH2_CONFIG"
+        secret_name = "pgadmin-oauth2-config" 
       }
     }
     volume {
@@ -653,8 +684,6 @@ resource "azurerm_container_app" "PostgresAdmin" {
     # allow_insecure_connections = false # consider adding this
     traffic_weight {
       percentage = 100
-      # TBD: remove when using single after this bug is fixed:
-      # https://github.com/hashicorp/terraform-provider-azurerm/issues/20435
       latest_revision = true
     }
   }
@@ -670,14 +699,18 @@ resource "azurerm_container_app" "PostgresAdmin" {
     name                = "pgadmin-default-email"
     identity            = azurerm_user_assigned_identity.pgadminIdentity.id
     key_vault_secret_id = azurerm_key_vault_secret.pgadminDefaultEmail[0].id
-    # value = azurerm_key_vault_secret.pgadminDefaultEmail[0].value
   }
 
   secret {
     name                = "pgadmin-default-password"
     identity            = azurerm_user_assigned_identity.pgadminIdentity.id
     key_vault_secret_id = azurerm_key_vault_secret.pgadminDefaultPassword[0].id
-    # value = azurerm_key_vault_secret.pgadminDefaultPassword[0].value
+  }
+
+  secret {
+    name                = "pgadmin-oauth2-config"
+    identity            = azurerm_user_assigned_identity.pgadminIdentity.id
+    key_vault_secret_id = azurerm_key_vault_secret.pgadminOauth2Config[0].id
   }
 
   tags = {

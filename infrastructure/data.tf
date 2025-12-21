@@ -111,9 +111,9 @@ resource "terraform_data" "redisEntrypoint_hash" {
 }
 
 resource "azurerm_storage_share_file" "redisEntrypoint" {
-  name             = "entrypoint.sh"
+  name              = "entrypoint.sh"
   storage_share_url = azurerm_storage_share.redisData.url
-  source           = "../cache/entrypoint.sh"
+  source            = "../cache/entrypoint.sh"
   lifecycle {
     replace_triggered_by = [
       terraform_data.redisEntrypoint_hash,
@@ -128,9 +128,9 @@ resource "terraform_data" "redisConf_hash" {
 }
 
 resource "azurerm_storage_share_file" "redisConf" {
-  name             = "redis.conf"
+  name              = "redis.conf"
   storage_share_url = azurerm_storage_share.redisData.url
-  source           = "../cache/redis.conf"
+  source            = "../cache/redis.conf"
   lifecycle {
     replace_triggered_by = [
       terraform_data.redisConf_hash,
@@ -145,9 +145,9 @@ resource "terraform_data" "redisConfFull_hash" {
 }
 
 resource "azurerm_storage_share_file" "redisConfFull" {
-  name             = "redis-full.conf"
+  name              = "redis-full.conf"
   storage_share_url = azurerm_storage_share.redisData.url
-  source           = "../cache/redis-full.conf"
+  source            = "../cache/redis-full.conf"
   lifecycle {
     replace_triggered_by = [
       terraform_data.redisConfFull_hash,
@@ -162,9 +162,9 @@ resource "terraform_data" "redisUsersTemplate_hash" {
 }
 
 resource "azurerm_storage_share_file" "redisUsersTemplate" {
-  name             = "users_template.acl"
+  name              = "users_template.acl"
   storage_share_url = azurerm_storage_share.redisData.url
-  source           = "../cache/users_template.acl"
+  source            = "../cache/users_template.acl"
   lifecycle {
     replace_triggered_by = [
       terraform_data.redisUsersTemplate_hash,

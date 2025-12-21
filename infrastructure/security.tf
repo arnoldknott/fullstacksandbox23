@@ -454,6 +454,37 @@ resource "azurerm_key_vault_secret" "pgadminDefaultPassword" {
   key_vault_id = azurerm_key_vault.keyVault.id
 }
 
+locals {
+  count        = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  pgadmin_oauth2_config = <<EOT
+[{
+  'OAUTH2_NAME': 'EntraID',
+  'OAUTH2_DISPLAY_NAME': 'Microsoft Entra ID',
+  'OAUTH2_CLIENT_ID': '${azuread_application.postgresAdmin[0].client_id}',
+  'OAUTH2_CLIENT_SECRET': '${azuread_application_password.postgresAdminSecret[0].value}',
+  'OAUTH2_TOKEN_URL': 'https://login.microsoftonline.com/${var.azure_tenant_id}/oauth2/v2.0/token',
+  'OAUTH2_AUTHORIZATION_URL': 'https://login.microsoftonline.com/${var.azure_tenant_id}/oauth2/v2.0/authorize',
+  'OAUTH2_SERVER_METADATA_URL': 'https://login.microsoftonline.com/${var.azure_tenant_id}/v2.0/.well-known/openid-configuration',
+  'OAUTH2_API_BASE_URL': 'https://graph.microsoft.com/oidc/',
+  'OAUTH2_USERINFO_ENDPOINT': 'userinfo',
+  'OAUTH2_SCOPE': 'openid profile email',
+  'OAUTH2_ADDITIONAL_CLAIMS': {'roles': ['Admin']},
+  'OAUTH2_CHALLENGE_METHOD': 'S256',
+  'OAUTH2_RESPONSE_TYPE': 'code',
+  'OAUTH2_USERNAME_CLAIM': 'name',
+  'OAUTH2_ICON': 'fa-microsoft',
+  'OAUTH2_BUTTON_COLOR': '#00A4EF'
+}]
+EOT
+}
+
+resource "azurerm_key_vault_secret" "pgadminOauth2Config" {
+  count        = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  name         = "pgadmin-oauth2-config"
+  value        = local.pgadmin_oauth2_config
+  key_vault_id = azurerm_key_vault.keyVault.id
+}
+
 # Container apps need to have the secrets in the key vault to be able to use them.
 # data "azurerm_key_vault_secrets" "keyVaultAllSecrets" {
 #   key_vault_id = azurerm_key_vault.keyVault.id
