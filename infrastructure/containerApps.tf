@@ -646,7 +646,7 @@ resource "azurerm_container_app" "postgresAdmin" {
         value = "/dev/null"
       }
       env {
-        name = "CONSOLE_LOG_LEVEL"
+        name  = "CONSOLE_LOG_LEVEL"
         value = "10"
       }
       # Configure authentication for pgadmin:
@@ -656,7 +656,7 @@ resource "azurerm_container_app" "postgresAdmin" {
         value = "['oauth2', 'internal']"
       }
       env {
-        name = "PGADMIN_CONFIG_OAUTH2_AUTO_CREATE_USER"
+        name  = "PGADMIN_CONFIG_OAUTH2_AUTO_CREATE_USER"
         value = "True"
       }
       env {
@@ -665,8 +665,8 @@ resource "azurerm_container_app" "postgresAdmin" {
       }
       # Configure OAuth with Azure AD:
       env {
-        name = "PGADMIN_CONFIG_OAUTH2_CONFIG"
-        secret_name = "pgadmin-oauth2-config" 
+        name        = "PGADMIN_CONFIG_OAUTH2_CONFIG"
+        secret_name = "pgadmin-oauth2-config"
       }
     }
     volume {
@@ -683,7 +683,7 @@ resource "azurerm_container_app" "postgresAdmin" {
     external_enabled = true
     # allow_insecure_connections = false # consider adding this
     traffic_weight {
-      percentage = 100
+      percentage      = 100
       latest_revision = true
     }
   }

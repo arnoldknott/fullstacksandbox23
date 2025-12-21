@@ -254,7 +254,7 @@ resource "azuread_service_principal" "backendAPI" { # TBD: consider renaming int
   app_role_assignment_required = false
   description                  = "Service principal for the fullStackSandbox23 application"
   # owners                       = [data.azuread_client_config.current.object_id, var.owner_object_id]
-  owners = [var.owner_object_id, var.developer_localhost_object_id, var.managed_identity_github_actions_object_id]
+  owners                       = [var.owner_object_id, var.developer_localhost_object_id, var.managed_identity_github_actions_object_id]
   notification_email_addresses = [var.budget_notification_email]
 }
 
@@ -422,15 +422,15 @@ resource "azuread_application_password" "postgresAdminSecret" {
 }
 
 resource "azuread_service_principal" "postgresAdmin" {
-  count        = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
-  client_id    = azuread_application.postgresAdmin[0].client_id
-  description  = "Service principal for pgAdmin access to ${var.project_name} database"
-  owners       = [var.owner_object_id, var.developer_localhost_object_id, var.managed_identity_github_actions_object_id]  
+  count       = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  client_id   = azuread_application.postgresAdmin[0].client_id
+  description = "Service principal for pgAdmin access to ${var.project_name} database"
+  owners      = [var.owner_object_id, var.developer_localhost_object_id, var.managed_identity_github_actions_object_id]
   # Enabling app_role_assignement requires the Azure Tenant Admin to assign the application to a user
   # otherwise the application does not issue tokens and Admin consent is required.
   # app_role_assignment_required = true 
   notification_email_addresses = [var.pgadmin_default_email]
-  feature_tags{
+  feature_tags {
     hide = true
   }
 }

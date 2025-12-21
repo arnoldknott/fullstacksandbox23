@@ -455,7 +455,7 @@ resource "azurerm_key_vault_secret" "pgadminDefaultPassword" {
 }
 
 locals {
-  count        = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  count                 = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
   pgadmin_oauth2_config = <<EOT
 [{
   'OAUTH2_NAME': 'EntraID',
