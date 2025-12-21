@@ -61,8 +61,6 @@ services:
     environment:
       - PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION=False
       - PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED=True
-      # or
-      # - MASTER_PASSWORD_REQUIRED=True
       # - LOG_LEVEL=10
       - GUNICORN_ACCESS_LOGFILE=/dev/null
       - PGADMIN_CONFIG_AUTHENTICATION_SOURCES=['oauth2', 'internal']

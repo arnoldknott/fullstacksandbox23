@@ -244,12 +244,18 @@ resource "azuread_application_identifier_uri" "backendAPIURI" {
   identifier_uri = "api://${azuread_application.backendAPI.client_id}"
 }
 
-resource "azuread_service_principal" "servicePrinciple" { # TBD: consider renaming into "backendAPI"
+moved {
+  from = azuread_service_principal.servicePrinciple
+  to   = azuread_service_principal.backendAPI
+}
+
+resource "azuread_service_principal" "backendAPI" { # TBD: consider renaming into "backendAPI"
   client_id                    = azuread_application.backendAPI.client_id
   app_role_assignment_required = false
   description                  = "Service principal for the fullStackSandbox23 application"
   # owners                       = [data.azuread_client_config.current.object_id, var.owner_object_id]
   owners = [var.owner_object_id, var.developer_localhost_object_id, var.managed_identity_github_actions_object_id]
+  notification_email_addresses = [var.budget_notification_email]
 }
 
 resource "azuread_application_pre_authorized" "preAuthorizeFrontendatBackend" {
