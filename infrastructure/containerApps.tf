@@ -626,6 +626,8 @@ resource "azurerm_container_app" "postgresAdmin" {
         # path = "/var/lib/pgadmin"
         path = "/data"
       }
+      ################
+      # TBD: comment after switching to OAuth2 login only
       # Default user name and password authentication:
       env {
         name        = "PGADMIN_DEFAULT_EMAIL"
@@ -635,6 +637,7 @@ resource "azurerm_container_app" "postgresAdmin" {
         name        = "PGADMIN_DEFAULT_PASSWORD"
         secret_name = "pgadmin-default-password"
       }
+      ################
       # Preconfigure database servers inside pgadmin:
       env {
         name  = "PGADMIN_SERVER_JSON_FILE"
@@ -650,6 +653,15 @@ resource "azurerm_container_app" "postgresAdmin" {
         value = "10"
       }
       # Configure authentication for pgadmin:
+      # This one is fed through the hook script - not a direct variable for PGADMIN:
+      env {
+        name        = "PGADMIN_MASTER_PASSWORD"
+        secret_name = "pgadmin-master-password"
+      }
+      env {
+        name  = "PGADMIN_CONFIG_MASTER_PASSWORD_HOOK"
+        value = "'/data/pgadmin/set_master_password.sh'"
+      }
       env {
         name = "PGADMIN_CONFIG_AUTHENTICATION_SOURCES"
         # TBD: remove "internal" when OAuth is working!
@@ -695,6 +707,8 @@ resource "azurerm_container_app" "postgresAdmin" {
     ]
   }
 
+  ################
+  # TBD: comment after switching to OAuth2 login only
   secret {
     name                = "pgadmin-default-email"
     identity            = azurerm_user_assigned_identity.pgadminIdentity.id
@@ -705,6 +719,13 @@ resource "azurerm_container_app" "postgresAdmin" {
     name                = "pgadmin-default-password"
     identity            = azurerm_user_assigned_identity.pgadminIdentity.id
     key_vault_secret_id = azurerm_key_vault_secret.pgadminDefaultPassword[0].id
+  }
+  ################
+
+  secret {
+    name                = "pgadmin-master-password"
+    identity            = azurerm_user_assigned_identity.pgadminIdentity.id
+    key_vault_secret_id = azurerm_key_vault_secret.pgadminMasterPassword[0].id
   }
 
   secret {

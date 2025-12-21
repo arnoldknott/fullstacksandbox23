@@ -435,6 +435,8 @@ resource "azurerm_key_vault_secret" "developer-clients-secret" {
   key_vault_id = azurerm_key_vault.keyVault.id
 }
 
+################
+# TBD: comment after switching to OAuth2 login only
 resource "azurerm_key_vault_secret" "pgadminDefaultEmail" {
   count        = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
   name         = "pgadmin-default-email"
@@ -453,9 +455,28 @@ resource "azurerm_key_vault_secret" "pgadminDefaultPassword" {
   value        = random_password.pgadminDefaultPassword[0].result
   key_vault_id = azurerm_key_vault.keyVault.id
 }
+################
+
+resource "random_password" "pgadminMasterPassword" {
+  count   = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  length  = 24
+  special = false
+}
+
+resource "azurerm_key_vault_secret" "pgadminMasterPassword" {
+  count        = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  name         = "pgadmin-master-password"
+  value        = random_password.pgadminMasterPassword[0].result
+  key_vault_id = azurerm_key_vault.keyVault.id
+}
 
 locals {
   count                 = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  # This is predictive and resolves circular conflict between container app and key vault secret:
+  # TBD: use this prediction also for backend and frontend apps to remove circular dependencies instead of saving the fqdn's as secrets.
+  pgadmin_fqdn = "${var.project_short_name}-pgadmin-${terraform.workspace}.${azurerm_container_app_environment.ContainerEnvironment.default_domain}"
+  # or using this below:
+  # 'OAUTH2_LOGOUT_URL': 'https://login.microsoftonline.com/${var.azure_tenant_id}/oauth2/v2.0/logout?post_logout_redirect_uri=https://${var.project_short_name}-pgadmin-${terraform.workspace}.${azurerm_container_app_environment.ContainerEnvironment.default_domain}',
   pgadmin_oauth2_config = <<EOT
 [{
   'OAUTH2_NAME': 'EntraID',
@@ -469,14 +490,16 @@ locals {
   'OAUTH2_USERINFO_ENDPOINT': 'userinfo',
   'OAUTH2_SCOPE': 'openid profile email',
   'OAUTH2_ADDITIONAL_CLAIMS': {'roles': ['Admin']},
+  'OAUTH2_LOGOUT_URL': 'https://login.microsoftonline.com/${var.azure_tenant_id}/oauth2/v2.0/logout?post_logout_redirect_uri=https://${local.pgadmin_fqdn}',
   'OAUTH2_CHALLENGE_METHOD': 'S256',
   'OAUTH2_RESPONSE_TYPE': 'code',
-  'OAUTH2_USERNAME_CLAIM': 'name',
+  'OAUTH2_USERNAME_CLAIM': 'preferred_username',
   'OAUTH2_ICON': 'fa-microsoft',
   'OAUTH2_BUTTON_COLOR': '#00A4EF'
 }]
 EOT
 }
+
 
 resource "azurerm_key_vault_secret" "pgadminOauth2Config" {
   count        = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0

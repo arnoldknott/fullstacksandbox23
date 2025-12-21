@@ -198,6 +198,12 @@ resource "azurerm_storage_share_directory" "pgAdminDirectory" {
   storage_share_url = azurerm_storage_share.adminData[0].url
 }
 
+# The scripts are copied as files into the container,
+# as the Dockerfile in the pgadmin container changes the execution rights on the files.
+# This is not possible when mounting the SMB mounts from the azurerm_storage_account in "Standard" tear.
+# When a dedicated database administrator is working with pgAdmin, upgrade to "Premium" tear and
+# mount the directory /var/lib/pgadmin as read-write volume.
+# Then this admin person can also save its work on that volume.
 locals {
   pgadmin_servers_json = jsonencode({
     "Servers" : {
@@ -260,6 +266,18 @@ resource "azurerm_storage_share_file" "pgAdminServers" {
       terraform_data.pgAdminServersJsonHash[0],
     ]
   }
+}
+
+resource "azurerm_storage_share_file" "pgAdminSetMasterPasswordScript" {
+  count             = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  name              = "set_master_password.sh"
+  path              = "pgadmin"
+  storage_share_url = azurerm_storage_share.adminData[0].url
+  source            = "../pgadmin/set_master_password.sh"
+
+  depends_on = [
+    azurerm_storage_share_directory.pgAdminDirectory,
+  ]
 }
 
 # Backup:
