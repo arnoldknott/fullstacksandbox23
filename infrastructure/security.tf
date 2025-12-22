@@ -493,7 +493,7 @@ locals {
   'OAUTH2_LOGOUT_URL': 'https://login.microsoftonline.com/${var.azure_tenant_id}/oauth2/v2.0/logout?post_logout_redirect_uri=https://${local.pgadmin_fqdn}',
   'OAUTH2_CHALLENGE_METHOD': 'S256',
   'OAUTH2_RESPONSE_TYPE': 'code',
-  'OAUTH2_USERNAME_CLAIM': 'preferred_username',
+  'OAUTH2_USERNAME_CLAIM': 'name',
   'OAUTH2_ICON': 'fa-microsoft',
   'OAUTH2_BUTTON_COLOR': '#00A4EF'
 }]
