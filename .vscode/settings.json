@@ -4,7 +4,7 @@
     "editor.defaultFormatter": "ms-python.black-formatter",
     "editor.formatOnSave": true
   },
-  "editor.hover.enabled": true,
+  "editor.hover.enabled": "on",
   "svelte.plugin.css.hover.enable": true,
   "svelte.plugin.html.hover.enable": true,
   "svelte.plugin.svelte.hover.enable": true,
