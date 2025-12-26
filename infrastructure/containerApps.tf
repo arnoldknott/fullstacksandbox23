@@ -620,11 +620,34 @@ resource "azurerm_container_app" "postgresAdmin" {
       image  = "dpage/pgadmin4:9.11.0"
       cpu    = 0.25
       memory = "0.5Gi"
+      # volume_mounts {
+      #   name = "${terraform.workspace}-admin-data"
+      #   # SMB file mounts - as azure file share - conflict with linux chmod requirements of pgadmin
+      #   # path = "/var/lib/pgadmin/storage"
+      #   # TBD: change back to /var/lib/storage after exteranl database is in place!
+      #   path = "/data"
+      #   sub_path = azurerm_storage_share_directory.pgAdminDirectory[0].name
+      # }
+      volume_mounts {
+        name     = "${terraform.workspace}-admin-data"
+        path     = "/scripts"
+        sub_path = azurerm_storage_share_directory.pgAdminScriptsDirectory[0].name
+      }
       volume_mounts {
         name = "${terraform.workspace}-admin-data"
         # SMB file mounts - as azure file share - conflict with linux chmod requirements of pgadmin
-        # path = "/var/lib/pgadmin"
-        path = "/data"
+        # so mounting and persisting data and SQLite database to /var/lib/pgadmin is not possible!
+        path     = "/var/lib/pgadmin/storage"
+        sub_path = azurerm_storage_share_directory.pgAdminStorageDirectory[0].name
+      }
+      # Silence Gunicorn webserver - otherwise all HTTP requests are printed to container app logs:
+      env {
+        name  = "GUNICORN_ACCESS_LOGFILE"
+        value = "/dev/null"
+      }
+      env {
+        name  = "CONSOLE_LOG_LEVEL"
+        value = "10"
       }
       ################
       # TBD: comment after switching to OAuth2 login only
@@ -638,20 +661,34 @@ resource "azurerm_container_app" "postgresAdmin" {
         secret_name = "pgadmin-default-password"
       }
       ################
-      # Preconfigure database servers inside pgadmin:
+      # using external database - so no need for internal Sqlite db, which does not work on SMB volume mounts:
       env {
-        name  = "PGADMIN_SERVER_JSON_FILE"
-        value = "/data/pgadmin/servers.json"
+        name        = "PGADMIN_CONFIG_CONFIG_DATABASE_URI"
+        secret_name = "pgadmin-database-uri"
       }
-      # Silence Gunicorn webserver - otherwise all HTTP requests are printed to container app logs:
+      # To fix setup error:
       env {
-        name  = "GUNICORN_ACCESS_LOGFILE"
-        value = "/dev/null"
+        name        = "PGADMIN_SETUP_EMAIL"
+        secret_name = "pgadmin-default-email"
       }
       env {
-        name  = "CONSOLE_LOG_LEVEL"
-        value = "10"
+        name        = "PGADMIN_SETUP_PASSWORD"
+        secret_name = "pgadmin-default-password"
       }
+      # TBD: update to use psycopg3 when pgadmin bug is fixed!
+      # To avoid error:
+      # File "/venv/lib/python3.14/site-packages/sqlalchemy/dialects/postgresql/psycopg2.py", line 696, in import_dbapi
+      # import psycopg2
+      # ModuleNotFoundError: No module named 'psycopg2'
+      # env{
+      #   name ="PGADMIN_CONFIG_PG_DEFAULT_DRIVER"
+      #   value ="'psycopg2'"
+      # }
+      # Preconfigure database servers inside pgadmin - works only with internal login, not with OAuth2:
+      # env {
+      #   name  = "PGADMIN_SERVER_JSON_FILE"
+      #   value = "/data/pgadmin/servers.json"
+      # }
       # Configure authentication for pgadmin:
       # This one is fed through the hook script - not a direct variable for PGADMIN:
       env {
@@ -660,7 +697,9 @@ resource "azurerm_container_app" "postgresAdmin" {
       }
       env {
         name  = "PGADMIN_CONFIG_MASTER_PASSWORD_HOOK"
-        value = "'/data/pgadmin/set_master_password.sh'"
+        value = "'/scripts/set_master_password.sh'"
+        # value = "'/data/set_master_password.sh'"
+        # value = "'/var/lib/pgadmin/storage/set_master_password.sh'"
       }
       env {
         name = "PGADMIN_CONFIG_AUTHENTICATION_SOURCES"
@@ -685,6 +724,7 @@ resource "azurerm_container_app" "postgresAdmin" {
       name         = "${terraform.workspace}-admin-data"
       storage_name = azurerm_container_app_environment_storage.adminDataConnect[0].name
       storage_type = "AzureFile"
+      # mount_options = "uid=5050,gid=5050,dir_mode=0700,file_mode=0700" # pgadmin user
     }
     min_replicas = 0
     max_replicas = 1
@@ -721,7 +761,11 @@ resource "azurerm_container_app" "postgresAdmin" {
     key_vault_secret_id = azurerm_key_vault_secret.pgadminDefaultPassword[0].id
   }
   ################
-
+  secret {
+    name                = "pgadmin-database-uri"
+    identity            = azurerm_user_assigned_identity.pgadminIdentity.id
+    key_vault_secret_id = azurerm_key_vault_secret.pgadminDatabaseURI[0].id
+  }
   secret {
     name                = "pgadmin-master-password"
     identity            = azurerm_user_assigned_identity.pgadminIdentity.id

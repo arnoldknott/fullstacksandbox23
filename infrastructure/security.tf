@@ -457,6 +457,25 @@ resource "azurerm_key_vault_secret" "pgadminDefaultPassword" {
 }
 ################
 
+# resource "random_string" "pgadminDatabaseUser" {
+#   count  = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+#   length  = 12
+#   special = false
+# }
+
+# resource "random_password" "pgadminDatabasePassword" {
+#   count  = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+#   length  = 24
+#   special = false
+# }
+resource "azurerm_key_vault_secret" "pgadminDatabaseURI" {
+  count = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  name  = "pgadmin-database-uri"
+  value = "\"postgresql+psycopg://${random_string.postgresUser.result}:${urlencode(random_password.postgresPassword.result)}@${urlencode(azurerm_postgresql_flexible_server.postgresServer.fqdn)}:5432/${urlencode(azurerm_postgresql_flexible_server_database.pgadminDatabase[0].name)}\""
+  # value        = "\"postgresql+psycopg://${urlencode(random_string.postgresUser.result)}:${urlencode(random_password.postgresPassword.result)}@fssb23-postgres-dev.postgres.database.azure.com:5432/dev_pgadmin\""
+  key_vault_id = azurerm_key_vault.keyVault.id
+}
+
 resource "random_password" "pgadminMasterPassword" {
   count   = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
   length  = 24
@@ -471,7 +490,7 @@ resource "azurerm_key_vault_secret" "pgadminMasterPassword" {
 }
 
 locals {
-  count                 = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  count = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
   # This is predictive and resolves circular conflict between container app and key vault secret:
   # TBD: use this prediction also for backend and frontend apps to remove circular dependencies instead of saving the fqdn's as secrets.
   pgadmin_fqdn = "${var.project_short_name}-pgadmin-${terraform.workspace}.${azurerm_container_app_environment.ContainerEnvironment.default_domain}"

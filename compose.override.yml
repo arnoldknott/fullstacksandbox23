@@ -63,16 +63,17 @@ services:
       - GUNICORN_ACCESS_LOGFILE=/dev/null
       - PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION=False
       - PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED=True
-      - PGADMIN_CONFIG_MASTER_PASSWORD_HOOK="'/pgadmin4/set_master_password.sh'"
-      # - PGADMIN_CONFIG_AUTHENTICATION_SOURCES=['oauth2', 'internal']
+      - PGADMIN_CONFIG_MASTER_PASSWORD_HOOK="'/scripts/set_master_password.sh'"
+      # For local dev, keep internal auth enabled alongside OAuth2
+      - PGADMIN_CONFIG_AUTHENTICATION_SOURCES=['oauth2', 'internal']
       # After fully implementing OAuth2 in all environments, turn off local login:
-      - PGADMIN_CONFIG_AUTHENTICATION_SOURCES=['oauth2']
+      # - PGADMIN_CONFIG_AUTHENTICATION_SOURCES=['oauth2']
       - PGADMIN_CONFIG_OAUTH2_AUTO_CREATE_USER=True
     ports:
       - "5533:80"
     volumes:
       - dev-pgadmin-data:/var/lib/pgadmin
-      - ./pgadmin/set_master_password.sh:/pgadmin4/set_master_password.sh:ro
+      - ./pgadmin/set_master_password.sh:/scripts/set_master_password.sh:ro
     restart: unless-stopped
     networks:
       - dev_network
