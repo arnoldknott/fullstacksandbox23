@@ -445,6 +445,6 @@ resource "azuread_application_app_role" "postgresAdminAppRoleAdmin" {
   allowed_member_types = ["User"] # can also be ["User", "Application"], meaning 'User' or 'Application' on the Azure Tenant.
   description          = "Database Admins can manage the database via pgAdmin"
   display_name         = "Admin"
-  role_id              = random_uuid.pgAdminRoleAdmin.result
+  role_id              = random_uuid.pgAdminRoleAdmin[0].result
   value                = "Admin"
 }
