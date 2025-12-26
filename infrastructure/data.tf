@@ -1,4 +1,6 @@
-
+# According to
+# https://learn.microsoft.com/en-us/azure/storage/files/files-nfs-protocol#security-and-networking
+# all data is encrypted at rest.
 resource "azurerm_storage_account" "storage" {
   name                             = "${var.project_short_name}storage${terraform.workspace}"
   resource_group_name              = azurerm_resource_group.resourceGroup.name
@@ -17,7 +19,7 @@ resource "azurerm_storage_account" "storage" {
   #   virtual_network_subnet_ids = [azurerm_subnet.subnetFileStorage.id]
   # }
 
-  # add AD authnetication and allow the following RBAC access:
+  # add AD authentication and allow the following RBAC access:
   # Terraform script: vars.azure_sp_object_id
   # Github-hosted runner: azurerm_service_principal.GithubActionsServicePrincipal.?? or azurerm_user_assigned_identity.GithubActionsManagedIdentity.???
   # backendAPI app registration: azurerm_service_principal.terraformServicePrincipal.???
@@ -80,6 +82,14 @@ resource "azurerm_postgresql_flexible_server_database" "postgresDatabase" {
   collation = "en_US.utf8"
 }
 
+resource "azurerm_postgresql_flexible_server_database" "pgadminDatabase" {
+  count     = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  name      = "${terraform.workspace}_pgadmin"
+  server_id = azurerm_postgresql_flexible_server.postgresServer.id
+  charset   = "UTF8"
+  collation = "en_US.utf8"
+}
+
 # # resource "random_uuid" "uuidPostgresAccessShare" {}
 # resource "azurerm_storage_share" "postgresData" {
 #   name                 = "${var.project_short_name}-postgresdata-${terraform.workspace}"
@@ -111,9 +121,9 @@ resource "terraform_data" "redisEntrypoint_hash" {
 }
 
 resource "azurerm_storage_share_file" "redisEntrypoint" {
-  name             = "entrypoint.sh"
+  name              = "entrypoint.sh"
   storage_share_url = azurerm_storage_share.redisData.url
-  source           = "../cache/entrypoint.sh"
+  source            = "../cache/entrypoint.sh"
   lifecycle {
     replace_triggered_by = [
       terraform_data.redisEntrypoint_hash,
@@ -128,9 +138,9 @@ resource "terraform_data" "redisConf_hash" {
 }
 
 resource "azurerm_storage_share_file" "redisConf" {
-  name             = "redis.conf"
+  name              = "redis.conf"
   storage_share_url = azurerm_storage_share.redisData.url
-  source           = "../cache/redis.conf"
+  source            = "../cache/redis.conf"
   lifecycle {
     replace_triggered_by = [
       terraform_data.redisConf_hash,
@@ -145,9 +155,9 @@ resource "terraform_data" "redisConfFull_hash" {
 }
 
 resource "azurerm_storage_share_file" "redisConfFull" {
-  name             = "redis-full.conf"
+  name              = "redis-full.conf"
   storage_share_url = azurerm_storage_share.redisData.url
-  source           = "../cache/redis-full.conf"
+  source            = "../cache/redis-full.conf"
   lifecycle {
     replace_triggered_by = [
       terraform_data.redisConfFull_hash,
@@ -162,9 +172,9 @@ resource "terraform_data" "redisUsersTemplate_hash" {
 }
 
 resource "azurerm_storage_share_file" "redisUsersTemplate" {
-  name             = "users_template.acl"
+  name              = "users_template.acl"
   storage_share_url = azurerm_storage_share.redisData.url
-  source           = "../cache/users_template.acl"
+  source            = "../cache/users_template.acl"
   lifecycle {
     replace_triggered_by = [
       terraform_data.redisUsersTemplate_hash,
@@ -198,68 +208,108 @@ resource "azurerm_storage_share_directory" "pgAdminDirectory" {
   storage_share_url = azurerm_storage_share.adminData[0].url
 }
 
-locals {
-  pgadmin_servers_json = jsonencode({
-    "Servers" : {
-      "1" : {
-        "Name" : "${var.project_short_name}-${terraform.workspace}-azure",
-        "Group" : "Servers",
-        "Host" : "${var.project_short_name}-postgres-${terraform.workspace}.postgres.database.azure.com",
-        "Port" : 5432,
-        "MaintenanceDB" : "postgres",
-        "Username" : "${random_string.postgresUser.result}",
-        "DBRestrictionType" : "databases",
-        "UseSSHTunnel" : 0,
-        "TunnelPort" : "22",
-        "TunnelAuthentication" : 0,
-        "TunnelPromptPassword" : 0,
-        "TunnelKeepAlive" : 0,
-        "KerberosAuthentication" : false,
-        "ConnectionParameters" : {
-          "sslmode" : "prefer",
-          "connect_timeout" : 10,
-          "sslcert" : "<STORAGE_DIR>/.postgresql/postgresql.crt",
-          "sslkey" : "<STORAGE_DIR>/.postgresql/postgresql.key"
-        },
-        "Tags" : []
-      }
-    }
-  })
-}
-
-resource "terraform_data" "pgAdminServersJsonHash" {
-  count = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
-  triggers_replace = {
-    sha256 = sha256(local.pgadmin_servers_json)
-  }
-
-  provisioner "local-exec" {
-    command = <<-EOT
-      mkdir -p ${path.module}/.generated
-      cat > ${path.module}/.generated/servers.json <<'EOF'
-${local.pgadmin_servers_json}
-EOF
-    EOT
-  }
-}
-
-resource "azurerm_storage_share_file" "pgAdminServers" {
+resource "azurerm_storage_share_directory" "pgAdminScriptsDirectory" {
   count             = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
-  name              = "servers.json"
-  path              = "pgadmin"
+  name              = "pgadmin/scripts"
   storage_share_url = azurerm_storage_share.adminData[0].url
-  source            = "${path.module}/.generated/servers.json"
 
   depends_on = [
     azurerm_storage_share_directory.pgAdminDirectory,
-    terraform_data.pgAdminServersJsonHash
   ]
+}
 
-  lifecycle {
-    replace_triggered_by = [
-      terraform_data.pgAdminServersJsonHash[0],
-    ]
-  }
+resource "azurerm_storage_share_directory" "pgAdminStorageDirectory" {
+  count             = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  name              = "pgadmin/storage"
+  storage_share_url = azurerm_storage_share.adminData[0].url
+
+  depends_on = [
+    azurerm_storage_share_directory.pgAdminDirectory,
+  ]
+}
+
+# The scripts are copied as files into the container,
+# as the Dockerfile in the pgadmin container changes the execution rights on the files.
+# This is not possible when mounting the SMB mounts from the azurerm_storage_account in "Standard" tear.
+# When a dedicated database administrator is working with pgAdmin, upgrade to "Premium" tear and
+# mount the directory /var/lib/pgadmin as read-write volume.
+# Then this admin person can also save its work on that volume.
+
+# This only works with internal login in pgAdmin, not with OAUTH2!
+# locals {
+#   pgadmin_servers_json = jsonencode({
+#     "Servers" : {
+#       "1" : {
+#         "Name" : "${var.project_short_name}-${terraform.workspace}-azure",
+#         "Group" : "Servers",
+#         "Host" : "${var.project_short_name}-postgres-${terraform.workspace}.postgres.database.azure.com",
+#         "Port" : 5432,
+#         "MaintenanceDB" : "postgres",
+#         "Username" : "${random_string.postgresUser.result}",
+#         "DBRestrictionType" : "databases",
+#         "UseSSHTunnel" : 0,
+#         "TunnelPort" : "22",
+#         "TunnelAuthentication" : 0,
+#         "TunnelPromptPassword" : 0,
+#         "TunnelKeepAlive" : 0,
+#         "KerberosAuthentication" : false,
+#         "ConnectionParameters" : {
+#           "sslmode" : "prefer",
+#           "connect_timeout" : 10,
+#           "sslcert" : "<STORAGE_DIR>/.postgresql/postgresql.crt",
+#           "sslkey" : "<STORAGE_DIR>/.postgresql/postgresql.key"
+#         },
+#         "Tags" : []
+#       }
+#     }
+#   })
+# }
+
+# resource "terraform_data" "pgAdminServersJsonHash" {
+#   count = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+#   triggers_replace = {
+#     sha256 = sha256(local.pgadmin_servers_json)
+#   }
+
+#   provisioner "local-exec" {
+#     command = <<-EOT
+#       mkdir -p ${path.module}/.generated
+#       cat > ${path.module}/.generated/servers.json <<'EOF'
+# ${local.pgadmin_servers_json}
+# EOF
+#     EOT
+#   }
+# }
+
+# resource "azurerm_storage_share_file" "pgAdminServers" {
+#   count             = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+#   name              = "servers.json"
+#   path              = "pgadmin"
+#   storage_share_url = azurerm_storage_share.adminData[0].url
+#   source            = "${path.module}/.generated/servers.json"
+
+#   depends_on = [
+#     azurerm_storage_share_directory.pgAdminDirectory,
+#     terraform_data.pgAdminServersJsonHash
+#   ]
+
+#   lifecycle {
+#     replace_triggered_by = [
+#       terraform_data.pgAdminServersJsonHash[0],
+#     ]
+#   }
+# }
+
+resource "azurerm_storage_share_file" "pgAdminSetMasterPasswordScript" {
+  count             = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  name              = "set_master_password.sh"
+  path              = "pgadmin/scripts"
+  storage_share_url = azurerm_storage_share.adminData[0].url
+  source            = "../pgadmin/set_master_password.sh"
+
+  depends_on = [
+    azurerm_storage_share_directory.pgAdminScriptsDirectory,
+  ]
 }
 
 # Backup:

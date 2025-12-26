@@ -1,8 +1,9 @@
 resource "random_uuid" "ScopeApiRead" {}
 resource "random_uuid" "ScopeApiWrite" {}
 resource "random_uuid" "ScopeSocketio" {}
-resource "random_uuid" "RoleAdmin" {} # Used for admins in backend
-resource "random_uuid" "RoleUser" {}  # Used for users in backend
+resource "random_uuid" "RoleAdmin" {}        # Used for admins in backend
+resource "random_uuid" "RoleUser" {}         # Used for users in backend
+resource "random_uuid" "pgAdminRoleAdmin" {} # Used for admins in pgAdmin
 
 # # get the application ids for the well known applications to configure ms graph access:
 # data "azuread_service_principal" "msgraph" {
@@ -87,7 +88,9 @@ resource "azuread_application" "backendAPI" {
   # can be used to add groups to tokens and assign roles - but no correlation between role and group!
   # Defines roles within the app - mainly required for the backend,
   # but also used by the backendAPI to impersonate the user to access the Microsoft Graph API
-  # and/or to access the backendAPI from postman/thunderclient:
+  # and/or to access the backendAPI from postman/thunderclient
+  # Here's how to assign these roles to users and groups:
+  # https://learn.microsoft.com/en-us/entra/identity-platform/howto-add-app-roles-in-apps#assign-users-and-groups-to-microsoft-entra-roles
   app_role {
     allowed_member_types = ["User"] # can also be ["User", "Application"], meaning 'User' or 'Application' on the Azure Tenant.
     description          = "Admins can manage the whole application"
@@ -241,12 +244,18 @@ resource "azuread_application_identifier_uri" "backendAPIURI" {
   identifier_uri = "api://${azuread_application.backendAPI.client_id}"
 }
 
-resource "azuread_service_principal" "servicePrinciple" { # TBD: consider renaming into "backendAPI"
+moved {
+  from = azuread_service_principal.servicePrinciple
+  to   = azuread_service_principal.backendAPI
+}
+
+resource "azuread_service_principal" "backendAPI" { # TBD: consider renaming into "backendAPI"
   client_id                    = azuread_application.backendAPI.client_id
   app_role_assignment_required = false
   description                  = "Service principal for the fullStackSandbox23 application"
   # owners                       = [data.azuread_client_config.current.object_id, var.owner_object_id]
-  owners = [var.owner_object_id, var.developer_localhost_object_id, var.managed_identity_github_actions_object_id]
+  owners                       = [var.owner_object_id, var.developer_localhost_object_id, var.managed_identity_github_actions_object_id]
+  notification_email_addresses = [var.budget_notification_email]
 }
 
 resource "azuread_application_pre_authorized" "preAuthorizeFrontendatBackend" {
@@ -348,4 +357,92 @@ resource "azuread_application" "developerClients" {
 # TBD: consider different secrets for those two clients and one for each developer?
 resource "azuread_application_password" "developerClientsSecret" {
   application_id = azuread_application.developerClients.id
+}
+
+resource "azuread_application" "postgresAdmin" {
+  count                   = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  display_name            = "${var.project_name}-pgAdmin-${terraform.workspace}"
+  description             = "Postgres Admin (pgAdmin) for admin access to ${var.project_name} database"
+  owners                  = [var.owner_object_id, var.developer_localhost_object_id, var.managed_identity_github_actions_object_id]
+  prevent_duplicate_names = true
+  sign_in_audience        = "AzureADMyOrg"
+  group_membership_claims = ["ApplicationGroup"]
+
+  lifecycle {
+    ignore_changes = [web, app_role]
+  }
+
+  required_resource_access {
+    resource_app_id = "00000003-0000-0000-c000-000000000000"
+
+    ### Those are absolutely mandatory:
+    # openid:
+    resource_access {
+      id   = "37f7f235-527c-4136-accd-4a02d197296e"
+      type = "Scope"
+    }
+
+    # profile:
+    resource_access {
+      id   = "14dad69e-099b-42c9-810b-d002981feec1"
+      type = "Scope"
+    }
+
+    # email:
+    resource_access {
+      id   = "64a6cdd6-aab1-4aaf-94b8-3cc8405e90d0"
+      type = "Scope"
+    }
+  }
+
+  tags = [var.costcenter, var.owner_name, terraform.workspace]
+}
+
+resource "azuread_application_redirect_uris" "postgresAdminOAuthRedirectURI" {
+  count          = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  application_id = azuread_application.postgresAdmin[0].id
+  type           = "Web"
+
+
+  redirect_uris = (terraform.workspace == "dev" ?
+    [
+      "https://${azurerm_container_app.postgresAdmin[0].ingress[0].fqdn}/oauth2/authorize",
+      "http://localhost:5533/oauth2/authorize",
+    ]
+    :
+    [
+      "https://${azurerm_container_app.postgresAdmin[0].ingress[0].fqdn}/oauth2/authorize",
+    ]
+  )
+}
+
+resource "azuread_application_password" "postgresAdminSecret" {
+  count          = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  application_id = azuread_application.postgresAdmin[0].id
+}
+
+resource "azuread_service_principal" "postgresAdmin" {
+  count       = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  client_id   = azuread_application.postgresAdmin[0].client_id
+  description = "Service principal for pgAdmin access to ${var.project_name} database"
+  owners      = [var.owner_object_id, var.developer_localhost_object_id, var.managed_identity_github_actions_object_id]
+  # Enabling app_role_assignement requires the Azure Tenant Admin to assign the application to a user
+  # otherwise the application does not issue tokens and Admin consent is required.
+  # app_role_assignment_required = true 
+  notification_email_addresses = [var.pgadmin_default_email]
+  feature_tags {
+    hide = true
+  }
+}
+
+# Here's how to assign these roles to users and groups:
+# https://learn.microsoft.com/en-us/entra/identity-platform/howto-add-app-roles-in-apps#assign-users-and-groups-to-microsoft-entra-roles
+resource "azuread_application_app_role" "postgresAdminAppRoleAdmin" {
+  count                = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  application_id       = azuread_application.postgresAdmin[0].id
+  allowed_member_types = ["User"] # can also be ["User", "Application"], meaning 'User' or 'Application' on the Azure Tenant.
+  description          = "Database Admins can manage the database via pgAdmin"
+  display_name         = "Admin"
+  role_id              = random_uuid.pgAdminRoleAdmin.result
+  value                = "Admin"
 }

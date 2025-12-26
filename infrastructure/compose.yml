@@ -12,6 +12,7 @@ services:
     volumes:
       - .:/src
       - ../cache:/cache:ro
+      - ../pgadmin:/pgadmin:ro
     # ports:
     #   - "443:443"
     # environment:
