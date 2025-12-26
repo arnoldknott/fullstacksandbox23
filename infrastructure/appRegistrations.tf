@@ -246,11 +246,6 @@ resource "azuread_application_identifier_uri" "backendAPIURI" {
   identifier_uri = "api://${azuread_application.backendAPI.client_id}"
 }
 
-moved {
-  from = azuread_service_principal.servicePrinciple
-  to   = azuread_service_principal.backendAPI
-}
-
 resource "azuread_service_principal" "backendAPI" { # TBD: consider renaming into "backendAPI"
   client_id                    = azuread_application.backendAPI.client_id
   app_role_assignment_required = false
