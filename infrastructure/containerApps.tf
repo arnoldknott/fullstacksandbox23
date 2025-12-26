@@ -594,11 +594,6 @@ resource "azurerm_container_app" "redisContainer" {
   }
 }
 
-moved {
-  from = azurerm_container_app.PostgresAdmin
-  to   = azurerm_container_app.postgresAdmin
-}
-
 # Container not starting up:
 # sudo: The "no new privileges" flag is set, which prevents sudo from running as root.
 # sudo: If sudo is running in a container, you may need to adjust the container configuration to disable the flag.
@@ -703,8 +698,9 @@ resource "azurerm_container_app" "postgresAdmin" {
       }
       env {
         name = "PGADMIN_CONFIG_AUTHENTICATION_SOURCES"
-        # TBD: remove "internal" when OAuth is working!
-        value = "['oauth2', 'internal']"
+        # For initial configuration use both "internal" and "oauth2"!
+        # value = "['oauth2', 'internal']"
+        value = "['oauth2']"
       }
       env {
         name  = "PGADMIN_CONFIG_OAUTH2_AUTO_CREATE_USER"
