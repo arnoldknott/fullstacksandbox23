@@ -3,7 +3,9 @@ resource "random_uuid" "ScopeApiWrite" {}
 resource "random_uuid" "ScopeSocketio" {}
 resource "random_uuid" "RoleAdmin" {}        # Used for admins in backend
 resource "random_uuid" "RoleUser" {}         # Used for users in backend
-resource "random_uuid" "pgAdminRoleAdmin" {} # Used for admins in pgAdmin
+resource "random_uuid" "pgAdminRoleAdmin" { # Used for admins in pgAdmin
+  count = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+}
 
 # # get the application ids for the well known applications to configure ms graph access:
 # data "azuread_service_principal" "msgraph" {
@@ -443,6 +445,6 @@ resource "azuread_application_app_role" "postgresAdminAppRoleAdmin" {
   allowed_member_types = ["User"] # can also be ["User", "Application"], meaning 'User' or 'Application' on the Azure Tenant.
   description          = "Database Admins can manage the database via pgAdmin"
   display_name         = "Admin"
-  role_id              = random_uuid.pgAdminRoleAdmin.result
+  role_id              = random_uuid.pgAdminRoleAdmin[0].result
   value                = "Admin"
 }
