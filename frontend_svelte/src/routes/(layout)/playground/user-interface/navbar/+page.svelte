@@ -19,6 +19,12 @@
 			description:
 				'Adds a dummy sidebar and reorganizes the layout to fit with scrolling behavior.',
 			url: 'navbar/with-sidebar'
+		},
+		{
+			name: 'Scroll off by javascript',
+			description:
+				'Changes the scrolling off on top from "sticky" in terraform to javascript "onScroll" event.',
+			url: 'navbar/hide-by-javascript'
 		}
 	];
 </script>
