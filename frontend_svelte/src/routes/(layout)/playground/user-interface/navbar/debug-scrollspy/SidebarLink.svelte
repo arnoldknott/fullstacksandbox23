@@ -60,7 +60,7 @@
 
 	const removeScrollspy = (node: HTMLElement) => {
 		node.removeAttribute('data-scrollspy');
-		node.removeAttribute('data-scrollspy-scrollable-parent');
+		// node.removeAttribute('data-scrollspy-scrollable-parent');
 		// console.log('=== SidebarLink.svelte - removeScrollspy - node ===');
 		// console.log(node);
 		try {
@@ -79,6 +79,7 @@
 		) {
 			// afterNavigate((_navigator) => {
 			if (thisPage) {
+				console.log('=== SidebarLink.svelte - toggleScrollspyOnParent - addScrollspy ===');
 				addScrollspy(parent);
 			}
 			// if (navigator.to?.url.hash !== '') {

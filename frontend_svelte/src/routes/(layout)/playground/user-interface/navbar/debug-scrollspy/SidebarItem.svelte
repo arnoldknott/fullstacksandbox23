@@ -5,14 +5,14 @@
 	import SidebarLink from './SidebarLink.svelte';
 	let {
 		content,
-		topLevel = false
+		topLevel = false,
 		// TBD: remove topoffset
-		// topoffset
+		topoffset
 		// scrollspyParent
 	}: {
 		content: SidebarItemContent;
 		topLevel?: boolean;
-		// topoffset: number;
+		topoffset: number;
 		// scrollspyParent: HTMLElement;
 	} = $props();
 	let { name, pathname, hash, icon } = $derived({ ...content });
@@ -33,7 +33,7 @@
 	<!-- {@debug content} -->
 	<SidebarLink href={createHref(pathname!, hash)} thisPage={thisPage(pathname!)} {icon} {topLevel}>
 		<!-- {scrollspyParent} -->
-		{name}
+		{name}, {topoffset}
 	</SidebarLink>
 {:else}
 	<!-- It's a Folder -->
@@ -43,7 +43,7 @@
 			pathname: pathname || ''
 		} as SidebarFolderContent}
 		{topLevel}
+		{topoffset}
 	/>
 	<!-- {scrollspyParent} -->
-	<!-- {topoffset} -->
 {/if}

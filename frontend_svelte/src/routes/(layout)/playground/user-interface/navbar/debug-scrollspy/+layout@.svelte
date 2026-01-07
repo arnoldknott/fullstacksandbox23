@@ -7,7 +7,7 @@
 	import { onMount, tick, type Snippet } from 'svelte';
 	import { page } from '$app/state';
 	import Guard from '$components/Guard.svelte';
-	import { initDropdown, initOverlay } from '$lib/userInterface';
+	import { initDropdown, initOverlay, initScrollspy } from '$lib/userInterface';
 	import ThemePicker from '../../../components/ThemePicker.svelte';
 	import ArtificialIntelligencePicker from '../../../components/ArtificialIntelligencePicker.svelte';
 	import { themeStore } from '$lib/stores';
@@ -565,7 +565,7 @@
 	// onMount, afterNavigate $effect, (beforeNavigate), (onNavigate), Attachment, onscrollend, derived, derived.by(), ...?
 
 	let navBar: HTMLElement | null = $state(null);
-	// let navBarBottom: number = $state(0);
+	let navBarBottom: number = $state(0);
 
 	// let contentArea: HTMLElement | null = $state(null);
 	// let contentAreaTop: number = $state(0);
@@ -581,38 +581,38 @@
 
 	onMount(() => {
 		// Polyfill for scrollend event (Safari doesn't support it yet)
-		// let scrollEndTimer: ReturnType<typeof setTimeout> | null = null;
-		// let cleanupScrollEndPolyfill: (() => void) | null = null;
+		let scrollEndTimer: ReturnType<typeof setTimeout> | null = null;
+		let cleanupScrollEndPolyfill: (() => void) | null = null;
 
-		// // Wait for scrollspyParent to be available
-		// if (scrollspyParent) {
-		// 	// Check if scrollend is supported
-		// 	const supportsScrollEnd = 'onscrollend' in scrollspyParent;
+		// Wait for scrollspyParent to be available
+		if (scrollspyParent) {
+			// Check if scrollend is supported
+			const supportsScrollEnd = 'onscrollend' in scrollspyParent;
 
-		// 	if (!supportsScrollEnd) {
-		// 		// console.log('=== scrollend not supported - using polyfill ===');
+			if (!supportsScrollEnd) {
+				// console.log('=== scrollend not supported - using polyfill ===');
 
-		// 		const handleScroll = () => {
-		// 			if (scrollEndTimer) {
-		// 				clearTimeout(scrollEndTimer);
-		// 			}
-		// 			scrollEndTimer = setTimeout(() => {
-		// 				const scrollEndEvent = new Event('scrollend', { bubbles: true });
-		// 				scrollspyParent?.dispatchEvent(scrollEndEvent);
-		// 			}, 150); // 150ms after scroll stops (slightly longer for reliability)
-		// 		};
+				const handleScroll = () => {
+					if (scrollEndTimer) {
+						clearTimeout(scrollEndTimer);
+					}
+					scrollEndTimer = setTimeout(() => {
+						const scrollEndEvent = new Event('scrollend', { bubbles: true });
+						scrollspyParent?.dispatchEvent(scrollEndEvent);
+					}, 150); // 150ms after scroll stops (slightly longer for reliability)
+				};
 
-		// 		scrollspyParent.addEventListener('scroll', handleScroll, { passive: true });
+				scrollspyParent.addEventListener('scroll', handleScroll, { passive: true });
 
-		// 		cleanupScrollEndPolyfill = () => {
-		// 			scrollspyParent?.removeEventListener('scroll', handleScroll);
-		// 			if (scrollEndTimer) {
-		// 				clearTimeout(scrollEndTimer);
-		// 				scrollEndTimer = null;
-		// 			}
-		// 		};
-		// 	}
-		// }
+				cleanupScrollEndPolyfill = () => {
+					scrollspyParent?.removeEventListener('scroll', handleScroll);
+					if (scrollEndTimer) {
+						clearTimeout(scrollEndTimer);
+						scrollEndTimer = null;
+					}
+				};
+			}
+		}
 
 		// Reroute native history updates to SvelteKit to avoid router conflicts
 		// const originalPush = history.pushState.bind(history);
@@ -673,9 +673,9 @@
 		};
 
 		return () => {
-			// if (cleanupScrollEndPolyfill) {
-			// 	cleanupScrollEndPolyfill();
-			// }
+			if (cleanupScrollEndPolyfill) {
+				cleanupScrollEndPolyfill();
+			}
 			// history.pushState = originalPush;
 			history.replaceState = originalReplace;
 		};
@@ -786,51 +786,114 @@
 	// locationHash = location.hash;
 	// };
 
-	afterNavigate(async () => {
+	afterNavigate(async ({ to }) => {
+		console.log('=== afterNavigate - scroll handling ===');
 		// Browser handles scroll restoration automatically with body scroll
 		// Force header height recalculation after navigation
 		await tick();
 		document.documentElement.style.setProperty('--header-height', `${header?.offsetHeight}px`);
+		navBarBottom = header?.offsetHeight ?? 0;
+
+		// Handle initial hash scrolling on page load/refresh or cross-page navigation with hash
+		if (to?.url.hash) {
+			const targetId = to.url.hash.substring(1);
+
+			// Retry logic to wait for element to be in DOM (for cross-page navigation)
+			const scrollToTarget = () => {
+				const targetElement = document.getElementById(targetId);
+
+				if (targetElement) {
+					// Calculate offset (navbar height)
+					const offset = navBarBottom || 0;
+					const elementPosition = targetElement.getBoundingClientRect().top + window.scrollY;
+					const offsetPosition = elementPosition - offset;
+
+					// Preserve hash in URL by using history.replaceState before scrolling
+					// console.log('=== to.url.hash scroll to target ===');
+					// console.log(to?.url.hash);
+					const currentUrl = window.location.pathname + window.location.search + to?.url.hash;
+					// window.history.replaceState(window.history.state, '', currentUrl);
+					replaceState(currentUrl, page.state);
+
+					window.scrollTo({
+						top: offsetPosition,
+						behavior: 'smooth'
+					});
+					handleIntentionalNavigation(); // Show navbar after scrolling
+				}
+			};
+
+			// Wait for layout to settle and scrollspy to potentially initialize
+			await tick();
+
+			// Try immediately
+			requestAnimationFrame(() => {
+				// requestAnimationFrame(() => {
+				scrollToTarget();
+				// });
+			});
+
+			// initScrollspy(); // Ensure scrollspy is initialized
+
+			// If element isn't ready yet (cross-page navigation), retry after a short delay
+			console.log('=== afterNavigate - setting timeout ===');
+			setTimeout(() => {
+				console.log('=== afterNavigate - retry scroll to target ===');
+				scrollToTarget();
+			}, 1);
+		}
 	});
 	// Hide / show  navbar on scroll down / up
 	let header: HTMLElement | null = $state(null);
 	let previousScrollY = $state(scrollY.current ?? 0);
-	let sidebarNavigationInProgress = $state(false);
+	let intentionalNavigationInProgress = $state(false);
+
+	// Show navbar and mark navigation as intentional:
+	const handleIntentionalNavigation = () => {
+		if (header) {
+			// Show navbar when browser back/forward is used
+			intentionalNavigationInProgress = true;
+			header.classList.add('mt-2');
+			header.style.top = '0';
+		}
+	};
+
+	// $effect(() => {
+	// 	console.log('=== page.url changed ===');
+	// 	console.log(page.url.href);
+
+	// 	// Handle code refresh (HMR) - when page.url.hash changes due to hot reload
+	// 	// This catches cases where afterNavigate doesn't fire (like HMR updates)
+	// 	if (page.url.hash) {
+	// 		// Use untrack to avoid infinite loops
+	// 		requestAnimationFrame(async () => {
+	// 			await scrollToHash(page.url.hash);
+	// 		});
+	// 	}
+	// });
 
 	onMount(() => {
+		console.log('=== onMount - scrollspy navbar ===');
 		document.documentElement.style.setProperty('--header-height', `${header?.offsetHeight}px`);
+		navBarBottom = header?.offsetHeight ?? 0;
 
-		// Listen for FlyonUI scrollspy beforeScroll event
-		const handleBeforeScroll = () => {
-			if (header) {
-				// Show navbar when scrollspy navigation starts
-				sidebarNavigationInProgress = true;
-				header.classList.add('mt-2');
-				header.style.top = '0';
-			}
-		};
-
-		// Listen for scroll end to reset flag
-		// const handleScrollEnd = () => {
-		// 	sidebarNavigationInProgress = false;
-		// };
-
-		document.addEventListener('beforeScroll.scrollspy', handleBeforeScroll);
-		// window.addEventListener('scrollend', handleScrollEnd);
+		document.addEventListener('beforeScroll.scrollspy', handleIntentionalNavigation);
+		// window.addEventListener('popstate', handleIntentionalNavigation);
 
 		return () => {
-			document.removeEventListener('beforeScroll.scrollspy', handleBeforeScroll);
-			// window.removeEventListener('scrollend', handleScrollEnd);
+			document.removeEventListener('beforeScroll.scrollspy', handleIntentionalNavigation);
+			// window.removeEventListener('popstate', handleIntentionalNavigation);
 		};
 	});
 
 	const windowResizeHandler = (_event: UIEvent) => {
 		document.documentElement.style.setProperty('--header-height', `${header?.offsetHeight}px`);
+		navBarBottom = header?.offsetHeight ?? 0;
 	};
 
 	const toggleTopNavBar = () => {
-		// Don't hide navbar during sidebar navigation
-		if (!sidebarNavigationInProgress) {
+		// Don't hide navbar during intentional navigation (sidebar clicks, browser back/forward)
+		if (!intentionalNavigationInProgress) {
 			// console.log('=== toggleTopNavBar ===');
 			// const currentScrollY = scrollspyParent?.scrollTop ?? 0;
 			// see https://www.w3schools.com/howto/howto_js_navbar_hide_scroll.asp
@@ -863,8 +926,9 @@
 	onresize={(event) => windowResizeHandler(event)}
 	onscroll={toggleTopNavBar}
 	onscrollend={() => {
-		sidebarNavigationInProgress = false;
+		intentionalNavigationInProgress = false;
 	}}
+	onpopstate={handleIntentionalNavigation}
 />
 
 <svelte:body bind:this={scrollspyParent} use:applyTheming />
@@ -1153,12 +1217,15 @@
 							pathname: debugSidebarItem.pathname || page.url.pathname
 						}}
 						topLevel={true}
+						topoffset={navBarBottom}
 					/>
 					<!-- {scrollspyParent} -->
-					<!-- topoffset={navBarBottom} -->
 				{/each}
+				<!-- {#each Array(50) as _, index}
+					<li>Filler Item {index + 1}</li>
+				{/each} -->
 			</ul>
-			<ul data-scrollspy="#scrollspy" data-scrollspy-scrollable-parent="#app-body">
+			<!-- <ul data-scrollspy="#scrollspy" data-scrollspy-scrollable-parent="#app-body">
 				<li>
 					<a
 						href="./page2#pg2loreum2"
@@ -1167,10 +1234,7 @@
 						Page 2 - Loreum 2
 					</a>
 				</li>
-				<!-- {#each Array(50) as _, index}
-					<li>Filler Item {index + 1}</li>
-				{/each} -->
-			</ul>
+			</ul> -->
 		</div>
 		<div class="mb-2 flex items-center gap-1">
 			<label class="label label-text text-base" for="debugSwitcher">Debug: </label>
@@ -1182,6 +1246,8 @@
 			/>
 		</div>
 		scrollY: {scrollY.current}
+		<br />
+		navBarBottom: {navBarBottom}
 		<!-- {navBarBottom}
 		<br />
 		{locationPageAndHash?.page}{locationPageAndHash?.hash}
