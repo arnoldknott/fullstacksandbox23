@@ -20,6 +20,7 @@
 	import LoginOutButton from '../../../../LoginOutButton.svelte';
 	import Logo from '../../../../Logo.svelte';
 	import { scrollY } from 'svelte/reactivity/window';
+	import { on } from 'svelte/events';
 
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
 
@@ -794,42 +795,77 @@
 	// Hide / show  navbar on scroll down / up
 	let header: HTMLElement | null = $state(null);
 	let previousScrollY = $state(scrollY.current ?? 0);
+	let sidebarNavigationInProgress = $state(false);
+
 	onMount(() => {
 		document.documentElement.style.setProperty('--header-height', `${header?.offsetHeight}px`);
+
+		// Listen for FlyonUI scrollspy beforeScroll event
+		const handleBeforeScroll = () => {
+			if (header) {
+				// Show navbar when scrollspy navigation starts
+				sidebarNavigationInProgress = true;
+				header.classList.add('mt-2');
+				header.style.top = '0';
+			}
+		};
+
+		// Listen for scroll end to reset flag
+		// const handleScrollEnd = () => {
+		// 	sidebarNavigationInProgress = false;
+		// };
+
+		document.addEventListener('beforeScroll.scrollspy', handleBeforeScroll);
+		// window.addEventListener('scrollend', handleScrollEnd);
+
+		return () => {
+			document.removeEventListener('beforeScroll.scrollspy', handleBeforeScroll);
+			// window.removeEventListener('scrollend', handleScrollEnd);
+		};
 	});
 
 	const windowResizeHandler = (_event: UIEvent) => {
 		document.documentElement.style.setProperty('--header-height', `${header?.offsetHeight}px`);
 	};
+
 	const toggleTopNavBar = () => {
-		// console.log('=== toggleTopNavBar ===');
-		// const currentScrollY = scrollspyParent?.scrollTop ?? 0;
-		// see https://www.w3schools.com/howto/howto_js_navbar_hide_scroll.asp
-		const currentScrollY = scrollY.current ?? 0;
-		// if (navBar) {
-		if (header) {
-			if (currentScrollY > previousScrollY) {
-				// Scrolling down removes navbar
-				// navBar.classList.add('-mt-[var(--header-height)]');
-				header?.classList.remove('mt-2');
-				header.style.top = `-${header.offsetHeight}px`;
-				// Too late: the scroll has already happened
-				// document.documentElement.style.setProperty('--scroll-padding-top', '0px');
-			} else {
-				// Scrolling up shows navbar
-				// navBar.classList.remove('-mt-[var(--header-height)]');
-				header?.classList.add('mt-2');
-				header.style.top = '0';
-				// Too late: the scroll has already happened
-				// document.documentElement.style.setProperty('--scroll-padding-top', '--header-height');
+		// Don't hide navbar during sidebar navigation
+		if (!sidebarNavigationInProgress) {
+			// console.log('=== toggleTopNavBar ===');
+			// const currentScrollY = scrollspyParent?.scrollTop ?? 0;
+			// see https://www.w3schools.com/howto/howto_js_navbar_hide_scroll.asp
+			const currentScrollY = scrollY.current ?? 0;
+			// if (navBar) {
+			if (header) {
+				if (currentScrollY > previousScrollY) {
+					// Scrolling down removes navbar
+					// navBar.classList.add('-mt-[var(--header-height)]');
+					header.classList.remove('mt-2');
+					header.style.top = `-${header.offsetHeight}px`;
+				} else {
+					// Scrolling up shows navbar
+					// navBar.classList.remove('-mt-[var(--header-height)]');
+					header.classList.add('mt-2');
+					header.style.top = '0';
+				}
 			}
+			previousScrollY = currentScrollY;
 		}
-		previousScrollY = currentScrollY;
 	};
+
+	// onMount(() => {
+	// 	document.addEventListener('beforeScroll.scrollspy', showNavbarOnSidebarClick);
+	// });
 </script>
 
 <!-- onpopstate={(event) => windowPopstateHandler(event)} -->
-<svelte:window onresize={(event) => windowResizeHandler(event)} onscroll={toggleTopNavBar} />
+<svelte:window
+	onresize={(event) => windowResizeHandler(event)}
+	onscroll={toggleTopNavBar}
+	onscrollend={() => {
+		sidebarNavigationInProgress = false;
+	}}
+/>
 
 <svelte:body bind:this={scrollspyParent} use:applyTheming />
 
@@ -1007,7 +1043,7 @@
 <!-- use:applyTheming -->
 <!-- id="scrollspy-scrollable-parent" -->
 <!-- onscrollend={mainScrollEnd} -->
-<main id="app-main" class="static w-screen">
+<main class="static w-screen">
 	<!-- onscroll={toggleTopNavBar} -->
 	<!-- class="border-error h-screen w-screen overflow-x-scroll overflow-y-auto border border-4" -->
 	<!-- bind:session={data.session} -->
@@ -1131,6 +1167,9 @@
 						Page 2 - Loreum 2
 					</a>
 				</li>
+				<!-- {#each Array(50) as _, index}
+					<li>Filler Item {index + 1}</li>
+				{/each} -->
 			</ul>
 		</div>
 		<div class="mb-2 flex items-center gap-1">
