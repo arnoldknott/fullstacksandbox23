@@ -11,27 +11,30 @@
 
 	<p>Page 3 has hierarchial content and id's linked in main sidebar</p>
 
-	<Heading id="loreum1"><span class="italic">First</span> Lorem ipsum dolor sit amet...</Heading>
+	<Heading id="pg3loreum1"><span class="italic">First</span> Lorem ipsum dolor sit amet...</Heading>
 	<Loreum repetition={30} />
 
-	<Heading id="loreum2"><span class="italic">Second</span> Lorem ipsum dolor sit amet...</Heading>
+	<Heading id="pg3loreum2"><span class="italic">Second</span> Lorem ipsum dolor sit amet...</Heading
+	>
 	<Loreum repetition={10} />
 
-	<Heading id="loreum2a"><span class="italic">Second A</span> Lorem ipsum dolor sit amet...</Heading
+	<Heading id="pg3loreum2a"
+		><span class="italic">Second A</span> Lorem ipsum dolor sit amet...</Heading
 	>
 	<Loreum repetition={8} />
 
-	<Heading id="sub-category-page3">Sub Category</Heading>
+	<Heading id="pg3sub-category">Sub Category</Heading>
 
-	<Title id="loreum3p1"><span class="italic">3.1</span> Lorem ipsum dolor sit amet...</Title>
+	<Title id="pg3loreum3p1"><span class="italic">3.1</span> Lorem ipsum dolor sit amet...</Title>
 	<Loreum />
 
-	<Title id="loreum3p2"><span class="italic">3.2</span> Lorem ipsum dolor sit amet...</Title>
+	<Title id="pg3loreum3p2"><span class="italic">3.2</span> Lorem ipsum dolor sit amet...</Title>
 	<Loreum />
 
-	<Heading id="loreum4"><span class="italic">Fourth</span> Lorem ipsum dolor sit amet...</Heading>
+	<Heading id="pg3loreum4"><span class="italic">Fourth</span> Lorem ipsum dolor sit amet...</Heading
+	>
 	<Loreum />
 
-	<Heading id="loreum5"><span class="italic">Fifth</span> Lorem ipsum dolor sit amet...</Heading>
+	<Heading id="pg3loreum5"><span class="italic">Fifth</span> Lorem ipsum dolor sit amet...</Heading>
 	<Loreum repetition={20} />
 </div>
