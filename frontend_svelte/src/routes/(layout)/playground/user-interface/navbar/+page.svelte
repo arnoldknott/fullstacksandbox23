@@ -25,6 +25,12 @@
 			description:
 				'Changes the scrolling off on top from "sticky" in terraform to javascript "onScroll" event.',
 			url: 'navbar/hide-by-javascript'
+		},
+		{
+			name: 'Debug scrollspy with scroll off by Javascript',
+			description:
+				'Takes the sidebar and Sidebar united with scroll-off by Javascript and new document layout - debugs scrollspy errors, especially for foreign pages.',
+			url: 'navbar/debug-scrollspy'
 		}
 	];
 </script>
