@@ -3,6 +3,7 @@
 	import { page } from '$app/state';
 	import { initScrollspy } from '$lib/userInterface';
 	import {
+		afterNavigate,
 		beforeNavigate,
 		goto
 		// pushState
@@ -15,17 +16,38 @@
 		href,
 		thisPage,
 		icon,
-		// scrollspyParent,
+		scrollspyParent,
 		topLevel = false,
 		children
 	}: {
 		href: string;
 		thisPage: boolean;
 		icon: string;
-		// scrollspyParent: HTMLDivElement;
+		scrollspyParent: HTMLElement;
 		topLevel?: boolean;
 		children: Snippet;
 	} = $props();
+
+	const forceScrolling = () => {
+		if (scrollspyParent) {
+			// const original = scrollspyParent.scrollTop;
+			// // scrolls to the other end of the scroll area and back to force scrollspy to recalculate positions
+			// const alt =
+			// 	original < 2 ? scrollspyParent.scrollHeight : original - scrollspyParent.scrollHeight;
+			// scrollspyParent.scrollTop = alt;
+			// scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
+			// requestAnimationFrame(() => {
+			// 	scrollspyParent.scrollTop = original;
+			// 	scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
+			// });
+		}
+	};
+
+	afterNavigate(() => {
+		if (thisPage) {
+			forceScrolling();
+		}
+	});
 
 	const addScrollspy = (node: HTMLElement) => {
 		node.setAttribute('data-scrollspy', '#scrollspy');
@@ -38,6 +60,8 @@
 	const removeScrollspy = (node: HTMLElement) => {
 		node.removeAttribute('data-scrollspy');
 		node.removeAttribute('data-scrollspy-scrollable-parent');
+		// console.log('=== SidebarLink.svelte - removeScrollspy - node ===');
+		// console.log(node);
 		try {
 			const { element } = window.HSScrollspy.getInstance(node, true);
 			element.destroy();

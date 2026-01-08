@@ -551,7 +551,7 @@
 	// onMount, afterNavigate $effect, (beforeNavigate), (onNavigate), Attachment, onscrollend, derived, derived.by(), ...?
 
 	let navBar: HTMLElement | null = $state(null);
-	let navBarBottom: number = $state(0);
+	// let navBarBottom: number = $state(0);
 
 	// let contentArea: HTMLElement | null = $state(null);
 	// let contentAreaTop: number = $state(0);
@@ -559,11 +559,11 @@
 
 	// let locationHash: string = $state('');
 	// TBD: include search parameters?
-	type LocationPageAndHash = {
-		page: string;
-		hash: string;
-	};
-	let locationPageAndHash: LocationPageAndHash | null = $state(null);
+	// type LocationPageAndHash = {
+	// 	page: string;
+	// 	hash: string;
+	// };
+	// let locationPageAndHash: LocationPageAndHash | null = $state(null);
 
 	onMount(() => {
 		// Polyfill for scrollend event (Safari doesn't support it yet)
@@ -667,18 +667,18 @@
 		};
 	});
 
-	afterNavigate((navigation) => {
-		// console.log('=== afterNavigate - navigation ===');
-		navBarBottom =
-			navBar && navBar.getBoundingClientRect().bottom > 0
-				? navBar.getBoundingClientRect().bottom
-				: 0;
+	afterNavigate((_navigation) => {
+		console.log('=== afterNavigate - navigation ===');
+		// 	navBarBottom =
+		// 		navBar && navBar.getBoundingClientRect().bottom > 0
+		// 			? navBar.getBoundingClientRect().bottom
+		// 			: 0;
 		if (!location.hash) {
 			// console.log('=== afterNavigate - scroll to TOP ===');
-			locationPageAndHash = {
-				page: navigation.to?.url.pathname || '',
-				hash: ''
-			};
+			// locationPageAndHash = {
+			// 	page: navigation.to?.url.pathname || '',
+			// 	hash: ''
+			// };
 			requestAnimationFrame(() => {
 				scrollspyParent!.scrollTop = 0;
 				scrollspyParent?.scrollTo({
@@ -690,46 +690,48 @@
 		}
 	});
 
-	const adjustScrollTopForNavBar = () => {
-		// console.log('=== adjustScrollTopForNavBar ===');
-		// Double requestAnimationFrame ensures layout has fully settled
-		requestAnimationFrame(() => {
-			requestAnimationFrame(() => {
-				// Re-measure navbar height after layout settles
-				navBarBottom =
-					navBar && navBar.getBoundingClientRect().bottom > 0
-						? navBar.getBoundingClientRect().bottom
-						: 0;
-				scrollspyParent!.scrollTop -= navBarBottom;
-				scrollspyParent?.scrollTo({
-					left: scrollspyParent.scrollLeft,
-					top: scrollspyParent.scrollTop,
-					behavior: 'smooth'
-				});
-			});
-		});
-	};
+	// const adjustScrollTopForNavBar = () => {
+	// 	console.log('=== adjustScrollTopForNavBar ===');
+	// 	// 	// Double requestAnimationFrame ensures layout has fully settled
+	// 	requestAnimationFrame(() => {
+	// 		requestAnimationFrame(() => {
+	// 			// Re-measure navbar height after layout settles
+	// 			// navBarBottom =
+	// 			// 	navBar && navBar.getBoundingClientRect().bottom > 0
+	// 			// 	? navBar.getBoundingClientRect().bottom
+	// 			// 	: 0;
+	// 			// navBarBottom = 0;
+	// 			// scrollspyParent!.scrollTop -= navBarBottom;
+	// 			scrollspyParent?.scrollTo({
+	// 				left: scrollspyParent.scrollLeft,
+	// 				top: scrollspyParent.scrollTop,
+	// 				behavior: 'smooth'
+	// 			});
+	// 		});
+	// 	});
+	// };
 
 	const mainScrollEnd = (_event: Event) => {
-		// console.log('=== onscrollend ===');
+		console.log('=== onscrollend ===');
 		// note: the SidebarFolder has "max-sm:[--scrollspy-offset:56px]",
 		// which also affects the scrollspy offset calculation!
-		const thisPageandHash: LocationPageAndHash = {
-			page: page.url.pathname,
-			hash: location.hash
-		};
-		if (locationPageAndHash?.hash !== thisPageandHash.hash && window.innerWidth >= 640) {
-			locationPageAndHash = thisPageandHash;
-			adjustScrollTopForNavBar();
-		} else if (locationPageAndHash?.page !== thisPageandHash.page) {
-			locationPageAndHash = thisPageandHash;
-			adjustScrollTopForNavBar();
-		}
+		// const thisPageandHash: LocationPageAndHash = {
+		// 	page: page.url.pathname,
+		// 	hash: location.hash
+		// };
+		// if (locationPageAndHash?.hash !== thisPageandHash.hash && window.innerWidth >= 640) {
+		// if (locationPageAndHash?.hash !== thisPageandHash.hash) {
+		// 	locationPageAndHash = thisPageandHash;
+		// adjustScrollTopForNavBar();
+		// } else if (locationPageAndHash?.page !== thisPageandHash.page) {
+		// 	locationPageAndHash = thisPageandHash;
+		// 	adjustScrollTopForNavBar();
+		// }
 		// contentAreaTop = contentArea ? contentArea.getBoundingClientRect().top : 0;
 	};
 
 	onMount(() => {
-		// console.log('=== onMount ===');
+		console.log('=== onMount ===');
 		scrollspyParent!.scrollTo({
 			left: scrollspyParent!.scrollLeft,
 			top: scrollspyParent!.scrollTop,
@@ -752,7 +754,7 @@
 	});
 
 	const windowPopstateHandler = (_event: PopStateEvent) => {
-		// console.log('=== 🪟 - popstate ===');
+		console.log('=== 🪟 - popstate ===');
 		if (page.url.hash) {
 			const target = document.getElementById(location.hash.substring(1));
 			// TBD: consider opening a potential collapsed parent sections here
@@ -769,9 +771,38 @@
 		}
 		// locationHash = location.hash;
 	};
+
+	// Hide / show  navbar on scroll down / up
+	let header: HTMLElement | null = $state(null);
+	let previousScrollY = $derived.by(() => scrollspyParent?.scrollTop ?? 0);
+	onMount(() => {
+		document.documentElement.style.setProperty('--header-height', `${header?.offsetHeight}px`);
+	});
+
+	const windowResizeHandler = (_event: UIEvent) => {
+		document.documentElement.style.setProperty('--header-height', `${header?.offsetHeight}px`);
+	};
+	const toggleTopNavBar = () => {
+		const currentScrollY = scrollspyParent?.scrollTop ?? 0;
+		if (navBar) {
+			if (currentScrollY > previousScrollY) {
+				// Scrolling down
+				navBar.classList.add('-mt-[var(--header-height)]');
+				header?.classList.remove('mt-2');
+			} else {
+				// Scrolling up
+				navBar.classList.remove('-mt-[var(--header-height)]');
+				header?.classList.add('mt-2');
+			}
+		}
+		previousScrollY = currentScrollY;
+	};
 </script>
 
-<svelte:window onpopstate={(event) => windowPopstateHandler(event)} />
+<svelte:window
+	onpopstate={(event) => windowPopstateHandler(event)}
+	onresize={(event) => windowResizeHandler(event)}
+/>
 
 {#snippet sidebarToggleButton(classes: string, overlayModifier: object)}
 	<button
@@ -812,12 +843,142 @@
 	</li>
 {/snippet}
 
+<header bind:this={header} class="xs:mx-5 xs:mt-5 mt-2 w-screen px-2">
+	<!-- TBD: put navbar into component -->
+	<nav
+		class="navbar rounded-box bg-base-200 shadow-shadow border-outline-variant sticky start-0 top-0 z-1 flex justify-between border-1 border-b shadow-md transition-all duration-300 max-sm:h-14 max-sm:px-3 md:items-center"
+		bind:this={navBar}
+	>
+		<!-- {@attach updateNavbarBottom} -->
+		<div class="navbar-start rtl:[--placement:bottom-end]">
+			<ul class="menu menu-horizontal flex flex-nowrap items-center">
+				{@render sidebarToggleButton('hidden sm:flex', {
+					'data-overlay-minifier': '#collapsible-mini-sidebar'
+				})}
+				{@render sidebarToggleButton('sm:hidden', {
+					'data-overlay': '#collapsible-mini-sidebar'
+				})}
+				{@render navbarPartItem('/docs', 'icon-[oui--documentation]', 'Docs')}
+				{@render navbarPartItem(
+					'/playground',
+					'icon-[mdi--playground-seesaw]',
+					'Playground',
+					'hidden lg:block'
+				)}
+				<Guard>
+					{@render navbarPartItem(
+						'/dashboard',
+						'icon-[material-symbols--dashboard-outline-rounded]',
+						'Dashboard',
+						'hidden xl:block'
+					)}
+				</Guard>
+				<!-- {@render navbarPartItem(
+						'/features',
+						'icon-[mdi--feature-highlight]',
+						'Features',
+						'hidden xl:block'
+					)}
+					{@render navbarPartItem('/apps', 'icon-[tabler--apps]', 'Apps', 'hidden xl:block')}
+					{@render navbarPartItem(
+						'/construction',
+						'icon-[maki--construction]',
+						'Construction',
+						'hidden xl:block'
+					)} -->
+			</ul>
+		</div>
+		<Logo />
+		<div class="navbar-end">
+			<button
+				class="btn btn-sm btn-text btn-circle text-primary size-8.5 md:hidden"
+				aria-label="Search"
+			>
+				<span class="icon-[tabler--search] size-5"></span>
+			</button>
+			<div class="input mx-2 max-w-56 rounded-full max-md:hidden">
+				<span class="icon-[tabler--search] text-base-content/80 my-auto me-3 size-5 shrink-0"
+				></span>
+				<label class="sr-only" for="searchInput">Search</label>
+				<input type="search" class="grow" placeholder="Search" id="searchInput" />
+			</div>
+			<div
+				class="dropdown flex items-center [--auto-close:inside] rtl:[--placement:bottom-end]"
+				{@attach initDropdown}
+			>
+				<span
+					id="dropdown-menu-icon-user"
+					class="dropdown-toggle {!loggedIn ? 'icon-[fa6-solid--user] bg-secondary size-5' : ''}"
+					role="button"
+					aria-haspopup="menu"
+					aria-expanded="false"
+					aria-label="User Menu"
+				>
+					{#if loggedIn}
+						<img
+							class="not-hover:mask-radial-t-0% h-10 min-w-10 rounded-full not-hover:mask-radial-from-40%"
+							src={resolve('/apiproxies/msgraph') + '?endpoint=/me/photo/$value'}
+							alt="you"
+						/>
+					{/if}
+				</span>
+				<ul
+					class="dropdown-menu bg-base-200 text-secondary shadow-outline dropdown-open:opacity-100 hidden shadow-md"
+					role="menu"
+					aria-orientation="vertical"
+					aria-labelledby="dropdown-menu-icon-user"
+				>
+					<ArtificialIntelligencePicker
+						{updateProfileAccount}
+						{saveProfileAccount}
+						bind:artificialIntelligenceForm
+						bind:artificialIntelligenceConfiguration
+					/>
+					<li>
+						<hr class="border-outline -mx-2 my-5" />
+					</li>
+					<ThemePicker
+						{updateProfileAccount}
+						{saveProfileAccount}
+						bind:themeForm
+						bind:mode
+						bind:themeConfiguration
+					/>
+					<li>
+						<hr class="border-outline -mx-2 my-5" />
+					</li>
+					<li class="flex items-center gap-2">
+						<button
+							aria-label="show Modal"
+							type="button"
+							class="dropdown-item dropdown-close"
+							aria-haspopup="dialog"
+							aria-expanded="false"
+							aria-controls="welcome-modal"
+							data-overlay="#welcome-modal"
+						>
+							<span class="icon-[tabler--eye] bg-secondary size-5"></span>
+							<span class="text-secondary grow">Show welcome modal</span>
+						</button>
+					</li>
+				</ul>
+			</div>
+			<div class="hidden items-center sm:flex md:ml-2">
+				<LoginOutButton {loggedIn} />
+			</div>
+		</div>
+	</nav>
+</header>
+
 <main
 	bind:this={scrollspyParent}
 	id="scrollspy-scrollable-parent"
 	class="h-screen w-screen overflow-x-scroll overflow-y-auto"
+	onscroll={toggleTopNavBar}
 	onscrollend={mainScrollEnd}
+	use:applyTheming
 >
+	<!-- class="border-error h-screen w-screen overflow-x-scroll overflow-y-auto border border-4" -->
 	<!-- bind:session={data.session} -->
 	<WelcomeModal
 		bind:session
@@ -890,11 +1051,14 @@
 			<div class="divider"></div>
 			<ul class="menu p-0">
 				{#each sidebarLinks as sidebarItem (sidebarItem.id)}
+					<!-- TBD: remove topoffset -->
 					<SidebarItem
 						content={{ ...sidebarItem, pathname: sidebarItem.pathname || page.url.pathname }}
 						topLevel={true}
-						topoffset={navBarBottom}
+						{scrollspyParent}
 					/>
+					<!-- {scrollspyParent} -->
+					<!-- topoffset={navBarBottom} -->
 					<!-- topoffset={internalNavigationTarget} -->
 					<!-- topoffset={navBarBottom} -->
 					<!-- topoffset={`[--scrollspy-offset:${navBarBottom + 8}]`} -->
@@ -907,8 +1071,10 @@
 								pathname: protectedSidebarItem.pathname || page.url.pathname
 							}}
 							topLevel={true}
-							topoffset={navBarBottom}
+							{scrollspyParent}
 						/>
+						<!-- {scrollspyParent} -->
+						<!-- topoffset={navBarBottom} -->
 					{/each}
 				</Guard>
 				{#if debug}
@@ -919,8 +1085,10 @@
 								pathname: debugSidebarItem.pathname || page.url.pathname
 							}}
 							topLevel={true}
-							topoffset={navBarBottom}
+							{scrollspyParent}
 						/>
+						<!-- {scrollspyParent} -->
+						<!-- topoffset={navBarBottom} -->
 					{/each}
 				{/if}
 			</ul>
@@ -939,134 +1107,7 @@
 		{locationPageAndHash?.page}{locationPageAndHash?.hash}
 		<br /> -->
 	</aside>
-	<div class="bg-base-100 xs:mx-5 xs:mt-5 mt-2 w-screen px-2 sm:h-full" use:applyTheming>
-		<!-- TBD: put navbar into component -->
-		<!-- <div class="h-full"> -->
-		<nav
-			class="navbar rounded-box bg-base-200 shadow-shadow border-outline-variant sticky start-0 top-0 z-1 flex justify-between border-1 border-b shadow-md max-sm:h-14 max-sm:px-3 md:items-center"
-			bind:this={navBar}
-		>
-			<!-- {@attach updateNavbarBottom} -->
-			<div class="navbar-start rtl:[--placement:bottom-end]">
-				<ul class="menu menu-horizontal flex flex-nowrap items-center">
-					{@render sidebarToggleButton('hidden sm:flex', {
-						'data-overlay-minifier': '#collapsible-mini-sidebar'
-					})}
-					{@render sidebarToggleButton('sm:hidden', {
-						'data-overlay': '#collapsible-mini-sidebar'
-					})}
-					{@render navbarPartItem('/docs', 'icon-[oui--documentation]', 'Docs')}
-					{@render navbarPartItem(
-						'/playground',
-						'icon-[mdi--playground-seesaw]',
-						'Playground',
-						'hidden lg:block'
-					)}
-					<Guard>
-						{@render navbarPartItem(
-							'/dashboard',
-							'icon-[material-symbols--dashboard-outline-rounded]',
-							'Dashboard',
-							'hidden xl:block'
-						)}
-					</Guard>
-					<!-- {@render navbarPartItem(
-						'/features',
-						'icon-[mdi--feature-highlight]',
-						'Features',
-						'hidden xl:block'
-					)}
-					{@render navbarPartItem('/apps', 'icon-[tabler--apps]', 'Apps', 'hidden xl:block')}
-					{@render navbarPartItem(
-						'/construction',
-						'icon-[maki--construction]',
-						'Construction',
-						'hidden xl:block'
-					)} -->
-				</ul>
-			</div>
-			<Logo />
-			<div class="navbar-end">
-				<button
-					class="btn btn-sm btn-text btn-circle text-primary size-8.5 md:hidden"
-					aria-label="Search"
-				>
-					<span class="icon-[tabler--search] size-5"></span>
-				</button>
-				<div class="input mx-2 max-w-56 rounded-full max-md:hidden">
-					<span class="icon-[tabler--search] text-base-content/80 my-auto me-3 size-5 shrink-0"
-					></span>
-					<label class="sr-only" for="searchInput">Search</label>
-					<input type="search" class="grow" placeholder="Search" id="searchInput" />
-				</div>
-				<div
-					class="dropdown flex items-center [--auto-close:inside] rtl:[--placement:bottom-end]"
-					{@attach initDropdown}
-				>
-					<span
-						id="dropdown-menu-icon-user"
-						class="dropdown-toggle {!loggedIn ? 'icon-[fa6-solid--user] bg-secondary size-5' : ''}"
-						role="button"
-						aria-haspopup="menu"
-						aria-expanded="false"
-						aria-label="User Menu"
-					>
-						{#if loggedIn}
-							<img
-								class="not-hover:mask-radial-t-0% h-10 min-w-10 rounded-full not-hover:mask-radial-from-40%"
-								src={resolve('/apiproxies/msgraph') + '?endpoint=/me/photo/$value'}
-								alt="you"
-							/>
-						{/if}
-					</span>
-					<ul
-						class="dropdown-menu bg-base-200 text-secondary shadow-outline dropdown-open:opacity-100 hidden shadow-md"
-						role="menu"
-						aria-orientation="vertical"
-						aria-labelledby="dropdown-menu-icon-user"
-					>
-						<ArtificialIntelligencePicker
-							{updateProfileAccount}
-							{saveProfileAccount}
-							bind:artificialIntelligenceForm
-							bind:artificialIntelligenceConfiguration
-						/>
-						<li>
-							<hr class="border-outline -mx-2 my-5" />
-						</li>
-						<ThemePicker
-							{updateProfileAccount}
-							{saveProfileAccount}
-							bind:themeForm
-							bind:mode
-							bind:themeConfiguration
-						/>
-						<li>
-							<hr class="border-outline -mx-2 my-5" />
-						</li>
-						<li class="flex items-center gap-2">
-							<button
-								aria-label="show Modal"
-								type="button"
-								class="dropdown-item dropdown-close"
-								aria-haspopup="dialog"
-								aria-expanded="false"
-								aria-controls="welcome-modal"
-								data-overlay="#welcome-modal"
-							>
-								<span class="icon-[tabler--eye] bg-secondary size-5"></span>
-								<span class="text-secondary grow">Show welcome modal</span>
-							</button>
-						</li>
-					</ul>
-				</div>
-				<div class="hidden items-center sm:flex md:ml-2">
-					<LoginOutButton {loggedIn} />
-				</div>
-			</div>
-		</nav>
-		<!-- </div> -->
-
+	<div class="bg-base-100 xs:mx-5 xs:mt-5 mt-2 w-screen px-2 sm:h-full">
 		<div
 			id="scrollspy"
 			class="sm:overlay-minified:ps-19 overlay-open:ps-0 space-y-4 pt-2 transition-all duration-300 sm:mx-2 sm:mt-2 sm:ps-66"

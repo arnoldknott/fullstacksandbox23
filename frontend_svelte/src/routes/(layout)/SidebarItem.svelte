@@ -6,13 +6,14 @@
 	let {
 		content,
 		topLevel = false,
-		topoffset
-		// scrollspyParent
+		// TBD: remove topoffset
+		// topoffset
+		scrollspyParent
 	}: {
 		content: SidebarItemContent;
 		topLevel?: boolean;
-		topoffset: number;
-		// scrollspyParent: HTMLDivElement;
+		// topoffset: number;
+		scrollspyParent: HTMLElement;
 	} = $props();
 	let { name, pathname, hash, icon } = $derived({ ...content });
 
@@ -30,7 +31,14 @@
 {#if Object.keys(content).includes('items') === false || (content as SidebarFolderContent).items.length === 0}
 	<!-- It's a Link -->
 	<!-- {@debug content} -->
-	<SidebarLink href={createHref(pathname!, hash)} thisPage={thisPage(pathname!)} {icon} {topLevel}>
+	<SidebarLink
+		href={createHref(pathname!, hash)}
+		thisPage={thisPage(pathname!)}
+		{icon}
+		{topLevel}
+		{scrollspyParent}
+	>
+		<!-- {scrollspyParent} -->
 		{name}
 	</SidebarLink>
 {:else}
@@ -41,6 +49,8 @@
 			pathname: pathname || ''
 		} as SidebarFolderContent}
 		{topLevel}
-		{topoffset}
+		{scrollspyParent}
 	/>
+	<!-- {scrollspyParent} -->
+	<!-- {topoffset} -->
 {/if}
