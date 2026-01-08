@@ -772,8 +772,8 @@
 	};
 	// ********* remove navbar patches until here *********
 
-	// scroll off navbar when scrolling down and scroll in when scrolling up
-
+	// Hide / show  navbar on scroll down / up
+	// let mainContent: HTMLDivElement | null = $state(null);
 	let header: HTMLElement | null = $state(null);
 	// let headerHeight: number = $state(0);
 	// Set CSS variable for header height
@@ -792,6 +792,7 @@
 	// 		// 		header.getBoundingClientRect().bottom > 0 ? header.getBoundingClientRect().bottom : 0;
 	// 	}
 	// });
+	let previousScrollY = $derived.by(() => scrollspyParent?.scrollTop ?? 0);
 	onMount(() => {
 		document.documentElement.style.setProperty('--header-height', `${header?.offsetHeight}px`);
 	});
@@ -799,9 +800,6 @@
 	const windowResizeHandler = (_event: UIEvent) => {
 		document.documentElement.style.setProperty('--header-height', `${header?.offsetHeight}px`);
 	};
-
-	let mainContent: HTMLDivElement | null = $state(null);
-	let previousScrollY = $derived.by(() => scrollspyParent?.scrollTop ?? 0);
 	const toggleTopNavBar = () => {
 		const currentScrollY = scrollspyParent?.scrollTop ?? 0;
 		if (navBar) {
@@ -1094,8 +1092,9 @@
 					<SidebarItem
 						content={{ ...sidebarItem, pathname: sidebarItem.pathname || page.url.pathname }}
 						topLevel={true}
-						topoffset={navBarBottom}
+						{scrollspyParent}
 					/>
+					<!-- topoffset={navBarBottom} -->
 					<!-- topoffset={internalNavigationTarget} -->
 					<!-- topoffset={navBarBottom} -->
 					<!-- topoffset={`[--scrollspy-offset:${navBarBottom + 8}]`} -->
@@ -1108,8 +1107,9 @@
 								pathname: protectedSidebarItem.pathname || page.url.pathname
 							}}
 							topLevel={true}
-							topoffset={navBarBottom}
+							{scrollspyParent}
 						/>
+						<!-- topoffset={navBarBottom} -->
 					{/each}
 				</Guard>
 				{#if debug}
@@ -1120,8 +1120,9 @@
 								pathname: debugSidebarItem.pathname || page.url.pathname
 							}}
 							topLevel={true}
-							topoffset={navBarBottom}
+							{scrollspyParent}
 						/>
+						<!-- topoffset={navBarBottom} -->
 					{/each}
 				{/if}
 			</ul>
