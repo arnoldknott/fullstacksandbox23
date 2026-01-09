@@ -28,24 +28,24 @@
 
 	let debug = $state(page.url.searchParams.get('debug') === 'true' ? true : false);
 
-	// $effect(() => {
-	// 	const currentUrl = new URL(page.url);
+	$effect(() => {
+		const currentUrl = new URL(page.url);
 
-	// 	if (debug) {
-	// 		currentUrl.searchParams.set('debug', 'true');
-	// 	} else {
-	// 		currentUrl.searchParams.delete('debug');
-	// 	}
+		if (debug) {
+			currentUrl.searchParams.set('debug', 'true');
+		} else {
+			currentUrl.searchParams.delete('debug');
+		}
 
-	// 	// Only navigate if the search params actually changed
-	// 	if (currentUrl.search !== page.url.search) {
-	// 		goto(`${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`, {
-	// 			replaceState: true,
-	// 			noScroll: true,
-	// 			keepFocus: true
-	// 		});
-	// 	}
-	// });
+		// Only navigate if the search params actually changed
+		if (currentUrl.search !== page.url.search) {
+			goto(`${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`, {
+				replaceState: true,
+				noScroll: true,
+				keepFocus: true
+			});
+		}
+	});
 
 	let userUnregistered = $derived(
 		!data.session?.loggedIn
@@ -734,11 +734,13 @@
 					// navBar.classList.add('-mt-[var(--header-height)]');
 					header.classList.remove('mt-2');
 					header.style.top = `-${header.offsetHeight}px`;
+					navBarBottom = 0;
 				} else {
 					// Scrolling up shows navbar
 					// navBar.classList.remove('-mt-[var(--header-height)]');
 					header.classList.add('mt-2');
 					header.style.top = '0';
+					navBarBottom = header.offsetHeight;
 				}
 			}
 			previousScrollY = currentScrollY;
@@ -936,7 +938,10 @@
 <!-- use:applyTheming -->
 <!-- id="scrollspy-scrollable-parent" -->
 <!-- onscrollend={mainScrollEnd} -->
-<main class="static w-screen">
+<main
+	class="static w-screen transition-[padding-top] duration-300"
+	style="padding-top: {navBarBottom + 4}px;"
+>
 	<!-- onscroll={toggleTopNavBar} -->
 	<!-- class="border-error h-screen w-screen overflow-x-scroll overflow-y-auto border border-4" -->
 	<!-- bind:session={data.session} -->

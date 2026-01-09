@@ -318,7 +318,7 @@
 html {
 	scroll-behavior: smooth;
 	/* Add padding to account for fixed header when jumping to hash anchors */
-	/* scroll-padding-top: var(--header-height, 80px); */
+	scroll-padding-top: calc(var(--header-height, 86px) + 10px);
 }
 
 html,
