@@ -72,7 +72,7 @@
 			{href}
 			class="{isActive || isVisible
 				? 'text-base-content italic'
-				: ' text-base-content-variant'} group flex items-center gap-x-2 transition-opacity duration-300 hover:opacity-100 {linkOpacity}"
+				: ' text-base-content-variant'} group flex items-center gap-x-2 transition-opacity duration-600 hover:opacity-100 {linkOpacity}"
 		>
 			<!-- 			onclick={() => {
 				const target = document.getElementById(href)
@@ -111,21 +111,21 @@
 			{#if topLevel}
 				<span class="{icon} size-5"></span>
 			{:else}
-				<!-- <span
-					class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
-				></span> -->
-				<span
-					class={isActive
-						? 'icon-[tabler--hand-finger-right] text-base-content/100 size-6'
-						: `${icon} size-5`}
-				></span>
-				<!-- <span
-					class="{isActive
-						? 'inline'
-						: 'hidden'}  icon-[tabler--hand-finger-right] text-base-content/100 size-5 transition-all duration-600"
-				></span>
-				<span class="{isActive ? 'hidden' : 'inline'}  {icon} size-5 transition-all duration-600"
-				></span> -->
+				<!-- Icon crossfade container -->
+				<span class="relative inline-block size-6">
+					<!-- Regular icon - fades out when active -->
+					<span
+						class="{icon} absolute inset-0 size-5 transition-opacity duration-600 {isActive
+							? 'opacity-0'
+							: 'opacity-100'}"
+					></span>
+					<!-- Active finger-pointing icon - fades in when active -->
+					<span
+						class="icon-[tabler--hand-finger-right] text-base-content/100 absolute inset-0 size-6 transition-opacity duration-600 {isActive
+							? 'opacity-100'
+							: 'opacity-0'}"
+					></span>
+				</span>
 			{/if}
 			<span class="overlay-minified:hidden {isActive ? 'text-base-content/100' : ''}"
 				>{@render children?.()}</span
