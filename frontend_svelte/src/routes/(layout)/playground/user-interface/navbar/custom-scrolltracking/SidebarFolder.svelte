@@ -48,8 +48,8 @@
 			? 'open'
 			: 'hidden'} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
 		aria-labelledby={id + '-control'}
-		data-pathname={pathname}
 	>
+		<!-- data-pathname={pathname} -->
 		<!-- {`[--scrollspy-offset:${topoffset}]`.toString()} -->
 		<!-- max-sm:[--scrollspy-offset:56px] -->
 		<!-- {`[--scrollspy-offset:${topoffset}]`.toString()} -->
@@ -74,10 +74,10 @@
 			class="collapse-toggle {thisPage(pathname!) ? 'open' : ''} collapse-open:bg-base-content/10"
 			id={id + '-control'}
 			data-collapse={'#' + id + '-collapse'}
-			data-pathname={pathname}
 			{@attach initCollapse}
 			{@attach toggleCollapse}
 		>
+			<!-- data-pathname={pathname} -->
 			<span class="{icon} size-5"></span>
 			<span class="overlay-minified:hidden">{name}</span>
 			<span
@@ -103,11 +103,11 @@
 				: ''} collapse-open:bg-base-content/10 scrollspy-active:italic group"
 			id={id + '-control'}
 			data-collapse={'#' + id + '-collapse'}
-			data-pathname={pathname}
 			{href}
 			{@attach initCollapse}
 			{@attach toggleCollapse}
 		>
+			<!-- data-pathname={pathname} -->
 			<!-- onclick={(event) => {
 				event.preventDefault();
 				// pushState(href, page.state);

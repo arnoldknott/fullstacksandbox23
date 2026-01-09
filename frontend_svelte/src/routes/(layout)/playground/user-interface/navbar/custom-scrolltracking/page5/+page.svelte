@@ -9,9 +9,16 @@
 
 	<p>Page 5 has no children - only links within page</p>
 
-	<Heading id="loreum1"><span class="italic">First</span> Lorem ipsum dolor sit amet...</Heading>
-	<Loreum />
-
-	<Heading id="loreum2"><span class="italic">Second</span> Lorem ipsum dolor sit amet...</Heading>
-	<Loreum />
+	<div id="loreum1">
+		<Heading id="loreum1title">
+			<span class="italic">First</span> Lorem ipsum dolor sit amet...
+		</Heading>
+		<Loreum />
+	</div>
+	<div id="loreum2">
+		<Heading id="loreum2title">
+			<span class="italic">Second</span> Lorem ipsum dolor sit amet...
+		</Heading>
+		<Loreum />
+	</div>
 </div>

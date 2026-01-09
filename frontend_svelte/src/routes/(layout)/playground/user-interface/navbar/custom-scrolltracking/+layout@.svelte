@@ -6,7 +6,7 @@
 	import type { Action } from 'svelte/action';
 	import type { Attachment } from 'svelte/attachments';
 	import { writable, type Writable } from 'svelte/store';
-	import { onMount, setContext, type Snippet } from 'svelte';
+	import { onMount, setContext, tick, type Snippet } from 'svelte';
 	import { page } from '$app/state';
 	import Guard from '$components/Guard.svelte';
 	import { initDropdown, initOverlay } from '$lib/userInterface';
@@ -16,7 +16,7 @@
 	import { type SubmitFunction } from '@sveltejs/kit';
 	import { resolve } from '$app/paths';
 	import WelcomeModal from '../../../../WelcomeModal.svelte';
-	import { goto } from '$app/navigation';
+	import { goto, afterNavigate } from '$app/navigation';
 	// import type { SidebarItemContent, Session } from '$lib/types';
 	import type { Session } from '$lib/types';
 	import SidebarItem from './SidebarItem.svelte';
@@ -28,13 +28,24 @@
 
 	let debug = $state(page.url.searchParams.get('debug') === 'true' ? true : false);
 
-	$effect(() => {
-		if (debug) {
-			goto(`?debug=true`, { replaceState: true });
-		} else {
-			goto(`?`, { replaceState: true });
-		}
-	});
+	// $effect(() => {
+	// 	const currentUrl = new URL(page.url);
+
+	// 	if (debug) {
+	// 		currentUrl.searchParams.set('debug', 'true');
+	// 	} else {
+	// 		currentUrl.searchParams.delete('debug');
+	// 	}
+
+	// 	// Only navigate if the search params actually changed
+	// 	if (currentUrl.search !== page.url.search) {
+	// 		goto(`${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`, {
+	// 			replaceState: true,
+	// 			noScroll: true,
+	// 			keepFocus: true
+	// 		});
+	// 	}
+	// });
 
 	let userUnregistered = $derived(
 		!data.session?.loggedIn
@@ -556,6 +567,12 @@
 					]
 				},
 				{
+					id: 'page4-loreum5',
+					name: 'Loreum 5',
+					icon: 'icon-[mdi--text]',
+					hash: '#loreum5'
+				},
+				{
 					id: 'page4-loreum6',
 					name: 'Loreum 6',
 					icon: 'icon-[mdi--text]',
@@ -602,9 +619,9 @@
 	// Create IntersectionObserver in its own onMount (browser-only API)
 	onMount(() => {
 		const scrollObserverOptions = {
-			rootMargin: '0px',
+			// rootMargin: '0px',
 			// only trigger when being in upper part 100 ox of screen and at least 50% from the bottom
-			// rootMargin: '-100px 0px -50% 0px',
+			rootMargin: '-100px 0px -50% 0px',
 			scrollMargin: '0px',
 			threshold: [0, 1.0] // Track both entering/exiting and fully visible
 		};
@@ -614,36 +631,59 @@
 			observer: IntersectionObserver
 		) => {
 			scrollObserverContext.visibleSections.update((visible) => {
-				const newVisible = new Set(visible);
+				const visibleSections = new Set(visible);
 				entries.forEach((entry) => {
 					const elementId = entry.target.id;
 					if (!elementId) return;
 
 					if (entry.isIntersecting) {
 						// Section is visible
-						newVisible.add(elementId);
+						visibleSections.add(elementId);
 						// console.log('🖲️ => 🪟 - scroll into window:', elementId);
 					} else {
 						// Section left viewport
-						newVisible.delete(elementId);
+						visibleSections.delete(elementId);
 						// console.log('🖲️ => 🚪 - scroll out of window:', elementId);
 					}
 				});
 
 				// Determine active section: pick first visible (topmost in DOM order)
-				if (newVisible.size > 0) {
+				if (visibleSections.size > 0) {
 					// Get first element from Set (maintains insertion order)
-					const firstVisible = Array.from(newVisible)[0];
+					const firstVisible = Array.from(visibleSections)[0];
 					scrollObserverContext.activeSection.set(firstVisible);
+				} else {
+					// No visible sections - clear active
+					scrollObserverContext.activeSection.set(undefined);
 				}
 
-				return newVisible;
+				return visibleSections;
 			});
 		};
 
 		intersectionObserver = new IntersectionObserver(scrollObserverCallback, scrollObserverOptions);
 
 		return () => scrollObserverContext.observer?.disconnect();
+	});
+
+	// Handle navigation: clear stores and scroll to hash
+	afterNavigate(async (navigation) => {
+		// Clear tracking when navigating between pages
+		scrollObserverContext.visibleSections.set(new Set());
+		scrollObserverContext.activeSection.set(undefined);
+
+		// Handle hash scrolling after navigation
+		const hash = navigation.to?.url.hash;
+		if (hash) {
+			// Small delay to ensure DOM is ready
+			setTimeout(() => {
+				const targetElement = document.getElementById(hash.substring(1));
+				if (targetElement) {
+					targetElement.scrollIntoView({ behavior: 'smooth' });
+				}
+			}, 100);
+		}
+		// handleIntentionalNavigation();
 	});
 
 	let navBar: HTMLElement | null = $state(null);
@@ -1040,13 +1080,15 @@
 		{locationPageAndHash?.page}{locationPageAndHash?.hash}
 		<br /> -->
 	</aside>
-	<div class="bg-base-100 xs:mx-5 xs:mt-5 w-screen px-2 sm:h-full">
+	<div class="bg-base-100 xs:mx-5 xs:mt-5 h-screen w-screen px-2">
 		<div
 			id="scrollspy"
 			class="sm:overlay-minified:ps-19 overlay-open:ps-0 space-y-4 pt-2 transition-all duration-300 sm:mx-2 sm:mt-2 sm:ps-66"
 		>
 			<!-- bind:this={contentArea} -->
 			{@render children?.()}
+			<!-- <div class="mt-100">Spaceholder</div>
+			<a href={resolve('/(layout)/playground/page2') + '#pg2loreum2'}>Page2 Loreum2</a> -->
 			<!-- NavBarBottom: {navBarBottom}
 			<br />
 			ContentAreaTop: {contentAreaTop}

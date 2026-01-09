@@ -43,13 +43,14 @@
 	const activeSection = scrollObserverContext?.activeSection;
 	const visibleSections = scrollObserverContext?.visibleSections;
 
-	const isActive = $derived(elementId && $activeSection === elementId);
-	const isVisible = $derived(elementId && $visibleSections?.has(elementId));
+	const isActive = $derived(elementId && thisPage && $activeSection === elementId);
+	const isVisible = $derived(elementId && thisPage && $visibleSections?.has(elementId));
 
 	// Determine opacity based on visibility
 	const linkOpacity = $derived(isActive ? 'opacity-100' : isVisible ? 'opacity-95' : 'opacity-70');
 
 	const addElementToObserver: Attachment = () => {
+		// console.log('=== SidebarLink.svelte - addElementToObserver - attaching ===');
 		// Guard against missing observer (will be available after parent mounts)
 		if (scrollObserverContext?.observer) {
 			// Get the element in the content that corresponds to this link and observe it
@@ -65,17 +66,18 @@
 	};
 </script>
 
-{#if thisPage}
-	<!-- {@attach toggleScrollspyOnParent} -->
-	<li>
-		<a
-			{@attach addElementToObserver}
-			{href}
-			class="{isActive || isVisible
-				? 'text-base-content italic'
-				: ' text-base-content-variant'} group flex items-center gap-x-2 transition-opacity duration-600 hover:opacity-100 {linkOpacity}"
-		>
-			<!-- 			onclick={() => {
+<!-- {#if thisPage} -->
+<!-- {@attach toggleScrollspyOnParent} -->
+<li>
+	<a
+		{@attach addElementToObserver}
+		{href}
+		class="{isActive || isVisible
+			? 'text-base-content italic'
+			: ' text-base-content-variant'} group flex items-center gap-x-2 transition-opacity duration-600 hover:opacity-100 {linkOpacity}"
+	>
+		<!-- data-sveltekit-noscroll={thisPage ? 'true' : undefined} -->
+		<!-- 			onclick={() => {
 				const target = document.getElementById(href)
 				if (target) {
 					console.log("=== SidebarLink.svelte - onclick - before scroll ===");
@@ -84,21 +86,21 @@
 					console.log("=== SidebarLink.svelte - onclick - after scroll ===");
 				}
 				}} -->
-			<!-- onclick={(event) => {
+		<!-- onclick={(event) => {
 				console.log("=== SidebarLink.svelte - onclick ===");
 				event.preventDefault();
 				// goto(href, {noScroll: true, replaceState: true, state: page.state});
 			}}  -->
-			<!-- onclick={(event) => {
+		<!-- onclick={(event) => {
 				// event.preventDefault();
 				goto(new SvelteURL(href), {noScroll: true, replaceState: true, state: page.state});
 			}}  -->
-			<!-- onclick={(event) => {
+		<!-- onclick={(event) => {
 				event.preventDefault();
 				// pushState(href, page.state);
 				goto(href, {noScroll: true, replaceState: false, state: page.state});
 			}} -->
-			<!-- onclick={(event) => {
+		<!-- onclick={(event) => {
 				if (!thisPage)
 				{ 
 					event.preventDefault();
@@ -109,47 +111,31 @@
 					pushState(href, page.state);
 				};
 			}} -->
-			{#if topLevel}
-				<span class="{icon} size-5"></span>
-			{:else}
-				<!-- Icon crossfade container -->
-				<!-- <span class="relative inline-block size-6">
-					{#if isActive}
-						<span
-							in:receive={{ key: 'icon-' + elementId }}
-							out:send={{ key: 'icon-' + elementId }}
-							class="icon-[tabler--hand-finger-right] text-base-content/100 absolute inset-0 size-6"
-						></span>
-					{:else}
-						<span
-							in:receive={{ key: 'icon-' + elementId }}
-							out:send={{ key: 'icon-' + elementId }}
-							class="{icon} absolute inset-0 size-5"
-						></span>
-					{/if}
-				</span> -->
-				<!-- Icon crossfade container -->
-				<span class="relative inline-block size-6">
-					<!-- Regular icon - fades out when active -->
-					<span
-						class="{icon} absolute inset-0 size-5 transition-opacity duration-600 {isActive
-							? 'opacity-0'
-							: 'opacity-100'}"
-					></span>
-					<!-- Active finger-pointing icon - fades in when active -->
-					<span
-						class="icon-[tabler--hand-finger-right] text-base-content/100 absolute inset-0 size-6 transition-opacity duration-600 {isActive
-							? 'opacity-100'
-							: 'opacity-0'}"
-					></span>
-				</span>
-			{/if}
-			<span class="overlay-minified:hidden {isActive ? 'text-base-content/100' : ''}"
-				>{@render children?.()}</span
-			>
-		</a>
-	</li>
-{:else}
+		{#if topLevel}
+			<span class="{icon} size-5"></span>
+		{:else}
+			<!-- Icon crossfade container -->
+			<span class="relative inline-block size-6">
+				<!-- Regular icon - fades out when active -->
+				<span
+					class="{icon} absolute inset-0 size-5 transition-opacity duration-600 {isActive
+						? 'opacity-0'
+						: 'opacity-100'}"
+				></span>
+				<!-- Active finger-pointing icon - fades in when active -->
+				<span
+					class="icon-[tabler--hand-finger-right] text-base-content/100 absolute inset-0 size-6 transition-opacity duration-600 {isActive
+						? 'opacity-100'
+						: 'opacity-0'}"
+				></span>
+			</span>
+		{/if}
+		<span class="overlay-minified:hidden {isActive ? 'text-base-content/100' : ''}"
+			>{@render children?.()}</span
+		>
+	</a>
+</li>
+<!-- {:else}
 	<li>
 		<button
 			type="button"
@@ -163,7 +149,7 @@
 			<span class="overlay-minified:hidden">{@render children?.()}</span>
 		</button>
 	</li>
-{/if}
+{/if} -->
 
 <!-- 
 Old code from scrollspy - might still be handy to register and unregister observer

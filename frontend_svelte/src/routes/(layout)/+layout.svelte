@@ -24,13 +24,14 @@
 
 	let debug = $state(page.url.searchParams.get('debug') === 'true' ? true : false);
 
-	$effect(() => {
-		if (debug) {
-			goto(`?debug=true`, { replaceState: true });
-		} else {
-			goto(`?`, { replaceState: true });
-		}
-	});
+	// TBD: change into version, that keeps hash!
+	// $effect(() => {
+	// 	if (debug) {
+	// 		goto(`?debug=true`, { replaceState: true });
+	// 	} else {
+	// 		goto(`?`, { replaceState: true });
+	// 	}
+	// });
 
 	let userUnregistered = $derived(
 		!data.session?.loggedIn
