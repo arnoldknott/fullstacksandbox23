@@ -673,7 +673,7 @@
 		scrollObserverContext.activeSection.set(undefined);
 
 		// Handle hash scrolling after navigation
-		const hash = navigation.to?.url.hash;
+		const hash = location.hash;
 		if (hash) {
 			// Small delay to ensure DOM is ready
 			setTimeout(() => {
@@ -681,9 +681,9 @@
 				if (targetElement) {
 					targetElement.scrollIntoView({ behavior: 'smooth' });
 				}
+				handleIntentionalNavigation();
 			}, 100);
 		}
-		// handleIntentionalNavigation();
 	});
 
 	let navBar: HTMLElement | null = $state(null);
