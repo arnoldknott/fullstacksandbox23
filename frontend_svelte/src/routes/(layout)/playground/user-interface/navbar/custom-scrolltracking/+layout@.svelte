@@ -623,10 +623,7 @@
 			});
 		};
 
-		scrollObserverContext.observer = new IntersectionObserver(
-			scrollObserverCallback,
-			scrollObserverOptions
-		);
+		intersectionObserver = new IntersectionObserver(scrollObserverCallback, scrollObserverOptions);
 
 		return () => scrollObserverContext.observer?.disconnect();
 	});
