@@ -707,7 +707,7 @@
 	onMount(() => {
 		// console.log('=== onMount - navbar ===');
 		document.documentElement.style.setProperty('--header-height', `${header?.offsetHeight}px`);
-		// navBarBottom = header?.offsetHeight ?? 0
+		navBarBottom = header?.offsetHeight ?? 0;
 
 		return () => {
 			// Cleanup
@@ -717,7 +717,7 @@
 
 	const windowResizeHandler = (_event: UIEvent) => {
 		document.documentElement.style.setProperty('--header-height', `${header?.offsetHeight}px`);
-		// navBarBottom = header?.offsetHeight ?? 0;
+		navBarBottom = header?.offsetHeight ?? 0;
 	};
 
 	const toggleTopNavBar = () => {
@@ -806,9 +806,10 @@
 >
 	<!-- TBD: put navbar into component -->
 	<nav
-		class="navbar rounded-box bg-base-200 shadow-shadow border-outline-variant start-0 top-0 flex justify-between border-1 border-b shadow-md transition-all duration-300 max-sm:h-14 max-sm:px-3 md:items-center"
+		class="navbar rounded-box shadow-shadow border-outline-variant bg-base-200 start-0 top-0 flex justify-between border-1 border-b px-3 shadow-md transition-all duration-300 max-sm:h-14 md:items-center"
 		bind:this={navBar}
 	>
+		<!-- bg-transparent -->
 		<!-- {@attach updateNavbarBottom} -->
 		<div class="navbar-start rtl:[--placement:bottom-end]">
 			<ul class="menu menu-horizontal flex flex-nowrap items-center">
@@ -956,7 +957,7 @@
 		tabindex="-1"
 		{@attach initOverlay}
 	>
-		<div class="mx-7 flex h-26 flex-row items-center justify-between pt-7">
+		<div class="mx-7 flex h-24 flex-row items-center justify-between md:h-26">
 			<div class="hidden sm:block">
 				{@render sidebarToggleButton('hidden sm:flex', {
 					'data-overlay-minifier': '#collapsible-mini-sidebar'
@@ -1081,10 +1082,11 @@
 		<br /> -->
 	</aside>
 	<div class="bg-base-100 xs:mx-5 xs:mt-5 h-screen w-screen px-2">
+		<!-- style="padding-top: {navBarBottom}px;" -->
 		<div
-			id="scrollspy"
 			class="sm:overlay-minified:ps-19 overlay-open:ps-0 space-y-4 pt-2 transition-all duration-300 sm:mx-2 sm:mt-2 sm:ps-66"
 		>
+			<!-- id="scrollspy" -->
 			<!-- bind:this={contentArea} -->
 			{@render children?.()}
 			<!-- <div class="mt-100">Spaceholder</div>
