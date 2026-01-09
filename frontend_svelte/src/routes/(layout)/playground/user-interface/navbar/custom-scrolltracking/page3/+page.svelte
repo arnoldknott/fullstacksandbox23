@@ -11,30 +11,54 @@
 
 	<p>Page 3 has hierarchial content and id's linked in main sidebar</p>
 
-	<Heading id="pg3loreum1"><span class="italic">First</span> Lorem ipsum dolor sit amet...</Heading>
-	<Loreum repetition={30} />
+	<div id="pg3loreum1">
+		<Heading id="pg3loreum1title"
+			><span class="italic">First</span> Lorem ipsum dolor sit amet...</Heading
+		>
+		<Loreum repetition={30} />
+	</div>
 
-	<Heading id="pg3loreum2"><span class="italic">Second</span> Lorem ipsum dolor sit amet...</Heading
-	>
-	<Loreum repetition={10} />
+	<div id="pg3loreum2">
+		<Heading id="pg3loreum2title"
+			><span class="italic">Second</span> Lorem ipsum dolor sit amet...</Heading
+		>
+		<Loreum repetition={10} />
+	</div>
 
-	<Heading id="pg3loreum2a"
-		><span class="italic">Second A</span> Lorem ipsum dolor sit amet...</Heading
-	>
-	<Loreum repetition={8} />
+	<div id="pg3loreum2a">
+		<Heading id="pg3loreum2atitle"
+			><span class="italic">Second A</span> Lorem ipsum dolor sit amet...</Heading
+		>
+		<Loreum repetition={8} />
+	</div>
 
 	<Heading id="pg3sub-category">Sub Category</Heading>
 
-	<Title id="pg3loreum3p1"><span class="italic">3.1</span> Lorem ipsum dolor sit amet...</Title>
-	<Loreum />
+	<div id="pg3loreum3p1">
+		<Title id="pg3loreum3p1title"
+			><span class="italic">3.1</span> Lorem ipsum dolor sit amet...</Title
+		>
+		<Loreum />
+	</div>
 
-	<Title id="pg3loreum3p2"><span class="italic">3.2</span> Lorem ipsum dolor sit amet...</Title>
-	<Loreum />
+	<div id="pg3loreum3p2">
+		<Title id="pg3loreum3p2title"
+			><span class="italic">3.2</span> Lorem ipsum dolor sit amet...</Title
+		>
+		<Loreum />
+	</div>
 
-	<Heading id="pg3loreum4"><span class="italic">Fourth</span> Lorem ipsum dolor sit amet...</Heading
-	>
-	<Loreum />
+	<div id="pg3loreum4">
+		<Heading id="pg3loreum4title"
+			><span class="italic">Fourth</span> Lorem ipsum dolor sit amet...
+		</Heading>
+		<Loreum />
+	</div>
 
-	<Heading id="pg3loreum5"><span class="italic">Fifth</span> Lorem ipsum dolor sit amet...</Heading>
-	<Loreum repetition={20} />
+	<div id="pg3loreum5">
+		<Heading id="pg3loreum5title"
+			><span class="italic">Fifth</span> Lorem ipsum dolor sit amet...
+		</Heading>
+		<Loreum repetition={20} />
+	</div>
 </div>
