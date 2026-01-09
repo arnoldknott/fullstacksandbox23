@@ -1,8 +1,7 @@
 <script lang="ts">
-	import { getContext, onMount, type Snippet } from 'svelte';
+	import { getContext, type Snippet } from 'svelte';
 	import type { Writable } from 'svelte/store';
-	import { crossfade } from 'svelte/transition';
-	import { cubicOut } from 'svelte/easing';
+
 	// import { page } from '$app/state';
 	// import { initScrollspy } from '$lib/userInterface';
 	import {
@@ -15,11 +14,6 @@
 	} from '$app/navigation';
 	import type { Attachment } from 'svelte/attachments';
 	// import { SvelteURL } from 'svelte/reactivity';
-
-	const [send, receive] = crossfade({
-		duration: 600,
-		easing: cubicOut
-	});
 
 	let {
 		href,
@@ -119,7 +113,7 @@
 				<span class="{icon} size-5"></span>
 			{:else}
 				<!-- Icon crossfade container -->
-				<span class="relative inline-block size-6">
+				<!-- <span class="relative inline-block size-6">
 					{#if isActive}
 						<span
 							in:receive={{ key: 'icon-' + elementId }}
@@ -133,6 +127,21 @@
 							class="{icon} absolute inset-0 size-5"
 						></span>
 					{/if}
+				</span> -->
+				<!-- Icon crossfade container -->
+				<span class="relative inline-block size-6">
+					<!-- Regular icon - fades out when active -->
+					<span
+						class="{icon} absolute inset-0 size-5 transition-opacity duration-600 {isActive
+							? 'opacity-0'
+							: 'opacity-100'}"
+					></span>
+					<!-- Active finger-pointing icon - fades in when active -->
+					<span
+						class="icon-[tabler--hand-finger-right] text-base-content/100 absolute inset-0 size-6 transition-opacity duration-600 {isActive
+							? 'opacity-100'
+							: 'opacity-0'}"
+					></span>
 				</span>
 			{/if}
 			<span class="overlay-minified:hidden {isActive ? 'text-base-content/100' : ''}"
