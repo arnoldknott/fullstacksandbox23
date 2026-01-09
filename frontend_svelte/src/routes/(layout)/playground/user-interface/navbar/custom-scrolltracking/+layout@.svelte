@@ -594,7 +594,8 @@
 		set observer(value: IntersectionObserver | null) {
 			intersectionObserver = value;
 		},
-		activeSection: writable<string | undefined>(undefined)
+		activeSection: writable<string | undefined>(undefined),
+		visibleSections: writable<Set<string>>(new Set())
 	};
 	setContext('scrollObserver', scrollObserverContext);
 
@@ -602,24 +603,41 @@
 	onMount(() => {
 		const scrollObserverOptions = {
 			rootMargin: '0px',
+			// only trigger when being in upper part 100 ox of screen and at least 50% from the bottom
+			// rootMargin: '-100px 0px -50% 0px',
 			scrollMargin: '0px',
-			threshold: 0.0
+			threshold: [0, 1.0] // Track both entering/exiting and fully visible
 		};
 
 		const scrollObserverCallback = (
 			entries: IntersectionObserverEntry[],
 			observer: IntersectionObserver
 		) => {
-			entries.forEach((entry) => {
-				if (entry.isIntersecting) {
-					console.log('🖲️ => 🪟 - scroll into window - entry.target');
-					console.log(entry.target);
-					// Update active section store with the element's ID
+			scrollObserverContext.visibleSections.update((visible) => {
+				const newVisible = new Set(visible);
+				entries.forEach((entry) => {
 					const elementId = entry.target.id;
-					if (elementId) {
-						scrollObserverContext.activeSection.set(elementId);
+					if (!elementId) return;
+
+					if (entry.isIntersecting) {
+						// Section is visible
+						newVisible.add(elementId);
+						console.log('🖲️ => 🪟 - scroll into window:', elementId);
+					} else {
+						// Section left viewport
+						newVisible.delete(elementId);
+						console.log('🖲️ => 🚪 - scroll out of window:', elementId);
 					}
+				});
+
+				// Determine active section: pick first visible (topmost in DOM order)
+				if (newVisible.size > 0) {
+					// Get first element from Set (maintains insertion order)
+					const firstVisible = Array.from(newVisible)[0];
+					scrollObserverContext.activeSection.set(firstVisible);
 				}
+
+				return newVisible;
 			});
 		};
 

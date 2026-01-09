@@ -32,14 +32,21 @@
 	const scrollObserverContext = getContext<{
 		observer: IntersectionObserver | undefined;
 		activeSection: Writable<string | undefined>;
+		visibleSections: Writable<Set<string>>;
 	}>('scrollObserver');
 
 	// Extract element ID from href for comparison
 	const elementId = $derived(href.startsWith('#') ? href.substring(1) : null);
 
-	// Subscribe to active section to know when this link should be styled as active
+	// Subscribe to active section and visible sections
 	const activeSection = scrollObserverContext?.activeSection;
+	const visibleSections = scrollObserverContext?.visibleSections;
+
 	const isActive = $derived(elementId && $activeSection === elementId);
+	const isVisible = $derived(elementId && $visibleSections?.has(elementId));
+
+	// Determine opacity based on visibility
+	const linkOpacity = $derived(isActive ? 'opacity-100' : isVisible ? 'opacity-95' : 'opacity-70');
 
 	const addElementToObserver: Attachment = () => {
 		// Guard against missing observer (will be available after parent mounts)
@@ -63,9 +70,9 @@
 		<a
 			{@attach addElementToObserver}
 			{href}
-			class="text-base-content/80 group flex items-center gap-x-2 hover:opacity-100 {isActive
-				? 'italic'
-				: ''}"
+			class="{isActive || isVisible
+				? 'text-base-content italic'
+				: ' text-base-content-variant'} group flex items-center gap-x-2 transition-opacity duration-300 hover:opacity-100 {linkOpacity}"
 		>
 			<!-- 			onclick={() => {
 				const target = document.getElementById(href)
@@ -107,9 +114,22 @@
 				<!-- <span
 					class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
 				></span> -->
-				<span class="{isActive ? 'icon-[tabler--hand-finger-right]' : icon} size-5"></span>
+				<span
+					class={isActive
+						? 'icon-[tabler--hand-finger-right] text-base-content/100 size-6'
+						: `${icon} size-5`}
+				></span>
+				<!-- <span
+					class="{isActive
+						? 'inline'
+						: 'hidden'}  icon-[tabler--hand-finger-right] text-base-content/100 size-5 transition-all duration-600"
+				></span>
+				<span class="{isActive ? 'hidden' : 'inline'}  {icon} size-5 transition-all duration-600"
+				></span> -->
 			{/if}
-			<span class="overlay-minified:hidden">{@render children?.()}</span>
+			<span class="overlay-minified:hidden {isActive ? 'text-base-content/100' : ''}"
+				>{@render children?.()}</span
+			>
 		</a>
 	</li>
 {:else}
