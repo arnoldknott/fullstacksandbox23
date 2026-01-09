@@ -683,6 +683,10 @@
 				}
 				handleIntentionalNavigation();
 			}, 100);
+		} else {
+			// Scroll to top if no hash
+			window.scrollTo({ top: 0, behavior: 'smooth' });
+			handleIntentionalNavigation();
 		}
 	});
 
