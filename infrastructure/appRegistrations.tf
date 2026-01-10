@@ -1,8 +1,8 @@
 resource "random_uuid" "ScopeApiRead" {}
 resource "random_uuid" "ScopeApiWrite" {}
 resource "random_uuid" "ScopeSocketio" {}
-resource "random_uuid" "RoleAdmin" {}        # Used for admins in backend
-resource "random_uuid" "RoleUser" {}         # Used for users in backend
+resource "random_uuid" "RoleAdmin" {}       # Used for admins in backend
+resource "random_uuid" "RoleUser" {}        # Used for users in backend
 resource "random_uuid" "pgAdminRoleAdmin" { # Used for admins in pgAdmin
   count = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
 }
@@ -239,6 +239,7 @@ resource "azuread_application" "backendAPI" {
 # creates a client secret - which the backend uses for it's msal-client for user-impersonation to access MS Graph API
 resource "azuread_application_password" "backendAPIClientSecret" {
   application_id = azuread_application.backendAPI.id
+  end_date       = "2046-01-31T23:59:59Z"
 }
 
 resource "azuread_application_identifier_uri" "backendAPIURI" {
@@ -314,6 +315,7 @@ resource "azuread_application" "frontend" {
 # creates a client secret for the frontend for the web application, which uses it for msal-client-node:
 resource "azuread_application_password" "frontendClientSecret" {
   application_id = azuread_application.frontend.id
+  end_date       = "2046-01-31T23:59:59Z"
 }
 
 
@@ -352,8 +354,11 @@ resource "azuread_application" "developerClients" {
 
 # creates a client secret for the developer clients, which are used in Postman and Thunderclient
 # TBD: consider different secrets for those two clients and one for each developer?
+# Note: this secret is only used manully in
+# Postman/Thunderclient to get tokens from the backendAPI,  not in code.
 resource "azuread_application_password" "developerClientsSecret" {
   application_id = azuread_application.developerClients.id
+  end_date       = "2046-01-31T23:59:59Z"
 }
 
 resource "azuread_application" "postgresAdmin" {
@@ -416,6 +421,7 @@ resource "azuread_application_redirect_uris" "postgresAdminOAuthRedirectURI" {
 resource "azuread_application_password" "postgresAdminSecret" {
   count          = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
   application_id = azuread_application.postgresAdmin[0].id
+  end_date       = "2046-01-31T23:59:59Z"
 }
 
 resource "azuread_service_principal" "postgresAdmin" {

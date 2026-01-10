@@ -16,31 +16,31 @@
 		href,
 		thisPage,
 		icon,
-		scrollspyParent,
+		// scrollspyParent,
 		topLevel = false,
 		children
 	}: {
 		href: string;
 		thisPage: boolean;
 		icon: string;
-		scrollspyParent: HTMLElement;
+		// scrollspyParent: HTMLElement;
 		topLevel?: boolean;
 		children: Snippet;
 	} = $props();
 
 	const forceScrolling = () => {
-		if (scrollspyParent) {
-			// const original = scrollspyParent.scrollTop;
-			// // scrolls to the other end of the scroll area and back to force scrollspy to recalculate positions
-			// const alt =
-			// 	original < 2 ? scrollspyParent.scrollHeight : original - scrollspyParent.scrollHeight;
-			// scrollspyParent.scrollTop = alt;
-			// scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
-			// requestAnimationFrame(() => {
-			// 	scrollspyParent.scrollTop = original;
-			// 	scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
-			// });
-		}
+		// if (scrollspyParent) {
+		// const original = scrollspyParent.scrollTop;
+		// // scrolls to the other end of the scroll area and back to force scrollspy to recalculate positions
+		// const alt =
+		// 	original < 2 ? scrollspyParent.scrollHeight : original - scrollspyParent.scrollHeight;
+		// scrollspyParent.scrollTop = alt;
+		// scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
+		// requestAnimationFrame(() => {
+		// 	scrollspyParent.scrollTop = original;
+		// 	scrollspyParent.dispatchEvent(new Event('scroll', { bubbles: true }));
+		// });
+		// }
 	};
 
 	afterNavigate(() => {
@@ -51,7 +51,8 @@
 
 	const addScrollspy = (node: HTMLElement) => {
 		node.setAttribute('data-scrollspy', '#scrollspy');
-		node.setAttribute('data-scrollspy-scrollable-parent', '#scrollspy-scrollable-parent');
+		// Don't set the scrollable parent to body, this is the default scroll tracking!
+		// node.setAttribute('data-scrollspy-scrollable-parent', '#app-body');
 		// await tick();
 		initScrollspy(node);
 		// forceScrolling();
@@ -59,7 +60,7 @@
 
 	const removeScrollspy = (node: HTMLElement) => {
 		node.removeAttribute('data-scrollspy');
-		node.removeAttribute('data-scrollspy-scrollable-parent');
+		// node.removeAttribute('data-scrollspy-scrollable-parent');
 		// console.log('=== SidebarLink.svelte - removeScrollspy - node ===');
 		// console.log(node);
 		try {
@@ -78,6 +79,7 @@
 		) {
 			// afterNavigate((_navigator) => {
 			if (thisPage) {
+				console.log('=== SidebarLink.svelte - toggleScrollspyOnParent - addScrollspy ===');
 				addScrollspy(parent);
 			}
 			// if (navigator.to?.url.hash !== '') {
