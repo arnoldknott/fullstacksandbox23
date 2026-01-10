@@ -46,4 +46,13 @@
 <!-- <InitialScrollspy /> -->
 <!-- <ReproductionScrollspyDocumentationOnBodyScroll /> -->
 
+<!-- Simple navigation check -->
+<!-- <a href="#belowLoreum">Go below Loreum</a>
+
+<Loreum repetition={50} />
+
+<div id="belowLoreum">
+	<h2 class="mt-8 mb-4 text-2xl font-bold">You have arrived below the Loreum</h2>
+	</div> -->
+
 {@render children?.()}

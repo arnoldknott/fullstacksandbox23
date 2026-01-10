@@ -47,3 +47,38 @@
 	--btn-color: var(--color-primary-fixed-dim);
 	--btn-fg: var(--color-primary-fixed-content);
 }
+
+.btn-base-content {
+	--btn-color: var(--color-base-content);
+	--btn-fg: var(--color-base-100);
+}
+
+.btn-base-content-variant {
+	--btn-color: var(--color-base-content-variant);
+	--btn-fg: var(--color-base-100);
+}
+
+.btn-base-100 {
+	--btn-color: var(--color-base-100);
+	--btn-fg: var(--color-base-content);
+}
+
+.btn-abse-150 {
+	--btn-color: var(--color-base-150);
+	--btn-fg: var(--color-base-content);
+}
+
+.btn-base-200 {
+	--btn-color: var(--color-base-200);
+	--btn-fg: var(--color-base-content);
+}
+
+.btn-base-250 {
+	--btn-color: var(--color-base-250);
+	--btn-fg: var(--color-base-content);
+}
+
+.btn-base-300 {
+	--btn-color: var(--color-base-300);
+	--btn-fg: var(--color-base-content);
+}
