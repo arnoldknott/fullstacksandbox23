@@ -32,6 +32,8 @@
 	// console.log(topoffset);
 
 	const thisPage = $derived.by(() => (pathname: string) => pathname === page.url.pathname);
+	console.log('=== SidebarFolder.svelte - thisPage(pathname!) ===');
+	$effect(() => console.log(pathname));
 	const createHref = $derived.by(() => (destinationPathname: string, hash?: string) => {
 		let href = '';
 		if (!hash) href = destinationPathname;
@@ -52,6 +54,9 @@
 	const elementId = $derived(href.startsWith('#') ? href.substring(1) : null);
 	const activeSection = scrollObserverContext?.activeSection;
 	const isActive = $derived((elementId && $activeSection === elementId) || hasActiveChild);
+
+	// Determine opacity based on visibility
+	const linkOpacity = $derived(isActive ? 'opacity-100' : 'opacity-70');
 
 	const addElementToObserver: Attachment = () => {
 		// console.log('=== SidebarLink.svelte - addElementToObserver - attaching ===');
@@ -157,7 +162,13 @@
 	</li>
 {:else} -->
 <li class="space-y-0.5">
-	<a {href} {@attach addElementToObserver}>
+	<a
+		{href}
+		{@attach addElementToObserver}
+		class="{isActive || hasActiveChild || thisPage(pathname!)
+			? 'text-base-content italic'
+			: ' text-base-content-variant'}  items-center gap-x-2 transition-opacity duration-600 hover:opacity-100 {linkOpacity}"
+	>
 		{#if topLevel}
 			<span class="{icon} size-5"></span>
 		{:else}
