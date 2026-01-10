@@ -22,11 +22,4 @@
 			>{/snippet}
 		<Loreum repetition={30} />
 	</Section>
-
-	<!-- 
-	<Heading id="loreum1"><span class="italic">First</span> Lorem ipsum dolor sit amet...</Heading>
-	<Loreum repetition={30} />
-
-	<Heading id="loreum2"><span class="italic">Second</span> Lorem ipsum dolor sit amet...</Heading>
-	<Loreum repetition={30} /> -->
 </div>
