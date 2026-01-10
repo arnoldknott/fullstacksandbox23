@@ -7,7 +7,7 @@
 	import { onMount, tick, type Snippet } from 'svelte';
 	import { page } from '$app/state';
 	import Guard from '$components/Guard.svelte';
-	import { initDropdown, initOverlay, initScrollspy } from '$lib/userInterface';
+	import { initDropdown, initOverlay } from '$lib/userInterface';
 	import ThemePicker from '../../../components/ThemePicker.svelte';
 	import ArtificialIntelligencePicker from '../../../components/ArtificialIntelligencePicker.svelte';
 	import { themeStore } from '$lib/stores';
@@ -20,7 +20,6 @@
 	import LoginOutButton from '../../../../LoginOutButton.svelte';
 	import Logo from '../../../../Logo.svelte';
 	import { scrollY } from 'svelte/reactivity/window';
-	import { on } from 'svelte/events';
 
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
 
