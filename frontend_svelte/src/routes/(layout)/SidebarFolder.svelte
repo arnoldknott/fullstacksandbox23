@@ -23,9 +23,9 @@
 	// Aggregate children's active states and propagate up
 	$effect(() => {
 		hasActiveChild = childActiveStates.some((active) => active);
-		if (hasActiveChild) {
-			// toggleCollapse();
-		}
+		// if (hasActiveChild) {
+		// toggleCollapse();
+		// }
 	});
 
 	const thisPage = $derived.by(() => (pathname: string) => pathname === page.url.pathname);
