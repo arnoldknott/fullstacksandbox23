@@ -11,15 +11,13 @@
 	<p>Page 4.1 is a subpage to page 4</p>
 
 	<Section id="loreum1">
-		{#snippet header()}<Heading
-				><span class="italic">First</span> Lorem ipsum dolor sit amet...</Heading
-			>{/snippet}
+		<!-- {#snippet header()}{/snippet} -->
+		<Heading><span class="italic">First</span> Lorem ipsum dolor sit amet...</Heading>
 		<Loreum repetition={30} />
 	</Section>
 	<Section id="loreum2">
-		{#snippet header()}<Heading
-				><span class="italic">Second</span> Lorem ipsum dolor sit amet...</Heading
-			>{/snippet}
+		<!-- {#snippet header()}{/snippet} -->
+		<Heading><span class="italic">Second</span> Lorem ipsum dolor sit amet...</Heading>
 		<Loreum repetition={30} />
 	</Section>
 </div>

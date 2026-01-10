@@ -33,20 +33,17 @@
 	<Loreum repetition={20} /> -->
 
 	<Section id="pg2loreum1">
-		{#snippet header()}
-			<Heading>
-				<span class="italic">First</span> Lorem ipsum dolor sit amet...
-			</Heading>
-		{/snippet}
+		<Heading>
+			<span class="italic">First</span> Lorem ipsum dolor sit amet...
+		</Heading>
 		<Loreum />
 	</Section>
 
 	<Section id="pg2loreum2">
-		{#snippet header()}
-			<Heading>
-				<span class="italic">Second</span> Lorem ipsum dolor sit amet...
-			</Heading>
-		{/snippet}
+		<Heading>
+			<span class="italic">Second</span> Lorem ipsum dolor sit amet...
+		</Heading>
+
 		<Loreum repetition={4} />
 	</Section>
 
@@ -55,38 +52,30 @@
 	</Section>
 
 	<Section id="pg2loreum3">
-		{#snippet header()}
-			<Title id="pg2loreum3title">
-				<span class="italic">Third</span> Lorem ipsum dolor sit amet...
-			</Title>
-		{/snippet}
+		<Title id="pg2loreum3title">
+			<span class="italic">Third</span> Lorem ipsum dolor sit amet...
+		</Title>
 		<Loreum />
 	</Section>
 
 	<Section id="pg2loreum4">
-		{#snippet header()}
-			<Title id="pg2loreum4title">
-				<span class="italic">Fourth</span> Lorem ipsum dolor sit amet...
-			</Title>
-		{/snippet}
+		<Title id="pg2loreum4title">
+			<span class="italic">Fourth</span> Lorem ipsum dolor sit amet...
+		</Title>
 		<Loreum />
 	</Section>
 
 	<Section id="pg2loreum5">
-		{#snippet header()}
-			<Heading id="pg2loreum5title">
-				<span class="italic">Fifth</span> Lorem ipsum dolor sit amet...
-			</Heading>
-		{/snippet}
+		<Heading id="pg2loreum5title">
+			<span class="italic">Fifth</span> Lorem ipsum dolor sit amet...
+		</Heading>
 		<Loreum />
 	</Section>
 
 	<Section id="pg2loreum6">
-		{#snippet header()}
-			<Heading id="pg2loreum6title">
-				<span class="italic">Sixth</span> Lorem ipsum dolor sit amet...
-			</Heading>
-		{/snippet}
+		<Heading id="pg2loreum6title">
+			<span class="italic">Sixth</span> Lorem ipsum dolor sit amet...
+		</Heading>
 		<Loreum repetition={20} />
 	</Section>
 </div>

@@ -13,29 +13,23 @@
 	<p>Page 3 has hierarchial content and id's linked in main sidebar</p>
 
 	<Section id="pg3loreum1">
-		{#snippet header()}
-			<Heading id="pg3loreum1title"
-				><span class="italic">First</span> Lorem ipsum dolor sit amet...</Heading
-			>
-		{/snippet}
+		<Heading id="pg3loreum1title"
+			><span class="italic">First</span> Lorem ipsum dolor sit amet...</Heading
+		>
 		<Loreum repetition={30} />
 	</Section>
 
 	<Section id="pg3loreum2">
-		{#snippet header()}
-			<Heading id="pg3loreum2title"
-				><span class="italic">Second</span> Lorem ipsum dolor sit amet...</Heading
-			>
-		{/snippet}
+		<Heading id="pg3loreum2title"
+			><span class="italic">Second</span> Lorem ipsum dolor sit amet...</Heading
+		>
 		<Loreum repetition={10} />
 	</Section>
 
 	<Section id="pg3loreum2a">
-		{#snippet header()}
-			<Heading id="pg3loreum2atitle"
-				><span class="italic">Second A</span> Lorem ipsum dolor sit amet...</Heading
-			>
-		{/snippet}
+		<Heading id="pg3loreum2atitle"
+			><span class="italic">Second A</span> Lorem ipsum dolor sit amet...</Heading
+		>
 		<Loreum repetition={8} />
 	</Section>
 
@@ -44,38 +38,30 @@
 	</Section>
 
 	<Section id="pg3loreum3p1">
-		{#snippet header()}
-			<Title id="pg3loreum3p1title"
-				><span class="italic">3.1</span> Lorem ipsum dolor sit amet...</Title
-			>
-		{/snippet}
+		<Title id="pg3loreum3p1title"
+			><span class="italic">3.1</span> Lorem ipsum dolor sit amet...</Title
+		>
 		<Loreum />
 	</Section>
 
 	<Section id="pg3loreum3p2">
-		{#snippet header()}
-			<Title id="pg3loreum3p2title"
-				><span class="italic">3.2</span> Lorem ipsum dolor sit amet...</Title
-			>
-		{/snippet}
+		<Title id="pg3loreum3p2title"
+			><span class="italic">3.2</span> Lorem ipsum dolor sit amet...</Title
+		>
 		<Loreum />
 	</Section>
 
 	<Section id="pg3loreum4">
-		{#snippet header()}
-			<Heading id="pg3loreum4title"
-				><span class="italic">Fourth</span> Lorem ipsum dolor sit amet...</Heading
-			>
-		{/snippet}
+		<Heading id="pg3loreum4title"
+			><span class="italic">Fourth</span> Lorem ipsum dolor sit amet...</Heading
+		>
 		<Loreum />
 	</Section>
 
 	<Section id="pg3loreum5">
-		{#snippet header()}
-			<Heading id="pg3loreum5title"
-				><span class="italic">Fifth</span> Lorem ipsum dolor sit amet...</Heading
-			>
-		{/snippet}
+		<Heading id="pg3loreum5title"
+			><span class="italic">Fifth</span> Lorem ipsum dolor sit amet...</Heading
+		>
 		<Loreum repetition={20} />
 	</Section>
 </div>
