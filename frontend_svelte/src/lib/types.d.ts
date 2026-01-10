@@ -33,7 +33,8 @@ export type ClientSession = {
 };
 
 // Sidebar:
-
+// TBD: delete this one after changing +layout.svelte and SidebarContent.svelte in sidebar/iteration to use new types!
+// Or just delete the whole history of the sidebar development?
 export type SidebarContent = {
 	id: string;
 	name: string;

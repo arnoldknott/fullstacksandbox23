@@ -31,6 +31,11 @@
 			description:
 				'Takes the sidebar and Sidebar united with scroll-off by Javascript and new document layout - debugs scrollspy errors, especially for foreign pages.',
 			url: 'navbar/debug-scrollspy'
+		},
+		{
+			name: 'Replacing scrollspy with custom implementation',
+			description: 'Removes scrollspy and implements a scroll tracking by intersection observer.',
+			url: 'navbar/custom-scrolltracking'
 		}
 	];
 </script>

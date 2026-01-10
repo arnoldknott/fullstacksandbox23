@@ -28,6 +28,9 @@
 		// }
 	});
 
+	// console.log("=== SidebarFolder.svelte - topoffset ===");
+	// console.log(topoffset);
+
 	const thisPage = $derived.by(() => (pathname: string) => pathname === page.url.pathname);
 	const createHref = $derived.by(() => (destinationPathname: string, hash?: string) => {
 		let href = '';
@@ -51,6 +54,7 @@
 	const isActive = $derived((elementId && $activeSection === elementId) || hasActiveChild);
 
 	const addElementToObserver: Attachment = () => {
+		// console.log('=== SidebarLink.svelte - addElementToObserver - attaching ===');
 		// Guard against missing observer (will be available after parent mounts)
 		if (scrollObserverContext?.observer) {
 			// Get the element in the content that corresponds to this link and observe it
@@ -69,12 +73,16 @@
 	let collapseControl: HTMLElement | null = $state(null);
 
 	const toggleCollapse: Attachment<HTMLElement> = (node: HTMLElement) => {
+		// collapseControl = node;
+		// if (page.url.pathname.startsWith(node.dataset.pathname || '')) {
+		// if (page.url.pathname === node.dataset.pathname) {
 		if (pathname === page.url.pathname || hasActiveChild) {
 			const { element } = window.HSCollapse.getInstance(node, true);
 			element.show();
 		}
 	};
 
+	//TBD: check if this can be done by FlyonUI controls
 	// Reactively open collapse when a child becomes active
 	$effect(() => {
 		if (hasActiveChild && collapseControl) {
@@ -101,6 +109,12 @@
 		aria-labelledby={id + '-control'}
 		{@attach initCollapse}
 	>
+		<!-- data-pathname={pathname} -->
+		<!-- {`[--scrollspy-offset:${topoffset}]`.toString()} -->
+		<!-- max-sm:[--scrollspy-offset:56px] -->
+		<!-- {`[--scrollspy-offset:${topoffset}]`.toString()} -->
+		<!-- {topoffset} -->
+		<!-- add [--scrollspy-offset:86] here conditionally with number being navbarBottom variable from layout. -->
 		{#each items as item, index (item.id)}
 			<SidebarItem
 				content={{
@@ -109,10 +123,39 @@
 				} as SidebarFolderContent}
 				bind:isActiveChild={childActiveStates[index]}
 			/>
+			<!-- {scrollspyParent} -->
 		{/each}
 	</ul>
 {/snippet}
 
+<!-- {#if topLevel || (pathname && pathname !== page.url.pathname)}
+	<li class="space-y-0.5">
+		<button
+			type="button"
+			class="collapse-toggle {thisPage(pathname!) ? 'open' : ''} collapse-open:bg-base-content/10"
+			id={id + '-control'}
+			data-collapse={'#' + id + '-collapse'}
+			{@attach initCollapse}
+			{@attach toggleCollapse}
+		>
+			<span class="{icon} size-5"></span>
+			<span class="overlay-minified:hidden">{name}</span>
+			<span
+				class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:hidden size-4 transition-all duration-300"
+			></span>
+			<span
+				class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:block {topLevel
+					? 'overlay-minified:rotate-270'
+					: ''} hidden size-4 transition-all duration-300"
+				role="button"
+				tabindex="0"
+				onclick={() => openSidebar()}
+				onkeydown={() => openSidebar()}
+			></span>
+		</button>
+		{@render collapseList()}
+	</li>
+{:else} -->
 <li class="space-y-0.5">
 	<a {href} {@attach addElementToObserver}>
 		{#if topLevel}
@@ -164,6 +207,10 @@
 				onkeydown={() => openSidebar()}
 			></span>
 		</button>
+		<!-- <span
+				class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"
+			></span> -->
 	</a>
 	{@render collapseList()}
 </li>
+<!-- {/if} -->
