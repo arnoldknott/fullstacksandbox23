@@ -32,8 +32,8 @@
 	// console.log(topoffset);
 
 	const thisPage = $derived.by(() => (pathname: string) => pathname === page.url.pathname);
-	console.log('=== SidebarFolder.svelte - thisPage(pathname!) ===');
-	$effect(() => console.log(pathname));
+	// console.log('=== SidebarFolder.svelte - thisPage(pathname!) ===');
+	// $effect(() => console.log(pathname));
 	const createHref = $derived.by(() => (destinationPathname: string, hash?: string) => {
 		let href = '';
 		if (!hash) href = destinationPathname;
@@ -165,7 +165,7 @@
 	<a
 		{href}
 		{@attach addElementToObserver}
-		class="{isActive || hasActiveChild || thisPage(pathname!)
+		class="{isActive || hasActiveChild
 			? 'text-base-content italic'
 			: ' text-base-content-variant'}  items-center gap-x-2 transition-opacity duration-600 hover:opacity-100 {linkOpacity}"
 	>

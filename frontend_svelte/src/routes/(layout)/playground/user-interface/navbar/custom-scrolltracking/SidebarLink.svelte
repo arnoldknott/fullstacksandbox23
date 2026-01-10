@@ -52,9 +52,7 @@
 	const isVisible = $derived(elementId && thisPage && $visibleSections?.has(elementId));
 
 	// Determine opacity based on visibility
-	const linkOpacity = $derived(
-		isActive || thisPage ? 'opacity-100' : isVisible ? 'opacity-95' : 'opacity-70'
-	);
+	const linkOpacity = $derived(isActive ? 'opacity-100' : isVisible ? 'opacity-95' : 'opacity-70');
 
 	const addElementToObserver: Attachment = () => {
 		// console.log('=== SidebarLink.svelte - addElementToObserver - attaching ===');
@@ -79,7 +77,7 @@
 	<a
 		{@attach addElementToObserver}
 		{href}
-		class="{isActive || isVisible || thisPage
+		class="{isActive || isVisible
 			? 'text-base-content italic'
 			: ' text-base-content-variant'} flex items-center gap-x-2 transition-opacity duration-600 hover:opacity-100 {linkOpacity}"
 	>
