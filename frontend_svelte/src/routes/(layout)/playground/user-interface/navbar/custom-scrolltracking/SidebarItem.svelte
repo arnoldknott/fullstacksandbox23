@@ -5,14 +5,21 @@
 	import SidebarLink from './SidebarLink.svelte';
 	let {
 		content,
-		topLevel = false
+		topLevel = false,
+		isActiveChild = $bindable(false)
 	}: {
 		content: SidebarItemContent;
 		topLevel?: boolean;
+		isActiveChild?: boolean;
 	} = $props();
 	let { name, pathname, hash, icon } = $derived({ ...content });
 
 	let hasActiveChild = $state(false);
+
+	// Propagate active state up to parent
+	$effect(() => {
+		isActiveChild = hasActiveChild;
+	});
 
 	const thisPage = $derived.by(() => (pathname: string) => pathname === page.url.pathname);
 	const createHref = $derived.by(() => (destinationPathname: string, hash?: string) => {
@@ -44,6 +51,6 @@
 			pathname: pathname || ''
 		} as SidebarFolderContent}
 		{topLevel}
-		{hasActiveChild}
+		bind:hasActiveChild
 	/>
 {/if}

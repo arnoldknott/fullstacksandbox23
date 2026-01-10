@@ -9,13 +9,24 @@
 	let {
 		content,
 		topLevel = false,
-		hasActiveChild
+		hasActiveChild = $bindable(false)
 	}: {
 		content: SidebarFolderContent;
 		topLevel?: boolean;
 		hasActiveChild?: boolean;
 	} = $props();
 	let { id, name, pathname, hash, icon, items } = $derived({ ...content });
+
+	// Track active state for each child (use content.items for initialization to avoid referencing derived)
+	let childActiveStates: boolean[] = $state(content.items.map(() => false));
+
+	// Aggregate children's active states and propagate up
+	$effect(() => {
+		hasActiveChild = childActiveStates.some((active) => active);
+		if (hasActiveChild) {
+			// toggleCollapse();
+		}
+	});
 
 	// console.log("=== SidebarFolder.svelte - topoffset ===");
 	// console.log(topoffset);
@@ -40,9 +51,11 @@
 	// Extract element ID from href for comparison
 	const elementId = $derived(href.startsWith('#') ? href.substring(1) : null);
 	const activeSection = scrollObserverContext?.activeSection;
-	const isActive = $derived((elementId && $activeSection === elementId) || hasActiveChild);
-	console.log('=== SidebarFolder.svelte - hasActiveChild ===');
-	console.log(hasActiveChild);
+	const isActive = $derived(
+		(elementId && $activeSection === elementId) ||
+			hasActiveChild ||
+			childActiveStates.some((active) => active)
+	);
 
 	const addElementToObserver: Attachment = () => {
 		// console.log('=== SidebarLink.svelte - addElementToObserver - attaching ===');
@@ -83,6 +96,7 @@
 			? 'open'
 			: 'hidden'} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
 		aria-labelledby={id + '-control'}
+		{@attach initCollapse}
 	>
 		<!-- data-pathname={pathname} -->
 		<!-- {`[--scrollspy-offset:${topoffset}]`.toString()} -->
@@ -90,12 +104,13 @@
 		<!-- {`[--scrollspy-offset:${topoffset}]`.toString()} -->
 		<!-- {topoffset} -->
 		<!-- add [--scrollspy-offset:86] here conditionally with number being navbarBottom variable from layout. -->
-		{#each items as item (item.id)}
+		{#each items as item, index (item.id)}
 			<SidebarItem
 				content={{
 					...item,
 					pathname: item.pathname || pathname
 				} as SidebarFolderContent}
+				bind:isActiveChild={childActiveStates[index]}
 			/>
 			<!-- {scrollspyParent} -->
 		{/each}
@@ -154,7 +169,8 @@
 		<span class="overlay-minified:hidden">{name}</span>
 		<button
 			type="button"
-			class="btn btn-circle btn-xs btn-gradient btn-base-300 collapse-toggle {thisPage(pathname!)
+			class="btn btn-circle btn-xs btn-gradient btn-base-300 collapse-toggle {thisPage(pathname!) ||
+			isActive
 				? 'open'
 				: ''}"
 			id={id + '-control'}
@@ -164,7 +180,6 @@
 				e.preventDefault();
 				e.stopPropagation();
 			}}
-			{@attach initCollapse}
 			{@attach toggleCollapse}
 		>
 			<span
