@@ -4,14 +4,14 @@
 
 	// import { page } from '$app/state';
 	// import { initScrollspy } from '$lib/userInterface';
-	import {
-		// afterNavigate,
-		// beforeNavigate,
-		goto
-		// pushState
-		// pushState,
-		// replaceState
-	} from '$app/navigation';
+	// import {
+	// afterNavigate,
+	// beforeNavigate,
+	// goto
+	// pushState
+	// pushState,
+	// replaceState
+	// } from '$app/navigation';
 	import type { Attachment } from 'svelte/attachments';
 	// import { SvelteURL } from 'svelte/reactivity';
 

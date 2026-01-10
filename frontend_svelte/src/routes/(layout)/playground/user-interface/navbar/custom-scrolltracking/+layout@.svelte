@@ -4,9 +4,8 @@
 	import { Variant, Theming, type ColorConfig } from '$lib/theming';
 	import { Model, type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
 	import type { Action } from 'svelte/action';
-	import type { Attachment } from 'svelte/attachments';
-	import { writable, type Writable } from 'svelte/store';
-	import { onMount, setContext, tick, type Snippet } from 'svelte';
+	import { writable } from 'svelte/store';
+	import { onMount, setContext, type Snippet } from 'svelte';
 	import { page } from '$app/state';
 	import Guard from '$components/Guard.svelte';
 	import { initDropdown, initOverlay } from '$lib/userInterface';
@@ -628,7 +627,7 @@
 
 		const scrollObserverCallback = (
 			entries: IntersectionObserverEntry[],
-			observer: IntersectionObserver
+			_observer: IntersectionObserver
 		) => {
 			scrollObserverContext.visibleSections.update((visible) => {
 				const visibleSections = new Set(visible);
@@ -667,7 +666,7 @@
 	});
 
 	// Handle navigation: clear stores and scroll to hash
-	afterNavigate(async (navigation) => {
+	afterNavigate(async (_navigation) => {
 		// Clear tracking when navigating between pages
 		scrollObserverContext.visibleSections.set(new Set());
 		scrollObserverContext.activeSection.set(undefined);
