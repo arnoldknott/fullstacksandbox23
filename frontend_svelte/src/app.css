@@ -128,7 +128,9 @@
 	--color-error: rgb(var(--md-rgb-color-error));
 	--color-error-content: rgb(var(--md-rgb-color-on-error));
 	--color-base-100: rgb(var(--md-rgb-color-surface-container-lowest));
+	--color-base-150: rgb(var(--md-rgb-color-surface-container-low));
 	--color-base-200: rgb(var(--md-rgb-color-surface-container));
+	--color-base-250: rgb(var(--md-rgb-color-surface-container-high));
 	--color-base-300: rgb(var(--md-rgb-color-surface-container-highest));
 	--color-base-content: rgb(var(--md-rgb-color-on-surface));
 	--color-base-shadow: rgb(var(--md-rgb-color-shadow));
@@ -148,8 +150,6 @@
 	--color-success-container-content: rgb(var(--md-rgb-color-on-success-container));
 	--color-info-container: rgb(var(--md-rgb-color-info-container));
 	--color-info-container-content: rgb(var(--md-rgb-color-on-info-container));
-	--color-base-150: rgb(var(--md-rgb-color-surface-container-low));
-	--color-base-250: rgb(var(--md-rgb-color-surface-container-high));
 	--color-base-content-variant: rgb(var(--md-rgb-color-on-surface-variant));
 	--color-outline: rgb(var(--md-rgb-color-outline));
 	--color-outline-variant: rgb(var(--md-rgb-color-outline-variant));

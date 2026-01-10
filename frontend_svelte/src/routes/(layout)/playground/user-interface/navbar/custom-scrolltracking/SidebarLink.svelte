@@ -20,12 +20,14 @@
 		thisPage,
 		icon,
 		topLevel = false,
+		isActiveChild = $bindable(),
 		children
 	}: {
 		href: string;
 		thisPage: boolean;
 		icon: string;
 		topLevel?: boolean;
+		isActiveChild?: boolean;
 		children: Snippet;
 	} = $props();
 
@@ -44,6 +46,9 @@
 	const visibleSections = scrollObserverContext?.visibleSections;
 
 	const isActive = $derived(elementId && thisPage && $activeSection === elementId);
+	$effect(() => {
+		isActiveChild = isActive ? true : false;
+	});
 	const isVisible = $derived(elementId && thisPage && $visibleSections?.has(elementId));
 
 	// Determine opacity based on visibility
@@ -74,7 +79,7 @@
 		{href}
 		class="{isActive || isVisible
 			? 'text-base-content italic'
-			: ' text-base-content-variant'} group flex items-center gap-x-2 transition-opacity duration-600 hover:opacity-100 {linkOpacity}"
+			: ' text-base-content-variant'} flex items-center gap-x-2 transition-opacity duration-600 hover:opacity-100 {linkOpacity}"
 	>
 		<!-- data-sveltekit-noscroll={thisPage ? 'true' : undefined} -->
 		<!-- 			onclick={() => {

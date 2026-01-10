@@ -1,15 +1,19 @@
 <script lang="ts">
 	import type { SidebarFolderContent } from '$lib/types';
 	import { page } from '$app/state';
+	import { getContext } from 'svelte';
+	import type { Writable } from 'svelte/store';
 	import { initCollapse } from '$lib/userInterface';
 	import type { Attachment } from 'svelte/attachments';
 	import SidebarItem from './SidebarItem.svelte';
 	let {
 		content,
-		topLevel = false
+		topLevel = false,
+		hasActiveChild
 	}: {
 		content: SidebarFolderContent;
 		topLevel?: boolean;
+		hasActiveChild?: boolean;
 	} = $props();
 	let { id, name, pathname, hash, icon, items } = $derived({ ...content });
 
@@ -26,9 +30,40 @@
 	});
 	let href = $derived(createHref(pathname!, hash));
 
+	// Get context at top level during component initialization
+	const scrollObserverContext = getContext<{
+		observer: IntersectionObserver | undefined;
+		activeSection: Writable<string | undefined>;
+		visibleSections: Writable<Set<string>>;
+	}>('scrollObserver');
+
+	// Extract element ID from href for comparison
+	const elementId = $derived(href.startsWith('#') ? href.substring(1) : null);
+	const activeSection = scrollObserverContext?.activeSection;
+	const isActive = $derived((elementId && $activeSection === elementId) || hasActiveChild);
+	console.log('=== SidebarFolder.svelte - hasActiveChild ===');
+	console.log(hasActiveChild);
+
+	const addElementToObserver: Attachment = () => {
+		// console.log('=== SidebarLink.svelte - addElementToObserver - attaching ===');
+		// Guard against missing observer (will be available after parent mounts)
+		if (scrollObserverContext?.observer) {
+			// Get the element in the content that corresponds to this link and observe it
+			const id = href.startsWith('#') ? href.substring(1) : null;
+			const elementToObserve = id ? document.getElementById(id) : null;
+
+			if (elementToObserve) {
+				scrollObserverContext.observer.observe(elementToObserve);
+				// Cleanup: unobserve when attachment is removed
+				return () => scrollObserverContext.observer?.unobserve(elementToObserve);
+			}
+		}
+	};
+
 	const toggleCollapse: Attachment<HTMLElement> = (node: HTMLElement) => {
 		// if (page.url.pathname.startsWith(node.dataset.pathname || '')) {
-		if (page.url.pathname === node.dataset.pathname) {
+		// if (page.url.pathname === node.dataset.pathname) {
+		if (pathname === page.url.pathname) {
 			const { element } = window.HSCollapse.getInstance(node, true);
 			element.show();
 		}
@@ -67,7 +102,7 @@
 	</ul>
 {/snippet}
 
-{#if topLevel || (pathname && pathname !== page.url.pathname)}
+<!-- {#if topLevel || (pathname && pathname !== page.url.pathname)}
 	<li class="space-y-0.5">
 		<button
 			type="button"
@@ -77,7 +112,6 @@
 			{@attach initCollapse}
 			{@attach toggleCollapse}
 		>
-			<!-- data-pathname={pathname} -->
 			<span class="{icon} size-5"></span>
 			<span class="overlay-minified:hidden">{name}</span>
 			<span
@@ -95,51 +129,61 @@
 		</button>
 		{@render collapseList()}
 	</li>
-{:else}
-	<li data-scrollspy-group="" class="space-y-0.5">
-		<a
-			class="collapse-toggle {thisPage(pathname!)
+{:else} -->
+<li class="space-y-0.5">
+	<a {href} {@attach addElementToObserver}>
+		{#if topLevel}
+			<span class="{icon} size-5"></span>
+		{:else}
+			<!-- Icon crossfade container -->
+			<span class="relative inline-block size-6">
+				<!-- Regular icon - fades out when active -->
+				<span
+					class="{icon} absolute inset-0 size-5 transition-opacity duration-600 {isActive
+						? 'opacity-0'
+						: 'opacity-100'}"
+				></span>
+				<!-- Active finger-pointing icon - fades in when active -->
+				<span
+					class="icon-[tabler--hand-finger-right] text-base-content/100 absolute inset-0 size-6 transition-opacity duration-600 {isActive
+						? 'opacity-100'
+						: 'opacity-0'}"
+				></span>
+			</span>
+		{/if}
+		<span class="overlay-minified:hidden">{name}</span>
+		<button
+			type="button"
+			class="btn btn-circle btn-xs btn-gradient btn-base-300 collapse-toggle {thisPage(pathname!)
 				? 'open'
-				: ''} collapse-open:bg-base-content/10 scrollspy-active:italic group"
+				: ''}"
 			id={id + '-control'}
 			data-collapse={'#' + id + '-collapse'}
-			{href}
+			aria-label="Toggle folder collapse"
+			onclick={(e) => {
+				e.preventDefault();
+				e.stopPropagation();
+			}}
 			{@attach initCollapse}
 			{@attach toggleCollapse}
 		>
-			<!-- data-pathname={pathname} -->
-			<!-- onclick={(event) => {
-				event.preventDefault();
-				// pushState(href, page.state);
-				goto(href, {noScroll: true, replaceState: true, state: page.state});
-			}} -->
-			<!-- 
-			No more smooth scrolling inside page with this one:
-			onclick={(event) => {
-				event.preventDefault();
-				replaceState(href, page.state);
-				goto(href);
-			}}-->
-			<!-- onclick={(event) => {
-				if (!thisPage)
-				{ 
-					event.preventDefault();
-					pushState(href, page.state);
-					goto(href)
-				}
-				else{
-					pushState(href, page.state);
-				};
-			}} -->
 			<span
-				class="icon-[tabler--hand-finger-right] hidden size-5 group-[.active]:inline group-[.scrollspy-active]:inline"
+				class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:hidden size-4 transition-all duration-300"
 			></span>
-			<span class="{icon} size-5 group-[.active]:hidden group-[.scrollspy-active]:hidden"></span>
-			{name}
 			<span
+				class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:block {topLevel
+					? 'overlay-minified:rotate-270'
+					: ''} hidden size-4 transition-all duration-300"
+				role="button"
+				tabindex="0"
+				onclick={() => openSidebar()}
+				onkeydown={() => openSidebar()}
+			></span>
+		</button>
+		<!-- <span
 				class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"
-			></span>
-		</a>
-		{@render collapseList()}
-	</li>
-{/if}
+			></span> -->
+	</a>
+	{@render collapseList()}
+</li>
+<!-- {/if} -->

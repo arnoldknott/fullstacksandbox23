@@ -12,6 +12,8 @@
 	} = $props();
 	let { name, pathname, hash, icon } = $derived({ ...content });
 
+	let hasActiveChild = $state(false);
+
 	const thisPage = $derived.by(() => (pathname: string) => pathname === page.url.pathname);
 	const createHref = $derived.by(() => (destinationPathname: string, hash?: string) => {
 		let href = '';
@@ -25,7 +27,13 @@
 <!-- Is the SidebarItem a Link or a Folder? -->
 {#if Object.keys(content).includes('items') === false || (content as SidebarFolderContent).items.length === 0}
 	<!-- It's a Link -->
-	<SidebarLink href={createHref(pathname!, hash)} thisPage={thisPage(pathname!)} {icon} {topLevel}>
+	<SidebarLink
+		href={createHref(pathname!, hash)}
+		thisPage={thisPage(pathname!)}
+		{icon}
+		{topLevel}
+		bind:isActiveChild={hasActiveChild}
+	>
 		{name}
 	</SidebarLink>
 {:else}
@@ -36,5 +44,6 @@
 			pathname: pathname || ''
 		} as SidebarFolderContent}
 		{topLevel}
+		{hasActiveChild}
 	/>
 {/if}
