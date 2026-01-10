@@ -3,6 +3,7 @@
 	import Heading from '$components/Heading.svelte';
 	import Loreum from '../../Loreum.svelte';
 	import Display from '$components/Display.svelte';
+	import Section from '$components/Section.svelte';
 </script>
 
 <div class="bg-warning-container/70 rounded-xl p-4">
@@ -10,7 +11,7 @@
 
 	<p>Page 2 has hierarchial content and id's linked in main sidebar</p>
 
-	<Heading id="pg2loreum1"><span class="italic">First</span> Lorem ipsum dolor sit amet...</Heading>
+	<!-- <Heading id="pg2loreum1"><span class="italic">First</span> Lorem ipsum dolor sit amet...</Heading>
 	<Loreum />
 
 	<Heading id="pg2loreum2"><span class="italic">Second</span> Lorem ipsum dolor sit amet...</Heading
@@ -29,5 +30,52 @@
 	<Loreum />
 
 	<Heading id="pg2loreum6"><span class="italic">Sixth</span> Lorem ipsum dolor sit amet...</Heading>
-	<Loreum repetition={20} />
+	<Loreum repetition={20} /> -->
+
+	<Section id="pg2loreum1">
+		<Heading>
+			<span class="italic">First</span> Lorem ipsum dolor sit amet...
+		</Heading>
+		<Loreum />
+	</Section>
+
+	<Section id="pg2loreum2">
+		<Heading>
+			<span class="italic">Second</span> Lorem ipsum dolor sit amet...
+		</Heading>
+
+		<Loreum repetition={4} />
+	</Section>
+
+	<Section id="pg2sub-category">
+		<Heading>Sub Category</Heading>
+	</Section>
+
+	<Section id="pg2loreum3">
+		<Title id="pg2loreum3title">
+			<span class="italic">Third</span> Lorem ipsum dolor sit amet...
+		</Title>
+		<Loreum />
+	</Section>
+
+	<Section id="pg2loreum4">
+		<Title id="pg2loreum4title">
+			<span class="italic">Fourth</span> Lorem ipsum dolor sit amet...
+		</Title>
+		<Loreum />
+	</Section>
+
+	<Section id="pg2loreum5">
+		<Heading id="pg2loreum5title">
+			<span class="italic">Fifth</span> Lorem ipsum dolor sit amet...
+		</Heading>
+		<Loreum />
+	</Section>
+
+	<Section id="pg2loreum6">
+		<Heading id="pg2loreum6title">
+			<span class="italic">Sixth</span> Lorem ipsum dolor sit amet...
+		</Heading>
+		<Loreum repetition={20} />
+	</Section>
 </div>

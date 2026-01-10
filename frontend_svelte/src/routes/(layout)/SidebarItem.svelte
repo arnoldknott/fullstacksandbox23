@@ -6,16 +6,20 @@
 	let {
 		content,
 		topLevel = false,
-		// TBD: remove topoffset
-		// topoffset
-		scrollspyParent
+		isActiveChild = $bindable(false)
 	}: {
 		content: SidebarItemContent;
 		topLevel?: boolean;
-		// topoffset: number;
-		scrollspyParent: HTMLElement;
+		isActiveChild?: boolean;
 	} = $props();
 	let { name, pathname, hash, icon } = $derived({ ...content });
+
+	let hasActiveChild = $state(false);
+
+	// Propagate active state up to parent
+	$effect(() => {
+		isActiveChild = hasActiveChild;
+	});
 
 	const thisPage = $derived.by(() => (pathname: string) => pathname === page.url.pathname);
 	const createHref = $derived.by(() => (destinationPathname: string, hash?: string) => {
@@ -30,15 +34,13 @@
 <!-- Is the SidebarItem a Link or a Folder? -->
 {#if Object.keys(content).includes('items') === false || (content as SidebarFolderContent).items.length === 0}
 	<!-- It's a Link -->
-	<!-- {@debug content} -->
 	<SidebarLink
 		href={createHref(pathname!, hash)}
 		thisPage={thisPage(pathname!)}
 		{icon}
 		{topLevel}
-		{scrollspyParent}
+		bind:isActiveChild={hasActiveChild}
 	>
-		<!-- {scrollspyParent} -->
 		{name}
 	</SidebarLink>
 {:else}
@@ -49,8 +51,6 @@
 			pathname: pathname || ''
 		} as SidebarFolderContent}
 		{topLevel}
-		{scrollspyParent}
+		bind:hasActiveChild
 	/>
-	<!-- {scrollspyParent} -->
-	<!-- {topoffset} -->
 {/if}

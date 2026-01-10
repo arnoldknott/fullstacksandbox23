@@ -4,7 +4,8 @@
 	import { Variant, Theming, type ColorConfig } from '$lib/theming';
 	import { Model, type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
 	import type { Action } from 'svelte/action';
-	import { onMount, type Snippet } from 'svelte';
+	import { writable } from 'svelte/store';
+	import { onMount, setContext, type Snippet } from 'svelte';
 	import { page } from '$app/state';
 	import Guard from '$components/Guard.svelte';
 	import { initDropdown, initOverlay } from '$lib/userInterface';
@@ -14,24 +15,35 @@
 	import { type SubmitFunction } from '@sveltejs/kit';
 	import { resolve } from '$app/paths';
 	import WelcomeModal from './WelcomeModal.svelte';
-	import { afterNavigate, replaceState, pushState, goto } from '$app/navigation';
+	import { afterNavigate, goto } from '$app/navigation';
 	import type { SidebarItemContent, Session } from '$lib/types';
 	import SidebarItem from './SidebarItem.svelte';
 	import LoginOutButton from './LoginOutButton.svelte';
 	import Logo from './Logo.svelte';
+	import { scrollY } from 'svelte/reactivity/window';
 
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
 
 	let debug = $state(page.url.searchParams.get('debug') === 'true' ? true : false);
 
-	// TBD: change into version, that keeps hash!
-	// $effect(() => {
-	// 	if (debug) {
-	// 		goto(`?debug=true`, { replaceState: true });
-	// 	} else {
-	// 		goto(`?`, { replaceState: true });
-	// 	}
-	// });
+	$effect(() => {
+		const currentUrl = new URL(page.url);
+
+		if (debug) {
+			currentUrl.searchParams.set('debug', 'true');
+		} else {
+			currentUrl.searchParams.delete('debug');
+		}
+
+		// Only navigate if the search params actually changed
+		if (currentUrl.search !== page.url.search) {
+			goto(`${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`, {
+				replaceState: true,
+				noScroll: true,
+				keepFocus: true
+			});
+		}
+	});
 
 	let userUnregistered = $derived(
 		!data.session?.loggedIn
@@ -546,264 +558,169 @@
 		}
 	]);
 
-	let scrollspyParent: HTMLElement | null = $state(null);
-
 	// TBD: potential useful features to encaspulate the scroll into:
 	// onMount, afterNavigate $effect, (beforeNavigate), (onNavigate), Attachment, onscrollend, derived, derived.by(), ...?
 
-	let navBar: HTMLElement | null = $state(null);
-	// let navBarBottom: number = $state(0);
+	// Reactive context for IntersectionObserver (SSR-safe)
+	let intersectionObserver = $state<IntersectionObserver | null>(null);
+	const scrollObserverContext = {
+		get observer() {
+			return intersectionObserver;
+		},
+		set observer(value: IntersectionObserver | null) {
+			intersectionObserver = value;
+		},
+		activeSection: writable<string | undefined>(undefined),
+		visibleSections: writable<Set<string>>(new Set())
+	};
+	setContext('scrollObserver', scrollObserverContext);
 
-	// let contentArea: HTMLElement | null = $state(null);
-	// let contentAreaTop: number = $state(0);
-	// let contentAreaOffset: number = $state(0);
-
-	// let locationHash: string = $state('');
-	// TBD: include search parameters?
-	// type LocationPageAndHash = {
-	// 	page: string;
-	// 	hash: string;
-	// };
-	// let locationPageAndHash: LocationPageAndHash | null = $state(null);
-
+	// Create IntersectionObserver in its own onMount (browser-only API)
 	onMount(() => {
-		// Polyfill for scrollend event (Safari doesn't support it yet)
-		let scrollEndTimer: ReturnType<typeof setTimeout> | null = null;
-		let cleanupScrollEndPolyfill: (() => void) | null = null;
+		const scrollObserverOptions = {
+			// rootMargin: '0px',
+			// only trigger when being in upper part 100 ox of screen and at least 30% from the bottom
+			rootMargin: '-100px 0px -30% 0px',
+			scrollMargin: '0px',
+			threshold: [0, 1.0] // Track both entering/exiting and fully visible
+		};
 
-		// Wait for scrollspyParent to be available
-		if (scrollspyParent) {
-			// Check if scrollend is supported
-			const supportsScrollEnd = 'onscrollend' in scrollspyParent;
+		const scrollObserverCallback = (
+			entries: IntersectionObserverEntry[],
+			_observer: IntersectionObserver
+		) => {
+			scrollObserverContext.visibleSections.update((visible) => {
+				const visibleSections = new Set(visible);
+				entries.forEach((entry) => {
+					const elementId = entry.target.id;
+					if (!elementId) return;
 
-			if (!supportsScrollEnd) {
-				// console.log('=== scrollend not supported - using polyfill ===');
-
-				const handleScroll = () => {
-					if (scrollEndTimer) {
-						clearTimeout(scrollEndTimer);
-					}
-					scrollEndTimer = setTimeout(() => {
-						const scrollEndEvent = new Event('scrollend', { bubbles: true });
-						scrollspyParent?.dispatchEvent(scrollEndEvent);
-					}, 150); // 150ms after scroll stops (slightly longer for reliability)
-				};
-
-				scrollspyParent.addEventListener('scroll', handleScroll, { passive: true });
-
-				cleanupScrollEndPolyfill = () => {
-					scrollspyParent?.removeEventListener('scroll', handleScroll);
-					if (scrollEndTimer) {
-						clearTimeout(scrollEndTimer);
-						scrollEndTimer = null;
-					}
-				};
-			}
-		}
-
-		// Reroute native history updates to SvelteKit to avoid router conflicts
-		// const originalPush = history.pushState.bind(history);
-		const originalReplace = history.replaceState.bind(history);
-		// Capture native prototype methods to bypass SvelteKit's patched wrappers
-		// const nativePush = History.prototype.pushState;
-		const nativeReplace = History.prototype.replaceState;
-		let bypassNativeOverride = false;
-		// TBD: check if tyhis is needed at all?
-		// history.pushState = (state: unknown, title: string, url?: string | URL | null) => {
-		// 	if (bypassNativeOverride) {
-		// 		// Call the native prototype directly to avoid warning wrappers
-		// 		return nativePush.call(history, state, title, url ?? '');
-		// 	}
-		// 	const nextUrl = url instanceof URL ? url.toString() : typeof url === 'string' ? url : null;
-		// 	if (nextUrl) {
-		// 		bypassNativeOverride = true;
-		// 		try {
-		// 			pushState(nextUrl, page.state);
-		// 		} finally {
-		// 			bypassNativeOverride = false;
-		// 		}
-		// 	} else {
-		// 		// Fallback to native method to avoid warnings
-		// 		nativePush.call(history, state, title, url ?? '');
-		// 	}
-		// };
-		// TBD: only catch navigation from scrollspy / FlyonUI here!
-		history.replaceState = (state: unknown, title: string, url?: string | URL | null) => {
-			if (bypassNativeOverride) {
-				// Call the native prototype directly to avoid warning wrappers
-				return nativeReplace.call(history, state, title, url ?? '');
-			}
-			const nextUrl = url instanceof URL ? url.toString() : typeof url === 'string' ? url : null;
-			if (nextUrl) {
-				bypassNativeOverride = true;
-
-				// Detect FlyonUI scrollspy hash-only updates and convert to pushState
-				const current = new URL(location.href);
-				const next = new URL(nextUrl, location.href);
-				const isSamePath = current.pathname === next.pathname && current.search === next.search;
-				const isHashChange = current.hash !== next.hash;
-				try {
-					// FlyonUI scrollspy calls replaceState for hash changes - convert to pushState for history
-					if (isSamePath && isHashChange) {
-						// console.log('=== history.replaceState converted to pushState for hash change ===');
-						pushState(nextUrl, page.state);
+					if (entry.isIntersecting) {
+						// Section is visible
+						visibleSections.add(elementId);
+						// console.log('🖲️ => 🪟 - scroll into window:', elementId);
 					} else {
-						replaceState(nextUrl, page.state);
+						// Section left viewport
+						visibleSections.delete(elementId);
+						// console.log('🖲️ => 🚪 - scroll out of window:', elementId);
 					}
-				} finally {
-					bypassNativeOverride = false;
+				});
+
+				// Determine active section: pick first visible (topmost in DOM order)
+				if (visibleSections.size > 0) {
+					// Get first element from Set (maintains insertion order)
+					const firstVisible = Array.from(visibleSections)[0];
+					scrollObserverContext.activeSection.set(firstVisible);
+				} else {
+					// No visible sections - clear active
+					scrollObserverContext.activeSection.set(undefined);
 				}
-			} else {
-				// Fallback to native method to avoid warnings
-				nativeReplace.call(history, state, title, url ?? '');
-			}
-		};
 
-		return () => {
-			if (cleanupScrollEndPolyfill) {
-				cleanupScrollEndPolyfill();
-			}
-			// history.pushState = originalPush;
-			history.replaceState = originalReplace;
-		};
-	});
-
-	afterNavigate((_navigation) => {
-		console.log('=== afterNavigate - navigation ===');
-		// 	navBarBottom =
-		// 		navBar && navBar.getBoundingClientRect().bottom > 0
-		// 			? navBar.getBoundingClientRect().bottom
-		// 			: 0;
-		if (!location.hash) {
-			// console.log('=== afterNavigate - scroll to TOP ===');
-			// locationPageAndHash = {
-			// 	page: navigation.to?.url.pathname || '',
-			// 	hash: ''
-			// };
-			requestAnimationFrame(() => {
-				scrollspyParent!.scrollTop = 0;
-				scrollspyParent?.scrollTo({
-					left: scrollspyParent.scrollLeft,
-					top: scrollspyParent.scrollTop,
-					behavior: 'smooth'
-				});
+				return visibleSections;
 			});
+		};
+
+		intersectionObserver = new IntersectionObserver(scrollObserverCallback, scrollObserverOptions);
+
+		return () => scrollObserverContext.observer?.disconnect();
+	});
+
+	// Handle navigation: clear stores and scroll to hash
+	afterNavigate(async (_navigation) => {
+		// Clear tracking when navigating between pages
+		scrollObserverContext.visibleSections.set(new Set());
+		scrollObserverContext.activeSection.set(undefined);
+
+		// Handle hash scrolling after navigation
+		const hash = location.hash;
+		if (hash) {
+			// Small delay to ensure DOM is ready
+			setTimeout(() => {
+				const targetElement = document.getElementById(hash.substring(1));
+				if (targetElement) {
+					targetElement.scrollIntoView({ behavior: 'smooth' });
+				}
+				handleIntentionalNavigation();
+			}, 100);
+		} else {
+			// Scroll to top if no hash
+			window.scrollTo({ top: 0, behavior: 'smooth' });
+			handleIntentionalNavigation();
 		}
 	});
 
-	// const adjustScrollTopForNavBar = () => {
-	// 	console.log('=== adjustScrollTopForNavBar ===');
-	// 	// 	// Double requestAnimationFrame ensures layout has fully settled
-	// 	requestAnimationFrame(() => {
-	// 		requestAnimationFrame(() => {
-	// 			// Re-measure navbar height after layout settles
-	// 			// navBarBottom =
-	// 			// 	navBar && navBar.getBoundingClientRect().bottom > 0
-	// 			// 	? navBar.getBoundingClientRect().bottom
-	// 			// 	: 0;
-	// 			// navBarBottom = 0;
-	// 			// scrollspyParent!.scrollTop -= navBarBottom;
-	// 			scrollspyParent?.scrollTo({
-	// 				left: scrollspyParent.scrollLeft,
-	// 				top: scrollspyParent.scrollTop,
-	// 				behavior: 'smooth'
-	// 			});
-	// 		});
-	// 	});
-	// };
-
-	const mainScrollEnd = (_event: Event) => {
-		console.log('=== onscrollend ===');
-		// note: the SidebarFolder has "max-sm:[--scrollspy-offset:56px]",
-		// which also affects the scrollspy offset calculation!
-		// const thisPageandHash: LocationPageAndHash = {
-		// 	page: page.url.pathname,
-		// 	hash: location.hash
-		// };
-		// if (locationPageAndHash?.hash !== thisPageandHash.hash && window.innerWidth >= 640) {
-		// if (locationPageAndHash?.hash !== thisPageandHash.hash) {
-		// 	locationPageAndHash = thisPageandHash;
-		// adjustScrollTopForNavBar();
-		// } else if (locationPageAndHash?.page !== thisPageandHash.page) {
-		// 	locationPageAndHash = thisPageandHash;
-		// 	adjustScrollTopForNavBar();
-		// }
-		// contentAreaTop = contentArea ? contentArea.getBoundingClientRect().top : 0;
-	};
-
-	onMount(() => {
-		console.log('=== onMount ===');
-		scrollspyParent!.scrollTo({
-			left: scrollspyParent!.scrollLeft,
-			top: scrollspyParent!.scrollTop,
-			behavior: 'smooth'
-		});
-		if (page.url.hash) {
-			const target = document.getElementById(page.url.hash.substring(1));
-			// TBD: consider opening a potential collapsed parent sections here
-			if (target) {
-				const parentRect = scrollspyParent!.getBoundingClientRect();
-				const targetRect = target.getBoundingClientRect();
-				scrollspyParent!.scrollTop += targetRect.top - parentRect.top;
-				scrollspyParent?.scrollTo({
-					left: scrollspyParent.scrollLeft,
-					top: scrollspyParent.scrollTop,
-					behavior: 'smooth'
-				});
-			}
-		}
-	});
-
-	const windowPopstateHandler = (_event: PopStateEvent) => {
-		console.log('=== 🪟 - popstate ===');
-		if (page.url.hash) {
-			const target = document.getElementById(location.hash.substring(1));
-			// TBD: consider opening a potential collapsed parent sections here
-			if (target) {
-				const parentRect = scrollspyParent!.getBoundingClientRect();
-				const targetRect = target.getBoundingClientRect();
-				scrollspyParent!.scrollTop += targetRect.top - parentRect.top;
-				scrollspyParent?.scrollTo({
-					left: scrollspyParent.scrollLeft,
-					top: scrollspyParent.scrollTop,
-					behavior: 'smooth'
-				});
-			}
-		}
-		// locationHash = location.hash;
-	};
+	let navBar: HTMLElement | null = $state(null);
+	let navBarBottom: number = $state(0);
 
 	// Hide / show  navbar on scroll down / up
 	let header: HTMLElement | null = $state(null);
-	let previousScrollY = $derived.by(() => scrollspyParent?.scrollTop ?? 0);
+	let previousScrollY = $state(scrollY.current ?? 0);
+	let intentionalNavigationInProgress = $state(false);
+
+	// Show navbar and mark navigation as intentional:
+	const handleIntentionalNavigation = () => {
+		if (header) {
+			// Show navbar when browser back/forward is used
+			intentionalNavigationInProgress = true;
+			header.classList.add('mt-2');
+			header.style.top = '0';
+		}
+	};
+
 	onMount(() => {
+		// console.log('=== onMount - navbar ===');
 		document.documentElement.style.setProperty('--header-height', `${header?.offsetHeight}px`);
+		navBarBottom = header?.offsetHeight ?? 0;
+
+		return () => {
+			// Cleanup
+			document.documentElement.style.removeProperty('--header-height');
+		};
 	});
 
 	const windowResizeHandler = (_event: UIEvent) => {
 		document.documentElement.style.setProperty('--header-height', `${header?.offsetHeight}px`);
+		navBarBottom = header?.offsetHeight ?? 0;
 	};
+
 	const toggleTopNavBar = () => {
-		const currentScrollY = scrollspyParent?.scrollTop ?? 0;
-		if (navBar) {
-			if (currentScrollY > previousScrollY) {
-				// Scrolling down
-				navBar.classList.add('-mt-[var(--header-height)]');
-				header?.classList.remove('mt-2');
-			} else {
-				// Scrolling up
-				navBar.classList.remove('-mt-[var(--header-height)]');
-				header?.classList.add('mt-2');
+		// Don't hide navbar during intentional navigation (sidebar clicks, browser back/forward)
+		if (!intentionalNavigationInProgress) {
+			// console.log('=== toggleTopNavBar ===');
+			// const currentScrollY = scrollspyParent?.scrollTop ?? 0;
+			// see https://www.w3schools.com/howto/howto_js_navbar_hide_scroll.asp
+			const currentScrollY = scrollY.current ?? 0;
+			// if (navBar) {
+			if (header) {
+				if (currentScrollY > previousScrollY) {
+					// Scrolling down removes navbar
+					// navBar.classList.add('-mt-[var(--header-height)]');
+					header.classList.remove('mt-2');
+					header.style.top = `-${header.offsetHeight}px`;
+					navBarBottom = 0;
+				} else {
+					// Scrolling up shows navbar
+					// navBar.classList.remove('-mt-[var(--header-height)]');
+					header.classList.add('mt-2');
+					header.style.top = '0';
+					navBarBottom = header.offsetHeight;
+				}
 			}
+			previousScrollY = currentScrollY;
 		}
-		previousScrollY = currentScrollY;
 	};
 </script>
 
 <svelte:window
-	onpopstate={(event) => windowPopstateHandler(event)}
 	onresize={(event) => windowResizeHandler(event)}
+	onscroll={toggleTopNavBar}
+	onscrollend={() => {
+		intentionalNavigationInProgress = false;
+	}}
+	onpopstate={handleIntentionalNavigation}
 />
+
+<svelte:body use:applyTheming />
 
 {#snippet sidebarToggleButton(classes: string, overlayModifier: object)}
 	<button
@@ -844,10 +761,13 @@
 	</li>
 {/snippet}
 
-<header bind:this={header} class="xs:mx-5 xs:mt-5 mt-2 w-screen px-2">
+<header
+	bind:this={header}
+	class="xs:mx-5 xs:mt-5 fixed z-1 mt-2 w-screen px-2 transition-all duration-300"
+>
 	<!-- TBD: put navbar into component -->
 	<nav
-		class="navbar rounded-box bg-base-200 shadow-shadow border-outline-variant sticky start-0 top-0 z-1 flex justify-between border-1 border-b shadow-md transition-all duration-300 max-sm:h-14 max-sm:px-3 md:items-center"
+		class="navbar rounded-box shadow-shadow border-outline-variant bg-base-200 start-0 top-0 z-1 flex justify-between border-1 border-b px-3 shadow-md transition-all duration-300 max-sm:h-14 md:items-center"
 		bind:this={navBar}
 	>
 		<!-- {@attach updateNavbarBottom} -->
@@ -972,12 +892,8 @@
 </header>
 
 <main
-	bind:this={scrollspyParent}
-	id="scrollspy-scrollable-parent"
-	class="h-screen w-screen overflow-x-scroll overflow-y-auto"
-	onscroll={toggleTopNavBar}
-	onscrollend={mainScrollEnd}
-	use:applyTheming
+	class="static w-screen transition-[padding-top] duration-300"
+	style="padding-top: {navBarBottom + 4}px;"
 >
 	<!-- class="border-error h-screen w-screen overflow-x-scroll overflow-y-auto border border-4" -->
 	<!-- bind:session={data.session} -->
@@ -993,11 +909,11 @@
 	<!-- TBD: put sidebar into component -->
 	<aside
 		id="collapsible-mini-sidebar"
-		class="overlay overlay-minified:w-19 overlay-open:translate-x-0 drawer drawer-start bg-base-150 border-base-content/20 hidden w-66 border-e [--auto-close:sm] sm:absolute sm:z-0 sm:flex sm:translate-x-0 sm:shadow-none"
+		class="overlay overlay-minified:w-19 overlay-open:translate-x-0 drawer drawer-start bg-base-150 border-base-content/20 start-0 top-0 hidden w-66 border-e [--auto-close:sm] sm:z-0 sm:flex sm:translate-x-0 sm:shadow-none"
 		tabindex="-1"
 		{@attach initOverlay}
 	>
-		<div class="mx-7 flex h-26 flex-row items-center justify-between pt-7">
+		<div class="mx-7 flex h-24 flex-row items-center justify-between md:h-26">
 			<div class="hidden sm:block">
 				{@render sidebarToggleButton('hidden sm:flex', {
 					'data-overlay-minifier': '#collapsible-mini-sidebar'
@@ -1056,7 +972,6 @@
 					<SidebarItem
 						content={{ ...sidebarItem, pathname: sidebarItem.pathname || page.url.pathname }}
 						topLevel={true}
-						{scrollspyParent}
 					/>
 					<!-- {scrollspyParent} -->
 					<!-- topoffset={navBarBottom} -->
@@ -1072,7 +987,6 @@
 								pathname: protectedSidebarItem.pathname || page.url.pathname
 							}}
 							topLevel={true}
-							{scrollspyParent}
 						/>
 						<!-- {scrollspyParent} -->
 						<!-- topoffset={navBarBottom} -->
@@ -1086,7 +1000,6 @@
 								pathname: debugSidebarItem.pathname || page.url.pathname
 							}}
 							topLevel={true}
-							{scrollspyParent}
 						/>
 						<!-- {scrollspyParent} -->
 						<!-- topoffset={navBarBottom} -->
@@ -1103,12 +1016,17 @@
 				id="debugSwitcher"
 			/>
 		</div>
+		{#if debug}
+			scrollY: {scrollY.current}
+			<br />
+			navBarBottom: {navBarBottom}
+		{/if}
 		<!-- {navBarBottom}
 		<br />
 		{locationPageAndHash?.page}{locationPageAndHash?.hash}
 		<br /> -->
 	</aside>
-	<div class="bg-base-100 xs:mx-5 xs:mt-5 mt-2 w-screen px-2 sm:h-full">
+	<div class="bg-base-100 xs:mx-5 xs:mt-5 h-screen w-screen px-2">
 		<div
 			id="scrollspy"
 			class="sm:overlay-minified:ps-19 overlay-open:ps-0 space-y-4 pt-2 transition-all duration-300 sm:mx-2 sm:mt-2 sm:ps-66"

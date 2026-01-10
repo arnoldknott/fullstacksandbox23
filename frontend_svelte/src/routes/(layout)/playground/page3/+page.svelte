@@ -3,56 +3,65 @@
 	import Heading from '$components/Heading.svelte';
 	import Loreum from '../../Loreum.svelte';
 	import Display from '$components/Display.svelte';
+	import Section from '$components/Section.svelte';
 </script>
 
 <div class="bg-error-container/70 rounded-xl p-4">
-	<Loreum repetition={3} />
+	<Loreum repetition={30} />
 	<Display>Page 3</Display>
 
 	<p>Page 3 has hierarchial content and id's linked in main sidebar</p>
 
-	<Heading id="pg3loreum1"
-		><span class="italic">First</span> Lorem
-		<span class="hidden sm:inline">ipsum dolor sit amet...</span></Heading
-	>
-	<Loreum repetition={30} />
+	<Section id="pg3loreum1">
+		<Heading id="pg3loreum1title"
+			><span class="italic">First</span> Lorem ipsum dolor sit amet...</Heading
+		>
+		<Loreum repetition={30} />
+	</Section>
 
-	<Heading id="pg3loreum2"
-		><span class="italic">Second</span> Lorem
-		<span class="hidden sm:inline">ipsum dolor sit amet...</span></Heading
-	>
-	<Loreum repetition={10} />
+	<Section id="pg3loreum2">
+		<Heading id="pg3loreum2title"
+			><span class="italic">Second</span> Lorem ipsum dolor sit amet...</Heading
+		>
+		<Loreum repetition={10} />
+	</Section>
 
-	<Heading id="pg3loreum2a"
-		><span class="italic">Second A</span> Lorem
-		<span class="hidden sm:inline">ipsum dolor sit amet...</span></Heading
-	>
+	<Section id="pg3loreum2a">
+		<Heading id="pg3loreum2atitle"
+			><span class="italic">Second A</span> Lorem ipsum dolor sit amet...</Heading
+		>
+		<Loreum repetition={8} />
+	</Section>
 
-	<Loreum repetition={8} />
+	<Section id="pg3sub-category">
+		<Heading id="pg3sub-category">Sub Category</Heading>
+	</Section>
 
-	<Heading id="pg3sub-category">Sub Category</Heading>
+	<Section id="pg3loreum3p1">
+		<Title id="pg3loreum3p1title"
+			><span class="italic">3.1</span> Lorem ipsum dolor sit amet...</Title
+		>
+		<Loreum />
+	</Section>
 
-	<Title id="pg3loreum3p1"
-		><span class="italic">3.1</span> Lorem
-		<span class="hidden sm:inline">ipsum dolor sit amet...</span></Title
-	>
-	<Loreum />
+	<Section id="pg3loreum3p2">
+		<Title id="pg3loreum3p2title"
+			><span class="italic">3.2</span> Lorem ipsum dolor sit amet...</Title
+		>
+		<Loreum />
+	</Section>
 
-	<Title id="pg3loreum3p2"
-		><span class="italic">3.2</span> Lorem
-		<span class="hidden sm:inline">ipsum dolor sit amet...</span></Title
-	>
-	<Loreum />
+	<Section id="pg3loreum4">
+		<Heading id="pg3loreum4title"
+			><span class="italic">Fourth</span> Lorem ipsum dolor sit amet...</Heading
+		>
+		<Loreum />
+	</Section>
 
-	<Heading id="pg3loreum4"
-		><span class="italic">Fourth</span> Lorem
-		<span class="hidden sm:inline">ipsum dolor sit amet...</span></Heading
-	>
-	<Loreum />
-
-	<Heading id="pg3loreum5"
-		><span class="italic">Fifth</span> Lorem
-		<span class="hidden sm:inline">ipsum dolor sit amet...</span></Heading
-	>
-	<Loreum repetition={20} />
+	<Section id="pg3loreum5">
+		<Heading id="pg3loreum5title"
+			><span class="italic">Fifth</span> Lorem ipsum dolor sit amet...</Heading
+		>
+		<Loreum repetition={20} />
+	</Section>
 </div>
