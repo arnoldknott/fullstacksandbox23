@@ -16,8 +16,7 @@
 	import { resolve } from '$app/paths';
 	import WelcomeModal from '../../../../WelcomeModal.svelte';
 	import { goto, afterNavigate } from '$app/navigation';
-	// import type { SidebarItemContent, Session } from '$lib/types';
-	import type { Session } from '$lib/types';
+	import type { SidebarItemContent, Session } from '$lib/types';
 	import SidebarItem from './SidebarItem.svelte';
 	import LoginOutButton from '../../../../LoginOutButton.svelte';
 	import Logo from '../../../../Logo.svelte';
@@ -121,19 +120,19 @@
 	};
 
 	// Sidebar:
-	type SidebarLinkContent = {
-		id: string;
-		name: string;
-		pathname?: string;
-		hash?: string;
-		icon: string;
-		// TBD: implement <Guard> around SidebarItem based on this property!
-		guarded?: boolean;
-	};
+	// type SidebarLinkContent = {
+	// 	id: string;
+	// 	name: string;
+	// 	pathname?: string;
+	// 	hash?: string;
+	// 	icon: string;
+	// 	// TBD: implement <Guard> around SidebarItem based on this property!
+	// 	guarded?: boolean;
+	// };
 
-	type SidebarFolderContent = SidebarLinkContent & {
-		items: SidebarItemContent[];
-	};
+	// type SidebarFolderContent = SidebarLinkContent & {
+	// 	items: SidebarItemContent[];
+	// };
 	// export type SidebarFolderContent = {
 	// 	id: string;
 	// 	name: string;
@@ -142,7 +141,7 @@
 	// 	icon: string;
 	// 	items: SidebarItemContent[];
 	// };
-	type SidebarItemContent = SidebarFolderContent | SidebarLinkContent;
+	// type SidebarItemContent = SidebarFolderContent | SidebarLinkContent;
 
 	// Sidebar:
 	// let sidebarLinks: SidebarItemContent[] = $state([
@@ -811,7 +810,7 @@
 >
 	<!-- TBD: put navbar into component -->
 	<nav
-		class="navbar rounded-box shadow-shadow border-outline-variant bg-base-200 start-0 top-0 flex justify-between border-1 border-b px-3 shadow-md transition-all duration-300 max-sm:h-14 md:items-center"
+		class="navbar rounded-box shadow-shadow border-outline-variant bg-base-200 start-0 top-0 z-1 flex justify-between border-1 border-b px-3 shadow-md transition-all duration-300 max-sm:h-14 md:items-center"
 		bind:this={navBar}
 	>
 		<!-- bg-transparent -->
