@@ -73,7 +73,7 @@
 	let collapseControl: HTMLElement | null = $state(null);
 
 	const toggleCollapse: Attachment<HTMLElement> = (node: HTMLElement) => {
-		collapseControl = node;
+		// collapseControl = node;
 		// if (page.url.pathname.startsWith(node.dataset.pathname || '')) {
 		// if (page.url.pathname === node.dataset.pathname) {
 		if (pathname === page.url.pathname || hasActiveChild) {
@@ -82,6 +82,7 @@
 		}
 	};
 
+	//TBD: check if this can be done by FlyonUI controls
 	// Reactively open collapse when a child becomes active
 	$effect(() => {
 		if (hasActiveChild && collapseControl) {
@@ -178,6 +179,7 @@
 		{/if}
 		<span class="overlay-minified:hidden">{name}</span>
 		<button
+			bind:this={collapseControl}
 			type="button"
 			class="btn btn-circle btn-xs btn-gradient btn-base-300 collapse-toggle {thisPage(pathname!) ||
 			isActive
