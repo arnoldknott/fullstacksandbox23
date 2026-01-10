@@ -620,8 +620,8 @@
 	onMount(() => {
 		const scrollObserverOptions = {
 			// rootMargin: '0px',
-			// only trigger when being in upper part 100 ox of screen and at least 50% from the bottom
-			rootMargin: '-100px 0px -50% 0px',
+			// only trigger when being in upper part 100 ox of screen and at least 30% from the bottom
+			rootMargin: '-100px 0px -30% 0px',
 			scrollMargin: '0px',
 			threshold: [0, 1.0] // Track both entering/exiting and fully visible
 		};
