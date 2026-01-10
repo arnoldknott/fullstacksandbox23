@@ -9,14 +9,14 @@
 		topLevel = false,
 		// TBD: remove topoffset if scrollspy-offset is unnecessary!
 		// TBD: remove topoffset since Javascript can handles hide/show of topnavbar now
-		// topoffset
-		scrollspyParent
+		topoffset
+		// scrollspyParent
 	}: {
 		content: SidebarFolderContent;
 		topLevel?: boolean;
-		// topoffset: number;
+		topoffset: number;
 		// z: HTMLElement;
-		scrollspyParent: HTMLElement;
+		// scrollspyParent: HTMLElement;
 	} = $props();
 	let { id, name, pathname, hash, icon, items } = $derived({ ...content });
 
@@ -53,7 +53,7 @@
 		id={id + '-collapse'}
 		class="collapse {thisPage(pathname!)
 			? 'open'
-			: 'hidden'} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
+			: 'hidden'} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300 {`[--scrollspy-offset:${topoffset}]`.toString()}"
 		aria-labelledby={id + '-control'}
 		data-pathname={pathname}
 	>
@@ -67,10 +67,9 @@
 					...item,
 					pathname: item.pathname || pathname
 				} as SidebarFolderContent}
-				{scrollspyParent}
+				{topoffset}
 			/>
 			<!-- {scrollspyParent} -->
-			<!-- {topoffset} -->
 		{/each}
 	</ul>
 {/snippet}

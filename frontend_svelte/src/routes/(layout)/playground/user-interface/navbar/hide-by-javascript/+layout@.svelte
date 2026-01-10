@@ -8,17 +8,17 @@
 	import { page } from '$app/state';
 	import Guard from '$components/Guard.svelte';
 	import { initDropdown, initOverlay } from '$lib/userInterface';
-	import ThemePicker from './playground/components/ThemePicker.svelte';
-	import ArtificialIntelligencePicker from './playground/components/ArtificialIntelligencePicker.svelte';
+	import ThemePicker from '../../../components/ThemePicker.svelte';
+	import ArtificialIntelligencePicker from '../../../components/ArtificialIntelligencePicker.svelte';
 	import { themeStore } from '$lib/stores';
 	import { type SubmitFunction } from '@sveltejs/kit';
 	import { resolve } from '$app/paths';
-	import WelcomeModal from './WelcomeModal.svelte';
+	import WelcomeModal from '../../../../WelcomeModal.svelte';
 	import { afterNavigate, replaceState, pushState, goto } from '$app/navigation';
 	import type { SidebarItemContent, Session } from '$lib/types';
-	import SidebarItem from './SidebarItem.svelte';
-	import LoginOutButton from './LoginOutButton.svelte';
-	import Logo from './Logo.svelte';
+	import SidebarItem from '../../../../SidebarItem.svelte';
+	import LoginOutButton from '../../../../LoginOutButton.svelte';
+	import Logo from '../../../../Logo.svelte';
 
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
 
@@ -551,7 +551,7 @@
 	// onMount, afterNavigate $effect, (beforeNavigate), (onNavigate), Attachment, onscrollend, derived, derived.by(), ...?
 
 	let navBar: HTMLElement | null = $state(null);
-	// let navBarBottom: number = $state(0);
+	let navBarBottom: number = $state(0);
 
 	// let contentArea: HTMLElement | null = $state(null);
 	// let contentAreaTop: number = $state(0);
@@ -559,11 +559,11 @@
 
 	// let locationHash: string = $state('');
 	// TBD: include search parameters?
-	// type LocationPageAndHash = {
-	// 	page: string;
-	// 	hash: string;
-	// };
-	// let locationPageAndHash: LocationPageAndHash | null = $state(null);
+	type LocationPageAndHash = {
+		page: string;
+		hash: string;
+	};
+	let locationPageAndHash: LocationPageAndHash | null = $state(null);
 
 	onMount(() => {
 		// Polyfill for scrollend event (Safari doesn't support it yet)
@@ -667,18 +667,19 @@
 		};
 	});
 
-	afterNavigate((_navigation) => {
-		console.log('=== afterNavigate - navigation ===');
-		// 	navBarBottom =
-		// 		navBar && navBar.getBoundingClientRect().bottom > 0
-		// 			? navBar.getBoundingClientRect().bottom
-		// 			: 0;
+	// ********* remove navbar patches from here *********
+	afterNavigate((navigation) => {
+		// console.log('=== afterNavigate - navigation ===');
+		navBarBottom =
+			navBar && navBar.getBoundingClientRect().bottom > 0
+				? navBar.getBoundingClientRect().bottom
+				: 0;
 		if (!location.hash) {
 			// console.log('=== afterNavigate - scroll to TOP ===');
-			// locationPageAndHash = {
-			// 	page: navigation.to?.url.pathname || '',
-			// 	hash: ''
-			// };
+			locationPageAndHash = {
+				page: navigation.to?.url.pathname || '',
+				hash: ''
+			};
 			requestAnimationFrame(() => {
 				scrollspyParent!.scrollTop = 0;
 				scrollspyParent?.scrollTo({
@@ -690,48 +691,46 @@
 		}
 	});
 
-	// const adjustScrollTopForNavBar = () => {
-	// 	console.log('=== adjustScrollTopForNavBar ===');
-	// 	// 	// Double requestAnimationFrame ensures layout has fully settled
-	// 	requestAnimationFrame(() => {
-	// 		requestAnimationFrame(() => {
-	// 			// Re-measure navbar height after layout settles
-	// 			// navBarBottom =
-	// 			// 	navBar && navBar.getBoundingClientRect().bottom > 0
-	// 			// 	? navBar.getBoundingClientRect().bottom
-	// 			// 	: 0;
-	// 			// navBarBottom = 0;
-	// 			// scrollspyParent!.scrollTop -= navBarBottom;
-	// 			scrollspyParent?.scrollTo({
-	// 				left: scrollspyParent.scrollLeft,
-	// 				top: scrollspyParent.scrollTop,
-	// 				behavior: 'smooth'
-	// 			});
-	// 		});
-	// 	});
-	// };
+	const adjustScrollTopForNavBar = () => {
+		// console.log('=== adjustScrollTopForNavBar ===');
+		// Double requestAnimationFrame ensures layout has fully settled
+		requestAnimationFrame(() => {
+			requestAnimationFrame(() => {
+				// Re-measure navbar height after layout settles
+				navBarBottom =
+					navBar && navBar.getBoundingClientRect().bottom > 0
+						? navBar.getBoundingClientRect().bottom
+						: 0;
+				scrollspyParent!.scrollTop -= navBarBottom;
+				scrollspyParent?.scrollTo({
+					left: scrollspyParent.scrollLeft,
+					top: scrollspyParent.scrollTop,
+					behavior: 'smooth'
+				});
+			});
+		});
+	};
 
 	const mainScrollEnd = (_event: Event) => {
-		console.log('=== onscrollend ===');
+		// console.log('=== onscrollend ===');
 		// note: the SidebarFolder has "max-sm:[--scrollspy-offset:56px]",
 		// which also affects the scrollspy offset calculation!
-		// const thisPageandHash: LocationPageAndHash = {
-		// 	page: page.url.pathname,
-		// 	hash: location.hash
-		// };
-		// if (locationPageAndHash?.hash !== thisPageandHash.hash && window.innerWidth >= 640) {
-		// if (locationPageAndHash?.hash !== thisPageandHash.hash) {
-		// 	locationPageAndHash = thisPageandHash;
-		// adjustScrollTopForNavBar();
-		// } else if (locationPageAndHash?.page !== thisPageandHash.page) {
-		// 	locationPageAndHash = thisPageandHash;
-		// 	adjustScrollTopForNavBar();
-		// }
+		const thisPageandHash: LocationPageAndHash = {
+			page: page.url.pathname,
+			hash: location.hash
+		};
+		if (locationPageAndHash?.hash !== thisPageandHash.hash && window.innerWidth >= 640) {
+			locationPageAndHash = thisPageandHash;
+			adjustScrollTopForNavBar();
+		} else if (locationPageAndHash?.page !== thisPageandHash.page) {
+			locationPageAndHash = thisPageandHash;
+			adjustScrollTopForNavBar();
+		}
 		// contentAreaTop = contentArea ? contentArea.getBoundingClientRect().top : 0;
 	};
 
 	onMount(() => {
-		console.log('=== onMount ===');
+		// console.log('=== onMount ===');
 		scrollspyParent!.scrollTo({
 			left: scrollspyParent!.scrollLeft,
 			top: scrollspyParent!.scrollTop,
@@ -754,7 +753,7 @@
 	});
 
 	const windowPopstateHandler = (_event: PopStateEvent) => {
-		console.log('=== 🪟 - popstate ===');
+		// console.log('=== 🪟 - popstate ===');
 		if (page.url.hash) {
 			const target = document.getElementById(location.hash.substring(1));
 			// TBD: consider opening a potential collapsed parent sections here
@@ -771,9 +770,28 @@
 		}
 		// locationHash = location.hash;
 	};
+	// ********* remove navbar patches until here *********
 
 	// Hide / show  navbar on scroll down / up
+	// let mainContent: HTMLDivElement | null = $state(null);
 	let header: HTMLElement | null = $state(null);
+	// let headerHeight: number = $state(0);
+	// Set CSS variable for header height
+	// $effect(() => {
+	// 	// console.log(`=== header.offsetHeight ===`);
+	// 	// console.log(headerHeight);
+	// 	if (header) {
+	// 		// get the complete height of the header, including margins, even if it's not visible:
+	// 		const height =
+	// 			header.offsetHeight +
+	// 			parseFloat(getComputedStyle(header).marginTop) +
+	// 			parseFloat(getComputedStyle(header).marginBottom);
+	// 		console.log(`=== setting --header-height to ${height}px ===`);
+	// 		document.documentElement.style.setProperty('--header-height', `${header.offsetHeight}px`);
+	// 		// 	headerHeight =
+	// 		// 		header.getBoundingClientRect().bottom > 0 ? header.getBoundingClientRect().bottom : 0;
+	// 	}
+	// });
 	let previousScrollY = $derived.by(() => scrollspyParent?.scrollTop ?? 0);
 	onMount(() => {
 		document.documentElement.style.setProperty('--header-height', `${header?.offsetHeight}px`);
@@ -785,12 +803,33 @@
 	const toggleTopNavBar = () => {
 		const currentScrollY = scrollspyParent?.scrollTop ?? 0;
 		if (navBar) {
+			// console.log('=== toggleTopNavBar ===');
+			// console.log(
+			// 	`=== currentScrollY: ${currentScrollY} - previousScrollY: ${previousScrollY} ===`
+			// );
 			if (currentScrollY > previousScrollY) {
+				// console.log(`=== Scrolling down - hide navbar - ${navBarBottom} ===`);
 				// Scrolling down
+				// navBar.style.transform = `translateY(-${navBarBottom}px)`;
+				// navBar.style.transform = `translateY(-100%)`;
 				navBar.classList.add('-mt-[var(--header-height)]');
 				header?.classList.remove('mt-2');
+				// navBar.classList.add(`mt-[-56px]`);
+				// console.log(`=== navBarBottom: ${navBarBottom} ===`);
+				// console.log(
+				// 	`=== navBarBottom: ${document.documentElement.style.getPropertyValue('--navbar-bottom')} ===`
+				// );
+				// {`[--scrollspy-offset:${topoffset}]`.toString()}
+				// navBar.classList.add(`mt-[-${navBarBottom}]`.toString());
+				// works, but doesn't transition smoothly:
+				// navBar.classList.add('hidden');
+				// navBar.style.transform = `translateY(-110%)`;
 			} else {
 				// Scrolling up
+				// navBar.style.transform = 'translateY(0)';
+				// navBar.classList.remove(`mt-[-${navBarBottom}px]`.toString());
+				// works, but doesn't transition smoothly:
+				// navBar.classList.remove('hidden');
 				navBar.classList.remove('-mt-[var(--header-height)]');
 				header?.classList.add('mt-2');
 			}
@@ -844,7 +883,7 @@
 {/snippet}
 
 <header bind:this={header} class="xs:mx-5 xs:mt-5 mt-2 w-screen px-2">
-	<!-- TBD: put navbar into component -->
+	<!-- bind:offsetHeight={headerHeight} -->
 	<nav
 		class="navbar rounded-box bg-base-200 shadow-shadow border-outline-variant sticky start-0 top-0 z-1 flex justify-between border-1 border-b shadow-md transition-all duration-300 max-sm:h-14 max-sm:px-3 md:items-center"
 		bind:this={navBar}
@@ -973,12 +1012,11 @@
 <main
 	bind:this={scrollspyParent}
 	id="scrollspy-scrollable-parent"
-	class="h-screen w-screen overflow-x-scroll overflow-y-auto"
-	onscroll={toggleTopNavBar}
+	class="border-error h-screen w-screen overflow-x-scroll overflow-y-auto border border-4"
 	onscrollend={mainScrollEnd}
+	onscroll={toggleTopNavBar}
 	use:applyTheming
 >
-	<!-- class="border-error h-screen w-screen overflow-x-scroll overflow-y-auto border border-4" -->
 	<!-- bind:session={data.session} -->
 	<WelcomeModal
 		bind:session
@@ -1051,13 +1089,11 @@
 			<div class="divider"></div>
 			<ul class="menu p-0">
 				{#each sidebarLinks as sidebarItem (sidebarItem.id)}
-					<!-- TBD: remove topoffset -->
 					<SidebarItem
 						content={{ ...sidebarItem, pathname: sidebarItem.pathname || page.url.pathname }}
 						topLevel={true}
 						{scrollspyParent}
 					/>
-					<!-- {scrollspyParent} -->
 					<!-- topoffset={navBarBottom} -->
 					<!-- topoffset={internalNavigationTarget} -->
 					<!-- topoffset={navBarBottom} -->
@@ -1073,7 +1109,6 @@
 							topLevel={true}
 							{scrollspyParent}
 						/>
-						<!-- {scrollspyParent} -->
 						<!-- topoffset={navBarBottom} -->
 					{/each}
 				</Guard>
@@ -1087,7 +1122,6 @@
 							topLevel={true}
 							{scrollspyParent}
 						/>
-						<!-- {scrollspyParent} -->
 						<!-- topoffset={navBarBottom} -->
 					{/each}
 				{/if}
@@ -1107,7 +1141,12 @@
 		{locationPageAndHash?.page}{locationPageAndHash?.hash}
 		<br /> -->
 	</aside>
-	<div class="bg-base-100 xs:mx-5 xs:mt-5 h-screen w-screen px-2">
+	<div class="bg-base-100 xs:mx-5 xs:mt-5 mt-2 w-screen px-2 sm:h-full">
+		<!-- TBD: put navbar into component -->
+		<!-- <div class="h-full"> -->
+
+		<!-- </div> -->
+
 		<div
 			id="scrollspy"
 			class="sm:overlay-minified:ps-19 overlay-open:ps-0 space-y-4 pt-2 transition-all duration-300 sm:mx-2 sm:mt-2 sm:ps-66"

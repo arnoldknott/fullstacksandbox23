@@ -4,21 +4,22 @@
 	import { Variant, Theming, type ColorConfig } from '$lib/theming';
 	import { Model, type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
 	import type { Action } from 'svelte/action';
-	import { onMount, type Snippet } from 'svelte';
+	import { onMount, tick, type Snippet } from 'svelte';
 	import { page } from '$app/state';
 	import Guard from '$components/Guard.svelte';
 	import { initDropdown, initOverlay } from '$lib/userInterface';
-	import ThemePicker from './playground/components/ThemePicker.svelte';
-	import ArtificialIntelligencePicker from './playground/components/ArtificialIntelligencePicker.svelte';
+	import ThemePicker from '../../../components/ThemePicker.svelte';
+	import ArtificialIntelligencePicker from '../../../components/ArtificialIntelligencePicker.svelte';
 	import { themeStore } from '$lib/stores';
 	import { type SubmitFunction } from '@sveltejs/kit';
 	import { resolve } from '$app/paths';
-	import WelcomeModal from './WelcomeModal.svelte';
+	import WelcomeModal from '../../../../WelcomeModal.svelte';
 	import { afterNavigate, replaceState, pushState, goto } from '$app/navigation';
 	import type { SidebarItemContent, Session } from '$lib/types';
 	import SidebarItem from './SidebarItem.svelte';
-	import LoginOutButton from './LoginOutButton.svelte';
-	import Logo from './Logo.svelte';
+	import LoginOutButton from '../../../../LoginOutButton.svelte';
+	import Logo from '../../../../Logo.svelte';
+	import { scrollY } from 'svelte/reactivity/window';
 
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
 
@@ -312,14 +313,14 @@
 	let debugSidebarLinks: SidebarItemContent[] = $state([
 		{
 			name: 'Page 1',
-			pathname: resolve('/(layout)/playground/page1'),
+			pathname: resolve('/(layout)/playground/user-interface/navbar/debug-scrollspy/page1'),
 			icon: 'icon-[tabler--user]',
 			id: 'page1',
 			items: []
 		},
 		{
 			name: 'Page 2',
-			pathname: resolve('/(layout)/playground/page2'),
+			pathname: resolve('/(layout)/playground/user-interface/navbar/debug-scrollspy/page2'),
 			icon: 'icon-[icon-park-outline--page]',
 			id: 'page2',
 			items: [
@@ -371,7 +372,7 @@
 		},
 		{
 			name: 'Page 3',
-			pathname: resolve('/(layout)/playground/page3'),
+			pathname: resolve('/(layout)/playground/user-interface/navbar/debug-scrollspy/page3'),
 			icon: 'icon-[icon-park-outline--page]',
 			id: 'page3',
 			items: [
@@ -430,7 +431,7 @@
 		{
 			id: 'further-page',
 			name: 'Further Page',
-			pathname: resolve('/(layout)/playground/page4'),
+			pathname: resolve('/(layout)/playground/user-interface/navbar/debug-scrollspy/page4'),
 			icon: 'icon-[tabler--mail]',
 			items: [
 				{
@@ -474,21 +475,27 @@
 				{
 					name: 'Sub-page 4.1',
 					icon: 'icon-[mingcute--directory-line]',
-					pathname: resolve('/(layout)/playground/page4/page4-1'),
+					pathname: resolve(
+						'/(layout)/playground/user-interface/navbar/debug-scrollspy/page4/page4-1'
+					),
 					id: 'page4p1',
 					items: [
 						{
 							id: 'page4p1-loreum1',
 							name: 'Loreum 1 pg4.1',
 							icon: 'icon-[mdi--text]',
-							pathname: resolve('/(layout)/playground/page4/page4-1'),
+							pathname: resolve(
+								'/(layout)/playground/user-interface/navbar/debug-scrollspy/page4/page4-1'
+							),
 							hash: '#loreum1'
 						},
 						{
 							id: 'page4p1-loreum2',
 							name: 'Loreum 2 pg4.2',
 							icon: 'icon-[mdi--text]',
-							pathname: resolve('/(layout)/playground/page4/page4-1'),
+							pathname: resolve(
+								'/(layout)/playground/user-interface/navbar/debug-scrollspy/page4/page4-1'
+							),
 							hash: '#loreum2'
 						}
 					]
@@ -496,21 +503,27 @@
 				{
 					name: 'Sub-page 4.2',
 					icon: 'icon-[material-symbols--folder-outline-rounded]',
-					pathname: resolve('/(layout)/playground/page4/page4-2'),
+					pathname: resolve(
+						'/(layout)/playground/user-interface/navbar/debug-scrollspy/page4/page4-2'
+					),
 					id: 'page4p2',
 					items: [
 						{
 							id: 'page4p2-loreum1',
 							name: 'Loreum 1 pg4.2',
 							icon: 'icon-[mdi--text]',
-							pathname: resolve('/(layout)/playground/page4/page4-2'),
+							pathname: resolve(
+								'/(layout)/playground/user-interface/navbar/debug-scrollspy/page4/page4-2'
+							),
 							hash: '#loreum1'
 						},
 						{
 							id: 'page4p2-loreum2',
 							name: 'Loreum 2 pg4.2',
 							icon: 'icon-[mdi--text]',
-							pathname: resolve('/(layout)/playground/page4/page4-2'),
+							pathname: resolve(
+								'/(layout)/playground/user-interface/navbar/debug-scrollspy/page4/page4-2'
+							),
 							hash: '#loreum2'
 						}
 					]
@@ -525,7 +538,7 @@
 		},
 		{
 			name: 'Page 5',
-			pathname: resolve('/(layout)/playground/page5'),
+			pathname: resolve('/(layout)/playground/user-interface/navbar/debug-scrollspy/page5'),
 			icon: 'icon-[tabler--user]',
 			id: 'page5',
 			items: [
@@ -545,13 +558,13 @@
 		}
 	]);
 
-	let scrollspyParent: HTMLElement | null = $state(null);
+	let scrollspyParent: HTMLBodyElement | null = $state(null);
 
 	// TBD: potential useful features to encaspulate the scroll into:
 	// onMount, afterNavigate $effect, (beforeNavigate), (onNavigate), Attachment, onscrollend, derived, derived.by(), ...?
 
 	let navBar: HTMLElement | null = $state(null);
-	// let navBarBottom: number = $state(0);
+	let navBarBottom: number = $state(0);
 
 	// let contentArea: HTMLElement | null = $state(null);
 	// let contentAreaTop: number = $state(0);
@@ -667,28 +680,28 @@
 		};
 	});
 
-	afterNavigate((_navigation) => {
-		console.log('=== afterNavigate - navigation ===');
-		// 	navBarBottom =
-		// 		navBar && navBar.getBoundingClientRect().bottom > 0
-		// 			? navBar.getBoundingClientRect().bottom
-		// 			: 0;
-		if (!location.hash) {
-			// console.log('=== afterNavigate - scroll to TOP ===');
-			// locationPageAndHash = {
-			// 	page: navigation.to?.url.pathname || '',
-			// 	hash: ''
-			// };
-			requestAnimationFrame(() => {
-				scrollspyParent!.scrollTop = 0;
-				scrollspyParent?.scrollTo({
-					left: scrollspyParent.scrollLeft,
-					top: scrollspyParent.scrollTop,
-					behavior: 'smooth'
-				});
-			});
-		}
-	});
+	// afterNavigate((_navigation) => {
+	// 	console.log('=== afterNavigate - navigation ===');
+	// 	navBarBottom =
+	// 		navBar && navBar.getBoundingClientRect().bottom > 0
+	// 			? navBar.getBoundingClientRect().bottom
+	// 			: 0;
+	// if (!location.hash) {
+	// 	// console.log('=== afterNavigate - scroll to TOP ===');
+	// 	// locationPageAndHash = {
+	// 	// 	page: navigation.to?.url.pathname || '',
+	// 	// 	hash: ''
+	// 	// };
+	// 	requestAnimationFrame(() => {
+	// 		scrollspyParent!.scrollTop = 0;
+	// 		scrollspyParent?.scrollTo({
+	// 			left: scrollspyParent.scrollLeft,
+	// 			top: scrollspyParent.scrollTop,
+	// 			behavior: 'smooth'
+	// 		});
+	// 	});
+	// }
+	// });
 
 	// const adjustScrollTopForNavBar = () => {
 	// 	console.log('=== adjustScrollTopForNavBar ===');
@@ -711,98 +724,213 @@
 	// 	});
 	// };
 
-	const mainScrollEnd = (_event: Event) => {
-		console.log('=== onscrollend ===');
-		// note: the SidebarFolder has "max-sm:[--scrollspy-offset:56px]",
-		// which also affects the scrollspy offset calculation!
-		// const thisPageandHash: LocationPageAndHash = {
-		// 	page: page.url.pathname,
-		// 	hash: location.hash
-		// };
-		// if (locationPageAndHash?.hash !== thisPageandHash.hash && window.innerWidth >= 640) {
-		// if (locationPageAndHash?.hash !== thisPageandHash.hash) {
-		// 	locationPageAndHash = thisPageandHash;
-		// adjustScrollTopForNavBar();
-		// } else if (locationPageAndHash?.page !== thisPageandHash.page) {
-		// 	locationPageAndHash = thisPageandHash;
-		// 	adjustScrollTopForNavBar();
-		// }
-		// contentAreaTop = contentArea ? contentArea.getBoundingClientRect().top : 0;
-	};
+	// const mainScrollEnd = (_event: Event) => {
+	// 	console.log('=== onscrollend ===');
+	// note: the SidebarFolder has "max-sm:[--scrollspy-offset:56px]",
+	// which also affects the scrollspy offset calculation!
+	// const thisPageandHash: LocationPageAndHash = {
+	// 	page: page.url.pathname,
+	// 	hash: location.hash
+	// };
+	// if (locationPageAndHash?.hash !== thisPageandHash.hash && window.innerWidth >= 640) {
+	// if (locationPageAndHash?.hash !== thisPageandHash.hash) {
+	// 	locationPageAndHash = thisPageandHash;
+	// adjustScrollTopForNavBar();
+	// } else if (locationPageAndHash?.page !== thisPageandHash.page) {
+	// 	locationPageAndHash = thisPageandHash;
+	// 	adjustScrollTopForNavBar();
+	// }
+	// contentAreaTop = contentArea ? contentArea.getBoundingClientRect().top : 0;
+	// };
 
-	onMount(() => {
-		console.log('=== onMount ===');
-		scrollspyParent!.scrollTo({
-			left: scrollspyParent!.scrollLeft,
-			top: scrollspyParent!.scrollTop,
-			behavior: 'smooth'
-		});
-		if (page.url.hash) {
-			const target = document.getElementById(page.url.hash.substring(1));
-			// TBD: consider opening a potential collapsed parent sections here
-			if (target) {
-				const parentRect = scrollspyParent!.getBoundingClientRect();
-				const targetRect = target.getBoundingClientRect();
-				scrollspyParent!.scrollTop += targetRect.top - parentRect.top;
-				scrollspyParent?.scrollTo({
-					left: scrollspyParent.scrollLeft,
-					top: scrollspyParent.scrollTop,
-					behavior: 'smooth'
-				});
-			}
+	// onMount(() => {
+	// 	console.log('=== onMount ===');
+	// scrollspyParent!.scrollTo({
+	// 	left: scrollspyParent!.scrollLeft,
+	// 	top: scrollspyParent!.scrollTop,
+	// 	behavior: 'smooth'
+	// });
+	// if (page.url.hash) {
+	// 	const target = document.getElementById(page.url.hash.substring(1));
+	// 	// TBD: consider opening a potential collapsed parent sections here
+	// 	if (target) {
+	// 		const parentRect = scrollspyParent!.getBoundingClientRect();
+	// 		const targetRect = target.getBoundingClientRect();
+	// 		scrollspyParent!.scrollTop += targetRect.top - parentRect.top;
+	// 		scrollspyParent?.scrollTo({
+	// 			left: scrollspyParent.scrollLeft,
+	// 			top: scrollspyParent.scrollTop,
+	// 			behavior: 'smooth'
+	// 		});
+	// 	}
+	// }
+	// });
+
+	// const windowPopstateHandler = (_event: PopStateEvent) => {
+	// 	console.log('=== 🪟 - popstate ===');
+	// if (page.url.hash) {
+	// 	const target = document.getElementById(location.hash.substring(1));
+	// 	// TBD: consider opening a potential collapsed parent sections here
+	// 	if (target) {
+	// 		const parentRect = scrollspyParent!.getBoundingClientRect();
+	// 		const targetRect = target.getBoundingClientRect();
+	// 		scrollspyParent!.scrollTop += targetRect.top - parentRect.top;
+	// 		scrollspyParent?.scrollTo({
+	// 			left: scrollspyParent.scrollLeft,
+	// 			top: scrollspyParent.scrollTop,
+	// 			behavior: 'smooth'
+	// 		});
+	// 	}
+	// }
+	// locationHash = location.hash;
+	// };
+
+	afterNavigate(async ({ to }) => {
+		console.log('=== afterNavigate - scroll handling ===');
+		// Browser handles scroll restoration automatically with body scroll
+		// Force header height recalculation after navigation
+		await tick();
+		document.documentElement.style.setProperty('--header-height', `${header?.offsetHeight}px`);
+		navBarBottom = header?.offsetHeight ?? 0;
+
+		// Handle initial hash scrolling on page load/refresh or cross-page navigation with hash
+		if (to?.url.hash) {
+			const targetId = to.url.hash.substring(1);
+
+			// Retry logic to wait for element to be in DOM (for cross-page navigation)
+			const scrollToTarget = () => {
+				const targetElement = document.getElementById(targetId);
+
+				if (targetElement) {
+					// Calculate offset (navbar height)
+					const offset = navBarBottom || 0;
+					const elementPosition = targetElement.getBoundingClientRect().top + window.scrollY;
+					const offsetPosition = elementPosition - offset;
+
+					// Preserve hash in URL by using history.replaceState before scrolling
+					// console.log('=== to.url.hash scroll to target ===');
+					// console.log(to?.url.hash);
+					const currentUrl = window.location.pathname + window.location.search + to?.url.hash;
+					// window.history.replaceState(window.history.state, '', currentUrl);
+					replaceState(currentUrl, page.state);
+
+					window.scrollTo({
+						top: offsetPosition,
+						behavior: 'smooth'
+					});
+					handleIntentionalNavigation(); // Show navbar after scrolling
+				}
+			};
+
+			// Wait for layout to settle and scrollspy to potentially initialize
+			await tick();
+
+			// Try immediately
+			requestAnimationFrame(() => {
+				// requestAnimationFrame(() => {
+				scrollToTarget();
+				// });
+			});
+
+			// initScrollspy(); // Ensure scrollspy is initialized
+
+			// If element isn't ready yet (cross-page navigation), retry after a short delay
+			console.log('=== afterNavigate - setting timeout ===');
+			setTimeout(() => {
+				console.log('=== afterNavigate - retry scroll to target ===');
+				scrollToTarget();
+			}, 1);
 		}
 	});
-
-	const windowPopstateHandler = (_event: PopStateEvent) => {
-		console.log('=== 🪟 - popstate ===');
-		if (page.url.hash) {
-			const target = document.getElementById(location.hash.substring(1));
-			// TBD: consider opening a potential collapsed parent sections here
-			if (target) {
-				const parentRect = scrollspyParent!.getBoundingClientRect();
-				const targetRect = target.getBoundingClientRect();
-				scrollspyParent!.scrollTop += targetRect.top - parentRect.top;
-				scrollspyParent?.scrollTo({
-					left: scrollspyParent.scrollLeft,
-					top: scrollspyParent.scrollTop,
-					behavior: 'smooth'
-				});
-			}
-		}
-		// locationHash = location.hash;
-	};
-
 	// Hide / show  navbar on scroll down / up
 	let header: HTMLElement | null = $state(null);
-	let previousScrollY = $derived.by(() => scrollspyParent?.scrollTop ?? 0);
+	let previousScrollY = $state(scrollY.current ?? 0);
+	let intentionalNavigationInProgress = $state(false);
+
+	// Show navbar and mark navigation as intentional:
+	const handleIntentionalNavigation = () => {
+		if (header) {
+			// Show navbar when browser back/forward is used
+			intentionalNavigationInProgress = true;
+			header.classList.add('mt-2');
+			header.style.top = '0';
+		}
+	};
+
+	// $effect(() => {
+	// 	console.log('=== page.url changed ===');
+	// 	console.log(page.url.href);
+
+	// 	// Handle code refresh (HMR) - when page.url.hash changes due to hot reload
+	// 	// This catches cases where afterNavigate doesn't fire (like HMR updates)
+	// 	if (page.url.hash) {
+	// 		// Use untrack to avoid infinite loops
+	// 		requestAnimationFrame(async () => {
+	// 			await scrollToHash(page.url.hash);
+	// 		});
+	// 	}
+	// });
+
 	onMount(() => {
+		console.log('=== onMount - scrollspy navbar ===');
 		document.documentElement.style.setProperty('--header-height', `${header?.offsetHeight}px`);
+		navBarBottom = header?.offsetHeight ?? 0;
+
+		document.addEventListener('beforeScroll.scrollspy', handleIntentionalNavigation);
+		// window.addEventListener('popstate', handleIntentionalNavigation);
+
+		return () => {
+			document.removeEventListener('beforeScroll.scrollspy', handleIntentionalNavigation);
+			// window.removeEventListener('popstate', handleIntentionalNavigation);
+		};
 	});
 
 	const windowResizeHandler = (_event: UIEvent) => {
 		document.documentElement.style.setProperty('--header-height', `${header?.offsetHeight}px`);
+		navBarBottom = header?.offsetHeight ?? 0;
 	};
+
 	const toggleTopNavBar = () => {
-		const currentScrollY = scrollspyParent?.scrollTop ?? 0;
-		if (navBar) {
-			if (currentScrollY > previousScrollY) {
-				// Scrolling down
-				navBar.classList.add('-mt-[var(--header-height)]');
-				header?.classList.remove('mt-2');
-			} else {
-				// Scrolling up
-				navBar.classList.remove('-mt-[var(--header-height)]');
-				header?.classList.add('mt-2');
+		// Don't hide navbar during intentional navigation (sidebar clicks, browser back/forward)
+		if (!intentionalNavigationInProgress) {
+			// console.log('=== toggleTopNavBar ===');
+			// const currentScrollY = scrollspyParent?.scrollTop ?? 0;
+			// see https://www.w3schools.com/howto/howto_js_navbar_hide_scroll.asp
+			const currentScrollY = scrollY.current ?? 0;
+			// if (navBar) {
+			if (header) {
+				if (currentScrollY > previousScrollY) {
+					// Scrolling down removes navbar
+					// navBar.classList.add('-mt-[var(--header-height)]');
+					header.classList.remove('mt-2');
+					header.style.top = `-${header.offsetHeight}px`;
+				} else {
+					// Scrolling up shows navbar
+					// navBar.classList.remove('-mt-[var(--header-height)]');
+					header.classList.add('mt-2');
+					header.style.top = '0';
+				}
 			}
+			previousScrollY = currentScrollY;
 		}
-		previousScrollY = currentScrollY;
 	};
+
+	// onMount(() => {
+	// 	document.addEventListener('beforeScroll.scrollspy', showNavbarOnSidebarClick);
+	// });
 </script>
 
+<!-- onpopstate={(event) => windowPopstateHandler(event)} -->
 <svelte:window
-	onpopstate={(event) => windowPopstateHandler(event)}
 	onresize={(event) => windowResizeHandler(event)}
+	onscroll={toggleTopNavBar}
+	onscrollend={() => {
+		intentionalNavigationInProgress = false;
+	}}
+	onpopstate={handleIntentionalNavigation}
 />
+
+<svelte:body bind:this={scrollspyParent} use:applyTheming />
 
 {#snippet sidebarToggleButton(classes: string, overlayModifier: object)}
 	<button
@@ -843,10 +971,13 @@
 	</li>
 {/snippet}
 
-<header bind:this={header} class="xs:mx-5 xs:mt-5 mt-2 w-screen px-2">
+<header
+	bind:this={header}
+	class="xs:mx-5 xs:mt-5 fixed z-1 mt-2 w-screen px-2 transition-all duration-300"
+>
 	<!-- TBD: put navbar into component -->
 	<nav
-		class="navbar rounded-box bg-base-200 shadow-shadow border-outline-variant sticky start-0 top-0 z-1 flex justify-between border-1 border-b shadow-md transition-all duration-300 max-sm:h-14 max-sm:px-3 md:items-center"
+		class="navbar rounded-box bg-base-200 shadow-shadow border-outline-variant start-0 top-0 flex justify-between border-1 border-b shadow-md transition-all duration-300 max-sm:h-14 max-sm:px-3 md:items-center"
 		bind:this={navBar}
 	>
 		<!-- {@attach updateNavbarBottom} -->
@@ -970,14 +1101,13 @@
 	</nav>
 </header>
 
-<main
-	bind:this={scrollspyParent}
-	id="scrollspy-scrollable-parent"
-	class="h-screen w-screen overflow-x-scroll overflow-y-auto"
-	onscroll={toggleTopNavBar}
-	onscrollend={mainScrollEnd}
-	use:applyTheming
->
+<!-- class="h-screen w-screen overflow-x-scroll overflow-y-auto" -->
+<!-- bind:this={scrollspyParent} -->
+<!-- use:applyTheming -->
+<!-- id="scrollspy-scrollable-parent" -->
+<!-- onscrollend={mainScrollEnd} -->
+<main class="static w-screen">
+	<!-- onscroll={toggleTopNavBar} -->
 	<!-- class="border-error h-screen w-screen overflow-x-scroll overflow-y-auto border border-4" -->
 	<!-- bind:session={data.session} -->
 	<WelcomeModal
@@ -990,9 +1120,10 @@
 	/>
 
 	<!-- TBD: put sidebar into component -->
+	<!-- sm:absolute -->
 	<aside
 		id="collapsible-mini-sidebar"
-		class="overlay overlay-minified:w-19 overlay-open:translate-x-0 drawer drawer-start bg-base-150 border-base-content/20 hidden w-66 border-e [--auto-close:sm] sm:absolute sm:z-0 sm:flex sm:translate-x-0 sm:shadow-none"
+		class="overlay overlay-minified:w-19 overlay-open:translate-x-0 drawer drawer-start bg-base-150 border-base-content/20 start-0 top-0 hidden w-66 border-e [--auto-close:sm] sm:z-0 sm:flex sm:translate-x-0 sm:shadow-none"
 		tabindex="-1"
 		{@attach initOverlay}
 	>
@@ -1006,12 +1137,12 @@
 				<Logo />
 			</div>
 		</div>
-		<div class="drawer-body px-2 pt-4">
+		<div class="drawer-body px-2">
 			<ul class="menu p-0">
-				<!-- <li><a href={resolve('/(layout)/playground/page2')}>Page 2 - top</a></li>
-				<li><a href={resolve('/(layout)/playground/page2') + '#pg2loreum1'}>Page 2 - Lor. 1</a></li>
-				<li><a href={resolve('/(layout)/playground/page2') + '#pg2loreum2'}>Page 2 - Lor. 2</a></li>
-				<li><a href={resolve('/(layout)/playground/page2') + '#pg2loreum4'}>Page 2 - Lor. 4</a></li> -->
+				<!-- <li><a href={resolve('/(layout)/playground/user-interface/navbar/debug-scrollspy/page2')}>Page 2 - top</a></li>
+				<li><a href={resolve('/(layout)/playground/user-interface/navbar/debug-scrollspy/page2') + '#pg2loreum1'}>Page 2 - Lor. 1</a></li>
+				<li><a href={resolve('/(layout)/playground/user-interface/navbar/debug-scrollspy/page2') + '#pg2loreum2'}>Page 2 - Lor. 2</a></li>
+				<li><a href={resolve('/(layout)/playground/user-interface/navbar/debug-scrollspy/page2') + '#pg2loreum4'}>Page 2 - Lor. 4</a></li> -->
 				{@render sidebarPartItem('/', 'icon-[material-symbols--home-outline-rounded]', 'Home')}
 				{@render sidebarPartItem('/docs', 'icon-[oui--documentation]', 'Docs', 'md:hidden')}
 				{@render sidebarPartItem(
@@ -1052,11 +1183,11 @@
 			<ul class="menu p-0">
 				{#each sidebarLinks as sidebarItem (sidebarItem.id)}
 					<!-- TBD: remove topoffset -->
-					<SidebarItem
+					<!-- <SidebarItem
 						content={{ ...sidebarItem, pathname: sidebarItem.pathname || page.url.pathname }}
 						topLevel={true}
 						{scrollspyParent}
-					/>
+					/> -->
 					<!-- {scrollspyParent} -->
 					<!-- topoffset={navBarBottom} -->
 					<!-- topoffset={internalNavigationTarget} -->
@@ -1065,33 +1196,44 @@
 				{/each}
 				<Guard>
 					{#each protectedSidebarLinks as protectedSidebarItem (protectedSidebarItem.id)}
-						<SidebarItem
+						<!-- <SidebarItem
 							content={{
 								...protectedSidebarItem,
 								pathname: protectedSidebarItem.pathname || page.url.pathname
 							}}
 							topLevel={true}
 							{scrollspyParent}
-						/>
+						/> -->
 						<!-- {scrollspyParent} -->
 						<!-- topoffset={navBarBottom} -->
 					{/each}
 				</Guard>
-				{#if debug}
-					{#each debugSidebarLinks as debugSidebarItem (debugSidebarItem.id)}
-						<SidebarItem
-							content={{
-								...debugSidebarItem,
-								pathname: debugSidebarItem.pathname || page.url.pathname
-							}}
-							topLevel={true}
-							{scrollspyParent}
-						/>
-						<!-- {scrollspyParent} -->
-						<!-- topoffset={navBarBottom} -->
-					{/each}
-				{/if}
+
+				{#each debugSidebarLinks as debugSidebarItem (debugSidebarItem.id)}
+					<SidebarItem
+						content={{
+							...debugSidebarItem,
+							pathname: debugSidebarItem.pathname || page.url.pathname
+						}}
+						topLevel={true}
+						topoffset={navBarBottom}
+					/>
+					<!-- {scrollspyParent} -->
+				{/each}
+				<!-- {#each Array(50) as _, index}
+					<li>Filler Item {index + 1}</li>
+				{/each} -->
 			</ul>
+			<!-- <ul data-scrollspy="#scrollspy" data-scrollspy-scrollable-parent="#app-body">
+				<li>
+					<a
+						href="./page2#pg2loreum2"
+						class="text-base-content/80 hover:text-base-content scrollspy-active:text-primary block py-0.5 font-medium"
+					>
+						Page 2 - Loreum 2
+					</a>
+				</li>
+			</ul> -->
 		</div>
 		<div class="mb-2 flex items-center gap-1">
 			<label class="label label-text text-base" for="debugSwitcher">Debug: </label>
@@ -1102,12 +1244,15 @@
 				id="debugSwitcher"
 			/>
 		</div>
+		scrollY: {scrollY.current}
+		<br />
+		navBarBottom: {navBarBottom}
 		<!-- {navBarBottom}
 		<br />
 		{locationPageAndHash?.page}{locationPageAndHash?.hash}
 		<br /> -->
 	</aside>
-	<div class="bg-base-100 xs:mx-5 xs:mt-5 h-screen w-screen px-2">
+	<div class="bg-base-100 xs:mx-5 xs:mt-5 w-screen px-2 sm:h-full">
 		<div
 			id="scrollspy"
 			class="sm:overlay-minified:ps-19 overlay-open:ps-0 space-y-4 pt-2 transition-all duration-300 sm:mx-2 sm:mt-2 sm:ps-66"
