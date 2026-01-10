@@ -1107,7 +1107,7 @@
 		{locationPageAndHash?.page}{locationPageAndHash?.hash}
 		<br /> -->
 	</aside>
-	<div class="bg-base-100 xs:mx-5 xs:mt-5 mt-2 w-screen px-2 sm:h-full">
+	<div class="bg-base-100 xs:mx-5 xs:mt-5 h-screen w-screen px-2">
 		<div
 			id="scrollspy"
 			class="sm:overlay-minified:ps-19 overlay-open:ps-0 space-y-4 pt-2 transition-all duration-300 sm:mx-2 sm:mt-2 sm:ps-66"
