@@ -51,11 +51,7 @@
 	// Extract element ID from href for comparison
 	const elementId = $derived(href.startsWith('#') ? href.substring(1) : null);
 	const activeSection = scrollObserverContext?.activeSection;
-	const isActive = $derived(
-		(elementId && $activeSection === elementId) ||
-			hasActiveChild ||
-			childActiveStates.some((active) => active)
-	);
+	const isActive = $derived((elementId && $activeSection === elementId) || hasActiveChild);
 
 	const addElementToObserver: Attachment = () => {
 		// console.log('=== SidebarLink.svelte - addElementToObserver - attaching ===');
@@ -73,14 +69,28 @@
 		}
 	};
 
+	// Reference to the collapse control element for reactive updates
+	let collapseControl: HTMLElement | null = $state(null);
+
 	const toggleCollapse: Attachment<HTMLElement> = (node: HTMLElement) => {
+		collapseControl = node;
 		// if (page.url.pathname.startsWith(node.dataset.pathname || '')) {
 		// if (page.url.pathname === node.dataset.pathname) {
-		if (pathname === page.url.pathname) {
+		if (pathname === page.url.pathname || hasActiveChild) {
 			const { element } = window.HSCollapse.getInstance(node, true);
 			element.show();
 		}
 	};
+
+	// Reactively open collapse when a child becomes active
+	$effect(() => {
+		if (hasActiveChild && collapseControl) {
+			const instance = window.HSCollapse.getInstance(collapseControl, true);
+			if (instance?.element) {
+				instance.element.show();
+			}
+		}
+	});
 
 	const openSidebar = () => {
 		const { element } = window.HSOverlay.getInstance('#collapsible-mini-sidebar', true);
