@@ -354,6 +354,8 @@ resource "azuread_application" "developerClients" {
 
 # creates a client secret for the developer clients, which are used in Postman and Thunderclient
 # TBD: consider different secrets for those two clients and one for each developer?
+# Note: this secret is only used manully in
+# Postman/Thunderclient to get tokens from the backendAPI,  not in code.
 resource "azuread_application_password" "developerClientsSecret" {
   application_id = azuread_application.developerClients.id
   end_date       = "2046-01-31T23:59:59Z"
