@@ -24,6 +24,7 @@
 	$effect(() => {
 		hasActiveChild = childActiveStates.some((active) => active);
 		if (hasActiveChild) {
+			// toggleCollapse();
 		}
 	});
 
