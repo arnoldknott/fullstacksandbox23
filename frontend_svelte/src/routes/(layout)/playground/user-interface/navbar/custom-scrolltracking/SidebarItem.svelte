@@ -40,25 +40,7 @@
 		hasActiveChild = childActiveStates.some((active) => active);
 	});
 
-	// const thisPage = $derived.by(() => (pathname: string) => pathname === page.url.pathname);
-	// const createHref = $derived.by(() => (destinationPathname: string, hash?: string) => {
-	// 	let href = '';
-	// 	if (!hash) href = destinationPathname;
-	// 	else if (thisPage(destinationPathname)) {
-	// 		href = hash;
-	// 	} else href = `${destinationPathname}${hash}`;
-	// 	return href;
-	// });
-	// let href = $derived(createHref(pathname!, hash));
 	const thisPage = $derived(pathname === page.url.pathname);
-	// const createHref = $derived.by(() => (destinationPathname: string, hash?: string) => {
-	// 	let href = '';
-	// 	if (!hash) href = destinationPathname;
-	// 	else if (thisPage(destinationPathname)) {
-	// 		href = hash;
-	// 	} else href = `${destinationPathname}${hash}`;
-	// 	return href;
-	// });
 	let href = $derived(!hash ? pathname! : thisPage ? hash : `${pathname}${hash}`);
 	// The id of the element, this SidebarItem links to (if any):
 	let trackedElementId = $derived(href.startsWith('#') ? href.substring(1) : null);
