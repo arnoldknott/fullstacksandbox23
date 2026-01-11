@@ -33,7 +33,9 @@
 	const activeSection = scrollObserverContext?.activeSection;
 	const visibleSections = scrollObserverContext?.visibleSections;
 
-	const isActive = $derived(elementId && thisPage && $activeSection === elementId);
+	const isActive = $derived(
+		(elementId && thisPage && $activeSection === elementId) || (thisPage && !href.startsWith('#'))
+	);
 	$effect(() => {
 		isActiveChild = isActive ? true : false;
 	});
@@ -47,6 +49,7 @@
 		// Guard against missing observer (will be available after parent mounts)
 		if (scrollObserverContext?.observer) {
 			// Get the element in the content that corresponds to this link and observe it
+			// TBD: href.startsWith('#') should be equivalent to "hash" in Folder and Item - refactor!
 			const id = href.startsWith('#') ? href.substring(1) : null;
 			const elementToObserve = id ? document.getElementById(id) : null;
 
