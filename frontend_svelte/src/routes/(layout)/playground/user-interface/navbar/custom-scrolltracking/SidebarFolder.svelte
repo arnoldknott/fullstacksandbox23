@@ -100,6 +100,9 @@
 		}
 	});
 
+	// needed somewhere?
+	// initCollapse(document.getElementById(id + '-collapse')!);
+
 	const openSidebar = () => {
 		const { element } = window.HSOverlay.getInstance('#collapsible-mini-sidebar', true);
 		element.open();
