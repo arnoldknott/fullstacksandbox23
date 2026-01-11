@@ -80,9 +80,6 @@
 	const linkOpacity = $derived(isActive ? 'opacity-100' : isVisible ? 'opacity-95' : 'opacity-70');
 
 	const toggleCollapse: Attachment<HTMLElement> = (node: HTMLElement) => {
-		// collapseControl = node;
-		// if (page.url.pathname.startsWith(node.dataset.pathname || '')) {
-		// if (page.url.pathname === node.dataset.pathname) {
 		if (pathname === page.url.pathname || hasActiveChild) {
 			const { element } = window.HSCollapse.getInstance(node, true);
 			element.show();
@@ -99,7 +96,6 @@
 			if (instance?.element) {
 				// or should the show be on document.getElementById(id + '-collapse')?
 				instance.element.show();
-				// TBD: initCollapse here?
 				initCollapse(document.getElementById(id + '-collapse')!);
 			}
 		}
@@ -133,8 +129,6 @@
 	</ul>
 {/snippet}
 
-<!-- {#if isFolder} -->
-<!-- It's a Folder -->
 <li class="space-y-0.5">
 	<a
 		{href}
@@ -165,6 +159,7 @@
 			</span>
 		{/if}
 		<span class="overlay-minified:hidden">{name}</span>
+		<!-- Chevron to open the collapse-->
 		{#if isFolder}
 			<button
 				bind:this={collapseControl}
@@ -200,55 +195,3 @@
 		{@render collapseList()}
 	{/if}
 </li>
-<!-- It's a Link -->
-<!-- {:else} 
-	<li>
-		<a
-			{href}
-			{@attach addElementToObserver}
-			class="{isActive || isVisible
-				? 'text-base-content italic'
-				: ' text-base-content-variant'} flex items-center gap-x-2 transition-opacity duration-600 hover:opacity-100 {linkOpacity}"
-		>
-			{#if topLevel}
-				<span class="{icon} size-5"></span>
-			{:else}
-				<span class="relative inline-block size-6">
-					<span
-						class="{icon} absolute inset-0 size-5 transition-opacity duration-600 {isActive
-							? 'opacity-0'
-							: 'opacity-100'}"
-					></span>
-					<span
-						class="icon-[tabler--hand-finger-right] text-base-content/100 absolute inset-0 size-6 transition-opacity duration-600 {isActive
-							? 'opacity-100'
-							: 'opacity-0'}"
-					></span>
-				</span>
-			{/if}
-			<span class="overlay-minified:hidden">{name}</span>
-		</a>
-	</li>
-{/if} -->
-
-<!-- Is the SidebarItem a Link or a Folder?
-{#if Object.keys(content).includes('items') === false || (content as SidebarContent).items.length === 0}
-	<SidebarLink
-		href={createHref(pathname!, hash)}
-		thisPage={thisPage(pathname!)}
-		{icon}
-		{topLevel}
-		bind:isActiveChild={hasActiveChild}
-	>
-		{name}
-	</SidebarLink>
-{:else}
-	<SidebarFolder
-		content={{
-			...content,
-			pathname: pathname || ''
-		} as SidebarContent}
-		{topLevel}
-		bind:hasActiveChild
-	/>
-{/if} -->
