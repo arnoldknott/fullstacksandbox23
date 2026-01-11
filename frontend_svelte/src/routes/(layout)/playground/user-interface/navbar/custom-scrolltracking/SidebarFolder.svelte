@@ -114,12 +114,6 @@
 		aria-labelledby={id + '-control'}
 		{@attach initCollapse}
 	>
-		<!-- data-pathname={pathname} -->
-		<!-- {`[--scrollspy-offset:${topoffset}]`.toString()} -->
-		<!-- max-sm:[--scrollspy-offset:56px] -->
-		<!-- {`[--scrollspy-offset:${topoffset}]`.toString()} -->
-		<!-- {topoffset} -->
-		<!-- add [--scrollspy-offset:86] here conditionally with number being navbarBottom variable from layout. -->
 		{#each items as item, index (item.id)}
 			<SidebarItem
 				content={{
@@ -128,46 +122,17 @@
 				} as SidebarFolderContent}
 				bind:isActiveChild={childActiveStates[index]}
 			/>
-			<!-- {scrollspyParent} -->
 		{/each}
 	</ul>
 {/snippet}
 
-<!-- {#if topLevel || (pathname && pathname !== page.url.pathname)}
-	<li class="space-y-0.5">
-		<button
-			type="button"
-			class="collapse-toggle {thisPage(pathname!) ? 'open' : ''} collapse-open:bg-base-content/10"
-			id={id + '-control'}
-			data-collapse={'#' + id + '-collapse'}
-			{@attach initCollapse}
-			{@attach toggleCollapse}
-		>
-			<span class="{icon} size-5"></span>
-			<span class="overlay-minified:hidden">{name}</span>
-			<span
-				class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:hidden size-4 transition-all duration-300"
-			></span>
-			<span
-				class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:block {topLevel
-					? 'overlay-minified:rotate-270'
-					: ''} hidden size-4 transition-all duration-300"
-				role="button"
-				tabindex="0"
-				onclick={() => openSidebar()}
-				onkeydown={() => openSidebar()}
-			></span>
-		</button>
-		{@render collapseList()}
-	</li>
-{:else} -->
 <li class="space-y-0.5">
 	<a
 		{href}
 		{@attach addElementToObserver}
 		class="{isActive || hasActiveChild
 			? 'text-base-content italic'
-			: ' text-base-content-variant'}  items-center gap-x-2 transition-opacity duration-600 hover:opacity-100 {linkOpacity}"
+			: ' text-base-content-variant'} items-center gap-x-2 transition-opacity duration-600 hover:opacity-100 {linkOpacity}"
 	>
 		{#if topLevel}
 			<span class="{icon} size-5"></span>
@@ -218,10 +183,6 @@
 				onkeydown={() => openSidebar()}
 			></span>
 		</button>
-		<!-- <span
-				class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"
-			></span> -->
 	</a>
 	{@render collapseList()}
 </li>
-<!-- {/if} -->

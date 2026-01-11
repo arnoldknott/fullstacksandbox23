@@ -523,7 +523,25 @@
 							pathname: resolve(
 								'/(layout)/playground/user-interface/navbar/custom-scrolltracking/page4/page4-1'
 							),
-							hash: '#loreum1'
+							hash: '#loreum1',
+							items: [
+								{
+									id: 'page4p1p1',
+									name: 'Page 4.1.1',
+									icon: 'icon-[mdi--text]',
+									pathname: resolve(
+										'/(layout)/playground/user-interface/navbar/custom-scrolltracking/page4/page4-1/page4-1-1'
+									)
+								},
+								{
+									id: 'page4p1p2',
+									name: 'Page 4.1.2',
+									icon: 'icon-[mdi--text]',
+									pathname: resolve(
+										'/(layout)/playground/user-interface/navbar/custom-scrolltracking/page4/page4-1/page4-1-2'
+									)
+								}
+							]
 						},
 						{
 							id: 'page4p1-loreum2',
