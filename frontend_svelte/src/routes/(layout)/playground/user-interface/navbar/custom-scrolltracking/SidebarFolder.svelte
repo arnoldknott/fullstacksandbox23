@@ -31,6 +31,7 @@
 	// console.log("=== SidebarFolder.svelte - topoffset ===");
 	// console.log(topoffset);
 
+	// TBD: refactor to avoid duplicate code from SideBarItem
 	const thisPage = $derived.by(() => (pathname: string) => pathname === page.url.pathname);
 	// console.log('=== SidebarFolder.svelte - thisPage(pathname!) ===');
 	// $effect(() => console.log(pathname));
@@ -58,6 +59,7 @@
 	// Determine opacity based on visibility
 	const linkOpacity = $derived(isActive ? 'opacity-100' : 'opacity-70');
 
+	// TBD: refactor to avoid duplicate code from SideBarLink
 	const addElementToObserver: Attachment = () => {
 		// console.log('=== SidebarLink.svelte - addElementToObserver - attaching ===');
 		// Guard against missing observer (will be available after parent mounts)
@@ -126,6 +128,7 @@
 	</ul>
 {/snippet}
 
+<!-- TBD: refactor to avoid duplicate code from SideBarItem -->
 <li class="space-y-0.5">
 	<a
 		{href}
