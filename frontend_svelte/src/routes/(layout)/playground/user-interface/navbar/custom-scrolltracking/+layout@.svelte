@@ -9,17 +9,17 @@
 	import { page } from '$app/state';
 	import Guard from '$components/Guard.svelte';
 	import { initDropdown, initOverlay } from '$lib/userInterface';
-	import ThemePicker from './playground/components/ThemePicker.svelte';
-	import ArtificialIntelligencePicker from './playground/components/ArtificialIntelligencePicker.svelte';
+	import ThemePicker from '../../../components/ThemePicker.svelte';
+	import ArtificialIntelligencePicker from '../../../components/ArtificialIntelligencePicker.svelte';
 	import { themeStore } from '$lib/stores';
 	import { type SubmitFunction } from '@sveltejs/kit';
 	import { resolve } from '$app/paths';
-	import WelcomeModal from './WelcomeModal.svelte';
-	import { afterNavigate, goto } from '$app/navigation';
+	import WelcomeModal from '../../../../WelcomeModal.svelte';
+	import { goto, afterNavigate } from '$app/navigation';
 	import type { SidebarItemContent, Session } from '$lib/types';
 	import SidebarItem from './SidebarItem.svelte';
-	import LoginOutButton from './LoginOutButton.svelte';
-	import Logo from './Logo.svelte';
+	import LoginOutButton from '../../../../LoginOutButton.svelte';
+	import Logo from '../../../../Logo.svelte';
 	import { scrollY } from 'svelte/reactivity/window';
 
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
@@ -120,207 +120,243 @@
 	};
 
 	// Sidebar:
-	let sidebarLinks: SidebarItemContent[] = $state([
-		{
-			name: 'Docs',
-			pathname: resolve('/(plain)/docs'),
-			icon: 'icon-[oui--documentation]',
-			id: 'docs',
-			items: []
-		},
-		{
-			name: 'Playground',
-			pathname: resolve('/(layout)/playground'),
-			icon: 'icon-[mdi--playground-seesaw]',
-			id: 'playground',
-			items: [
-				{
-					name: 'User Interface',
-					pathname: resolve('/(layout)/playground/user-interface'),
-					icon: 'icon-[mdi--monitor-dashboard]',
-					id: 'user-interface',
-					items: []
-				},
-				{
-					name: 'Components',
-					pathname: resolve('/(layout)/playground/components') + '?prod=false&develop=true',
-					icon: 'icon-[tabler--components]',
-					id: 'components',
-					items: []
-				},
-				{
-					name: 'Design',
-					pathname: resolve('/(layout)/playground/design'),
-					icon: 'icon-[fluent--design-ideas-20-regular]',
-					id: 'design',
-					items: [
-						{
-							name: 'Backgrounds',
-							icon: 'icon-[mdi--palette-outline]',
-							hash: '#backgrounds-and-surfaces',
-							id: 'backgrounds'
-						},
-						{
-							name: 'Foregrounds',
-							icon: 'icon-[mdi--palette-outline]',
-							hash: '#foregrounds',
-							id: 'foregrounds'
-						},
-						{
-							name: 'Components',
-							icon: 'icon-[mdi--palette-outline]',
-							hash: '#components',
-							id: 'components'
-						},
-						{
-							name: 'Playground',
-							icon: 'icon-[mdi--playground-seesaw]',
-							hash: '#design-playground',
-							id: 'design-playground'
-						},
-						{
-							name: 'Building Blocks',
-							icon: 'icon-[clarity--blocks-group-line]',
-							hash: '#design-building-blocks',
-							id: 'design-building-blocks',
-							items: [
-								{
-									name: 'FlyonUI',
-									icon: 'icon-[mingcute--arrows-up-fill]',
-									pathname: resolve('/(layout)/playground/design/flyonui'),
-									id: 'flyonui'
-								},
-								{
-									name: 'Material Design',
-									icon: 'icon-[mdi--material-design]',
-									pathname: resolve('/(layout)/playground/design/materialdesign'),
-									id: 'material-design'
-								},
-								{
-									name: 'Svelte',
-									icon: 'icon-[tabler--brand-svelte]',
-									pathname: resolve('/(layout)/playground/design/svelte'),
-									id: 'svelte'
-								}
-							]
-						}
-					]
-				},
-				{
-					name: 'Data Flow & Navigation',
-					pathname: resolve('/(layout)/playground/dataflow'),
-					icon: 'icon-[iconoir--data-transfer-both]',
-					id: 'dataflow'
-				},
-				{
-					name: 'Backend Schema',
-					pathname: resolve('/(layout)/playground/backend-schema'),
-					icon: 'icon-[file-icons--openapi]',
-					id: 'backend-schema'
-				},
-				{
-					name: 'Counter',
-					pathname: resolve('/(layout)/playground/counter'),
-					icon: 'icon-[mdi--counter]',
-					id: 'counter'
-				},
-				{
-					name: 'Core',
-					pathname: resolve('/(layout)/playground/core'),
-					icon: 'icon-[streamline-ultimate--computer-chip-core]',
-					id: 'core'
-				},
-				{
-					name: 'Websockets',
-					pathname: resolve('/(layout)/playground/websockets'),
-					icon: 'icon-[solar--socket-linear]',
-					id: 'websockets'
-				}
-			]
-		}
-		// {
-		// 	name: 'Apps',
-		// 	pathname: resolve('/(layout)/(protected)/dashboard'),
-		// 	icon: 'icon-[material-symbols--dashboard-outline-rounded]',
-		// 	id: 'apps',
-		// 	items: []
-		// },
-	]);
+	// type SidebarLinkContent = {
+	// 	id: string;
+	// 	name: string;
+	// 	pathname?: string;
+	// 	hash?: string;
+	// 	icon: string;
+	// 	// TBD: implement <Guard> around SidebarItem based on this property!
+	// 	guarded?: boolean;
+	// };
 
-	let protectedSidebarLinks: SidebarItemContent[] = $state([
-		{
-			name: 'Dashboard',
-			pathname: resolve('/(layout)/(protected)/dashboard'),
-			icon: 'icon-[material-symbols--dashboard-outline-rounded]',
-			id: 'dashboard',
-			items: [
-				{
-					name: 'Demo Resources',
-					pathname: resolve('/(layout)/(protected)/dashboard/backend-demo-resource'),
-					icon: 'icon-[grommet-icons--resources]',
-					id: 'demo-resource',
-					items: [
-						{
-							name: 'Rest API',
-							pathname: resolve('/(layout)/(protected)/dashboard/backend-demo-resource/restapi'),
-							icon: 'icon-[dashicons--rest-api]',
-							id: 'demo-resource-restapi'
-						},
-						{
-							name: 'Socket IO',
-							pathname: resolve('/(layout)/(protected)/dashboard/backend-demo-resource/socketio'),
-							icon: 'icon-[tabler--brand-socket-io]',
-							id: 'demo-resource-socketio'
-						}
-					]
-				},
-				{
-					name: 'Hierarchical Resources',
-					pathname: resolve('/(layout)/(protected)/dashboard/backend-protected-hierarchy'),
-					icon: 'icon-[fluent-mdl2--family]',
-					id: 'hierarchical-resources'
-				},
-				{
-					name: 'Identities',
-					// pathname: resolve('/(layout)/(protected)/dashboard/identities'),
-					icon: 'icon-[material-symbols--identity-platform-outline-rounded]',
-					id: 'identities',
-					items: [
-						{
-							name: 'All identities',
-							pathname: resolve('/(layout)/(protected)/dashboard/identities'),
-							icon: 'icon-[mdi--account-multiple-outline]',
-							id: 'identities-all'
-						},
-						{
-							name: 'Microsoft',
-							pathname: resolve('/(layout)/(protected)/dashboard/msgraph'),
-							icon: 'icon-[fluent--person-20-filled]',
-							id: 'identities-microsoft'
-						}
-					]
-				},
-				{
-					name: 'Socket.IO',
-					pathname: resolve('/(layout)/(protected)/dashboard/socketio'),
-					icon: 'icon-[tabler--brand-socket-io]',
-					id: 'socketio'
-				}
-			]
-		}
-	]);
+	// type SidebarFolderContent = SidebarLinkContent & {
+	// 	items: SidebarItemContent[];
+	// };
+	// export type SidebarFolderContent = {
+	// 	id: string;
+	// 	name: string;
+	// 	pathname?: string;
+	// 	hash?: string;
+	// 	icon: string;
+	// 	items: SidebarItemContent[];
+	// };
+	// type SidebarItemContent = SidebarFolderContent | SidebarLinkContent;
+
+	// Sidebar:
+	// let sidebarLinks: SidebarItemContent[] = $state([
+	// 	{
+	// 		name: 'Docs',
+	// 		pathname: resolve('/(plain)/docs'),
+	// 		icon: 'icon-[oui--documentation]',
+	// 		id: 'docs',
+	// 		items: []
+	// 	},
+	// 	{
+	// 		name: 'Playground',
+	// 		pathname: resolve('/(layout)/playground'),
+	// 		icon: 'icon-[mdi--playground-seesaw]',
+	// 		id: 'playground',
+	// 		items: [
+	// 			{
+	// 				name: 'Overview',
+	// 				pathname: resolve('/(layout)/playground') + '#top',
+	// 				icon: 'icon-[mdi--playground-seesaw]',
+	// 				id: 'overview'
+	// 			},
+	// 			{
+	// 				name: 'User Interface',
+	// 				pathname: resolve('/(layout)/playground/user-interface'),
+	// 				icon: 'icon-[mdi--monitor-dashboard]',
+	// 				id: 'user-interface',
+	// 				items: []
+	// 			},
+	// 			{
+	// 				name: 'Components',
+	// 				pathname: resolve('/(layout)/playground/components') + '?prod=false&develop=true',
+	// 				icon: 'icon-[tabler--components]',
+	// 				id: 'components',
+	// 				items: []
+	// 			},
+	// 			{
+	// 				name: 'Design',
+	// 				pathname: resolve('/(layout)/playground/design'),
+	// 				icon: 'icon-[fluent--design-ideas-20-regular]',
+	// 				id: 'design',
+	// 				items: [
+	// 					{
+	// 						name: 'Backgrounds',
+	// 						icon: 'icon-[mdi--palette-outline]',
+	// 						hash: '#backgrounds-and-surfaces',
+	// 						id: 'backgrounds'
+	// 					},
+	// 					{
+	// 						name: 'Foregrounds',
+	// 						icon: 'icon-[mdi--palette-outline]',
+	// 						hash: '#foregrounds',
+	// 						id: 'foregrounds'
+	// 					},
+	// 					{
+	// 						name: 'Components',
+	// 						icon: 'icon-[mdi--palette-outline]',
+	// 						hash: '#components',
+	// 						id: 'components'
+	// 					},
+	// 					{
+	// 						name: 'Playground',
+	// 						icon: 'icon-[mdi--playground-seesaw]',
+	// 						hash: '#design-playground',
+	// 						id: 'design-playground'
+	// 					},
+	// 					{
+	// 						name: 'Building Blocks',
+	// 						icon: 'icon-[clarity--blocks-group-line]',
+	// 						hash: '#design-building-blocks',
+	// 						id: 'design-building-blocks',
+	// 						items: [
+	// 							{
+	// 								name: 'FlyonUI',
+	// 								icon: 'icon-[mingcute--arrows-up-fill]',
+	// 								pathname: resolve('/(layout)/playground/design/flyonui'),
+	// 								id: 'flyonui'
+	// 							},
+	// 							{
+	// 								name: 'Material Design',
+	// 								icon: 'icon-[mdi--material-design]',
+	// 								pathname: resolve('/(layout)/playground/design/materialdesign'),
+	// 								id: 'material-design'
+	// 							},
+	// 							{
+	// 								name: 'Svelte',
+	// 								icon: 'icon-[tabler--brand-svelte]',
+	// 								pathname: resolve('/(layout)/playground/design/svelte'),
+	// 								id: 'svelte'
+	// 							}
+	// 						]
+	// 					}
+	// 				]
+	// 			},
+	// 			{
+	// 				name: 'Data Flow & Navigation',
+	// 				pathname: resolve('/(layout)/playground/dataflow'),
+	// 				icon: 'icon-[iconoir--data-transfer-both]',
+	// 				id: 'dataflow'
+	// 			},
+	// 			{
+	// 				name: 'Backend Schema',
+	// 				pathname: resolve('/(layout)/playground/backend-schema'),
+	// 				icon: 'icon-[file-icons--openapi]',
+	// 				id: 'backend-schema'
+	// 			},
+	// 			{
+	// 				name: 'Counter',
+	// 				pathname: resolve('/(layout)/playground/counter'),
+	// 				icon: 'icon-[mdi--counter]',
+	// 				id: 'counter'
+	// 			},
+	// 			{
+	// 				name: 'Core',
+	// 				pathname: resolve('/(layout)/playground/core'),
+	// 				icon: 'icon-[streamline-ultimate--computer-chip-core]',
+	// 				id: 'core'
+	// 			},
+	// 			{
+	// 				name: 'Websockets',
+	// 				pathname: resolve('/(layout)/playground/websockets'),
+	// 				icon: 'icon-[solar--socket-linear]',
+	// 				id: 'websockets'
+	// 			}
+	// 		]
+	// 	}
+	// 	// {
+	// 	// 	name: 'Apps',
+	// 	// 	pathname: resolve('/(layout)/(protected)/dashboard'),
+	// 	// 	icon: 'icon-[material-symbols--dashboard-outline-rounded]',
+	// 	// 	id: 'apps',
+	// 	// 	items: []
+	// 	// },
+	// ]);
+
+	// let protectedSidebarLinks: SidebarItemContent[] = $state([
+	// 	{
+	// 		name: 'Dashboard',
+	// 		pathname: resolve('/(layout)/(protected)/dashboard'),
+	// 		icon: 'icon-[material-symbols--dashboard-outline-rounded]',
+	// 		id: 'dashboard',
+	// 		items: [
+	// 			{
+	// 				name: 'Overview',
+	// 				pathname: resolve('/(layout)/(protected)/dashboard') + '#top',
+	// 				icon: 'icon-[material-symbols--dashboard-outline-rounded]',
+	// 				id: 'overview'
+	// 			},
+	// 			{
+	// 				name: 'Demo Resources',
+	// 				pathname: resolve('/(layout)/(protected)/dashboard/backend-demo-resource'),
+	// 				icon: 'icon-[grommet-icons--resources]',
+	// 				id: 'demo-resource',
+	// 				items: [
+	// 					{
+	// 						name: 'Rest API',
+	// 						pathname: resolve('/(layout)/(protected)/dashboard/backend-demo-resource/restapi'),
+	// 						icon: 'icon-[dashicons--rest-api]',
+	// 						id: 'demo-resource-restapi'
+	// 					},
+	// 					{
+	// 						name: 'Socket IO',
+	// 						pathname: resolve('/(layout)/(protected)/dashboard/backend-demo-resource/socketio'),
+	// 						icon: 'icon-[tabler--brand-socket-io]',
+	// 						id: 'demo-resource-socketio'
+	// 					}
+	// 				]
+	// 			},
+	// 			{
+	// 				name: 'Hierarchical Resources',
+	// 				pathname: resolve('/(layout)/(protected)/dashboard/backend-protected-hierarchy'),
+	// 				icon: 'icon-[fluent-mdl2--family]',
+	// 				id: 'hierarchical-resources'
+	// 			},
+	// 			{
+	// 				name: 'Identities',
+	// 				// pathname: resolve('/(layout)/(protected)/dashboard/identities'),
+	// 				icon: 'icon-[material-symbols--identity-platform-outline-rounded]',
+	// 				id: 'identities',
+	// 				items: [
+	// 					{
+	// 						name: 'All identities',
+	// 						pathname: resolve('/(layout)/(protected)/dashboard/identities'),
+	// 						icon: 'icon-[mdi--account-multiple-outline]',
+	// 						id: 'identities-all'
+	// 					},
+	// 					{
+	// 						name: 'Microsoft',
+	// 						pathname: resolve('/(layout)/(protected)/dashboard/msgraph'),
+	// 						icon: 'icon-[fluent--person-20-filled]',
+	// 						id: 'identities-microsoft'
+	// 					}
+	// 				]
+	// 			},
+	// 			{
+	// 				name: 'Socket.IO',
+	// 				pathname: resolve('/(layout)/(protected)/dashboard/socketio'),
+	// 				icon: 'icon-[tabler--brand-socket-io]',
+	// 				id: 'socketio'
+	// 			}
+	// 		]
+	// 	}
+	// ]);
 
 	let debugSidebarLinks: SidebarItemContent[] = $state([
 		{
 			name: 'Page 1',
-			pathname: resolve('/(layout)/playground/page1'),
+			pathname: resolve('/(layout)/playground/user-interface/navbar/custom-scrolltracking/page1'),
 			icon: 'icon-[tabler--user]',
 			id: 'page1',
 			items: []
 		},
 		{
 			name: 'Page 2',
-			pathname: resolve('/(layout)/playground/page2'),
+			pathname: resolve('/(layout)/playground/user-interface/navbar/custom-scrolltracking/page2'),
 			icon: 'icon-[icon-park-outline--page]',
 			id: 'page2',
 			items: [
@@ -372,7 +408,7 @@
 		},
 		{
 			name: 'Page 3',
-			pathname: resolve('/(layout)/playground/page3'),
+			pathname: resolve('/(layout)/playground/user-interface/navbar/custom-scrolltracking/page3'),
 			icon: 'icon-[icon-park-outline--page]',
 			id: 'page3',
 			items: [
@@ -431,7 +467,7 @@
 		{
 			id: 'further-page',
 			name: 'Further Page',
-			pathname: resolve('/(layout)/playground/page4'),
+			pathname: resolve('/(layout)/playground/user-interface/navbar/custom-scrolltracking/page4'),
 			icon: 'icon-[tabler--mail]',
 			items: [
 				{
@@ -475,21 +511,45 @@
 				{
 					name: 'Sub-page 4.1',
 					icon: 'icon-[mingcute--directory-line]',
-					pathname: resolve('/(layout)/playground/page4/page4-1'),
+					pathname: resolve(
+						'/(layout)/playground/user-interface/navbar/custom-scrolltracking/page4/page4-1'
+					),
 					id: 'page4p1',
 					items: [
 						{
 							id: 'page4p1-loreum1',
 							name: 'Loreum 1 pg4.1',
 							icon: 'icon-[mdi--text]',
-							pathname: resolve('/(layout)/playground/page4/page4-1'),
-							hash: '#loreum1'
+							pathname: resolve(
+								'/(layout)/playground/user-interface/navbar/custom-scrolltracking/page4/page4-1'
+							),
+							hash: '#loreum1',
+							items: [
+								{
+									id: 'page4p1p1',
+									name: 'Page 4.1.1',
+									icon: 'icon-[mdi--text]',
+									pathname: resolve(
+										'/(layout)/playground/user-interface/navbar/custom-scrolltracking/page4/page4-1/page4-1-1'
+									)
+								},
+								{
+									id: 'page4p1p2',
+									name: 'Page 4.1.2',
+									icon: 'icon-[mdi--text]',
+									pathname: resolve(
+										'/(layout)/playground/user-interface/navbar/custom-scrolltracking/page4/page4-1/page4-1-2'
+									)
+								}
+							]
 						},
 						{
 							id: 'page4p1-loreum2',
 							name: 'Loreum 2 pg4.2',
 							icon: 'icon-[mdi--text]',
-							pathname: resolve('/(layout)/playground/page4/page4-1'),
+							pathname: resolve(
+								'/(layout)/playground/user-interface/navbar/custom-scrolltracking/page4/page4-1'
+							),
 							hash: '#loreum2'
 						}
 					]
@@ -497,24 +557,36 @@
 				{
 					name: 'Sub-page 4.2',
 					icon: 'icon-[material-symbols--folder-outline-rounded]',
-					pathname: resolve('/(layout)/playground/page4/page4-2'),
+					pathname: resolve(
+						'/(layout)/playground/user-interface/navbar/custom-scrolltracking/page4/page4-2'
+					),
 					id: 'page4p2',
 					items: [
 						{
 							id: 'page4p2-loreum1',
 							name: 'Loreum 1 pg4.2',
 							icon: 'icon-[mdi--text]',
-							pathname: resolve('/(layout)/playground/page4/page4-2'),
+							pathname: resolve(
+								'/(layout)/playground/user-interface/navbar/custom-scrolltracking/page4/page4-2'
+							),
 							hash: '#loreum1'
 						},
 						{
 							id: 'page4p2-loreum2',
 							name: 'Loreum 2 pg4.2',
 							icon: 'icon-[mdi--text]',
-							pathname: resolve('/(layout)/playground/page4/page4-2'),
+							pathname: resolve(
+								'/(layout)/playground/user-interface/navbar/custom-scrolltracking/page4/page4-2'
+							),
 							hash: '#loreum2'
 						}
 					]
+				},
+				{
+					id: 'page4-loreum5',
+					name: 'Loreum 5',
+					icon: 'icon-[mdi--text]',
+					hash: '#loreum5'
 				},
 				{
 					id: 'page4-loreum6',
@@ -526,7 +598,7 @@
 		},
 		{
 			name: 'Page 5',
-			pathname: resolve('/(layout)/playground/page5'),
+			pathname: resolve('/(layout)/playground/user-interface/navbar/custom-scrolltracking/page5'),
 			icon: 'icon-[tabler--user]',
 			id: 'page5',
 			items: [
@@ -545,9 +617,6 @@
 			]
 		}
 	]);
-
-	// TBD: potential useful features to encaspulate the scroll into:
-	// onMount, afterNavigate $effect, (beforeNavigate), (onNavigate), Attachment, onscrollend, derived, derived.by(), ...?
 
 	// Reactive context for IntersectionObserver (SSR-safe)
 	let intersectionObserver = $state<IntersectionObserver | null>(null);
@@ -697,6 +766,10 @@
 			previousScrollY = currentScrollY;
 		}
 	};
+
+	// onMount(() => {
+	// 	document.addEventListener('beforeScroll.scrollspy', showNavbarOnSidebarClick);
+	// });
 </script>
 
 <svelte:window
@@ -758,6 +831,7 @@
 		class="navbar rounded-box shadow-shadow border-outline-variant bg-base-200 start-0 top-0 z-1 flex justify-between border-1 border-b px-3 shadow-md transition-all duration-300 max-sm:h-14 md:items-center"
 		bind:this={navBar}
 	>
+		<!-- bg-transparent -->
 		<!-- {@attach updateNavbarBottom} -->
 		<div class="navbar-start rtl:[--placement:bottom-end]">
 			<ul class="menu menu-horizontal flex flex-nowrap items-center">
@@ -879,10 +953,16 @@
 	</nav>
 </header>
 
+<!-- class="h-screen w-screen overflow-x-scroll overflow-y-auto" -->
+<!-- bind:this={scrollspyParent} -->
+<!-- use:applyTheming -->
+<!-- id="scrollspy-scrollable-parent" -->
+<!-- onscrollend={mainScrollEnd} -->
 <main
 	class="static w-screen transition-[padding-top] duration-300"
 	style="padding-top: {navBarBottom + 4}px;"
 >
+	<!-- onscroll={toggleTopNavBar} -->
 	<!-- class="border-error h-screen w-screen overflow-x-scroll overflow-y-auto border border-4" -->
 	<!-- bind:session={data.session} -->
 	<WelcomeModal
@@ -895,6 +975,7 @@
 	/>
 
 	<!-- TBD: put sidebar into component -->
+	<!-- sm:absolute -->
 	<aside
 		id="collapsible-mini-sidebar"
 		class="overlay overlay-minified:w-19 overlay-open:translate-x-0 drawer drawer-start bg-base-150 border-base-content/20 start-0 top-0 hidden w-66 border-e [--auto-close:sm] sm:z-0 sm:flex sm:translate-x-0 sm:shadow-none"
@@ -911,12 +992,12 @@
 				<Logo />
 			</div>
 		</div>
-		<div class="drawer-body px-2 pt-4">
+		<div class="drawer-body px-2">
 			<ul class="menu p-0">
-				<!-- <li><a href={resolve('/(layout)/playground/page2')}>Page 2 - top</a></li>
-				<li><a href={resolve('/(layout)/playground/page2') + '#pg2loreum1'}>Page 2 - Lor. 1</a></li>
-				<li><a href={resolve('/(layout)/playground/page2') + '#pg2loreum2'}>Page 2 - Lor. 2</a></li>
-				<li><a href={resolve('/(layout)/playground/page2') + '#pg2loreum4'}>Page 2 - Lor. 4</a></li> -->
+				<!-- <li><a href={resolve('/(layout)/playground/user-interface/navbar/custom-scrolltracking/page2')}>Page 2 - top</a></li>
+				<li><a href={resolve('/(layout)/playground/user-interface/navbar/custom-scrolltracking/page2') + '#pg2loreum1'}>Page 2 - Lor. 1</a></li>
+				<li><a href={resolve('/(layout)/playground/user-interface/navbar/custom-scrolltracking/page2') + '#pg2loreum2'}>Page 2 - Lor. 2</a></li>
+				<li><a href={resolve('/(layout)/playground/user-interface/navbar/custom-scrolltracking/page2') + '#pg2loreum4'}>Page 2 - Lor. 4</a></li> -->
 				{@render sidebarPartItem('/', 'icon-[material-symbols--home-outline-rounded]', 'Home')}
 				{@render sidebarPartItem('/docs', 'icon-[oui--documentation]', 'Docs', 'md:hidden')}
 				{@render sidebarPartItem(
@@ -955,45 +1036,58 @@
 			</ul>
 			<div class="divider"></div>
 			<ul class="menu p-0">
-				{#each sidebarLinks as sidebarItem (sidebarItem.id)}
-					<!-- TBD: remove topoffset -->
-					<SidebarItem
+				<!-- {#each sidebarLinks as sidebarItem (sidebarItem.id)} -->
+				<!-- TBD: remove topoffset -->
+				<!-- <SidebarItem
 						content={{ ...sidebarItem, pathname: sidebarItem.pathname || page.url.pathname }}
 						topLevel={true}
-					/>
-					<!-- {scrollspyParent} -->
-					<!-- topoffset={navBarBottom} -->
-					<!-- topoffset={internalNavigationTarget} -->
-					<!-- topoffset={navBarBottom} -->
-					<!-- topoffset={`[--scrollspy-offset:${navBarBottom + 8}]`} -->
-				{/each}
-				<Guard>
-					{#each protectedSidebarLinks as protectedSidebarItem (protectedSidebarItem.id)}
-						<SidebarItem
+						{scrollspyParent}
+					/> -->
+				<!-- {scrollspyParent} -->
+				<!-- topoffset={navBarBottom} -->
+				<!-- topoffset={internalNavigationTarget} -->
+				<!-- topoffset={navBarBottom} -->
+				<!-- topoffset={`[--scrollspy-offset:${navBarBottom + 8}]`} -->
+				<!-- {/each} -->
+				<!-- <Guard> -->
+				<!-- {#each protectedSidebarLinks as protectedSidebarItem (protectedSidebarItem.id)} -->
+				<!-- <SidebarItem
 							content={{
 								...protectedSidebarItem,
 								pathname: protectedSidebarItem.pathname || page.url.pathname
 							}}
 							topLevel={true}
-						/>
-						<!-- {scrollspyParent} -->
-						<!-- topoffset={navBarBottom} -->
-					{/each}
-				</Guard>
-				{#if debug}
-					{#each debugSidebarLinks as debugSidebarItem (debugSidebarItem.id)}
-						<SidebarItem
-							content={{
-								...debugSidebarItem,
-								pathname: debugSidebarItem.pathname || page.url.pathname
-							}}
-							topLevel={true}
-						/>
-						<!-- {scrollspyParent} -->
-						<!-- topoffset={navBarBottom} -->
-					{/each}
-				{/if}
+							{scrollspyParent}
+						/> -->
+				<!-- {scrollspyParent} -->
+				<!-- topoffset={navBarBottom} -->
+				<!-- {/each} -->
+				<!-- </Guard> -->
+
+				{#each debugSidebarLinks as debugSidebarItem (debugSidebarItem.id)}
+					<SidebarItem
+						content={{
+							...debugSidebarItem,
+							pathname: debugSidebarItem.pathname || page.url.pathname
+						}}
+						topLevel={true}
+					/>
+					<!-- {scrollspyParent} -->
+				{/each}
+				<!-- {#each Array(50) as _, index}
+					<li>Filler Item {index + 1}</li>
+				{/each} -->
 			</ul>
+			<!-- <ul data-scrollspy="#scrollspy" data-scrollspy-scrollable-parent="#app-body">
+				<li>
+					<a
+						href="./page2#pg2loreum2"
+						class="text-base-content/80 hover:text-base-content scrollspy-active:text-primary block py-0.5 font-medium"
+					>
+						Page 2 - Loreum 2
+					</a>
+				</li>
+			</ul> -->
 		</div>
 		<div class="mb-2 flex items-center gap-1">
 			<label class="label label-text text-base" for="debugSwitcher">Debug: </label>
@@ -1004,23 +1098,24 @@
 				id="debugSwitcher"
 			/>
 		</div>
-		{#if debug}
-			scrollY: {scrollY.current}
-			<br />
-			navBarBottom: {navBarBottom}
-		{/if}
+		scrollY: {scrollY.current}
+		<br />
+		navBarBottom: {navBarBottom}
 		<!-- {navBarBottom}
 		<br />
 		{locationPageAndHash?.page}{locationPageAndHash?.hash}
 		<br /> -->
 	</aside>
 	<div class="bg-base-100 xs:mx-5 xs:mt-5 h-screen w-screen px-2">
+		<!-- style="padding-top: {navBarBottom}px;" -->
 		<div
-			id="scrollspy"
 			class="sm:overlay-minified:ps-19 overlay-open:ps-0 space-y-4 pt-2 transition-all duration-300 sm:mx-2 sm:mt-2 sm:ps-66"
 		>
+			<!-- id="scrollspy" -->
 			<!-- bind:this={contentArea} -->
 			{@render children?.()}
+			<!-- <div class="mt-100">Spaceholder</div>
+			<a href={resolve('/(layout)/playground/page2') + '#pg2loreum2'}>Page2 Loreum2</a> -->
 			<!-- NavBarBottom: {navBarBottom}
 			<br />
 			ContentAreaTop: {contentAreaTop}

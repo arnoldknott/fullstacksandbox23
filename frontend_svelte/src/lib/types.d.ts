@@ -33,14 +33,15 @@ export type ClientSession = {
 };
 
 // Sidebar:
-
-export type SidebarContent = {
-	id: string;
-	name: string;
-	pathname: string;
-	icon: string;
-	items: SidebarItemContent[];
-};
+// TBD: delete this one after changing +layout.svelte and SidebarContent.svelte in sidebar/iteration to use new types!
+// Or just delete the whole history of the sidebar development?
+// export type SidebarContent = {
+// 	id: string;
+// 	name: string;
+// 	pathname: string;
+// 	icon: string;
+// 	items: SidebarItemContent[];
+// };
 
 type SidebarLinkContent = {
 	id: string;
@@ -62,6 +63,16 @@ export type SidebarFolderContent = SidebarLinkContent & {
 // 	items: SidebarItemContent[];
 // };
 type SidebarItemContent = SidebarFolderContent | SidebarLinkContent;
+
+// Simplified after refactoring the Sidebar to use only one type:
+export type SidebarItem = {
+	id: string;
+	name: string;
+	pathname?: string;
+	hash?: string;
+	icon: string;
+	items?: SidebarContent[];
+};
 
 // Access types:
 export interface AccessPolicy {
