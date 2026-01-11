@@ -40,16 +40,26 @@
 		hasActiveChild = childActiveStates.some((active) => active);
 	});
 
-	const thisPage = $derived.by(() => (pathname: string) => pathname === page.url.pathname);
-	const createHref = $derived.by(() => (destinationPathname: string, hash?: string) => {
-		let href = '';
-		if (!hash) href = destinationPathname;
-		else if (thisPage(destinationPathname)) {
-			href = hash;
-		} else href = `${destinationPathname}${hash}`;
-		return href;
-	});
-	let href = $derived(createHref(pathname!, hash));
+	// const thisPage = $derived.by(() => (pathname: string) => pathname === page.url.pathname);
+	// const createHref = $derived.by(() => (destinationPathname: string, hash?: string) => {
+	// 	let href = '';
+	// 	if (!hash) href = destinationPathname;
+	// 	else if (thisPage(destinationPathname)) {
+	// 		href = hash;
+	// 	} else href = `${destinationPathname}${hash}`;
+	// 	return href;
+	// });
+	// let href = $derived(createHref(pathname!, hash));
+	const thisPage = $derived(pathname === page.url.pathname);
+	// const createHref = $derived.by(() => (destinationPathname: string, hash?: string) => {
+	// 	let href = '';
+	// 	if (!hash) href = destinationPathname;
+	// 	else if (thisPage(destinationPathname)) {
+	// 		href = hash;
+	// 	} else href = `${destinationPathname}${hash}`;
+	// 	return href;
+	// });
+	let href = $derived(!hash ? pathname! : thisPage ? hash : `${pathname}${hash}`);
 	// The id of the element, this SidebarItem links to (if any):
 	let trackedElementId = $derived(href.startsWith('#') ? href.substring(1) : null);
 
@@ -79,11 +89,11 @@
 	const isActive = $derived(
 		isFolder
 			? (trackedElementId && $activeSection === trackedElementId) || hasActiveChild
-			: (trackedElementId && thisPage(pathname!) && $activeSection === trackedElementId) ||
-					(thisPage(pathname!) && href !== hash)
+			: (trackedElementId && thisPage && $activeSection === trackedElementId) ||
+					(thisPage && href !== hash)
 	);
 	const isVisible = $derived(
-		(trackedElementId && thisPage(pathname!) && $visibleSections?.has(trackedElementId)) || false
+		(trackedElementId && thisPage && $visibleSections?.has(trackedElementId)) || false
 	);
 	const linkOpacity = $derived(isActive ? 'opacity-100' : isVisible ? 'opacity-95' : 'opacity-70');
 
@@ -123,7 +133,7 @@
 {#snippet collapseList()}
 	<ul
 		id={id + '-collapse'}
-		class="collapse {thisPage(pathname!)
+		class="collapse {thisPage
 			? 'open'
 			: 'hidden'} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
 		aria-labelledby={id + '-control'}
@@ -177,9 +187,7 @@
 			<button
 				bind:this={collapseControl}
 				type="button"
-				class="btn btn-circle btn-sm btn-gradient btn-base-300 collapse-toggle {thisPage(
-					pathname!
-				) || isActive
+				class="btn btn-circle btn-sm btn-gradient btn-base-300 collapse-toggle {thisPage || isActive
 					? 'open'
 					: ''}"
 				id={id + '-control'}
