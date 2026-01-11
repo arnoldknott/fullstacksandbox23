@@ -1,6 +1,4 @@
 <script lang="ts">
-	// import type { SidebarItemContent, SidebarFolderContent } from '$lib/types';
-	import type { SidebarFolderContent } from '$lib/types';
 	import type { SidebarItem as SideBarItemType } from '$lib/types';
 	import SidebarItem from './SidebarItem.svelte';
 	import { getContext } from 'svelte';
@@ -120,7 +118,7 @@
 				content={{
 					...item,
 					pathname: item.pathname || pathname
-				} as SidebarFolderContent}
+				} as SideBarItemType}
 				bind:isActiveChild={childActiveStates[index]}
 			/>
 		{/each}
