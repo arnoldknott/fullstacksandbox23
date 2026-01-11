@@ -8,8 +8,6 @@
 	import type { Attachment } from 'svelte/attachments';
 	import { initCollapse } from '$lib/userInterface';
 	import { page } from '$app/state';
-	import SidebarFolder from './SidebarFolder.svelte';
-	import SidebarLink from './SidebarLink.svelte';
 
 	let {
 		content,
