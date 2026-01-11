@@ -31,7 +31,10 @@
 	// console.log("=== SidebarFolder.svelte - topoffset ===");
 	// console.log(topoffset);
 
+	// TBD: refactor to avoid duplicate code from SideBarItem
 	const thisPage = $derived.by(() => (pathname: string) => pathname === page.url.pathname);
+	// console.log('=== SidebarFolder.svelte - thisPage(pathname!) ===');
+	// $effect(() => console.log(pathname));
 	const createHref = $derived.by(() => (destinationPathname: string, hash?: string) => {
 		let href = '';
 		if (!hash) href = destinationPathname;
@@ -53,6 +56,10 @@
 	const activeSection = scrollObserverContext?.activeSection;
 	const isActive = $derived((elementId && $activeSection === elementId) || hasActiveChild);
 
+	// Determine opacity based on visibility
+	const linkOpacity = $derived(isActive ? 'opacity-100' : 'opacity-70');
+
+	// TBD: refactor to avoid duplicate code from SideBarLink
 	const addElementToObserver: Attachment = () => {
 		// console.log('=== SidebarLink.svelte - addElementToObserver - attaching ===');
 		// Guard against missing observer (will be available after parent mounts)
@@ -93,6 +100,9 @@
 		}
 	});
 
+	// needed somewhere?
+	// initCollapse(document.getElementById(id + '-collapse')!);
+
 	const openSidebar = () => {
 		const { element } = window.HSOverlay.getInstance('#collapsible-mini-sidebar', true);
 		element.open();
@@ -109,12 +119,6 @@
 		aria-labelledby={id + '-control'}
 		{@attach initCollapse}
 	>
-		<!-- data-pathname={pathname} -->
-		<!-- {`[--scrollspy-offset:${topoffset}]`.toString()} -->
-		<!-- max-sm:[--scrollspy-offset:56px] -->
-		<!-- {`[--scrollspy-offset:${topoffset}]`.toString()} -->
-		<!-- {topoffset} -->
-		<!-- add [--scrollspy-offset:86] here conditionally with number being navbarBottom variable from layout. -->
 		{#each items as item, index (item.id)}
 			<SidebarItem
 				content={{
@@ -123,41 +127,19 @@
 				} as SidebarFolderContent}
 				bind:isActiveChild={childActiveStates[index]}
 			/>
-			<!-- {scrollspyParent} -->
 		{/each}
 	</ul>
 {/snippet}
 
-<!-- {#if topLevel || (pathname && pathname !== page.url.pathname)}
-	<li class="space-y-0.5">
-		<button
-			type="button"
-			class="collapse-toggle {thisPage(pathname!) ? 'open' : ''} collapse-open:bg-base-content/10"
-			id={id + '-control'}
-			data-collapse={'#' + id + '-collapse'}
-			{@attach initCollapse}
-			{@attach toggleCollapse}
-		>
-			<span class="{icon} size-5"></span>
-			<span class="overlay-minified:hidden">{name}</span>
-			<span
-				class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:hidden size-4 transition-all duration-300"
-			></span>
-			<span
-				class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:block {topLevel
-					? 'overlay-minified:rotate-270'
-					: ''} hidden size-4 transition-all duration-300"
-				role="button"
-				tabindex="0"
-				onclick={() => openSidebar()}
-				onkeydown={() => openSidebar()}
-			></span>
-		</button>
-		{@render collapseList()}
-	</li>
-{:else} -->
+<!-- TBD: refactor to avoid duplicate code from SideBarItem -->
 <li class="space-y-0.5">
-	<a {href} {@attach addElementToObserver}>
+	<a
+		{href}
+		{@attach addElementToObserver}
+		class="{isActive || hasActiveChild
+			? 'text-base-content italic'
+			: ' text-base-content-variant'} items-center gap-x-2 transition-opacity duration-600 hover:opacity-100 {linkOpacity}"
+	>
 		{#if topLevel}
 			<span class="{icon} size-5"></span>
 		{:else}
@@ -207,10 +189,6 @@
 				onkeydown={() => openSidebar()}
 			></span>
 		</button>
-		<!-- <span
-				class="icon-[tabler--chevron-down] collapse-open:rotate-180 size-4 transition-all duration-300"
-			></span> -->
 	</a>
 	{@render collapseList()}
 </li>
-<!-- {/if} -->

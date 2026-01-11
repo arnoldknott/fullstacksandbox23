@@ -135,12 +135,6 @@
 			id: 'playground',
 			items: [
 				{
-					name: 'Overview',
-					pathname: resolve('/(layout)/playground') + '#top',
-					icon: 'icon-[mdi--playground-seesaw]',
-					id: 'overview'
-				},
-				{
 					name: 'User Interface',
 					pathname: resolve('/(layout)/playground/user-interface'),
 					icon: 'icon-[mdi--monitor-dashboard]',
@@ -260,12 +254,6 @@
 			icon: 'icon-[material-symbols--dashboard-outline-rounded]',
 			id: 'dashboard',
 			items: [
-				{
-					name: 'Overview',
-					pathname: resolve('/(layout)/(protected)/dashboard') + '#top',
-					icon: 'icon-[material-symbols--dashboard-outline-rounded]',
-					id: 'overview'
-				},
 				{
 					name: 'Demo Resources',
 					pathname: resolve('/(layout)/(protected)/dashboard/backend-demo-resource'),

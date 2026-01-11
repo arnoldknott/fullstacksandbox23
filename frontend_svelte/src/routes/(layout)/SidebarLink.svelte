@@ -40,7 +40,9 @@
 	const isVisible = $derived(elementId && thisPage && $visibleSections?.has(elementId));
 
 	// Determine opacity based on visibility
-	const linkOpacity = $derived(isActive ? 'opacity-100' : isVisible ? 'opacity-95' : 'opacity-70');
+	const linkOpacity = $derived(
+		isActive || thisPage ? 'opacity-100' : isVisible ? 'opacity-95' : 'opacity-70'
+	);
 
 	const addElementToObserver: Attachment = () => {
 		// Guard against missing observer (will be available after parent mounts)

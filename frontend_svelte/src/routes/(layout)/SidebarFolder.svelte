@@ -50,6 +50,9 @@
 	const activeSection = scrollObserverContext?.activeSection;
 	const isActive = $derived((elementId && $activeSection === elementId) || hasActiveChild);
 
+	// Determine opacity based on visibility
+	const linkOpacity = $derived(isActive ? 'opacity-100' : 'opacity-70');
+
 	const addElementToObserver: Attachment = () => {
 		// Guard against missing observer (will be available after parent mounts)
 		if (scrollObserverContext?.observer) {
@@ -114,7 +117,13 @@
 {/snippet}
 
 <li class="space-y-0.5">
-	<a {href} {@attach addElementToObserver}>
+	<a
+		{href}
+		{@attach addElementToObserver}
+		class="{isActive || hasActiveChild
+			? 'text-base-content italic'
+			: ' text-base-content-variant'}  items-center gap-x-2 transition-opacity duration-600 hover:opacity-100 {linkOpacity}"
+	>
 		{#if topLevel}
 			<span class="{icon} size-5"></span>
 		{:else}
