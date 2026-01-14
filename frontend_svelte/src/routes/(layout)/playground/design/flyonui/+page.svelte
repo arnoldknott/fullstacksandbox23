@@ -1779,15 +1779,16 @@
 		<p class="text-center">Fonts families</p>
 		<div class="grid grid-cols-1 divide-y-4">
 			<div class="py-2 font-sans">
-				Some text in <em>sans</em> font family, should be using <b>Robot</b> Google Fonts extending
-				default theme in <code>app.css</code>.
-			</div>
-			<div class="py-2 font-serif">
-				Some text in <em>serif</em> font family, should be using <b>Merriweather</b> Google Fonts,
+				Use class <em>font-sans</em> as font family, should be using <b>Robot</b> Google Fonts
 				extending default theme in <code>app.css</code>.
 			</div>
+			<div class="py-2 font-serif">
+				Use class <em>font-serif</em> as font family, should be using <b>Merriweather</b> Google
+				Fonts, extending default theme in <code>app.css</code>.
+			</div>
 			<div class="py-2 font-mono">
-				Some text in <em>mono</em> font family, still <b>TailwindCSS</b> default, not overwritten in
+				Use class <em>font-mono</em> as font family, still <b>TailwindCSS</b> default, not
+				overwritten in
 				<code>app.css</code> yet
 			</div>
 		</div>
