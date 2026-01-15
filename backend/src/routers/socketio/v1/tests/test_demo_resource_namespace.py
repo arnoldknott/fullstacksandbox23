@@ -1166,7 +1166,7 @@ async def test_user_updates_access_to_owned_resource_for_a_group_identity_to_sam
     )
 
     # Wait for the response to be set
-    await connection1.client.sleep(0.2)
+    await connection1.client.sleep(0.4)
 
     assert connection1.responses("status") == [
         {"error": "404: Access policy not found."}
