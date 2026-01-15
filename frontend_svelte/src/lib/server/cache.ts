@@ -58,15 +58,15 @@ class RedisCache {
 
 		// IMPORTANT: without an 'error' handler, Node will treat it as an unhandled
 		// EventEmitter error and crash the process (which stops the container).
-		// Error details suppressed - these are expected Azure networking transients.
-		this.redisClient.on('error', () => {
-			// Silently handle - prevents process crash
+		this.redisClient.on('error', (_err) => {
+			console.error('🔥 🥞 cache - server - redisClient error');
+			// console.error(err);
 		});
 		this.redisClient.on('reconnecting', () => {
-			// Silently reconnecting
+			console.warn('⚠️ 🥞 cache - server - redisClient reconnecting');
 		});
 		this.redisClient.on('end', () => {
-			// Connection ended, will auto-reconnect
+			console.warn('⚠️ 🥞 cache - server - redisClient connection ended');
 		});
 		this.redisClient.on('ready', () => {
 			console.log('👍 🥞 cache - server - redisClient ready');
