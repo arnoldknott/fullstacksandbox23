@@ -13,7 +13,6 @@ const sessionTimeOut = appConfig.session_timeout;
 class RedisCache {
 	redisClient: RedisClientType | null;
 	private handlersAttached: boolean = false;
-	private keepAliveInterval: NodeJS.Timeout | null = null;
 
 	constructor() {
 		this.redisClient = this.startClient();
@@ -65,42 +64,13 @@ class RedisCache {
 		});
 		this.redisClient.on('reconnecting', () => {
 			console.warn('⚠️ 🥞 cache - server - redisClient reconnecting');
-			this.stopKeepAlive();
 		});
 		this.redisClient.on('end', () => {
 			console.warn('⚠️ 🥞 cache - server - redisClient connection ended');
-			this.stopKeepAlive();
 		});
 		this.redisClient.on('ready', () => {
 			console.log('👍 🥞 cache - server - redisClient ready');
-			this.startKeepAlive();
 		});
-	}
-
-	private startKeepAlive() {
-		if (this.keepAliveInterval || !this.redisClient) return;
-
-		// Send PING every 2 minutes to keep connection alive through Azure Container Apps
-		this.keepAliveInterval = setInterval(async () => {
-			if (this.redisClient?.isOpen) {
-				try {
-					await this.redisClient.ping();
-					console.log('🏓 🥞 cache - server - keepalive PING sent');
-				} catch (err) {
-					console.error('🔥 🥞 cache - server - keepalive PING failed');
-					console.error(err);
-				}
-			}
-		}, 120000); // 2 minutes
-		console.log('👍 🥞 cache - server - keepalive started (2 min interval)');
-	}
-
-	private stopKeepAlive() {
-		if (this.keepAliveInterval) {
-			clearInterval(this.keepAliveInterval);
-			this.keepAliveInterval = null;
-			console.log('⏹️ 🥞 cache - server - keepalive stopped');
-		}
 	}
 
 	// TBD: what about disconnecting?
@@ -152,7 +122,6 @@ class RedisCache {
 
 	// TBD: stop the client when the server is stopped!
 	public stopClient() {
-		this.stopKeepAlive();
 		this.redisClient?.destroy();
 		console.log('👍 🥞 cache - server - stopClient - redisClient disconnected');
 		this.redisClient?.close();
