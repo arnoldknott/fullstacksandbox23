@@ -12,7 +12,7 @@
 	onMount(() => {
 		const reveal = new Reveal({});
 		reveal.initialize({
-			embeddded: true,
+			embedded: true,
 			keyboard: keyboard,
 			slideNumber: 'c/t',
 			width: 1600,
