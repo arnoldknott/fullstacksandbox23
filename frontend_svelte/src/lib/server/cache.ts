@@ -87,7 +87,8 @@ class RedisCache {
 					await this.redisClient.ping();
 					console.log('🏓 🥞 cache - server - keepalive PING sent');
 				} catch (err) {
-					console.warn('⚠️ 🥞 cache - server - keepalive PING failed');
+					console.error('🔥 🥞 cache - server - keepalive PING failed');
+					console.error(err);
 				}
 			}
 		}, 120000); // 2 minutes
