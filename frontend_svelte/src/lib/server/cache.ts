@@ -5,82 +5,126 @@ import { error } from '@sveltejs/kit';
 
 const appConfig = await AppConfig.getInstance();
 
+// type AppRedisClient = ReturnType<typeof createClient>;
+
 const connectionString = `redis://session:${appConfig.redis_session_password}@${appConfig.redis_host}:${appConfig.redis_port}`;
 const sessionTimeOut = appConfig.session_timeout;
 
 class RedisCache {
-	redisClient: RedisClientType;
+	redisClient: RedisClientType | null;
+	private handlersAttached: boolean = false;
 
 	constructor() {
-		this.redisClient = this.startClient() as RedisClientType;
+		this.redisClient = this.startClient();
+		this.attachEventHandlers();
 	}
 
-	private startClient() {
+	private startClient(): RedisClientType | null {
 		try {
 			const redisClient = createClient({
 				url: `${connectionString}/${appConfig.redis_session_db}`,
 				socket: {
 					host: appConfig.redis_host,
 					port: Number(appConfig.redis_port),
-					connectTimeout: 60000
+					connectTimeout: 60000,
+					keepAlive: true,
+					keepAliveInitialDelay: 5000,
+					reconnectStrategy: (retries) => {
+						// Backoff up to 5s; returning a number keeps reconnecting.
+						return Math.min(retries * 200, 5000);
+					}
 				}
 			});
 			console.log('👍 🥞 cache - server - createRedisClient - redisClient created');
-			return redisClient;
+			return redisClient as RedisClientType;
 		} catch (err) {
 			if (!building) {
 				console.error('🔥 🥞 cache - server - createRedisClient - createClient failed');
 				console.error(err);
-				throw new Error('🔥 🥞 cache - server - createRedisClient - createClient failed: ' + err);
+				// Don't crash the Node process; session features will degrade until Redis is reachable.
+				return null;
 			} else {
 				console.warn(
 					'👎 🥞 cache - server - createRedisClient - does not need to create during build'
 				);
+				return null;
 			}
 		}
+	}
+
+	private attachEventHandlers() {
+		if (this.handlersAttached || !this.redisClient) return;
+		this.handlersAttached = true;
+
+		// IMPORTANT: without an 'error' handler, Node will treat it as an unhandled
+		// EventEmitter error and crash the process (which stops the container).
+		this.redisClient.on('error', (err) => {
+			console.error('🔥 🥞 cache - server - redisClient error');
+			console.error(err);
+		});
+		this.redisClient.on('reconnecting', () => {
+			console.warn('⚠️ 🥞 cache - server - redisClient reconnecting');
+		});
+		this.redisClient.on('end', () => {
+			console.warn('⚠️ 🥞 cache - server - redisClient connection ended');
+		});
+		this.redisClient.on('ready', () => {
+			console.log('👍 🥞 cache - server - redisClient ready');
+		});
 	}
 
 	// TBD: what about disconnecting?
-	private async connectClient() {
+	private async connectClient(): Promise<boolean> {
 		try {
-			await this.redisClient?.connect();
+			if (!this.redisClient) return false;
+			this.attachEventHandlers();
+			await this.redisClient.connect();
 			console.log('👍 🥞 cache - server - createRedisClient - redisClient connected');
+			return true;
 		} catch (error) {
 			console.error('🔥 🥞 cache - server - createRedisClient - connectClient failed');
 			console.error(error);
-			throw new Error('🔥 🥞 cache - server - createRedisClient - connectClient failed: ' + error);
+			// Don't throw here; callers should treat this as "session store unavailable".
+			return false;
 		}
 	}
 
-	public async provideClient(): Promise<RedisClientType> {
+	public async provideClient(): Promise<RedisClientType | null> {
 		try {
-			if (!this.redisClient?.isOpen) {
-				await this.connectClient();
-			}
 			if (!this.redisClient) {
-				// throw new Error('🥞 cache - server - provideClient - redisClient not initialized');
-				console.error('🔥 🥞 cache - server - provideClient - redisClient not initialized');
+				if (building) {
+					console.warn(
+						'👎 🥞 cache - server - provideClient - redisClient not initialized during build'
+					);
+					return null;
+				}
+				throw new Error('🔥 🥞 cache - server - provideClient - redisClient not initialized');
+			}
+			if (!this.redisClient.isOpen) {
+				const connected = await this.connectClient();
+				if (!connected) return null;
 			}
 			return this.redisClient;
 		} catch (error) {
 			if (!building) {
 				console.error('🔥 🥞 cache - server - provideClient - failed');
 				console.error(error);
-				throw new Error('🔥 🥞 cache - server - provideClient - failed: ' + error);
+				// During runtime, prefer failing the request/operation rather than crashing the container.
+				throw error;
 			} else {
 				console.warn(
 					'👎 🥞 cache - server - provideClient - does not need to connect during build'
 				);
-				return {} as RedisClientType;
+				return null;
 			}
 		}
 	}
 
 	// TBD: stop the client when the server is stopped!
 	public stopClient() {
-		this.redisClient?.disconnect();
+		this.redisClient?.destroy();
 		console.log('👍 🥞 cache - server - stopClient - redisClient disconnected');
-		this.redisClient?.quit();
+		this.redisClient?.close();
 		console.log('👍 🥞 cache - server - stopClient - redisClient quit');
 	}
 
@@ -91,12 +135,11 @@ class RedisCache {
 		timeOut: number = sessionTimeOut
 	): Promise<boolean> {
 		try {
-			const setStatus = await this.redisClient?.json.set(
-				`session:${sessionId}`,
-				path,
-				JSON.parse(data)
-			);
-			await this.redisClient?.expire(`session:${sessionId}`, timeOut);
+			const client = await this.provideClient();
+			if (!client) return false;
+
+			const setStatus = await client.json.set(`session:${sessionId}`, path, JSON.parse(data));
+			await client.expire(`session:${sessionId}`, timeOut);
 			return setStatus === 'OK' ? true : false;
 		} catch (err) {
 			console.error('🔥 🥞 cache - server - setSession - failed');
@@ -112,7 +155,10 @@ class RedisCache {
 			throw new Error('Session ID is null');
 		}
 		try {
-			const result = await this.redisClient?.json.get(`session:${sessionId}`, { path: path });
+			const client = await this.provideClient();
+			if (!client) return {};
+
+			const result = await client.json.get(`session:${sessionId}`, { path: path });
 			if (Array.isArray(result) && result.length > 0) {
 				return result[0] as object;
 			} else {
@@ -135,7 +181,10 @@ class RedisCache {
 			throw error(401, 'Session ID is null');
 		}
 		try {
-			await this.redisClient.expire(`session:${sessionId}`, timeOut);
+			const client = await this.provideClient();
+			if (!client) return;
+
+			await client.expire(`session:${sessionId}`, timeOut);
 		} catch (err) {
 			console.error('🔥 🥞 cache - server - updateSessionExpiry - failed');
 			console.error(err);
@@ -149,7 +198,10 @@ class RedisCache {
 			throw error(401, 'Session ID is null');
 		}
 		try {
-			await this.redisClient.json.del(sessionId);
+			const client = await this.provideClient();
+			if (!client) return;
+
+			await client.json.del(`session:${sessionId}`);
 		} catch (err) {
 			console.error('🔥 🥞 cache - server - deleteSession - failed');
 			console.error(err);

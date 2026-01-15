@@ -113,7 +113,7 @@ resource "azurerm_container_app" "FrontendSvelteContainer" {
         value = var.redis_session_db
       }
     }
-
+    min_replicas = terraform.workspace == "prod" ? 1 : 0
     http_scale_rule {
       name                = "http-scaler"
       concurrent_requests = "100"
