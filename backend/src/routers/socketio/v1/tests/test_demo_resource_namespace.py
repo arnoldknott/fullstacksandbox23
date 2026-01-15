@@ -106,7 +106,7 @@ async def test_owner_connects_to_demo_resource_namespace_and_gets_all_demoresour
     resources = await add_test_demo_resources(connection.token_payload())
     await connection.connect()
 
-    await connection.client.sleep(0.2)
+    await connection.client.sleep(0.3)
     transfer_data = connection.responses("transferred")
 
     assert len(transfer_data) == 4
@@ -150,7 +150,7 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
     await connection.connect()
     transfer_data = []
 
-    await connection.client.sleep(0.2)
+    await connection.client.sleep(0.3)
     transfer_data = connection.responses("transferred")
 
     resources_with_user_acccess = [
@@ -261,7 +261,7 @@ async def test_user_gets_error_on_status_event_due_to_database_error(
         await connection.connect()
 
         # Wait for the response to be set
-        # await client.sleep(0.2)
+        # await client.sleep(0.3)
 
         transfer_data = connection.responses("transferred")
         status_data = connection.responses("status")
@@ -295,7 +295,7 @@ async def test_user_submits_resource_without_id_for_creation(
     )
 
     # Wait for the response to be set
-    await connection_user.client.sleep(0.2)
+    await connection_user.client.sleep(0.3)
 
     status_data = connection_user.responses("status")
 
@@ -347,7 +347,7 @@ async def test_user_submits_resource_without_id_for_creation_missing_write_scope
     )
 
     # Wait for the response to be set
-    await connection.client.sleep(0.2)
+    await connection.client.sleep(0.3)
     status_data = connection.responses("status")
     transfer_data = connection.responses("transferred")
 
@@ -457,7 +457,7 @@ async def test_user_submits_two_resource_with_new__string_in_id_field_for_creati
     )
 
     # Wait for the response to be set
-    await connection.client.sleep(0.2)
+    await connection.client.sleep(0.3)
     status_data = connection.responses("status")
 
     assert len(status_data) == 1
@@ -472,7 +472,7 @@ async def test_user_submits_two_resource_with_new__string_in_id_field_for_creati
     )
 
     # Wait for the response to be set
-    await connection.client.sleep(0.2)
+    await connection.client.sleep(0.3)
 
     status_data = connection.responses("status")
 
@@ -511,7 +511,7 @@ async def test_user_submits_resource_with_random_string_in_id_field_fails(
     )
 
     # Wait for the response to be set
-    await connection.client.sleep(0.2)
+    await connection.client.sleep(0.3)
     status_data = connection.responses("status")
 
     assert status_data[0]["error"] == "badly formed hexadecimal UUID string"
@@ -537,7 +537,7 @@ async def test_user_submits_resource_without_id_for_creation_missing_name(
     )
 
     # Wait for the response to be set
-    await connection.client.sleep(0.2)
+    await connection.client.sleep(0.3)
 
     statuses_data = connection.responses("status")
 
@@ -570,7 +570,7 @@ async def test_user_submits_resource_with_nonexisting_uuid_fails(
     )
 
     # Wait for the response to be set
-    await connection.client.sleep(0.2)
+    await connection.client.sleep(0.3)
     statuses_data = connection.responses("status")
 
     assert statuses_data[0]["error"] == "404: DemoResource not updated."
@@ -610,7 +610,7 @@ async def test_user_submits_existing_resource_for_update(
     )
 
     # Wait for the response to be set
-    await connection.client.sleep(0.2)
+    await connection.client.sleep(0.3)
     statuses_data = connection.responses("status")
 
     assert UUID(statuses_data[0]["id"])  # Check if the ID is a valid UUID
@@ -680,7 +680,7 @@ async def test_user_updates_demo_resource_missing_write_scope_in_token_fails(
     )
 
     # Wait for the response to be set
-    await connection.client.sleep(0.2)
+    await connection.client.sleep(0.3)
     status_data = connection.responses("status")
     assert status_data[0]["error"] == "401: Invalid token."
 
@@ -729,7 +729,7 @@ async def test_user_updates_demo_resource_not_having_write_access_fails(
     )
 
     # Wait for the response to be set
-    await connection.client.sleep(0.2)
+    await connection.client.sleep(0.3)
     statuses_data = connection.responses("status")
 
     assert statuses_data[0]["error"] == "404: DemoResource not updated."
@@ -759,8 +759,8 @@ async def test_one_client_deletes_a_demo_resource_and_another_client_from_same_u
     )
 
     # Wait for the response to be set
-    await connection1.client.sleep(0.2)
-    await connection2.client.sleep(0.2)
+    await connection1.client.sleep(0.3)
+    await connection2.client.sleep(0.3)
 
     statuses_data_client1 = connection1.responses("status")
     statuses_data_client2 = connection2.responses("status")
@@ -808,8 +808,8 @@ async def test_one_client_deletes_a_demo_resource_and_another_client_with_differ
     )
 
     # Wait for the response to be set
-    await connection1.client.sleep(0.2)
-    await connection2.client.sleep(0.2)
+    await connection1.client.sleep(0.3)
+    await connection2.client.sleep(0.3)
 
     assert connection1.responses("deleted") == [str(resources[2].id)]
     assert connection1.responses("status") == [
@@ -839,7 +839,7 @@ async def test_user_deletes_a_demo_resource_missing_write_scope_in_token(
     )
 
     # Wait for the response to be set
-    await connection.client.sleep(0.2)
+    await connection.client.sleep(0.3)
     statuses_data = connection.responses("status")
     deleted_data = connection.responses("deleted")
 
@@ -870,7 +870,7 @@ async def test_client_tries_to_delete_demo_resource_without_owner_rights_fails_a
     )
 
     # Wait for the response to be set
-    await connection.client.sleep(0.2)
+    await connection.client.sleep(0.3)
 
     assert connection.responses("status")[0] == {
         "error": "404: DemoResource not deleted."
