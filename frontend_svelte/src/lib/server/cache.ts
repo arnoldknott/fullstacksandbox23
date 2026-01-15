@@ -58,9 +58,9 @@ class RedisCache {
 
 		// IMPORTANT: without an 'error' handler, Node will treat it as an unhandled
 		// EventEmitter error and crash the process (which stops the container).
-		this.redisClient.on('error', (err) => {
+		this.redisClient.on('error', (_err) => {
 			console.error('🔥 🥞 cache - server - redisClient error');
-			console.error(err);
+			// console.error(err);
 		});
 		this.redisClient.on('reconnecting', () => {
 			console.warn('⚠️ 🥞 cache - server - redisClient reconnecting');
