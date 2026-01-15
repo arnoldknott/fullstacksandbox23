@@ -116,7 +116,7 @@ resource "azurerm_container_app" "FrontendSvelteContainer" {
     min_replicas = terraform.workspace == "prod" ? 1 : 0
     http_scale_rule {
       name                = "http-scaler"
-      concurrent_requests = "100"
+      concurrent_requests = "1000"
     }
     # consider adjust to "20" or more, if the apps can handle it!
   }
@@ -245,7 +245,7 @@ resource "azurerm_container_app" "BackendAPIContainer" {
       storage_type = "AzureFile"
     }
     # leave at least 1 bakend running now in stage & prod
-    min_replicas = 0
+    min_replicas = terraform.workspace == "prod" ? 1 : 0
     max_replicas = 1 # SocketIO breaks with more than 1 replica!
     http_scale_rule {
       name                = "http-scaler"
@@ -389,7 +389,7 @@ resource "azurerm_container_app" "BackendWorkerContainer" {
       storage_type = "AzureFile"
     }
     # leave at least 1 bakend running now in stage & prod
-    min_replicas = 0
+    min_replicas = terraform.workspace == "prod" ? 1 : 0
     max_replicas = 10
     http_scale_rule {
       name                = "http-scaler"
