@@ -1,4 +1,4 @@
 user default on >${REDIS_PASSWORD} ~* &* +@all
-user session on >${REDIS_SESSION_PASSWORD} ~session:* ~msal:* ~jwks:* +@read +@write +select -@dangerous
+user session on >${REDIS_SESSION_PASSWORD} ~session:* ~msal:* ~jwks:* +@read +@write +select +ping -@dangerous
 user socketio on >${REDIS_SOCKETIO_PASSWORD} &socketio* &socketio:* +publish +subscribe +psubscribe +unsubscribe +punsubscribe +select -@dangerous
 user celery on >${REDIS_CELERY_PASSWORD} ~* &* +@all -@dangerous
