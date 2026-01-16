@@ -2888,7 +2888,7 @@ async def test_add_user_to_ueber_group_and_remove_again(
     assert ueber_group_response.status_code == 200
     ueber_group = UeberGroupRead(**ueber_group_response.json())
     assert len(ueber_group.users) == 1
-    assert any(user.id == str(existing_user.id) for user in ueber_group.users)
+    assert any(user.id == existing_user.id for user in ueber_group.users)
 
     # remove user from ueber group
     remove_response = await async_client.delete(
@@ -2950,7 +2950,7 @@ async def test_bulk_add_users_to_ueber_group_and_bulk_remove(
     ueber_group = UeberGroupRead(**ueber_group_response.json())
     assert len(ueber_group.users) == 5
     assert all(
-        user.id in [str(existing_user.id) for existing_user in existing_users]
+        user.id in [existing_user.id for existing_user in existing_users]
         for user in ueber_group.users
     )
 
@@ -3020,7 +3020,7 @@ async def test_bulk_add_groups_to_ueber_group_and_bulk_remove(
     ueber_group = UeberGroupRead(**ueber_group_response.json())
     assert len(ueber_group.groups) == 4
     assert all(
-        group.id in [str(mocked_group.id) for mocked_group in mocked_groups]
+        group.id in [mocked_group.id for mocked_group in mocked_groups]
         for group in ueber_group.groups
     )
 
@@ -3334,7 +3334,7 @@ async def test_bulk_add_users_to_sub_group_and_bulk_remove(
     sub_group = UeberGroupRead(**sub_group_response.json())
     assert len(sub_group.users) == 5
     assert all(
-        user.id in [str(existing_user.id) for existing_user in existing_users]
+        user.id in [existing_user.id for existing_user in existing_users]
         for user in sub_group.users
     )
 
@@ -3647,8 +3647,8 @@ async def test_add_group_to_ueber_group(
     assert ueber_group_response.status_code == 200
     ueber_group = UeberGroupRead(**ueber_group_response.json())
     assert len(ueber_group.groups) == 2
-    assert any(group.id == str(mocked_groups[1].id) for group in ueber_group.groups)
-    assert any(group.id == str(mocked_groups[3].id) for group in ueber_group.groups)
+    assert any(group.id == mocked_groups[1].id for group in ueber_group.groups)
+    assert any(group.id == mocked_groups[3].id for group in ueber_group.groups)
 
     # remove a group from the ueber-group:
     remove_response = await async_client.delete(
@@ -3666,11 +3666,11 @@ async def test_add_group_to_ueber_group(
     )
     assert len(ueber_group_after_delete.groups) == 1
     assert all(
-        group.id != str(mocked_groups[1].id)
+        group.id != mocked_groups[1].id
         for group in ueber_group_after_delete.groups
     )
     assert any(
-        group.id == str(mocked_groups[3].id)
+        group.id == mocked_groups[3].id
         for group in ueber_group_after_delete.groups
     )
 
