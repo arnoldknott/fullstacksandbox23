@@ -84,6 +84,15 @@ class ResourceType(EntityType):
     # TBD: consider getting those values programmatically from models?
     # or make this enum a collection of the models and add
     # a method __str__(self) that returns the name of the model?
+    presentation = "Presentation"
+    quiz = "Quiz"
+    question = "Question"
+    # Messages are useful anywhere:
+    # in chats, comments, and answers to (quiz-)questions
+    message = "Message"
+    # A numerical resource is a resource that holds a numerical value
+    # useful for quiz answers, and exercise solutions
+    numerical = "Numerical"
     category = "Category"
     tag = "Tag"
     demo_resource = "DemoResource"
