@@ -14,6 +14,8 @@ from .demo_resource import DemoResource  # noqa F401
 # from .identity import AzureGroupUserLink  # noqa F401
 from .identity import AzureGroup  # noqa F401
 from .identity import User, UserAccount, UserProfile  # noqa F401
+from .presentation import Presentation  # noqa F401
+from .quiz import Quiz, Question, Message, Numerical  # noqa F401
 from .protected_resource import (  # noqa F401
     ProtectedChild,
     ProtectedGrandChild,

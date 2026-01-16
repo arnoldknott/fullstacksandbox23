@@ -111,6 +111,7 @@ class RelationshipHierarchyType(str, Enum):
 
     parent = "parent"
     child = "child"
+    direct = "direct"
 
 
 class Attribute(BaseModel):
@@ -129,10 +130,9 @@ class Relationship(BaseModel):
     related_entity: ResourceType | IdentityType
     hierarchy_type: RelationshipHierarchyType
     back_populates: str
-    exclude: Set[ModelTypes] = set()  # Set of schema types to exclude from
-    read_schema_name: Optional[str] = (
-        None  # Override for Read schema (e.g., "ProtectedChildReadNoParents")
-    )
+    exclude: Set[ModelTypes] = (
+        set()
+    )  # Set of schema types to exclude fromProtectedChildReadNoParents")
 
 
 # Utility functions
@@ -265,9 +265,7 @@ def _build_annotations_and_fields(  # noqa: C901
                 continue
 
             rel_name = rel.name or rel.related_entity.name
-            related_class_name = (
-                rel.read_schema_name or f"{rel.related_entity.value}Read"
-            )
+            related_class_name = f"{rel.related_entity.value}Read"
             annotations[rel_name] = Optional[List[related_class_name]]
             fields[rel_name] = None
 
@@ -372,7 +370,7 @@ def create_model(
     #     if ModelTypes.read in rel.exclude:
     #         continue
     #     rel_name = rel.name or rel.related_entity.name
-    #     related_class_name = rel.read_schema_name or f"{rel.related_entity.value}Read"
+    #     related_class_name = f"{rel.related_entity.value}Read"
     #     read_annotations[rel_name] = Optional[List[related_class_name]]
     #     read_fields[rel_name] = None
 
