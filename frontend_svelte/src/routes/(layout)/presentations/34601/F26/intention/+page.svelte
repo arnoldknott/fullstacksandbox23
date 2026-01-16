@@ -28,6 +28,9 @@
 
 <RevealJS>
 	<section>
+		<h1>Welcome</h1>
+	</section>
+	<section>
 		<div class="relative">
 			<div class="absolute top-2 right-10">Some absolut text</div>
 			<SlideTitle>Sharing Round</SlideTitle>
