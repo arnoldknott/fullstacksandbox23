@@ -360,6 +360,8 @@ class UserRead(UserCreate):
     # brightspace_account: Optional["DiscordAccount"] = None
     # google_account: Optional["GoogleAccount"] = None
     # discord_account: Optional["DiscordAccount"] = None
+    # TBD: decide, wether to include the groups or not.
+    # Currently there's only one test checking for ueber-groups.
     ueber_groups: Optional[List["UeberGroupRead"]] = None
     groups: Optional[List["GroupRead"]] = None
     sub_groups: Optional[List["SubGroupRead"]] = None
