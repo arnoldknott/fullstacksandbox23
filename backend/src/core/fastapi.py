@@ -18,6 +18,8 @@ from routers.api.v1.identities import (
 from routers.api.v1.protected_resource import router as protected_resource_router
 from routers.api.v1.public_resource import router as public_resource_router
 from routers.api.v1.tag import router as tag_router
+from routers.api.v1.presentation import router as presentation_router
+from routers.api.v1.quiz import router as quiz_router
 from routers.ws.v1.websockets import router as websocket_router
 
 
@@ -132,6 +134,16 @@ def mount_rest_api_routes(app: FastAPI, api_prefix: str, ws_prefix: str):
         dependencies=[Depends(CurrentAccessTokenHasScope("api.read"))],
         # TBD: This is not ready to use - requires the redirect URI to be passed through Swagger UI
         # dependencies=[Depends(oauth2_scheme)],
+    )
+    app.include_router(
+        presentation_router,
+        prefix=f"{api_prefix}/presentation",
+        tags=["Presentation"],
+    )
+    app.include_router(
+        quiz_router,
+        prefix=f"{api_prefix}/presentation",
+        tags=["Presentation"],
     )
     app.include_router(
         websocket_router,

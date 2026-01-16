@@ -70,6 +70,11 @@ Question = create_model(
     ],
 )
 
+QuestionCreate = Question.Create
+QuestionRead = Question.Read
+QuestionUpdate = Question.Update
+QuestionExtended = Question.Extended
+
 
 # For regular text answers, reuse Message model:
 Message = create_model(
