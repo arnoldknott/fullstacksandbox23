@@ -140,7 +140,7 @@ class ProtectedChildReadNoParents(ProtectedChildCreate):
 
 
 ProtectedChildUpdate = ProtectedChild.Update
-ProtectedChildExtended = ProtectedChild.Extended
+# ProtectedChildExtended = ProtectedChild.Extended
 
 
 # endregion ProtectedChild
@@ -179,7 +179,7 @@ ProtectedGrandChild = create_model(
 ProtectedGrandChildCreate = ProtectedGrandChild.Create
 ProtectedGrandChildRead = ProtectedGrandChild.Read
 ProtectedGrandChildUpdate = ProtectedGrandChild.Update
-ProtectedGrandChildExtended = ProtectedGrandChild.Extended
+# ProtectedGrandChildExtended = ProtectedGrandChild.Extended
 
 
 # endregion ProtectedGrandChild
