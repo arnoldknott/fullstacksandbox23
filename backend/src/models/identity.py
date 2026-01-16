@@ -751,11 +751,11 @@ SubGroupExtended = SubGroup.Extended
 # region SubSubGroup
 
 
-class SubSubGroupCreate(SQLModel):
-    """Schema for creating a sub-sub-group."""
+# class SubSubGroupCreate(SQLModel):
+#     """Schema for creating a sub-sub-group."""
 
-    name: str = Field(..., max_length=150, regex="^[a-zA-Z0-9]*$", index=True)
-    description: Optional[str] = Field(None, max_length=500)
+#     name: str = Field(..., max_length=150, regex="^[a-zA-Z0-9]*$", index=True)
+#     description: Optional[str] = Field(None, max_length=500)
 
 
 # class SubSubGroup(SubSubGroupCreate, table=True):
