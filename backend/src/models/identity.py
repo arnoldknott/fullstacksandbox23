@@ -198,8 +198,8 @@ class User(UserCreate, table=True):
         back_populates="users",
         link_model=IdentityHierarchy,
         sa_relationship_kwargs={
-            "lazy": "joined",
-            # "lazy": "noload",
+            # "lazy": "joined",
+            "lazy": "noload",
             "viewonly": True,
             "primaryjoin": "User.id == foreign(IdentityHierarchy.child_id)",
             "secondaryjoin": "SubGroup.id == foreign(IdentityHierarchy.parent_id)",
@@ -209,8 +209,8 @@ class User(UserCreate, table=True):
         back_populates="users",
         link_model=IdentityHierarchy,
         sa_relationship_kwargs={
-            "lazy": "joined",
-            # "lazy": "noload",
+            # "lazy": "joined",
+            "lazy": "noload",
             "viewonly": True,
             "primaryjoin": "User.id == foreign(IdentityHierarchy.child_id)",
             "secondaryjoin": "SubSubGroup.id == foreign(IdentityHierarchy.parent_id)",
@@ -626,75 +626,116 @@ GroupExtended = Group.Extended
 # region SubGroup
 
 
-class SubGroupCreate(SQLModel):
-    """Schema for creating a sub-group."""
+# class SubGroupCreate(SQLModel):
+#     """Schema for creating a sub-group."""
 
-    name: str = Field(..., max_length=150, regex="^[a-zA-Z0-9]*$", index=True)
-    description: Optional[str] = Field(None, max_length=500)
-
-
-class SubGroup(SubGroupCreate, table=True):
-    """Schema for a sub-group in the database."""
-
-    id: Optional[uuid.UUID] = Field(
-        default_factory=uuid.uuid4,
-        foreign_key="identifiertypelink.id",
-        primary_key=True,
-    )
-    users: Optional[List["User"]] = Relationship(
-        back_populates="sub_groups",
-        link_model=IdentityHierarchy,
-        sa_relationship_kwargs={
-            # "lazy": "joined",
-            "lazy": "noload",
-            "viewonly": True,
-            "primaryjoin": "SubGroup.id == foreign(IdentityHierarchy.parent_id)",
-            "secondaryjoin": "User.id == foreign(IdentityHierarchy.child_id)",
-        },
-    )
-    groups: Optional[List["Group"]] = Relationship(
-        back_populates="sub_groups",
-        link_model=IdentityHierarchy,
-        sa_relationship_kwargs={
-            # "lazy": "joined",
-            "lazy": "noload",
-            "viewonly": True,
-            "primaryjoin": "SubGroup.id == foreign(IdentityHierarchy.child_id)",
-            "secondaryjoin": "Group.id == foreign(IdentityHierarchy.parent_id)",
-        },
-    )
-    sub_sub_groups: Optional[List["SubSubGroup"]] = Relationship(
-        back_populates="sub_groups",
-        link_model=IdentityHierarchy,
-        sa_relationship_kwargs={
-            # "lazy": "joined",
-            "lazy": "noload",
-            "viewonly": True,
-            "primaryjoin": "SubGroup.id == foreign(IdentityHierarchy.parent_id)",
-            "secondaryjoin": "SubSubGroup.id == foreign(IdentityHierarchy.child_id)",
-        },
-    )
+#     name: str = Field(..., max_length=150, regex="^[a-zA-Z0-9]*$", index=True)
+#     description: Optional[str] = Field(None, max_length=500)
 
 
-class SubGroupRead(SubGroupCreate):
-    """Schema for reading a sub-group."""
+# class SubGroup(SubGroupCreate, table=True):
+#     """Schema for a sub-group in the database."""
 
-    id: uuid.UUID  # no longer optional - needs to exist now
-    users: Optional[List["User"]] = None
-    sub_sub_groups: Optional[List["SubSubGroup"]] = None
+#     id: Optional[uuid.UUID] = Field(
+#         default_factory=uuid.uuid4,
+#         foreign_key="identifiertypelink.id",
+#         primary_key=True,
+#     )
+#     users: Optional[List["User"]] = Relationship(
+#         back_populates="sub_groups",
+#         link_model=IdentityHierarchy,
+#         sa_relationship_kwargs={
+#             # "lazy": "joined",
+#             "lazy": "noload",
+#             "viewonly": True,
+#             "primaryjoin": "SubGroup.id == foreign(IdentityHierarchy.parent_id)",
+#             "secondaryjoin": "User.id == foreign(IdentityHierarchy.child_id)",
+#         },
+#     )
+#     groups: Optional[List["Group"]] = Relationship(
+#         back_populates="sub_groups",
+#         link_model=IdentityHierarchy,
+#         sa_relationship_kwargs={
+#             # "lazy": "joined",
+#             "lazy": "noload",
+#             "viewonly": True,
+#             "primaryjoin": "SubGroup.id == foreign(IdentityHierarchy.child_id)",
+#             "secondaryjoin": "Group.id == foreign(IdentityHierarchy.parent_id)",
+#         },
+#     )
+#     sub_sub_groups: Optional[List["SubSubGroup"]] = Relationship(
+#         back_populates="sub_groups",
+#         link_model=IdentityHierarchy,
+#         sa_relationship_kwargs={
+#             # "lazy": "joined",
+#             "lazy": "noload",
+#             "viewonly": True,
+#             "primaryjoin": "SubGroup.id == foreign(IdentityHierarchy.parent_id)",
+#             "secondaryjoin": "SubSubGroup.id == foreign(IdentityHierarchy.child_id)",
+#         },
+#     )
 
 
-class SubGroupUpdate(SubGroupCreate):
-    """Schema for updating a sub-group."""
+# class SubGroupRead(SubGroupCreate):
+#     """Schema for reading a sub-group."""
 
-    name: Optional[str] = None
+#     id: uuid.UUID  # no longer optional - needs to exist now
+#     users: Optional[List["User"]] = None
+#     sub_sub_groups: Optional[List["SubSubGroup"]] = None
 
 
-class SubGroupExtended(
-    SubGroupRead, AccessRightsMixin, AccessPolicyMixin, CreatedAtMixin, UpdatedAtMixin
-):
-    pass
+# class SubGroupUpdate(SubGroupCreate):
+#     """Schema for updating a sub-group."""
 
+#     name: Optional[str] = None
+
+
+# class SubGroupExtended(
+#     SubGroupRead, AccessRightsMixin, AccessPolicyMixin, CreatedAtMixin, UpdatedAtMixin
+# ):
+#     pass
+
+SubGroup = create_model(
+    name="SubGroup",
+    table=True,
+    attributes=[
+        Attribute(
+            name="name",
+            type="str",
+            field_value=Field(..., max_length=150, regex="^[a-zA-Z0-9]*$", index=True)
+        ),
+        Attribute(
+            name="description",
+            type="Optional[str]",
+            field_value=Field(None, max_length=500)
+        ),
+    ],
+    relationships=[
+        AppRelationship(
+            name="users",
+            related_entity=IdentityType.user,
+            hierarchy_type=RelationshipHierarchyType.parent,
+            back_populates="sub_groups"
+        ),
+        AppRelationship(
+            name="groups",
+            related_entity=IdentityType.group,
+            hierarchy_type=RelationshipHierarchyType.child,
+            back_populates="sub_groups"
+        ),
+        AppRelationship(
+            name="sub_sub_groups",
+            related_entity=IdentityType.sub_sub_group,
+            hierarchy_type=RelationshipHierarchyType.parent,
+            back_populates="sub_groups"
+        ),
+    ]
+)
+
+SubGroupCreate = SubGroup.Create
+SubGroupRead = SubGroup.Read
+SubGroupUpdate = SubGroup.Update
+SubGroupExtended = SubGroup.Extended
 
 # endregion SubGroup
 
@@ -709,59 +750,95 @@ class SubSubGroupCreate(SQLModel):
     description: Optional[str] = Field(None, max_length=500)
 
 
-class SubSubGroup(SubSubGroupCreate, table=True):
-    """Schema for a sub-sub-group in the database."""
+# class SubSubGroup(SubSubGroupCreate, table=True):
+#     """Schema for a sub-sub-group in the database."""
 
-    id: Optional[uuid.UUID] = Field(
-        default_factory=uuid.uuid4,
-        foreign_key="identifiertypelink.id",
-        primary_key=True,
-    )
-    users: Optional[List["User"]] = Relationship(
-        back_populates="sub_sub_groups",
-        link_model=IdentityHierarchy,
-        sa_relationship_kwargs={
-            # "lazy": "joined",
-            "lazy": "noload",
-            "viewonly": True,
-            "primaryjoin": "SubSubGroup.id == foreign(IdentityHierarchy.parent_id)",
-            "secondaryjoin": "User.id == foreign(IdentityHierarchy.child_id)",
-        },
-    )
-    sub_groups: Optional["SubGroup"] = Relationship(
-        back_populates="sub_sub_groups",
-        link_model=IdentityHierarchy,
-        sa_relationship_kwargs={
-            # "lazy": "joined",
-            "lazy": "noload",
-            "viewonly": True,
-            "primaryjoin": "SubSubGroup.id == foreign(IdentityHierarchy.child_id)",
-            "secondaryjoin": "SubGroup.id == foreign(IdentityHierarchy.parent_id)",
-        },
-    )
-
-
-class SubSubGroupRead(SubSubGroupCreate):
-    """Schema for reading a sub-sub-group."""
-
-    id: uuid.UUID  # no longer optional - needs to exist now
-    users: Optional[List["User"]] = None
+#     id: Optional[uuid.UUID] = Field(
+#         default_factory=uuid.uuid4,
+#         foreign_key="identifiertypelink.id",
+#         primary_key=True,
+#     )
+#     users: Optional[List["User"]] = Relationship(
+#         back_populates="sub_sub_groups",
+#         link_model=IdentityHierarchy,
+#         sa_relationship_kwargs={
+#             # "lazy": "joined",
+#             "lazy": "noload",
+#             "viewonly": True,
+#             "primaryjoin": "SubSubGroup.id == foreign(IdentityHierarchy.parent_id)",
+#             "secondaryjoin": "User.id == foreign(IdentityHierarchy.child_id)",
+#         },
+#     )
+#     sub_groups: Optional["SubGroup"] = Relationship(
+#         back_populates="sub_sub_groups",
+#         link_model=IdentityHierarchy,
+#         sa_relationship_kwargs={
+#             # "lazy": "joined",
+#             "lazy": "noload",
+#             "viewonly": True,
+#             "primaryjoin": "SubSubGroup.id == foreign(IdentityHierarchy.child_id)",
+#             "secondaryjoin": "SubGroup.id == foreign(IdentityHierarchy.parent_id)",
+#         },
+#     )
 
 
-class SubSubGroupUpdate(SubSubGroupCreate):
-    """Schema for updating a sub-sub-group."""
+# class SubSubGroupRead(SubSubGroupCreate):
+#     """Schema for reading a sub-sub-group."""
 
-    name: Optional[str] = None
+#     id: uuid.UUID  # no longer optional - needs to exist now
+#     users: Optional[List["User"]] = None
 
 
-class SubSubGroupExtended(
-    SubSubGroupRead,
-    AccessRightsMixin,
-    AccessPolicyMixin,
-    CreatedAtMixin,
-    UpdatedAtMixin,
-):
-    pass
+# class SubSubGroupUpdate(SubSubGroupCreate):
+#     """Schema for updating a sub-sub-group."""
+
+#     name: Optional[str] = None
+
+
+# class SubSubGroupExtended(
+#     SubSubGroupRead,
+#     AccessRightsMixin,
+#     AccessPolicyMixin,
+#     CreatedAtMixin,
+#     UpdatedAtMixin,
+# ):
+#     pass
+
+SubSubGroup = create_model(
+    name="SubSubGroup",
+    table=True,
+    attributes=[
+        Attribute(
+            name="name",
+            type="str",
+            field_value=Field(..., max_length=150, regex="^[a-zA-Z0-9]*$", index=True)
+        ),
+        Attribute(
+            name="description",
+            type="Optional[str]",
+            field_value=Field(None, max_length=500)
+        ),
+    ],
+    relationships=[
+        AppRelationship(
+            name="users",
+            related_entity=IdentityType.user,
+            hierarchy_type=RelationshipHierarchyType.parent,
+            back_populates="sub_sub_groups"
+        ),
+        AppRelationship(
+            name="sub_groups",
+            related_entity=IdentityType.sub_group,
+            hierarchy_type=RelationshipHierarchyType.child,
+            back_populates="sub_sub_groups"
+        ),
+    ]
+)
+
+SubSubGroupCreate = SubSubGroup.Create
+SubSubGroupRead = SubSubGroup.Read
+SubSubGroupUpdate = SubSubGroup.Update
+SubSubGroupExtended = SubSubGroup.Extended
 
 
 # endregion SubSubGroup

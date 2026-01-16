@@ -3274,7 +3274,7 @@ async def test_add_user_to_sub_group_and_remove_again(
     assert sub_group_response.status_code == 200
     sub_group = SubGroupRead(**sub_group_response.json())
     assert len(sub_group.users) == 1
-    assert any(user.id == str(existing_user.id) for user in sub_group.users)
+    assert any(user.id == existing_user.id for user in sub_group.users)
 
     # remove user from sub group
     remove_response = await async_client.delete(
@@ -3290,7 +3290,7 @@ async def test_add_user_to_sub_group_and_remove_again(
     sub_group_after_delete = SubGroupRead(**sub_group_after_delete_response.json())
     assert len(sub_group_after_delete.users) == 0
     assert all(
-        user.id != str(existing_user.id) for user in sub_group_after_delete.users
+        user.id != existing_user.id for user in sub_group_after_delete.users
     )
 
 
@@ -3406,7 +3406,7 @@ async def test_bulk_add_sub_sub_groups_to_sub_group_and_bulk_remove(
     assert all(
         sub_sub_group.id
         in [
-            str(mocked_sub_sub_group.id)
+            mocked_sub_sub_group.id
             for mocked_sub_sub_group in mocked_sub_sub_groups
         ]
         for sub_sub_group in sub_group.sub_sub_groups
@@ -3430,17 +3430,17 @@ async def test_bulk_add_sub_sub_groups_to_sub_group_and_bulk_remove(
     assert any(
         sub_sub_group.id
         not in [
-            str(mocked_sub_sub_group.id)
+            mocked_sub_sub_group.id
             for mocked_sub_sub_group in mocked_sub_sub_groups[0:2]
         ]
         for sub_sub_group in sub_group.sub_sub_groups
     )
     expected_ids = [
-        str(mocked_sub_sub_group.id)
+        mocked_sub_sub_group.id
         for mocked_sub_sub_group in mocked_sub_sub_groups[2:]
     ]
     sub_group_sub_sub_group_ids = [
-        str(sub_sub_group.id) for sub_sub_group in sub_group_after_delete.sub_sub_groups
+        sub_sub_group.id for sub_sub_group in sub_group_after_delete.sub_sub_groups
     ]
     assert all(
         sub_sub_group_id in sub_group_sub_sub_group_ids
@@ -3486,7 +3486,7 @@ async def test_add_user_to_sub_sub_group_and_remove_again(
     assert sub_sub_group_response.status_code == 200
     sub_sub_group = SubSubGroupRead(**sub_sub_group_response.json())
     assert len(sub_sub_group.users) == 1
-    assert any(user.id == str(existing_user.id) for user in sub_sub_group.users)
+    assert any(user.id == existing_user.id for user in sub_sub_group.users)
 
     # remove user from sub-sub-group
     remove_response = await async_client.delete(
@@ -3504,7 +3504,7 @@ async def test_add_user_to_sub_sub_group_and_remove_again(
     )
     assert len(sub_sub_group_after_delete.users) == 0
     assert all(
-        user.id != str(existing_user.id) for user in sub_sub_group_after_delete.users
+        user.id != existing_user.id for user in sub_sub_group_after_delete.users
     )
 
 
@@ -3548,7 +3548,7 @@ async def test_bulk_add_users_to_sub_sub_group_and_bulk_remove(
     sub_sub_group = SubSubGroupRead(**sub_sub_group_response.json())
     assert len(sub_sub_group.users) == 5
     assert all(
-        user.id in [str(existing_user.id) for existing_user in existing_users]
+        user.id in [existing_user.id for existing_user in existing_users]
         for user in sub_sub_group.users
     )
 
@@ -3570,11 +3570,11 @@ async def test_bulk_add_users_to_sub_sub_group_and_bulk_remove(
     )
     assert len(sub_sub_group_after_delete.users) == 3
     assert any(
-        user.id not in [str(existing_user.id) for existing_user in existing_users[0:2]]
+        user.id not in [existing_user.id for existing_user in existing_users[0:2]]
         for user in sub_sub_group.users
     )
-    expected_ids = [str(existing_user.id) for existing_user in existing_users[2:]]
-    sub_sub_group_user_ids = [str(user.id) for user in sub_sub_group.users]
+    expected_ids = [existing_user.id for existing_user in existing_users[2:]]
+    sub_sub_group_user_ids = [user.id for user in sub_sub_group.users]
     assert all(user_id in sub_sub_group_user_ids for user_id in expected_ids)
 
 
@@ -3784,7 +3784,7 @@ async def test_add_sub_sub_group_to_sub_group(
     assert sub_group_response.status_code == 200
     sub_group = SubGroupRead(**sub_group_response.json())
     assert any(
-        sub_sub_group.id == str(mocked_sub_sub_groups[4].id)
+        sub_sub_group.id == mocked_sub_sub_groups[4].id
         for sub_sub_group in sub_group.sub_sub_groups
     )
 
@@ -3801,11 +3801,11 @@ async def test_add_sub_sub_group_to_sub_group(
     sub_group = SubGroupRead(**sub_group_response.json())
     assert len(sub_group.sub_sub_groups) == 2
     assert any(
-        sub_sub_group.id == str(mocked_sub_sub_groups[3].id)
+        sub_sub_group.id == mocked_sub_sub_groups[3].id
         for sub_sub_group in sub_group.sub_sub_groups
     )
     assert any(
-        sub_sub_group.id == str(mocked_sub_sub_groups[4].id)
+        sub_sub_group.id == mocked_sub_sub_groups[4].id
         for sub_sub_group in sub_group.sub_sub_groups
     )
 
@@ -3823,11 +3823,11 @@ async def test_add_sub_sub_group_to_sub_group(
     sub_group_after_delete = SubGroupRead(**sub_group_after_delete_response.json())
     assert len(sub_group_after_delete.sub_sub_groups) == 1
     assert all(
-        sub_sub_group.id != str(mocked_sub_sub_groups[4].id)
+        sub_sub_group.id != mocked_sub_sub_groups[4].id
         for sub_sub_group in sub_group_after_delete.sub_sub_groups
     )
     assert any(
-        sub_sub_group.id == str(mocked_sub_sub_groups[3].id)
+        sub_sub_group.id == mocked_sub_sub_groups[3].id
         for sub_sub_group in sub_group_after_delete.sub_sub_groups
     )
 
