@@ -19,7 +19,7 @@ Usage Example:
         name="ProtectedChild",
         table=True,
         attributes=[
-            Attribute(name="title", type="str"),
+            Attribute(name="title", type=str),
         ],
         relationships=[
             Relationship(
@@ -58,6 +58,7 @@ import uuid
 from datetime import datetime
 from typing import Any, List, Optional, Set, Tuple, Type
 from enum import Enum
+from typing import get_origin, get_args
 import sys
 
 from pydantic import BaseModel
@@ -116,7 +117,7 @@ class Attribute(BaseModel):
     """Attributes for the app's base model"""
 
     name: str
-    type: str  # String representation of type, e.g., "str", "Optional[str]", "int"
+    type: Any  # Actual Python type, e.g., str, Optional[str], int
     field_value: Any = None  # Can be a Field(...) or a default value or None
     exclude: Set[ModelTypes] = set()  # Set of schema types to exclude from
 
@@ -197,6 +198,22 @@ class SchemaType(Enum):
     EXTENDED = "extended"
 
 
+def _is_optional(type_hint) -> bool:
+    """Check if a type hint is Optional (Union with None).
+
+    Supports both Python 3.9 Union syntax and Python 3.10+ | operator.
+    """
+    origin = get_origin(type_hint)
+    if origin is type(None) | type:  # Python 3.10+ UnionType
+        return type(None) in get_args(type_hint)
+    # Also check for typing.Union (Python 3.9 compatibility)
+    from typing import Union
+
+    if origin is Union:
+        return type(None) in get_args(type_hint)
+    return False
+
+
 def _build_annotations_and_fields(  # noqa: C901
     attributes: List[Attribute],
     relationships: List[Relationship],
@@ -220,13 +237,15 @@ def _build_annotations_and_fields(  # noqa: C901
 
         # For UPDATE, make all fields Optional
         if schema_type == SchemaType.UPDATE:
-            type_str = attr.type
-            if not type_str.startswith("Optional["):
-                type_str = f"Optional[{type_str}]"
-            annotations[attr.name] = eval(type_str)
+            if _is_optional(attr.type):
+                # Already Optional, use as-is
+                annotations[attr.name] = attr.type
+            else:
+                # Not Optional, wrap it
+                annotations[attr.name] = Optional[attr.type]
             fields[attr.name] = None
         else:
-            annotations[attr.name] = eval(attr.type)
+            annotations[attr.name] = attr.type
             if attr.field_value is not None:
                 fields[attr.name] = attr.field_value
 
@@ -302,7 +321,7 @@ def create_model(
             name="ProtectedChild",
             table=True,
             attributes=[
-                Attribute(name="title", type="str", field_value=...),
+                Attribute(name="title", type=str, field_value=...),
             ],
             relationships=[
                 Relationship(
@@ -488,8 +507,8 @@ def rebuild_model_forward_refs(*models):
 #     name="ProtectedResource",
 #     table=True,
 #     attributes=[
-#         Attribute(name="name", type="str"),
-#         Attribute(name="description", type="Optional[str]", field_value=None),
+#         Attribute(name="name", type=str),
+#         Attribute(name="description", type=Optional[str], field_value=None),
 #     ],
 #     relationships=[
 #         Relationship(
@@ -504,7 +523,7 @@ def rebuild_model_forward_refs(*models):
 # ProtectedChild = create_model(
 #     name="ProtectedChild",
 #     attributes=[
-#         Attribute(name="title", type="str"),
+#         Attribute(name="title", type=str),
 #     ],
 #     relationships=[
 #         Relationship(

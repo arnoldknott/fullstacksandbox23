@@ -1,6 +1,6 @@
 import uuid
 
-# from typing import List, Optional
+from typing import Optional
 
 # from sqlmodel import Field, Relationship, SQLModel
 
@@ -53,8 +53,8 @@ from core.types import ResourceType
 ProtectedResource = create_model(
     name="ProtectedResource",
     attributes=[
-        Attribute(name="name", type="str"),
-        Attribute(name="description", type="Optional[str]", field_value=None),
+        Attribute(name="name", type=str),
+        Attribute(name="description", type=Optional[str], field_value=None),
     ],
     relationships=[
         Relationship(
@@ -119,7 +119,7 @@ ProtectedResourceUpdate = ProtectedResource.Update
 ProtectedChild = create_model(
     name="ProtectedChild",
     attributes=[
-        Attribute(name="title", type="str"),
+        Attribute(name="title", type=str),
     ],
     relationships=[
         Relationship(
@@ -133,14 +133,12 @@ ProtectedChild = create_model(
 
 ProtectedChildCreate = ProtectedChild.Create
 ProtectedChildRead = ProtectedChild.Read
+ProtectedChildUpdate = ProtectedChild.Update
+# ProtectedChildExtended = ProtectedChild.Extended
 
 
 class ProtectedChildReadNoParents(ProtectedChildCreate):
     id: uuid.UUID
-
-
-ProtectedChildUpdate = ProtectedChild.Update
-# ProtectedChildExtended = ProtectedChild.Extended
 
 
 # endregion ProtectedChild
@@ -172,7 +170,7 @@ ProtectedChildUpdate = ProtectedChild.Update
 ProtectedGrandChild = create_model(
     name="ProtectedGrandChild",
     attributes=[
-        Attribute(name="text", type="str"),
+        Attribute(name="text", type=str),
     ],
 )
 

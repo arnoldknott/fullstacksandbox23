@@ -8,7 +8,13 @@ from sqlmodel import Field, Relationship, SQLModel
 
 from core.config import config
 from models.access import IdentityHierarchy
-from .base import create_model, Attribute, Relationship as AppRelationship, RelationshipHierarchyType, rebuild_model_forward_refs
+from .base import (
+    create_model,
+    Attribute,
+    Relationship as AppRelationship,
+    RelationshipHierarchyType,
+    rebuild_model_forward_refs,
+)
 from core.types import IdentityType
 
 from .base import (
@@ -474,13 +480,13 @@ UeberGroup = create_model(
     attributes=[
         Attribute(
             name="name",
-            type="str",
-            field_value=Field(..., max_length=150, regex="^[a-zA-Z0-9]*$", index=True)
+            type=str,
+            field_value=Field(..., max_length=150, regex="^[a-zA-Z0-9]*$", index=True),
         ),
         Attribute(
             name="description",
-            type="Optional[str]",
-            field_value=Field(None, max_length=500)
+            type=Optional[str],
+            field_value=Field(None, max_length=500),
         ),
     ],
     relationships=[
@@ -488,15 +494,15 @@ UeberGroup = create_model(
             name="users",
             related_entity=IdentityType.user,
             hierarchy_type=RelationshipHierarchyType.parent,
-            back_populates="ueber_groups"
+            back_populates="ueber_groups",
         ),
         AppRelationship(
             name="groups",
             related_entity=IdentityType.group,
             hierarchy_type=RelationshipHierarchyType.parent,
-            back_populates="ueber_groups"
+            back_populates="ueber_groups",
         ),
-    ]
+    ],
 )
 
 UeberGroupCreate = UeberGroup.Create
@@ -585,13 +591,13 @@ Group = create_model(
     attributes=[
         Attribute(
             name="name",
-            type="str",
-            field_value=Field(..., max_length=150, regex="^[a-zA-Z0-9]*$", index=True)
+            type=str,
+            field_value=Field(..., max_length=150, regex="^[a-zA-Z0-9]*$", index=True),
         ),
         Attribute(
             name="description",
-            type="Optional[str]",
-            field_value=Field(None, max_length=500)
+            type=Optional[str],
+            field_value=Field(None, max_length=500),
         ),
     ],
     relationships=[
@@ -599,21 +605,21 @@ Group = create_model(
             name="users",
             related_entity=IdentityType.user,
             hierarchy_type=RelationshipHierarchyType.parent,
-            back_populates="groups"
+            back_populates="groups",
         ),
         AppRelationship(
             name="ueber_groups",
             related_entity=IdentityType.ueber_group,
             hierarchy_type=RelationshipHierarchyType.child,
-            back_populates="groups"
+            back_populates="groups",
         ),
         AppRelationship(
             name="sub_groups",
             related_entity=IdentityType.sub_group,
             hierarchy_type=RelationshipHierarchyType.parent,
-            back_populates="groups"
+            back_populates="groups",
         ),
-    ]
+    ],
 )
 
 GroupCreate = Group.Create
@@ -703,13 +709,13 @@ SubGroup = create_model(
     attributes=[
         Attribute(
             name="name",
-            type="str",
-            field_value=Field(..., max_length=150, regex="^[a-zA-Z0-9]*$", index=True)
+            type=str,
+            field_value=Field(..., max_length=150, regex="^[a-zA-Z0-9]*$", index=True),
         ),
         Attribute(
             name="description",
-            type="Optional[str]",
-            field_value=Field(None, max_length=500)
+            type=Optional[str],
+            field_value=Field(None, max_length=500),
         ),
     ],
     relationships=[
@@ -717,21 +723,21 @@ SubGroup = create_model(
             name="users",
             related_entity=IdentityType.user,
             hierarchy_type=RelationshipHierarchyType.parent,
-            back_populates="sub_groups"
+            back_populates="sub_groups",
         ),
         AppRelationship(
             name="groups",
             related_entity=IdentityType.group,
             hierarchy_type=RelationshipHierarchyType.child,
-            back_populates="sub_groups"
+            back_populates="sub_groups",
         ),
         AppRelationship(
             name="sub_sub_groups",
             related_entity=IdentityType.sub_sub_group,
             hierarchy_type=RelationshipHierarchyType.parent,
-            back_populates="sub_groups"
+            back_populates="sub_groups",
         ),
-    ]
+    ],
 )
 
 SubGroupCreate = SubGroup.Create
@@ -812,13 +818,13 @@ SubSubGroup = create_model(
     attributes=[
         Attribute(
             name="name",
-            type="str",
-            field_value=Field(..., max_length=150, regex="^[a-zA-Z0-9]*$", index=True)
+            type=str,
+            field_value=Field(..., max_length=150, regex="^[a-zA-Z0-9]*$", index=True),
         ),
         Attribute(
             name="description",
-            type="Optional[str]",
-            field_value=Field(None, max_length=500)
+            type=Optional[str],
+            field_value=Field(None, max_length=500),
         ),
     ],
     relationships=[
@@ -826,15 +832,15 @@ SubSubGroup = create_model(
             name="users",
             related_entity=IdentityType.user,
             hierarchy_type=RelationshipHierarchyType.parent,
-            back_populates="sub_sub_groups"
+            back_populates="sub_sub_groups",
         ),
         AppRelationship(
             name="sub_groups",
             related_entity=IdentityType.sub_group,
             hierarchy_type=RelationshipHierarchyType.child,
-            back_populates="sub_sub_groups"
+            back_populates="sub_sub_groups",
         ),
-    ]
+    ],
 )
 
 SubSubGroupCreate = SubSubGroup.Create
