@@ -1,10 +1,13 @@
+from typing import Optional
+
 from .base import (
     create_model,
     Attribute,
     Relationship,
     RelationshipHierarchyType,
-    rebuild_model_forward_refs,
 )
+
+# from .quiz import Quiz, QuizRead
 from core.types import ResourceType
 
 Presentation = create_model(
@@ -13,11 +16,11 @@ Presentation = create_model(
         # Source is the location fo the source code
         # This can be internal in this repository
         # or somewhere in another repo
-        Attribute(name="source", type="str"),
+        Attribute(name="source", type=str),
         # Path is the endpoint path to access the presentation
         # some might be hard coded and
         # some might have the [id] as a slug in the path
-        Attribute(name="path", type="Optional[str]", field_value=None),
+        Attribute(name="path", type=Optional[str], field_value=None),
     ],
     # These could be comments - not needed yet
     # relationships=[
@@ -38,9 +41,9 @@ Presentation = create_model(
     ],
 )
 
-PresentationCreate = Presentation.Create
-PresentationRead = Presentation.Read
-PresentationUpdate = Presentation.Update
-PresentationExtended = Presentation.Extended
+# PresentationCreate = Presentation.Create
+# PresentationRead = Presentation.Read
+# PresentationUpdate = Presentation.Update
+# PresentationExtended = Presentation.Extended
 
-rebuild_model_forward_refs(Presentation)
+# rebuild_model_forward_refs(Presentation)

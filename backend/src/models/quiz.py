@@ -6,7 +6,6 @@ from .base import (
     Attribute,
     Relationship,
     RelationshipHierarchyType,
-    rebuild_model_forward_refs,
 )
 
 from core.types import ResourceType
@@ -20,11 +19,9 @@ Quiz = create_model(
         Relationship(
             name="presentations",
             back_populates="quizzes",
-            related_entity=ResourceType.question,
+            related_entity=ResourceType.presentation,
             hierarchy_type=RelationshipHierarchyType.child,
         ),
-    ],
-    relationships=[
         Relationship(
             name="questions",
             back_populates="quizzes",
@@ -35,10 +32,10 @@ Quiz = create_model(
 )
 
 
-QuizCreate = Quiz.Create
-QuizRead = Quiz.Read
-QuizUpdate = Quiz.Update
-QuizExtended = Quiz.Extended
+# QuizCreate = Quiz.Create
+# QuizRead = Quiz.Read
+# QuizUpdate = Quiz.Update
+# QuizExtended = Quiz.Extended
 
 
 Question = create_model(
@@ -70,10 +67,10 @@ Question = create_model(
     ],
 )
 
-QuestionCreate = Question.Create
-QuestionRead = Question.Read
-QuestionUpdate = Question.Update
-QuestionExtended = Question.Extended
+# QuestionCreate = Question.Create
+# QuestionRead = Question.Read
+# QuestionUpdate = Question.Update
+# QuestionExtended = Question.Extended
 
 
 # For regular text answers, reuse Message model:
@@ -95,10 +92,10 @@ Message = create_model(
     ],
 )
 
-MessageCreate = Message.Create
-MessageRead = Message.Read
-MessageUpdate = Message.Update
-MessageExtended = Message.Extended
+# MessageCreate = Message.Create
+# MessageRead = Message.Read
+# MessageUpdate = Message.Update
+# MessageExtended = Message.Extended
 
 # For numerical answers, create Numerical model:
 # For now float also covers integers,
@@ -118,9 +115,9 @@ Numerical = create_model(
         )
     ],
 )
-NumericalCreate = Numerical.Create
-NumericalRead = Numerical.Read
-NumericalUpdate = Numerical.Update
-NumericalExtended = Numerical.Extended
+# NumericalCreate = Numerical.Create
+# NumericalRead = Numerical.Read
+# NumericalUpdate = Numerical.Update
+# NumericalExtended = Numerical.Extended
 
-rebuild_model_forward_refs(Quiz, Message, Numerical)
+# rebuild_model_forward_refs(Quiz, Message, Numerical)
