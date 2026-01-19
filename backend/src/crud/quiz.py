@@ -29,7 +29,7 @@ class QuizCRUD(
     ]
 ):
     def __init__(self):
-        super().__init__(Quiz)
+        super().__init__(Quiz, allow_standalone=True)
 
 
 class QuestionCRUD(
@@ -53,7 +53,7 @@ class MessageCRUD(
     ]
 ):
     def __init__(self):
-        super().__init__(Message)
+        super().__init__(Message, allow_standalone=True)
 
 
 class NumericalCRUD(
