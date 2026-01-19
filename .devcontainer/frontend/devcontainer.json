@@ -1,0 +1,19 @@
+{
+  "name": "fullStackSandbox23-frontend_svelte",
+  "dockerComposeFile": [
+    "../../compose.yml",
+    "../../compose.override.yml"
+  ],
+  "service": "frontend_svelte",
+  "workspaceFolder": "/app",
+  "shutdownAction": "none",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "svelte.svelte-vscode",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  }
+}
