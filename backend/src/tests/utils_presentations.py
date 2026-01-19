@@ -3,7 +3,7 @@ one_test_presentation = {
     "path": "/presentations/intro-to-fastapi",
 }
 
-wrong_test_presentations =[
+wrong_test_presentations = [
     {
         "source": 12345,  # Invalid type, should be str
         "path": None,
