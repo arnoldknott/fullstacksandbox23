@@ -455,6 +455,14 @@ def create_model(
         TableModel.Update = Update
         TableModel.Extended = Extended
 
+        # # Add type annotations so type checkers understand these are types
+        # if not hasattr(TableModel, '__annotations__'):
+        #     TableModel.__annotations__ = {}
+        # TableModel.__annotations__['Create'] = type[Create]
+        # TableModel.__annotations__['Read'] = type[Read]
+        # TableModel.__annotations__['Update'] = type[Update]
+        # TableModel.__annotations__['Extended'] = type[Extended]
+
         # NOTE: Forward references in relationships may need model_rebuild() after all models are defined
         # Call TableModel.Read.model_rebuild() and TableModel.Extended.model_rebuild() if needed
 
