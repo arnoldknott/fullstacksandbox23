@@ -19,6 +19,7 @@ class BaseTest:
         _test_data_update: Update data dict for PUT (e.g., presentation_update_data)
     """
 
+    ## Fixtures
     @pytest.fixture(autouse=True)
     def setup(self, async_client, app_override_provide_http_token_payload):
         """Auto-inject common fixtures for all tests."""
@@ -54,6 +55,7 @@ class BaseTest:
         # Return the factory function itself, not the result
         return _added_resources
 
+    ## POST Tests
     async def test_post_success(
         self, test_data_single, mocked_provide_http_token_payload
     ):
@@ -74,6 +76,15 @@ class BaseTest:
         for key, value in test_data_single.items():
             assert data[key] == value
 
+    async def test_post_fails_authorization(self, test_data_single, mocked_provide_http_token_payload):
+        """Test POST fails without proper authorization."""
+        response = await self.async_client.post(
+            self.router_path,
+            json=test_data_single,
+        )
+        assert response.status_code == 401
+
+    ## GET Tests
     async def test_get_all_success(
         self, added_resources, mocked_provide_http_token_payload
     ):

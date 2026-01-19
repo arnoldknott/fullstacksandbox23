@@ -4,7 +4,7 @@ import pytest
 
 from crud.presentation import PresentationCRUD
 from models.presentation import Presentation
-from tests.utils import token_admin_read_write
+from tests.utils import token_admin_read_write, token_user1_read_write, token_admin_read, token_admin_write, token_user1_read, token_user1_write
 from tests.utils_presentations import (
     one_test_presentation,
     many_test_presentations,
@@ -28,13 +28,25 @@ class TestPresentationEndpoints(BaseTest):
 
     @pytest.mark.anyio
     @pytest.mark.parametrize(
-        "mocked_provide_http_token_payload", [token_admin_read_write], indirect=True
+        "mocked_provide_http_token_payload", [token_admin_read_write, token_user1_read_write], indirect=True
     )
     async def test_post_success(
         self, test_data_single, mocked_provide_http_token_payload
     ):
         """Test POST presentation success."""
         await super().test_post_success(
+            test_data_single, mocked_provide_http_token_payload
+        )
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "mocked_provide_http_token_payload", [token_admin_read, token_admin_write, token_user1_read, token_user1_write], indirect=True
+    )
+    async def test_post_fails_authorization(
+        self, test_data_single, mocked_provide_http_token_payload
+    ):
+        """Test POST presentation success."""
+        await super().test_post_fails_authorization(
             test_data_single, mocked_provide_http_token_payload
         )
 
