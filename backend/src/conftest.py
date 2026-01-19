@@ -955,7 +955,9 @@ async def add_many_test_resources(
         for resource_data in resources_data:
             current_user = await current_user_from_azure_token(token_payload)
             async with crud() as crud_instance:
-                added_resource = await crud_instance.create(resource_data, current_user, parent_id)
+                added_resource = await crud_instance.create(
+                    resource_data, current_user, parent_id
+                )
             resources.append(added_resource)
 
         resources = sorted(resources, key=lambda x: x.id)

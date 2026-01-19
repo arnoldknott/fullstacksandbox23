@@ -41,8 +41,7 @@ class BaseTest:
         """Provides pre-added resources for tests.
         Returns a factory function that can be called with optional parent_id.
         """
-        from tests.utils import token_admin_read_write
-        
+
         async def _added_resources(parent_id: UUID = None):
             """Factory function to add resources with optional parent_id."""
             return await add_many_test_resources(
@@ -51,7 +50,7 @@ class BaseTest:
                 token_admin_read_write,
                 parent_id=parent_id,
             )
-        
+
         # Return the factory function itself, not the result
         return _added_resources
 
@@ -76,7 +75,9 @@ class BaseTest:
         for key, value in test_data_single.items():
             assert data[key] == value
 
-    async def test_post_fails_authorization(self, test_data_single, mocked_provide_http_token_payload):
+    async def test_post_fails_authorization(
+        self, test_data_single, mocked_provide_http_token_payload
+    ):
         """Test POST fails without proper authorization."""
         response = await self.async_client.post(
             self.router_path,
