@@ -15,6 +15,7 @@ class BaseTest:
         model: The SQLModel table model (e.g., Presentation)
         router_path: The API router path (e.g., "/api/v1/presentation")
         _test_data_single: Single test data dict for POST (e.g., one_test_presentation)
+        _test_data_wrong: List of invalid test data dicts for negative tests (e.g., wrong_test_presentations)
         _test_data_many: List of test data dicts for bulk operations (e.g., many_test_presentations)
         _test_data_update: Update data dict for PUT (e.g., presentation_update_data)
     """
@@ -35,6 +36,11 @@ class BaseTest:
     def update_data(self):
         """Provides update data for PUT."""
         return self._test_data_update
+
+    @pytest.fixture(scope="function")
+    def test_data_wrong(self):
+        """Provides invalid test data for negative tests."""
+        return self._test_data_wrong
 
     @pytest.fixture(scope="function")
     async def added_resources(self, add_many_test_resources):
@@ -84,6 +90,17 @@ class BaseTest:
             json=test_data_single,
         )
         assert response.status_code == 401
+
+    async def test_post_invalid_data(
+        self, test_data_wrong, mocked_provide_http_token_payload
+    ):
+        """Test POST with invalid data fails."""
+        for invalid_data in test_data_wrong:
+            response = await self.async_client.post(
+                self.router_path,
+                json=invalid_data,
+            )
+            assert response.status_code == 422  # Unprocessable Entity
 
     ## GET Tests
     async def test_get_all_success(

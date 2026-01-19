@@ -14,6 +14,7 @@ from tests.utils import (
 )
 from tests.utils_presentations import (
     one_test_presentation,
+    wrong_test_presentations,
     many_test_presentations,
     presentation_update_data,
 )
@@ -28,6 +29,7 @@ class TestPresentationEndpoints(BaseTest):
     model = Presentation
     router_path = "/api/v1/presentation/"
     _test_data_single = one_test_presentation
+    _test_data_wrong = wrong_test_presentations
     _test_data_many = many_test_presentations
     _test_data_update = presentation_update_data
 
@@ -59,6 +61,18 @@ class TestPresentationEndpoints(BaseTest):
         """Test POST presentation success."""
         await super().test_post_fails_authorization(
             test_data_single, mocked_provide_http_token_payload
+        )
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "mocked_provide_http_token_payload", [token_admin_read_write], indirect=True
+    )
+    async def test_post_invalid_data(
+        self, test_data_wrong, mocked_provide_http_token_payload
+    ):
+        """Test POST presentation with invalid data fails."""
+        await super().test_post_invalid_data(
+            test_data_wrong, mocked_provide_http_token_payload
         )
 
     @pytest.mark.anyio

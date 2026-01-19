@@ -3,6 +3,29 @@ one_test_presentation = {
     "path": "/presentations/intro-to-fastapi",
 }
 
+wrong_test_presentations =[
+    {
+        "source": 12345,  # Invalid type, should be str
+        "path": None,
+    },
+    {
+        "source": "https://example.com/valid-source",
+        "path": 67890,  # Invalid type, should be str or None
+    },
+    {
+        # Missing 'source' field
+        "path": "/presentations/missing-source",
+    },
+    {
+        "source": "",
+        # Missing 'path' field
+    },
+    {
+        "source": "https://example.com/missing-path",
+        "text": "Some text",  # Extra unexpected field
+    },
+]
+
 many_test_presentations = [
     {
         "source": "https://example.com/fastapi-basics",
