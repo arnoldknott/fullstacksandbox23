@@ -1,5 +1,6 @@
 {
-  "python.analysis.extraPaths": ["./backend/app"],
+  "python.analysis.extraPaths": ["./backend/src"],
+  "python.autoComplete.extraPaths": ["./backend/src"],
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter",
     "editor.formatOnSave": true

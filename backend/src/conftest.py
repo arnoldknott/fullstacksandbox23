@@ -109,7 +109,11 @@ def mocked_provide_http_token_payload(request):
     """Returns a mocked token payload."""
     # print("=== conftest - mocked_provide_http_token_payload - request ===")
     # pprint(request.param)
-    return request.param
+    # return request.param
+    if request and hasattr(request, "param"):
+        return request.param
+    else:
+        return {}
 
     # def inner():
     #     # if request:
@@ -905,3 +909,82 @@ async def add_many_test_sub_sub_groups(
         return sub_sub_groups
 
     yield _add_many_test_sub_sub_groups
+
+
+# Generic resource fixtures for testing
+
+
+@pytest.fixture(scope="function")
+async def add_one_test_resource(
+    current_user_from_azure_token: User,
+):
+    """Generic fixture to add one test resource to the database."""
+
+    async def _add_one_test_resource(
+        crud_class,
+        resource_data: dict,
+        current_user: CurrentUserData = None,
+    ):
+        """Adds a single test resource using the provided CRUD class."""
+        if not current_user:
+            current_user = await current_user_from_azure_token()
+
+        async with crud_class() as crud:
+            added_resource = await crud.create(resource_data, current_user)
+
+        return added_resource
+
+    yield _add_one_test_resource
+
+
+@pytest.fixture(scope="function")
+async def add_many_test_resources(
+    current_user_from_azure_token: User,
+):
+    """Generic fixture to add many test resources to the database."""
+
+    async def _add_many_test_resources(
+        crud,
+        resources_data: list[dict],
+        token_payload: dict = None,
+        parent_id: UUID = None,
+    ):
+        """Adds multiple test resources using the provided CRUD class."""
+        resources = []
+
+        for resource_data in resources_data:
+            current_user = await current_user_from_azure_token(token_payload)
+            async with crud() as crud_instance:
+                added_resource = await crud_instance.create(
+                    resource_data, current_user, parent_id
+                )
+            resources.append(added_resource)
+
+        resources = sorted(resources, key=lambda x: x.id)
+        return resources
+
+    yield _add_many_test_resources
+
+
+# @pytest.fixture(scope="function")
+# async def add_many_test_public_resources():
+#     """Generic fixture to add many public test resources (no auth required)."""
+
+#     async def _add_many_test_public_resources(
+#         crud_class,
+#         resources_data: list[dict],
+#     ):
+#         """Adds multiple public test resources using the provided CRUD class."""
+#         resources = []
+
+#         for resource_data in resources_data:
+#             async with crud_class() as crud:
+#                 # Public resources don't need current_user
+#                 added_resource = await crud.create(resource_data)
+
+#             resources.append(added_resource)
+
+#         resources = sorted(resources, key=lambda x: x.id)
+#         return resources
+
+#     yield _add_many_test_public_resources

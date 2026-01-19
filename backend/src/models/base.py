@@ -19,7 +19,7 @@ Usage Example:
         name="ProtectedChild",
         table=True,
         attributes=[
-            Attribute(name="title", type="str"),
+            Attribute(name="title", type=str),
         ],
         relationships=[
             Relationship(
@@ -58,6 +58,7 @@ import uuid
 from datetime import datetime
 from typing import Any, List, Optional, Set, Tuple, Type
 from enum import Enum
+from typing import get_origin, get_args
 import sys
 
 from pydantic import BaseModel
@@ -110,13 +111,14 @@ class RelationshipHierarchyType(str, Enum):
 
     parent = "parent"
     child = "child"
+    direct = "direct"
 
 
 class Attribute(BaseModel):
     """Attributes for the app's base model"""
 
     name: str
-    type: str  # String representation of type, e.g., "str", "Optional[str]", "int"
+    type: Any  # Actual Python type, e.g., str, Optional[str], int
     field_value: Any = None  # Can be a Field(...) or a default value or None
     exclude: Set[ModelTypes] = set()  # Set of schema types to exclude from
 
@@ -128,10 +130,9 @@ class Relationship(BaseModel):
     related_entity: ResourceType | IdentityType
     hierarchy_type: RelationshipHierarchyType
     back_populates: str
-    exclude: Set[ModelTypes] = set()  # Set of schema types to exclude from
-    read_schema_name: Optional[str] = (
-        None  # Override for Read schema (e.g., "ProtectedChildReadNoParents")
-    )
+    exclude: Set[ModelTypes] = (
+        set()
+    )  # Set of schema types to exclude fromProtectedChildReadNoParents")
 
 
 # Utility functions
@@ -197,6 +198,22 @@ class SchemaType(Enum):
     EXTENDED = "extended"
 
 
+def _is_optional(type_hint) -> bool:
+    """Check if a type hint is Optional (Union with None).
+
+    Supports both Python 3.9 Union syntax and Python 3.10+ | operator.
+    """
+    origin = get_origin(type_hint)
+    if origin is type(None) | type:  # Python 3.10+ UnionType
+        return type(None) in get_args(type_hint)
+    # Also check for typing.Union (Python 3.9 compatibility)
+    from typing import Union
+
+    if origin is Union:
+        return type(None) in get_args(type_hint)
+    return False
+
+
 def _build_annotations_and_fields(  # noqa: C901
     attributes: List[Attribute],
     relationships: List[Relationship],
@@ -220,13 +237,15 @@ def _build_annotations_and_fields(  # noqa: C901
 
         # For UPDATE, make all fields Optional
         if schema_type == SchemaType.UPDATE:
-            type_str = attr.type
-            if not type_str.startswith("Optional["):
-                type_str = f"Optional[{type_str}]"
-            annotations[attr.name] = eval(type_str)
+            if _is_optional(attr.type):
+                # Already Optional, use as-is
+                annotations[attr.name] = attr.type
+            else:
+                # Not Optional, wrap it
+                annotations[attr.name] = Optional[attr.type]
             fields[attr.name] = None
         else:
-            annotations[attr.name] = eval(attr.type)
+            annotations[attr.name] = attr.type
             if attr.field_value is not None:
                 fields[attr.name] = attr.field_value
 
@@ -246,9 +265,7 @@ def _build_annotations_and_fields(  # noqa: C901
                 continue
 
             rel_name = rel.name or rel.related_entity.name
-            related_class_name = (
-                rel.read_schema_name or f"{rel.related_entity.value}Read"
-            )
+            related_class_name = f"{rel.related_entity.value}Read"
             annotations[rel_name] = Optional[List[related_class_name]]
             fields[rel_name] = None
 
@@ -302,7 +319,7 @@ def create_model(
             name="ProtectedChild",
             table=True,
             attributes=[
-                Attribute(name="title", type="str", field_value=...),
+                Attribute(name="title", type=str, field_value=...),
             ],
             relationships=[
                 Relationship(
@@ -353,7 +370,7 @@ def create_model(
     #     if ModelTypes.read in rel.exclude:
     #         continue
     #     rel_name = rel.name or rel.related_entity.name
-    #     related_class_name = rel.read_schema_name or f"{rel.related_entity.value}Read"
+    #     related_class_name = f"{rel.related_entity.value}Read"
     #     read_annotations[rel_name] = Optional[List[related_class_name]]
     #     read_fields[rel_name] = None
 
@@ -438,6 +455,14 @@ def create_model(
         TableModel.Update = Update
         TableModel.Extended = Extended
 
+        # # Add type annotations so type checkers understand these are types
+        # if not hasattr(TableModel, '__annotations__'):
+        #     TableModel.__annotations__ = {}
+        # TableModel.__annotations__['Create'] = type[Create]
+        # TableModel.__annotations__['Read'] = type[Read]
+        # TableModel.__annotations__['Update'] = type[Update]
+        # TableModel.__annotations__['Extended'] = type[Extended]
+
         # NOTE: Forward references in relationships may need model_rebuild() after all models are defined
         # Call TableModel.Read.model_rebuild() and TableModel.Extended.model_rebuild() if needed
 
@@ -488,8 +513,8 @@ def rebuild_model_forward_refs(*models):
 #     name="ProtectedResource",
 #     table=True,
 #     attributes=[
-#         Attribute(name="name", type="str"),
-#         Attribute(name="description", type="Optional[str]", field_value=None),
+#         Attribute(name="name", type=str),
+#         Attribute(name="description", type=Optional[str], field_value=None),
 #     ],
 #     relationships=[
 #         Relationship(
@@ -504,7 +529,7 @@ def rebuild_model_forward_refs(*models):
 # ProtectedChild = create_model(
 #     name="ProtectedChild",
 #     attributes=[
-#         Attribute(name="title", type="str"),
+#         Attribute(name="title", type=str),
 #     ],
 #     relationships=[
 #         Relationship(

@@ -202,6 +202,9 @@ class ResourceHierarchy(BaseHierarchyCreate, BaseHierarchy, table=True):
 
     # TBD: add the required relations: children, that cannot be standalone, but need a parent.
     relations: ClassVar = {
+        ResourceType.presentation: [ResourceType.quiz],
+        ResourceType.quiz: [ResourceType.question],
+        ResourceType.question: [ResourceType.message, ResourceType.numerical],
         ResourceType.demo_resource: [
             ResourceType.tag,
             ResourceType.demo_file,

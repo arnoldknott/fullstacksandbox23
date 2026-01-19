@@ -2,6 +2,7 @@
 	import RevealJS from '$components/RevealJS.svelte';
 	import MotivationTable from './MotivationTable.svelte';
 	import SlideTitle from './SlideTitle.svelte';
+	import { flip } from 'svelte/animate';
 
 	let sharing = $state('');
 	let intentionAnwers: string[] = $state([
@@ -28,12 +29,15 @@
 
 <RevealJS>
 	<section>
+		<h1>Welcome</h1>
+	</section>
+	<section>
 		<div class="relative">
 			<div class="absolute top-2 right-10">Some absolut text</div>
 			<SlideTitle>Sharing Round</SlideTitle>
 			<div class="mx-10 mt-8">
-				<div class="textarea-filled">
-					<textarea
+				<div class="text-left">
+					<!-- <textarea
 						class="textarea textarea-xl display-large"
 						placeholder="Sharing is caring"
 						id="sharing"
@@ -45,33 +49,52 @@
 								sharing = '';
 							}
 						}}
-					></textarea>
-					<label class="textarea-filled-label display-large" for="sharing"
-						>What's on your heart? 🫶</label
+					></textarea> -->
+					<label class="heading" for="sharing"
+						>What is your intention for your studies, your course, this lecture? 🤔</label
 					>
+					<textarea
+						class="heading placeholder:title w-full border border-2 p-2 shadow-inner placeholder:italic"
+						placeholder="The sharing is publically available on the internet for everyone, who has a link to this presentation. Sharing is caring 🫶"
+						id="sharing"
+						bind:value={sharing}
+						onkeydown={(event) => {
+							if (event.key === 'Enter' && !event.shiftKey) {
+								event.preventDefault();
+								intentionAnwers = [sharing, ...intentionAnwers];
+								sharing = '';
+							}
+						}}
+					></textarea>
 				</div>
 			</div>
 			<div class="heading mt-8">
 				<div class="mx-5 grid max-h-[700px] grid-cols-3 overflow-y-auto">
 					<div class="mx-2 flex w-full flex-col gap-4">
 						{#each intentionAnwers as answer, index (index)}
-							{#if index % 3 === 0}
-								{@render intentionAnswer(answer, index)}
-							{/if}
+							<div animate:flip>
+								{#if index % 3 === 0}
+									{@render intentionAnswer(answer, index)}
+								{/if}
+							</div>
 						{/each}
 					</div>
 					<div class="mx-2 flex flex-col gap-4">
 						{#each intentionAnwers as answer, index (index)}
-							{#if index % 3 === 1}
-								{@render intentionAnswer(answer, index)}
-							{/if}
+							<div animate:flip>
+								{#if index % 3 === 1}
+									{@render intentionAnswer(answer, index)}
+								{/if}
+							</div>
 						{/each}
 					</div>
 					<div class="mx-2 flex flex-col gap-4">
 						{#each intentionAnwers as answer, index (index)}
-							{#if index % 3 === 2}
-								{@render intentionAnswer(answer, index)}
-							{/if}
+							<div animate:flip>
+								{#if index % 3 === 2}
+									{@render intentionAnswer(answer, index)}
+								{/if}
+							</div>
 						{/each}
 					</div>
 				</div>

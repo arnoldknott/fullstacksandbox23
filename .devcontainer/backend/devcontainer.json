@@ -1,0 +1,24 @@
+{
+  "name": "fullStackSandbox23-backend_api",
+  "dockerComposeFile": [
+    "../../compose.yml",
+    "../../compose.override.yml"
+  ],
+  "service": "backend_api",
+  "workspaceFolder": "/app",
+  "shutdownAction": "none",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "python.defaultInterpreterPath": "/py/bin/python",
+        "python.analysis.extraPaths": ["/app/src"],
+        "python.autoComplete.extraPaths": ["/app/src"],
+        "python.envFile": "/app/src/.env"
+      },
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance"
+      ]
+    }
+  }
+}
