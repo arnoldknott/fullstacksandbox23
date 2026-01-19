@@ -2,62 +2,66 @@ from .base import BaseCRUD
 
 from models.quiz import (
     Quiz,
-    QuizCreate,
-    QuizRead,
-    QuizUpdate,
+    # QuizCreate,
+    # QuizRead,
+    # QuizUpdate,
     Question,
-    QuestionCreate,
-    QuestionRead,
-    QuestionUpdate,
+    # QuestionCreate,
+    # QuestionRead,
+    # QuestionUpdate,
     Message,
-    MessageCreate,
-    MessageRead,
-    MessageUpdate,
+    # MessageCreate,
+    # MessageRead,
+    # MessageUpdate,
     Numerical,
-    NumericalCreate,
-    NumericalRead,
-    NumericalUpdate,
+    # NumericalCreate,
+    # NumericalRead,
+    # NumericalUpdate,
 )
+
 
 class QuizCRUD(
     BaseCRUD[
         Quiz,
-        QuizCreate,
-        QuizRead,
-        QuizUpdate,
+        Quiz.Create,
+        Quiz.Read,
+        Quiz.Update,
     ]
 ):
     def __init__(self):
         super().__init__(Quiz)
 
+
 class QuestionCRUD(
     BaseCRUD[
         Question,
-        QuestionCreate,
-        QuestionRead,
-        QuestionUpdate,
+        Question.Create,
+        Question.Read,
+        Question.Update,
     ]
 ):
     def __init__(self):
         super().__init__(Question)
 
+
 class MessageCRUD(
     BaseCRUD[
         Message,
-        MessageCreate,
-        MessageRead,
-        MessageUpdate,
+        Message.Create,
+        Message.Read,
+        Message.Update,
     ]
 ):
     def __init__(self):
         super().__init__(Message)
 
+
 class NumericalCRUD(
     BaseCRUD[
         Numerical,
-        NumericalCreate,
-        NumericalRead,
-        NumericalUpdate,
+        Numerical.Create,
+        Numerical.Read,
+        Numerical.Update,
     ]
 ):
     def __init__(self):
