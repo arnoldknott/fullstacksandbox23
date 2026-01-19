@@ -1,6 +1,6 @@
 """Base test class for API endpoint testing."""
 
-from uuid import uuid4
+from uuid import UUID, uuid4
 from core.types import CurrentUserData
 import pytest
 
@@ -37,14 +37,22 @@ class BaseTest:
 
     @pytest.fixture(scope="function")
     async def added_resources(self, add_many_test_resources):
-        """Provides pre-added resources for tests."""
-        # TBD: refactor into a closure to accept parent_id if needed
-        return await add_many_test_resources(
-            self.crud,
-            self._test_data_many,
-            token_admin_read_write,
-            parent_id=None,
-        )
+        """Provides pre-added resources for tests.
+        Returns a factory function that can be called with optional parent_id.
+        """
+        from tests.utils import token_admin_read_write
+        
+        async def _added_resources(parent_id: UUID = None):
+            """Factory function to add resources with optional parent_id."""
+            return await add_many_test_resources(
+                self.crud,
+                self._test_data_many,
+                token_admin_read_write,
+                parent_id=parent_id,
+            )
+        
+        # Return the factory function itself, not the result
+        return _added_resources
 
     async def test_post_success(
         self, test_data_single, mocked_provide_http_token_payload
@@ -70,13 +78,14 @@ class BaseTest:
         self, added_resources, mocked_provide_http_token_payload
     ):
         """Test successful GET all resources."""
+        resources = await added_resources()
         response = await self.async_client.get(self.router_path)
 
         assert response.status_code == 200
         data = response.json()
 
         assert isinstance(data, list)
-        assert len(data) >= len(added_resources)
+        assert len(data) >= len(resources)
 
         # Validate each item matches Read model
         for item in data:
@@ -87,7 +96,8 @@ class BaseTest:
         self, added_resources, mocked_provide_http_token_payload
     ):
         """Test successful GET by ID with authentication."""
-        resource_id = added_resources[0].id
+        resources = await added_resources()
+        resource_id = resources[0].id
 
         response = await self.async_client.get(f"{self.router_path}{resource_id}")
 
@@ -103,7 +113,8 @@ class BaseTest:
         self, add_one_test_access_policy, added_resources
     ):
         """Test successful public GET by ID without authentication."""
-        resource_id = added_resources[0].id
+        resources = await added_resources()
+        resource_id = resources[0].id
         current_user = CurrentUserData(**current_user_data_admin)
         await add_one_test_access_policy(
             {
@@ -130,7 +141,8 @@ class BaseTest:
         self, added_resources, update_data, mocked_provide_http_token_payload
     ):
         """Test successful PUT update."""
-        resource_id = added_resources[0].id
+        resources = await added_resources()
+        resource_id = resources[0].id
 
         response = await self.async_client.put(
             f"{self.router_path}{resource_id}",
@@ -153,7 +165,8 @@ class BaseTest:
         self, added_resources, mocked_provide_http_token_payload
     ):
         """Test successful DELETE."""
-        resource_id = added_resources[0].id
+        resources = await added_resources()
+        resource_id = resources[0].id
 
         response = await self.async_client.delete(f"{self.router_path}{resource_id}")
 
