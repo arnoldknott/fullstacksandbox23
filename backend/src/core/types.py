@@ -85,7 +85,7 @@ class ResourceType(EntityType):
     # or make this enum a collection of the models and add
     # a method __str__(self) that returns the name of the model?
     presentation = "Presentation"
-    quiz = "Quiz"
+    # quiz = "Quiz"
     question = "Question"
     # Messages are useful anywhere:
     # in chats, comments, and answers to (quiz-)questions

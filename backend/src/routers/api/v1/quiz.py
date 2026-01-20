@@ -8,15 +8,17 @@ from core.security import (
     get_http_access_token_payload,
 )
 from core.types import GuardTypes
-from crud.quiz import QuizCRUD, QuestionCRUD, MessageCRUD, NumericalCRUD
-from models.quiz import Quiz, Question, Message, Numerical
+
+# from crud.quiz import QuizCRUD, QuestionCRUD, MessageCRUD, NumericalCRUD
+from crud.quiz import QuestionCRUD, MessageCRUD, NumericalCRUD
+from models.quiz import Question, Message, Numerical
 
 from .base import BaseView
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-quiz_view = BaseView(QuizCRUD)
+# quiz_view = BaseView(QuizCRUD)
 question_view = BaseView(QuestionCRUD)
 message_view = BaseView(MessageCRUD)
 numerical_view = BaseView(NumericalCRUD)
@@ -25,68 +27,68 @@ numerical_view = BaseView(NumericalCRUD)
 # region Quiz
 
 
-@router.post("/", status_code=201)
-async def post_quiz(
-    quiz: Quiz.Create,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(
-        Guards(scopes=["api.read", "api.write"], roles=["User"])
-    ),
-) -> Quiz:
-    """Creates a new quiz."""
-    return await quiz_view.post(quiz, token_payload, guards)
+# @router.post("/", status_code=201)
+# async def post_quiz(
+#     quiz: Quiz.Create,
+#     token_payload=Depends(get_http_access_token_payload),
+#     guards: GuardTypes = Depends(
+#         Guards(scopes=["api.read", "api.write"], roles=["User"])
+#     ),
+# ) -> Quiz:
+#     """Creates a new quiz."""
+#     return await quiz_view.post(quiz, token_payload, guards)
 
 
-@router.get("/", status_code=200)
-async def get_quizzes(
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
-) -> list[Quiz.Read]:
-    """Returns all quizzes."""
-    return await quiz_view.get(token_payload, guards)
+# @router.get("/", status_code=200)
+# async def get_quizzes(
+#     token_payload=Depends(get_http_access_token_payload),
+#     guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
+# ) -> list[Quiz.Read]:
+#     """Returns all quizzes."""
+#     return await quiz_view.get(token_payload, guards)
 
 
-@router.get("/{resource_id}", status_code=200)
-async def get_quiz_by_id(
-    resource_id: UUID,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
-) -> Quiz.Read:
-    """Returns a quiz."""
-    return await quiz_view.get_by_id(resource_id, token_payload, guards)
+# @router.get("/{resource_id}", status_code=200)
+# async def get_quiz_by_id(
+#     resource_id: UUID,
+#     token_payload=Depends(get_http_access_token_payload),
+#     guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
+# ) -> Quiz.Read:
+#     """Returns a quiz."""
+#     return await quiz_view.get_by_id(resource_id, token_payload, guards)
 
 
-@router.get("/public/{resource_id}", status_code=200)
-async def get_public_quiz_by_id(
-    resource_id: UUID,
-) -> Quiz.Read:
-    """Returns a public quiz without authentication."""
-    return await quiz_view.get_by_id(resource_id, token_payload=None, guards=None)
+# @router.get("/public/{resource_id}", status_code=200)
+# async def get_public_quiz_by_id(
+#     resource_id: UUID,
+# ) -> Quiz.Read:
+#     """Returns a public quiz without authentication."""
+#     return await quiz_view.get_by_id(resource_id, token_payload=None, guards=None)
 
 
-@router.put("/{resource_id}", status_code=200)
-async def put_quiz(
-    resource_id: UUID,
-    quiz: Quiz.Update,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(
-        Guards(scopes=["api.read", "api.write"], roles=["User"])
-    ),
-) -> Quiz:
-    """Updates a quiz."""
-    return await quiz_view.put(resource_id, quiz, token_payload, guards)
+# @router.put("/{resource_id}", status_code=200)
+# async def put_quiz(
+#     resource_id: UUID,
+#     quiz: Quiz.Update,
+#     token_payload=Depends(get_http_access_token_payload),
+#     guards: GuardTypes = Depends(
+#         Guards(scopes=["api.read", "api.write"], roles=["User"])
+#     ),
+# ) -> Quiz:
+#     """Updates a quiz."""
+#     return await quiz_view.put(resource_id, quiz, token_payload, guards)
 
 
-@router.delete("/{resource_id}", status_code=200)
-async def delete_quiz(
-    resource_id: UUID,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(
-        Guards(scopes=["api.read", "api.write"], roles=["User"])
-    ),
-) -> None:
-    """Deletes a quiz."""
-    return await quiz_view.delete(resource_id, token_payload, guards)
+# @router.delete("/{resource_id}", status_code=200)
+# async def delete_quiz(
+#     resource_id: UUID,
+#     token_payload=Depends(get_http_access_token_payload),
+#     guards: GuardTypes = Depends(
+#         Guards(scopes=["api.read", "api.write"], roles=["User"])
+#     ),
+# ) -> None:
+#     """Deletes a quiz."""
+#     return await quiz_view.delete(resource_id, token_payload, guards)
 
 
 # endregion Quiz
