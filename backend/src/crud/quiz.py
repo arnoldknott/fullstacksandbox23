@@ -53,7 +53,7 @@ class MessageCRUD(
     ]
 ):
     def __init__(self):
-        super().__init__(Message, allow_standalone=True)
+        super().__init__(Message, allow_standalone=False)
 
 
 class NumericalCRUD(

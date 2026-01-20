@@ -48,11 +48,11 @@ class BaseView:
         parent_id=None,
         inherit=False,
     ):
-        logger.info("POST view for public access calls create_public CRUD")
+        logger.info("POST view for public access calls create with public=True CRUD")
         current_user = await check_token_against_guards(token_payload, guards)
         async with self.crud() as crud:
-            created_object = await crud.create_public(
-                object, current_user, parent_id, inherit
+            created_object = await crud.create(
+                object, current_user, parent_id, inherit, public=True
             )
         return created_object
 

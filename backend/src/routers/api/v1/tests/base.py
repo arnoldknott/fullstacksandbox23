@@ -118,14 +118,10 @@ class BaseTest():
     ):
         """Test POST with invalid data fails."""
         for invalid_data in test_data_wrong:
-            print("=== Testing invalid data ===")
-            print(invalid_data)
             response = await self.async_client.post(
                 self.router_path,
                 json=invalid_data,
             )
-            print("=== Response status code ===")
-            print(response.status_code)
             assert response.status_code == 422  # Unprocessable Entity
 
     ## GET Tests

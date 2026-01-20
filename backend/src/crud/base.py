@@ -205,6 +205,9 @@ class BaseCRUD(
         current_user: "CurrentUserData",
         parent_id: Optional[uuid.UUID] = None,
         inherit: Optional[bool] = False,
+        # TBD: add tests in protected resource to check public and public_action creation:
+        public : Optional[bool] = False,
+        public_action: Optional[Action] = None,
     ) -> BaseModelType:
         """Creates a new object."""
         logger.info("BaseCRUD.create")
@@ -290,6 +293,21 @@ class BaseCRUD(
             await self.session.commit()
             await self.session.refresh(database_object)
 
+            if public:
+                if not public_action:
+                    public_action = read
+                public_access_policy = AccessPolicyCreate(
+                    resource_id=database_object.id,
+                    action=public_action,
+                    public=True,
+                )
+                async with self.policy_CRUD as policy_CRUD:
+                    await policy_CRUD.create(
+                        public_access_policy,
+                        current_user,
+                        allow_override=self.allow_standalone,
+                    )
+
             # call service orchestrator.handle here with
             # - event = Event.AFTER_CREATE
             # - self.entity_type
@@ -347,30 +365,30 @@ class BaseCRUD(
                 detail=f"{self.model.__name__} - Forbidden.",
             )
 
-    async def create_public(
-        self,
-        object: BaseSchemaTypeCreate,
-        current_user: "CurrentUserData",
-        parent_id: Optional[uuid.UUID] = None,
-        inherit: Optional[bool] = False,
-        action: Action = read,
-    ) -> BaseModelType:
-        """Creates a new object with public access."""
-        database_object = await self.create(object, current_user, parent_id, inherit)
+    # async def create_public(
+    #     self,
+    #     object: BaseSchemaTypeCreate,
+    #     current_user: "CurrentUserData",
+    #     parent_id: Optional[uuid.UUID] = None,
+    #     inherit: Optional[bool] = False,
+    #     action: Action = read,
+    # ) -> BaseModelType:
+    #     """Creates a new object with public access."""
+    #     database_object = await self.create(object, current_user, parent_id, inherit)
 
-        public_access_policy = AccessPolicyCreate(
-            resource_id=database_object.id,
-            action=action,
-            public=True,
-        )
-        async with self.policy_CRUD as policy_CRUD:
-            await policy_CRUD.create(
-                public_access_policy,
-                current_user,
-                allow_override=self.allow_standalone,
-            )
+    #     public_access_policy = AccessPolicyCreate(
+    #         resource_id=database_object.id,
+    #         action=action,
+    #         public=True,
+    #     )
+    #     async with self.policy_CRUD as policy_CRUD:
+    #         await policy_CRUD.create(
+    #             public_access_policy,
+    #             current_user,
+    #             allow_override=self.allow_standalone,
+    #         )
 
-        return database_object
+    #     return database_object
 
     async def add_child_to_parent(
         self,

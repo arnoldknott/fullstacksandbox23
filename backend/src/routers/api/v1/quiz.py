@@ -1,7 +1,8 @@
 import logging
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from typing import Annotated
+from fastapi import APIRouter, Depends, Query
 
 from core.security import (
     Guards,
@@ -107,6 +108,28 @@ async def post_question(
     """Creates a new question."""
     return await question_view.post(question, token_payload, guards)
 
+@router.post("/question/{question_id}/message/", status_code=201)
+async def post_question_message(
+    question_id: UUID,
+    message: Message.Create,
+    inherit: Annotated[bool, Query()] = True,
+    public: Annotated[bool, Query()] = False,
+    token_payload=Depends(get_http_access_token_payload),
+    guards: GuardTypes = Depends(
+        Guards(scopes=["api.read", "api.write"], roles=["User"])
+    ),
+) -> Message:
+    """Creates a new message answer for a question."""
+    return await question_view.post_add_child_to_parent(
+        parent_id=question_id,
+        child_create=message,
+        child_view=message_view,
+        token_payload=token_payload,
+        guards=guards,
+        inherit=inherit,
+        public=public,
+    )
+
 
 @router.get("/question/", status_code=200)
 async def get_questions(
@@ -165,26 +188,26 @@ async def delete_question(
 # region Message
 
 
-@router.post("/message/", status_code=201)
-async def post_message(
-    message: Message.Create,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(
-        Guards(scopes=["api.read", "api.write"], roles=["User"])
-    ),
-) -> Message:
-    """Creates a new message."""
-    return await message_view.post(message, token_payload, guards)
+# @router.post("/message/", status_code=201)
+# async def post_message(
+#     message: Message.Create,
+#     token_payload=Depends(get_http_access_token_payload),
+#     guards: GuardTypes = Depends(
+#         Guards(scopes=["api.read", "api.write"], roles=["User"])
+#     ),
+# ) -> Message:
+#     """Creates a new message."""
+#     return await message_view.post(message, token_payload, guards)
 
 
-@router.post("/message/public", status_code=201)
-async def post_public_message(
-    message: Message.Create,
-) -> Message:
-    """Creates a new public message without authentication."""
-    return await message_view.post_with_public_access(
-        message, token_payload=None, guards=None
-    )
+# @router.post("/message/public", status_code=201)
+# async def post_public_message(
+#     message: Message.Create,
+# ) -> Message:
+#     """Creates a new public message without authentication."""
+#     return await message_view.post_with_public_access(
+#         message, token_payload=None, guards=None
+#     )
 
 
 @router.get("/message/", status_code=200)
@@ -244,26 +267,26 @@ async def delete_message(
 # region Numerical
 
 
-@router.post("/numerical/", status_code=201)
-async def post_numerical(
-    numerical: Numerical.Create,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(
-        Guards(scopes=["api.read", "api.write"], roles=["User"])
-    ),
-) -> Numerical:
-    """Creates a new numerical answer."""
-    return await numerical_view.post(numerical, token_payload, guards)
+# @router.post("/numerical/", status_code=201)
+# async def post_numerical(
+#     numerical: Numerical.Create,
+#     token_payload=Depends(get_http_access_token_payload),
+#     guards: GuardTypes = Depends(
+#         Guards(scopes=["api.read", "api.write"], roles=["User"])
+#     ),
+# ) -> Numerical:
+#     """Creates a new numerical answer."""
+#     return await numerical_view.post(numerical, token_payload, guards)
 
 
-@router.post("/numerical/public", status_code=201)
-async def post_public_numerical(
-    numerical: Numerical.Create,
-) -> Numerical:
-    """Creates a new public numerical answer without authentication."""
-    return await numerical_view.post_with_public_access(
-        numerical, token_payload=None, guards=None
-    )
+# @router.post("/numerical/public", status_code=201)
+# async def post_public_numerical(
+#     numerical: Numerical.Create,
+# ) -> Numerical:
+#     """Creates a new public numerical answer without authentication."""
+#     return await numerical_view.post_with_public_access(
+#         numerical, token_payload=None, guards=None
+#     )
 
 
 @router.get("/numerical/", status_code=200)
