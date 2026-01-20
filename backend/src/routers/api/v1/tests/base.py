@@ -43,17 +43,27 @@ class BaseTest:
         return self._test_data_wrong
 
     @pytest.fixture(scope="function")
-    async def added_resources(self, add_many_test_resources):
-        """Provides pre-added resources for tests.
+    async def added_resources(self, add_many_test_resources, mocked_provide_http_token_payload):
+        """
+        Provides pre-added resources for tests.
         Returns a factory function that can be called with optional parent_id.
         """
+        token_payload = None
+        if not mocked_provide_http_token_payload:
+            print("=== added_resources - using default admin token payload ===")
+            token_payload = token_admin_read_write
+        else:
+            token_payload = mocked_provide_http_token_payload
+
 
         async def _added_resources(parent_id: UUID = None):
             """Factory function to add resources with optional parent_id."""
+            print("=== added_resources - token_payload ===")
+            print(token_payload)
             return await add_many_test_resources(
                 self.crud,
                 self._test_data_many,
-                token_admin_read_write,
+                token_payload,
                 parent_id=parent_id,
             )
 
@@ -80,6 +90,14 @@ class BaseTest:
         # Check all input fields are present in response
         for key, value in test_data_single.items():
             assert data[key] == value
+
+    async def test_post_missing_auth(self, test_data_single):
+        """Test POST fails without authentication."""
+        response = await self.async_client.post(
+            self.router_path,
+            json=test_data_single,
+        )
+        assert response.status_code == 401
 
     async def test_post_fails_authorization(
         self, test_data_single, mocked_provide_http_token_payload
@@ -120,6 +138,25 @@ class BaseTest:
         for item in data:
             validated = self.model.Read(**item)
             assert validated is not None
+
+    async def test_get_all_missing_auth(self, added_resources):
+        """Test GET all fails without authentication."""
+        print("=== get-all-missing-auth - self.router_path ===")
+        print(self.router_path)
+        response = await self.async_client.get(self.router_path)
+        print("=== get-all-missing-auth - Response Status Code ===")
+        print(response.status_code)
+        payload = response.json()
+        print("=== get-all-missing-auth - Response Payload ===")
+        print(payload)
+        assert response.status_code == 401
+
+    async def test_get_all_fails_authorization(
+        self, added_resources, mocked_provide_http_token_payload
+    ):
+        """Test GET all fails without proper authorization."""
+        response = await self.async_client.get(self.router_path)
+        assert response.status_code == 401
 
     async def test_get_by_id_success(
         self, added_resources, mocked_provide_http_token_payload
@@ -204,14 +241,6 @@ class BaseTest:
         # Verify resource is deleted
         get_response = await self.async_client.get(f"{self.router_path}{resource_id}")
         assert get_response.status_code == 404
-
-    async def test_post_missing_auth(self, test_data_single):
-        """Test POST fails without authentication."""
-        response = await self.async_client.post(
-            self.router_path,
-            json=test_data_single,
-        )
-        assert response.status_code == 401
 
     async def test_get_by_id_not_found(self, mocked_provide_http_token_payload):
         """Test GET by ID returns 404 for non-existent resource."""

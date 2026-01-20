@@ -958,6 +958,8 @@ async def add_many_test_resources(
                 added_resource = await crud_instance.create(
                     resource_data, current_user, parent_id
                 )
+            print("=== add many test resources - Added resource ===")
+            print(added_resource)
             resources.append(added_resource)
 
         resources = sorted(resources, key=lambda x: x.id)

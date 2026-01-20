@@ -11,6 +11,7 @@ from tests.utils import (
     token_admin_write,
     token_user1_read,
     token_user1_write,
+    token_admin,
 )
 from tests.utils_presentations import (
     one_test_presentation,
@@ -50,6 +51,11 @@ class TestPresentationEndpoints(BaseTest):
         )
 
     @pytest.mark.anyio
+    async def test_post_missing_auth(self, test_data_single):
+        """Test POST fails without authentication."""
+        await super().test_post_missing_auth(test_data_single)
+
+    @pytest.mark.anyio
     @pytest.mark.parametrize(
         "mocked_provide_http_token_payload",
         [token_admin_read, token_admin_write, token_user1_read, token_user1_write],
@@ -77,7 +83,7 @@ class TestPresentationEndpoints(BaseTest):
 
     @pytest.mark.anyio
     @pytest.mark.parametrize(
-        "mocked_provide_http_token_payload", [token_admin_read_write], indirect=True
+        "mocked_provide_http_token_payload", [token_admin_read, token_user1_read], indirect=True
     )
     async def test_get_all_success(
         self, added_resources, mocked_provide_http_token_payload
@@ -88,8 +94,26 @@ class TestPresentationEndpoints(BaseTest):
         )
 
     @pytest.mark.anyio
+    async def test_get_all_missing_auth(self, added_resources):
+        """Test GET all fails without authentication."""
+        await super().test_get_all_missing_auth(added_resources)
+
+    @pytest.mark.anyio
     @pytest.mark.parametrize(
-        "mocked_provide_http_token_payload", [token_admin_read_write], indirect=True
+        "mocked_provide_http_token_payload", [token_admin], indirect=True
+    )
+    @pytest.mark.anyio
+    async def test_get_all_fails_authorization(
+        self, added_resources, mocked_provide_http_token_payload
+    ):
+        """Test GET all fails without proper authorization."""
+        await super().test_get_all_fails_authorization(
+            added_resources, mocked_provide_http_token_payload
+        )
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "mocked_provide_http_token_payload", [token_admin_read_write, token_user1_read_write], indirect=True
     )
     async def test_get_by_id_success(
         self, added_resources, mocked_provide_http_token_payload
@@ -131,11 +155,6 @@ class TestPresentationEndpoints(BaseTest):
         await super().test_delete_success(
             added_resources, mocked_provide_http_token_payload
         )
-
-    @pytest.mark.anyio
-    async def test_post_missing_auth(self, test_data_single):
-        """Test POST fails without authentication."""
-        await super().test_post_missing_auth(test_data_single)
 
     @pytest.mark.anyio
     @pytest.mark.parametrize(

@@ -41,6 +41,8 @@ async def get_presentations(
     guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
 ) -> list[Presentation.Read]:
     """Returns all presentations."""
+    print("=== get_presentations - token_payload ===")
+    print(token_payload)
     return await presentation_view.get(token_payload, guards)
 
 
