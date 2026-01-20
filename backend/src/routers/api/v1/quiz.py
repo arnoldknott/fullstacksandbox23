@@ -121,10 +121,31 @@ async def post_question_message(
     ),
 ) -> Message:
     """Creates a new message answer for a question."""
-    return await question_view.post_add_child_to_parent(
+    return await message_view.post(
+        object=message,
         parent_id=question_id,
-        child_create=message,
-        child_view=message_view,
+        token_payload=token_payload,
+        guards=guards,
+        inherit=inherit,
+        public=public,
+    )
+
+
+@router.post("/question/{question_id}/numerical/", status_code=201)
+async def post_question_numerical(
+    question_id: UUID,
+    numerical: Numerical.Create,
+    inherit: Annotated[bool, Query()] = True,
+    public: Annotated[bool, Query()] = False,
+    token_payload=Depends(get_http_access_token_payload),
+    guards: GuardTypes = Depends(
+        Guards(scopes=["api.read", "api.write"], roles=["User"])
+    ),
+) -> Numerical:
+    """Creates a new numerical answer for a question."""
+    return await numerical_view.post(
+        object=numerical,
+        parent_id=question_id,
         token_payload=token_payload,
         guards=guards,
         inherit=inherit,

@@ -27,7 +27,15 @@ class BaseTest:
         _test_data_wrong: List of invalid test data dicts for negative tests (e.g., wrong_test_presentations)
         _test_data_many: List of test data dicts for bulk operations (e.g., many_test_presentations)
         _test_data_update: Update data dict for PUT (e.g., presentation_update_data)
+
+    Optional attributes for hierarchical resources:
+        _hierarchical_router_path: Path pattern with {parent_id} placeholder (e.g., "/api/v1/quiz/question/{parent_id}/message/")
+        _parent_model: The SQLModel table model for parent (e.g., Question)
     """
+
+    # Optional: Override in child classes that require parent resources
+    _hierarchical_router_path = None
+    _parent_model = None
 
     ## Fixtures
     @pytest.fixture(autouse=True)
@@ -53,11 +61,15 @@ class BaseTest:
 
     @pytest.fixture(scope="function")
     async def added_resources(
-        self, add_many_test_resources, mocked_provide_http_token_payload
+        self,
+        add_many_test_resources,
+        mocked_provide_http_token_payload,
+        access_to_one_parent,
     ):
         """
         Provides pre-added resources for tests.
         Returns a factory function that can be called with optional parent_id.
+        If _parent_resource_type is defined, automatically creates a parent resource.
         """
         token_payload = None
         if not mocked_provide_http_token_payload:
@@ -67,6 +79,12 @@ class BaseTest:
 
         async def _added_resources(parent_id: UUID = None):
             """Factory function to add resources with optional parent_id."""
+            # If no parent_id provided but this resource requires a parent, create one
+            if parent_id is None and self._parent_model is not None:
+                parent_id = await access_to_one_parent(
+                    self._parent_model, token_payload
+                )
+
             return await add_many_test_resources(
                 self.crud,
                 self._test_data_many,
@@ -126,6 +144,33 @@ class BaseTest:
                 json=invalid_data,
             )
             assert response.status_code == 422  # Unprocessable Entity
+
+    async def run_post_with_parent_success(
+        self, test_data_single, access_to_one_parent, mocked_provide_http_token_payload
+    ):
+        """Test successful POST creation with parent resource."""
+        if not self._hierarchical_router_path or not self._parent_model:
+            pytest.skip("Hierarchical path or parent resource type not defined")
+
+        # Get parent resource ID
+        parent_id = await access_to_one_parent(
+            self._parent_model, mocked_provide_http_token_payload
+        )
+
+        # Format the hierarchical path with parent_id
+        path = self._hierarchical_router_path.format(parent_id=parent_id)
+
+        response = await self.async_client.post(path, json=test_data_single)
+        assert response.status_code == 201
+        data = response.json()
+
+        # Validate response matches Read model
+        validated = self.model.Read(**data)
+        assert validated is not None
+
+        # Check all input fields are present in response
+        for key, value in test_data_single.items():
+            assert data[key] == value
 
     ## GET Tests
     async def run_get_all_success(
