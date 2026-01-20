@@ -22,7 +22,7 @@ from tests.utils_presentations import (
 from routers.api.v1.tests.base import BaseTest
 
 
-class TestPresentationEndpoints(BaseTest):
+class TestPresentation(BaseTest):
     """Test suite for presentation API endpoints."""
 
     # Class attributes for BaseTest

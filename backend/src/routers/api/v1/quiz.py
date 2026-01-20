@@ -210,16 +210,16 @@ async def delete_question(
 # region Message
 
 
-# @router.post("/message/", status_code=201)
-# async def post_message(
-#     message: Message.Create,
-#     token_payload=Depends(get_http_access_token_payload),
-#     guards: GuardTypes = Depends(
-#         Guards(scopes=["api.read", "api.write"], roles=["User"])
-#     ),
-# ) -> Message:
-#     """Creates a new message."""
-#     return await message_view.post(message, token_payload, guards)
+@router.post("/message/", status_code=201)
+async def post_message(
+    message: Message.Create,
+    token_payload=Depends(get_http_access_token_payload),
+    guards: GuardTypes = Depends(
+        Guards(scopes=["api.read", "api.write"], roles=["User"])
+    ),
+) -> Message:
+    """Creates a new message."""
+    return await message_view.post(message, token_payload, guards)
 
 
 # @router.post("/message/public", status_code=201)

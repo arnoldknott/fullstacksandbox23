@@ -30,7 +30,7 @@ from tests.utils_quiz import (
 from routers.api.v1.tests.base import BaseTest
 
 
-class TestQuestionEndpoints(BaseTest):
+class TestQuestion(BaseTest):
     """Test suite for Question CRUD endpoints."""
 
     crud = QuestionCRUD
@@ -267,7 +267,7 @@ class TestQuestionEndpoints(BaseTest):
 # ============================================================================
 
 
-class TestMessageEndpoints(BaseTest):
+class TestMessage(BaseTest):
     """Test suite for Message CRUD endpoints."""
 
     crud = MessageCRUD
@@ -283,50 +283,50 @@ class TestMessageEndpoints(BaseTest):
     _parent_model = Question
 
     # POST tests
-    # @pytest.mark.anyio
-    # @pytest.mark.parametrize(
-    #     "mocked_provide_http_token_payload",
-    #     [token_admin_read_write, token_user1_read_write],
-    #     indirect=True,
-    # )
-    # async def test_post_success(
-    #     self, test_data_single, mocked_provide_http_token_payload
-    # ):
-    #     """Test POST message success."""
-    #     await super().run_post_success(
-    #         test_data_single, mocked_provide_http_token_payload
-    #     )
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "mocked_provide_http_token_payload",
+        [token_admin_read_write, token_user1_read_write],
+        indirect=True,
+    )
+    async def test_post_success(
+        self, test_data_single, mocked_provide_http_token_payload
+    ):
+        """Test POST message success."""
+        await super().run_post_success(
+            test_data_single, mocked_provide_http_token_payload
+        )
 
-    # @pytest.mark.anyio
-    # async def test_post_missing_auth(self, test_data_single):
-    #     """Test POST fails without authentication."""
-    #     await super().run_post_missing_auth(test_data_single)
+    @pytest.mark.anyio
+    async def test_post_missing_auth(self, test_data_single):
+        """Test POST fails without authentication."""
+        await super().run_post_missing_auth(test_data_single)
 
-    # @pytest.mark.anyio
-    # @pytest.mark.parametrize(
-    #     "mocked_provide_http_token_payload",
-    #     [token_admin_read, token_admin_write, token_user1_read, token_user1_write],
-    #     indirect=True,
-    # )
-    # async def test_post_fails_authorization(
-    #     self, test_data_single, mocked_provide_http_token_payload
-    # ):
-    #     """Test POST message fails without proper authorization."""
-    #     await super().run_post_fails_authorization(
-    #         test_data_single, mocked_provide_http_token_payload
-    #     )
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "mocked_provide_http_token_payload",
+        [token_admin_read, token_admin_write, token_user1_read, token_user1_write],
+        indirect=True,
+    )
+    async def test_post_fails_authorization(
+        self, test_data_single, mocked_provide_http_token_payload
+    ):
+        """Test POST message fails without proper authorization."""
+        await super().run_post_fails_authorization(
+            test_data_single, mocked_provide_http_token_payload
+        )
 
-    # @pytest.mark.anyio
-    # @pytest.mark.parametrize(
-    #     "mocked_provide_http_token_payload", [token_admin_read_write], indirect=True
-    # )
-    # async def test_post_invalid_data(
-    #     self, test_data_wrong, mocked_provide_http_token_payload
-    # ):
-    #     """Test POST message with invalid data fails."""
-    #     await super().run_post_invalid_data(
-    #         test_data_wrong, mocked_provide_http_token_payload
-    #     )
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "mocked_provide_http_token_payload", [token_admin_read_write], indirect=True
+    )
+    async def test_post_invalid_data(
+        self, test_data_wrong, mocked_provide_http_token_payload
+    ):
+        """Test POST message with invalid data fails."""
+        await super().run_post_invalid_data(
+            test_data_wrong, mocked_provide_http_token_payload
+        )
 
     @pytest.mark.anyio
     @pytest.mark.parametrize(
@@ -522,7 +522,7 @@ class TestMessageEndpoints(BaseTest):
 # ============================================================================
 
 
-class TestNumericalEndpoints(BaseTest):
+class TestNumerical(BaseTest):
     """Test suite for Numerical CRUD endpoints."""
 
     crud = NumericalCRUD
