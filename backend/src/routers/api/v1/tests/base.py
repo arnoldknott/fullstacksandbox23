@@ -50,7 +50,6 @@ class BaseTest:
         """
         token_payload = None
         if not mocked_provide_http_token_payload:
-            print("=== added_resources - using default admin token payload ===")
             token_payload = token_admin_read_write
         else:
             token_payload = mocked_provide_http_token_payload
@@ -58,8 +57,6 @@ class BaseTest:
 
         async def _added_resources(parent_id: UUID = None):
             """Factory function to add resources with optional parent_id."""
-            print("=== added_resources - token_payload ===")
-            print(token_payload)
             return await add_many_test_resources(
                 self.crud,
                 self._test_data_many,
@@ -141,14 +138,9 @@ class BaseTest:
 
     async def test_get_all_missing_auth(self, added_resources):
         """Test GET all fails without authentication."""
-        print("=== get-all-missing-auth - self.router_path ===")
-        print(self.router_path)
         response = await self.async_client.get(self.router_path)
-        print("=== get-all-missing-auth - Response Status Code ===")
-        print(response.status_code)
         payload = response.json()
-        print("=== get-all-missing-auth - Response Payload ===")
-        print(payload)
+
         assert response.status_code == 401
 
     async def test_get_all_fails_authorization(
@@ -226,6 +218,44 @@ class BaseTest:
         # Check updated fields
         for key, value in update_data.items():
             assert data[key] == value
+
+    async def test_put_missing_auth(
+        self, added_resources, update_data
+        ):
+        """Test PUT fails without authentication."""
+        resources = await added_resources()
+        resource_id = resources[0].id
+        response = await self.async_client.put(
+            f"{self.router_path}{resource_id}",
+            json=update_data,
+        )
+        assert response.status_code == 401
+
+    async def test_put_fails_authorization(
+        self, added_resources, update_data, mocked_provide_http_token_payload
+    ):
+        """Test PUT fails without proper authorization."""
+        resources = await added_resources()
+        resource_id = resources[0].id
+
+        response = await self.async_client.put(
+            f"{self.router_path}{resource_id}",
+            json=update_data,
+        )
+        assert response.status_code == 401
+
+    async def test_put_fails_invalid_data(
+        self, added_resources, test_data_wrong, mocked_provide_http_token_payload
+    ):
+        """Test PUT with invalid data fails."""
+        resources = await added_resources()
+        resource_id = resources[0].id
+
+        response = await self.async_client.put(
+            f"{self.router_path}{resource_id}",
+            json=test_data_wrong,
+        )
+        assert response.status_code == 422  # Unprocessable Entity
 
     async def test_delete_success(
         self, added_resources, mocked_provide_http_token_payload
