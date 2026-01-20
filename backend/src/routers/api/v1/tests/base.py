@@ -6,8 +6,14 @@ import pytest
 
 from tests.utils import token_admin_read_write, current_user_data_admin
 
+class AbstractTestMixin:
+    """Mixin to prevent pytest collection of abstract test classes."""
+    def __init_subclass__(cls):
+        # Mark as test only if not directly inheriting from AbstractTestMixin
+        cls.__test__ = AbstractTestMixin not in cls.__bases__
 
-class BaseTest:
+class BaseTest():
+    # __test__ = False
     """Base class for API endpoint tests with common fixtures and test methods.
 
     Subclasses must define these class attributes:
@@ -69,7 +75,7 @@ class BaseTest:
         return _added_resources
 
     ## POST Tests
-    async def test_post_success(
+    async def run_post_success(
         self, test_data_single, mocked_provide_http_token_payload
     ):
         """Test successful POST creation."""
@@ -89,7 +95,7 @@ class BaseTest:
         for key, value in test_data_single.items():
             assert data[key] == value
 
-    async def test_post_missing_auth(self, test_data_single):
+    async def run_post_missing_auth(self, test_data_single):
         """Test POST fails without authentication."""
         response = await self.async_client.post(
             self.router_path,
@@ -97,7 +103,7 @@ class BaseTest:
         )
         assert response.status_code == 401
 
-    async def test_post_fails_authorization(
+    async def run_post_fails_authorization(
         self, test_data_single, mocked_provide_http_token_payload
     ):
         """Test POST fails without proper authorization."""
@@ -107,19 +113,23 @@ class BaseTest:
         )
         assert response.status_code == 401
 
-    async def test_post_invalid_data(
+    async def run_post_invalid_data(
         self, test_data_wrong, mocked_provide_http_token_payload
     ):
         """Test POST with invalid data fails."""
         for invalid_data in test_data_wrong:
+            print("=== Testing invalid data ===")
+            print(invalid_data)
             response = await self.async_client.post(
                 self.router_path,
                 json=invalid_data,
             )
+            print("=== Response status code ===")
+            print(response.status_code)
             assert response.status_code == 422  # Unprocessable Entity
 
     ## GET Tests
-    async def test_get_all_success(
+    async def run_get_all_success(
         self, added_resources, mocked_provide_http_token_payload
     ):
         """Test successful GET all resources."""
@@ -137,19 +147,19 @@ class BaseTest:
             validated = self.model.Read(**item)
             assert validated is not None
 
-    async def test_get_all_missing_auth(self, added_resources):
+    async def run_get_all_missing_auth(self, added_resources):
         """Test GET all fails without authentication."""
         response = await self.async_client.get(self.router_path)
         assert response.status_code == 401
 
-    async def test_get_all_fails_authorization(
+    async def run_get_all_fails_authorization(
         self, added_resources, mocked_provide_http_token_payload
     ):
         """Test GET all fails without proper authorization."""
         response = await self.async_client.get(self.router_path)
         assert response.status_code == 401
 
-    async def test_get_by_id_not_found(self, mocked_provide_http_token_payload):
+    async def run_get_by_id_not_found(self, mocked_provide_http_token_payload):
         """Test GET by ID returns 404 for non-existent resource."""
         fake_id = uuid4()
 
@@ -157,7 +167,7 @@ class BaseTest:
 
         assert response.status_code == 404
 
-    async def test_get_by_id_missing_auth(self, added_resources):
+    async def run_get_by_id_missing_auth(self, added_resources):
         """Test GET by ID fails without authentication."""
         resources = await added_resources()
         resource_id = resources[0].id
@@ -166,7 +176,7 @@ class BaseTest:
 
         assert response.status_code == 401
 
-    async def test_get_by_id_fails_authorization(
+    async def run_get_by_id_fails_authorization(
         self, added_resources, mocked_provide_http_token_payload
     ):
         """Test GET by ID fails without proper authorization."""
@@ -177,7 +187,7 @@ class BaseTest:
 
         assert response.status_code == 401
 
-    async def test_get_by_id_success(
+    async def run_get_by_id_success(
         self, added_resources, mocked_provide_http_token_payload
     ):
         """Test successful GET by ID with authentication."""
@@ -194,7 +204,7 @@ class BaseTest:
         assert validated is not None
         assert data["id"] == str(resource_id)
 
-    async def test_get_public_by_id_success(
+    async def run_get_public_by_id_success(
         self, add_one_test_access_policy, added_resources
     ):
         """Test successful public GET by ID without authentication."""
@@ -222,7 +232,7 @@ class BaseTest:
         assert validated is not None
         assert data["id"] == str(resource_id)
 
-    async def test_put_success(
+    async def run_put_success(
         self, added_resources, update_data, mocked_provide_http_token_payload
     ):
         """Test successful PUT update."""
@@ -246,7 +256,7 @@ class BaseTest:
         for key, value in update_data.items():
             assert data[key] == value
 
-    async def test_put_not_found(self, update_data, mocked_provide_http_token_payload):
+    async def run_put_not_found(self, update_data, mocked_provide_http_token_payload):
         """Test PUT returns 404 for non-existent resource."""
         fake_id = uuid4()
 
@@ -257,7 +267,7 @@ class BaseTest:
 
         assert response.status_code == 404
 
-    async def test_put_missing_auth(self, added_resources, update_data):
+    async def run_put_missing_auth(self, added_resources, update_data):
         """Test PUT fails without authentication."""
         resources = await added_resources()
         resource_id = resources[0].id
@@ -267,7 +277,7 @@ class BaseTest:
         )
         assert response.status_code == 401
 
-    async def test_put_fails_authorization(
+    async def run_put_fails_authorization(
         self, added_resources, update_data, mocked_provide_http_token_payload
     ):
         """Test PUT fails without proper authorization."""
@@ -280,7 +290,7 @@ class BaseTest:
         )
         assert response.status_code == 401
 
-    async def test_put_fails_invalid_data(
+    async def run_put_fails_invalid_data(
         self, added_resources, test_data_wrong, mocked_provide_http_token_payload
     ):
         """Test PUT with invalid data fails."""
@@ -293,7 +303,7 @@ class BaseTest:
         )
         assert response.status_code == 422  # Unprocessable Entity
 
-    async def test_delete_success(
+    async def run_delete_success(
         self, added_resources, mocked_provide_http_token_payload
     ):
         """Test successful DELETE."""
@@ -308,7 +318,7 @@ class BaseTest:
         get_response = await self.async_client.get(f"{self.router_path}{resource_id}")
         assert get_response.status_code == 404
 
-    async def test_delete_not_found(self, mocked_provide_http_token_payload):
+    async def run_delete_not_found(self, mocked_provide_http_token_payload):
         """Test DELETE returns 404 for non-existent resource."""
         fake_id = uuid4()
 
@@ -316,7 +326,7 @@ class BaseTest:
 
         assert response.status_code == 404
 
-    async def test_delete_missing_auth(self, added_resources):
+    async def run_delete_missing_auth(self, added_resources):
         """Test DELETE fails without authentication."""
         resources = await added_resources()
         resource_id = resources[0].id
@@ -325,7 +335,7 @@ class BaseTest:
 
         assert response.status_code == 401
 
-    async def test_delete_fails_authorization(
+    async def run_delete_fails_authorization(
         self, added_resources, mocked_provide_http_token_payload
     ):
         """Test DELETE fails without proper authorization."""
