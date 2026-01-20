@@ -206,7 +206,7 @@ class BaseCRUD(
         parent_id: Optional[uuid.UUID] = None,
         inherit: Optional[bool] = False,
         # TBD: add tests in protected resource to check public and public_action creation:
-        public : Optional[bool] = False,
+        public: Optional[bool] = False,
         public_action: Optional[Action] = None,
     ) -> BaseModelType:
         """Creates a new object."""

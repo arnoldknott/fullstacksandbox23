@@ -108,6 +108,7 @@ async def post_question(
     """Creates a new question."""
     return await question_view.post(question, token_payload, guards)
 
+
 @router.post("/question/{question_id}/message/", status_code=201)
 async def post_question_message(
     question_id: UUID,

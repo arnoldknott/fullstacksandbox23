@@ -6,13 +6,16 @@ import pytest
 
 from tests.utils import token_admin_read_write, current_user_data_admin
 
+
 class AbstractTestMixin:
     """Mixin to prevent pytest collection of abstract test classes."""
+
     def __init_subclass__(cls):
         # Mark as test only if not directly inheriting from AbstractTestMixin
         cls.__test__ = AbstractTestMixin not in cls.__bases__
 
-class BaseTest():
+
+class BaseTest:
     # __test__ = False
     """Base class for API endpoint tests with common fixtures and test methods.
 
