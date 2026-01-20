@@ -1,9 +1,36 @@
 <script lang="ts">
+	import type { PageData } from './$types';
+	import { SocketIO, type SocketioConnection } from '$lib/socketio';
+	import type { Message } from '$lib/types';
 	import RevealJS from '$components/RevealJS.svelte';
 	import MotivationTable from './MotivationTable.svelte';
 	import SlideTitle from './SlideTitle.svelte';
 	import { flip } from 'svelte/animate';
 
+	let { data }: { data: PageData } = $props();
+
+	let intentionAnswers = $state<Message[]>(data.questionsData?.intention.messages || []);
+
+	const connection: SocketioConnection = {
+		namespace: '/message',
+		query_params: {
+			'parent-id': data.questionsData?.intention.id || ''
+		}
+	};
+	const socketio = new SocketIO(connection, () => intentionAnswers);
+
+	socketio.client.on('transferred', (data: Message) => {
+		// if (debug) {
+		// 	console.log(
+		// 		'=== dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
+		// 	);
+		// 	console.log(data);
+		// }
+		socketio.handleTransferred(data);
+	});
+
+	console.log('=== Page Data in +page.svelte for intention slide ===');
+	console.log(data.questionsData);
 	let sharing = $state('');
 	let intentionAnwers: string[] = $state([
 		'A short answer!',

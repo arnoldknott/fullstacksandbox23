@@ -17,7 +17,7 @@ class BackendAPI extends BaseAPI {
 	}
 
 	async post(
-		session_id: string,
+		session_id: string | null,
 		path: string,
 		body: RequestBody,
 		scopes: string[] = [`${appConfig.api_scope}/api.read`, `${appConfig.api_scope}/api.write`],
@@ -28,7 +28,7 @@ class BackendAPI extends BaseAPI {
 	}
 
 	async get(
-		session_id: string,
+		session_id: string | null,
 		path: string,
 		scopes: string[] = [`${appConfig.api_scope}/api.read`],
 		options: RequestInit = {},
@@ -38,7 +38,7 @@ class BackendAPI extends BaseAPI {
 	}
 
 	async put(
-		session_id: string,
+		session_id: string | null,
 		path: string,
 		body: RequestBody,
 		scopes: string[] = [`${appConfig.api_scope}/api.read`, `${appConfig.api_scope}/api.write`],
