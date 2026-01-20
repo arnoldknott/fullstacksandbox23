@@ -290,17 +290,17 @@ class TestMessage(BaseTest):
         indirect=True,
     )
     async def test_post_success(
-        self, test_data_single, mocked_provide_http_token_payload
+        self, test_data_single, mocked_provide_http_token_payload, access_to_one_parent
     ):
         """Test POST message success."""
         await super().run_post_success(
-            test_data_single, mocked_provide_http_token_payload
+            test_data_single, mocked_provide_http_token_payload, access_to_one_parent
         )
 
     @pytest.mark.anyio
-    async def test_post_missing_auth(self, test_data_single):
+    async def test_post_missing_auth(self, test_data_single, access_to_one_parent):
         """Test POST fails without authentication."""
-        await super().run_post_missing_auth(test_data_single)
+        await super().run_post_missing_auth(test_data_single, access_to_one_parent)
 
     @pytest.mark.anyio
     @pytest.mark.parametrize(
@@ -309,11 +309,11 @@ class TestMessage(BaseTest):
         indirect=True,
     )
     async def test_post_fails_authorization(
-        self, test_data_single, mocked_provide_http_token_payload
+        self, test_data_single, mocked_provide_http_token_payload, access_to_one_parent
     ):
         """Test POST message fails without proper authorization."""
         await super().run_post_fails_authorization(
-            test_data_single, mocked_provide_http_token_payload
+            test_data_single, mocked_provide_http_token_payload, access_to_one_parent
         )
 
     @pytest.mark.anyio
@@ -321,26 +321,26 @@ class TestMessage(BaseTest):
         "mocked_provide_http_token_payload", [token_admin_read_write], indirect=True
     )
     async def test_post_invalid_data(
-        self, test_data_wrong, mocked_provide_http_token_payload
+        self, test_data_wrong, mocked_provide_http_token_payload, access_to_one_parent
     ):
         """Test POST message with invalid data fails."""
         await super().run_post_invalid_data(
-            test_data_wrong, mocked_provide_http_token_payload
+            test_data_wrong, mocked_provide_http_token_payload, access_to_one_parent
         )
 
-    @pytest.mark.anyio
-    @pytest.mark.parametrize(
-        "mocked_provide_http_token_payload",
-        [token_admin_read_write, token_user1_read_write],
-        indirect=True,
-    )
-    async def test_post_with_parent_success(
-        self, test_data_single, access_to_one_parent, mocked_provide_http_token_payload
-    ):
-        """Test POST message with parent question success."""
-        await super().run_post_with_parent_success(
-            test_data_single, access_to_one_parent, mocked_provide_http_token_payload
-        )
+    # @pytest.mark.anyio
+    # @pytest.mark.parametrize(
+    #     "mocked_provide_http_token_payload",
+    #     [token_admin_read_write, token_user1_read_write],
+    #     indirect=True,
+    # )
+    # async def test_post_with_parent_success(
+    #     self, test_data_single, access_to_one_parent, mocked_provide_http_token_payload
+    # ):
+    #     """Test POST message with parent question success."""
+    #     await super().run_post_with_parent_success(
+    #         test_data_single, access_to_one_parent, mocked_provide_http_token_payload
+    #     )
 
     # GET tests
     @pytest.mark.anyio
@@ -538,63 +538,63 @@ class TestNumerical(BaseTest):
     _parent_model = Question
 
     # POST tests
-    # @pytest.mark.anyio
-    # @pytest.mark.parametrize(
-    #     "mocked_provide_http_token_payload",
-    #     [token_admin_read_write, token_user1_read_write],
-    #     indirect=True,
-    # )
-    # async def test_post_success(
-    #     self, test_data_single, mocked_provide_http_token_payload
-    # ):
-    #     """Test POST numerical success."""
-    #     await super().run_post_success(
-    #         test_data_single, mocked_provide_http_token_payload
-    #     )
-
-    # @pytest.mark.anyio
-    # async def test_post_missing_auth(self, test_data_single):
-    #     """Test POST fails without authentication."""
-    #     await super().run_post_missing_auth(test_data_single)
-
-    # @pytest.mark.anyio
-    # @pytest.mark.parametrize(
-    #     "mocked_provide_http_token_payload",
-    #     [token_admin_read, token_admin_write, token_user1_read, token_user1_write],
-    #     indirect=True,
-    # )
-    # async def test_post_fails_authorization(
-    #     self, test_data_single, mocked_provide_http_token_payload
-    # ):
-    #     """Test POST numerical fails without proper authorization."""
-    #     await super().run_post_fails_authorization(
-    #         test_data_single, mocked_provide_http_token_payload
-    #     )
-    # @pytest.mark.anyio
-    # @pytest.mark.parametrize(
-    #     "mocked_provide_http_token_payload", [token_admin_read_write], indirect=True
-    # )
-    # async def test_post_invalid_data(
-    #     self, test_data_wrong, mocked_provide_http_token_payload
-    # ):
-    #     """Test POST numerical with invalid data fails."""
-    #     await super().run_post_invalid_data(
-    #         test_data_wrong, mocked_provide_http_token_payload
-    #     )
-
     @pytest.mark.anyio
     @pytest.mark.parametrize(
         "mocked_provide_http_token_payload",
         [token_admin_read_write, token_user1_read_write],
         indirect=True,
     )
-    async def test_post_with_parent_success(
-        self, test_data_single, access_to_one_parent, mocked_provide_http_token_payload
+    async def test_post_success(
+        self, test_data_single, mocked_provide_http_token_payload, access_to_one_parent
     ):
-        """Test POST numerical with parent question success."""
-        await super().run_post_with_parent_success(
-            test_data_single, access_to_one_parent, mocked_provide_http_token_payload
+        """Test POST numerical success."""
+        await super().run_post_success(
+            test_data_single, mocked_provide_http_token_payload, access_to_one_parent
         )
+
+    @pytest.mark.anyio
+    async def test_post_missing_auth(self, test_data_single, access_to_one_parent):
+        """Test POST fails without authentication."""
+        await super().run_post_missing_auth(test_data_single, access_to_one_parent)
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "mocked_provide_http_token_payload",
+        [token_admin_read, token_admin_write, token_user1_read, token_user1_write],
+        indirect=True,
+    )
+    async def test_post_fails_authorization(
+        self, test_data_single, mocked_provide_http_token_payload, access_to_one_parent
+    ):
+        """Test POST numerical fails without proper authorization."""
+        await super().run_post_fails_authorization(
+            test_data_single, mocked_provide_http_token_payload, access_to_one_parent
+        )
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "mocked_provide_http_token_payload", [token_admin_read_write], indirect=True
+    )
+    async def test_post_invalid_data(
+        self, test_data_wrong, mocked_provide_http_token_payload, access_to_one_parent
+    ):
+        """Test POST numerical with invalid data fails."""
+        await super().run_post_invalid_data(
+            test_data_wrong, mocked_provide_http_token_payload, access_to_one_parent
+        )
+
+    # @pytest.mark.anyio
+    # @pytest.mark.parametrize(
+    #     "mocked_provide_http_token_payload",
+    #     [token_admin_read_write, token_user1_read_write],
+    #     indirect=True,
+    # )
+    # async def test_post_with_parent_success(
+    #     self, test_data_single, access_to_one_parent, mocked_provide_http_token_payload
+    # ):
+    #     """Test POST numerical with parent question success."""
+    #     await super().run_post_with_parent_success(
+    #         test_data_single, access_to_one_parent, mocked_provide_http_token_payload
+    #     )
 
     # GET tests
     @pytest.mark.anyio

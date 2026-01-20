@@ -97,68 +97,17 @@ class BaseTest:
 
     ## POST Tests
     async def run_post_success(
-        self, test_data_single, mocked_provide_http_token_payload
+        self, test_data_single, mocked_provide_http_token_payload, access_to_one_parent=None
     ):
         """Test successful POST creation."""
-        response = await self.async_client.post(
-            self.router_path,
-            json=test_data_single,
-        )
-        assert response.status_code == 201
-        data = response.json()
-
-        # Validate response matches Read model
-        # validated = self.model_read(**data)
-        validated = self.model.Read(**data)
-        assert validated is not None
-
-        # Check all input fields are present in response
-        for key, value in test_data_single.items():
-            assert data[key] == value
-
-    async def run_post_missing_auth(self, test_data_single):
-        """Test POST fails without authentication."""
-        response = await self.async_client.post(
-            self.router_path,
-            json=test_data_single,
-        )
-        assert response.status_code == 401
-
-    async def run_post_fails_authorization(
-        self, test_data_single, mocked_provide_http_token_payload
-    ):
-        """Test POST fails without proper authorization."""
-        response = await self.async_client.post(
-            self.router_path,
-            json=test_data_single,
-        )
-        assert response.status_code == 401
-
-    async def run_post_invalid_data(
-        self, test_data_wrong, mocked_provide_http_token_payload
-    ):
-        """Test POST with invalid data fails."""
-        for invalid_data in test_data_wrong:
-            response = await self.async_client.post(
-                self.router_path,
-                json=invalid_data,
+        # Determine which path to use (hierarchical or standalone)
+        if self._hierarchical_router_path and self._parent_model:
+            parent_id = await access_to_one_parent(
+                self._parent_model, mocked_provide_http_token_payload
             )
-            assert response.status_code == 422  # Unprocessable Entity
-
-    async def run_post_with_parent_success(
-        self, test_data_single, access_to_one_parent, mocked_provide_http_token_payload
-    ):
-        """Test successful POST creation with parent resource."""
-        if not self._hierarchical_router_path or not self._parent_model:
-            pytest.skip("Hierarchical path or parent resource type not defined")
-
-        # Get parent resource ID
-        parent_id = await access_to_one_parent(
-            self._parent_model, mocked_provide_http_token_payload
-        )
-
-        # Format the hierarchical path with parent_id
-        path = self._hierarchical_router_path.format(parent_id=parent_id)
+            path = self._hierarchical_router_path.format(parent_id=parent_id)
+        else:
+            path = self.router_path
 
         response = await self.async_client.post(path, json=test_data_single)
         assert response.status_code == 201
@@ -171,6 +120,79 @@ class BaseTest:
         # Check all input fields are present in response
         for key, value in test_data_single.items():
             assert data[key] == value
+
+    async def run_post_missing_auth(self, test_data_single, access_to_one_parent=None):
+        """Test POST fails without authentication."""
+        # For hierarchical resources, we still need the path format (even though auth will fail)
+        if self._hierarchical_router_path and self._parent_model:
+            # Create parent with admin token for the path, but don't use auth for the actual request
+            parent_id = await access_to_one_parent(self._parent_model, token_admin_read_write)
+            path = self._hierarchical_router_path.format(parent_id=parent_id)
+        else:
+            path = self.router_path
+
+        response = await self.async_client.post(path, json=test_data_single)
+        assert response.status_code == 401
+
+    async def run_post_fails_authorization(
+        self, test_data_single, mocked_provide_http_token_payload, access_to_one_parent=None
+    ):
+        """Test POST fails without proper authorization."""
+        # Determine which path to use
+        if self._hierarchical_router_path and self._parent_model:
+            parent_id = await access_to_one_parent(
+                self._parent_model, mocked_provide_http_token_payload
+            )
+            path = self._hierarchical_router_path.format(parent_id=parent_id)
+        else:
+            path = self.router_path
+
+        response = await self.async_client.post(path, json=test_data_single)
+        assert response.status_code == 401
+
+    async def run_post_invalid_data(
+        self, test_data_wrong, mocked_provide_http_token_payload, access_to_one_parent=None
+    ):
+        """Test POST with invalid data fails."""
+        # Determine which path to use
+        if self._hierarchical_router_path and self._parent_model:
+            parent_id = await access_to_one_parent(
+                self._parent_model, mocked_provide_http_token_payload
+            )
+            path = self._hierarchical_router_path.format(parent_id=parent_id)
+        else:
+            path = self.router_path
+
+        for invalid_data in test_data_wrong:
+            response = await self.async_client.post(path, json=invalid_data)
+            assert response.status_code == 422  # Unprocessable Entity
+
+    # async def run_post_with_parent_success(
+    #     self, test_data_single, access_to_one_parent, mocked_provide_http_token_payload
+    # ):
+    #     """Test successful POST creation with parent resource."""
+    #     if not self._hierarchical_router_path or not self._parent_model:
+    #         pytest.skip("Hierarchical path or parent resource type not defined")
+
+    #     # Get parent resource ID
+    #     parent_id = await access_to_one_parent(
+    #         self._parent_model, mocked_provide_http_token_payload
+    #     )
+
+    #     # Format the hierarchical path with parent_id
+    #     path = self._hierarchical_router_path.format(parent_id=parent_id)
+
+    #     response = await self.async_client.post(path, json=test_data_single)
+    #     assert response.status_code == 201
+    #     data = response.json()
+
+    #     # Validate response matches Read model
+    #     validated = self.model.Read(**data)
+    #     assert validated is not None
+
+    #     # Check all input fields are present in response
+    #     for key, value in test_data_single.items():
+    #         assert data[key] == value
 
     ## GET Tests
     async def run_get_all_success(
