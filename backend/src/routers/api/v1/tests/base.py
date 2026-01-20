@@ -158,6 +158,27 @@ class BaseTest:
 
         assert response.status_code == 404
 
+    async def test_get_by_id_missing_auth(self, added_resources):
+        """Test GET by ID fails without authentication."""
+        resources = await added_resources()
+        resource_id = resources[0].id
+
+        response = await self.async_client.get(f"{self.router_path}{resource_id}")
+
+        assert response.status_code == 401
+        
+    async def test_get_by_id_fails_authorization(
+        self, added_resources, mocked_provide_http_token_payload
+    ):
+        """Test GET by ID fails without proper authorization."""
+        resources = await added_resources()
+        resource_id = resources[0].id
+
+        response = await self.async_client.get(f"{self.router_path}{resource_id}")
+
+        assert response.status_code == 401
+
+
     async def test_get_by_id_success(
         self, added_resources, mocked_provide_http_token_payload
     ):

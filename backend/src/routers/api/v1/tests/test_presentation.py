@@ -35,7 +35,7 @@ class TestPresentationEndpoints(BaseTest):
     _test_data_update = presentation_update_data
 
     # Test methods - just declare them, BaseTest handles implementation
-
+    ## POST tests
     @pytest.mark.anyio
     @pytest.mark.parametrize(
         "mocked_provide_http_token_payload",
@@ -81,6 +81,7 @@ class TestPresentationEndpoints(BaseTest):
             test_data_wrong, mocked_provide_http_token_payload
         )
 
+    ## GET tests
     @pytest.mark.anyio
     @pytest.mark.parametrize(
         "mocked_provide_http_token_payload", [token_admin_read, token_user1_read], indirect=True
@@ -130,6 +131,23 @@ class TestPresentationEndpoints(BaseTest):
     async def test_get_by_id_not_found(self, mocked_provide_http_token_payload):
         """Test GET by ID returns 404 for non-existent presentation."""
         await super().test_get_by_id_not_found(mocked_provide_http_token_payload)
+
+    @pytest.mark.anyio
+    async def test_get_by_id_missing_auth(self, added_resources):
+        """Test GET by ID fails without authentication."""
+        await super().test_get_by_id_missing_auth(added_resources)
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "mocked_provide_http_token_payload", [token_admin, token_admin_write, token_user1_write], indirect=True
+    )
+    async def test_get_by_id_fails_authorization(
+        self, added_resources, mocked_provide_http_token_payload
+    ):
+        """Test GET presentation by ID fails without proper authorization."""
+        await super().test_get_by_id_fails_authorization(
+            added_resources, mocked_provide_http_token_payload
+        )
 
     @pytest.mark.anyio
     async def test_get_public_by_id_success(
@@ -190,6 +208,7 @@ class TestPresentationEndpoints(BaseTest):
             added_resources, test_data_wrong, mocked_provide_http_token_payload
         )
 
+    ## DELETE tests
     @pytest.mark.anyio
     @pytest.mark.parametrize(
         "mocked_provide_http_token_payload", [token_admin_read_write], indirect=True
