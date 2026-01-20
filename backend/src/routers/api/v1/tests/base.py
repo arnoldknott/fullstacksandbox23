@@ -43,7 +43,9 @@ class BaseTest:
         return self._test_data_wrong
 
     @pytest.fixture(scope="function")
-    async def added_resources(self, add_many_test_resources, mocked_provide_http_token_payload):
+    async def added_resources(
+        self, add_many_test_resources, mocked_provide_http_token_payload
+    ):
         """
         Provides pre-added resources for tests.
         Returns a factory function that can be called with optional parent_id.
@@ -53,7 +55,6 @@ class BaseTest:
             token_payload = token_admin_read_write
         else:
             token_payload = mocked_provide_http_token_payload
-
 
         async def _added_resources(parent_id: UUID = None):
             """Factory function to add resources with optional parent_id."""
@@ -139,8 +140,6 @@ class BaseTest:
     async def test_get_all_missing_auth(self, added_resources):
         """Test GET all fails without authentication."""
         response = await self.async_client.get(self.router_path)
-        payload = response.json()
-
         assert response.status_code == 401
 
     async def test_get_all_fails_authorization(
@@ -166,7 +165,7 @@ class BaseTest:
         response = await self.async_client.get(f"{self.router_path}{resource_id}")
 
         assert response.status_code == 401
-        
+
     async def test_get_by_id_fails_authorization(
         self, added_resources, mocked_provide_http_token_payload
     ):
@@ -177,7 +176,6 @@ class BaseTest:
         response = await self.async_client.get(f"{self.router_path}{resource_id}")
 
         assert response.status_code == 401
-
 
     async def test_get_by_id_success(
         self, added_resources, mocked_provide_http_token_payload
@@ -259,9 +257,7 @@ class BaseTest:
 
         assert response.status_code == 404
 
-    async def test_put_missing_auth(
-        self, added_resources, update_data
-        ):
+    async def test_put_missing_auth(self, added_resources, update_data):
         """Test PUT fails without authentication."""
         resources = await added_resources()
         resource_id = resources[0].id

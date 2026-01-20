@@ -84,7 +84,9 @@ class TestPresentationEndpoints(BaseTest):
     ## GET tests
     @pytest.mark.anyio
     @pytest.mark.parametrize(
-        "mocked_provide_http_token_payload", [token_admin_read, token_user1_read], indirect=True
+        "mocked_provide_http_token_payload",
+        [token_admin_read, token_user1_read],
+        indirect=True,
     )
     async def test_get_all_success(
         self, added_resources, mocked_provide_http_token_payload
@@ -114,7 +116,9 @@ class TestPresentationEndpoints(BaseTest):
 
     @pytest.mark.anyio
     @pytest.mark.parametrize(
-        "mocked_provide_http_token_payload", [token_admin_read_write, token_user1_read_write], indirect=True
+        "mocked_provide_http_token_payload",
+        [token_admin_read_write, token_user1_read_write],
+        indirect=True,
     )
     async def test_get_by_id_success(
         self, added_resources, mocked_provide_http_token_payload
@@ -139,7 +143,9 @@ class TestPresentationEndpoints(BaseTest):
 
     @pytest.mark.anyio
     @pytest.mark.parametrize(
-        "mocked_provide_http_token_payload", [token_admin, token_admin_write, token_user1_write], indirect=True
+        "mocked_provide_http_token_payload",
+        [token_admin, token_admin_write, token_user1_write],
+        indirect=True,
     )
     async def test_get_by_id_fails_authorization(
         self, added_resources, mocked_provide_http_token_payload
@@ -170,7 +176,7 @@ class TestPresentationEndpoints(BaseTest):
         await super().test_put_success(
             added_resources, update_data, mocked_provide_http_token_payload
         )
-    
+
     @pytest.mark.anyio
     @pytest.mark.parametrize(
         "mocked_provide_http_token_payload", [token_admin_read_write], indirect=True
@@ -186,7 +192,9 @@ class TestPresentationEndpoints(BaseTest):
 
     @pytest.mark.anyio
     @pytest.mark.parametrize(
-        "mocked_provide_http_token_payload", [token_admin, token_user1_read, token_user1_write], indirect=True
+        "mocked_provide_http_token_payload",
+        [token_admin, token_user1_read, token_user1_write],
+        indirect=True,
     )
     async def test_put_fails_authorization(
         self, added_resources, update_data, mocked_provide_http_token_payload
@@ -236,7 +244,9 @@ class TestPresentationEndpoints(BaseTest):
 
     @pytest.mark.anyio
     @pytest.mark.parametrize(
-        "mocked_provide_http_token_payload", [token_admin, token_user1_read, token_user1_write], indirect=True
+        "mocked_provide_http_token_payload",
+        [token_admin, token_user1_read, token_user1_write],
+        indirect=True,
     )
     async def test_delete_fails_authorization(
         self, added_resources, mocked_provide_http_token_payload
