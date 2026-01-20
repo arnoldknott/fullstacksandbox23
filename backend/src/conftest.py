@@ -924,13 +924,14 @@ async def add_one_test_resource(
         crud_class,
         resource_data: dict,
         current_user: CurrentUserData = None,
+        parent_id: UUID = None,
     ):
         """Adds a single test resource using the provided CRUD class."""
         if not current_user:
             current_user = await current_user_from_azure_token()
 
         async with crud_class() as crud:
-            added_resource = await crud.create(resource_data, current_user)
+            added_resource = await crud.create(resource_data, current_user, parent_id)
 
         return added_resource
 

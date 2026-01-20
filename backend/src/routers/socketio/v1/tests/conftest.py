@@ -22,6 +22,11 @@ from routers.socketio.v1.identities import (
 )
 from routers.socketio.v1.interactive_documentation import InteractiveDocumentation
 from routers.socketio.v1.public_namespace import PublicNamespace
+from routers.socketio.v1.quiz_namespace import (
+    QuestionNamespace,
+    MessageNamespace,
+    NumericalNamespace,
+)
 from tests.utils import sessions
 
 # Mocking the sessions for testing purposes.
@@ -143,6 +148,9 @@ async def socketio_test_server(
             sio.register_namespace(SubGroupNamespace(server=sio))
             sio.register_namespace(SubSubGroupNamespace(server=sio))
             sio.register_namespace(InteractiveDocumentation(server=sio))
+            sio.register_namespace(QuestionNamespace(server=sio))
+            sio.register_namespace(MessageNamespace(server=sio))
+            sio.register_namespace(NumericalNamespace(server=sio))
             await asyncio.sleep(1)
             yield sio
             await server.shutdown()

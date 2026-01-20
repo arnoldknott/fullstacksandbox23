@@ -570,6 +570,7 @@ class TestNumerical(BaseTest):
         await super().run_post_fails_authorization(
             test_data_single, mocked_provide_http_token_payload, access_to_one_parent
         )
+
     @pytest.mark.anyio
     @pytest.mark.parametrize(
         "mocked_provide_http_token_payload", [token_admin_read_write], indirect=True

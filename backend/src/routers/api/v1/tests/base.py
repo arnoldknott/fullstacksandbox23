@@ -97,7 +97,10 @@ class BaseTest:
 
     ## POST Tests
     async def run_post_success(
-        self, test_data_single, mocked_provide_http_token_payload, access_to_one_parent=None
+        self,
+        test_data_single,
+        mocked_provide_http_token_payload,
+        access_to_one_parent=None,
     ):
         """Test successful POST creation."""
         # Determine which path to use (hierarchical or standalone)
@@ -126,7 +129,9 @@ class BaseTest:
         # For hierarchical resources, we still need the path format (even though auth will fail)
         if self._hierarchical_router_path and self._parent_model:
             # Create parent with admin token for the path, but don't use auth for the actual request
-            parent_id = await access_to_one_parent(self._parent_model, token_admin_read_write)
+            parent_id = await access_to_one_parent(
+                self._parent_model, token_admin_read_write
+            )
             path = self._hierarchical_router_path.format(parent_id=parent_id)
         else:
             path = self.router_path
@@ -135,7 +140,10 @@ class BaseTest:
         assert response.status_code == 401
 
     async def run_post_fails_authorization(
-        self, test_data_single, mocked_provide_http_token_payload, access_to_one_parent=None
+        self,
+        test_data_single,
+        mocked_provide_http_token_payload,
+        access_to_one_parent=None,
     ):
         """Test POST fails without proper authorization."""
         # Determine which path to use
@@ -151,7 +159,10 @@ class BaseTest:
         assert response.status_code == 401
 
     async def run_post_invalid_data(
-        self, test_data_wrong, mocked_provide_http_token_payload, access_to_one_parent=None
+        self,
+        test_data_wrong,
+        mocked_provide_http_token_payload,
+        access_to_one_parent=None,
     ):
         """Test POST with invalid data fails."""
         # Determine which path to use
