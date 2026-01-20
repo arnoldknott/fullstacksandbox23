@@ -41,7 +41,7 @@ class QuestionCRUD(
     ]
 ):
     def __init__(self):
-        super().__init__(Question)
+        super().__init__(Question, allow_standalone=True)
 
 
 class MessageCRUD(
