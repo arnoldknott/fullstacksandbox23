@@ -150,6 +150,14 @@ class BaseTest:
         response = await self.async_client.get(self.router_path)
         assert response.status_code == 401
 
+    async def test_get_by_id_not_found(self, mocked_provide_http_token_payload):
+        """Test GET by ID returns 404 for non-existent resource."""
+        fake_id = uuid4()
+
+        response = await self.async_client.get(f"{self.router_path}{fake_id}")
+
+        assert response.status_code == 404
+
     async def test_get_by_id_success(
         self, added_resources, mocked_provide_http_token_payload
     ):
@@ -219,6 +227,17 @@ class BaseTest:
         for key, value in update_data.items():
             assert data[key] == value
 
+    async def test_put_not_found(self, update_data, mocked_provide_http_token_payload):
+        """Test PUT returns 404 for non-existent resource."""
+        fake_id = uuid4()
+
+        response = await self.async_client.put(
+            f"{self.router_path}{fake_id}",
+            json=update_data,
+        )
+
+        assert response.status_code == 404
+
     async def test_put_missing_auth(
         self, added_resources, update_data
         ):
@@ -272,25 +291,6 @@ class BaseTest:
         get_response = await self.async_client.get(f"{self.router_path}{resource_id}")
         assert get_response.status_code == 404
 
-    async def test_get_by_id_not_found(self, mocked_provide_http_token_payload):
-        """Test GET by ID returns 404 for non-existent resource."""
-        fake_id = uuid4()
-
-        response = await self.async_client.get(f"{self.router_path}{fake_id}")
-
-        assert response.status_code == 404
-
-    async def test_put_not_found(self, update_data, mocked_provide_http_token_payload):
-        """Test PUT returns 404 for non-existent resource."""
-        fake_id = uuid4()
-
-        response = await self.async_client.put(
-            f"{self.router_path}{fake_id}",
-            json=update_data,
-        )
-
-        assert response.status_code == 404
-
     async def test_delete_not_found(self, mocked_provide_http_token_payload):
         """Test DELETE returns 404 for non-existent resource."""
         fake_id = uuid4()
@@ -298,3 +298,23 @@ class BaseTest:
         response = await self.async_client.delete(f"{self.router_path}{fake_id}")
 
         assert response.status_code == 404
+
+    async def test_delete_missing_auth(self, added_resources):
+        """Test DELETE fails without authentication."""
+        resources = await added_resources()
+        resource_id = resources[0].id
+
+        response = await self.async_client.delete(f"{self.router_path}{resource_id}")
+
+        assert response.status_code == 401
+
+    async def test_delete_fails_authorization(
+        self, added_resources, mocked_provide_http_token_payload
+    ):
+        """Test DELETE fails without proper authorization."""
+        resources = await added_resources()
+        resource_id = resources[0].id
+
+        response = await self.async_client.delete(f"{self.router_path}{resource_id}")
+
+        assert response.status_code == 401

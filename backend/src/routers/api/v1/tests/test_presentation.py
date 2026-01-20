@@ -124,6 +124,14 @@ class TestPresentationEndpoints(BaseTest):
         )
 
     @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "mocked_provide_http_token_payload", [token_admin_read_write], indirect=True
+    )
+    async def test_get_by_id_not_found(self, mocked_provide_http_token_payload):
+        """Test GET by ID returns 404 for non-existent presentation."""
+        await super().test_get_by_id_not_found(mocked_provide_http_token_payload)
+
+    @pytest.mark.anyio
     async def test_get_public_by_id_success(
         self, add_one_test_access_policy, added_resources
     ):
@@ -144,6 +152,14 @@ class TestPresentationEndpoints(BaseTest):
         await super().test_put_success(
             added_resources, update_data, mocked_provide_http_token_payload
         )
+    
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "mocked_provide_http_token_payload", [token_admin_read_write], indirect=True
+    )
+    async def test_put_not_found(self, update_data, mocked_provide_http_token_payload):
+        """Test PUT returns 404 for non-existent presentation."""
+        await super().test_put_not_found(update_data, mocked_provide_http_token_payload)
 
     @pytest.mark.anyio
     async def test_put_missing_auth(self, added_resources, update_data):
@@ -190,22 +206,23 @@ class TestPresentationEndpoints(BaseTest):
     @pytest.mark.parametrize(
         "mocked_provide_http_token_payload", [token_admin_read_write], indirect=True
     )
-    async def test_get_by_id_not_found(self, mocked_provide_http_token_payload):
-        """Test GET by ID returns 404 for non-existent presentation."""
-        await super().test_get_by_id_not_found(mocked_provide_http_token_payload)
-
-    @pytest.mark.anyio
-    @pytest.mark.parametrize(
-        "mocked_provide_http_token_payload", [token_admin_read_write], indirect=True
-    )
-    async def test_put_not_found(self, update_data, mocked_provide_http_token_payload):
-        """Test PUT returns 404 for non-existent presentation."""
-        await super().test_put_not_found(update_data, mocked_provide_http_token_payload)
-
-    @pytest.mark.anyio
-    @pytest.mark.parametrize(
-        "mocked_provide_http_token_payload", [token_admin_read_write], indirect=True
-    )
     async def test_delete_not_found(self, mocked_provide_http_token_payload):
         """Test DELETE returns 404 for non-existent presentation."""
         await super().test_delete_not_found(mocked_provide_http_token_payload)
+
+    @pytest.mark.anyio
+    async def test_delete_missing_auth(self, added_resources):
+        """Test DELETE fails without authentication."""
+        await super().test_delete_missing_auth(added_resources)
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "mocked_provide_http_token_payload", [token_admin, token_user1_read, token_user1_write], indirect=True
+    )
+    async def test_delete_fails_authorization(
+        self, added_resources, mocked_provide_http_token_payload
+    ):
+        """Test DELETE presentation fails without proper authorization."""
+        await super().test_delete_fails_authorization(
+            added_resources, mocked_provide_http_token_payload
+        )
