@@ -274,11 +274,18 @@ class SocketIOTestConnection:
 
     def token_payload(self):
         """Returns the current token payload for the user of this session."""
-        token_payload = [
-            session["token_payload"]
-            for session in sessions
-            if session["session_id"] == self.session_id
-        ][0]
+        token_payload = None
+        try:
+            token_payload = [
+                session["token_payload"]
+                for session in sessions
+                if session["session_id"] == self.session_id
+            ][0]
+        except IndexError:
+            print(
+                f"=== Session ID {self.session_id} not found in sessions for token payload. ===",
+                flush=True,
+            )
         return token_payload
 
     async def current_user(self) -> CurrentUserData:

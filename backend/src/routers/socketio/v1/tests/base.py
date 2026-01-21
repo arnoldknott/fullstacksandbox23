@@ -38,21 +38,21 @@ class BaseSocketIOTest:
         access_to_one_parent=None,
     ):
         """Test successful resource creation via submit event."""
-        if session_ids is None:
-            connection = await socketio_test_client(
-                client_config=self.client_config(),
+        session_id = None
+        if session_ids is not None:
+            session_id = session_ids[0]
+
+        connection = await socketio_test_client(
+            client_config=self.client_config(),
+            session_id=session_id,
             )
-        else:
-            connection = await socketio_test_client(
-                client_config=self.client_config(),
-                    session_id=session_ids[0],
-                )
+        token_payload = connection.token_payload()
 
         # If hierarchical, create parent
         parent_id = None
         if self._parent_model and access_to_one_parent:
             parent_id = await access_to_one_parent(
-                self._parent_model, connection.token_payload()
+                self._parent_model, token_payload
             )
 
         await connection.connect()
