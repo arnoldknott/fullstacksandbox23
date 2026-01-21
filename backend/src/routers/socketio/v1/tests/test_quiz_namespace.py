@@ -22,7 +22,7 @@ from tests.utils_quiz import (
 from .base import BaseSocketIOTest
 
 
-class TestQuestionNamespace(BaseSocketIOTest):
+class TestQuestion(BaseSocketIOTest):
     """Test suite for Question SocketIO namespace."""
 
     namespace_path = "/question"
@@ -56,17 +56,6 @@ class TestQuestionNamespace(BaseSocketIOTest):
             access_to_one_parent,
         )
 
-    # @pytest.mark.anyio
-    # async def test_submit_create_public_success(
-    #     self,
-    #     socketio_test_client,
-    #     access_to_one_parent,
-    # ):
-    #     """Test successful question creation."""
-    #     await super().run_submit_create_success(
-    #         socketio_test_client,
-    #         access_to_one_parent=access_to_one_parent,
-    #     )
 
     # Submit Update Tests
     @pytest.mark.anyio
@@ -148,7 +137,7 @@ class TestQuestionNamespace(BaseSocketIOTest):
         )
 
 
-class TestMessageNamespace(BaseSocketIOTest):
+class TestMessage(BaseSocketIOTest):
     """Test suite for Message SocketIO namespace."""
 
     namespace_path = "/message"
@@ -181,6 +170,18 @@ class TestMessageNamespace(BaseSocketIOTest):
             session_ids,
             access_to_one_parent,
         )
+
+    # @pytest.mark.anyio
+    # async def test_submit_create_public_success(
+    #     self,
+    #     socketio_test_client,
+    #     access_to_one_parent,
+    # ):
+    #     """Test successful question creation."""
+    #     await super().run_submit_create_success(
+    #         socketio_test_client,
+    #         access_to_one_parent=access_to_one_parent,
+    #     )
 
     # Submit Update Tests
     @pytest.mark.anyio
@@ -262,7 +263,7 @@ class TestMessageNamespace(BaseSocketIOTest):
         )
 
 
-class TestNumericalNamespace(BaseSocketIOTest):
+class TestNumerical(BaseSocketIOTest):
     """Test suite for Numerical SocketIO namespace."""
 
     namespace_path = "/numerical"
