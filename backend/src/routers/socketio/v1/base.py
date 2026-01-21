@@ -34,7 +34,8 @@ class SocketIoSessionData(BaseModel):
 
     user_name: str
     current_user: CurrentUserData
-    session_id: str  # That's the Redis session-id, not the socket.io session-id (sid)
+    session_id: Optional[str] = None  # That's the Redis session-id, not the socket.io session-id (sid)
+    query_strings: Optional[dict] = None
 
 
 class BaseNamespace(socketio.AsyncNamespace):
@@ -483,18 +484,9 @@ class BaseNamespace(socketio.AsyncNamespace):
                     else:
                         # if id is not present, it is a create
                         # validate data with create model
-                        print(
-                            "=== routers - socketio - v1 - on_submit - CREATE ===",
-                            flush=True,
-                        )
                         current_user = await self._get_current_user_and_check_guard(
                             sid, "submit:create"
                         )
-                        print(
-                            "=== routers - socketio - v1 - on_submit - CREATE - current_user ===",
-                            flush=True,
-                        )
-                        print(current_user, flush=True)
                         object_create = self.create_model(**payload)
                         parent_id = data.get("parent_id", None)
                         # TBD: add tests for inherit, public and public_action flags
