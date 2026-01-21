@@ -146,6 +146,7 @@ export interface DemoResource {
 	tags?: string[];
 }
 export interface Message {
+	id: string;
 	content: string;
 	language: string;
 }

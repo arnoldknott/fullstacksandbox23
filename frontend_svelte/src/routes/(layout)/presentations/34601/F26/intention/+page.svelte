@@ -10,12 +10,11 @@
 	let { data }: { data: PageData } = $props();
 
 	let intentionAnswers = $state<Message[]>(data.questionsData?.intention.messages || []);
+	let questionId = data.questionsData?.intention.id || '';
 
 	const connection: SocketioConnection = {
 		namespace: '/message',
-		query_params: {
-			'parent-id': data.questionsData?.intention.id || ''
-		}
+		query_params: {'parent-id': questionId}
 	};
 	const socketio = new SocketIO(connection, () => intentionAnswers);
 
@@ -29,21 +28,26 @@
 		socketio.handleTransferred(data);
 	});
 
-	console.log('=== Page Data in +page.svelte for intention slide ===');
-	console.log(data.questionsData);
-	let sharing = $state('');
-	let intentionAnwers: string[] = $state([
-		'A short answer!',
-		'A longer answer, someone had something to share in the session. We are grateful for all inputs!',
-		'At some point we gotta flip over here, right?!',
-		'Another answer - might be a reaction to the first or a stand alone! What happens if this answer exceeds a certain length? Will it wrap around correctly and still be readable?',
-		'Another Answer of someone, who has something to share. Going deep inside and make that share a bit longer, so it wraps around correctly and is still readable.',
-		'SingleWord',
-		'One more short',
-		'Another answer - might be a reaction to the first or a stand alone! What happens if this answer exceeds a certain length? Will it wrap around correctly and still be readable?',
-		'A medium length answer to see how that looks like in the sharing round section of the presentation slide.',
-		'Another answer - might be a reaction to the first or a stand alone! What happens if this answer exceeds a certain length? Will it wrap around correctly and still be readable?'
-	]);
+	// let sharing = $state('');
+	// let intentionAnswers: string[] = $state([
+	// 	'A short answer!',
+	// 	'A longer answer, someone had something to share in the session. We are grateful for all inputs!',
+	// 	'At some point we gotta flip over here, right?!',
+	// 	'Another answer - might be a reaction to the first or a stand alone! What happens if this answer exceeds a certain length? Will it wrap around correctly and still be readable?',
+	// 	'Another Answer of someone, who has something to share. Going deep inside and make that share a bit longer, so it wraps around correctly and is still readable.',
+	// 	'SingleWord',
+	// 	'One more short',
+	// 	'Another answer - might be a reaction to the first or a stand alone! What happens if this answer exceeds a certain length? Will it wrap around correctly and still be readable?',
+	// 	'A medium length answer to see how that looks like in the sharing round section of the presentation slide.',
+	// 	'Another answer - might be a reaction to the first or a stand alone! What happens if this answer exceeds a certain length? Will it wrap around correctly and still be readable?'
+	// ]);
+	let mySharing: Message = $derived(
+		{
+			id: 'new_' + Math.random().toString(36).substring(2, 9),
+			content: "",
+			language: 'en'
+		}
+	);
 </script>
 
 {#snippet intentionAnswer(text: string, index: number)}
@@ -84,12 +88,18 @@
 						class="heading placeholder:title w-full border border-2 p-2 shadow-inner placeholder:italic"
 						placeholder="The sharing is publically available on the internet for everyone, who has a link to this presentation. Sharing is caring 🫶"
 						id="sharing"
-						bind:value={sharing}
+						bind:value={mySharing.content}
 						onkeydown={(event) => {
 							if (event.key === 'Enter' && !event.shiftKey) {
 								event.preventDefault();
-								intentionAnwers = [sharing, ...intentionAnwers];
-								sharing = '';
+								intentionAnswers = [mySharing, ...intentionAnswers];
+								socketio.addEntity(mySharing);
+								socketio.submitEntity(mySharing, questionId, true);
+								mySharing = {
+									id: 'new_' + Math.random().toString(36).substring(2, 9),
+									content: "",
+									language: 'en'
+								}
 							}
 						}}
 					></textarea>
@@ -98,28 +108,28 @@
 			<div class="heading mt-8">
 				<div class="mx-5 grid max-h-[700px] grid-cols-3 overflow-y-auto">
 					<div class="mx-2 flex w-full flex-col gap-4">
-						{#each intentionAnwers as answer, index (index)}
+						{#each intentionAnswers as answer, index (index)}
 							<div animate:flip>
 								{#if index % 3 === 0}
-									{@render intentionAnswer(answer, index)}
+									{@render intentionAnswer(answer.content, index)}
 								{/if}
 							</div>
 						{/each}
 					</div>
 					<div class="mx-2 flex flex-col gap-4">
-						{#each intentionAnwers as answer, index (index)}
+						{#each intentionAnswers as answer, index (index)}
 							<div animate:flip>
 								{#if index % 3 === 1}
-									{@render intentionAnswer(answer, index)}
+									{@render intentionAnswer(answer.content, index)}
 								{/if}
 							</div>
 						{/each}
 					</div>
 					<div class="mx-2 flex flex-col gap-4">
-						{#each intentionAnwers as answer, index (index)}
+						{#each intentionAnswers as answer, index (index)}
 							<div animate:flip>
 								{#if index % 3 === 2}
-									{@render intentionAnswer(answer, index)}
+									{@render intentionAnswer(answer.content, index)}
 								{/if}
 							</div>
 						{/each}
