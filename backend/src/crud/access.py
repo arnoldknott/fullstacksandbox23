@@ -364,6 +364,9 @@ class AccessPolicyCRUD:
 
             # Handle authorization
             if allow_override:
+                # When overriding without authentication, only public policies allowed
+                if not current_user and not policy.public:
+                    raise HTTPException(status_code=403,detail="Forbidden.")
                 # Skip all authorization checks
                 pass
             elif not current_user:
