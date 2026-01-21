@@ -30,7 +30,7 @@ class EventGuard(BaseModel):
     """Guards for the events in socket.io namespaces"""
 
     event: str
-    guards: GuardTypes
+    guards: GuardTypes | None
 
 
 # TBD: consider moving this to src/models/access.py or src/core/security.py?

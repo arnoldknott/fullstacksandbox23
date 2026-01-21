@@ -115,15 +115,15 @@ class BaseNamespace(socketio.AsyncNamespace):
             token_payload = await self._get_token_payload_if_authenticated(
                 session["session_id"]
             )
-        current_user = await check_token_against_guards(token_payload, guards)
+            current_user = await check_token_against_guards(token_payload, guards)
 
-        if current_user is None:
-            logger.error(
-                f"🧦 Client with session id {sid} is missing current_user data."
-            )
-            self._emit_status(sid, {"error": "No Current User found."})
-        else:
-            return current_user
+            if current_user is None:
+                logger.error(
+                    f"🧦 Client with session id {sid} is missing current_user data."
+                )
+                self._emit_status(sid, {"error": "No Current User found."})
+        # else:
+        return current_user
 
     async def _get_all(
         self, sid, current_user: CurrentUserData, request_access_data: bool = False
@@ -430,9 +430,12 @@ class BaseNamespace(socketio.AsyncNamespace):
                     else:
                         # if id is not present, it is a create
                         # validate data with create model
+                        print("=== routers - socketio - v1 - on_submit - CREATE ===", flush=True)
                         current_user = await self._get_current_user_and_check_guard(
                             sid, "submit:create"
                         )
+                        print("=== routers - socketio - v1 - on_submit - CREATE - current_user ===", flush=True)
+                        print(current_user, flush=True)
                         object_create = self.create_model(**payload)
                         parent_id = data.get("parent_id", None)
                         # TBD: add tests for inherit, public and public_action flags

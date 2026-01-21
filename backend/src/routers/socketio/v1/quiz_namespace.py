@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 question_guards = [
     EventGuard(
         event="connect",
-        guards=GuardTypes(),  # allow public access
+        guards=None# GuardTypes(),  # allow public access
     ),
     EventGuard(
         event="submit:create",
@@ -68,11 +68,11 @@ class QuestionNamespace(BaseNamespace):
 message_guards = [
     EventGuard(
         event="connect",
-        guards=GuardTypes(),  # allow public access
+        guards=None #GuardTypes(),  # allow public access
     ),
     EventGuard(
         event="submit:create",
-        guards=GuardTypes(),  # allow public access
+        guards=None # GuardTypes(),  # allow public access
     ),
     EventGuard(
         event="submit:update",
@@ -117,11 +117,11 @@ class MessageNamespace(BaseNamespace):
 numerical_guards = [
     EventGuard(
         event="connect",
-        guards=GuardTypes(),  # allow public access
+        guards=None # GuardTypes(),  # allow public access
     ),
     EventGuard(
         event="submit:create",
-        guards=GuardTypes(),  # allow public access
+        guards=None # GuardTypes(),  # allow public access
     ),
     EventGuard(
         event="submit:update",
