@@ -60,12 +60,14 @@ class BaseCRUD(
         base_model: Type[BaseModelType],
         directory: str = None,
         allow_standalone: Optional[bool] = False,
+        allow_public_create: Optional[bool] = False,
     ):
         """Provides a database session for CRUD operations."""
         self.session = None
         self.model = base_model
         self.data_directory = directory
         self.allow_standalone = allow_standalone
+        self.allow_public_create = allow_public_create
         if base_model.__name__ in ResourceType.list():
             self.entity_type = ResourceType(self.model.__name__)
             self.type = ResourceType
@@ -202,33 +204,59 @@ class BaseCRUD(
     async def create(
         self,
         object: BaseSchemaTypeCreate,
-        current_user: "CurrentUserData",
+        current_user: Optional["CurrentUserData"] = None,
         parent_id: Optional[uuid.UUID] = None,
         inherit: Optional[bool] = False,
         # TBD: add tests in protected resource to check public and public_action creation:
         public: Optional[bool] = False,
         public_action: Optional[Action] = None,
     ) -> BaseModelType:
-        """Creates a new object."""
+        """Creates a new object.
+        
+        Supports both authenticated and public resource creation:
+        - Authenticated: Creates access log + owner policy + optional public policy
+        - Public: Only creates public access policy (no owner, no log)
+        
+        Public creation requires:
+        - self.allow_public_create = True
+        - public = True
+        - current_user = None
+        """
         logger.info("BaseCRUD.create")
+        
+        # Determine if this is a public (unauthenticated) creation
+        is_public_creation = self.allow_public_create and public and not current_user
+        
         try:
+            # Early validation
             if inherit and not parent_id:
                 raise HTTPException(
                     status_code=400,
                     detail="Cannot inherit permissions without a parent.",
                 )
+            
+            # Validate that current_user is present when required
+            if not is_public_creation and not current_user:
+                raise HTTPException(
+                    status_code=401,
+                    detail="Authentication required.",
+                )
+            
+            # Create and add database object
             database_object = self.model.model_validate(object)
-
             await self._write_identifier_type_link(database_object.id)
             self.session.add(database_object)
-            access_log = AccessLogCreate(
-                resource_id=database_object.id,
-                action=own,
-                identity_id=current_user.user_id,
-                status_code=201,
-            )
-            async with self.logging_CRUD as logging_CRUD:
-                await logging_CRUD.create(access_log)
+            
+            # Create access log (only for authenticated users)
+            if not is_public_creation:
+                access_log = AccessLogCreate(
+                    resource_id=database_object.id,
+                    action=own,
+                    identity_id=current_user.user_id,
+                    status_code=201,
+                )
+                async with self.logging_CRUD as logging_CRUD:
+                    await logging_CRUD.create(access_log)
 
             # TBD: merge the sessions for creating the policy and the log
             # maybe together with creating the object
@@ -241,58 +269,59 @@ class BaseCRUD(
             # TBD: create the statements in the methods, but execute together - less round-trips to database
             # await self._write_identifier_type_link(database_object.id)
             # await self._write_policy(database_object.id, own, current_user)
-            access_policy = AccessPolicyCreate(
-                resource_id=database_object.id,
-                action=own,
-                identity_id=current_user.user_id,
-            )
+            
+            # Create owner access policy (only for authenticated users)
+            if not is_public_creation:
+                access_policy = AccessPolicyCreate(
+                    resource_id=database_object.id,
+                    action=own,
+                    identity_id=current_user.user_id,
+                )
 
-            if parent_id:
-                parent_access_request = AccessRequest(
-                    resource_id=parent_id,
-                    action=write,
-                    current_user=current_user,
-                )
-                if not await self.policy_CRUD.allows(parent_access_request):
-                    logger.error(f"Parent {parent_id} does not allow write access.")
-                    raise HTTPException(status_code=403, detail="Forbidden.")
-                async with self.policy_CRUD as policy_CRUD:
-                    await policy_CRUD.create(
-                        access_policy, current_user, allow_override=True
-                    )
-                await self.add_child_to_parent(
-                    parent_id=parent_id,
-                    child_id=database_object.id,
-                    current_user=current_user,
-                    inherit=inherit,
-                )
-            elif self.allow_standalone:
-                async with self.policy_CRUD as policy_CRUD:
-                    await policy_CRUD.create(
-                        access_policy, current_user, allow_override=True
-                    )
                 if parent_id:
+                    parent_access_request = AccessRequest(
+                        resource_id=parent_id,
+                        action=write,
+                        current_user=current_user,
+                    )
+                    if not await self.policy_CRUD.allows(parent_access_request):
+                        logger.error(f"Parent {parent_id} does not allow write access.")
+                        raise HTTPException(status_code=403, detail="Forbidden.")
+                    async with self.policy_CRUD as policy_CRUD:
+                        await policy_CRUD.create(
+                            access_policy, current_user, allow_override=True
+                        )
                     await self.add_child_to_parent(
                         parent_id=parent_id,
                         child_id=database_object.id,
                         current_user=current_user,
                         inherit=inherit,
                     )
-            else:
-                # TBD: is it only admin that can create stand-alone resources?
-                logger.error(f"Resource {database_object.id} is not allowed.")
-                raise HTTPException(
-                    status_code=403,
-                    detail=f"{self.model.__name__} - Forbidden.",
-                )
-                # async with self.policy_CRUD as policy_CRUD:
-                #     await policy_CRUD.create(access_policy, current_user)
+                elif self.allow_standalone:
+                    async with self.policy_CRUD as policy_CRUD:
+                        await policy_CRUD.create(
+                            access_policy, current_user, allow_override=True
+                        )
+                    if parent_id:
+                        await self.add_child_to_parent(
+                            parent_id=parent_id,
+                            child_id=database_object.id,
+                            current_user=current_user,
+                            inherit=inherit,
+                        )
+                else:
+                    # TBD: is it only admin that can create stand-alone resources?
+                    logger.error(f"Resource {database_object.id} is not allowed.")
+                    raise HTTPException(
+                        status_code=403,
+                        detail=f"{self.model.__name__} - Forbidden.",
+                    )
 
-            # After all checks have passed: commit the object to the database
-
+            # Commit the object to the database
             await self.session.commit()
             await self.session.refresh(database_object)
 
+            # Create public access policy (for both authenticated+public and public-only creation)
             if public:
                 if not public_action:
                     public_action = read
@@ -304,33 +333,29 @@ class BaseCRUD(
                 async with self.policy_CRUD as policy_CRUD:
                     await policy_CRUD.create(
                         public_access_policy,
-                        current_user,
-                        allow_override=self.allow_standalone,
+                        current_user=current_user,  # Will be None for public creation
+                        allow_override=True,  # Always True - public policies don't need authorization
                     )
-
-            # call service orchestrator.handle here with
-            # - event = Event.AFTER_CREATE
-            # - self.entity_type
-            # - current_user
-            # - database_object.id
 
             return database_object
 
         except Exception as e:
-            try:
-                access_log = AccessLogCreate(
-                    resource_id=database_object.id,
-                    action=own,
-                    identity_id=current_user.user_id,
-                    status_code=404,
-                )
-                async with self.logging_CRUD as logging_CRUD:
-                    await logging_CRUD.create(access_log)
-                # await self._write_log(database_object.id, own, current_user, 404)
-            except Exception as log_error:
-                logger.error(
-                    f"Error in BaseCRUD.create of an object of type {self.model}, action: {own}, current_user: {current_user}, status_code: {404} results in  {log_error}"
-                )
+            # Only log errors for authenticated users
+            if not is_public_creation:
+                try:
+                    access_log = AccessLogCreate(
+                        resource_id=database_object.id,
+                        action=own,
+                        identity_id=current_user.user_id,
+                        status_code=404,
+                    )
+                    async with self.logging_CRUD as logging_CRUD:
+                        await logging_CRUD.create(access_log)
+                    # await self._write_log(database_object.id, own, current_user, 404)
+                except Exception as log_error:
+                    logger.error(
+                        f"Error in BaseCRUD.create of an object of type {self.model}, action: {own}, current_user: {current_user}, status_code: {404} results in  {log_error}"
+                    )
             logger.error(f"Error in BaseCRUD.create: {e}")
             raise HTTPException(
                 status_code=403,
