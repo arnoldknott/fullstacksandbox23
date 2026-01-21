@@ -435,11 +435,20 @@ class BaseNamespace(socketio.AsyncNamespace):
                         )
                         object_create = self.create_model(**payload)
                         parent_id = data.get("parent_id", None)
+                        # TBD: add tests for inherit, public and public_action flags
+                        # in protected resource hierarchy
                         inherit = data.get("inherit", False)
+                        public = data.get("public", False)
+                        public_action = data.get("public_action", "read")
                         async with self.crud() as crud:
                             # TBD: check the hierarchical resource system all the way through other events as well!
                             database_object = await crud.create(
-                                object_create, current_user, parent_id, inherit
+                                object_create,
+                                current_user,
+                                parent_id,
+                                inherit,
+                                public,
+                                public_action,
                             )
                             await self.server.enter_room(
                                 sid,
