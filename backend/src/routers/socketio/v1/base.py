@@ -111,17 +111,35 @@ class BaseNamespace(socketio.AsyncNamespace):
 
         session = await self._get_session_data(sid)
         guards = self._get_event_guards(guard_name)
-        if guards is not None:
-            token_payload = await self._get_token_payload_if_authenticated(
-                session["session_id"]
-            )
-            current_user = await check_token_against_guards(token_payload, guards)
+        ### This solution works for none-protected events, but a user is logged in anyways:
+        # try:
+        #     token_payload = await self._get_token_payload_if_authenticated(
+        #         session["session_id"]
+        #     )
+        #     current_user = await check_token_against_guards(token_payload, guards)
+        # except Exception as _error:
+        #     logger.info(f"🧦 Client with session id {sid} authenticated.")
+            
 
-            if current_user is None:
-                logger.error(
-                    f"🧦 Client with session id {sid} is missing current_user data."
-                )
-                self._emit_status(sid, {"error": "No Current User found."})
+        # if guards is not None and current_user is None:
+        #     logger.error(
+        #         f"🧦 Client with session id {sid} is missing current_user data."
+        #     )
+        #     self._emit_status(sid, {"error": "No Current User found."})
+        # return current_user
+
+
+        # if guards is not None:
+        token_payload = await self._get_token_payload_if_authenticated(
+            session["session_id"]
+        )
+        current_user = await check_token_against_guards(token_payload, guards)
+
+        if current_user is None:
+            logger.error(
+                f"🧦 Client with session id {sid} is missing current_user data."
+            )
+            self._emit_status(sid, {"error": "No Current User found."})
         # else:
         return current_user
 
@@ -265,41 +283,78 @@ class BaseNamespace(socketio.AsyncNamespace):
         # print("=== routers - socketio - v1 - on_connect - identity_ids ===")
         # print(identity_ids, flush=True)
         guards = self._get_event_guards("connect")
-        if guards is not None:
-            try:
-
-                # TBD: catch and handle an expired token gracefully and return something to the client on a different message channel,
-                # so it can initiate the authentication process and come back with a new session id
-                token_payload = await self._get_token_payload_if_authenticated(
-                    auth["session-id"]
+        ### THis solution works for none-protected events, but a user is logged in anyways:
+        try:
+            # TBD: catch and handle an expired token gracefully and return something to the client on a different message channel,
+            # so it can initiate the authentication process and come back with a new session id
+            token_payload = await self._get_token_payload_if_authenticated(
+                auth["session-id"]
+            )
+            current_user = await check_token_against_guards(token_payload, guards)
+            session_data: SocketIoSessionData = {
+                "user_name": token_payload["name"],
+                # "current_user": current_user,
+                "session_id": auth["session-id"],
+                "query_strings": query_strings,
+            }
+            await self.server.save_session(
+                sid, session_data, namespace=self.namespace
+            )
+            if "Admin" in current_user.azure_token_roles:
+                await self.server.enter_room(
+                    sid,
+                    "role:Admin",
+                    namespace=self.namespace,
                 )
-                current_user = await check_token_against_guards(token_payload, guards)
-                session_data: SocketIoSessionData = {
-                    "user_name": token_payload["name"],
-                    # "current_user": current_user,
-                    "session_id": auth["session-id"],
-                    "query_strings": query_strings,
-                }
-                await self.server.save_session(
-                    sid, session_data, namespace=self.namespace
-                )
-                if "Admin" in current_user.azure_token_roles:
-                    await self.server.enter_room(
-                        sid,
-                        "role:Admin",
-                        namespace=self.namespace,
-                    )
-                logger.info(
-                    f"🧦 Client authenticated to access protected namespace {self.namespace}."
-                )
-            except Exception:
+            logger.info(
+                f"🧦 Client authenticated to access protected namespace {self.namespace}."
+            )
+        except Exception as error:
+            if guards is not None:
+                print("=== routers - socketio - v1 - on_connect - authentication error ===")
+                print(error, flush=True)
                 logger.error(f"🧦 Client with session id {sid} failed to authenticate.")
                 raise ConnectionRefusedError("Authorization failed.")
-        else:
-            current_user = None
-            logger.info(
-                f"🧦 Client authenticated to public namespace {self.namespace}."
-            )
+            else:
+                current_user = None
+                logger.info(
+                    f"🧦 Client authenticated to public namespace {self.namespace}."
+                )
+
+        # if guards is not None:
+        #     try:
+        #         # TBD: catch and handle an expired token gracefully and return something to the client on a different message channel,
+        #         # so it can initiate the authentication process and come back with a new session id
+        #         token_payload = await self._get_token_payload_if_authenticated(
+        #             auth["session-id"]
+        #         )
+        #         current_user = await check_token_against_guards(token_payload, guards)
+        #         session_data: SocketIoSessionData = {
+        #             "user_name": token_payload["name"],
+        #             # "current_user": current_user,
+        #             "session_id": auth["session-id"],
+        #             "query_strings": query_strings,
+        #         }
+        #         await self.server.save_session(
+        #             sid, session_data, namespace=self.namespace
+        #         )
+        #         if "Admin" in current_user.azure_token_roles:
+        #             await self.server.enter_room(
+        #                 sid,
+        #                 "role:Admin",
+        #                 namespace=self.namespace,
+        #             )
+        #         logger.info(
+        #             f"🧦 Client authenticated to access protected namespace {self.namespace}."
+        #         )
+        #     except Exception:
+        #         logger.error(f"🧦 Client with session id {sid} failed to authenticate.")
+        #         raise ConnectionRefusedError("Authorization failed.")
+        # else:
+        #     current_user = None
+        #     logger.info(
+        #         f"🧦 Client authenticated to public namespace {self.namespace}."
+        #     )
         if self.callback_on_connect is not None:
             await self.callback_on_connect(
                 sid,
