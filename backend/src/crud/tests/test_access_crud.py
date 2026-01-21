@@ -2,6 +2,7 @@ import uuid
 from pprint import pprint
 
 import pytest
+from fastapi import HTTPException
 
 from core.types import Action, CurrentUserData, IdentityType, ResourceType
 from crud.access import (
@@ -252,6 +253,137 @@ async def test_create_access_policy_for_non_public_resource_without_identity_fai
         assert err.status_code == 403
         assert err.detail == "Forbidden."
 
+@pytest.mark.anyio
+async def test_create_access_policy_with_allow_override_without_current_user(
+    register_many_resources
+):
+    """Test creating a public access policy with allow_override=True and no current_user."""
+    
+    register_many_resources
+    
+    modelled_policy = AccessPolicy(**one_test_policy_public_read)
+    async with AccessPolicyCRUD() as policy_crud:
+        created_policy = await policy_crud.create(
+            modelled_policy, 
+            current_user=None,  # No authentication
+            allow_override=True  # Bypass authorization
+        )
+    
+    assert created_policy.resource_id == uuid.UUID(modelled_policy.resource_id)
+    assert created_policy.identity_id is None
+    assert created_policy.action == modelled_policy.action
+    assert created_policy.public is True
+
+@pytest.mark.anyio
+async def test_create_access_policy_without_current_user_fails(
+    register_many_resources
+):
+    """Test that creating access policy without current_user and without allow_override raises 401."""
+    
+    register_many_resources
+    
+    modelled_policy = AccessPolicy(**one_test_policy_public_read)
+    
+    try:
+        async with AccessPolicyCRUD() as policy_crud:
+            await policy_crud.create(
+                modelled_policy,
+                current_user=None,  # No authentication
+                allow_override=False  # Don't bypass authorization
+            )
+    except HTTPException as err:
+        assert err.status_code == 403
+        assert err.detail == "Forbidden."
+    else:
+        pytest.fail("Expected HTTPException with 403 status code")
+
+@pytest.mark.anyio
+async def test_create_access_policy_with_allow_override_bypasses_authorization(
+    register_current_user,
+    register_many_resources
+):
+    """Test that allow_override=True bypasses all authorization checks."""
+    
+    # Register both users
+    user1 = await register_current_user(current_user_data_user1)
+    current_user = await register_current_user(current_user_data_user2)
+    register_many_resources
+    
+    # Try to create policy for resource user2 doesn't own, granting access to user1
+    policy = AccessPolicyCreate(
+        resource_id=resource_id1,  # User2 doesn't own this
+        identity_id=user1.user_id,  # Grant access to user1
+        action=Action.read
+    )
+    
+    async with AccessPolicyCRUD() as policy_crud:
+        created_policy = await policy_crud.create(
+            policy,
+            current_user=current_user,
+            allow_override=True  # Should bypass ownership check
+        )
+    
+    assert created_policy.resource_id == uuid.UUID(resource_id1)
+    assert created_policy.identity_id == user1.user_id
+    assert created_policy.action == Action.read
+    
+@pytest.mark.anyio
+async def test_create_access_policy_for_own_user_object(
+    register_current_user,
+    register_many_resources
+):
+    """Test that users can create access policy for their own user object without allow_override."""
+    
+    current_user = await register_current_user(current_user_data_user1)
+    user2 = await register_current_user(current_user_data_user2)
+    register_many_resources
+    
+    # Create policy for own user_id (should be allowed by __always_allow)
+    policy = AccessPolicyCreate(
+        resource_id=current_user.user_id,
+        identity_id=user2.user_id,  # Grant access to user2
+        action=Action.read
+    )
+    
+    async with AccessPolicyCRUD() as policy_crud:
+        created_policy = await policy_crud.create(
+            policy,
+            current_user=current_user,
+            allow_override=False  # Should pass via __always_allow
+        )
+    
+    assert created_policy.resource_id == current_user.user_id
+    assert created_policy.identity_id == user2.user_id
+
+
+@pytest.mark.anyio
+async def test_create_non_public_policy_with_allow_override_without_current_user_fails(
+    register_many_resources
+):
+    """Test that creating non-public access policy with allow_override but no current_user raises 403."""
+    
+    register_many_resources
+    
+    # Try to create a non-public policy without authentication
+    non_public_policy = AccessPolicyCreate(
+        resource_id=uuid.uuid4(),
+        identity_id=uuid.uuid4(),
+        action=Action.read,
+        public=False  # Non-public policy
+    )
+    
+    try:
+        async with AccessPolicyCRUD() as policy_crud:
+            await policy_crud.create(
+                non_public_policy,
+                current_user=None,  # No authentication
+                allow_override=True  # Even with override, shouldn't allow non-public without auth
+            )
+    except HTTPException as err:
+        assert err.status_code == 403
+        assert err.detail == "Forbidden."
+    else:
+        pytest.fail("Expected HTTPException with 403 status code - cannot create non-public policy without authentication")
 
 # TBD: implement tests for filters_allowed and allowed methods - or leave this to the read / delete?
 
