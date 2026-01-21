@@ -171,17 +171,17 @@ class TestMessage(BaseSocketIOTest):
             access_to_one_parent,
         )
 
-    # @pytest.mark.anyio
-    # async def test_submit_create_public_success(
-    #     self,
-    #     socketio_test_client,
-    #     access_to_one_parent,
-    # ):
-    #     """Test successful question creation."""
-    #     await super().run_submit_create_success(
-    #         socketio_test_client,
-    #         access_to_one_parent=access_to_one_parent,
-    #     )
+    @pytest.mark.anyio
+    async def test_submit_create_public_success(
+        self,
+        socketio_test_client,
+        access_to_one_parent,
+    ):
+        """Test successful question creation."""
+        await super().run_submit_create_success(
+            socketio_test_client,
+            access_to_one_parent=access_to_one_parent,
+        )
 
     # Submit Update Tests
     @pytest.mark.anyio
