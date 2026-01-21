@@ -34,14 +34,19 @@ class BaseSocketIOTest:
     async def run_submit_create_success(
         self,
         socketio_test_client,
-        session_ids,
+        session_ids=None,
         access_to_one_parent=None,
     ):
         """Test successful resource creation via submit event."""
-        connection = await socketio_test_client(
-            client_config=self.client_config(),
-            session_id=session_ids[0],
-        )
+        if session_ids is None:
+            connection = await socketio_test_client(
+                client_config=self.client_config(),
+            )
+        else:
+            connection = await socketio_test_client(
+                client_config=self.client_config(),
+                    session_id=session_ids[0],
+                )
 
         # If hierarchical, create parent
         parent_id = None

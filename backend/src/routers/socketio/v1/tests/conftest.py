@@ -192,7 +192,7 @@ class SocketIOTestConnection:
     def __init__(
         self,
         client_config: ClientConfig,
-        session_id: uuid.UUID,
+        session_id: Optional[uuid.UUID] = None,
     ):
         self.client_config = client_config
         self.session_id = session_id
@@ -298,14 +298,20 @@ def socketio_test_client(request, session_ids):
         session_id: Optional[uuid.UUID] = None,
     ):
         """Creates an instance of SocketIOTestClient."""
-        if not session_id:
-            session_id = session_ids[0]
+        if session_ids is None:
+            connection = SocketIOTestConnection(
+                client_config,
+            )
+            await connection.__aenter__()
+        else:
+            if not session_id:
+                session_id = session_ids[0]
 
-        connection = SocketIOTestConnection(
-            client_config,
-            session_id,
-        )
-        await connection.__aenter__()
+            connection = SocketIOTestConnection(
+                client_config,
+                session_id,
+            )
+            await connection.__aenter__()
 
         def cleanup():
             # Schedule disconnect for the event loop
