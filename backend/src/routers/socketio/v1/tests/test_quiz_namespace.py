@@ -56,7 +56,6 @@ class TestQuestion(BaseSocketIOTest):
             access_to_one_parent,
         )
 
-
     # Submit Update Tests
     @pytest.mark.anyio
     @pytest.mark.parametrize(

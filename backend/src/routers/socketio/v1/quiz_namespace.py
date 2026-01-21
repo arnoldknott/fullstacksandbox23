@@ -17,10 +17,7 @@ from .base import BaseNamespace
 logger = logging.getLogger(__name__)
 
 question_guards = [
-    EventGuard(
-        event="connect",
-        guards=None# GuardTypes(),  # allow public access
-    ),
+    EventGuard(event="connect", guards=None),  # GuardTypes(),  # allow public access
     EventGuard(
         event="submit:create",
         guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
@@ -66,13 +63,9 @@ class QuestionNamespace(BaseNamespace):
 
 
 message_guards = [
+    EventGuard(event="connect", guards=None),  # GuardTypes(),  # allow public access
     EventGuard(
-        event="connect",
-        guards=None #GuardTypes(),  # allow public access
-    ),
-    EventGuard(
-        event="submit:create",
-        guards=None # GuardTypes(),  # allow public access
+        event="submit:create", guards=None  # GuardTypes(),  # allow public access
     ),
     EventGuard(
         event="submit:update",
@@ -115,13 +108,9 @@ class MessageNamespace(BaseNamespace):
 
 
 numerical_guards = [
+    EventGuard(event="connect", guards=None),  # GuardTypes(),  # allow public access
     EventGuard(
-        event="connect",
-        guards=None # GuardTypes(),  # allow public access
-    ),
-    EventGuard(
-        event="submit:create",
-        guards=None # GuardTypes(),  # allow public access
+        event="submit:create", guards=None  # GuardTypes(),  # allow public access
     ),
     EventGuard(
         event="submit:update",

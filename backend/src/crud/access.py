@@ -348,12 +348,12 @@ class AccessPolicyCRUD:
         *args,
     ) -> AccessPolicyRead:
         """Creates a new access control policy.
-        
+
         Args:
             policy: The access policy to create
             current_user: The user creating the policy (optional if allow_override=True)
             allow_override: If True, bypasses all authorization checks
-        
+
         Raises:
             HTTPException(403): If authorization checks fail
             HTTPException(409): If policy already exists
@@ -366,12 +366,12 @@ class AccessPolicyCRUD:
             if allow_override:
                 # When overriding without authentication, only public policies allowed
                 if not current_user and not policy.public:
-                    raise HTTPException(status_code=403,detail="Forbidden.")
+                    raise HTTPException(status_code=403, detail="Forbidden.")
                 # Skip all authorization checks
                 pass
             elif not current_user:
                 # current_user required when not overriding
-                raise HTTPException(status_code=403,detail="Forbidden.")
+                raise HTTPException(status_code=403, detail="Forbidden.")
             elif self.__always_allow(policy, current_user):
                 # User has inherent permission (admin, own resource, group member)
                 pass

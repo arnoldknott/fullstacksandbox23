@@ -119,7 +119,6 @@ class BaseNamespace(socketio.AsyncNamespace):
         #     current_user = await check_token_against_guards(token_payload, guards)
         # except Exception as _error:
         #     logger.info(f"🧦 Client with session id {sid} authenticated.")
-            
 
         # if guards is not None and current_user is None:
         #     logger.error(
@@ -127,7 +126,6 @@ class BaseNamespace(socketio.AsyncNamespace):
         #     )
         #     self._emit_status(sid, {"error": "No Current User found."})
         # return current_user
-
 
         # if guards is not None:
         token_payload = await self._get_token_payload_if_authenticated(
@@ -297,9 +295,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                 "session_id": auth["session-id"],
                 "query_strings": query_strings,
             }
-            await self.server.save_session(
-                sid, session_data, namespace=self.namespace
-            )
+            await self.server.save_session(sid, session_data, namespace=self.namespace)
             if "Admin" in current_user.azure_token_roles:
                 await self.server.enter_room(
                     sid,
@@ -311,7 +307,9 @@ class BaseNamespace(socketio.AsyncNamespace):
             )
         except Exception as error:
             if guards is not None:
-                print("=== routers - socketio - v1 - on_connect - authentication error ===")
+                print(
+                    "=== routers - socketio - v1 - on_connect - authentication error ==="
+                )
                 print(error, flush=True)
                 logger.error(f"🧦 Client with session id {sid} failed to authenticate.")
                 raise ConnectionRefusedError("Authorization failed.")
@@ -485,11 +483,17 @@ class BaseNamespace(socketio.AsyncNamespace):
                     else:
                         # if id is not present, it is a create
                         # validate data with create model
-                        print("=== routers - socketio - v1 - on_submit - CREATE ===", flush=True)
+                        print(
+                            "=== routers - socketio - v1 - on_submit - CREATE ===",
+                            flush=True,
+                        )
                         current_user = await self._get_current_user_and_check_guard(
                             sid, "submit:create"
                         )
-                        print("=== routers - socketio - v1 - on_submit - CREATE - current_user ===", flush=True)
+                        print(
+                            "=== routers - socketio - v1 - on_submit - CREATE - current_user ===",
+                            flush=True,
+                        )
                         print(current_user, flush=True)
                         object_create = self.create_model(**payload)
                         parent_id = data.get("parent_id", None)

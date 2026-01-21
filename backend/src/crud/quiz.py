@@ -41,7 +41,7 @@ class QuestionCRUD(
     ]
 ):
     def __init__(self):
-        super().__init__(Question, allow_standalone=True)
+        super().__init__(Question, allow_standalone=True, allow_public_create=True)
 
 
 class MessageCRUD(
@@ -53,7 +53,7 @@ class MessageCRUD(
     ]
 ):
     def __init__(self):
-        super().__init__(Message, allow_standalone=True)
+        super().__init__(Message, allow_standalone=True, allow_public_create=True)
 
 
 class NumericalCRUD(
@@ -65,4 +65,4 @@ class NumericalCRUD(
     ]
 ):
     def __init__(self):
-        super().__init__(Numerical)
+        super().__init__(Numerical, allow_public_create=True)

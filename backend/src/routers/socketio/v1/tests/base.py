@@ -45,15 +45,13 @@ class BaseSocketIOTest:
         connection = await socketio_test_client(
             client_config=self.client_config(),
             session_id=session_id,
-            )
+        )
         token_payload = connection.token_payload()
 
         # If hierarchical, create parent
         parent_id = None
         if self._parent_model and access_to_one_parent:
-            parent_id = await access_to_one_parent(
-                self._parent_model, token_payload
-            )
+            parent_id = await access_to_one_parent(self._parent_model, token_payload)
 
         await connection.connect()
         await connection.client.sleep(0.2)

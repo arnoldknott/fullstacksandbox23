@@ -201,7 +201,7 @@ class BaseCRUD(
         except Exception as e:
             raise Exception(f"Path not found: {e}")
 
-    async def create(
+    async def create( # noqa: C901
         self,
         object: BaseSchemaTypeCreate,
         current_user: Optional["CurrentUserData"] = None,
@@ -212,21 +212,21 @@ class BaseCRUD(
         public_action: Optional[Action] = None,
     ) -> BaseModelType:
         """Creates a new object.
-        
+
         Supports both authenticated and public resource creation:
         - Authenticated: Creates access log + owner policy + optional public policy
         - Public: Only creates public access policy (no owner, no log)
-        
+
         Public creation requires:
         - self.allow_public_create = True
         - public = True
         - current_user = None
         """
         logger.info("BaseCRUD.create")
-        
+
         # Determine if this is a public (unauthenticated) creation
         is_public_creation = self.allow_public_create and public and not current_user
-        
+
         try:
             # Early validation
             if inherit and not parent_id:
@@ -234,19 +234,19 @@ class BaseCRUD(
                     status_code=400,
                     detail="Cannot inherit permissions without a parent.",
                 )
-            
+
             # Validate that current_user is present when required
             if not is_public_creation and not current_user:
                 raise HTTPException(
                     status_code=401,
                     detail="Authentication required.",
                 )
-            
+
             # Create and add database object
             database_object = self.model.model_validate(object)
             await self._write_identifier_type_link(database_object.id)
             self.session.add(database_object)
-            
+
             # Create access log (only for authenticated users)
             if not is_public_creation:
                 access_log = AccessLogCreate(
@@ -269,7 +269,7 @@ class BaseCRUD(
             # TBD: create the statements in the methods, but execute together - less round-trips to database
             # await self._write_identifier_type_link(database_object.id)
             # await self._write_policy(database_object.id, own, current_user)
-            
+
             # Create owner access policy (only for authenticated users)
             if not is_public_creation:
                 access_policy = AccessPolicyCreate(
