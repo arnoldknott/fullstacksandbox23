@@ -113,6 +113,7 @@ class IdentityType(EntityType):
     """Enum for the types of identities to identify which table an identity uuid belongs"""
 
     # TBD: consider getting those values programmatically?
+    public = "Public"
     user = "User"
     user_account = "UserAccount"
     user_profile = "UserProfile"

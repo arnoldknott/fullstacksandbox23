@@ -224,9 +224,6 @@ class BaseCRUD(
         """
         logger.info("BaseCRUD.create")
 
-        # Determine if this is a public (unauthenticated) creation
-        is_public_creation = self.allow_public_create and public and not current_user
-
         try:
             # Early validation
             if inherit and not parent_id:
@@ -235,28 +232,39 @@ class BaseCRUD(
                     detail="Cannot inherit permissions without a parent.",
                 )
 
+            # Determine if this is a public (unauthenticated) creation
+            is_public_creation = (
+                self.allow_public_create and public and not current_user
+            )
+
             # Validate that current_user is present when required
             if not is_public_creation and not current_user:
                 raise HTTPException(
                     status_code=401,
                     detail="Authentication required.",
                 )
+            elif not current_user:
+                public_user_id = uuid.uuid4()
+                await self._write_identifier_type_link(
+                    public_user_id, IdentityType.public
+                )
+                current_user = CurrentUserData(user_id=public_user_id)
 
             # Create and add database object
             database_object = self.model.model_validate(object)
             await self._write_identifier_type_link(database_object.id)
             self.session.add(database_object)
 
-            # Create access log (only for authenticated users)
-            if not is_public_creation:
-                access_log = AccessLogCreate(
-                    resource_id=database_object.id,
-                    action=own,
-                    identity_id=current_user.user_id,
-                    status_code=201,
-                )
-                async with self.logging_CRUD as logging_CRUD:
-                    await logging_CRUD.create(access_log)
+            # Create access log
+            # if not is_public_creation:
+            access_log = AccessLogCreate(
+                resource_id=database_object.id,
+                action=own,
+                identity_id=current_user.user_id,
+                status_code=201,
+            )
+            async with self.logging_CRUD as logging_CRUD:
+                await logging_CRUD.create(access_log)
 
             # TBD: merge the sessions for creating the policy and the log
             # maybe together with creating the object
@@ -269,16 +277,18 @@ class BaseCRUD(
             # TBD: create the statements in the methods, but execute together - less round-trips to database
             # await self._write_identifier_type_link(database_object.id)
             # await self._write_policy(database_object.id, own, current_user)
+            # That's what session handling is for - it depends on where to exec() the session.
 
-            # Create owner access policy (only for authenticated users)
-            if not is_public_creation:
-                access_policy = AccessPolicyCreate(
-                    resource_id=database_object.id,
-                    action=own,
-                    identity_id=current_user.user_id,
-                )
+            # Create owner access policy
+            # if not is_public_creation:
+            access_policy = AccessPolicyCreate(
+                resource_id=database_object.id,
+                action=own,
+                identity_id=current_user.user_id,
+            )
 
-                if parent_id:
+            if parent_id or self.allow_standalone:
+                if not self.allow_standalone:
                     parent_access_request = AccessRequest(
                         resource_id=parent_id,
                         action=write,
@@ -287,41 +297,30 @@ class BaseCRUD(
                     if not await self.policy_CRUD.allows(parent_access_request):
                         logger.error(f"Parent {parent_id} does not allow write access.")
                         raise HTTPException(status_code=403, detail="Forbidden.")
-                    async with self.policy_CRUD as policy_CRUD:
-                        await policy_CRUD.create(
-                            access_policy, current_user, allow_override=True
-                        )
+                async with self.policy_CRUD as policy_CRUD:
+                    await policy_CRUD.create(
+                        access_policy, current_user, allow_override=True
+                    )
+                if parent_id:
                     await self.add_child_to_parent(
                         parent_id=parent_id,
                         child_id=database_object.id,
                         current_user=current_user,
                         inherit=inherit,
                     )
-                elif self.allow_standalone:
-                    async with self.policy_CRUD as policy_CRUD:
-                        await policy_CRUD.create(
-                            access_policy, current_user, allow_override=True
-                        )
-                    if parent_id:
-                        await self.add_child_to_parent(
-                            parent_id=parent_id,
-                            child_id=database_object.id,
-                            current_user=current_user,
-                            inherit=inherit,
-                        )
-                else:
-                    # TBD: is it only admin that can create stand-alone resources?
-                    logger.error(f"Resource {database_object.id} is not allowed.")
-                    raise HTTPException(
-                        status_code=403,
-                        detail=f"{self.model.__name__} - Forbidden.",
-                    )
+            else:
+                # TBD: is it only admin that can create stand-alone resources?
+                logger.error(f"Resource {database_object.id} is not allowed.")
+                raise HTTPException(
+                    status_code=403,
+                    detail=f"{self.model.__name__} - Forbidden.",
+                )
 
             # Commit the object to the database
             await self.session.commit()
             await self.session.refresh(database_object)
 
-            # Create public access policy (for both authenticated+public and public-only creation)
+            # Create public access policy
             if public:
                 if not public_action:
                     public_action = read
