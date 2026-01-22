@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { SocketIO, type SocketioConnection } from '$lib/socketio';
+	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio';
 	import type { Message } from '$lib/types';
 	import RevealJS from '$components/RevealJS.svelte';
 	import MotivationTable from './MotivationTable.svelte';
@@ -22,7 +22,27 @@
 	socketio.client.on('transferred', (data: Message) => {
 		// if (debug) {
 		// 	console.log(
-		// 		'=== dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
+		// 		'=== 🧦 dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
+		// 	);
+		// 	console.log(data);
+		// }
+		socketio.handleTransferred(data);
+	});
+
+	socketio.client.on('status', (data: SocketioStatus) => {
+		// if (debug) {
+			console.log(
+				'=== 🧦 dashboard - backend-demo-resource - socketio - +page.svelte - received status update ==='
+			);
+			console.log('Status update:', data);
+		// }
+		socketio.handleStatus(data);
+	});
+
+	socketio.client.on('transferred', (data: Message) => {
+		// if (debug) {
+		// 	console.log(
+		// 		'=== 🧦 dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
 		// 	);
 		// 	console.log(data);
 		// }
@@ -42,7 +62,7 @@
 	// 	'A medium length answer to see how that looks like in the sharing round section of the presentation slide.',
 	// 	'Another answer - might be a reaction to the first or a stand alone! What happens if this answer exceeds a certain length? Will it wrap around correctly and still be readable?'
 	// ]);
-	let mySharing: Message = $derived({
+	let mySharing: Message = $state({
 		id: 'new_' + Math.random().toString(36).substring(2, 9),
 		content: '',
 		language: 'en'
