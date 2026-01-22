@@ -113,7 +113,7 @@ def mocked_provide_http_token_payload(request):
     if request and hasattr(request, "param"):
         return request.param
     else:
-        return {}
+        return None
 
     # def inner():
     #     # if request:

@@ -59,6 +59,9 @@ class BaseSocketIOTest:
         # Submit new resource
         test_data = {**self._test_data_single}
         submit_data = {"payload": test_data}
+
+        if token_payload is None:
+            submit_data["public"] = True
         if parent_id:
             submit_data["parent_id"] = str(parent_id)
 

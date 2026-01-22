@@ -201,7 +201,7 @@ class BaseCRUD(
         except Exception as e:
             raise Exception(f"Path not found: {e}")
 
-    async def create( # noqa: C901
+    async def create(  # noqa: C901
         self,
         object: BaseSchemaTypeCreate,
         current_user: Optional["CurrentUserData"] = None,

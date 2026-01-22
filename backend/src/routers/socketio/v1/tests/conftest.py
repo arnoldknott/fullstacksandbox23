@@ -283,7 +283,7 @@ class SocketIOTestConnection:
             ][0]
         except IndexError:
             print(
-                f"=== Session ID {self.session_id} not found in sessions for token payload. ===",
+                f"=== Session ID {self.session_id} not found in sessions - unauthenticated request! ===",
                 flush=True,
             )
         return token_payload

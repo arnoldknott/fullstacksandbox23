@@ -34,7 +34,9 @@ class SocketIoSessionData(BaseModel):
 
     user_name: str
     current_user: CurrentUserData
-    session_id: Optional[str] = None  # That's the Redis session-id, not the socket.io session-id (sid)
+    session_id: Optional[str] = (
+        None  # That's the Redis session-id, not the socket.io session-id (sid)
+    )
     query_strings: Optional[dict] = None
 
 
@@ -440,14 +442,34 @@ class BaseNamespace(socketio.AsyncNamespace):
         try:
             if self.crud is not None:
                 payload = data.get("payload", None)
+
+                # Determine event name
+                if "id" in payload and payload["id"][:4] != "new_":
+                    event_name = "submit:update"
+                else:
+                    event_name = "submit:create"
+
+                # Get guards for this event
+                guards = self._get_event_guards(event_name)
+
+                # Try to authenticate
+                current_user = None
+                try:
+                    current_user = await self._get_current_user_and_check_guard(
+                        sid, event_name
+                    )
+                except Exception as error:
+                    # If guards exist, authentication is required - fail
+                    if guards is not None:
+                        logger.error(f"🧦 Failed authenticating {sid}.")
+                        # await self._emit_status(sid, {"error": str(error)})
+                        raise error
+                    # If guards=None, continue without authentication
+                    logger.info(f"Public access (no authentication) for {event_name}")
+
                 try:
                     database_object = None
-                    if (
-                        "id" in payload and payload["id"][:4] != "new_"
-                    ):  # validate if id is a valid UUID
-                        current_user = await self._get_current_user_and_check_guard(
-                            sid, "submit:update"
-                        )
+                    if event_name == "submit:update":
                         resource_id = UUID(payload["id"])
                         # if id is present, it is an update
                         # validate data with update model
@@ -484,9 +506,6 @@ class BaseNamespace(socketio.AsyncNamespace):
                     else:
                         # if id is not present, it is a create
                         # validate data with create model
-                        current_user = await self._get_current_user_and_check_guard(
-                            sid, "submit:create"
-                        )
                         object_create = self.create_model(**payload)
                         parent_id = data.get("parent_id", None)
                         # TBD: add tests for inherit, public and public_action flags
