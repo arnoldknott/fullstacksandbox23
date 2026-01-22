@@ -23,7 +23,7 @@ export class BaseAPI {
 
 	private constructRequest(
 		path: string,
-		accessToken: string,
+		accessToken: string | null,
 		requestOptions: RequestInit = {},
 		headers: HeadersInit = {}
 	): Request {
@@ -31,7 +31,7 @@ export class BaseAPI {
 			...requestOptions,
 			headers: {
 				'content-type': 'application/json',
-				Authorization: `Bearer ${accessToken}`,
+				Authorization: accessToken ? `Bearer ${accessToken}` : '',
 				...requestOptions.headers,
 				...headers
 			}
@@ -48,7 +48,7 @@ export class BaseAPI {
 	// }
 
 	async post(
-		session_id: string,
+		session_id: string | null,
 		path: string,
 		body: RequestBody,
 		scopes: string[] = [],
@@ -56,7 +56,9 @@ export class BaseAPI {
 		headers: HeadersInit = {}
 	): Promise<Response> {
 		// try {
-		const accessToken = await this.oauthProvider.getAccessToken(session_id, scopes);
+		const accessToken = session_id
+			? await this.oauthProvider.getAccessToken(session_id, scopes)
+			: null;
 		// options.body = JSON.stringify(body);
 		if (body instanceof FormData) {
 			options.body = JSON.stringify(Object.fromEntries(body));
@@ -85,14 +87,16 @@ export class BaseAPI {
 	}
 
 	async get(
-		sessionId: string,
+		sessionId: string | null,
 		path: string,
 		scopes: string[] = [],
 		options: RequestInit,
 		headers: HeadersInit
 	): Promise<Response> {
 		// try {
-		const accessToken = await this.oauthProvider.getAccessToken(sessionId, scopes);
+		const accessToken = sessionId
+			? await this.oauthProvider.getAccessToken(sessionId, scopes)
+			: null;
 		options.method = 'GET';
 		const request = this.constructRequest(path, accessToken, options, headers);
 		const response = await fetch(request);
@@ -108,7 +112,7 @@ export class BaseAPI {
 	}
 
 	async put(
-		session_id: string,
+		session_id: string | null,
 		path: string,
 		body: RequestBody,
 		scopes: string[] = [],
@@ -116,7 +120,9 @@ export class BaseAPI {
 		headers: HeadersInit = {}
 	): Promise<Response> {
 		// try {
-		const accessToken = await this.oauthProvider.getAccessToken(session_id, scopes);
+		const accessToken = session_id
+			? await this.oauthProvider.getAccessToken(session_id, scopes)
+			: null;
 		if (body instanceof FormData) {
 			options.body = JSON.stringify(Object.fromEntries(body));
 		} else if (typeof body === 'string') {

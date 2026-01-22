@@ -30,7 +30,7 @@ class EventGuard(BaseModel):
     """Guards for the events in socket.io namespaces"""
 
     event: str
-    guards: GuardTypes
+    guards: GuardTypes | None
 
 
 # TBD: consider moving this to src/models/access.py or src/core/security.py?
@@ -85,7 +85,7 @@ class ResourceType(EntityType):
     # or make this enum a collection of the models and add
     # a method __str__(self) that returns the name of the model?
     presentation = "Presentation"
-    quiz = "Quiz"
+    # quiz = "Quiz"
     question = "Question"
     # Messages are useful anywhere:
     # in chats, comments, and answers to (quiz-)questions
@@ -113,6 +113,7 @@ class IdentityType(EntityType):
     """Enum for the types of identities to identify which table an identity uuid belongs"""
 
     # TBD: consider getting those values programmatically?
+    public = "Public"
     user = "User"
     user_account = "UserAccount"
     user_profile = "UserProfile"

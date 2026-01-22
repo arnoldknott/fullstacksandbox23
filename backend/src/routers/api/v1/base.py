@@ -29,11 +29,22 @@ class BaseView:
     # - implement pagination
     # - implement sorting
 
-    async def post(self, object, token_payload, guards, parent_id=None, inherit=False):
+    async def post(
+        self,
+        object,
+        token_payload,
+        guards,
+        parent_id=None,
+        inherit=False,
+        public=False,
+        public_action=None,
+    ):
         logger.info("POST view calls create CRUD")
         current_user = await check_token_against_guards(token_payload, guards)
         async with self.crud() as crud:
-            created_object = await crud.create(object, current_user, parent_id, inherit)
+            created_object = await crud.create(
+                object, current_user, parent_id, inherit, public, public_action
+            )
             # if parent_id is not None:
             #     created_object = await crud.create(object, current_user, parent_id)
             # else:
@@ -48,11 +59,11 @@ class BaseView:
         parent_id=None,
         inherit=False,
     ):
-        logger.info("POST view for public access calls create_public CRUD")
+        logger.info("POST view for public access calls create with public=True CRUD")
         current_user = await check_token_against_guards(token_payload, guards)
         async with self.crud() as crud:
-            created_object = await crud.create_public(
-                object, current_user, parent_id, inherit
+            created_object = await crud.create(
+                object, current_user, parent_id, inherit, public=True
             )
         return created_object
 
@@ -120,8 +131,10 @@ class BaseView:
     ):
         logger.info("GET view to retrieve all objects from read CRUD")
         current_user = None
-        if token_payload:
+        if guards:
             current_user = await check_token_against_guards(token_payload, guards)
+        elif token_payload:
+            current_user = await check_token_against_guards(token_payload, None)
         async with self.crud() as crud:
             objects = await crud.read(current_user)
 
@@ -135,8 +148,10 @@ class BaseView:
     ):
         logger.info("GET by id view to retrieve specific object from read CRUD")
         current_user = None
-        if token_payload:
+        if guards:
             current_user = await check_token_against_guards(token_payload, guards)
+        elif token_payload:
+            current_user = await check_token_against_guards(token_payload, None)
         async with self.crud() as crud:
             object = await crud.read_by_id(id, current_user)
         return object
@@ -151,8 +166,10 @@ class BaseView:
             "GET file by id view to retrieve specific file from disk through read CRUD"
         )
         current_user = None
-        if token_payload:
+        if guards:
             current_user = await check_token_against_guards(token_payload, guards)
+        elif token_payload:
+            current_user = await check_token_against_guards(token_payload, None)
         async with self.crud() as crud:
             return await crud.read_file_by_id(id, current_user)
 

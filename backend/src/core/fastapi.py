@@ -142,8 +142,8 @@ def mount_rest_api_routes(app: FastAPI, api_prefix: str, ws_prefix: str):
     )
     app.include_router(
         quiz_router,
-        prefix=f"{api_prefix}/presentation",
-        tags=["Presentation"],
+        prefix=f"{api_prefix}/quiz",
+        tags=["Quiz"],
     )
     app.include_router(
         websocket_router,

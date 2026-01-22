@@ -237,7 +237,7 @@ async def add_test_tags(
         current_user = await current_user_from_azure_token(token_payload)
         for tag in many_test_tags:
             async with TagCRUD() as crud:
-                tag_instance = await crud.create_public(tag, current_user)
+                tag_instance = await crud.create(tag, current_user, public=True)
             tags.append(tag_instance)
 
         tags = sorted(tags, key=lambda x: x.id)

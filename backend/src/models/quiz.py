@@ -10,32 +10,26 @@ from .base import (
 
 from core.types import ResourceType
 
-Quiz = create_model(
-    name="Quiz",
-    attributes=[
-        Attribute(name="title", type=str),
-    ],
-    relationships=[
-        Relationship(
-            name="presentations",
-            back_populates="quizzes",
-            related_entity=ResourceType.presentation,
-            hierarchy_type=RelationshipHierarchyType.child,
-        ),
-        Relationship(
-            name="questions",
-            back_populates="quizzes",
-            related_entity=ResourceType.question,
-            hierarchy_type=RelationshipHierarchyType.parent,
-        ),
-    ],
-)
-
-
-# QuizCreate = Quiz.Create
-# QuizRead = Quiz.Read
-# QuizUpdate = Quiz.Update
-# QuizExtended = Quiz.Extended
+# Quiz = create_model(
+#     name="Quiz",
+#     attributes=[
+#         Attribute(name="title", type=str),
+#     ],
+#     relationships=[
+#         Relationship(
+#             name="presentations",
+#             back_populates="quizzes",
+#             related_entity=ResourceType.presentation,
+#             hierarchy_type=RelationshipHierarchyType.child,
+#         ),
+#         Relationship(
+#             name="questions",
+#             back_populates="quizzes",
+#             related_entity=ResourceType.question,
+#             hierarchy_type=RelationshipHierarchyType.parent,
+#         ),
+#     ],
+# )
 
 
 Question = create_model(
@@ -45,11 +39,17 @@ Question = create_model(
         Attribute(name="language", type=LanguageAlpha2, field_value="en"),
     ],
     relationships=[
-        # Questions can be in many quizzes - note the answers are also following along!
+        # Questions can be in many quizzes/presentations - note the answers are also following along!
+        # Relationship(
+        #     name="quizzes",
+        #     back_populates="questions",
+        #     related_entity=ResourceType.quiz,
+        #     hierarchy_type=RelationshipHierarchyType.child,
+        # ),
         Relationship(
-            name="quizzes",
+            name="presentations",
             back_populates="questions",
-            related_entity=ResourceType.quiz,
+            related_entity=ResourceType.presentation,
             hierarchy_type=RelationshipHierarchyType.child,
         ),
         Relationship(
@@ -67,10 +67,10 @@ Question = create_model(
     ],
 )
 
-# QuestionCreate = Question.Create
-# QuestionRead = Question.Read
-# QuestionUpdate = Question.Update
-# QuestionExtended = Question.Extended
+# TBD: add another step: A Question has many Answers
+# Intention: the parent needs to have write access to create answers
+# So the parent to a mesage / numerical should be an Answer entity, not a Question.
+# Or on the long run: create an Action: "link", so own, write, read, link?
 
 
 # For regular text answers, reuse Message model:
@@ -92,11 +92,6 @@ Message = create_model(
     ],
 )
 
-# MessageCreate = Message.Create
-# MessageRead = Message.Read
-# MessageUpdate = Message.Update
-# MessageExtended = Message.Extended
-
 # For numerical answers, create Numerical model:
 # For now float also covers integers,
 # can be extended later if needed
@@ -115,9 +110,3 @@ Numerical = create_model(
         )
     ],
 )
-# NumericalCreate = Numerical.Create
-# NumericalRead = Numerical.Read
-# NumericalUpdate = Numerical.Update
-# NumericalExtended = Numerical.Extended
-
-# rebuild_model_forward_refs(Quiz, Message, Numerical)

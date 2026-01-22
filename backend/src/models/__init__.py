@@ -16,7 +16,9 @@ from .demo_resource import DemoResource  # noqa F401
 from .identity import AzureGroup  # noqa F401
 from .identity import User, UserAccount, UserProfile  # noqa F401
 from .presentation import Presentation  # noqa F401
-from .quiz import Quiz, Question, Message, Numerical  # noqa F401
+
+# from .quiz import Quiz, Question, Message, Numerical  # noqa F401
+from .quiz import Question, Message, Numerical  # noqa F401
 
 # from .presentation import Presentation, PresentationRead  # noqa F401
 # from .quiz import MessageRead, NumericalRead, Quiz, QuizRead, Question, QuestionRead, Message, MessageRead, Numerical, NumericalRead  # noqa F401
@@ -33,10 +35,10 @@ PresentationCreate = Presentation.Create
 PresentationRead = Presentation.Read
 PresentationUpdate = Presentation.Update
 PresentationExtended = Presentation.Extended
-QuizCreate = Quiz.Create
-QuizRead = Quiz.Read
-QuizUpdate = Quiz.Update
-QuizExtended = Quiz.Extended
+# QuizCreate = Quiz.Create
+# QuizRead = Quiz.Read
+# QuizUpdate = Quiz.Update
+# QuizExtended = Quiz.Extended
 QuestionCreate = Question.Create
 QuestionRead = Question.Read
 QuestionUpdate = Question.Update
@@ -50,4 +52,5 @@ NumericalRead = Numerical.Read
 NumericalUpdate = Numerical.Update
 NumericalExtended = Numerical.Extended
 
-rebuild_model_forward_refs(Presentation, Quiz, Question, Message, Numerical)
+# rebuild_model_forward_refs(Presentation, Quiz, Question, Message, Numerical)
+rebuild_model_forward_refs(Presentation, Question, Message, Numerical)

@@ -113,7 +113,7 @@ def mocked_provide_http_token_payload(request):
     if request and hasattr(request, "param"):
         return request.param
     else:
-        return {}
+        return None
 
     # def inner():
     #     # if request:
@@ -371,21 +371,28 @@ async def access_to_one_parent(
         token_payload: dict = None,
     ):
         """Registers a parent and adds a write policy for a the current user token to the database."""
+        public = True if not token_payload else False
         token_payload = token_payload or mocked_provide_http_token_payload
         current_user = await current_user_from_azure_token(token_payload)
 
         parent_id = uuid4()
 
         await register_one_resource_helper(parent_id, model)
-        if "Admin" not in current_user.azure_token_roles:
+        if public:
+            access_policy = {
+                "resource_id": str(parent_id),
+                "public": True,
+                "action": Action.write,
+            }
+        else:
             access_policy = {
                 "resource_id": str(parent_id),
                 "identity_id": str(current_user.user_id),
                 "action": Action.write,
             }
-            await add_test_access_policy(
-                access_policy, CurrentUserData(**current_user_data_admin)
-            )
+        await add_test_access_policy(
+            access_policy, CurrentUserData(**current_user_data_admin)
+        )
 
         return parent_id
 
@@ -924,13 +931,14 @@ async def add_one_test_resource(
         crud_class,
         resource_data: dict,
         current_user: CurrentUserData = None,
+        parent_id: UUID = None,
     ):
         """Adds a single test resource using the provided CRUD class."""
         if not current_user:
             current_user = await current_user_from_azure_token()
 
         async with crud_class() as crud:
-            added_resource = await crud.create(resource_data, current_user)
+            added_resource = await crud.create(resource_data, current_user, parent_id)
 
         return added_resource
 
