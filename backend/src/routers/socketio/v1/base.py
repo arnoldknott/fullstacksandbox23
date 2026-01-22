@@ -510,6 +510,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                         parent_id = data.get("parent_id", None)
                         # TBD: add tests for inherit, public and public_action flags
                         # in protected resource hierarchy
+                        # (There are tests for public in QuizNamespace already.)
                         inherit = data.get("inherit", False)
                         public = data.get("public", False)
                         public_action = data.get("public_action", "read")
