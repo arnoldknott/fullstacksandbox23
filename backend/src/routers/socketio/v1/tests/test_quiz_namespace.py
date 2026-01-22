@@ -43,13 +43,13 @@ class TestQuestion(BaseSocketIOTest):
         ],
         indirect=True,
     )
-    async def test_submit_create_success(
+    async def test_submit_create_with_parent_success(
         self,
         socketio_test_client,
         session_ids,
         access_to_one_parent,
     ):
-        """Test successful question creation."""
+        """Test successful message creation."""
         await super().run_submit_create_success(
             socketio_test_client,
             session_ids,
@@ -57,7 +57,7 @@ class TestQuestion(BaseSocketIOTest):
         )
 
     @pytest.mark.anyio
-    async def test_submit_create_public_success(
+    async def test_submit_create_public_with_parent_success(
         self,
         socketio_test_client,
         access_to_one_parent,
@@ -66,6 +66,35 @@ class TestQuestion(BaseSocketIOTest):
         await super().run_submit_create_success(
             socketio_test_client,
             access_to_one_parent=access_to_one_parent,
+        )
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "session_ids",
+        [
+            [session_id_admin_read_write_socketio],
+            [session_id_user1_read_write_socketio],
+        ],
+        indirect=True,
+    )
+    @pytest.mark.anyio
+    async def test_submit_create_without_parent_success(
+        self,
+        socketio_test_client,
+    ):
+        """Test successful question creation."""
+        await super().run_submit_create_success(
+            socketio_test_client,
+        )
+
+    @pytest.mark.anyio
+    async def test_submit_create_public_without_parent_success(
+        self,
+        socketio_test_client,
+    ):
+        """Test successful question creation."""
+        await super().run_submit_create_success(
+            socketio_test_client,
         )
 
     # Submit Update Tests
@@ -192,6 +221,35 @@ class TestMessage(BaseSocketIOTest):
         await super().run_submit_create_success(
             socketio_test_client,
             access_to_one_parent=access_to_one_parent,
+        )
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "session_ids",
+        [
+            [session_id_admin_read_write_socketio],
+            [session_id_user1_read_write_socketio],
+        ],
+        indirect=True,
+    )
+    @pytest.mark.anyio
+    async def test_submit_create_without_parent_success(
+        self,
+        socketio_test_client,
+    ):
+        """Test successful question creation."""
+        await super().run_submit_create_success(
+            socketio_test_client,
+        )
+
+    @pytest.mark.anyio
+    async def test_submit_create_public_without_parent_success(
+        self,
+        socketio_test_client,
+    ):
+        """Test successful question creation."""
+        await super().run_submit_create_success(
+            socketio_test_client,
         )
 
     # Submit Update Tests

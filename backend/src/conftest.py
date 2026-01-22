@@ -371,21 +371,28 @@ async def access_to_one_parent(
         token_payload: dict = None,
     ):
         """Registers a parent and adds a write policy for a the current user token to the database."""
+        public = True if not token_payload else False
         token_payload = token_payload or mocked_provide_http_token_payload
         current_user = await current_user_from_azure_token(token_payload)
 
         parent_id = uuid4()
 
         await register_one_resource_helper(parent_id, model)
-        if "Admin" not in current_user.azure_token_roles:
+        if public:
+            access_policy = {
+                "resource_id": str(parent_id),
+                "public": True,
+                "action": Action.write,
+            }
+        else:
             access_policy = {
                 "resource_id": str(parent_id),
                 "identity_id": str(current_user.user_id),
                 "action": Action.write,
             }
-            await add_test_access_policy(
-                access_policy, CurrentUserData(**current_user_data_admin)
-            )
+        await add_test_access_policy(
+            access_policy, CurrentUserData(**current_user_data_admin)
+        )
 
         return parent_id
 

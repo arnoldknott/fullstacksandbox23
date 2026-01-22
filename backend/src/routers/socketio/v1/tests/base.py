@@ -30,8 +30,8 @@ class BaseSocketIOTest:
                 "events": ["transferred", "deleted", "status"],
             }
         ]
-    
-    async def submit_data(
+
+    async def helper_submit_data(
         self,
         socketio_test_client,
         session_ids=None,
@@ -81,7 +81,7 @@ class BaseSocketIOTest:
         access_to_one_parent=None,
     ):
         """Test successful resource creation via submit event."""
-        connection = await self.submit_data(
+        connection = await self.helper_submit_data(
             socketio_test_client,
             session_ids,
             access_to_one_parent,
@@ -114,7 +114,7 @@ class BaseSocketIOTest:
         access_to_one_parent=None,
     ):
         """Test resource creation error via submit event."""
-        connection = await self.submit_data(
+        connection = await self.helper_submit_data(
             socketio_test_client,
             session_ids,
             access_to_one_parent,
@@ -127,7 +127,10 @@ class BaseSocketIOTest:
         # Find the created status
         created_status = None
         for status in status_data:
-            if isinstance(status, dict) and status.get("error") == f"403: {self.model.__name__} - Forbidden.":
+            if (
+                isinstance(status, dict)
+                and status.get("error") == f"403: {self.model.__name__} - Forbidden."
+            ):
                 created_status = status
                 break
 
