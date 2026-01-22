@@ -276,6 +276,7 @@ class AccessPolicyCRUD:
 
             query = self.filters_allowed(query, action, current_user=current_user)
 
+            # TBD: refactor for correct session handling!
             async with self:
                 # Only one policy per resource - action - identity combination is allowed!
                 response = await self.session.exec(query)
