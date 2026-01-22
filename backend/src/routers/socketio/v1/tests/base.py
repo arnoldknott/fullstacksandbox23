@@ -30,14 +30,14 @@ class BaseSocketIOTest:
                 "events": ["transferred", "deleted", "status"],
             }
         ]
-
-    async def run_submit_create_success(
+    
+    async def submit_data(
         self,
         socketio_test_client,
         session_ids=None,
         access_to_one_parent=None,
     ):
-        """Test successful resource creation via submit event."""
+        """Helper method to submit data via the submit event."""
         session_id = None
         if session_ids is not None:
             session_id = session_ids[0]
@@ -72,6 +72,21 @@ class BaseSocketIOTest:
         )
         await connection.client.sleep(0.5)
 
+        return connection
+
+    async def run_submit_create_success(
+        self,
+        socketio_test_client,
+        session_ids=None,
+        access_to_one_parent=None,
+    ):
+        """Test successful resource creation via submit event."""
+        connection = await self.submit_data(
+            socketio_test_client,
+            session_ids,
+            access_to_one_parent,
+        )
+
         # Check status event for creation success
         status_data = connection.responses("status", self.namespace_path)
         assert len(status_data) >= 1
@@ -88,8 +103,35 @@ class BaseSocketIOTest:
         assert "submitted_id" in created_status
 
         # Verify the created resource exists and has correct data
-        created_id = created_status["id"]
-        assert created_id is not None
+        assert created_status["id"] is not None
+
+        await connection.client.disconnect()
+
+    async def run_submit_create_fails(
+        self,
+        socketio_test_client,
+        session_ids=None,
+        access_to_one_parent=None,
+    ):
+        """Test resource creation error via submit event."""
+        connection = await self.submit_data(
+            socketio_test_client,
+            session_ids,
+            access_to_one_parent,
+        )
+
+        # Check status event for creation success
+        status_data = connection.responses("status", self.namespace_path)
+        assert len(status_data) >= 1
+
+        # Find the created status
+        created_status = None
+        for status in status_data:
+            if isinstance(status, dict) and status.get("error") == f"403: {self.model.__name__} - Forbidden.":
+                created_status = status
+                break
+
+        assert created_status is not None, f"No 'error' status found in {status_data}"
 
         await connection.client.disconnect()
 
