@@ -33,7 +33,7 @@ class SocketIoSessionData(BaseModel):
     """Data stored in the socket.io session."""
 
     user_name: str
-    current_user: CurrentUserData
+    # current_user: CurrentUserData
     session_id: Optional[str] = (
         None  # That's the Redis session-id, not the socket.io session-id (sid)
     )
@@ -130,24 +130,25 @@ class BaseNamespace(socketio.AsyncNamespace):
         #     self._emit_status(sid, {"error": "No Current User found."})
         # return current_user
 
-        # try:
-        token_payload = await self._get_token_payload_if_authenticated(
-            session["session_id"]
-        )
-        current_user = await check_token_against_guards(token_payload, guards)
-
-        # except Exception as _error:
-        #     if guards is not None:
-        if current_user is None:
-            logger.error(
-                f"🧦 Client with session id {sid} is missing current_user data."
+        try:
+            token_payload = await self._get_token_payload_if_authenticated(
+                session["session_id"]
             )
-            self._emit_status(sid, {"error": "No Current User found."})
-        # else:
-        #         logger.info(
-        #             f"🧦 Client {sid} accessing namespace {self.namespace} publically."
-        #         )
-        # else:
+            current_user = await check_token_against_guards(token_payload, guards)
+        except Exception as error:
+            if guards is not None:
+                if current_user is None:
+                    logger.error(
+                        # f"🧦 Client with session id {sid} is missing current_user data."
+                        f"🧦 Failed to authenticate client {sid}."
+                    )
+                    # self._emit_status(sid, {"error": "No Current User found."})
+                    # await self._emit_status(sid, {"error": str(error)})
+                raise error
+            else:
+                logger.info(
+                    f"🧦 Client {sid} accessing namespace {self.namespace} publically."
+                )
         return current_user
 
     async def _get_all(
@@ -343,6 +344,13 @@ class BaseNamespace(socketio.AsyncNamespace):
                 raise ConnectionRefusedError("Authorization failed.")
             else:
                 current_user = None
+                session_data: SocketIoSessionData = {
+                    "user_name": "Anonymous",
+                    "query_strings": query_strings,
+                }
+                await self.server.save_session(
+                    sid, session_data, namespace=self.namespace
+                )
                 logger.info(
                     # f"🧦 Client authenticated to public namespace {self.namespace}."
                     f"🧦 Client {sid} accessing namespace {self.namespace} publically."
