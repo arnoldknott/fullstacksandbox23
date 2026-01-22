@@ -12,7 +12,7 @@ from core.security import (
     check_token_against_guards,
     get_token_payload_from_cache,
 )
-from core.types import CurrentUserData, EventGuard, GuardTypes
+from core.types import Action, CurrentUserData, EventGuard, GuardTypes
 from crud import register_crud
 from crud.access import AccessLoggingCRUD, AccessPolicyCRUD
 from models.access import (
@@ -513,7 +513,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                         # (There are tests for public in QuizNamespace already.)
                         inherit = data.get("inherit", False)
                         public = data.get("public", False)
-                        public_action = data.get("public_action", "read")
+                        public_action = data.get("public_action", Action.read)
                         async with self.crud() as crud:
                             # TBD: check the hierarchical resource system all the way through other events as well!
                             database_object = await crud.create(
