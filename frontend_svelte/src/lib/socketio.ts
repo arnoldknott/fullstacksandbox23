@@ -8,6 +8,7 @@ import type {
 	BackendAPIConfiguration,
 	Hierarchy
 } from '$lib/types.d.ts';
+import type { Action } from '$lib/accessHandler';
 import { SvelteSet } from 'svelte/reactivity';
 
 export type SocketioConnection = {
@@ -68,7 +69,13 @@ export class SocketIO {
 
 	// The backend is handling it, whether it's new or existing.
 	// If the id is a UUID, it tries to update an existing resource.
-	public submitEntity(entity: AnyEntityExtended, parent_id?: string, inherit?: boolean): void {
+	public submitEntity(
+		entity: AnyEntityExtended,
+		parent_id?: string,
+		inherit?: boolean,
+		publicAccess?: boolean,
+		publicAction?: Action
+	): void {
 		// Deletes the preliminary id from editIds, if it is a new entity.
 		// if (this.editIds && this.editIds.has(entity.id) && entity.id.slice(0, 4) === 'new_') {
 		if (this.editIds && this.editIds.has(entity.id) && entity.id.slice(0, 4) === 'new_') {
@@ -77,7 +84,9 @@ export class SocketIO {
 		const data = {
 			payload: entity,
 			...(parent_id ? { parent_id } : {}),
-			...(inherit ? { inherit } : {})
+			...(inherit ? { inherit } : {}),
+			...(publicAccess ? { public: publicAccess } : {}),
+			...(publicAction ? { public_action: publicAction } : {})
 		};
 		this.client.emit('submit', data);
 	}

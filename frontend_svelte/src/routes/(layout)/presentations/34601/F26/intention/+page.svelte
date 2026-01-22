@@ -6,6 +6,7 @@
 	import MotivationTable from './MotivationTable.svelte';
 	import SlideTitle from './SlideTitle.svelte';
 	import { flip } from 'svelte/animate';
+	import { Action } from '$lib/accessHandler';
 
 	let { data }: { data: PageData } = $props();
 
@@ -14,7 +15,7 @@
 
 	const connection: SocketioConnection = {
 		namespace: '/message',
-		query_params: {'parent-id': questionId}
+		query_params: { 'parent-id': questionId }
 	};
 	const socketio = new SocketIO(connection, () => intentionAnswers);
 
@@ -41,13 +42,11 @@
 	// 	'A medium length answer to see how that looks like in the sharing round section of the presentation slide.',
 	// 	'Another answer - might be a reaction to the first or a stand alone! What happens if this answer exceeds a certain length? Will it wrap around correctly and still be readable?'
 	// ]);
-	let mySharing: Message = $derived(
-		{
-			id: 'new_' + Math.random().toString(36).substring(2, 9),
-			content: "",
-			language: 'en'
-		}
-	);
+	let mySharing: Message = $derived({
+		id: 'new_' + Math.random().toString(36).substring(2, 9),
+		content: '',
+		language: 'en'
+	});
 </script>
 
 {#snippet intentionAnswer(text: string, index: number)}
@@ -94,12 +93,12 @@
 								event.preventDefault();
 								intentionAnswers = [mySharing, ...intentionAnswers];
 								socketio.addEntity(mySharing);
-								socketio.submitEntity(mySharing, questionId, true);
+								socketio.submitEntity(mySharing, questionId, true, true, Action.READ);
 								mySharing = {
 									id: 'new_' + Math.random().toString(36).substring(2, 9),
-									content: "",
+									content: '',
 									language: 'en'
-								}
+								};
 							}
 						}}
 					></textarea>
