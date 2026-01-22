@@ -67,6 +67,11 @@ Question = create_model(
     ],
 )
 
+# TBD: add another step: A Question has many Answers
+# Intention: the parent needs to have write access to create answers
+# So the parent to a mesage / numerical should be an Answer entity, not a Question.
+# Or on the long run: create an Action: "link", so own, write, read, link?
+
 
 # For regular text answers, reuse Message model:
 Message = create_model(
