@@ -205,10 +205,10 @@ class BaseNamespace(socketio.AsyncNamespace):
         async with AccessLoggingCRUD() as logging_crud:
             try:
                 creation_date = await logging_crud.read_resource_created_at(
-                    current_user, resource_id=resource_id
+                    resource_id=resource_id, current_user=current_user
                 )
                 last_modified_date = await logging_crud.read_resource_last_modified_at(
-                    current_user, resource_id=resource_id
+                    resource_id=resource_id, current_user=current_user
                 )
             except Exception:
                 creation_date = None
@@ -413,6 +413,13 @@ class BaseNamespace(socketio.AsyncNamespace):
                     if "request-access-data" in session["query_strings"]
                     else None
                 )
+                request_access_data = (
+                    True
+                    if request_access_data == "true"
+                    or request_access_data == "True"
+                    or request_access_data
+                    else False
+                )
                 if resource_id is None:
                     await self._get_all(sid, current_user, request_access_data)
                 else:
@@ -422,18 +429,55 @@ class BaseNamespace(socketio.AsyncNamespace):
                             database_object
                         )
                     if request_access_data:
-                        access_data = await self._get_access_data(
-                            sid, current_user, database_object.id
-                        )
+                        guards = self._get_event_guards("connect")
                         database_object = self.read_extended_model.model_validate(
                             database_object
                         )
-                        database_object.access_right = access_data["access_right"]
-                        database_object.access_policies = access_data["access_policies"]
-                        database_object.creation_date = access_data["creation_date"]
-                        database_object.last_modified_date = access_data[
-                            "last_modified_date"
-                        ]
+                        if guards is None and current_user is None:
+                            creation_date = None
+                            last_modified_date = None
+                            try:
+                                print(
+                                    "=== routers - socketio - v1 - on_read - public access - get dates ==="
+                                )
+                                async with AccessLoggingCRUD() as logging_crud:
+                                    creation_date = (
+                                        await logging_crud.read_resource_created_at(
+                                            resource_id=resource_id
+                                        )
+                                    )
+                                    last_modified_date = await logging_crud.read_resource_last_modified_at(
+                                        resource_id=resource_id
+                                    )
+                            except Exception:
+                                logger.info(
+                                    "Failed to get creation and modification dates with public access."
+                                )
+                                print(
+                                    "=== routers - socketio - v1 - on_read - public access - failed to get dates ==="
+                                )
+                            database_object.access_right = Action.read
+                            database_object.creation_date = creation_date
+                            database_object.last_modified_date = last_modified_date
+                            print(
+                                "=== routers - socketio - v1 - on_read - public access - added dates ==="
+                            )
+                            print(database_object, flush=True)
+                        else:
+                            access_data = await self._get_access_data(
+                                sid, current_user, database_object.id
+                            )
+                            # database_object = self.read_extended_model.model_validate(
+                            #     database_object
+                            # )
+                            database_object.access_right = access_data["access_right"]
+                            database_object.access_policies = access_data[
+                                "access_policies"
+                            ]
+                            database_object.creation_date = access_data["creation_date"]
+                            database_object.last_modified_date = access_data[
+                                "last_modified_date"
+                            ]
                     if database_object.id not in self.server.rooms(sid, self.namespace):
                         await self.server.enter_room(
                             sid,

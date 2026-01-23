@@ -726,8 +726,8 @@ class AccessLoggingCRUD:
 
     async def read_resource_created_at(
         self,
-        current_user: CurrentUserData,
         resource_id: UUID,
+        current_user: Optional["CurrentUserData"] = None,
     ) -> datetime:
         """Reads the first access log with action "Own" for a resource id - corresponds to create."""
         try:
@@ -747,9 +747,9 @@ class AccessLoggingCRUD:
 
     async def read_resource_last_accessed_at(
         self,
-        current_user: CurrentUserData,
         resource_id: UUID,
         action: Action = Action.own,
+        current_user: Optional["CurrentUserData"] = None,
     ) -> AccessLogRead:
         """Reads the last access log for a resource id."""
         try:
@@ -786,7 +786,7 @@ class AccessLoggingCRUD:
                 last_write_date = last_write_log[0].time
             else:
                 last_write_date = await self.read_resource_created_at(
-                    current_user, resource_id
+                    resource_id=resource_id, current_user=current_user
                 )
             return last_write_date
         except Exception as err:

@@ -177,10 +177,10 @@ async def test_admin_posts_user(
 
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
-            current_user, resource_id=created_user.id
+            resource_id=created_user.id, current_user=current_user
         )
         last_accessed_at = await crud.read_resource_last_accessed_at(
-            current_user, resource_id=created_user.id
+            resource_id=created_user.id, current_user=current_user
         )
 
     assert created_at > before_time - timedelta(seconds=1)
@@ -242,10 +242,10 @@ async def test_post_user_with_integer_user_id(
 
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
-            current_user, resource_id=created_user.id
+            resource_id=created_user.id, current_user=current_user
         )
         last_accessed_at = await crud.read_resource_last_accessed_at(
-            current_user, resource_id=created_user.id
+            resource_id=created_user.id, current_user=current_user
         )
 
     assert created_at > before_time - timedelta(seconds=1)
@@ -308,10 +308,10 @@ async def test_post_user_with_uuid_user_id(
 
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
-            current_user, resource_id=created_user.id
+            resource_id=created_user.id, current_user=current_user
         )
         last_accessed_at = await crud.read_resource_last_accessed_at(
-            current_user, resource_id=created_user.id
+            resource_id=created_user.id, current_user=current_user
         )
 
     assert created_at > before_time - timedelta(seconds=1)
@@ -565,12 +565,12 @@ async def test_user_gets_own_user_through_me_endpoint(
 
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
-            CurrentUserData(**current_user_data_admin),
             resource_id=modelled_response_user.id,
+            current_user=CurrentUserData(**current_user_data_admin),
         )
         last_accessed_at = await crud.read_resource_last_accessed_at(
-            CurrentUserData(**current_user_data_admin),
             resource_id=modelled_response_user.id,
+            current_user=CurrentUserData(**current_user_data_admin),
         )
 
     assert created_at > before_time - timedelta(seconds=1)
@@ -789,12 +789,12 @@ async def test_user_gets_user_by_azure_user_id(
 
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
-            CurrentUserData(**current_user_data_admin),
             resource_id=modelled_response_user.id,
+            current_user=CurrentUserData(**current_user_data_admin),
         )
         last_accessed_at = await crud.read_resource_last_accessed_at(
-            CurrentUserData(**current_user_data_admin),
             resource_id=modelled_response_user.id,
+            current_user=CurrentUserData(**current_user_data_admin),
         )
 
     assert created_at > before_time - timedelta(seconds=1)
@@ -872,12 +872,12 @@ async def test_user_gets_user_by_azure_user_id_with_common_groups(
 
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
-            CurrentUserData(**current_user_data_admin),
             resource_id=modelled_response_user.id,
+            current_user=CurrentUserData(**current_user_data_admin),
         )
         last_accessed_at = await crud.read_resource_last_accessed_at(
-            CurrentUserData(**current_user_data_admin),
             resource_id=modelled_response_user.id,
+            current_user=CurrentUserData(**current_user_data_admin),
         )
 
     assert created_at > before_time - timedelta(seconds=1)
@@ -969,12 +969,12 @@ async def test_user_gets_user_by_azure_user_id_with_partial_access_to_other_user
 
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
-            CurrentUserData(**current_user_data_admin),
             resource_id=modelled_response_user.id,
+            current_user=CurrentUserData(**current_user_data_admin),
         )
         last_accessed_at = await crud.read_resource_last_accessed_at(
-            CurrentUserData(**current_user_data_admin),
             resource_id=modelled_response_user.id,
+            current_user=CurrentUserData(**current_user_data_admin),
         )
 
     assert created_at > before_time - timedelta(seconds=1)
@@ -1035,12 +1035,12 @@ async def test_user_gets_user_by_azure_user_id_with_no_access_to_other_users_gro
 
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
-            CurrentUserData(**current_user_data_admin),
             resource_id=modelled_response_user.id,
+            current_user=CurrentUserData(**current_user_data_admin),
         )
         last_accessed_at = await crud.read_resource_last_accessed_at(
-            CurrentUserData(**current_user_data_admin),
             resource_id=modelled_response_user.id,
+            current_user=CurrentUserData(**current_user_data_admin),
         )
 
     assert created_at > before_time - timedelta(seconds=1)
@@ -1081,12 +1081,12 @@ async def test_admin_gets_user_by_azure_user_id(
 
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
-            CurrentUserData(**current_user_data_admin),
             resource_id=modelled_response_user.id,
+            current_user=CurrentUserData(**current_user_data_admin),
         )
         last_accessed_at = await crud.read_resource_last_accessed_at(
-            CurrentUserData(**current_user_data_admin),
             resource_id=modelled_response_user.id,
+            current_user=CurrentUserData(**current_user_data_admin),
         )
 
     assert created_at > before_time - timedelta(seconds=1)
@@ -1193,12 +1193,12 @@ async def test_user_gets_user_by_id(
 
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
-            CurrentUserData(**current_user_data_admin),
             resource_id=modelled_response_user.id,
+            current_user=CurrentUserData(**current_user_data_admin),
         )
         last_accessed_at = await crud.read_resource_last_accessed_at(
-            CurrentUserData(**current_user_data_admin),
             resource_id=modelled_response_user.id,
+            current_user=CurrentUserData(**current_user_data_admin),
         )
 
     assert created_at > before_time - timedelta(seconds=1)
@@ -1238,12 +1238,12 @@ async def test_admin_gets_user_by_id(
 
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
-            CurrentUserData(**current_user_data_admin),
             resource_id=modelled_response_user.id,
+            current_user=CurrentUserData(**current_user_data_admin),
         )
         last_accessed_at = await crud.read_resource_last_accessed_at(
-            CurrentUserData(**current_user_data_admin),
             resource_id=modelled_response_user.id,
+            current_user=CurrentUserData(**current_user_data_admin),
         )
 
     assert created_at > before_time - timedelta(seconds=1)
@@ -1996,12 +1996,12 @@ async def test_put_user_from_admin(
 
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
-            CurrentUserData(**current_user_data_admin),
             resource_id=db_user.id,
+            current_user=CurrentUserData(**current_user_data_admin),
         )
         last_accessed_at = await crud.read_resource_last_accessed_at(
-            CurrentUserData(**current_user_data_admin),
             resource_id=db_user.id,
+            current_user=CurrentUserData(**current_user_data_admin),
         )
 
     assert created_at > before_time - timedelta(seconds=2)
@@ -2058,12 +2058,12 @@ async def test_put_user_with_integer_user_id(
 
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
-            CurrentUserData(**current_user_data_admin),
             resource_id=db_user.id,
+            current_user=CurrentUserData(**current_user_data_admin),
         )
         last_accessed_at = await crud.read_resource_last_accessed_at(
-            CurrentUserData(**current_user_data_admin),
             resource_id=db_user.id,
+            current_user=CurrentUserData(**current_user_data_admin),
         )
 
     assert created_at > before_time - timedelta(
@@ -2126,12 +2126,12 @@ async def test_admin_put_user_with_uuid_user_id(
 
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
-            CurrentUserData(**current_user_data_admin),
             resource_id=db_user.id,
+            current_user=CurrentUserData(**current_user_data_admin),
         )
         last_accessed_at = await crud.read_resource_last_accessed_at(
-            CurrentUserData(**current_user_data_admin),
             resource_id=db_user.id,
+            current_user=CurrentUserData(**current_user_data_admin),
         )
 
     assert created_at > before_time - timedelta(seconds=2)
@@ -3971,8 +3971,8 @@ async def test_user_access_through_inheritance_from_direct_group_membership(
     current_admin_user = await current_user_from_azure_token(token_admin_read_write)
     async with AccessLoggingCRUD() as crud:
         access_log = await crud.read_resource_last_accessed_at(
-            current_admin_user,
             resource_id=mocked_protected_resources[2].id,
+            current_user=current_admin_user,
         )
 
     assert access_log.resource_id == mocked_protected_resources[2].id
@@ -4110,8 +4110,8 @@ async def test_user_access_through_inheritance_from_indirect_group_membership(
     current_admin_user = await current_user_from_azure_token(token_admin_read_write)
     async with AccessLoggingCRUD() as crud:
         access_log = await crud.read_resource_last_accessed_at(
-            current_admin_user,
             resource_id=mocked_protected_resources[2].id,
+            current_user=current_admin_user,
         )
 
     assert access_log.resource_id == mocked_protected_resources[2].id
@@ -4257,8 +4257,8 @@ async def test_user_access_prohibited_after_deleting_group_with_direct_group_mem
     current_admin_user = await current_user_from_azure_token(token_admin_read_write)
     async with AccessLoggingCRUD() as crud:
         access_log = await crud.read_resource_last_accessed_at(
-            current_admin_user,
             resource_id=mocked_protected_resources[2].id,
+            current_user=current_admin_user,
         )
 
     assert access_log.resource_id == mocked_protected_resources[2].id

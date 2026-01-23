@@ -398,7 +398,7 @@ def create_model(
     Update = type(f"{name}Update", (SQLModel,), update_fields)
 
     # ===== Build Extended Schema =====
-    extended_annotations, extended_fields = _build_annotations_and_fields(
+    _extended_annotations, extended_fields = _build_annotations_and_fields(
         attributes, relationships, SchemaType.EXTENDED
     )
     # extended_annotations = {**read_annotations}

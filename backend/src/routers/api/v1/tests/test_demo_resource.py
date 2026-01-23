@@ -328,7 +328,7 @@ async def test_put_demo_resource(
 
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
-            current_user, resource_id=content["id"]
+            resource_id=content["id"], current_user=current_user
         )
 
     assert (
