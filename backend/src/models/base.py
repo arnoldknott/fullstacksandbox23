@@ -269,20 +269,20 @@ def _build_annotations_and_fields(  # noqa: C901
             annotations[rel_name] = Optional[List[related_class_name]]
             fields[rel_name] = None
 
-    # Add mixin fields for Extended schema
-    if schema_type == SchemaType.EXTENDED:
-        for mixin in (
-            AccessRightsMixin,
-            AccessPolicyMixin,
-            CreatedAtMixin,
-            UpdatedAtMixin,
-        ):
-            if hasattr(mixin, "__annotations__"):
-                for field_name, field_type in mixin.__annotations__.items():
-                    annotations[field_name] = field_type
-                    # Get default value from mixin if exists
-                    if hasattr(mixin, field_name):
-                        fields[field_name] = getattr(mixin, field_name)
+    # # Add mixin fields for Extended schema
+    # if schema_type == SchemaType.EXTENDED:
+    #     for mixin in (
+    #         AccessRightsMixin,
+    #         AccessPolicyMixin,
+    #         CreatedAtMixin,
+    #         UpdatedAtMixin,
+    #     ):
+    #         if hasattr(mixin, "__annotations__"):
+    #             for field_name, field_type in mixin.__annotations__.items():
+    #                 annotations[field_name] = field_type
+    #                 # Get default value from mixin if exists
+    #                 if hasattr(mixin, field_name):
+    #                     fields[field_name] = getattr(mixin, field_name)
 
     fields["__annotations__"] = annotations
     return annotations, fields
