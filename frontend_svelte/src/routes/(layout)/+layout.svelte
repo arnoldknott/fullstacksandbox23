@@ -275,6 +275,20 @@
 					]
 				},
 				{
+					name: 'Presentations',
+					pathname: resolve('/(layout)/presentations'),
+					icon: 'icon-[fa6-solid--chalkboard]',
+					id: 'presentations',
+					items: [
+						{
+							name: 'Dev2 F23 Intention',
+							pathname: resolve('/(layout)/presentations/dev2/F23/(protected)/setup'),
+							icon: 'icon-[fa6-solid--chalkboard]',
+							id: 'presentations-dev2-f23-intention'
+						}
+					]
+				},
+				{
 					name: 'Hierarchical Resources',
 					pathname: resolve('/(layout)/(protected)/dashboard/backend-protected-hierarchy'),
 					icon: 'icon-[fluent-mdl2--family]',

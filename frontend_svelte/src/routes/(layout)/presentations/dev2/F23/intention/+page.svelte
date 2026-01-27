@@ -57,6 +57,16 @@
 		socketio.handleTransferred(data);
 	});
 
+	socketio.client.on('deleted', (message_id: string) => {
+		// if (debug) {
+		// 	console.log(
+		// 		'=== dashboard - backend-demo-resource - socketio - +page.svelte - deleted DemoResources ==='
+		// 	);
+		// 	console.log(resource_id);
+		// }
+		socketio.handleDeleted(message_id);
+	});
+
 	// let sharing = $state('');
 	// let intentionAnswers: string[] = $state([
 	// 	'A short answer!',
