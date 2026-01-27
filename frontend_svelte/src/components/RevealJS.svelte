@@ -4,17 +4,18 @@
 	import type { Snippet } from 'svelte';
 	import { onMount } from 'svelte';
 	import Reveal from 'reveal.js';
-	import type {Options } from 'reveal.js';
-	type RevealType = typeof Reveal;
+	import type { Options, Api } from 'reveal.js';
 
 	export const ssr = false;
 	// let { children, keyboard=true }: {  children: Snippet, keyboard: boolean} = $props();
-	let { children, options = {}, reveal = $bindable() }: { children: Snippet; options?: Options; reveal?: RevealType } = $props();
-
-	
+	let {
+		children,
+		options = {},
+		reveal = $bindable()
+	}: { children: Snippet; options?: Options; reveal?: Api } = $props();
 
 	onMount(() => {
-		const reveal = new Reveal({});
+		reveal = new Reveal({});
 		reveal.initialize({
 			// Default options
 			embedded: true,
@@ -25,10 +26,10 @@
 			// Override with external options
 			...options
 		});
-		reveal.on('fragmentshown', (event) => {
-			console.log('=== fragment shown ===');
-			console.log(event);
-		});
+		// reveal.on('fragmentshown', (event) => {
+		// 	console.log('=== fragment shown ===');
+		// 	console.log(event);
+		// });
 	});
 </script>
 

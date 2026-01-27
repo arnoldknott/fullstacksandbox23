@@ -3,12 +3,20 @@
 	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio';
 	import type { MessageExtended } from '$lib/types';
 	import RevealJS from '$components/RevealJS.svelte';
+	import type { Api } from 'reveal.js';
 	import MotivationTable from './MotivationTable.svelte';
 	import SlideTitle from './SlideTitle.svelte';
 	import { flip } from 'svelte/animate';
 	import { Action } from '$lib/accessHandler';
 
+	interface RevealFragmentEvent extends Event {
+		fragment: HTMLElement;
+		fragments: HTMLElement[];
+	}
+
 	let { data }: { data: PageData } = $props();
+
+	let revealInstance = $state<Api | undefined>(undefined);
 
 	let intentionAnswers: MessageExtended[] = $state(data.questionsData?.intention.messages || []);
 	let questionId = data.questionsData?.intention.id || '';
@@ -77,6 +85,56 @@
 		content: '',
 		language: 'en'
 	});
+
+	let addColorToMotivationTable = $state(true);
+
+	$effect(() => {
+		if (revealInstance) {
+			revealInstance.on('fragmentshown', (event: Event) => {
+				const fragmentEvent = event as RevealFragmentEvent;
+				// console.log('=== fragment shown and captured in presentation ===');
+				// console.log(fragmentEvent);
+				
+				if (fragmentEvent.fragment?.innerText === 'Dummy to trigger color event') {
+					addColorToMotivationTable = true;
+				}
+			});
+			revealInstance.on('fragmenthidden', (event: Event) => {
+				const fragmentEvent = event as RevealFragmentEvent;
+				// console.log('=== fragment shown and captured in presentation ===');
+				// console.log(fragmentEvent);
+				
+				if (fragmentEvent.fragment?.innerText === 'Dummy to trigger color event') {
+					addColorToMotivationTable = false;
+				}
+			});
+		}
+	});
+
+	// let revealFragmentShownEvent = $derived.by(() => {
+	// 	return revealInstance?.on('fragmentshown', (event) => {
+	// 		console.log('=== fragment shown and captures in presentation ===');
+	// 		console.log(event);
+	// 		// if (event?.fragment?.innerText === 'Dummy to trigger event') {
+	// 		// 	addColorToMotivationTable = true;
+	// 		// }
+	// 		return event;})
+	// // works returtning the event, but cannot access it outside of this function
+	// 	});
+
+	// $effect(() => {
+	// 	if (revealFragmentShownEvent?.fragment?.innerText === 'Dummy to trigger event') {
+	// 		addColorToMotivationTable = true;
+	// 	}
+	// });
+	
+	// let addColorToMotivationTable = $derived( revealFragmentShownEvent?.fragment?.innerText === 'Dummy to trigger event' ? true : false)
+	
+	// $effect(() => console.log($state.snapshot(revealFragmentShownEvent)))
+	// const backgroundColor = true
+
+
+	const backgroundColor = false
 </script>
 
 {#snippet intentionAnswer(text: string, date: Date | undefined, index: number)}
@@ -90,7 +148,7 @@
 	</div>
 {/snippet}
 
-<RevealJS>
+<RevealJS bind:reveal={revealInstance}>
 	<section>
 		<h1>Welcome</h1>
 	</section>
@@ -175,9 +233,10 @@
 			</div>
 		</div>
 	</section>
-	<section>
+	<section data-background-color={backgroundColor || 'rgb(var(--md-rgb-color-primary-container))'}>
 		<SlideTitle>Motivation</SlideTitle>
-		<p>Self determination theory:</p>
+		<p class="heading-large text-primary">Self determination theory - Ryan and Deci / Ib Ravn</p>
+
 		<p class="text-error">Consider removing?</p>
 		<ul>
 			<li>Autonomy</li>
@@ -186,11 +245,13 @@
 			<li>(Meaning)</li>
 		</ul>
 	</section>
-	<section>
-		<section>
+	<!-- <section data-background-color={addColorToMotivationTable || 'rgb(var(--md-rgb-color-primary-container))'}> -->
+	<section class="h-80% p-2 rounded-lg {addColorToMotivationTable ? 'bg-green-300/30 ' : ''}">
+		<div >
 			<SlideTitle>Motivation</SlideTitle>
 			<MotivationTable />
-		</section>
+			{addColorToMotivationTable}
+		</div>
 	</section>
 	<section>
 		<SlideTitle>Inclusion</SlideTitle>

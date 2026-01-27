@@ -12,6 +12,7 @@
 	<div class="fragment">Identified</div>
 	<div class="fragment">Integrated</div>
 	<div></div>
+	<div class="fragment hidden">Dummy to trigger color event</div>
 </div>
 
 <!--
