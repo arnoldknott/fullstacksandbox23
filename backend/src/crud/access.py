@@ -768,8 +768,8 @@ class AccessLoggingCRUD:
 
     async def read_resource_last_modified_at(
         self,
-        current_user: CurrentUserData,
         resource_id: UUID,
+        current_user: Optional["CurrentUserData"] = None,
     ) -> datetime:
         """Reads the last modification (or creation) date for a resource id."""
         try:
@@ -795,8 +795,8 @@ class AccessLoggingCRUD:
 
     async def read_resource_access_count(
         self,
-        current_user: CurrentUserData,
         resource_id: UUID,
+        current_user: Optional["CurrentUserData"] = None,
     ):
         """Reads the number of access logs for a resource id."""
         try:

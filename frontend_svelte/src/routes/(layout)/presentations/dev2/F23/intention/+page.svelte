@@ -14,11 +14,7 @@
 	let questionId = data.questionsData?.intention.id || '';
 
 	let intentionAnswersSorted: MessageExtended[] = $derived(
-		intentionAnswers.toSorted((a, b) => {
-			if (!a.creation_date) return 1;
-			if (!b.creation_date) return 1;
-			return a.creation_date < b.creation_date ? 1 : -1;
-		})
+		intentionAnswers.toSorted((a, b) => {return !a.creation_date > !b.creation_date ? 1 : -1;})
 	);
 
 	const connection: SocketioConnection = {
@@ -47,15 +43,15 @@
 		socketio.handleStatus(data);
 	});
 
-	// socketio.client.on('transferred', (data: MessageExtended) => {
-	// 	// if (debug) {
-	// 	console.log(
-	// 		'=== 🧦 dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
-	// 	);
-	// 	console.log(data);
-	// 	// }
-	// 	socketio.handleTransferred(data);
-	// });
+	socketio.client.on('transferred', (data: MessageExtended) => {
+		// if (debug) {
+		console.log(
+			'=== 🧦 dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
+		);
+		console.log(data);
+		// }
+		socketio.handleTransferred(data);
+	});
 
 	socketio.client.on('deleted', (message_id: string) => {
 		// if (debug) {
@@ -87,10 +83,11 @@
 	});
 </script>
 
-{#snippet intentionAnswer(text: string, index: number)}
+{#snippet intentionAnswer(text: string, date: Date | undefined, index: number)}
 	<div class="chat chat-receiver">
 		<div class="chat-bubble text-left {index % 2 ? 'chat-bubble-accent' : 'chat-bubble-primary'}">
 			{text}
+			<div class="label justify-self-end">{date ? new Date(date).toLocaleString() : 'no date'}</div>
 		</div>
 	</div>
 {/snippet}
@@ -130,7 +127,7 @@
 							if (event.key === 'Enter' && !event.shiftKey) {
 								event.preventDefault();
 								intentionAnswers = [mySharing, ...intentionAnswers];
-								socketio.addEntity(mySharing);
+								// socketio.addEntity(mySharing);
 								socketio.submitEntity(mySharing, questionId, true, true, Action.READ);
 								mySharing = {
 									id: 'new_' + Math.random().toString(36).substring(2, 9),
@@ -143,8 +140,14 @@
 				</div>
 			</div>
 			<div class="heading mt-8">
-				<div class="mx-5 grid max-h-[700px] grid-cols-3 overflow-y-auto">
-					<div class="mx-2 flex w-full flex-col gap-4">
+
+				<div class="mx-5 grid max-h-[700px] grid-cols-3 overflow-y-auto gap-4">
+					{#each intentionAnswersSorted as answer, index (index)}
+						<div animate:flip>
+							{@render intentionAnswer(answer.content, answer.creation_date, index)}
+						</div>
+					{/each}
+					<!-- <div class="mx-2 flex w-full flex-col gap-4">
 						{#each intentionAnswersSorted as answer, index (index)}
 							<div animate:flip>
 								{#if index % 3 === 0}
@@ -170,7 +173,7 @@
 								{/if}
 							</div>
 						{/each}
-					</div>
+					</div> -->
 				</div>
 			</div>
 		</div>
