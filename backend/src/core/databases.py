@@ -6,7 +6,15 @@ from core.config import config
 # from sqlmodel import SQLmodel  # noqa: F401
 
 postgres_async_engine = create_async_engine(
-    config.POSTGRES_URL.unicode_string()
+    config.POSTGRES_URL.unicode_string(),
+    # TBD: instead of increasing pool size,
+    # pass on the session as an optional argument
+    # from the calling CRUD to the nested CRUDs!
+    # For example from BaseCRUD to AccessControlledCRUD!
+    pool_size=25,          # Up from default 5
+    max_overflow=35,       # Up from default 10 (total: 60)
+    pool_timeout=60,       # Up from default 30s
+    pool_pre_ping=True,    # Test connections health
 )  # TBD: remove echo=True
 
 
