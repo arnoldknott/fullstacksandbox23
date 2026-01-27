@@ -14,7 +14,6 @@ postgres_async_engine = create_async_engine(
     # instead of creating new sessions in each CRUD.
     pool_size=40,  # Increased due to nested session pattern (3-5 connections per request) - default 5
     max_overflow=50,  # Emergency overflow for burst traffic (total: 120 max) - default: 10
-
     # total (default) max of database is 100 - leaves 10 for pgadmin connections.
     pool_timeout=90,  # Increased timeout to handle queue waits - default 30 (seconds)
     pool_pre_ping=True,  # Test connections health
