@@ -47,15 +47,15 @@
 		socketio.handleStatus(data);
 	});
 
-	socketio.client.on('transferred', (data: MessageExtended) => {
-		// if (debug) {
-		console.log(
-			'=== 🧦 dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
-		);
-		console.log(data);
-		// }
-		socketio.handleTransferred(data);
-	});
+	// socketio.client.on('transferred', (data: MessageExtended) => {
+	// 	// if (debug) {
+	// 	console.log(
+	// 		'=== 🧦 dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
+	// 	);
+	// 	console.log(data);
+	// 	// }
+	// 	socketio.handleTransferred(data);
+	// });
 
 	socketio.client.on('deleted', (message_id: string) => {
 		// if (debug) {

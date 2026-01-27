@@ -281,10 +281,10 @@
 					id: 'presentations',
 					items: [
 						{
-							name: 'Dev2 F23 Intention',
-							pathname: resolve('/(layout)/presentations/dev2/F23/(protected)/setup'),
+							name: 'Questions Setup',
+							pathname: resolve('/(layout)/presentations/questions/(protected)/setup'),
 							icon: 'icon-[fa6-solid--chalkboard]',
-							id: 'presentations-dev2-f23-intention'
+							id: 'presentations-questions-setup'
 						}
 					]
 				},

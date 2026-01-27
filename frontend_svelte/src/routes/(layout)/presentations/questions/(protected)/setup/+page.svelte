@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { SocketIO, type SocketioConnection } from '$lib/socketio';
+	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio';
 	import type { MessageExtended } from '$lib/types';
 	import { flip } from 'svelte/animate';
 	import JsonData from '$components/JsonData.svelte';
@@ -24,6 +24,26 @@
 		query_params: { 'parent-id': questionId, 'request-access-data': true }
 	};
 	const socketio = new SocketIO(connection, () => intentionAnswers);
+
+	socketio.client.on('transferred', (data: MessageExtended) => {
+		// if (debug) {
+		// 	console.log(
+		// 		'=== 🧦 dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
+		// 	);
+		// 	console.log(data);
+		// }
+		socketio.handleTransferred(data);
+	});
+
+	socketio.client.on('status', (data: SocketioStatus) => {
+		// if (debug) {
+		console.log(
+			'=== 🧦 dashboard - backend-demo-resource - socketio - +page.svelte - received status update ==='
+		);
+		console.log('Status update:', data);
+		// }
+		socketio.handleStatus(data);
+	});
 
 	socketio.client.on('deleted', (message_id: string) => {
 		// if (debug) {
@@ -67,4 +87,4 @@
 	{/each}
 </div>
 
-<JsonData {data} />
+<JsonData data={data.questionsData} />
