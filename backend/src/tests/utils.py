@@ -1244,3 +1244,133 @@ many_test_protected_grandchild_resources = [
 ]
 
 # TBD: configure the family of protected resources with parent-child relationships in three generations with AccessPolicies!
+
+
+# ===========================
+# Quiz Test Data
+# ===========================
+
+one_test_quiz = {
+    "title": "Python Basics Quiz",
+}
+
+many_test_quizzes = [
+    {
+        "title": "FastAPI Fundamentals",
+    },
+    {
+        "title": "Database Concepts",
+    },
+    {
+        "title": "REST API Design",
+    },
+    {
+        "title": "SocketIO and Real-time Communication",
+    },
+]
+
+quiz_update_data = {
+    "title": "Updated Quiz Title",
+}
+
+
+# ===========================
+# Question Test Data
+# ===========================
+
+one_test_question = {
+    "question": "What is the capital of France?",
+    "language": "en",
+}
+
+many_test_questions = [
+    {
+        "question": "What is 2 + 2?",
+        "language": "en",
+    },
+    {
+        "question": "Explain the concept of inheritance",
+        "language": "en",
+    },
+    {
+        "question": "Which HTTP method is idempotent?",
+        "language": "en",
+    },
+    {
+        "question": "What is the time complexity of binary search?",
+        "language": "en",
+    },
+]
+
+question_update_data = {
+    "question": "Updated question text?",
+    "language": "en",
+}
+
+
+# ===========================
+# Message Test Data
+# ===========================
+
+one_test_message = {
+    "content": "This is a test message",
+    "sender": "TestUser",
+}
+
+many_test_messages = [
+    {
+        "content": "Hello, world!",
+        "sender": "User1",
+    },
+    {
+        "content": "How are you?",
+        "sender": "User2",
+    },
+    {
+        "content": "Testing message functionality",
+        "sender": "Admin",
+    },
+    {
+        "content": "Another test message",
+        "sender": "User3",
+    },
+]
+
+message_update_data = {
+    "content": "Updated message content",
+    "sender": "UpdatedUser",
+}
+
+
+# ===========================
+# Numerical Test Data
+# ===========================
+
+one_test_numerical = {
+    "value": 42.5,
+    "unit": "meters",
+}
+
+many_test_numericals = [
+    {
+        "value": 100.0,
+        "unit": "kilometers",
+    },
+    {
+        "value": 25.5,
+        "unit": "celsius",
+    },
+    {
+        "value": 9.81,
+        "unit": "m/s^2",
+    },
+    {
+        "value": 3.14159,
+        "unit": "radians",
+    },
+]
+
+numerical_update_data = {
+    "value": 99.99,
+    "unit": "updated_unit",
+}

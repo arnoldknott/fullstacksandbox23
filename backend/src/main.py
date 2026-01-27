@@ -9,7 +9,7 @@ from fastapi.exception_handlers import http_exception_handler
 # TBD: this is the one, that starts the celery app in backend_api:
 from core.celery_app import celery_app  # noqa: F401
 from core.config import config
-from core.databases import run_migrations
+from core.databases import postgres_async_engine, run_migrations
 from core.fastapi import attach_middeleware, mount_rest_api_routes
 from core.socketio import mount_socketio_app, socketio_server
 
@@ -28,8 +28,10 @@ async def lifespan(app: FastAPI):
     # configure_logging()# TBD: add logging configuration
     asyncio.create_task(run_migrations())
     yield  # this is where the FastAPI runs - when its done, it comes back here and closes down
+    logger.info("Application shutdown - closing connections")
     await socketio_server.shutdown()
-    logger.info("Application shutdown")
+    await postgres_async_engine.dispose()  # Properly close all database connections
+    logger.info("Application shutdown complete")
 
 
 fastapi_app = FastAPI(

@@ -146,10 +146,12 @@ async def test_azure_user_self_signup(
 
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
-            CurrentUserData(**current_user_data_admin), resource_id=current_user["id"]
+            resource_id=current_user["id"],
+            current_user=CurrentUserData(**current_user_data_admin),
         )
         last_accessed_at = await crud.read_resource_last_accessed_at(
-            CurrentUserData(**current_user_data_admin), resource_id=current_user["id"]
+            resource_id=current_user["id"],
+            current_user=CurrentUserData(**current_user_data_admin),
         )
 
     assert created_at > before_time - timedelta(seconds=1)

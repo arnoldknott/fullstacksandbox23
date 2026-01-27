@@ -71,12 +71,12 @@ async def test_post_protected_resource_with_logs_and_policies(
     # Test for created logs:
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
-            CurrentUserData(**current_user_data_admin),
             resource_id=created_protected_resource.id,
+            current_user=CurrentUserData(**current_user_data_admin),
         )
         last_accessed_at = await crud.read_resource_last_accessed_at(
-            CurrentUserData(**current_user_data_admin),
             resource_id=created_protected_resource.id,
+            current_user=CurrentUserData(**current_user_data_admin),
         )
 
     assert created_at > before_time - timedelta(seconds=1)
@@ -153,8 +153,8 @@ async def test_get_all_protected_resources(
     async with AccessLoggingCRUD() as crud:
         for resource in mocked_protected_resources:
             last_accessed_at = await crud.read_resource_last_accessed_at(
-                CurrentUserData(**current_user_data_admin),
                 resource_id=resource.id,
+                current_user=CurrentUserData(**current_user_data_admin),
             )
             all_last_accessed_at.append(last_accessed_at)
 
@@ -208,8 +208,8 @@ async def test_get_protected_resource_by_id(
 
     async with AccessLoggingCRUD() as crud:
         last_accessed_at = await crud.read_resource_last_accessed_at(
-            CurrentUserData(**current_user_data_admin),
             resource_id=mocked_protected_resources[3].id,
+            current_user=CurrentUserData(**current_user_data_admin),
         )
 
     current_test_user = current_test_user
@@ -262,8 +262,8 @@ async def test_put_protected_resource(
 
     async with AccessLoggingCRUD() as crud:
         last_accessed_at = await crud.read_resource_last_accessed_at(
-            CurrentUserData(**current_user_data_admin),
             resource_id=mocked_protected_resources[2].id,
+            current_user=CurrentUserData(**current_user_data_admin),
         )
 
     current_test_user = current_test_user
@@ -306,8 +306,8 @@ async def test_delete_protected_resource(
 
     async with AccessLoggingCRUD() as crud:
         last_accessed_at = await crud.read_resource_last_accessed_at(
-            CurrentUserData(**current_user_data_admin),
             resource_id=mocked_protected_resources[1].id,
+            current_user=CurrentUserData(**current_user_data_admin),
         )
 
     current_test_user = current_test_user
@@ -610,12 +610,12 @@ async def test_post_protected_child_resource_and_add_to_parent(
     # Check for created logs:
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
-            CurrentUserData(**current_user_data_admin),
             resource_id=created_protected_child.id,
+            current_user=CurrentUserData(**current_user_data_admin),
         )
         last_accessed_at = await crud.read_resource_last_accessed_at(
-            CurrentUserData(**current_user_data_admin),
             resource_id=created_protected_child.id,
+            current_user=CurrentUserData(**current_user_data_admin),
         )
 
     assert created_at > before_time - timedelta(seconds=1)

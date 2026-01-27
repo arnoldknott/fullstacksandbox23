@@ -275,6 +275,20 @@
 					]
 				},
 				{
+					name: 'Presentations',
+					pathname: resolve('/(layout)/presentations'),
+					icon: 'icon-[fa6-solid--chalkboard]',
+					id: 'presentations',
+					items: [
+						{
+							name: 'Questions Setup',
+							pathname: resolve('/(layout)/presentations/questions/(protected)/setup'),
+							icon: 'icon-[fa6-solid--chalkboard]',
+							id: 'presentations-questions-setup'
+						}
+					]
+				},
+				{
 					name: 'Hierarchical Resources',
 					pathname: resolve('/(layout)/(protected)/dashboard/backend-protected-hierarchy'),
 					icon: 'icon-[fluent-mdl2--family]',

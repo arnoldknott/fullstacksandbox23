@@ -1,0 +1,9 @@
+{
+  "python.defaultInterpreterPath": "/py/bin/python",
+  "python.analysis.autoSearchPaths": true,
+  "python.analysis.diagnosticMode": "workspace",
+  "python.analysis.extraPaths": ["./src"],
+  "python.testing.pytestEnabled": true,
+  "python.testing.cwd": "${workspaceFolder}",
+  "python.testing.pytestArgs": ["-q"]
+}

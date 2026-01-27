@@ -22,6 +22,11 @@ from routers.socketio.v1.identities import (
 )
 from routers.socketio.v1.interactive_documentation import InteractiveDocumentation
 from routers.socketio.v1.public_namespace import PublicNamespace
+from routers.socketio.v1.quiz_namespace import (
+    QuestionNamespace,
+    MessageNamespace,
+    NumericalNamespace,
+)
 from tests.utils import sessions
 
 # Mocking the sessions for testing purposes.
@@ -143,6 +148,9 @@ async def socketio_test_server(
             sio.register_namespace(SubGroupNamespace(server=sio))
             sio.register_namespace(SubSubGroupNamespace(server=sio))
             sio.register_namespace(InteractiveDocumentation(server=sio))
+            sio.register_namespace(QuestionNamespace(server=sio))
+            sio.register_namespace(MessageNamespace(server=sio))
+            sio.register_namespace(NumericalNamespace(server=sio))
             await asyncio.sleep(1)
             yield sio
             await server.shutdown()
@@ -184,7 +192,7 @@ class SocketIOTestConnection:
     def __init__(
         self,
         client_config: ClientConfig,
-        session_id: uuid.UUID,
+        session_id: Optional[uuid.UUID] = None,
     ):
         self.client_config = client_config
         self.session_id = session_id
@@ -266,11 +274,18 @@ class SocketIOTestConnection:
 
     def token_payload(self):
         """Returns the current token payload for the user of this session."""
-        token_payload = [
-            session["token_payload"]
-            for session in sessions
-            if session["session_id"] == self.session_id
-        ][0]
+        token_payload = None
+        try:
+            token_payload = [
+                session["token_payload"]
+                for session in sessions
+                if session["session_id"] == self.session_id
+            ][0]
+        except IndexError:
+            print(
+                f"=== Session ID {self.session_id} not found in sessions - unauthenticated request! ===",
+                flush=True,
+            )
         return token_payload
 
     async def current_user(self) -> CurrentUserData:
@@ -290,14 +305,20 @@ def socketio_test_client(request, session_ids):
         session_id: Optional[uuid.UUID] = None,
     ):
         """Creates an instance of SocketIOTestClient."""
-        if not session_id:
-            session_id = session_ids[0]
+        if session_ids is None:
+            connection = SocketIOTestConnection(
+                client_config,
+            )
+            await connection.__aenter__()
+        else:
+            if not session_id:
+                session_id = session_ids[0]
 
-        connection = SocketIOTestConnection(
-            client_config,
-            session_id,
-        )
-        await connection.__aenter__()
+            connection = SocketIOTestConnection(
+                client_config,
+                session_id,
+            )
+            await connection.__aenter__()
 
         def cleanup():
             # Schedule disconnect for the event loop

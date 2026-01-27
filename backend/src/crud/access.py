@@ -276,6 +276,7 @@ class AccessPolicyCRUD:
 
             query = self.filters_allowed(query, action, current_user=current_user)
 
+            # TBD: refactor for correct session handling!
             async with self:
                 # Only one policy per resource - action - identity combination is allowed!
                 response = await self.session.exec(query)
@@ -286,14 +287,15 @@ class AccessPolicyCRUD:
                     return True
         except Exception as e:
             logger.error(f"Error in reading policy: {e}")
+            print("=== Error in AccessPolicyCRUD.ALLOWS - fails ===")
             raise HTTPException(status_code=403, detail="Forbidden.")
 
         return False
 
     async def check_access(
         self,
-        current_user: CurrentUserData,
         resource_id: UUID,
+        current_user: Optional[CurrentUserData] = None,
     ) -> AccessPermission:
         """Checks the access level of the user to the resource."""
         try:
@@ -343,18 +345,40 @@ class AccessPolicyCRUD:
     async def create(
         self,
         policy: AccessPolicyCreate,
-        current_user: CurrentUserData,
+        current_user: Optional[CurrentUserData] = None,
         allow_override: bool = False,
         *args,
     ) -> AccessPolicyRead:
-        """Creates a new access control policy."""
+        """Creates a new access control policy.
+
+        Args:
+            policy: The access policy to create
+            current_user: The user creating the policy (optional if allow_override=True)
+            allow_override: If True, bypasses all authorization checks
+
+        Raises:
+            HTTPException(403): If authorization checks fail
+            HTTPException(409): If policy already exists
+        """
         # Note: the current_user is the one who creates the policy for the identity_id in the policy!
         try:
             policy = AccessPolicy.model_validate(policy)
 
-            if allow_override or self.__always_allow(policy, current_user):
+            # Handle authorization
+            if allow_override:
+                # When overriding without authentication, only public policies allowed
+                if not current_user and not policy.public:
+                    raise HTTPException(status_code=403, detail="Forbidden.")
+                # Skip all authorization checks
+                pass
+            elif not current_user:
+                # current_user required when not overriding
+                raise HTTPException(status_code=403, detail="Forbidden.")
+            elif self.__always_allow(policy, current_user):
+                # User has inherent permission (admin, own resource, group member)
                 pass
             else:
+                # Check explicit access via read
                 response = await self.read(
                     current_user=current_user,
                     resource_id=policy.resource_id,
@@ -703,8 +727,8 @@ class AccessLoggingCRUD:
 
     async def read_resource_created_at(
         self,
-        current_user: CurrentUserData,
         resource_id: UUID,
+        current_user: Optional["CurrentUserData"] = None,
     ) -> datetime:
         """Reads the first access log with action "Own" for a resource id - corresponds to create."""
         try:
@@ -724,9 +748,9 @@ class AccessLoggingCRUD:
 
     async def read_resource_last_accessed_at(
         self,
-        current_user: CurrentUserData,
         resource_id: UUID,
         action: Action = Action.own,
+        current_user: Optional["CurrentUserData"] = None,
     ) -> AccessLogRead:
         """Reads the last access log for a resource id."""
         try:
@@ -745,8 +769,8 @@ class AccessLoggingCRUD:
 
     async def read_resource_last_modified_at(
         self,
-        current_user: CurrentUserData,
         resource_id: UUID,
+        current_user: Optional["CurrentUserData"] = None,
     ) -> datetime:
         """Reads the last modification (or creation) date for a resource id."""
         try:
@@ -763,7 +787,7 @@ class AccessLoggingCRUD:
                 last_write_date = last_write_log[0].time
             else:
                 last_write_date = await self.read_resource_created_at(
-                    current_user, resource_id
+                    resource_id=resource_id, current_user=current_user
                 )
             return last_write_date
         except Exception as err:
@@ -772,8 +796,8 @@ class AccessLoggingCRUD:
 
     async def read_resource_access_count(
         self,
-        current_user: CurrentUserData,
         resource_id: UUID,
+        current_user: Optional["CurrentUserData"] = None,
     ):
         """Reads the number of access logs for a resource id."""
         try:

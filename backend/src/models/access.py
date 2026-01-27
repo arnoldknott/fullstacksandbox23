@@ -111,7 +111,7 @@ class AccessRequest(BaseModel):
     """Model for the access request"""
 
     # for admin access resource_id and action can be None!
-    current_user: CurrentUserData
+    current_user: Optional[CurrentUserData]
     resource_id: Optional[uuid.UUID]
     action: Optional[Action]
 
@@ -202,6 +202,10 @@ class ResourceHierarchy(BaseHierarchyCreate, BaseHierarchy, table=True):
 
     # TBD: add the required relations: children, that cannot be standalone, but need a parent.
     relations: ClassVar = {
+        # ResourceType.presentation: [ResourceType.quiz],
+        ResourceType.presentation: [ResourceType.question],
+        # ResourceType.quiz: [ResourceType.question],
+        ResourceType.question: [ResourceType.message, ResourceType.numerical],
         ResourceType.demo_resource: [
             ResourceType.tag,
             ResourceType.demo_file,
