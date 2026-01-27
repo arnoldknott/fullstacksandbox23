@@ -94,7 +94,7 @@
 				const fragmentEvent = event as RevealFragmentEvent;
 				// console.log('=== fragment shown and captured in presentation ===');
 				// console.log(fragmentEvent);
-				
+
 				if (fragmentEvent.fragment?.innerText === 'Dummy to trigger color event') {
 					addColorToMotivationTable = true;
 				}
@@ -103,12 +103,19 @@
 				const fragmentEvent = event as RevealFragmentEvent;
 				// console.log('=== fragment shown and captured in presentation ===');
 				// console.log(fragmentEvent);
-				
+
 				if (fragmentEvent.fragment?.innerText === 'Dummy to trigger color event') {
 					addColorToMotivationTable = false;
 				}
 			});
 		}
+		// updates background color on the slides, where addColorToMotivationTable changes
+		if (revealInstance && addColorToMotivationTable !== undefined) {
+			const currentSlide = revealInstance.getCurrentSlide();
+			if (currentSlide) {
+				revealInstance.syncSlide(currentSlide);
+			}
+    	}
 	});
 
 	// let revealFragmentShownEvent = $derived.by(() => {
@@ -127,14 +134,13 @@
 	// 		addColorToMotivationTable = true;
 	// 	}
 	// });
-	
+
 	// let addColorToMotivationTable = $derived( revealFragmentShownEvent?.fragment?.innerText === 'Dummy to trigger event' ? true : false)
-	
+
 	// $effect(() => console.log($state.snapshot(revealFragmentShownEvent)))
 	// const backgroundColor = true
 
-
-	const backgroundColor = false
+	const backgroundColor = false;
 </script>
 
 {#snippet intentionAnswer(text: string, date: Date | undefined, index: number)}
@@ -148,13 +154,15 @@
 	</div>
 {/snippet}
 
-<RevealJS bind:reveal={revealInstance}>
+<!-- Allows covering the whole screen - but needs to be responsive in sizes to adapt to projectors  -->
+<!-- <RevealJS bind:reveal={revealInstance} options={{disableLayout: true}}> -->
+<RevealJS bind:reveal={revealInstance} >
 	<section>
 		<h1>Welcome</h1>
 	</section>
 	<section>
 		<div class="relative">
-			<div class="absolute top-2 right-10">Some absolut text</div>
+			<!-- <div class="absolute top-2 right-10">Some absolut text</div> -->
 			<SlideTitle>Sharing Round</SlideTitle>
 			<div class="mx-10 mt-8">
 				<div class="text-left">
@@ -175,7 +183,7 @@
 						>What is your intention for your studies, your course, this lecture? 🤔</label
 					>
 					<textarea
-						class="heading placeholder:title w-full border border-2 p-2 shadow-inner placeholder:italic"
+						class="heading placeholder:title-large w-full border border-2 p-2 shadow-inner placeholder:italic"
 						placeholder="The sharing is publically available on the internet for everyone, who has a link to this presentation. Sharing is caring 🫶"
 						id="sharing"
 						bind:value={mySharing.content}
@@ -233,33 +241,61 @@
 			</div>
 		</div>
 	</section>
-	<section data-background-color={backgroundColor || 'rgb(var(--md-rgb-color-primary-container))'}>
+	<!-- <section data-background-color={backgroundColor || 'rgb(var(--md-rgb-color-primary-container))'}> -->
+	<section data-background-color='rgb(var(--md-rgb-color-primary-container))'>
 		<SlideTitle>Motivation</SlideTitle>
-		<p class="heading-large text-primary">Self determination theory - Ryan and Deci / Ib Ravn</p>
-
-		<p class="text-error">Consider removing?</p>
-		<ul>
+		<h2 class="heading-large text-primary-container-content">Self determination theory</h2>
+		<h3>Ryan and Deci / Ib Ravn -  <a href="https://opentextbc.ca/peersupport/chapter/self-determination-theory/" target="_blank" class="title-large link text-secondary-content pb-5">Source of Definitions</a></h3>
+		<div class="grid grid-cols-4 gap-4 mx-5 h-120">
+			<div class="heading flex flex-col fragment">
+				<div >Autonomy</div>
+				<div class="btn btn-primary btn-gradient shadow-outline rounded-4xl shadow-sm h-full flex flex-col  heading-small">
+					Humans need to feel in control of their own life behaviours and goals.
+				</div>
+			</div>
+			<div class="heading-large flex flex-col fragment">
+				<div >Competence</div>
+				<div class="btn btn-secondary btn-gradient shadow-outline rounded-4xl shadow-sm h-full flex flex-col heading-small">
+					Humans need to gain mastery and control of their own lives & their environment. Essential for self-esteem.
+				</div>
+			</div>
+			<div class="heading-large flex flex-col fragment">
+				<div >Relatedness</div>
+				<div class="btn btn-accent btn-gradient shadow-outline rounded-4xl shadow-sm h-full flex flex-col heading-small">
+					Humans need to experince a sense of belonging and connection with other people. Feeling cared for by others and to care for others
+				</div>
+			</div>
+			<div class="heading-large flex flex-col fragment">
+				<div >Meaning</div>
+				<div class="btn btn-info btn-gradient shadow-outline rounded-4xl shadow-sm h-full flex flex-col  heading-small">
+					Humans need to feel theri positive impact on others and their influence on improving welfare to contribute to a better society.
+				</div>
+			</div>
+		</div>
+		
+		<!-- <ul>
 			<li>Autonomy</li>
 			<li>Competence</li>
 			<li>Sense of Belonging</li>
 			<li>(Meaning)</li>
-		</ul>
+		</ul> -->
 	</section>
-	<!-- <section data-background-color={addColorToMotivationTable || 'rgb(var(--md-rgb-color-primary-container))'}> -->
-	<section class="h-80% p-2 rounded-lg {addColorToMotivationTable ? 'bg-green-300/30 ' : ''}">
-		<div >
+	<section data-background-color={addColorToMotivationTable ? 'rgb(var(--md-rgb-color-primary-container))' : ''}>
+	<!-- <section class="h-screen rounded-lg p-2 {addColorToMotivationTable ? 'bg-green-300/30 ' : ''}"> -->
+	<!-- <section class="h-screen rounded-lg p-2" style={addColorToMotivationTable ? 'background-color: rgb(var(--md-rgb-color-primary-container))' : ''}> -->
+		<div>
 			<SlideTitle>Motivation</SlideTitle>
 			<MotivationTable />
 			{addColorToMotivationTable}
 		</div>
 	</section>
-	<section>
+	<!-- <section>
 		<SlideTitle>Inclusion</SlideTitle>
-	</section>
-	<section>
+	</section> -->
+	<!-- <section>
 		<SlideTitle>My motivation</SlideTitle>
 		<p class="text-error">Consider removing?</p>
-	</section>
+	</section> -->
 	<section>
 		<SlideTitle>To pass the course...</SlideTitle>
 	</section>
