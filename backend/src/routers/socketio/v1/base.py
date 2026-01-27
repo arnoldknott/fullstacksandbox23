@@ -152,7 +152,10 @@ class BaseNamespace(socketio.AsyncNamespace):
         return current_user
 
     async def _get_all(
-        self, sid, current_user: CurrentUserData, request_access_data: bool = False
+        self,
+        sid,
+        current_user: Optional[CurrentUserData] = None,
+        request_access_data: bool = False,
     ):
         """Get all event for socket.io namespaces."""
         logger.info(f"🧦 Get all data request from client {sid}.")
@@ -194,11 +197,11 @@ class BaseNamespace(socketio.AsyncNamespace):
         # Consider splitting the accesss policy and access log CRUDs into separate methods
         async with AccessPolicyCRUD() as policy_crud:
             access_permission = await policy_crud.check_access(
-                current_user, resource_id
+                resource_id=resource_id, current_user=current_user
             )
             try:
                 access_policies = await policy_crud.read_access_policies_by_resource_id(
-                    current_user, resource_id
+                    current_user=current_user, resource_id=resource_id
                 )
             except Exception:
                 access_policies = []
@@ -437,9 +440,6 @@ class BaseNamespace(socketio.AsyncNamespace):
                             creation_date = None
                             last_modified_date = None
                             try:
-                                print(
-                                    "=== routers - socketio - v1 - on_read - public access - get dates ==="
-                                )
                                 async with AccessLoggingCRUD() as logging_crud:
                                     creation_date = (
                                         await logging_crud.read_resource_created_at(
@@ -459,10 +459,6 @@ class BaseNamespace(socketio.AsyncNamespace):
                             database_object.access_right = Action.read
                             database_object.creation_date = creation_date
                             database_object.last_modified_date = last_modified_date
-                            print(
-                                "=== routers - socketio - v1 - on_read - public access - added dates ==="
-                            )
-                            print(database_object, flush=True)
                         else:
                             access_data = await self._get_access_data(
                                 sid, current_user, database_object.id

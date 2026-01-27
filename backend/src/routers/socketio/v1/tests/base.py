@@ -22,6 +22,13 @@ class BaseSocketIOTest:
     _test_data_update = None
     _parent_model = None
 
+    # TBD: refactor to accept an argument if the callback on connect is configured to return all or not.
+    # see below
+    # TBD: reafctor to accept an argument if the connection is established
+    # with query parameter "request-access-data"
+    # if yes, check for returning "last_modified", "created_at", "access_right"
+    # and if user is logged in also "access_policies"
+
     def client_config(self):
         """Returns the client configuration for this namespace."""
         return [
@@ -179,14 +186,22 @@ class BaseSocketIOTest:
         )
         await connection.client.sleep(0.5)
 
+        # TBD: refactor to accept an argument if the callback on connect is configured to return all or not.
         # Check transferred event
         transfer_data = connection.responses("transferred", self.namespace_path)
-        assert len(transfer_data) == 1
+        assert (
+            len(transfer_data) == 2
+        )  # one for connect (get_all on connect), one for update
         assert transfer_data[0]["id"] == str(resource.id)
 
-        # Verify updated fields
-        for key, value in self._test_data_update.items():
+        # Verify original fields
+        for key, value in self._test_data_single.items():
             assert transfer_data[0][key] == value
+
+        # Verify updated fields
+        assert transfer_data[1]["id"] == str(resource.id)
+        for key, value in self._test_data_update.items():
+            assert transfer_data[1][key] == value
 
         await connection.client.disconnect()
 

@@ -287,14 +287,15 @@ class AccessPolicyCRUD:
                     return True
         except Exception as e:
             logger.error(f"Error in reading policy: {e}")
+            print("=== Error in AccessPolicyCRUD.ALLOWS - fails ===")
             raise HTTPException(status_code=403, detail="Forbidden.")
 
         return False
 
     async def check_access(
         self,
-        current_user: CurrentUserData,
         resource_id: UUID,
+        current_user: Optional[CurrentUserData] = None,
     ) -> AccessPermission:
         """Checks the access level of the user to the resource."""
         try:

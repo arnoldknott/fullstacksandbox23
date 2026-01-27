@@ -14,7 +14,13 @@
 	let questionId = data.questionsData?.intention.id || '';
 
 	let intentionAnswersSorted: MessageExtended[] = $derived(
-		intentionAnswers.toSorted((a, b) => {return !a.creation_date > !b.creation_date ? 1 : -1;})
+		intentionAnswers.toSorted((a, b) => {
+			if (!a.creation_date || !b.creation_date) {
+				return 1;
+			} else {
+				return !a.creation_date > !b.creation_date ? 1 : -1;
+			}
+		})
 	);
 
 	const connection: SocketioConnection = {
@@ -25,32 +31,22 @@
 
 	socketio.client.on('transferred', (data: MessageExtended) => {
 		// if (debug) {
-		// 	console.log(
-		// 		'=== 🧦 dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
-		// 	);
-		// 	console.log(data);
+		// console.log(
+		// 	'=== 🧦 dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
+		// );
+		// console.log(data);
 		// }
 		socketio.handleTransferred(data);
 	});
 
 	socketio.client.on('status', (data: SocketioStatus) => {
 		// if (debug) {
-		console.log(
-			'=== 🧦 dashboard - backend-demo-resource - socketio - +page.svelte - received status update ==='
-		);
-		console.log('Status update:', data);
+		// console.log(
+		// 	'=== 🧦 dashboard - backend-demo-resource - socketio - +page.svelte - received status update ==='
+		// );
+		// console.log('Status update:', data);
 		// }
 		socketio.handleStatus(data);
-	});
-
-	socketio.client.on('transferred', (data: MessageExtended) => {
-		// if (debug) {
-		console.log(
-			'=== 🧦 dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
-		);
-		console.log(data);
-		// }
-		socketio.handleTransferred(data);
 	});
 
 	socketio.client.on('deleted', (message_id: string) => {
@@ -87,7 +83,9 @@
 	<div class="chat chat-receiver">
 		<div class="chat-bubble text-left {index % 2 ? 'chat-bubble-accent' : 'chat-bubble-primary'}">
 			{text}
-			<div class="label justify-self-end">{date ? new Date(date).toLocaleString() : 'no date'}</div>
+			<div class="label text-right">
+				{date ? new Date(date).toLocaleString() : 'Thanks for your contribution 🙏'}
+			</div>
 		</div>
 	</div>
 {/snippet}
@@ -127,7 +125,7 @@
 							if (event.key === 'Enter' && !event.shiftKey) {
 								event.preventDefault();
 								intentionAnswers = [mySharing, ...intentionAnswers];
-								// socketio.addEntity(mySharing);
+								socketio.addEntity(mySharing);
 								socketio.submitEntity(mySharing, questionId, true, true, Action.READ);
 								mySharing = {
 									id: 'new_' + Math.random().toString(36).substring(2, 9),
@@ -140,8 +138,7 @@
 				</div>
 			</div>
 			<div class="heading mt-8">
-
-				<div class="mx-5 grid max-h-[700px] grid-cols-3 overflow-y-auto gap-4">
+				<div class="mx-5 grid max-h-[500px] grid-cols-3 gap-4 overflow-y-auto">
 					{#each intentionAnswersSorted as answer, index (index)}
 						<div animate:flip>
 							{@render intentionAnswer(answer.content, answer.creation_date, index)}

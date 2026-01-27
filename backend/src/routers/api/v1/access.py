@@ -200,7 +200,9 @@ async def get_my_access_for_resource(
     logger.info("GET access level for resource_id")
     current_user = await check_token_against_guards(token_payload, guards)
     async with access_policy_view.crud() as crud:
-        return await crud.check_access(current_user, resource_id)
+        return await crud.check_access(
+            resource_id=resource_id, current_user=current_user
+        )
 
 
 @router.post("/right/resources", status_code=200)
@@ -215,7 +217,9 @@ async def get_my_access_for_resources(
     async with access_policy_view.crud() as crud:
         access_permissions = []
         for resource_id in resource_ids:
-            permission = await crud.check_access(current_user, resource_id)
+            permission = await crud.check_access(
+                resource_id=resource_id, current_user=current_user
+            )
             access_permissions.append(permission)
     return access_permissions
 
