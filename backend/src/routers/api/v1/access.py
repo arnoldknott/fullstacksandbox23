@@ -200,7 +200,9 @@ async def get_my_access_for_resource(
     logger.info("GET access level for resource_id")
     current_user = await check_token_against_guards(token_payload, guards)
     async with access_policy_view.crud() as crud:
-        return await crud.check_access(current_user, resource_id)
+        return await crud.check_access(
+            resource_id=resource_id, current_user=current_user
+        )
 
 
 @router.post("/right/resources", status_code=200)
@@ -215,7 +217,9 @@ async def get_my_access_for_resources(
     async with access_policy_view.crud() as crud:
         access_permissions = []
         for resource_id in resource_ids:
-            permission = await crud.check_access(current_user, resource_id)
+            permission = await crud.check_access(
+                resource_id=resource_id, current_user=current_user
+            )
             access_permissions.append(permission)
     return access_permissions
 
@@ -287,8 +291,8 @@ async def get_creation_date_for_resource(
     current_user = await check_token_against_guards(token_payload, guards)
     async with access_log_view.crud() as crud:
         return await crud.read_resource_created_at(
-            current_user,
             resource_id=resource_id,
+            current_user=current_user,
         )
 
 
@@ -306,8 +310,8 @@ async def get_creation_date_for_resources(
         creation_dates = []
         for resource_id in resource_ids:
             creation_date = await crud.read_resource_created_at(
-                current_user,
                 resource_id=resource_id,
+                current_user=current_user,
             )
             creation_dates.append(creation_date)
     return creation_dates
@@ -324,8 +328,8 @@ async def get_last_modified_for_resource(
     current_user = await check_token_against_guards(token_payload, guards)
     async with access_log_view.crud() as crud:
         return await crud.read_resource_last_modified_at(
-            current_user,
             resource_id=resource_id,
+            current_user=current_user,
         )
 
 
@@ -342,8 +346,8 @@ async def get_last_modified_for_resources(
         last_modified_dates = []
         for resource_id in resource_ids:
             last_modified = await crud.read_resource_last_modified_at(
-                current_user,
                 resource_id=resource_id,
+                current_user=current_user,
             )
             last_modified_dates.append(last_modified)
     return last_modified_dates
@@ -360,8 +364,8 @@ async def get_last_accessed_for_resource(
     current_user = await check_token_against_guards(token_payload, guards)
     async with access_log_view.crud() as crud:
         return await crud.read_resource_last_accessed_at(
-            current_user,
             resource_id=resource_id,
+            current_user=current_user,
         )
 
 
@@ -378,8 +382,8 @@ async def get_last_accessed_for_resources(
         last_accessed_dates = []
         for resource_id in resource_ids:
             last_accessed = await crud.read_resource_last_accessed_at(
-                current_user,
                 resource_id=resource_id,
+                current_user=current_user,
                 action=Action.read,
             )
             last_accessed_dates.append(last_accessed.time)
@@ -397,8 +401,8 @@ async def get_access_count_for_resource(
     current_user = await check_token_against_guards(token_payload, guards)
     async with access_log_view.crud() as crud:
         return await crud.read_resource_access_count(
-            current_user,
             resource_id=resource_id,
+            current_user=current_user,
         )
 
 

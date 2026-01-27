@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { SocketIO, type SocketioConnection } from '$lib/socketio';
-	import type { Message } from '$lib/types';
+	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio';
+	import type { MessageExtended } from '$lib/types';
 	import RevealJS from '$components/RevealJS.svelte';
 	import MotivationTable from './MotivationTable.svelte';
 	import SlideTitle from './SlideTitle.svelte';
@@ -10,23 +10,53 @@
 
 	let { data }: { data: PageData } = $props();
 
-	let intentionAnswers = $state<Message[]>(data.questionsData?.intention.messages || []);
+	let intentionAnswers: MessageExtended[] = $state(data.questionsData?.intention.messages || []);
 	let questionId = data.questionsData?.intention.id || '';
+
+	let intentionAnswersSorted: MessageExtended[] = $derived(
+		intentionAnswers.toSorted((a, b) => {
+			if (!a.creation_date || !b.creation_date) {
+				return 1;
+			} else {
+				return !a.creation_date > !b.creation_date ? 1 : -1;
+			}
+		})
+	);
 
 	const connection: SocketioConnection = {
 		namespace: '/message',
-		query_params: { 'parent-id': questionId }
+		query_params: { 'parent-id': questionId, 'request-access-data': true }
 	};
 	const socketio = new SocketIO(connection, () => intentionAnswers);
 
-	socketio.client.on('transferred', (data: Message) => {
+	socketio.client.on('transferred', (data: MessageExtended) => {
 		// if (debug) {
-		// 	console.log(
-		// 		'=== dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
-		// 	);
-		// 	console.log(data);
+		// console.log(
+		// 	'=== 🧦 dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
+		// );
+		// console.log(data);
 		// }
 		socketio.handleTransferred(data);
+	});
+
+	socketio.client.on('status', (data: SocketioStatus) => {
+		// if (debug) {
+		// console.log(
+		// 	'=== 🧦 dashboard - backend-demo-resource - socketio - +page.svelte - received status update ==='
+		// );
+		// console.log('Status update:', data);
+		// }
+		socketio.handleStatus(data);
+	});
+
+	socketio.client.on('deleted', (message_id: string) => {
+		// if (debug) {
+		// 	console.log(
+		// 		'=== dashboard - backend-demo-resource - socketio - +page.svelte - deleted DemoResources ==='
+		// 	);
+		// 	console.log(resource_id);
+		// }
+		socketio.handleDeleted(message_id);
 	});
 
 	// let sharing = $state('');
@@ -42,17 +72,20 @@
 	// 	'A medium length answer to see how that looks like in the sharing round section of the presentation slide.',
 	// 	'Another answer - might be a reaction to the first or a stand alone! What happens if this answer exceeds a certain length? Will it wrap around correctly and still be readable?'
 	// ]);
-	let mySharing: Message = $derived({
+	let mySharing: MessageExtended = $state({
 		id: 'new_' + Math.random().toString(36).substring(2, 9),
 		content: '',
 		language: 'en'
 	});
 </script>
 
-{#snippet intentionAnswer(text: string, index: number)}
+{#snippet intentionAnswer(text: string, date: Date | undefined, index: number)}
 	<div class="chat chat-receiver">
 		<div class="chat-bubble text-left {index % 2 ? 'chat-bubble-accent' : 'chat-bubble-primary'}">
 			{text}
+			<div class="label text-right">
+				{date ? new Date(date).toLocaleString() : 'Thanks for your contribution 🙏'}
+			</div>
 		</div>
 	</div>
 {/snippet}
@@ -105,9 +138,14 @@
 				</div>
 			</div>
 			<div class="heading mt-8">
-				<div class="mx-5 grid max-h-[700px] grid-cols-3 overflow-y-auto">
-					<div class="mx-2 flex w-full flex-col gap-4">
-						{#each intentionAnswers as answer, index (index)}
+				<div class="mx-5 grid max-h-[500px] grid-cols-3 gap-4 overflow-y-auto">
+					{#each intentionAnswersSorted as answer, index (index)}
+						<div animate:flip>
+							{@render intentionAnswer(answer.content, answer.creation_date, index)}
+						</div>
+					{/each}
+					<!-- <div class="mx-2 flex w-full flex-col gap-4">
+						{#each intentionAnswersSorted as answer, index (index)}
 							<div animate:flip>
 								{#if index % 3 === 0}
 									{@render intentionAnswer(answer.content, index)}
@@ -116,7 +154,7 @@
 						{/each}
 					</div>
 					<div class="mx-2 flex flex-col gap-4">
-						{#each intentionAnswers as answer, index (index)}
+						{#each intentionAnswersSorted as answer, index (index)}
 							<div animate:flip>
 								{#if index % 3 === 1}
 									{@render intentionAnswer(answer.content, index)}
@@ -125,14 +163,14 @@
 						{/each}
 					</div>
 					<div class="mx-2 flex flex-col gap-4">
-						{#each intentionAnswers as answer, index (index)}
+						{#each intentionAnswersSorted as answer, index (index)}
 							<div animate:flip>
 								{#if index % 3 === 2}
 									{@render intentionAnswer(answer.content, index)}
 								{/if}
 							</div>
 						{/each}
-					</div>
+					</div> -->
 				</div>
 			</div>
 		</div>

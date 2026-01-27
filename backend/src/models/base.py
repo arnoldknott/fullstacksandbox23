@@ -269,20 +269,20 @@ def _build_annotations_and_fields(  # noqa: C901
             annotations[rel_name] = Optional[List[related_class_name]]
             fields[rel_name] = None
 
-    # Add mixin fields for Extended schema
-    if schema_type == SchemaType.EXTENDED:
-        for mixin in (
-            AccessRightsMixin,
-            AccessPolicyMixin,
-            CreatedAtMixin,
-            UpdatedAtMixin,
-        ):
-            if hasattr(mixin, "__annotations__"):
-                for field_name, field_type in mixin.__annotations__.items():
-                    annotations[field_name] = field_type
-                    # Get default value from mixin if exists
-                    if hasattr(mixin, field_name):
-                        fields[field_name] = getattr(mixin, field_name)
+    # # Add mixin fields for Extended schema
+    # if schema_type == SchemaType.EXTENDED:
+    #     for mixin in (
+    #         AccessRightsMixin,
+    #         AccessPolicyMixin,
+    #         CreatedAtMixin,
+    #         UpdatedAtMixin,
+    #     ):
+    #         if hasattr(mixin, "__annotations__"):
+    #             for field_name, field_type in mixin.__annotations__.items():
+    #                 annotations[field_name] = field_type
+    #                 # Get default value from mixin if exists
+    #                 if hasattr(mixin, field_name):
+    #                     fields[field_name] = getattr(mixin, field_name)
 
     fields["__annotations__"] = annotations
     return annotations, fields
@@ -398,7 +398,7 @@ def create_model(
     Update = type(f"{name}Update", (SQLModel,), update_fields)
 
     # ===== Build Extended Schema =====
-    extended_annotations, extended_fields = _build_annotations_and_fields(
+    _extended_annotations, extended_fields = _build_annotations_and_fields(
         attributes, relationships, SchemaType.EXTENDED
     )
     # extended_annotations = {**read_annotations}

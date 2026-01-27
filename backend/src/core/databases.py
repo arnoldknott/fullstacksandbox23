@@ -6,7 +6,18 @@ from core.config import config
 # from sqlmodel import SQLmodel  # noqa: F401
 
 postgres_async_engine = create_async_engine(
-    config.POSTGRES_URL.unicode_string()
+    config.POSTGRES_URL.unicode_string(),
+    # TBD: nested context managers require architectural fix!
+    # Pass session as optional argument from calling CRUD to nested CRUDs
+    # for example from DemoResourceCRUD to BaseCrud to AccessPolicyCRUD
+    # to avoid exhausting the connection pool with multiple sessions
+    # instead of creating new sessions in each CRUD.
+    pool_size=40,  # Increased due to nested session pattern (3-5 connections per request) - default 5
+    max_overflow=50,  # Emergency overflow for burst traffic (total: 120 max) - default: 10
+    # total (default) max of database is 100 - leaves 10 for pgadmin connections.
+    pool_timeout=90,  # Increased timeout to handle queue waits - default 30 (seconds)
+    pool_pre_ping=True,  # Test connections health
+    pool_recycle=3600,  # Recycle connections after 1 hour
 )  # TBD: remove echo=True
 
 

@@ -33,7 +33,7 @@ class SocketIoSessionData(BaseModel):
     """Data stored in the socket.io session."""
 
     user_name: str
-    current_user: CurrentUserData
+    # current_user: CurrentUserData
     session_id: Optional[str] = (
         None  # That's the Redis session-id, not the socket.io session-id (sid)
     )
@@ -130,22 +130,32 @@ class BaseNamespace(socketio.AsyncNamespace):
         #     self._emit_status(sid, {"error": "No Current User found."})
         # return current_user
 
-        # if guards is not None:
-        token_payload = await self._get_token_payload_if_authenticated(
-            session["session_id"]
-        )
-        current_user = await check_token_against_guards(token_payload, guards)
-
-        if current_user is None:
-            logger.error(
-                f"🧦 Client with session id {sid} is missing current_user data."
+        try:
+            token_payload = await self._get_token_payload_if_authenticated(
+                session["session_id"]
             )
-            self._emit_status(sid, {"error": "No Current User found."})
-        # else:
+            current_user = await check_token_against_guards(token_payload, guards)
+        except Exception as error:
+            if guards is not None:
+                if current_user is None:
+                    logger.error(
+                        # f"🧦 Client with session id {sid} is missing current_user data."
+                        f"🧦 Failed to authenticate client {sid}."
+                    )
+                    # self._emit_status(sid, {"error": "No Current User found."})
+                    # await self._emit_status(sid, {"error": str(error)})
+                raise error
+            else:
+                logger.info(
+                    f"🧦 Client {sid} accessing namespace {self.namespace} publically."
+                )
         return current_user
 
     async def _get_all(
-        self, sid, current_user: CurrentUserData, request_access_data: bool = False
+        self,
+        sid,
+        current_user: Optional[CurrentUserData] = None,
+        request_access_data: bool = False,
     ):
         """Get all event for socket.io namespaces."""
         logger.info(f"🧦 Get all data request from client {sid}.")
@@ -187,21 +197,21 @@ class BaseNamespace(socketio.AsyncNamespace):
         # Consider splitting the accesss policy and access log CRUDs into separate methods
         async with AccessPolicyCRUD() as policy_crud:
             access_permission = await policy_crud.check_access(
-                current_user, resource_id
+                resource_id=resource_id, current_user=current_user
             )
             try:
                 access_policies = await policy_crud.read_access_policies_by_resource_id(
-                    current_user, resource_id
+                    current_user=current_user, resource_id=resource_id
                 )
             except Exception:
                 access_policies = []
         async with AccessLoggingCRUD() as logging_crud:
             try:
                 creation_date = await logging_crud.read_resource_created_at(
-                    current_user, resource_id=resource_id
+                    resource_id=resource_id, current_user=current_user
                 )
                 last_modified_date = await logging_crud.read_resource_last_modified_at(
-                    current_user, resource_id=resource_id
+                    resource_id=resource_id, current_user=current_user
                 )
             except Exception:
                 creation_date = None
@@ -268,16 +278,35 @@ class BaseNamespace(socketio.AsyncNamespace):
             if "resource-ids" in query_strings
             else []
         )
+        parent_id = (
+            parse_qs(query_strings).get("parent-id")[0]
+            if "parent-id" in query_strings
+            else ""
+        )
         # TBD: consider switching the if and for
         for identity_id in identity_ids:
             if identity_id:
                 # Assign the identity id to the room for hierarchical resource system
+                # TBD: Is access control necessary here?
+                # AccessCRUD.allows(
+                #   resource_id=identity_id,
+                #   Action=Action.read
+                #   identity_id=current_user.identity_id
+                # )
+                # Nothing is emitted here - the checks are done at reading, before transferring data!
+                # If access is added here, move down to after authentication!
+                # In cas it's added here, then also add the th try .. except as in submit,
+                # that allows public access if no guards are set!
                 await self.server.enter_room(
                     sid, f"identity:{identity_id}", namespace=self.namespace
                 )
                 logger.info(
                     f"🧦 Client with session id {sid} entered room {identity_id}."
                 )
+        if parent_id:
+            await self.server.enter_room(
+                sid, f"parent:{parent_id}", namespace=self.namespace
+            )
         # TBD: consider only relying on information from the backend
         # instead of retrieving identities from client side!
         # But allow the frontend client to request identity spaces!
@@ -318,8 +347,16 @@ class BaseNamespace(socketio.AsyncNamespace):
                 raise ConnectionRefusedError("Authorization failed.")
             else:
                 current_user = None
+                session_data: SocketIoSessionData = {
+                    "user_name": "Anonymous",
+                    "query_strings": query_strings,
+                }
+                await self.server.save_session(
+                    sid, session_data, namespace=self.namespace
+                )
                 logger.info(
-                    f"🧦 Client authenticated to public namespace {self.namespace}."
+                    # f"🧦 Client authenticated to public namespace {self.namespace}."
+                    f"🧦 Client {sid} accessing namespace {self.namespace} publically."
                 )
 
         # if guards is not None:
@@ -379,6 +416,13 @@ class BaseNamespace(socketio.AsyncNamespace):
                     if "request-access-data" in session["query_strings"]
                     else None
                 )
+                request_access_data = (
+                    True
+                    if request_access_data == "true"
+                    or request_access_data == "True"
+                    or request_access_data
+                    else False
+                )
                 if resource_id is None:
                     await self._get_all(sid, current_user, request_access_data)
                 else:
@@ -388,18 +432,48 @@ class BaseNamespace(socketio.AsyncNamespace):
                             database_object
                         )
                     if request_access_data:
-                        access_data = await self._get_access_data(
-                            sid, current_user, database_object.id
-                        )
+                        guards = self._get_event_guards("connect")
                         database_object = self.read_extended_model.model_validate(
                             database_object
                         )
-                        database_object.access_right = access_data["access_right"]
-                        database_object.access_policies = access_data["access_policies"]
-                        database_object.creation_date = access_data["creation_date"]
-                        database_object.last_modified_date = access_data[
-                            "last_modified_date"
-                        ]
+                        if guards is None and current_user is None:
+                            creation_date = None
+                            last_modified_date = None
+                            try:
+                                async with AccessLoggingCRUD() as logging_crud:
+                                    creation_date = (
+                                        await logging_crud.read_resource_created_at(
+                                            resource_id=resource_id
+                                        )
+                                    )
+                                    last_modified_date = await logging_crud.read_resource_last_modified_at(
+                                        resource_id=resource_id
+                                    )
+                            except Exception:
+                                logger.info(
+                                    "Failed to get creation and modification dates with public access."
+                                )
+                                print(
+                                    "=== routers - socketio - v1 - on_read - public access - failed to get dates ==="
+                                )
+                            database_object.access_right = Action.read
+                            database_object.creation_date = creation_date
+                            database_object.last_modified_date = last_modified_date
+                        else:
+                            access_data = await self._get_access_data(
+                                sid, current_user, database_object.id
+                            )
+                            # database_object = self.read_extended_model.model_validate(
+                            #     database_object
+                            # )
+                            database_object.access_right = access_data["access_right"]
+                            database_object.access_policies = access_data[
+                                "access_policies"
+                            ]
+                            database_object.creation_date = access_data["creation_date"]
+                            database_object.last_modified_date = access_data[
+                                "last_modified_date"
+                            ]
                     if database_object.id not in self.server.rooms(sid, self.namespace):
                         await self.server.enter_room(
                             sid,
@@ -470,6 +544,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                 try:
                     database_object = None
                     if event_name == "submit:update":
+                        # TBD: add handling of parent_id if present in data
                         resource_id = UUID(payload["id"])
                         # if id is present, it is an update
                         # validate data with update model
@@ -538,6 +613,10 @@ class BaseNamespace(socketio.AsyncNamespace):
                                 },
                             )
                             # transfer after create is necessary for other clients,
+                            # so they get notified through a "shared" event.
+                            rooms = ["role:Admin"]
+                            if parent_id is not None:
+                                rooms += [f"parent:{parent_id}"]
                             await self.server.emit(
                                 "status",
                                 {
@@ -545,7 +624,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                                     "id": str(database_object.id),
                                 },
                                 namespace=self.namespace,
-                                to=["role:Admin"],
+                                to=rooms,
                             )
                     # if database_object is not None:
                     #     await self.server.emit(
@@ -613,29 +692,25 @@ class BaseNamespace(socketio.AsyncNamespace):
                         rooms=[f"identity:{str(access_policy.identity_id)}"],
                     )
                 # print("=== socketio - DELETE - access_policy ===", flush=True)
-            elif "new_action" not in access_policy:
+            elif (
+                "new_action" not in access_policy
+                or access_policy["action"] != access_policy["new_action"]
+            ):
+                # elif "new_action" not in access_policy:
                 # print(
                 #     "=== routers - socketio - v1 - on_share - CREATE - access_policy ==="
                 # )
                 # pprint(access_policy)
-                access_policy = AccessPolicyCreate(**access_policy)
-                async with AccessPolicyCRUD() as crud:
-                    await crud.create(access_policy, current_user)
-                # print("=== socketio - CREATE - access_policy ===", flush=True)
-                await self._emit_status(
-                    sid,
-                    {
-                        "success": "shared",
-                        "id": str(access_policy.resource_id),
-                    },
-                    rooms=[f"identity:{access_policy.identity_id}"],
-                )
-                # print("=== socketio - CREATE - access_policy ===", flush=True)
-            elif access_policy["action"] != access_policy["new_action"]:
-                access_policy = AccessPolicyUpdate(**access_policy)
-                async with AccessPolicyCRUD() as crud:
-                    await crud.update(current_user, access_policy)
-                # print("=== socketio - UPDATE - access_policy ===", flush=True)
+                if "new_action" not in access_policy:
+                    access_policy = AccessPolicyCreate(**access_policy)
+                    async with AccessPolicyCRUD() as crud:
+                        await crud.create(access_policy, current_user)
+                    # print("=== socketio - CREATE - access_policy ===", flush=True)
+                elif access_policy["action"] != access_policy["new_action"]:
+                    access_policy = AccessPolicyUpdate(**access_policy)
+                    async with AccessPolicyCRUD() as crud:
+                        await crud.update(current_user, access_policy)
+                    # print("=== socketio - UPDATE - access_policy ===", flush=True)
                 await self._emit_status(
                     sid,
                     {
@@ -644,7 +719,21 @@ class BaseNamespace(socketio.AsyncNamespace):
                     },
                     rooms=[f"identity:{str(access_policy.identity_id)}"],
                 )
-                # print("=== socketio - UPDATE - access_policy ===", flush=True)
+                # print("=== socketio - CREATE - access_policy ===", flush=True)
+            # elif access_policy["action"] != access_policy["new_action"]:
+            #     access_policy = AccessPolicyUpdate(**access_policy)
+            #     async with AccessPolicyCRUD() as crud:
+            #         await crud.update(current_user, access_policy)
+            #     # print("=== socketio - UPDATE - access_policy ===", flush=True)
+            #     await self._emit_status(
+            #         sid,
+            #         {
+            #             "success": "shared",
+            #             "id": str(access_policy.resource_id),
+            #         },
+            #         rooms=[f"identity:{str(access_policy.identity_id)}"],
+            #     )
+            #     print("=== socketio - UPDATE - access_policy ===", flush=True)
         except Exception as error:
             logger.error(f"🧦 Failed update access attempted from client {sid}.")
             print(error, flush=True)

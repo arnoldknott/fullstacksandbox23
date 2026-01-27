@@ -1949,6 +1949,7 @@
 				<span class="icon-[fa6-solid--droplet] size-12"></span>
 				<span class="icon-[fa6-solid--comments] size-12"></span>
 				<span class="icon-[fa6-solid--plus] size-12"></span>
+				<span class="icon-[fa6-solid--chalkboard] size-12"></span>
 				<p class="label text-center">
 					Extension library <span class="label-prominent badge min-h-fit">Font Awesome</span>
 				</p>

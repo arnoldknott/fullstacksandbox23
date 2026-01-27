@@ -111,7 +111,7 @@ class AccessRequest(BaseModel):
     """Model for the access request"""
 
     # for admin access resource_id and action can be None!
-    current_user: CurrentUserData
+    current_user: Optional[CurrentUserData]
     resource_id: Optional[uuid.UUID]
     action: Optional[Action]
 
