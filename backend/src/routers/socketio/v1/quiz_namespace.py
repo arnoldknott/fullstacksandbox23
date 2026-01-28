@@ -54,18 +54,13 @@ class QuestionNamespace(BaseNamespace):
             **kwargs,
         )
 
-    # async def callback_on_connect(self, sid, *args, **kwargs):
-    #     """Callback on connect for socket.io namespaces."""
-    #     # trigger the read events to fetch requested questions:
-    #     resource_ids = kwargs.pop("resource_ids", None)
-    #     for resource_id in resource_ids or []:
-    #         await self.on_read(sid, resource_id=resource_id)
     async def callback_on_connect(self, sid, *args, **kwargs):
         """Callback on connect for socket.io namespaces."""
         # trigger the read all event to fetch all demo resources:
         current_user = kwargs.get("current_user")
         request_access_data = kwargs.get("request_access_data")
-        await self._get_all(sid, current_user, request_access_data)
+        parent_id = kwargs.get("parent_id")
+        await self._get_all(sid, current_user, request_access_data, parent_id=parent_id)
 
 
 message_guards = [
@@ -105,18 +100,13 @@ class MessageNamespace(BaseNamespace):
             **kwargs,
         )
 
-    # async def callback_on_connect(self, sid, *args, **kwargs):
-    #     """Callback on connect for socket.io namespaces."""
-    #     # trigger the read events to fetch requested messages:
-    #     resource_ids = kwargs.pop("resource_ids", None)
-    #     for resource_id in resource_ids or []:
-    #         await self.on_read(sid, resource_id=resource_id)
     async def callback_on_connect(self, sid, *args, **kwargs):
         """Callback on connect for socket.io namespaces."""
         # trigger the read all event to fetch all demo resources:
         current_user = kwargs.get("current_user")
         request_access_data = kwargs.get("request_access_data")
-        await self._get_all(sid, current_user, request_access_data)
+        parent_id = kwargs.get("parent_id")
+        await self._get_all(sid, current_user, request_access_data, parent_id=parent_id)
 
 
 numerical_guards = [
@@ -156,15 +146,10 @@ class NumericalNamespace(BaseNamespace):
             **kwargs,
         )
 
-    # async def callback_on_connect(self, sid, *args, **kwargs):
-    #     """Callback on connect for socket.io namespaces."""
-    #     # trigger the read events to fetch requested numericals:
-    #     resource_ids = kwargs.pop("resource_ids", None)
-    #     for resource_id in resource_ids or []:
-    #         await self.on_read(sid, resource_id=resource_id)
     async def callback_on_connect(self, sid, *args, **kwargs):
         """Callback on connect for socket.io namespaces."""
         # trigger the read all event to fetch all demo resources:
         current_user = kwargs.get("current_user")
         request_access_data = kwargs.get("request_access_data")
-        await self._get_all(sid, current_user, request_access_data)
+        parent_id = kwargs.get("parent_id")
+        await self._get_all(sid, current_user, request_access_data, parent_id=parent_id)

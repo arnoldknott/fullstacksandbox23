@@ -276,7 +276,7 @@ async def test_user_gets_error_on_status_event_due_to_database_error(
     [[session_id_user1_read_write_socketio, session_id_admin_read_write_socketio]],
     indirect=True,
 )
-async def test_user_submits_resource_without_id_for_creation(
+async def test_user_submits_resource_without_id_for_creation_admin_as_normal_user(
     socketio_test_client_demo_resource_namespace,
     session_ids: list[str],
 ):
@@ -299,8 +299,41 @@ async def test_user_submits_resource_without_id_for_creation(
 
     status_data = connection_user.responses("status")
 
-    print("=== test - create demo_resource - Status data ===")
-    print(status_data, flush=True)
+    assert status_data[0]["submitted_id"] is None
+    assert UUID(status_data[0]["id"])  # Check if the ID is a valid UUID
+    assert status_data[0]["success"] == "created"
+
+    assert len(connection_admin.responses("status")) == 0
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "session_ids",
+    [[session_id_user1_read_write_socketio, session_id_admin_read_write_socketio]],
+    indirect=True,
+)
+async def test_user_submits_resource_without_id_for_creation_admin_as_admin_user(
+    socketio_test_client_demo_resource_namespace,
+    session_ids: list[str],
+):
+    """Test the demo resource submit event without ID."""
+
+    status_data = []
+    connection_user = await socketio_test_client_demo_resource_namespace()
+    connection_admin = await socketio_test_client_demo_resource_namespace(
+        session_ids[1]
+    )
+    await connection_user.connect()
+    await connection_admin.connect(query_parameters={"join-admin-room": "true"})
+
+    await connection_user.client.emit(
+        "submit", {"payload": many_test_demo_resources[1]}, namespace="/demo-resource"
+    )
+
+    # Wait for the response to be set
+    await connection_user.client.sleep(0.3)
+
+    status_data = connection_user.responses("status")
 
     assert status_data[0]["submitted_id"] is None
     assert UUID(status_data[0]["id"])  # Check if the ID is a valid UUID
@@ -309,6 +342,36 @@ async def test_user_submits_resource_without_id_for_creation(
     assert len(connection_admin.responses("status")) == 1
     assert connection_admin.responses("status")[0]["success"] == "shared"
     assert connection_admin.responses("status")[0]["id"] == status_data[0]["id"]
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "session_ids",
+    [[session_id_user1_read_write_socketio, session_id_admin_read_write_socketio]],
+    indirect=True,
+)
+async def test_user_submits_resource_without_id_for_creation_user_tries_to_enter_admin_room(
+    socketio_test_client_demo_resource_namespace,
+    session_ids: list[str],
+):
+    """Test the demo resource submit event without ID."""
+
+    status_data = []
+    connection_user = await socketio_test_client_demo_resource_namespace()
+    await connection_user.connect(query_parameters={"join-admin-room": "true"})
+
+    await connection_user.client.emit(
+        "submit", {"payload": many_test_demo_resources[1]}, namespace="/demo-resource"
+    )
+
+    # Wait for the response to be set
+    await connection_user.client.sleep(0.3)
+
+    status_data = connection_user.responses("status")
+
+    assert status_data[0]["submitted_id"] is None
+    assert UUID(status_data[0]["id"])  # Check if the ID is a valid UUID
+    assert status_data[0]["success"] == "created"
 
 
 @pytest.mark.anyio
@@ -369,7 +432,7 @@ async def test_user_submits_resource_without_id_for_creation_missing_write_scope
     [[session_id_admin_read_write_socketio]],
     indirect=True,
 )
-async def test_admin_submits_resource_with_new__string_in_id_field_for_creation(
+async def test_admin_submits_resource_with_new__string_in_id_field_for_creation_without_joining_admin_room(
     socketio_test_client_demo_resource_namespace,
 ):
     """Test the demo resource submit event with non-UUID in ID field."""
@@ -379,6 +442,39 @@ async def test_admin_submits_resource_with_new__string_in_id_field_for_creation(
 
     connection = await socketio_test_client_demo_resource_namespace()
     await connection.connect()
+
+    await connection.client.emit(
+        "submit", {"payload": test_resource}, namespace="/demo-resource"
+    )
+
+    # Wait for the response to be set
+    await connection.client.sleep(0.3)
+    status_data = connection.responses("status")
+
+    assert len(status_data) == 1
+
+    # assert "id" in status[0]
+    assert status_data[0]["success"] == "created"
+    assert UUID(status_data[0]["id"])  # Check if the ID is a valid UUID
+    assert status_data[0]["submitted_id"] == test_resource["id"]
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "session_ids",
+    [[session_id_admin_read_write_socketio]],
+    indirect=True,
+)
+async def test_admin_submits_resource_with_new__string_in_id_field_for_creation_and_joins_admin_room(
+    socketio_test_client_demo_resource_namespace,
+):
+    """Test the demo resource submit event with non-UUID in ID field."""
+
+    test_resource = copy.deepcopy(many_test_demo_resources[1])
+    test_resource["id"] = "new_34ab56z"
+
+    connection = await socketio_test_client_demo_resource_namespace()
+    await connection.connect(query_parameters={"join-admin-room": "true"})
 
     await connection.client.emit(
         "submit", {"payload": test_resource}, namespace="/demo-resource"

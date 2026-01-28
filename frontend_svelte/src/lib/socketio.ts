@@ -54,6 +54,8 @@ export class SocketIO {
 			auth: { 'session-id': connection.cookie_session_id },
 			// TBD: refactor into an object to allow more flexible query parameters?
 			query: connection.query_params || {} // Use the query_params from the connection object
+			// forceNew: true, // to avoid reusing existing connections and get clients in the same room. TBD: consider an override option ("reuseExisting")?
+			// multiplex: false // to avoid reusing existing connections and get clients in the same room. TBD: consider an override option ("reuseExisting")?
 		});
 		this.entities = getEntities ? getEntities() : [];
 		if (getEditIds) {

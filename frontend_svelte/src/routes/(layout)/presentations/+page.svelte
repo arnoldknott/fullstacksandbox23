@@ -1,1 +1,5 @@
-<h1 class="text-primary">Overview of existing presentations</h1>
+<script lang="ts">
+	import Heading from '$components/Heading.svelte';
+</script>
+
+<Heading id="overview-presentations">Overview of public existing presentations</Heading>
