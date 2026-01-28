@@ -248,6 +248,9 @@ def _build_annotations_and_fields(  # noqa: C901
             annotations[attr.name] = attr.type
             if attr.field_value is not None:
                 fields[attr.name] = attr.field_value
+            elif _is_optional(attr.type):
+                # Optional fields should default to None if no field_value specified
+                fields[attr.name] = None
 
     # Add id field for Read and Extended schemas
     if schema_type in {SchemaType.READ, SchemaType.EXTENDED}:
