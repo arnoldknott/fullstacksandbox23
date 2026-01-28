@@ -5,6 +5,8 @@
 	import { flip } from 'svelte/animate';
 	import JsonData from '$components/JsonData.svelte';
 	import Heading from '$components/Heading.svelte';
+	import Title from '$components/Title.svelte';
+	import Display from '$components/Display.svelte';
 
 	let { data }: { data: PageData } = $props();
 	let questionId = data.questionsData?.questions.id || '';
@@ -131,8 +133,11 @@
 	</div>
 {/snippet}
 
-<p>Add id to question as query string (for now)!</p>
-<Heading id="messageAnswers">Message Answers</Heading>
+<Display>{data.questionsData?.questions.question || 'No question selected.'}</Display>
+{#if !data.questionsData?.questions.question}
+	<Title id="note-on-query-string-question-id">Add id to question as query string (for now)!</Title>
+{/if}
+<Heading id="messageAnswers">Message Answers:</Heading>
 
 <div class="mx-2 grid w-full grid-cols-5 gap-2">
 	{#each messageAnswersSorted as answer, index (index)}
@@ -142,7 +147,7 @@
 	{/each}
 </div>
 
-<Heading id="numericalAnswers">Numerical Answers</Heading>
+<Heading id="numericalAnswers">Numerical Answers:</Heading>
 
 <div class="mx-2 grid w-full grid-cols-5 gap-2">
 	{#each numericalAnswersSorted as answer, index (index)}
@@ -151,5 +156,7 @@
 		</div>
 	{/each}
 </div>
+
+<Heading id="numericalAnswers">JSONdata:</Heading>
 
 <JsonData data={data.questionsData} />
