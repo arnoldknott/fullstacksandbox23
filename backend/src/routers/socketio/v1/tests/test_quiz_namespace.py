@@ -331,6 +331,76 @@ class TestMessage(BaseSocketIOTest):
             access_to_one_parent,
         )
 
+    # Connection with parent_id filter test
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "session_ids",
+        [
+            [session_id_admin_read_write_socketio],
+        ],
+        indirect=True,
+    )
+    async def test_connect_with_parent_id_filter(
+        self,
+        socketio_test_client,
+        session_ids,
+        access_to_one_parent,
+        add_one_test_resource,
+    ):
+        """Test that connecting with parent-id only returns children of that parent."""
+
+        connection = await socketio_test_client(
+            client_config=self.client_config(),
+            session_id=session_ids[0],
+        )
+        current_user = await connection.current_user()
+
+        # Create two parent questions
+        parent1_id = await access_to_one_parent(Question, connection.token_payload())
+        parent2_id = await access_to_one_parent(Question, connection.token_payload())
+
+        # Create one message under parent1
+        message1 = await add_one_test_resource(
+            MessageCRUD,
+            one_test_message,
+            current_user,
+            parent_id=parent1_id,
+        )
+
+        # Create one message under parent2
+        message2_data = {**one_test_message, "content": "Message for parent 2"}
+        message2 = await add_one_test_resource(
+            MessageCRUD,
+            message2_data,
+            current_user,
+            parent_id=parent2_id,
+        )
+
+        # Connect with parent_id filter for parent1
+        query_params = {"parent-id": str(parent1_id)}
+        await connection.connect(query_parameters=query_params)
+        await connection.client.sleep(0.3)
+
+        # Check transferred events
+        transferred_data = connection.responses("transferred", self.namespace_path)
+
+        # Should only receive message1, not message2
+        assert (
+            len(transferred_data) == 1
+        ), f"Expected 1 message for parent1, got {len(transferred_data)}"
+
+        # Verify it's message1
+        assert transferred_data[0]["id"] == str(message1.id)
+        assert transferred_data[0]["content"] == one_test_message["content"]
+
+        # Verify message2 was NOT received
+        received_ids = [msg["id"] for msg in transferred_data]
+        assert (
+            str(message2.id) not in received_ids
+        ), "Message2 should not be received when filtering for parent1"
+
+        await connection.client.disconnect()
+
 
 class TestNumerical(BaseSocketIOTest):
     """Test suite for Numerical SocketIO namespace."""

@@ -899,7 +899,7 @@ class BaseHierarchyCRUD(
     # as all children get transferred in the read event of a parent resource
     async def read(
         self,
-        current_user: CurrentUserData,
+        current_user: Optional[CurrentUserData] = None,
         parent_id: Optional[UUID] = None,
         child_id: Optional[UUID] = None,
     ) -> List[BaseHierarchyModelRead]:

@@ -26,6 +26,9 @@
 	let motivationAnswers: Numerical[] = $state(data.questionsData?.motivation.numericals || []);
 	let motivationQuestionId = data.questionsData?.motivation.id || '';
 
+	let commentsAnswers: MessageExtended[] = $state(data.questionsData?.comments.messages || []);
+	let commentsQuestionId = data.questionsData?.comments.id || '';
+
 	let intentionAnswersSorted: MessageExtended[] = $derived(
 		intentionAnswers.toSorted((a, b) => {
 			if (!a.creation_date || !b.creation_date) {
@@ -40,38 +43,45 @@
 		namespace: '/message',
 		query_params: { 'parent-id': intentionQuestionId, 'request-access-data': true }
 	};
-	const socketioMessages = new SocketIO(intentionConnection, () => intentionAnswers);
-	socketioMessages.client.on('transferred', (data: MessageExtended) => {
+	const socketioIntention = new SocketIO(intentionConnection, () => intentionAnswers);
+	socketioIntention.client.on('transferred', (data: MessageExtended) => {
 		// if (debug) {
 		// console.log(
-		// 	'=== 🧦 dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
+		// 	'=== 🧦 presentation - devF23 - INTENTION - received transferred update ==='
 		// );
 		// console.log(data);
 		// }
-		socketioMessages.handleTransferred(data);
+		socketioIntention.handleTransferred(data);
 	});
 
-	socketioMessages.client.on('status', (data: SocketioStatus) => {
+	socketioIntention.client.on('status', (data: SocketioStatus) => {
 		// if (debug) {
 		// console.log(
-		// 	'=== 🧦 dashboard - backend-demo-resource - socketio - +page.svelte - received status update ==='
+		// 	'=== 🧦 presentation - devF23 - INTENTION - received status update ==='
 		// );
 		// console.log('Status update:', data);
 		// }
-		socketioMessages.handleStatus(data);
+		socketioIntention.handleStatus(data);
 	});
 
-	socketioMessages.client.on('deleted', (message_id: string) => {
+	socketioIntention.client.on('deleted', (message_id: string) => {
 		// if (debug) {
 		// 	console.log(
-		// 		'=== dashboard - backend-demo-resource - socketio - +page.svelte - deleted DemoResources ==='
+		// 		'=== presentation - devF23 - INTENTION - deleted messages ==='
 		// 	);
-		// 	console.log(resource_id);
+		// 	console.log(message_id);
 		// }
-		socketioMessages.handleDeleted(message_id);
+		socketioIntention.handleDeleted(message_id);
 	});
 
-	const connectionNumericals: SocketioConnection = {
+	let myIntention: MessageExtended = $state({
+		id: 'new_' + Math.random().toString(36).substring(2, 9),
+		content: '',
+		language: 'en'
+	});
+
+	// SocketIO for motivation numericals
+	const connectionMotivation: SocketioConnection = {
 		namespace: '/numerical',
 		query_params: { 'parent-id': motivationQuestionId }
 	};
@@ -95,26 +105,7 @@
 	// 	console.log($state.snapshot(averageMotivationColors));
 	// });
 
-	const socketioNumericals = new SocketIO(connectionNumericals, () => motivationAnswers);
-
-	// let sharing = $state('');
-	// let intentionAnswers: string[] = $state([
-	// 	'A short answer!',
-	// 	'A longer answer, someone had something to share in the session. We are grateful for all inputs!',
-	// 	'At some point we gotta flip over here, right?!',
-	// 	'Another answer - might be a reaction to the first or a stand alone! What happens if this answer exceeds a certain length? Will it wrap around correctly and still be readable?',
-	// 	'Another Answer of someone, who has something to share. Going deep inside and make that share a bit longer, so it wraps around correctly and is still readable.',
-	// 	'SingleWord',
-	// 	'One more short',
-	// 	'Another answer - might be a reaction to the first or a stand alone! What happens if this answer exceeds a certain length? Will it wrap around correctly and still be readable?',
-	// 	'A medium length answer to see how that looks like in the sharing round section of the presentation slide.',
-	// 	'Another answer - might be a reaction to the first or a stand alone! What happens if this answer exceeds a certain length? Will it wrap around correctly and still be readable?'
-	// ]);
-	let mySharing: MessageExtended = $state({
-		id: 'new_' + Math.random().toString(36).substring(2, 9),
-		content: '',
-		language: 'en'
-	});
+	const socketioMotivation = new SocketIO(connectionMotivation, () => motivationAnswers);
 
 	let addColorToMotivationTable = $state(false);
 
@@ -142,12 +133,63 @@
 		// updates background color on the slides, where addColorToMotivationTable changes
 		if (revealInstance && averageMotivationColors && addColorToMotivationTable !== undefined) {
 			const currentSlide = revealInstance.getCurrentSlide();
-			console.log('=== synchronizing slide to update background color ===');
-			console.log(averageMotivationColors);
+			// console.log('=== synchronizing slide to update background color ===');
+			// console.log(averageMotivationColors);
 			if (currentSlide) {
 				revealInstance.syncSlide(currentSlide);
 			}
 		}
+	});
+
+	let commentsAnswersSorted: MessageExtended[] = $derived(
+		commentsAnswers.toSorted((a, b) => {
+			if (!a.creation_date || !b.creation_date) {
+				return 1;
+			} else {
+				return !a.creation_date > !b.creation_date ? 1 : -1;
+			}
+		})
+	);
+
+	const commentConnection: SocketioConnection = {
+		namespace: '/message',
+		query_params: { 'parent-id': commentsQuestionId, 'request-access-data': true }
+	};
+	const socketioComment = new SocketIO(commentConnection, () => commentsAnswers);
+	socketioComment.client.on('transferred', (data: MessageExtended) => {
+		// if (debug) {
+		// console.log(
+		// 	'=== 🧦 presentation - devF23 - COMMENT - received transferred update ==='
+		// );
+		// console.log(data);
+		// }
+		socketioComment.handleTransferred(data);
+	});
+
+	socketioComment.client.on('status', (data: SocketioStatus) => {
+		// if (debug) {
+		// console.log(
+		// 	'=== 🧦 presentation - devF23 - COMMENT - received status update ==='
+		// );
+		// console.log('Status update:', data);
+		// }
+		socketioComment.handleStatus(data);
+	});
+
+	socketioComment.client.on('deleted', (message_id: string) => {
+		// if (debug) {
+		// 	console.log(
+		// 		'=== presentation - devF23 - COMMENT - deleted messages ==='
+		// 	);
+		// 	console.log(message_id);
+		// }
+		socketioComment.handleDeleted(message_id);
+	});
+
+	let myComment: MessageExtended = $state({
+		id: 'new_' + Math.random().toString(36).substring(2, 9),
+		content: '',
+		language: 'en'
 	});
 
 	// let revealFragmentShownEvent = $derived.by(() => {
@@ -175,7 +217,7 @@
 	// const backgroundColor = false;
 </script>
 
-{#snippet intentionAnswer(text: string, date: Date | undefined, index: number)}
+{#snippet messageAnswer(text: string, date: Date | undefined, index: number)}
 	<div class="chat chat-receiver">
 		<div class="chat-bubble text-left {index % 2 ? 'chat-bubble-accent' : 'chat-bubble-primary'}">
 			{text}
@@ -193,89 +235,46 @@
 		<h1>Welcome</h1>
 	</section>
 	<section>
-		<!-- <div class="relative"> -->
-			<!-- <div class="absolute top-2 right-10">Some absolut text</div> -->
-			<SlideTitle>Sharing Round</SlideTitle>
-			<div class="mx-10 mt-8">
-				<div class="text-left">
-					<!-- <textarea
-						class="textarea textarea-xl display-large"
-						placeholder="Sharing is caring"
-						id="sharing"
-						bind:value={sharing}
-						onkeydown={(event) => {
-							if (event.key === 'Enter' && !event.shiftKey) {
-								event.preventDefault();
-								intentionAnwers = [sharing, ...intentionAnwers];
-								sharing = '';
-							}
-						}}
-					></textarea> -->
-					<label class="heading" for="sharing"
-						>What is your intention for your studies, your course, this lecture? 🤔</label
-					>
-					<textarea
-						class="heading placeholder:title-large w-full border border-2 p-2 shadow-inner placeholder:italic"
-						placeholder="The sharing is publically available on the internet for everyone, who has a link to this presentation. Sharing is caring 🫶 Press Enter to send."
-						id="sharing"
-						bind:value={mySharing.content}
-						onkeydown={(event) => {
-							if (event.key === 'Enter' && !event.shiftKey) {
-								event.preventDefault();
-								intentionAnswers = [mySharing, ...intentionAnswers];
-								socketioMessages.addEntity(mySharing);
-								socketioMessages.submitEntity(
-									mySharing,
-									intentionQuestionId,
-									true,
-									true,
-									Action.READ
-								);
-								mySharing = {
-									id: 'new_' + Math.random().toString(36).substring(2, 9),
-									content: '',
-									language: 'en'
-								};
-							}
-						}}
-					></textarea>
-				</div>
+		<SlideTitle>Sharing Round</SlideTitle>
+		<div class="mx-10 mt-8">
+			<div class="text-left">
+				<label class="heading" for="sharing"
+					>What is your intention for your studies, your course, this lecture? 🤔</label
+				>
+				<textarea
+					class="heading placeholder:title-large w-full border border-2 p-2 shadow-inner placeholder:italic"
+					placeholder="The sharing is publically available on the internet for everyone, who has a link to this presentation. Sharing is caring 🫶 Press Enter to send."
+					id="sharing"
+					bind:value={myIntention.content}
+					onkeydown={(event) => {
+						if (event.key === 'Enter' && !event.shiftKey) {
+							event.preventDefault();
+							intentionAnswers = [myIntention, ...intentionAnswers];
+							socketioIntention.addEntity(myIntention);
+							socketioIntention.submitEntity(
+								myIntention,
+								intentionQuestionId,
+								true,
+								true,
+								Action.READ
+							);
+							myIntention = {
+								id: 'new_' + Math.random().toString(36).substring(2, 9),
+								content: '',
+								language: 'en'
+							};
+						}
+					}}
+				></textarea>
 			</div>
-			<div class="heading mt-8">
-				<div class="mx-5 grid max-h-[500px] grid-cols-3 gap-6 overflow-y-auto">
-					{#each intentionAnswersSorted as answer, index (index)}
-						<div animate:flip>
-							{@render intentionAnswer(answer.content, answer.creation_date, index)}
-						</div>
-					{/each}
-					<!-- <div class="mx-2 flex w-full flex-col gap-4">
-						{#each intentionAnswersSorted as answer, index (index)}
-							<div animate:flip>
-								{#if index % 3 === 0}
-									{@render intentionAnswer(answer.content, index)}
-								{/if}
-							</div>
-						{/each}
+		</div>
+		<div class="heading mt-8">
+			<div class="mx-5 grid max-h-[500px] grid-cols-3 gap-6 overflow-y-auto">
+				{#each intentionAnswersSorted as answer, index (index)}
+					<div animate:flip>
+						{@render messageAnswer(answer.content, answer.creation_date, index)}
 					</div>
-					<div class="mx-2 flex flex-col gap-4">
-						{#each intentionAnswersSorted as answer, index (index)}
-							<div animate:flip>
-								{#if index % 3 === 1}
-									{@render intentionAnswer(answer.content, index)}
-								{/if}
-							</div>
-						{/each}
-					</div>
-					<div class="mx-2 flex flex-col gap-4">
-						{#each intentionAnswersSorted as answer, index (index)}
-							<div animate:flip>
-								{#if index % 3 === 2}
-									{@render intentionAnswer(answer.content, index)}
-								{/if}
-							</div>
-						{/each}
-					</div> -->
-				<!-- </div> -->
+				{/each}
 			</div>
 		</div>
 	</section>
@@ -351,7 +350,7 @@
 			<SlideTitle>Motivation</SlideTitle>
 			<MotivationTable
 				questionId={motivationQuestionId}
-				socketio={socketioNumericals}
+				socketio={socketioMotivation}
 				averageMotivation={motivationAnswersAverage}
 				bind:averageColors={averageMotivationColors}
 			/>
@@ -377,8 +376,8 @@
 			<li>More than 100 students,</li>
 			<li>Online and physical attendance,</li>
 		</ul>
-		<div class= "fragment">
-			<p >and everyone has their own</p>
+		<div class="fragment">
+			<p>and everyone has their own</p>
 			<ul>
 				<li>individual learning preferences</li>
 				<li>technical background</li>
@@ -386,8 +385,11 @@
 				<li>intentions,</li>
 			</ul>
 		</div>
-		<p class="btn btn-gradient btn-primary-container rounded-xl p-4 mt-5 mx-5 px-5 heading h-fit fragment">
-			What can you do, to make this a pleasureable learning environment where everyone feels included and can strive?
+		<p
+			class="btn btn-gradient btn-primary-container heading fragment mx-5 mt-5 h-fit rounded-xl p-4 px-5"
+		>
+			What can you do, to make this a pleasureable learning environment where everyone feels
+			included and can strive?
 		</p>
 	</section>
 	<!-- <section>
@@ -396,8 +398,40 @@
 	</section> -->
 	<section>
 		<SlideTitle>Thank you for joining and participating!</SlideTitle>
-		<Heading>Do you have comments or questions?</Heading>
-		
+		<!-- <Heading>Do you have comments or questions?</Heading> -->
+		<div class="mx-10 mt-8">
+			<div class="text-left">
+				<label class="heading" for="sharing"> Do you have comments or questions? 🤔 </label>
+				<textarea
+					class="heading placeholder:title-large w-full border border-2 p-2 shadow-inner placeholder:italic"
+					placeholder="These questions and comments are publically available on the internet for everyone, who has a link to this presentation. Sharing is caring 🫶 Press Enter to send."
+					id="sharing"
+					bind:value={myComment.content}
+					onkeydown={(event) => {
+						if (event.key === 'Enter' && !event.shiftKey) {
+							event.preventDefault();
+							commentsAnswers = [myComment, ...commentsAnswers];
+							socketioComment.addEntity(myComment);
+							socketioComment.submitEntity(myComment, commentsQuestionId, true, true, Action.READ);
+							myComment = {
+								id: 'new_' + Math.random().toString(36).substring(2, 9),
+								content: '',
+								language: 'en'
+							};
+						}
+					}}
+				></textarea>
+			</div>
+		</div>
+		<div class="heading mt-8">
+			<div class="mx-5 grid max-h-[500px] grid-cols-3 gap-6 overflow-y-auto">
+				{#each commentsAnswersSorted as answer, index (index)}
+					<div animate:flip>
+						{@render messageAnswer(answer.content, answer.creation_date, index)}
+					</div>
+				{/each}
+			</div>
+		</div>
 	</section>
 	<!-- <section>
 		<SlideTitle>To pass the course...</SlideTitle>
