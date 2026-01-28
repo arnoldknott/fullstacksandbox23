@@ -151,9 +151,16 @@ export interface Message {
 	language: string;
 }
 
+export interface Numerical {
+	id: string;
+	value: number;
+	tolerance: number;
+}
+
 // add all specific resources that share the extension properties here:
 export type DemoResourceExtended = ExtendEntity<DemoResource>;
 export type MessageExtended = ExtendEntity<Message>;
+export type NumericalExtended = ExtendEntity<Numerical>;
 
 // TBD: consider moving this, to where it is used locally
 // in protected/backend-demo-resource: +page.svelte;
@@ -252,6 +259,7 @@ export type MicrosoftTeamExtended = MicrosoftTeam & Partial<WithAccessRights & W
 export type AnyEntityExtended =
 	| DemoResourceExtended
 	| MessageExtended
+	| NumericalExtended
 	| UserExtended
 	| UeberGroupExtended
 	| GroupExtended

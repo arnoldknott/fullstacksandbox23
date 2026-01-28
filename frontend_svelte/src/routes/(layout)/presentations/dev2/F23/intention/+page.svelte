@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio';
-	import type { MessageExtended } from '$lib/types';
+	import type { MessageExtended, Numerical } from '$lib/types';
 	import RevealJS from '$components/RevealJS.svelte';
 	import type { Api } from 'reveal.js';
 	import MotivationTable from './MotivationTable.svelte';
@@ -19,7 +19,7 @@
 	let revealInstance = $state<Api | undefined>(undefined);
 
 	let intentionAnswers: MessageExtended[] = $state(data.questionsData?.intention.messages || []);
-	let questionId = data.questionsData?.intention.id || '';
+	let intentionQuestionId = data.questionsData?.intention.id || '';
 
 	let intentionAnswersSorted: MessageExtended[] = $derived(
 		intentionAnswers.toSorted((a, b) => {
@@ -31,41 +31,63 @@
 		})
 	);
 
-	const connection: SocketioConnection = {
+	const connectionMessages: SocketioConnection = {
 		namespace: '/message',
-		query_params: { 'parent-id': questionId, 'request-access-data': true }
+		query_params: { 'parent-id': intentionQuestionId, 'request-access-data': true }
 	};
-	const socketio = new SocketIO(connection, () => intentionAnswers);
+	const socketioMessages = new SocketIO(connectionMessages, () => intentionAnswers);
 
-	socketio.client.on('transferred', (data: MessageExtended) => {
+	socketioMessages.client.on('transferred', (data: MessageExtended) => {
 		// if (debug) {
 		// console.log(
 		// 	'=== 🧦 dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
 		// );
 		// console.log(data);
 		// }
-		socketio.handleTransferred(data);
+		socketioMessages.handleTransferred(data);
 	});
 
-	socketio.client.on('status', (data: SocketioStatus) => {
+	socketioMessages.client.on('status', (data: SocketioStatus) => {
 		// if (debug) {
 		// console.log(
 		// 	'=== 🧦 dashboard - backend-demo-resource - socketio - +page.svelte - received status update ==='
 		// );
 		// console.log('Status update:', data);
 		// }
-		socketio.handleStatus(data);
+		socketioMessages.handleStatus(data);
 	});
 
-	socketio.client.on('deleted', (message_id: string) => {
+	socketioMessages.client.on('deleted', (message_id: string) => {
 		// if (debug) {
 		// 	console.log(
 		// 		'=== dashboard - backend-demo-resource - socketio - +page.svelte - deleted DemoResources ==='
 		// 	);
 		// 	console.log(resource_id);
 		// }
-		socketio.handleDeleted(message_id);
+		socketioMessages.handleDeleted(message_id);
 	});
+
+	let motivationAnswers: Numerical[] = $state(data.questionsData?.motivation.numericals || []);
+	let motivationQuestionId = data.questionsData?.motivation.id || '';
+
+	const connectionNumericals: SocketioConnection = {
+		namespace: '/numerical',
+		query_params: { 'parent-id': motivationQuestionId }
+	};
+
+	let motivationAnswersAverage: number = $derived.by(() => {
+		if (motivationAnswers.length <= 5) {
+			return 50;
+		} else {
+			const sum = motivationAnswers.reduce((acc, curr) => acc + curr.value, 0);
+			return Math.round(sum / motivationAnswers.length);
+		}
+	});
+
+	console.log('=== dev2 / F23 - Motivation Answers Average ===');
+	console.log($state.snapshot(motivationAnswersAverage));
+
+	const socketioNumericals = new SocketIO(connectionNumericals, () => motivationAnswers);
 
 	// let sharing = $state('');
 	// let intentionAnswers: string[] = $state([
@@ -86,7 +108,7 @@
 		language: 'en'
 	});
 
-	let addColorToMotivationTable = $state(true);
+	let addColorToMotivationTable = $state(false);
 
 	$effect(() => {
 		if (revealInstance) {
@@ -115,7 +137,7 @@
 			if (currentSlide) {
 				revealInstance.syncSlide(currentSlide);
 			}
-    	}
+		}
 	});
 
 	// let revealFragmentShownEvent = $derived.by(() => {
@@ -140,7 +162,7 @@
 	// $effect(() => console.log($state.snapshot(revealFragmentShownEvent)))
 	// const backgroundColor = true
 
-	const backgroundColor = false;
+	// const backgroundColor = false;
 </script>
 
 {#snippet intentionAnswer(text: string, date: Date | undefined, index: number)}
@@ -156,7 +178,7 @@
 
 <!-- Allows covering the whole screen - but needs to be responsive in sizes to adapt to projectors  -->
 <!-- <RevealJS bind:reveal={revealInstance} options={{disableLayout: true}}> -->
-<RevealJS bind:reveal={revealInstance} >
+<RevealJS bind:reveal={revealInstance}>
 	<section>
 		<h1>Welcome</h1>
 	</section>
@@ -191,8 +213,14 @@
 							if (event.key === 'Enter' && !event.shiftKey) {
 								event.preventDefault();
 								intentionAnswers = [mySharing, ...intentionAnswers];
-								socketio.addEntity(mySharing);
-								socketio.submitEntity(mySharing, questionId, true, true, Action.READ);
+								socketioMessages.addEntity(mySharing);
+								socketioMessages.submitEntity(
+									mySharing,
+									intentionQuestionId,
+									true,
+									true,
+									Action.READ
+								);
 								mySharing = {
 									id: 'new_' + Math.random().toString(36).substring(2, 9),
 									content: '',
@@ -242,37 +270,54 @@
 		</div>
 	</section>
 	<!-- <section data-background-color={backgroundColor || 'rgb(var(--md-rgb-color-primary-container))'}> -->
-	<section data-background-color='rgb(var(--md-rgb-color-primary-container))'>
+	<section data-background-color="rgb(var(--md-rgb-color-primary-container))">
 		<SlideTitle>Motivation</SlideTitle>
 		<h2 class="heading-large text-primary-container-content">Self determination theory</h2>
-		<h3>Ryan and Deci / Ib Ravn -  <a href="https://opentextbc.ca/peersupport/chapter/self-determination-theory/" target="_blank" class="title-large link text-secondary-content pb-5">Source of Definitions</a></h3>
-		<div class="grid grid-cols-4 gap-4 mx-5 h-120">
-			<div class="heading flex flex-col fragment">
-				<div >Autonomy</div>
-				<div class="btn btn-primary btn-gradient shadow-outline rounded-4xl shadow-sm h-full flex flex-col  heading-small">
+		<h3>
+			Ryan and Deci / Ib Ravn - <a
+				href="https://opentextbc.ca/peersupport/chapter/self-determination-theory/"
+				target="_blank"
+				class="title-large link text-secondary-content pb-5">Source of Definitions</a
+			>
+		</h3>
+		<div class="mx-5 grid h-120 grid-cols-4 gap-4">
+			<div class="heading fragment flex flex-col">
+				<div>Autonomy</div>
+				<div
+					class="btn btn-primary btn-gradient shadow-outline heading-small flex h-full flex-col rounded-4xl shadow-sm"
+				>
 					Humans need to feel in control of their own life behaviours and goals.
 				</div>
 			</div>
-			<div class="heading-large flex flex-col fragment">
-				<div >Competence</div>
-				<div class="btn btn-secondary btn-gradient shadow-outline rounded-4xl shadow-sm h-full flex flex-col heading-small">
-					Humans need to gain mastery and control of their own lives & their environment. Essential for self-esteem.
+			<div class="heading-large fragment flex flex-col">
+				<div>Competence</div>
+				<div
+					class="btn btn-secondary btn-gradient shadow-outline heading-small flex h-full flex-col rounded-4xl shadow-sm"
+				>
+					Humans need to gain mastery and control of their own lives & their environment. Essential
+					for self-esteem.
 				</div>
 			</div>
-			<div class="heading-large flex flex-col fragment">
-				<div >Relatedness</div>
-				<div class="btn btn-accent btn-gradient shadow-outline rounded-4xl shadow-sm h-full flex flex-col heading-small">
-					Humans need to experince a sense of belonging and connection with other people. Feeling cared for by others and to care for others
+			<div class="heading-large fragment flex flex-col">
+				<div>Relatedness</div>
+				<div
+					class="btn btn-accent btn-gradient shadow-outline heading-small flex h-full flex-col rounded-4xl shadow-sm"
+				>
+					Humans need to experince a sense of belonging and connection with other people. Feeling
+					cared for by others and to care for others
 				</div>
 			</div>
-			<div class="heading-large flex flex-col fragment">
-				<div >Meaning</div>
-				<div class="btn btn-info btn-gradient shadow-outline rounded-4xl shadow-sm h-full flex flex-col  heading-small">
-					Humans need to feel theri positive impact on others and their influence on improving welfare to contribute to a better society.
+			<div class="heading-large fragment flex flex-col">
+				<div>Meaning</div>
+				<div
+					class="btn btn-info btn-gradient shadow-outline heading-small flex h-full flex-col rounded-4xl shadow-sm"
+				>
+					Humans need to feel theri positive impact on others and their influence on improving
+					welfare to contribute to a better society.
 				</div>
 			</div>
 		</div>
-		
+
 		<!-- <ul>
 			<li>Autonomy</li>
 			<li>Competence</li>
@@ -280,12 +325,16 @@
 			<li>(Meaning)</li>
 		</ul> -->
 	</section>
-	<section data-background-color={addColorToMotivationTable ? 'rgb(var(--md-rgb-color-primary-container))' : ''}>
-	<!-- <section class="h-screen rounded-lg p-2 {addColorToMotivationTable ? 'bg-green-300/30 ' : ''}"> -->
-	<!-- <section class="h-screen rounded-lg p-2" style={addColorToMotivationTable ? 'background-color: rgb(var(--md-rgb-color-primary-container))' : ''}> -->
+	<section
+		data-background-color={addColorToMotivationTable
+			? 'rgb(var(--md-rgb-color-primary-container))'
+			: ''}
+	>
+		<!-- <section class="h-screen rounded-lg p-2 {addColorToMotivationTable ? 'bg-green-300/30 ' : ''}"> -->
+		<!-- <section class="h-screen rounded-lg p-2" style={addColorToMotivationTable ? 'background-color: rgb(var(--md-rgb-color-primary-container))' : ''}> -->
 		<div>
 			<SlideTitle>Motivation</SlideTitle>
-			<MotivationTable />
+			<MotivationTable socketio={socketioNumericals} />
 			{addColorToMotivationTable}
 		</div>
 	</section>
