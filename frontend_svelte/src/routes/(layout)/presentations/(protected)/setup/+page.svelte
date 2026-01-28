@@ -2,6 +2,7 @@
 	import Heading from '$components/Heading.svelte';
 	import type { PageData } from './$types';
 	import type { Question } from '$lib/types';
+	import { resolve } from '$app/paths';
 	let { data }: { data: PageData } = $props();
 
 	const allQuestions: Question[] = data.questionsData || [];
@@ -24,7 +25,7 @@
 					<td>{question.question}</td>
 					<td>{question.id}</td>
 					<td
-						><a href="http://localhost:8661/presentations/questions/setup?question-id={question.id}"
+						><a href={resolve(`/presentations/questions/setup`) + `?question-id=${question.id}`}
 							>Link</a
 						></td
 					>
