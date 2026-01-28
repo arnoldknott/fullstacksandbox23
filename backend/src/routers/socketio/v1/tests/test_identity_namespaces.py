@@ -52,7 +52,83 @@ async def test_admin_access_user_connect_create_read_update_delete(
     assert connection.responses("status")[0]["success"] == "created"
     assert "id" in connection.responses("status")[0]
     created_user_id = connection.responses("status")[0]["id"]
-    # Admin automatically gets a shared notification:
+    # Admin did not automatically get shared notification when not explicietly joining admin room::
+    assert len(connection.responses("status")) == 1
+    # assert connection.responses("status")[1]["success"] == "shared"
+    # assert connection.responses("status")[1]["id"] == created_user_id
+    # assert len(connection.responses("transferred")) == 0
+
+    # Read:
+    await connection.client.emit("read", created_user_id, namespace="/user")
+    await connection.client.sleep(1.3)
+    assert len(connection.responses("transferred")) == 1
+    assert connection.responses("transferred")[0]["id"] == created_user_id
+    assert (
+        connection.responses("transferred")[0]["azure_user_id"]
+        == test_user["azure_user_id"]
+    )
+    assert (
+        connection.responses("transferred")[0]["azure_tenant_id"]
+        == test_user["azure_tenant_id"]
+    )
+
+    # Update user:
+    updated_user = {
+        **test_user,
+        "id": created_user_id,
+        "is_active": False,
+    }
+    await connection.client.emit("submit", {"payload": updated_user}, namespace="/user")
+    await connection.client.sleep(0.3)
+    assert connection.responses("status")[1]["success"] == "updated"
+    assert connection.responses("status")[1]["id"] == created_user_id
+    assert len(connection.responses("transferred")) == 2
+    assert connection.responses("transferred")[1]["id"] == created_user_id
+    assert connection.responses("transferred")[1]["is_active"] is False
+
+    # Delete user:
+    await connection.client.emit("delete", created_user_id, namespace="/user")
+    await connection.client.sleep(0.3)
+    assert connection.responses("status")[2]["success"] == "deleted"
+    assert connection.responses("status")[2]["id"] == created_user_id
+    assert connection.responses("deleted")[0] == created_user_id
+
+    # Read deleted user fails:
+    await connection.client.emit("read", created_user_id, namespace="/user")
+    await connection.client.sleep(1)
+    assert len(connection.responses("transferred")) == 2
+    assert connection.responses("status")[3]["success"] == "deleted"
+    assert connection.responses("status")[3]["id"] == created_user_id
+    assert (
+        connection.responses("status")[4]["error"]
+        == f"Resource {created_user_id} not found."
+    )
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "session_ids", [[session_id_admin_read_write_socketio]], indirect=True
+)
+async def test_admin_access_user_connect_create_read_update_delete_joining_admin_room(
+    socketio_test_client_user_namespace,
+):
+    """Test admin access to connect, create, update, and delete events in the user namespace."""
+    connection = await socketio_test_client_user_namespace()
+    # Connect to the user namespace:
+    await connection.connect(query_parameters={"join-admin-room": "true"})
+    await connection.client.sleep(0.5)
+    assert len(connection.responses("transferred")) == 0
+
+    # Create user:
+    test_user = many_test_azure_users[1]
+    await connection.client.emit("submit", {"payload": test_user}, namespace="/user")
+    await connection.client.sleep(0.5)
+    # Check if the user was created successfully:
+    assert connection.responses("status")[0]["success"] == "created"
+    assert "id" in connection.responses("status")[0]
+    created_user_id = connection.responses("status")[0]["id"]
+    # Admin did get automatically shared notification after joining admin room::
+    assert len(connection.responses("status")) == 2
     assert connection.responses("status")[1]["success"] == "shared"
     assert connection.responses("status")[1]["id"] == created_user_id
     assert len(connection.responses("transferred")) == 0
@@ -405,7 +481,65 @@ async def test_admin_access_ueber_group_connect_create_update_delete(
     assert connection.responses("status")[0]["success"] == "created"
     assert "id" in connection.responses("status")[0]
     created_uber_group_id = connection.responses("status")[0]["id"]
-    # Admin automatically gets a shared notification:
+    # Admin does not get automatically notification without joining admin room:
+    assert len(connection.responses("status")) == 1
+    assert len(connection.responses("transferred")) == 0
+
+    # Update ueber group:
+    updated_group = {
+        **test_group,
+        "description": "Updated description",
+        "id": created_uber_group_id,
+    }
+    await connection.client.emit(
+        "submit", {"payload": updated_group}, namespace="/ueber-group"
+    )
+    await connection.client.sleep(0.3)
+    assert connection.responses("status")[1]["success"] == "updated"
+    assert connection.responses("status")[1]["id"] == created_uber_group_id
+    assert len(connection.responses("transferred")) == 1
+    assert connection.responses("transferred")[0]["id"] == created_uber_group_id
+    assert (
+        connection.responses("transferred")[0]["description"] == "Updated description"
+    )
+    assert connection.responses("transferred")[0]["name"] == "Dummy Ueber Group"
+
+    # Delete ueber group event:
+    await connection.client.emit(
+        "delete", created_uber_group_id, namespace="/ueber-group"
+    )
+    await connection.client.sleep(0.3)
+    assert connection.responses("status")[2]["success"] == "deleted"
+    assert connection.responses("status")[2]["id"] == created_uber_group_id
+    assert connection.responses("deleted")[0] == created_uber_group_id
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "session_ids", [[session_id_admin_read_write_socketio]], indirect=True
+)
+async def test_admin_access_ueber_group_connect_create_update_delete_joining_admin_room(
+    socketio_test_client_ueber_group_namespace,
+):
+    """Test admin access to connect, create, update, and delete events in the ueber group namespace."""
+    connection = await socketio_test_client_ueber_group_namespace()
+    # Connect to the ueber group namespace:
+    await connection.connect(query_parameters={"join-admin-room": "true"})
+    assert connection.responses("transferred") == []
+
+    # Create ueber group:
+    test_group = {
+        "name": "Dummy Ueber Group",
+        "description": "A dummy group added via SocketIO.",
+    }
+    await connection.client.emit(
+        "submit", {"payload": test_group}, namespace="/ueber-group"
+    )
+    await connection.client.sleep(0.3)
+    assert connection.responses("status")[0]["success"] == "created"
+    assert "id" in connection.responses("status")[0]
+    created_uber_group_id = connection.responses("status")[0]["id"]
+    # Admin automatically gets a shared notification afer joining admin room:
     assert connection.responses("status")[1]["success"] == "shared"
     assert connection.responses("status")[1]["id"] == created_uber_group_id
     assert len(connection.responses("transferred")) == 0

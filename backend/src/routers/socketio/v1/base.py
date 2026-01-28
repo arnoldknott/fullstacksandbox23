@@ -268,6 +268,13 @@ class BaseNamespace(socketio.AsyncNamespace):
             if "request-access-data" in query_strings
             else None
         )
+        request_access_data = (
+            True
+            if request_access_data == "true"
+            or request_access_data == "True"
+            or request_access_data
+            else False
+        )
         identity_ids = (
             parse_qs(query_strings).get("identity-ids")[0].split(",")
             if "identity-ids" in query_strings
@@ -282,6 +289,16 @@ class BaseNamespace(socketio.AsyncNamespace):
             parse_qs(query_strings).get("parent-id")[0]
             if "parent-id" in query_strings
             else ""
+        )
+        join_admin_room = (
+            parse_qs(query_strings).get("join-admin-room")[0]
+            if "join-admin-room" in query_strings
+            else ""
+        )
+        join_admin_room = (
+            True
+            if join_admin_room == "true" or join_admin_room == "True" or join_admin_room
+            else False
         )
         # TBD: consider switching the if and for
         for identity_id in identity_ids:
@@ -328,7 +345,8 @@ class BaseNamespace(socketio.AsyncNamespace):
                 "query_strings": query_strings,
             }
             await self.server.save_session(sid, session_data, namespace=self.namespace)
-            if "Admin" in current_user.azure_token_roles:
+            # if "Admin" in current_user.azure_token_roles:
+            if "Admin" in current_user.azure_token_roles and join_admin_room:
                 await self.server.enter_room(
                     sid,
                     "role:Admin",
