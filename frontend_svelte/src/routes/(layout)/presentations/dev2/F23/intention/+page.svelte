@@ -269,7 +269,7 @@
 			</div>
 		</div>
 		<div class="heading mt-8">
-			<div class="mx-5 grid max-h-[500px] grid-cols-3 gap-6 overflow-y-auto">
+			<div class="mx-5 grid max-h-[400px] grid-cols-3 gap-6 overflow-y-auto">
 				{#each intentionAnswersSorted as answer, index (index)}
 					<div animate:flip>
 						{@render messageAnswer(answer.content, answer.creation_date, index)}
@@ -424,7 +424,7 @@
 			</div>
 		</div>
 		<div class="heading mt-8">
-			<div class="mx-5 grid max-h-[500px] grid-cols-3 gap-6 overflow-y-auto">
+			<div class="mx-5 grid max-h-[400px] grid-cols-3 gap-6 overflow-y-auto">
 				{#each commentsAnswersSorted as answer, index (index)}
 					<div animate:flip>
 						{@render messageAnswer(answer.content, answer.creation_date, index)}
