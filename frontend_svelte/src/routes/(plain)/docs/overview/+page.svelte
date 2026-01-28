@@ -85,7 +85,7 @@
 	});
 </script>
 
-<RevealJs keyboard={true}>
+<RevealJs>
 	<section>
 		<h1>Fullstack Sandbox23</h1>
 		<ul>

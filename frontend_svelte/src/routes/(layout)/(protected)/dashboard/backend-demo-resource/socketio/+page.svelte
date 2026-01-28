@@ -30,7 +30,8 @@
 		cookie_session_id: page.data.session.sessionId,
 		query_params: {
 			'request-access-data': true,
-			'identity-ids': data.microsoftTeams.map((team) => team.id).join(',')
+			'identity-ids': data.microsoftTeams.map((team) => team.id).join(','),
+			'join-admin-room': 'true'
 		}
 	};
 

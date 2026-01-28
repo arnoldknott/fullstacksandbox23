@@ -12,9 +12,17 @@ from core.security import (
     check_token_against_guards,
     get_token_payload_from_cache,
 )
-from core.types import Action, CurrentUserData, EventGuard, GuardTypes
+from core.types import (
+    Action,
+    CurrentUserData,
+    EventGuard,
+    GuardTypes,
+)
 from crud import register_crud
-from crud.access import AccessLoggingCRUD, AccessPolicyCRUD
+from crud.access import (
+    AccessLoggingCRUD,
+    AccessPolicyCRUD,
+)
 from models.access import (
     AccessPolicyCreate,
     AccessPolicyDelete,
@@ -156,16 +164,48 @@ class BaseNamespace(socketio.AsyncNamespace):
         sid,
         current_user: Optional[CurrentUserData] = None,
         request_access_data: bool = False,
+        parent_id: Optional[UUID] = None,
     ):
         """Get all event for socket.io namespaces."""
         logger.info(f"🧦 Get all data request from client {sid}.")
         try:
             async with self.crud() as crud:
                 data = await crud.read(current_user)
-            if self.read_model is not None:
-                for idx, item in enumerate(data):
-                    data[idx] = self.read_model.model_validate(item)
+
+                allowed_child_ids = None
+                if parent_id:
+                    try:
+                        parent_uuid = UUID(parent_id)
+                        print("=== base namespace - crud.model.__name__ ===")
+                        print(crud.model.__name__)
+                        # if crud.model.__name__ in ResourceType.list():
+                        async with crud.hierarchy_CRUD as hierarchy_crud:
+                            hierarchies = await hierarchy_crud.read(
+                                current_user=current_user, parent_id=parent_uuid
+                            )
+                            allowed_child_ids = {h.child_id for h in hierarchies}
+                        # elif crud.model.__name__ in IdentityType.list():
+                        #     async with IdentityHierarchyCRUD() as hierarchy_crud:
+                        #         hierarchies = await hierarchy_crud.read(
+                        #             current_user=current_user,
+                        #             parent_id=parent_uuid
+                        #         )
+                        #         allowed_child_ids = {h.child_id for h in hierarchies}
+                    except ValueError:
+                        logger.error(f"Invalid parent_id UUID format: {parent_id}")
+                        allowed_child_ids = (
+                            set()
+                        )  # Empty set = filter out everything, silently fails.
+
+                if self.read_model is not None:
+                    for idx, item in enumerate(data):
+                        data[idx] = self.read_model.model_validate(item)
+
             for item in data:
+                # Skip if parent_id filter is active and item is not a child
+                if parent_id and item.id not in allowed_child_ids:
+                    continue
+
                 if request_access_data:
                     access_data = await self._get_access_data(
                         sid, current_user, item.id
@@ -268,6 +308,13 @@ class BaseNamespace(socketio.AsyncNamespace):
             if "request-access-data" in query_strings
             else None
         )
+        request_access_data = (
+            True
+            if request_access_data == "true"
+            or request_access_data == "True"
+            or request_access_data
+            else False
+        )
         identity_ids = (
             parse_qs(query_strings).get("identity-ids")[0].split(",")
             if "identity-ids" in query_strings
@@ -282,6 +329,16 @@ class BaseNamespace(socketio.AsyncNamespace):
             parse_qs(query_strings).get("parent-id")[0]
             if "parent-id" in query_strings
             else ""
+        )
+        join_admin_room = (
+            parse_qs(query_strings).get("join-admin-room")[0]
+            if "join-admin-room" in query_strings
+            else ""
+        )
+        join_admin_room = (
+            True
+            if join_admin_room == "true" or join_admin_room == "True" or join_admin_room
+            else False
         )
         # TBD: consider switching the if and for
         for identity_id in identity_ids:
@@ -328,7 +385,8 @@ class BaseNamespace(socketio.AsyncNamespace):
                 "query_strings": query_strings,
             }
             await self.server.save_session(sid, session_data, namespace=self.namespace)
-            if "Admin" in current_user.azure_token_roles:
+            # if "Admin" in current_user.azure_token_roles:
+            if "Admin" in current_user.azure_token_roles and join_admin_room:
                 await self.server.enter_room(
                     sid,
                     "role:Admin",
@@ -399,6 +457,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                 current_user=current_user,
                 request_access_data=request_access_data,
                 resource_ids=resource_ids,
+                parent_id=parent_id,
             )
 
     async def on_read(self, sid, resource_id: Optional[UUID] = None):
@@ -617,6 +676,10 @@ class BaseNamespace(socketio.AsyncNamespace):
                             rooms = ["role:Admin"]
                             if parent_id is not None:
                                 rooms += [f"parent:{parent_id}"]
+                            print(
+                                "=== routers - socketio - v1 - on_submit - create - emit to rooms ==="
+                            )
+                            print(rooms, flush=True)
                             await self.server.emit(
                                 "status",
                                 {
