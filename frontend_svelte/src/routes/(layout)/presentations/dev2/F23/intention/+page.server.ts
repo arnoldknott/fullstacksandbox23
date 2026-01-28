@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { backendAPI } from '$lib/server/apis/backendApi';
-import { error, fail } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async ({ url }) => {
 	const questionIntentionId = url.searchParams.get('q-intention');

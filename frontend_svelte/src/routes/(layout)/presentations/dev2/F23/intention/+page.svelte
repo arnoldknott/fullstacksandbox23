@@ -8,6 +8,7 @@
 	import SlideTitle from './SlideTitle.svelte';
 	import { flip } from 'svelte/animate';
 	import { Action } from '$lib/accessHandler';
+	import Heading from '$components/Heading.svelte';
 
 	interface RevealFragmentEvent extends Event {
 		fragment: HTMLElement;
@@ -192,7 +193,7 @@
 		<h1>Welcome</h1>
 	</section>
 	<section>
-		<div class="relative">
+		<!-- <div class="relative"> -->
 			<!-- <div class="absolute top-2 right-10">Some absolut text</div> -->
 			<SlideTitle>Sharing Round</SlideTitle>
 			<div class="mx-10 mt-8">
@@ -274,7 +275,7 @@
 							</div>
 						{/each}
 					</div> -->
-				</div>
+				<!-- </div> -->
 			</div>
 		</div>
 	</section>
@@ -368,14 +369,38 @@
 		</div>
 	</section>
 	<!-- <div>{addColorToMotivationTable} {motivationAnswersAverage}</div> -->
-	<!-- <section>
+	<section>
 		<SlideTitle>Inclusion</SlideTitle>
-	</section> -->
+		<Heading>We have diversity on this course...</Heading>
+		<ul>
+			<li>About 10 different study lines,</li>
+			<li>More than 100 students,</li>
+			<li>Online and physical attendance,</li>
+		</ul>
+		<div class= "fragment">
+			<p >and everyone has their own</p>
+			<ul>
+				<li>individual learning preferences</li>
+				<li>technical background</li>
+				<li>life situation</li>
+				<li>intentions,</li>
+			</ul>
+		</div>
+		<p class="btn btn-gradient btn-primary-container rounded-xl p-4 mt-5 mx-5 px-5 heading h-fit fragment">
+			What can you do, to make this a pleasureable learning environment where everyone feels included and can strive?
+		</p>
+	</section>
 	<!-- <section>
 		<SlideTitle>My motivation</SlideTitle>
 		<p class="text-error">Consider removing?</p>
 	</section> -->
 	<section>
-		<SlideTitle>To pass the course...</SlideTitle>
+		<SlideTitle>Thank you for joining and participating!</SlideTitle>
+		<Heading>Do you have comments or questions?</Heading>
+		
 	</section>
+	<!-- <section>
+		<SlideTitle>To pass the course...</SlideTitle>
+		<Heading>Hand in the four assignments</Heading>
+	</section> -->
 </RevealJS>
