@@ -339,13 +339,13 @@
 			? 'rgb(var(--md-rgb-color-primary-container))'
 			: ''}
 	> -->
+	<!-- <section class="h-screen rounded-lg p-2 {addColorToMotivationTable ? 'bg-green-300/30 ' : ''}"> -->
+	<!-- <section class="h-screen rounded-lg p-2" style={addColorToMotivationTable ? 'background-color: rgb(var(--md-rgb-color-primary-container))' : ''}> -->
 	<section
 		data-background-color={addColorToMotivationTable
 			? `rgb(${averageMotivationColors.background})`
 			: ''}
 	>
-		<!-- <section class="h-screen rounded-lg p-2 {addColorToMotivationTable ? 'bg-green-300/30 ' : ''}"> -->
-		<!-- <section class="h-screen rounded-lg p-2" style={addColorToMotivationTable ? 'background-color: rgb(var(--md-rgb-color-primary-container))' : ''}> -->
 		<div>
 			<SlideTitle>Motivation</SlideTitle>
 			<MotivationTable
@@ -366,8 +366,8 @@
 				<span class="text-base-300"> {addColorToMotivationTable}</span>
 			</div>
 		</div>
-		<!-- <div>{addColorToMotivationTable} {motivationAnswersAverage}</div> -->
 	</section>
+	<!-- <div>{addColorToMotivationTable} {motivationAnswersAverage}</div> -->
 	<!-- <section>
 		<SlideTitle>Inclusion</SlideTitle>
 	</section> -->
