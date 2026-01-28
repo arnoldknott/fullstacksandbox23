@@ -18,8 +18,12 @@
 
 	let revealInstance = $state<Api | undefined>(undefined);
 
+	// TBD: catch gracefully, if no intention or motivation question is available
 	let intentionAnswers: MessageExtended[] = $state(data.questionsData?.intention.messages || []);
 	let intentionQuestionId = data.questionsData?.intention.id || '';
+
+	let motivationAnswers: Numerical[] = $state(data.questionsData?.motivation.numericals || []);
+	let motivationQuestionId = data.questionsData?.motivation.id || '';
 
 	let intentionAnswersSorted: MessageExtended[] = $derived(
 		intentionAnswers.toSorted((a, b) => {
@@ -31,12 +35,11 @@
 		})
 	);
 
-	const connectionMessages: SocketioConnection = {
+	const intentionConnection: SocketioConnection = {
 		namespace: '/message',
 		query_params: { 'parent-id': intentionQuestionId, 'request-access-data': true }
 	};
-	const socketioMessages = new SocketIO(connectionMessages, () => intentionAnswers);
-
+	const socketioMessages = new SocketIO(intentionConnection, () => intentionAnswers);
 	socketioMessages.client.on('transferred', (data: MessageExtended) => {
 		// if (debug) {
 		// console.log(
@@ -67,9 +70,6 @@
 		socketioMessages.handleDeleted(message_id);
 	});
 
-	let motivationAnswers: Numerical[] = $state(data.questionsData?.motivation.numericals || []);
-	let motivationQuestionId = data.questionsData?.motivation.id || '';
-
 	const connectionNumericals: SocketioConnection = {
 		namespace: '/numerical',
 		query_params: { 'parent-id': motivationQuestionId }
@@ -77,6 +77,7 @@
 
 	let motivationAnswersAverage: number = $derived.by(() => {
 		if (motivationAnswers.length <= 5) {
+			// if (motivationAnswers.length <= 1) {
 			return 50;
 		} else {
 			const sum = motivationAnswers.reduce((acc, curr) => acc + curr.value, 0);
@@ -84,8 +85,14 @@
 		}
 	});
 
-	console.log('=== dev2 / F23 - Motivation Answers Average ===');
-	console.log($state.snapshot(motivationAnswersAverage));
+	let averageMotivationColors = $state({ background: '0 0 0', text: '0  0 0' });
+
+	// $effect(() => {
+	// 	console.log('=== dev2 / F23 - Motivation Answers Average ===');
+	// 	console.log($state.snapshot(motivationAnswersAverage));
+	// 	console.log('=== dev2 / F23 - Motivation Answers Average Colors ===');
+	// 	console.log($state.snapshot(averageMotivationColors));
+	// });
 
 	const socketioNumericals = new SocketIO(connectionNumericals, () => motivationAnswers);
 
@@ -132,8 +139,10 @@
 			});
 		}
 		// updates background color on the slides, where addColorToMotivationTable changes
-		if (revealInstance && addColorToMotivationTable !== undefined) {
+		if (revealInstance && averageMotivationColors && addColorToMotivationTable !== undefined) {
 			const currentSlide = revealInstance.getCurrentSlide();
+			console.log('=== synchronizing slide to update background color ===');
+			console.log(averageMotivationColors);
 			if (currentSlide) {
 				revealInstance.syncSlide(currentSlide);
 			}
@@ -206,7 +215,7 @@
 					>
 					<textarea
 						class="heading placeholder:title-large w-full border border-2 p-2 shadow-inner placeholder:italic"
-						placeholder="The sharing is publically available on the internet for everyone, who has a link to this presentation. Sharing is caring 🫶"
+						placeholder="The sharing is publically available on the internet for everyone, who has a link to this presentation. Sharing is caring 🫶 Press Enter to send."
 						id="sharing"
 						bind:value={mySharing.content}
 						onkeydown={(event) => {
@@ -232,7 +241,7 @@
 				</div>
 			</div>
 			<div class="heading mt-8">
-				<div class="mx-5 grid max-h-[500px] grid-cols-3 gap-4 overflow-y-auto">
+				<div class="mx-5 grid max-h-[500px] grid-cols-3 gap-6 overflow-y-auto">
 					{#each intentionAnswersSorted as answer, index (index)}
 						<div animate:flip>
 							{@render intentionAnswer(answer.content, answer.creation_date, index)}
@@ -325,18 +334,39 @@
 			<li>(Meaning)</li>
 		</ul> -->
 	</section>
-	<section
+	<!-- <section
 		data-background-color={addColorToMotivationTable
 			? 'rgb(var(--md-rgb-color-primary-container))'
+			: ''}
+	> -->
+	<section
+		data-background-color={addColorToMotivationTable
+			? `rgb(${averageMotivationColors.background})`
 			: ''}
 	>
 		<!-- <section class="h-screen rounded-lg p-2 {addColorToMotivationTable ? 'bg-green-300/30 ' : ''}"> -->
 		<!-- <section class="h-screen rounded-lg p-2" style={addColorToMotivationTable ? 'background-color: rgb(var(--md-rgb-color-primary-container))' : ''}> -->
 		<div>
 			<SlideTitle>Motivation</SlideTitle>
-			<MotivationTable socketio={socketioNumericals} />
-			{addColorToMotivationTable}
+			<MotivationTable
+				questionId={motivationQuestionId}
+				socketio={socketioNumericals}
+				averageMotivation={motivationAnswersAverage}
+				bind:averageColors={averageMotivationColors}
+			/>
 		</div>
+		<div class="relative mt-5">
+			<div class="absolute top-0 right-0 mt-20">
+				<span class="badge badge-lg badge-secondary shadow-outline shadow">
+					{motivationAnswersAverage}
+				</span>
+				<span class="badge badge-lg badge-info shadow-outline shadow">
+					{motivationAnswers.length}
+				</span>
+				<span class="text-base-300"> {addColorToMotivationTable}</span>
+			</div>
+		</div>
+		<!-- <div>{addColorToMotivationTable} {motivationAnswersAverage}</div> -->
 	</section>
 	<!-- <section>
 		<SlideTitle>Inclusion</SlideTitle>

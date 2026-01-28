@@ -145,6 +145,11 @@ export interface DemoResource {
 	category_id?: string;
 	tags?: string[];
 }
+export interface Question {
+	id: string;
+	question: string;
+	language: string;
+}
 export interface Message {
 	id: string;
 	content: string;
@@ -154,11 +159,12 @@ export interface Message {
 export interface Numerical {
 	id: string;
 	value: number;
-	tolerance: number;
+	tolerance?: number;
 }
 
 // add all specific resources that share the extension properties here:
 export type DemoResourceExtended = ExtendEntity<DemoResource>;
+export type QuestionExtended = ExtendEntity<Question>;
 export type MessageExtended = ExtendEntity<Message>;
 export type NumericalExtended = ExtendEntity<Numerical>;
 
@@ -258,9 +264,10 @@ export type MicrosoftTeamExtended = MicrosoftTeam & Partial<WithAccessRights & W
 
 export type AnyEntityExtended =
 	| DemoResourceExtended
-	| MessageExtended
 	| NumericalExtended
 	| UserExtended
+	| MessageExtended
+	| QuestionExtended
 	| UeberGroupExtended
 	| GroupExtended
 	| SubGroupExtended

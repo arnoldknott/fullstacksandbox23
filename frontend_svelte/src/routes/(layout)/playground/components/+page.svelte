@@ -231,7 +231,7 @@
 	let statusColors = $derived(
 		statusColorsHue.map((hue) => ({
 			background: hexFromArgb(Hct.from(hue.background, errorHct.chroma, errorHct.tone).toInt()),
-			text: hexFromArgb(Hct.from(hue.background, onErrorHct.chroma, onErrorHct.tone).toInt())
+			text: hexFromArgb(Hct.from(hue.text, onErrorHct.chroma, onErrorHct.tone).toInt())
 		}))
 	);
 	onDestroy(() => {

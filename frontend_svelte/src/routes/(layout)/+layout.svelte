@@ -281,6 +281,12 @@
 					id: 'presentations',
 					items: [
 						{
+							name: 'Presentations Setup',
+							pathname: resolve('/(layout)/presentations/(protected)/setup'),
+							icon: 'icon-[fa6-solid--chalkboard]',
+							id: 'presentations--setup'
+						},
+						{
 							name: 'Questions Setup',
 							pathname: resolve('/(layout)/presentations/questions/(protected)/setup'),
 							icon: 'icon-[fa6-solid--chalkboard]',
