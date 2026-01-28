@@ -16,14 +16,14 @@ wrong_test_presentations = [
         # Missing 'source' field
         "path": "/presentations/missing-source",
     },
-    {
-        "source": "",
-        # Missing 'path' field
-    },
-    {
-        "source": "https://example.com/missing-path",
-        "text": "Some text",  # Extra unexpected field
-    },
+    # { # That's ok: path is optional!
+    #     "source": "",
+    #     # Missing 'path' field
+    # },
+    # { # That's ok: extra field get's ignored, and path is optional!
+    #     "source": "https://example.com/missing-path",
+    #     "text": "Some text",  # Extra unexpected field
+    # },
 ]
 
 many_test_presentations = [
