@@ -921,7 +921,7 @@ async def test_user_reads_one_group(
     await connection.client.emit("read", str(existing_groups[2].id), namespace="/group")
 
     # Wait for the response to be set
-    await connection.client.sleep(0.2)
+    await connection.client.sleep(0.3)
 
     transferred_data_client = connection.responses("transferred")
 

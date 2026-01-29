@@ -9,6 +9,7 @@
 	import { flip } from 'svelte/animate';
 	import { Action } from '$lib/accessHandler';
 	import Heading from '$components/Heading.svelte';
+	import { onDestroy } from 'svelte';
 
 	interface RevealFragmentEvent extends Event {
 		fragment: HTMLElement;
@@ -20,14 +21,14 @@
 	let revealInstance = $state<Api | undefined>(undefined);
 
 	// TBD: catch gracefully, if no intention or motivation question is available
-	let intentionAnswers: MessageExtended[] = $state(data.questionsData?.intention.messages || []);
-	let intentionQuestionId = data.questionsData?.intention.id || '';
+	let intentionAnswers = $state(data.questionsData?.intention?.messages || []);
+	let intentionQuestionId = data.questionsData?.intention?.id || '';
 
-	let motivationAnswers: Numerical[] = $state(data.questionsData?.motivation.numericals || []);
-	let motivationQuestionId = data.questionsData?.motivation.id || '';
+	let motivationAnswers = $state(data.questionsData?.motivation?.numericals || []);
+	let motivationQuestionId = data.questionsData?.motivation?.id || '';
 
-	let commentsAnswers: MessageExtended[] = $state(data.questionsData?.comments.messages || []);
-	let commentsQuestionId = data.questionsData?.comments.id || '';
+	let commentsAnswers = $state(data.questionsData?.comments?.messages || []);
+	let commentsQuestionId = data.questionsData?.comments?.id || '';
 
 	let intentionAnswersSorted: MessageExtended[] = $derived(
 		intentionAnswers.toSorted((a, b) => {
@@ -85,6 +86,7 @@
 		namespace: '/numerical',
 		query_params: { 'parent-id': motivationQuestionId }
 	};
+	const socketioMotivation = new SocketIO(connectionMotivation, () => motivationAnswers);
 
 	let motivationAnswersAverage: number = $derived.by(() => {
 		if (motivationAnswers.length <= 5) {
@@ -96,6 +98,34 @@
 		}
 	});
 
+	socketioMotivation.client.on('transferred', (data: Numerical) => {
+		// if (debug) {
+		// console.log(
+		// 	'=== 🧦 presentation - devF23 - MOTIVATION - received transferred update ==='
+		// );
+		// console.log(data);
+		// }
+		socketioMotivation.handleTransferred(data);
+	});
+
+	socketioMotivation.client.on('status', (data: SocketioStatus) => {
+		// if (debug) {
+		console.log('=== 🧦 presentation - devF23 - MOTIVATION - received status update ===');
+		// console.log('Status update:', data);
+		// }
+		socketioMotivation.handleStatus(data);
+	});
+
+	socketioMotivation.client.on('deleted', (message_id: string) => {
+		// if (debug) {
+		// 	console.log(
+		// 		'=== presentation - devF23 - MOTIVATION - deleted messages ==='
+		// 	);
+		// 	console.log(message_id);
+		// }
+		socketioMotivation.handleDeleted(message_id);
+	});
+
 	let averageMotivationColors = $state({ background: '0 0 0', text: '0  0 0' });
 
 	// $effect(() => {
@@ -104,8 +134,6 @@
 	// 	console.log('=== dev2 / F23 - Motivation Answers Average Colors ===');
 	// 	console.log($state.snapshot(averageMotivationColors));
 	// });
-
-	const socketioMotivation = new SocketIO(connectionMotivation, () => motivationAnswers);
 
 	let addColorToMotivationTable = $state(false);
 
@@ -130,11 +158,18 @@
 				}
 			});
 		}
+		// console.log('=== dev2 / F23 - Motivation Average Color ===');
+		// console.log($state.snapshot(averageMotivationColors));
 		// updates background color on the slides, where addColorToMotivationTable changes
-		if (revealInstance && averageMotivationColors && addColorToMotivationTable !== undefined) {
+		// if (revealInstance && averageMotivationColors && addColorToMotivationTable !== undefined) {
+		if (
+			revealInstance &&
+			(motivationAnswersAverage || motivationAnswers.length === 6) &&
+			addColorToMotivationTable !== undefined
+		) {
 			const currentSlide = revealInstance.getCurrentSlide();
 			// console.log('=== synchronizing slide to update background color ===');
-			// console.log(averageMotivationColors);
+			// console.log($state.snapshot(averageMotivationColors));
 			if (currentSlide) {
 				revealInstance.syncSlide(currentSlide);
 			}
@@ -190,6 +225,12 @@
 		id: 'new_' + Math.random().toString(36).substring(2, 9),
 		content: '',
 		language: 'en'
+	});
+
+	onDestroy(() => {
+		socketioIntention.client.disconnect();
+		socketioMotivation.client.disconnect();
+		socketioComment.client.disconnect();
 	});
 
 	// let revealFragmentShownEvent = $derived.by(() => {

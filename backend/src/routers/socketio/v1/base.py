@@ -17,6 +17,8 @@ from core.types import (
     CurrentUserData,
     EventGuard,
     GuardTypes,
+    IdentityType,
+    ResourceType,
 )
 from crud import register_crud
 from crud.access import (
@@ -176,8 +178,6 @@ class BaseNamespace(socketio.AsyncNamespace):
                 if parent_id:
                     try:
                         parent_uuid = UUID(parent_id)
-                        print("=== base namespace - crud.model.__name__ ===")
-                        print(crud.model.__name__)
                         # if crud.model.__name__ in ResourceType.list():
                         async with crud.hierarchy_CRUD as hierarchy_crud:
                             hierarchies = await hierarchy_crud.read(
@@ -676,10 +676,6 @@ class BaseNamespace(socketio.AsyncNamespace):
                             rooms = ["role:Admin"]
                             if parent_id is not None:
                                 rooms += [f"parent:{parent_id}"]
-                            print(
-                                "=== routers - socketio - v1 - on_submit - create - emit to rooms ==="
-                            )
-                            print(rooms, flush=True)
                             await self.server.emit(
                                 "status",
                                 {
@@ -719,7 +715,14 @@ class BaseNamespace(socketio.AsyncNamespace):
             current_user = await self._get_current_user_and_check_guard(sid, "delete")
             async with self.crud() as crud:
                 await crud.delete(current_user, entity_id)
-            await self.server.close_room(entity_id, namespace=self.namespace)
+                if crud.model.__name__ in ResourceType.list():
+                    await self.server.close_room(
+                        f"resource:{str(entity_id)}", namespace=self.namespace
+                    )
+                elif crud.model.__name__ in IdentityType.list():
+                    await self.server.close_room(
+                        f"identity:{str(entity_id)}", namespace=self.namespace
+                    )
             await self.server.emit(
                 "deleted",
                 entity_id,
