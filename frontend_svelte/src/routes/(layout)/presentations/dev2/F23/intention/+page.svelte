@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio';
-	import type { MessageExtended, Numerical } from '$lib/types';
+	import type { MessageExtended, Numerical, QuestionExtended } from '$lib/types';
 	import RevealJS from '$components/RevealJS.svelte';
 	import type { Api } from 'reveal.js';
 	import MotivationTable from './MotivationTable.svelte';
@@ -9,6 +9,7 @@
 	import { flip } from 'svelte/animate';
 	import { Action } from '$lib/accessHandler';
 	import Heading from '$components/Heading.svelte';
+	import { onDestroy } from 'svelte';
 
 	interface RevealFragmentEvent extends Event {
 		fragment: HTMLElement;
@@ -20,14 +21,14 @@
 	let revealInstance = $state<Api | undefined>(undefined);
 
 	// TBD: catch gracefully, if no intention or motivation question is available
-	let intentionAnswers: MessageExtended[] = $state(data.questionsData?.intention.messages || []);
-	let intentionQuestionId = data.questionsData?.intention.id || '';
+	let intentionAnswers = $state(data.questionsData?.intention?.messages || []);
+	let intentionQuestionId = data.questionsData?.intention?.id || '';
 
-	let motivationAnswers: Numerical[] = $state(data.questionsData?.motivation.numericals || []);
-	let motivationQuestionId = data.questionsData?.motivation.id || '';
+	let motivationAnswers = $state(data.questionsData?.motivation?.numericals || []);
+	let motivationQuestionId = data.questionsData?.motivation?.id || '';
 
-	let commentsAnswers: MessageExtended[] = $state(data.questionsData?.comments.messages || []);
-	let commentsQuestionId = data.questionsData?.comments.id || '';
+	let commentsAnswers = $state(data.questionsData?.comments?.messages || []);
+	let commentsQuestionId = data.questionsData?.comments?.id || '';
 
 	let intentionAnswersSorted: MessageExtended[] = $derived(
 		intentionAnswers.toSorted((a, b) => {
@@ -109,9 +110,7 @@
 
 	socketioMotivation.client.on('status', (data: SocketioStatus) => {
 		// if (debug) {
-		// console.log(
-		// 	'=== 🧦 presentation - devF23 - MOTIVATION - received status update ==='
-		// );
+		console.log('=== 🧦 presentation - devF23 - MOTIVATION - received status update ===');
 		// console.log('Status update:', data);
 		// }
 		socketioMotivation.handleStatus(data);
@@ -136,8 +135,6 @@
 	// 	console.log($state.snapshot(averageMotivationColors));
 	// });
 
-
-
 	let addColorToMotivationTable = $state(false);
 
 	$effect(() => {
@@ -161,11 +158,15 @@
 				}
 			});
 		}
-		console.log('=== dev2 / F23 - Motivation Average Color ===');
-		console.log($state.snapshot(averageMotivationColors));
+		// console.log('=== dev2 / F23 - Motivation Average Color ===');
+		// console.log($state.snapshot(averageMotivationColors));
 		// updates background color on the slides, where addColorToMotivationTable changes
 		// if (revealInstance && averageMotivationColors && addColorToMotivationTable !== undefined) {
-		if (revealInstance && (motivationAnswersAverage || motivationAnswers.length === 6) && addColorToMotivationTable !== undefined) {
+		if (
+			revealInstance &&
+			(motivationAnswersAverage || motivationAnswers.length === 6) &&
+			addColorToMotivationTable !== undefined
+		) {
 			const currentSlide = revealInstance.getCurrentSlide();
 			// console.log('=== synchronizing slide to update background color ===');
 			// console.log($state.snapshot(averageMotivationColors));
@@ -224,6 +225,12 @@
 		id: 'new_' + Math.random().toString(36).substring(2, 9),
 		content: '',
 		language: 'en'
+	});
+
+	onDestroy(() => {
+		socketioIntention.client.disconnect();
+		socketioMotivation.client.disconnect();
+		socketioComment.client.disconnect();
 	});
 
 	// let revealFragmentShownEvent = $derived.by(() => {

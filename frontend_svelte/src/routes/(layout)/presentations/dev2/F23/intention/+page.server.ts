@@ -1,6 +1,8 @@
 import type { PageServerLoad } from './$types';
 import { backendAPI } from '$lib/server/apis/backendApi';
 import { error } from '@sveltejs/kit';
+import type { QuestionExtended, Numerical, Question } from '$lib/types';
+import type { Message } from 'postcss';
 
 export const load: PageServerLoad = async ({ url }) => {
 	const questionIntentionId = url.searchParams.get('q-intention');
@@ -18,12 +20,21 @@ export const load: PageServerLoad = async ({ url }) => {
 		null,
 		'/quiz/question/public/' + questionCommentsId
 	);
-	let questionsData = null;
+	type QuestionData = {
+		intention?: Question;
+		motivation?: Question;
+		comments?: Question;
+	};
+	let questionsData: QuestionData = {
+		intention: undefined,
+		motivation: undefined,
+		comments: undefined
+	};
 	if (responseIntention.status === 200) {
 		const intentionData = await responseIntention.json();
 		questionsData = { intention: intentionData };
-		console.log('=== 🧦 presentation - devF23 - INTENTION - pre-loaded intentionData ===');
-		console.log(intentionData);
+		// console.log('=== 🧦 presentation - devF23 - INTENTION - pre-loaded intentionData ===');
+		// console.log(intentionData);
 	} else {
 		// TBD: consider rising an error herem,
 		// so client side can react accordingly and not show the relevant elements
@@ -43,8 +54,8 @@ export const load: PageServerLoad = async ({ url }) => {
 	}
 	if (responseComments.status === 200) {
 		const commentsData = await responseComments.json();
-		console.log('=== 🧦 presentation - devF23 - COMMENTS - pre-loaded commentsData ===');
-		console.log(commentsData);
+		// console.log('=== 🧦 presentation - devF23 - COMMENTS - pre-loaded commentsData ===');
+		// console.log(commentsData);
 		if (questionsData) {
 			questionsData.comments = commentsData;
 		} else {
