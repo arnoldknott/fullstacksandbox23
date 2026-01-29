@@ -11,7 +11,7 @@
 	import DemoResourceContainer from './DemoResourceContainer.svelte';
 	import { fade, scale } from 'svelte/transition';
 	import IdBadge from '../../IdBadge.svelte';
-	import { onDestroy } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 
 	let { data }: { data: PageData } = $props();
@@ -25,55 +25,58 @@
 		}
 	});
 
-	const connection: SocketioConnection = {
-		namespace: '/demo-resource',
-		cookie_session_id: page.data.session.sessionId,
-		query_params: {
-			'request-access-data': true,
-			'identity-ids': data.microsoftTeams.map((team) => team.id).join(','),
-			'join-admin-room': 'true'
-		}
-	};
-
-	// TBD: populate by REST-API call initially?
+	let socketio: SocketIO;
 	let demoResources = $state<DemoResourceExtended[]>([]);
 	let editIds = new SvelteSet<string>();
 	let statusMessages = $state<SocketioStatus[]>([]);
-	const socketio = new SocketIO(
-		connection,
-		() => demoResources,
-		() => editIds
-	);
+	onMount(() => {
+		const connection: SocketioConnection = {
+			namespace: '/demo-resource',
+			cookie_session_id: page.data.session.sessionId,
+			query_params: {
+				'request-access-data': true,
+				'identity-ids': data.microsoftTeams.map((team) => team.id).join(','),
+				'join-admin-room': 'true'
+			}
+		};
+		// TBD: populate by REST-API call initially?
 
-	socketio.client.on('transferred', (data: DemoResourceExtended) => {
-		// if (debug) {
-		// 	console.log(
-		// 		'=== dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
-		// 	);
-		// 	console.log(data);
-		// }
-		socketio.handleTransferred(data);
-	});
+		socketio = new SocketIO(
+			connection,
+			() => demoResources,
+			() => editIds
+		);
 
-	socketio.client.on('deleted', (resource_id: string) => {
-		// if (debug) {
-		// 	console.log(
-		// 		'=== dashboard - backend-demo-resource - socketio - +page.svelte - deleted DemoResources ==='
-		// 	);
-		// 	console.log(resource_id);
-		// }
-		socketio.handleDeleted(resource_id);
-	});
+		socketio.client.on('transferred', (data: DemoResourceExtended) => {
+			// if (debug) {
+			// 	console.log(
+			// 		'=== dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
+			// 	);
+			// 	console.log(data);
+			// }
+			socketio?.handleTransferred(data);
+		});
 
-	socketio.client.on('status', (data: SocketioStatus) => {
-		// if (debug) {
-		// 	console.log(
-		// 		'=== dashboard - backend-demo-resource - socketio - +page.svelte - received status update ==='
-		// 	);
-		// 	console.log('Status update:', data);
-		// }
-		statusMessages.unshift(data);
-		socketio.handleStatus(data);
+		socketio.client.on('deleted', (resource_id: string) => {
+			// if (debug) {
+			// 	console.log(
+			// 		'=== dashboard - backend-demo-resource - socketio - +page.svelte - deleted DemoResources ==='
+			// 	);
+			// 	console.log(resource_id);
+			// }
+			socketio?.handleDeleted(resource_id);
+		});
+
+		socketio.client.on('status', (data: SocketioStatus) => {
+			// if (debug) {
+			// 	console.log(
+			// 		'=== dashboard - backend-demo-resource - socketio - +page.svelte - received status update ==='
+			// 	);
+			// 	console.log('Status update:', data);
+			// }
+			statusMessages.unshift(data);
+			socketio?.handleStatus(data);
+		});
 	});
 
 	const newDemoResource = (): DemoResourceExtended => {
@@ -87,7 +90,7 @@
 	};
 
 	const addDemoResource = () => {
-		socketio.addEntity(newDemoResource());
+		socketio?.addEntity(newDemoResource());
 	};
 
 	const sortResourcesByCreationDate = (a: DemoResourceExtended, b: DemoResourceExtended) => {
@@ -130,7 +133,7 @@
 			.sort(sortResourcesByCreationDate)
 	);
 
-	onDestroy(() => socketio.client.disconnect());
+	onDestroy(() => socketio?.client.disconnect());
 </script>
 
 <div class="flex flex-row flex-wrap justify-between">
