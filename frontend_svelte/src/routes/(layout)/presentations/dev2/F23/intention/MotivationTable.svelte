@@ -28,7 +28,7 @@
 	const sendMotvationNumerical = (value: number) => {
 		// console.log('=== Sending motivation value ===');
 		// console.log(value);
-		socketio?.addEntity({ id: motivationId, value: value });
+		// socketio?.addEntity({ id: motivationId, value: value });
 		socketio?.submitEntity({ id: motivationId, value: value }, questionId, true, true, Action.READ);
 		motivationId = 'new_' + Math.random().toString(36).substring(2, 9);
 	};
