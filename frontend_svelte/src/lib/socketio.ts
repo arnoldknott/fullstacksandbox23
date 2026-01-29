@@ -34,7 +34,7 @@ export type SocketioStatus =
 
 export class SocketIO {
 	public client: Socket;
-	private entities: AnyEntityExtended[] = [];
+	private getEntities?: () => AnyEntityExtended[];
 	private editIds?: SvelteSet<string>;
 
 	constructor(
@@ -58,7 +58,7 @@ export class SocketIO {
 			// forceNew: true // to avoid reusing existing connections and get clients in the same room. TBD: consider an override option ("reuseExisting")?
 			// multiplex: false // to avoid reusing existing connections and get clients in the same room. TBD: consider an override option ("reuseExisting")?
 		});
-		this.entities = getEntities ? getEntities() : [];
+		this.getEntities = getEntities;
 		if (getEditIds) {
 			this.editIds = getEditIds();
 		}
@@ -67,7 +67,10 @@ export class SocketIO {
 
 	// Emitters:
 	public addEntity(newEntity: AnyEntityExtended): void {
-		this.entities.unshift(newEntity);
+		const entities = this.getEntities?.();
+		if (entities) {
+			entities.unshift(newEntity);
+		}
 	}
 
 	// The backend is handling it, whether it's new or existing.
@@ -97,9 +100,12 @@ export class SocketIO {
 	public deleteEntity(entityId: string): void {
 		if (entityId.slice(0, 4) === 'new_') {
 			// If the resource is new and has no id, we can just remove it from the local array
-			const index = this.entities.findIndex((entity) => entity.id === entityId);
-			if (index > -1) {
-				this.entities.splice(index, 1);
+			const entities = this.getEntities?.();
+			if (entities) {
+				const index = entities.findIndex((entity) => entity.id === entityId);
+				if (index > -1) {
+					entities.splice(index, 1);
+				}
 			}
 			// Creates a new array and breaks reactivity:
 			// this.entities = this.entities.filter((res) => res.id !== entityId);
@@ -122,25 +128,31 @@ export class SocketIO {
 
 	// Receivers:
 	public handleTransferred(data: AnyEntityExtended): void {
-		const existingIndex = this.entities.findIndex((entity) => entity.id === data.id);
+		const entities = this.getEntities?.();
+		if (!entities) return;
+
+		const existingIndex = entities.findIndex((entity) => entity.id === data.id);
 		if (existingIndex > -1) {
 			// Update existing entity in place
-			this.entities[existingIndex] = { ...this.entities[existingIndex], ...data };
+			entities[existingIndex] = { ...entities[existingIndex], ...data };
 			// creates a new array and breaks reactivity:
 			// this.entities = this.entities.map((entity) =>
 			// 	// only replaces the keys, where the newly incoming data is defined.
 			// 	entity.id === data.id ? { ...entity, ...data } : entity
 			// );
 		} else {
-			// Add new entity
-			this.entities.push(data);
+			// Add new entity at the beginning (most recent first);
+			entities.unshift(data);
 		}
 	}
 
 	public handleDeleted(resource_id: string): void {
-		const index = this.entities.findIndex((entity) => entity.id === resource_id);
-		if (index > -1) {
-			this.entities.splice(index, 1);
+		const entities = this.getEntities?.();
+		if (entities) {
+			const index = entities.findIndex((entity) => entity.id === resource_id);
+			if (index > -1) {
+				entities.splice(index, 1);
+			}
 		}
 		if (this.editIds) {
 			this.editIds.delete(resource_id);
@@ -156,11 +168,14 @@ export class SocketIO {
 					this.editIds.add(status.id);
 				}
 
-				this.entities.forEach((entity) => {
-					if (entity.id === status.submitted_id) {
-						entity.id = status.id;
-					}
-				});
+				const entities = this.getEntities?.();
+				if (entities) {
+					entities.forEach((entity) => {
+						if (entity.id === status.submitted_id) {
+							entity.id = status.id;
+						}
+					});
+				}
 				// Adds the created id (as a replacement for the prelimnary id) to editIds.
 				// This is needed to keep editing on after newly created resources.
 			} else if (status.success === 'shared') {

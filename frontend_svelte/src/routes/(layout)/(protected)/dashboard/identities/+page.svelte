@@ -48,6 +48,7 @@
 	};
 
 	let ueberGroups = $state<UeberGroup[]>(data.ueberGroups);
+	// TBD: pu in onMount!
 	const socketio = new SocketIO(connection, () => ueberGroups);
 
 	socketio.client.on('transferred', (data: UeberGroupExtended) => socketio.handleTransferred(data));
