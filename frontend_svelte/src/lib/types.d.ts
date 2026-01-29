@@ -145,13 +145,14 @@ export interface DemoResource {
 	category_id?: string;
 	tags?: string[];
 }
+
 export interface Question {
 	id: string;
 	question: string;
 	language: string;
-	presentations?: string[]; // TBD: model properly
-	messages?: MessageExtended[]; // TBD consider if | Message[] is needed?
-	numericals?: NumericalExtended[]; // TBD consider if | Numerical[] is needed?
+	presentations?: string[]; // TBD: model presentation properly
+	messages?: MessageExtended[]; // TBD: consider if | Message[] is needed?
+	numericals?: NumericalExtended[]; // TBD: consider if | Numerical[] is needed?
 }
 export interface Message {
 	id: string;
