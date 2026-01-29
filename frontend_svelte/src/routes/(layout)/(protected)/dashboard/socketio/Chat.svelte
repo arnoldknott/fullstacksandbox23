@@ -11,6 +11,7 @@
 		children
 	}: { connection: SocketioConnection; socketioEvent: string; children: Snippet } = $props();
 
+	// TBD: put in onMount!
 	const socketio = new SocketIO(connection);
 
 	let status = $state(false);

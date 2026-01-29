@@ -36,6 +36,7 @@
 		cookie_session_id: data?.session?.sessionId || '',
 		query_params: { 'parent-id': questionId, 'request-access-data': true }
 	};
+	// TBD: put in onMount!
 	const messageSocketio = new SocketIO(messageConnection, () => messageAnswers);
 
 	messageSocketio.client.on('transferred', (data: MessageExtended) => {
@@ -73,6 +74,7 @@
 		cookie_session_id: data?.session?.sessionId || '',
 		query_params: { 'parent-id': questionId, 'request-access-data': true }
 	};
+	// TBD: put in onMount!
 	const numericalSocketio = new SocketIO(numericalConnection, () => numericalAnswers);
 	numericalSocketio.client.on('transferred', (data: MessageExtended) => {
 		// if (debug) {

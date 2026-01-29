@@ -39,6 +39,7 @@
 	// via resource-ids,
 	// as there is only read(id) callback-on-connect
 	// and not read-all callback on connect
+	// TBD: put in onMount!
 	const socketioUeberGroup = new SocketIO(ueberGroupConnection);
 
 	socketioUeberGroup.client.on('deleted', (resource_id: string) => {
@@ -94,6 +95,7 @@
 			multipleGroupsSuffixes.end = multipleGroupsSuffixes.start + 1;
 		}
 	});
+	// TBD: put in onMount!
 	const socketioGroup = new SocketIO(groupConnection, () => allGroups);
 
 	socketioGroup.client.emit('read');
