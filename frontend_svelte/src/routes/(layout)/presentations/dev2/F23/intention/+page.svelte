@@ -9,7 +9,7 @@
 	import { flip } from 'svelte/animate';
 	import { Action } from '$lib/accessHandler';
 	import Heading from '$components/Heading.svelte';
-	import { onDestroy } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 
 	interface RevealFragmentEvent extends Event {
 		fragment: HTMLElement;
@@ -40,39 +40,114 @@
 		})
 	);
 
-	const intentionConnection: SocketioConnection = {
-		namespace: '/message',
-		query_params: { 'parent-id': intentionQuestionId, 'request-access-data': true }
-	};
-	const socketioIntention = new SocketIO(intentionConnection, () => intentionAnswers);
-	socketioIntention.client.on('transferred', (data: MessageExtended) => {
-		// if (debug) {
-		// console.log(
-		// 	'=== 🧦 presentation - devF23 - INTENTION - received transferred update ==='
-		// );
-		// console.log(data);
-		// }
-		socketioIntention.handleTransferred(data);
-	});
+	let socketioIntention: SocketIO;
+	let socketioMotivation: SocketIO = $state(undefined as unknown as SocketIO);
+	let socketioComment: SocketIO;
+	onMount(() => {
+		const intentionConnection: SocketioConnection = {
+			namespace: '/message',
+			query_params: { 'parent-id': intentionQuestionId, 'request-access-data': true }
+		};
 
-	socketioIntention.client.on('status', (data: SocketioStatus) => {
-		// if (debug) {
-		// console.log(
-		// 	'=== 🧦 presentation - devF23 - INTENTION - received status update ==='
-		// );
-		// console.log('Status update:', data);
-		// }
-		socketioIntention.handleStatus(data);
-	});
+		socketioIntention = new SocketIO(intentionConnection, () => intentionAnswers);
+		socketioIntention.client.on('transferred', (data: MessageExtended) => {
+			// if (debug) {
+			// console.log(
+			// 	'=== 🧦 presentation - devF23 - INTENTION - received transferred update ==='
+			// );
+			// console.log(data);
+			// }
+			socketioIntention.handleTransferred(data);
+		});
 
-	socketioIntention.client.on('deleted', (message_id: string) => {
-		// if (debug) {
-		// 	console.log(
-		// 		'=== presentation - devF23 - INTENTION - deleted messages ==='
-		// 	);
-		// 	console.log(message_id);
-		// }
-		socketioIntention.handleDeleted(message_id);
+		socketioIntention.client.on('status', (data: SocketioStatus) => {
+			// if (debug) {
+			// console.log(
+			// 	'=== 🧦 presentation - devF23 - INTENTION - received status update ==='
+			// );
+			// console.log('Status update:', data);
+			// }
+			socketioIntention.handleStatus(data);
+		});
+
+		socketioIntention.client.on('deleted', (message_id: string) => {
+			// if (debug) {
+			// 	console.log(
+			// 		'=== presentation - devF23 - INTENTION - deleted messages ==='
+			// 	);
+			// 	console.log(message_id);
+			// }
+			socketioIntention.handleDeleted(message_id);
+		});
+
+		// SocketIO for motivation numericals
+		const connectionMotivation: SocketioConnection = {
+			namespace: '/numerical',
+			query_params: { 'parent-id': motivationQuestionId }
+		};
+		socketioMotivation = new SocketIO(connectionMotivation, () => motivationAnswers);
+
+		socketioMotivation.client.on('transferred', (data: Numerical) => {
+			// if (debug) {
+			// console.log(
+			// 	'=== 🧦 presentation - devF23 - MOTIVATION - received transferred update ==='
+			// );
+			// console.log(data);
+			// }
+			socketioMotivation.handleTransferred(data);
+		});
+
+		socketioMotivation.client.on('status', (data: SocketioStatus) => {
+			// if (debug) {
+			console.log('=== 🧦 presentation - devF23 - MOTIVATION - received status update ===');
+			// console.log('Status update:', data);
+			// }
+			socketioMotivation.handleStatus(data);
+		});
+
+		socketioMotivation.client.on('deleted', (message_id: string) => {
+			// if (debug) {
+			// 	console.log(
+			// 		'=== presentation - devF23 - MOTIVATION - deleted messages ==='
+			// 	);
+			// 	console.log(message_id);
+			// }
+			socketioMotivation.handleDeleted(message_id);
+		});
+		const commentConnection: SocketioConnection = {
+			namespace: '/message',
+			query_params: { 'parent-id': commentsQuestionId, 'request-access-data': true }
+		};
+		socketioComment = new SocketIO(commentConnection, () => commentsAnswers);
+		socketioComment.client.on('transferred', (data: MessageExtended) => {
+			// if (debug) {
+			// console.log(
+			// 	'=== 🧦 presentation - devF23 - COMMENT - received transferred update ==='
+			// );
+			// console.log(data);
+			// }
+			socketioComment.handleTransferred(data);
+		});
+
+		socketioComment.client.on('status', (data: SocketioStatus) => {
+			// if (debug) {
+			// console.log(
+			// 	'=== 🧦 presentation - devF23 - COMMENT - received status update ==='
+			// );
+			// console.log('Status update:', data);
+			// }
+			socketioComment.handleStatus(data);
+		});
+
+		socketioComment.client.on('deleted', (message_id: string) => {
+			// if (debug) {
+			// 	console.log(
+			// 		'=== presentation - devF23 - COMMENT - deleted messages ==='
+			// 	);
+			// 	console.log(message_id);
+			// }
+			socketioComment.handleDeleted(message_id);
+		});
 	});
 
 	let myIntention: MessageExtended = $state({
@@ -80,13 +155,6 @@
 		content: '',
 		language: 'en'
 	});
-
-	// SocketIO for motivation numericals
-	const connectionMotivation: SocketioConnection = {
-		namespace: '/numerical',
-		query_params: { 'parent-id': motivationQuestionId }
-	};
-	const socketioMotivation = new SocketIO(connectionMotivation, () => motivationAnswers);
 
 	let motivationAnswersAverage: number = $derived.by(() => {
 		if (motivationAnswers.length <= 5) {
@@ -96,34 +164,6 @@
 			const sum = motivationAnswers.reduce((acc, curr) => acc + curr.value, 0);
 			return Math.round(sum / motivationAnswers.length);
 		}
-	});
-
-	socketioMotivation.client.on('transferred', (data: Numerical) => {
-		// if (debug) {
-		// console.log(
-		// 	'=== 🧦 presentation - devF23 - MOTIVATION - received transferred update ==='
-		// );
-		// console.log(data);
-		// }
-		socketioMotivation.handleTransferred(data);
-	});
-
-	socketioMotivation.client.on('status', (data: SocketioStatus) => {
-		// if (debug) {
-		console.log('=== 🧦 presentation - devF23 - MOTIVATION - received status update ===');
-		// console.log('Status update:', data);
-		// }
-		socketioMotivation.handleStatus(data);
-	});
-
-	socketioMotivation.client.on('deleted', (message_id: string) => {
-		// if (debug) {
-		// 	console.log(
-		// 		'=== presentation - devF23 - MOTIVATION - deleted messages ==='
-		// 	);
-		// 	console.log(message_id);
-		// }
-		socketioMotivation.handleDeleted(message_id);
 	});
 
 	let averageMotivationColors = $state({ background: '0 0 0', text: '0  0 0' });
@@ -186,41 +226,6 @@
 		})
 	);
 
-	const commentConnection: SocketioConnection = {
-		namespace: '/message',
-		query_params: { 'parent-id': commentsQuestionId, 'request-access-data': true }
-	};
-	const socketioComment = new SocketIO(commentConnection, () => commentsAnswers);
-	socketioComment.client.on('transferred', (data: MessageExtended) => {
-		// if (debug) {
-		// console.log(
-		// 	'=== 🧦 presentation - devF23 - COMMENT - received transferred update ==='
-		// );
-		// console.log(data);
-		// }
-		socketioComment.handleTransferred(data);
-	});
-
-	socketioComment.client.on('status', (data: SocketioStatus) => {
-		// if (debug) {
-		// console.log(
-		// 	'=== 🧦 presentation - devF23 - COMMENT - received status update ==='
-		// );
-		// console.log('Status update:', data);
-		// }
-		socketioComment.handleStatus(data);
-	});
-
-	socketioComment.client.on('deleted', (message_id: string) => {
-		// if (debug) {
-		// 	console.log(
-		// 		'=== presentation - devF23 - COMMENT - deleted messages ==='
-		// 	);
-		// 	console.log(message_id);
-		// }
-		socketioComment.handleDeleted(message_id);
-	});
-
 	let myComment: MessageExtended = $state({
 		id: 'new_' + Math.random().toString(36).substring(2, 9),
 		content: '',
@@ -228,9 +233,9 @@
 	});
 
 	onDestroy(() => {
-		socketioIntention.client.disconnect();
-		socketioMotivation.client.disconnect();
-		socketioComment.client.disconnect();
+		socketioIntention?.client.disconnect();
+		socketioMotivation?.client.disconnect();
+		socketioComment?.client.disconnect();
 	});
 
 	// let revealFragmentShownEvent = $derived.by(() => {
