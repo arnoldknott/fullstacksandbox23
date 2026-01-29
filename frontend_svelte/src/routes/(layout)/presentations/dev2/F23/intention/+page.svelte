@@ -85,6 +85,7 @@
 		namespace: '/numerical',
 		query_params: { 'parent-id': motivationQuestionId }
 	};
+	const socketioMotivation = new SocketIO(connectionMotivation, () => motivationAnswers);
 
 	let motivationAnswersAverage: number = $derived.by(() => {
 		if (motivationAnswers.length <= 5) {
@@ -96,6 +97,36 @@
 		}
 	});
 
+	socketioMotivation.client.on('transferred', (data: Numerical) => {
+		// if (debug) {
+		// console.log(
+		// 	'=== 🧦 presentation - devF23 - MOTIVATION - received transferred update ==='
+		// );
+		// console.log(data);
+		// }
+		socketioMotivation.handleTransferred(data);
+	});
+
+	socketioMotivation.client.on('status', (data: SocketioStatus) => {
+		// if (debug) {
+		// console.log(
+		// 	'=== 🧦 presentation - devF23 - MOTIVATION - received status update ==='
+		// );
+		// console.log('Status update:', data);
+		// }
+		socketioMotivation.handleStatus(data);
+	});
+
+	socketioMotivation.client.on('deleted', (message_id: string) => {
+		// if (debug) {
+		// 	console.log(
+		// 		'=== presentation - devF23 - MOTIVATION - deleted messages ==='
+		// 	);
+		// 	console.log(message_id);
+		// }
+		socketioMotivation.handleDeleted(message_id);
+	});
+
 	let averageMotivationColors = $state({ background: '0 0 0', text: '0  0 0' });
 
 	// $effect(() => {
@@ -105,7 +136,7 @@
 	// 	console.log($state.snapshot(averageMotivationColors));
 	// });
 
-	const socketioMotivation = new SocketIO(connectionMotivation, () => motivationAnswers);
+
 
 	let addColorToMotivationTable = $state(false);
 
@@ -130,11 +161,14 @@
 				}
 			});
 		}
+		console.log('=== dev2 / F23 - Motivation Average Color ===');
+		console.log($state.snapshot(averageMotivationColors));
 		// updates background color on the slides, where addColorToMotivationTable changes
-		if (revealInstance && averageMotivationColors && addColorToMotivationTable !== undefined) {
+		// if (revealInstance && averageMotivationColors && addColorToMotivationTable !== undefined) {
+		if (revealInstance && (motivationAnswersAverage || motivationAnswers.length === 6) && addColorToMotivationTable !== undefined) {
 			const currentSlide = revealInstance.getCurrentSlide();
 			// console.log('=== synchronizing slide to update background color ===');
-			// console.log(averageMotivationColors);
+			// console.log($state.snapshot(averageMotivationColors));
 			if (currentSlide) {
 				revealInstance.syncSlide(currentSlide);
 			}
