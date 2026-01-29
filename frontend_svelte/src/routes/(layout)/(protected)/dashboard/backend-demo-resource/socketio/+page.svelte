@@ -25,7 +25,7 @@
 		}
 	});
 
-	let socketio: SocketIO;
+	let socketio: SocketIO = $state(undefined as unknown as SocketIO);
 	let demoResources = $state<DemoResourceExtended[]>([]);
 	let editIds = new SvelteSet<string>();
 	let statusMessages = $state<SocketioStatus[]>([]);

@@ -35,7 +35,7 @@
 			if (!a.creation_date || !b.creation_date) {
 				return 1;
 			} else {
-				return !a.creation_date > !b.creation_date ? 1 : -1;
+				return !a.creation_date < !b.creation_date ? -1 : 1;
 			}
 		})
 	);
@@ -62,10 +62,8 @@
 
 		socketioIntention.client.on('status', (data: SocketioStatus) => {
 			// if (debug) {
-			// console.log(
-			// 	'=== 🧦 presentation - devF23 - INTENTION - received status update ==='
-			// );
-			// console.log('Status update:', data);
+			// console.log('=== 🧦 presentation - devF23 - INTENTION - received status update ===');
+			console.log('=== 🧦 INTENTION status update ===', data);
 			// }
 			socketioIntention.handleStatus(data);
 		});
@@ -221,7 +219,7 @@
 			if (!a.creation_date || !b.creation_date) {
 				return 1;
 			} else {
-				return !a.creation_date > !b.creation_date ? 1 : -1;
+				return !a.creation_date < !b.creation_date ? -1 : 1;
 			}
 		})
 	);
@@ -296,7 +294,7 @@
 						if (event.key === 'Enter' && !event.shiftKey) {
 							event.preventDefault();
 							intentionAnswers = [myIntention, ...intentionAnswers];
-							socketioIntention.addEntity(myIntention);
+							// socketioIntention.addEntity(myIntention);
 							socketioIntention.submitEntity(
 								myIntention,
 								intentionQuestionId,
@@ -425,9 +423,9 @@
 		<div class="fragment">
 			<p>and everyone has their own</p>
 			<ul>
-				<li>individual learning preferences</li>
-				<li>technical background</li>
-				<li>life situation</li>
+				<li>individual learning preferences,</li>
+				<li>technical backgrounds,</li>
+				<li>life situations, and</li>
 				<li>intentions,</li>
 			</ul>
 		</div>
@@ -457,7 +455,7 @@
 						if (event.key === 'Enter' && !event.shiftKey) {
 							event.preventDefault();
 							commentsAnswers = [myComment, ...commentsAnswers];
-							socketioComment.addEntity(myComment);
+							// socketioComment.addEntity(myComment);
 							socketioComment.submitEntity(myComment, commentsQuestionId, true, true, Action.READ);
 							myComment = {
 								id: 'new_' + Math.random().toString(36).substring(2, 9),
