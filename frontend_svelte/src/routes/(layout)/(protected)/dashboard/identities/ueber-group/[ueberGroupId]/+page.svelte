@@ -13,6 +13,7 @@
 	import { crossfade } from 'svelte/transition';
 	import { SvelteMap } from 'svelte/reactivity';
 	import { IdentityType } from '$lib/accessHandler';
+	import { onDestroy, onMount } from 'svelte';
 
 	// Page related stuff:
 	let { data }: { data: PageData } = $props();
@@ -26,42 +27,9 @@
 		}
 	});
 
-	// Ueber-Group realted stuff:
+	// Data variables for Ueber-Groups and Groups:
 	let ueberGroup = $state(data.thisUeberGroup);
 	let editUeberGroup = $state(false);
-
-	const ueberGroupConnection: SocketioConnection = {
-		namespace: '/ueber-group',
-		cookie_session_id: page.data.session.sessionId
-	};
-	// TBD: when porting to group,
-	// remember to request the data of this group
-	// via resource-ids,
-	// as there is only read(id) callback-on-connect
-	// and not read-all callback on connect
-	// TBD: put in onMount!
-	const socketioUeberGroup = new SocketIO(ueberGroupConnection);
-
-	socketioUeberGroup.client.on('deleted', (resource_id: string) => {
-		if (ueberGroup && ueberGroup.id === resource_id) {
-			goto('../');
-		}
-	});
-
-	socketioUeberGroup.client.on('transferred', (data: UeberGroup) => {
-		if (ueberGroup && ueberGroup.id === data.id) {
-			ueberGroup = data;
-		}
-	});
-
-	// Group related stuff:
-	const groupConnection: SocketioConnection = {
-		namespace: '/group',
-		cookie_session_id: page.data.session.sessionId
-		// query_params: {
-		// 	'request-access-data': true,
-		// }
-	};
 
 	// const shortUeberGroupName = () => {
 	// 	let shortName = ueberGroup?.name.slice(0, 15) || 'this UeberGroup';
@@ -95,44 +63,86 @@
 			multipleGroupsSuffixes.end = multipleGroupsSuffixes.start + 1;
 		}
 	});
-	// TBD: put in onMount!
-	const socketioGroup = new SocketIO(groupConnection, () => allGroups);
 
-	socketioGroup.client.emit('read');
-	socketioGroup.client.on('transferred', (data: Group) => {
-		if (!linkedGroups.some((group) => group.id === data.id)) {
-			socketioGroup.handleTransferred(data);
-		}
-	});
-	socketioGroup.client.on('deleted', (resource_id: string) => {
-		linkedGroups = linkedGroups.filter((group) => group.id !== resource_id);
-	});
-	socketioGroup.client.on('status', (status: SocketioStatus) => {
-		if ('success' in status) {
-			if (status.success === 'created') {
-				if (newGroupIdsSuffixes.has(status.submitted_id)) {
-					const suffix = newGroupIdsSuffixes.get(status.submitted_id);
-					const thisGroup: Group = Object.assign({}, newGroup);
-					thisGroup.name = newGroup.name + suffix;
-					linkedGroups.push({ ...thisGroup, id: status.id });
-					newGroupIdsSuffixes.delete(status.submitted_id);
-					if (suffix === '' || newGroupIdsSuffixes.size === 1) {
-						newGroup.name = '';
-						newGroup.description = '';
-						if (suffix === '') {
-							newGroup.id = 'new_' + Math.random().toString(36).substring(2, 9);
-							newGroupIdsSuffixes.set(newGroup.id, '');
+	// SocketIO for Ueber-Groups and Groups:
+	const ueberGroupConnection: SocketioConnection = {
+		namespace: '/ueber-group',
+		cookie_session_id: page.data.session.sessionId
+	};
+
+	// TBD: when porting to group,
+	// remember to request the data of this group
+	// via resource-ids,
+	// as there is only read(id) callback-on-connect!
+
+	// Group related stuff:
+	const groupConnection: SocketioConnection = {
+		namespace: '/group',
+		cookie_session_id: page.data.session.sessionId
+		// query_params: {
+		// 	'request-access-data': true,
+		// }
+	};
+	// and not read-all callback on connect
+	let socketioUeberGroup: SocketIO = $state(undefined as unknown as SocketIO);
+	let socketioGroup: SocketIO = $state(undefined as unknown as SocketIO);
+	onMount(() => {
+		socketioUeberGroup = new SocketIO(ueberGroupConnection);
+
+		socketioUeberGroup.client.on('deleted', (resource_id: string) => {
+			if (ueberGroup && ueberGroup.id === resource_id) {
+				goto('../');
+			}
+		});
+
+		socketioUeberGroup.client.on('transferred', (data: UeberGroup) => {
+			if (ueberGroup && ueberGroup.id === data.id) {
+				ueberGroup = data;
+			}
+		});
+
+		socketioGroup = new SocketIO(groupConnection, () => allGroups);
+		socketioGroup.client.emit('read');
+		socketioGroup.client.on('transferred', (data: Group) => {
+			if (!linkedGroups.some((group) => group.id === data.id)) {
+				socketioGroup.handleTransferred(data);
+			}
+		});
+		socketioGroup.client.on('deleted', (resource_id: string) => {
+			linkedGroups = linkedGroups.filter((group) => group.id !== resource_id);
+		});
+		socketioGroup.client.on('status', (status: SocketioStatus) => {
+			if ('success' in status) {
+				if (status.success === 'created') {
+					if (newGroupIdsSuffixes.has(status.submitted_id)) {
+						const suffix = newGroupIdsSuffixes.get(status.submitted_id);
+						const thisGroup: Group = Object.assign({}, newGroup);
+						thisGroup.name = newGroup.name + suffix;
+						linkedGroups.push({ ...thisGroup, id: status.id });
+						newGroupIdsSuffixes.delete(status.submitted_id);
+						if (suffix === '' || newGroupIdsSuffixes.size === 1) {
+							newGroup.name = '';
+							newGroup.description = '';
+							if (suffix === '') {
+								newGroup.id = 'new_' + Math.random().toString(36).substring(2, 9);
+								newGroupIdsSuffixes.set(newGroup.id, '');
+							}
 						}
 					}
+				} else if (status.success === 'linked') {
+					linkedGroups.push(allGroups.find((group) => group.id === status.id) as Group);
+					allGroups = allGroups.filter((group) => group.id !== status.id);
+				} else if (status.success === 'unlinked') {
+					allGroups.push(linkedGroups.find((group) => group.id === status.id) as Group);
+					linkedGroups = linkedGroups.filter((group) => group.id !== status.id);
 				}
-			} else if (status.success === 'linked') {
-				linkedGroups.push(allGroups.find((group) => group.id === status.id) as Group);
-				allGroups = allGroups.filter((group) => group.id !== status.id);
-			} else if (status.success === 'unlinked') {
-				allGroups.push(linkedGroups.find((group) => group.id === status.id) as Group);
-				linkedGroups = linkedGroups.filter((group) => group.id !== status.id);
 			}
-		}
+		});
+	});
+
+	onDestroy(() => {
+		socketioUeberGroup?.client.disconnect();
+		socketioGroup?.client.disconnect();
 	});
 
 	const addNewGroup = () => {
@@ -177,6 +187,7 @@
 		}
 	};
 
+	// TBD: doesn't immedelty reomve group from DOM!
 	const deleteGroup = (groupId: string) => {
 		socketioGroup.deleteEntity(groupId);
 	};
