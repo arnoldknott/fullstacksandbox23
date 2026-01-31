@@ -183,8 +183,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                         action=Action.own,
                         identity_id=current_user_data.user_id,
                     )
-                    async with self.policy_CRUD as policy_CRUD:
-                        await policy_CRUD.create(access_policy, current_user_data)
+                    await self.policy_crud.create(access_policy, current_user_data)
 
                 access_log = AccessLogCreate(
                     resource_id=database_user.id,
@@ -192,8 +191,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                     identity_id=current_user_data.user_id,
                     status_code=response_status_code,
                 )
-                async with self.logging_CRUD as log_CRUD:
-                    await log_CRUD.create(access_log)
+                await self.logging_crud.create(access_log)
                 # await self._write_log(
                 #     current_user.id, Action.own, current_user_data, 201
                 # )
@@ -207,8 +205,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                     identity_id=current_user.id,
                     status_code=200,
                 )
-                async with self.logging_CRUD as log_CRUD:
-                    await log_CRUD.create(access_log)
+                await self.logging_crud.create(access_log)
                 current_user_data = CurrentUserData(
                     user_id=current_user.id,
                     azure_token_roles=[],  # Roles are coming from the token - but this information is not available here!
@@ -222,8 +219,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                     identity_id=current_user_data.user_id,
                     status_code=404,
                 )
-                async with self.logging_CRUD as log_CRUD:
-                    await log_CRUD.create(access_log)
+                await self.logging_crud.create(access_log)
                 # await self._write_log(
                 #     current_user.id, Action.own, current_user_data, 404
                 # )
@@ -234,22 +230,24 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             # TBD: refactor into using the access controlled protected methods:
             # Now the user actually exists and security can provide the CurrentUserData!
             # use current_user_data for this!
-            async with AzureGroupCRUD() as group_crud:
-                # TBD: add access control:
-                # members of groups need to have read access to the group -
-                # even if it exists already!
-                await group_crud.create_if_not_exists(azure_group_id, azure_tenant_id)
-                # try:
-                #     group_crud.read_by_id(azure_group_id)
-                # except HTTPException as err:
-                #     if err.status_code == 404:
-                #         group_create = GroupCreate(
-                #             azure_group_id=azure_group_id,
-                #             azure_tenant_id=azure_tenant_id,
-                #         )
-                #         group_crud.create(group_create)
-                # when using this elsewhere, consider if update is needed in else if statement
-                # But should also be covered already by the base.update!
+            # async with AzureGroupCRUD() as group_crud:
+            group_crud = AzureGroupCRUD()
+            group_crud.session = session
+            # TBD: add access control:
+            # members of groups need to have read access to the group -
+            # even if it exists already!
+            await group_crud.create_if_not_exists(azure_group_id, azure_tenant_id)
+            # try:
+            #     group_crud.read_by_id(azure_group_id)
+            # except HTTPException as err:
+            #     if err.status_code == 404:
+            #         group_create = GroupCreate(
+            #             azure_group_id=azure_group_id,
+            #             azure_tenant_id=azure_tenant_id,
+            #         )
+            #         group_crud.create(group_create)
+            # when using this elsewhere, consider if update is needed in else if statement
+            # But should also be covered already by the base.update!
             # session = self.session
 
             # azure_user_group_link = await session.exec(
@@ -272,21 +270,21 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             # TBD: check if the group is already linked to the user!
             # User needs write access to the group to be able to add itself to the group:
             user_group_link = []
-            async with self.hierarchy_CRUD as hierarchy_CRUD:
-                user_group_link = await hierarchy_CRUD.read(
-                    parent_id=azure_group_id,
-                    child_id=current_user_data.user_id,
-                    current_user=current_user_data,
-                )
+            # async with self.hierarchy_CRUD as hierarchy_CRUD:
+            hierarchy_CRUD = self.hierarchy_CRUD(session=session)
+            user_group_link = await hierarchy_CRUD.read(
+                parent_id=azure_group_id,
+                child_id=current_user_data.user_id,
+                current_user=current_user_data,
+            )
             if not user_group_link:
-                async with self.policy_CRUD as policy_CRUD:
-                    access_policy = AccessPolicyCreate(
-                        resource_id=azure_group_id,
-                        action=Action.write,  # needs write access to parent to add itself to the group -> BaseHierarchyCRUD.create()!
-                        identity_id=current_user_data.user_id,
-                    )
-                    # TBD: fix this: what rights should a user have to a newly created group_group?
-                    await policy_CRUD.create(access_policy, current_user_data)
+                access_policy = AccessPolicyCreate(
+                    resource_id=azure_group_id,
+                    action=Action.write,  # needs write access to parent to add itself to the group -> BaseHierarchyCRUD.create()!
+                    identity_id=current_user_data.user_id,
+                )
+                # TBD: fix this: what rights should a user have to a newly created group_group?
+                await self.policy_crud.create(access_policy, current_user_data)
                 await self.add_child_to_parent(
                     parent_id=azure_group_id,
                     child_id=current_user_data.user_id,
@@ -298,12 +296,12 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         # # remove hierarchy links for groups, that are no longer in the token:
         for linked_group in current_user.azure_groups:
             if str(linked_group.id) not in groups:
-                async with self.hierarchy_CRUD as hierarchy_CRUD:
-                    await hierarchy_CRUD.delete(
-                        parent_id=linked_group.id,
-                        child_id=current_user_data.user_id,
-                        current_user=current_user_data,
-                    )
+                hierarchy_CRUD = self.hierarchy_CRUD(session=session)
+                await hierarchy_CRUD.delete(
+                    parent_id=linked_group.id,
+                    child_id=current_user_data.user_id,
+                    current_user=current_user_data,
+                )
 
         # read again after the relationship to the groups is created:
         # TBD: put this one back in - but now with the current_user parameter!
@@ -343,10 +341,9 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                 action=Action.own,
                 identity_id=database_user.id,
             )
-            async with self.policy_CRUD as policy_CRUD:
-                await policy_CRUD.create(
-                    access_policy, current_user, allow_override=True
-                )
+            await self.policy_crud.create(
+                access_policy, current_user, allow_override=True
+            )
 
             access_log = AccessLogCreate(
                 resource_id=database_user.id,
@@ -354,8 +351,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                 identity_id=current_user.user_id,
                 status_code=201,
             )
-            async with self.logging_CRUD as logging_CRUD:
-                await logging_CRUD.create(access_log)
+            await self.logging_crud.create(access_log)
         except Exception as err:
             logging.error(err)
             raise HTTPException(status_code=404, detail="User not found")
@@ -472,8 +468,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                 identity_id=current_user.user_id,
                 status_code=200,
             )
-            async with self.logging_CRUD as log_CRUD:
-                await log_CRUD.create(access_log)
+            await self.logging_crud.create(access_log)
             return me
         except Exception as err:
             logging.error(err)

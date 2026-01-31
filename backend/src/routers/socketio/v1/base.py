@@ -179,7 +179,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                     try:
                         parent_uuid = UUID(parent_id)
                         # if crud.model.__name__ in ResourceType.list():
-                        async with crud.hierarchy_CRUD as hierarchy_crud:
+                        async with crud.hierarchy_CRUD() as hierarchy_crud:
                             hierarchies = await hierarchy_crud.read(
                                 current_user=current_user, parent_id=parent_uuid
                             )
@@ -254,6 +254,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                     resource_id=resource_id, current_user=current_user
                 )
             except Exception:
+                logger.info(f"🧦 No access data found for {resource_id}.")
                 creation_date = None
                 last_modified_date = None
         # TBD: add typing AccessData for access_data

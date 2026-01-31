@@ -48,18 +48,24 @@ own = Action.own
 class AccessPolicyCRUD:
     """CRUD for access control policies"""
 
-    def __init__(self):
+    def __init__(self, session: Optional[AsyncSession] = None):
         """Initializes the CRUD for access control policies."""
-        self.session = None
+        self.session = session
+        self._owns_session = False if session else True
 
     async def __aenter__(self) -> AsyncSession:
         """Returns a database session."""
-        self.session = await get_async_session()
+        if self.session is None:
+            self.session = await get_async_session()
+            self._owns_session = True
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """Closes the database session."""
-        await self.session.close()
+        if self._owns_session:
+            await self.session.close()
+            self.session = None
+            self._owns_session = False
 
     def __get_resource_inheritance_common_table_expression(
         self,
@@ -277,17 +283,16 @@ class AccessPolicyCRUD:
             query = self.filters_allowed(query, action, current_user=current_user)
 
             # TBD: refactor for correct session handling!
-            async with self:
-                # Only one policy per resource - action - identity combination is allowed!
-                response = await self.session.exec(query)
-                results = response.all()
+            # async with self:
+            # Only one policy per resource - action - identity combination is allowed!
+            response = await self.session.exec(query)
+            results = response.all()
 
             for result in results:
                 if result.resource_id == resource_id:
                     return True
         except Exception as e:
-            logger.error(f"Error in reading policy: {e}")
-            print("=== Error in AccessPolicyCRUD.ALLOWS - fails ===")
+            logger.error(f"Error in allowing policy: {e}")
             raise HTTPException(status_code=403, detail="Forbidden.")
 
         return False
@@ -339,7 +344,7 @@ class AccessPolicyCRUD:
                 )
 
         except Exception as e:
-            logger.error(f"Error in reading policy: {e}")
+            logger.error(f"Error in checking access to policy: {e}")
             raise HTTPException(status_code=403, detail="Forbidden.")
 
     async def create(
@@ -391,6 +396,11 @@ class AccessPolicyCRUD:
 
             self.session.add(policy)
             await self.session.commit()
+            # TBD: consider gathering all the commits in one transaction:
+            # if self._owns_session:
+            #     await self.session.commit()
+            # else:
+            #     await self.session.flush()
             await self.session.refresh(policy)
             return policy
         except Exception as err:
@@ -576,6 +586,11 @@ class AccessPolicyCRUD:
                 )
                 self.session.add(new_policy)
                 await self.session.commit()
+                # TBD: consider gathering all the commits in one transaction:
+                # if self._owns_session:
+                #     await self.session.commit()
+                # else:
+                #     await self.session.flush()
                 await self.session.refresh(new_policy)
                 updated_policy = new_policy
             return updated_policy
@@ -632,18 +647,27 @@ class AccessPolicyCRUD:
 class AccessLoggingCRUD:
     """Logging access attempts to database."""
 
-    def __init__(self):
-        self
-        self.policy_crud = AccessPolicyCRUD()
+    def __init__(self, session: Optional[AsyncSession] = None):
+        self.session = session
+        self._owns_session = False if session else True
+        self.policy_crud = (
+            AccessPolicyCRUD(session=self.session) if session else AccessPolicyCRUD()
+        )
 
     async def __aenter__(self) -> AsyncSession:
         """Returns a database session."""
-        self.session = await get_async_session()
+        if self.session is None:
+            self.session = await get_async_session()
+            self.policy_crud = AccessPolicyCRUD(session=self.session)
+            self._owns_session = True
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """Closes the database session."""
-        await self.session.close()
+        if self._owns_session:
+            await self.session.close()
+            self.session = None
+            self._owns_session = False
 
     async def create(self, access_log: AccessLogCreate) -> AccessLog:
         """Creates an access log entry."""
@@ -651,6 +675,11 @@ class AccessLoggingCRUD:
             access_log = AccessLog.model_validate(access_log)
             self.session.add(access_log)
             await self.session.commit()
+            # TBD: consider gathering all the commits in one transaction:
+            # if self._owns_session:
+            #     await self.session.commit()
+            # else:
+            #     await self.session.flush()
             await self.session.refresh(access_log)
 
             # print("=== AccessLoggingCRUD.create - access_log ===")
@@ -677,7 +706,9 @@ class AccessLoggingCRUD:
         try:
             session = self.session
             statement = select(AccessLog)
-            statement = self.policy_crud.filters_allowed(
+            # statement = self.policy_crud.filters_allowed(
+            policy_crud = AccessPolicyCRUD(session=session)
+            statement = policy_crud.filters_allowed(
                 statement, required_action, AccessLog, current_user
             )
             if resource_id:
@@ -829,20 +860,34 @@ class BaseHierarchyCRUD(
 ):
     """Base CRUD for hierarchies."""
 
-    def __init__(self, hierarchy: BaseHierarchy, base_model: Type[BaseHierarchyModel]):
-        self.session = None
+    def __init__(
+        self,
+        hierarchy: BaseHierarchy,
+        base_model: Type[BaseHierarchyModel],
+        session: Optional[AsyncSession] = None,
+    ):
+        self.session = session
+        self._owns_session = False if session else True
         self.hierarchy = hierarchy
         self.model = base_model
-        self.policy_crud = AccessPolicyCRUD()
+        self.policy_crud = (
+            AccessPolicyCRUD(session=session) if session else AccessPolicyCRUD()
+        )
 
     async def __aenter__(self) -> AsyncSession:
         """Returns a database session."""
-        self.session = await get_async_session()
+        if self.session is None:
+            self.session = await get_async_session()
+            self.policy_crud = AccessPolicyCRUD(session=self.session)
+            self._owns_session = True
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """Closes the database session."""
-        await self.session.close()
+        if self._owns_session:
+            await self.session.close()
+            self.session = None
+            self._owns_session = False
 
     async def create(
         self,
@@ -882,6 +927,11 @@ class BaseHierarchyCRUD(
                 relation = self.model.model_validate(relation)
                 self.session.add(relation)
                 await self.session.commit()
+                # TBD: consider gathering all the commits in one transaction:
+                # if self._owns_session:
+                #     await self.session.commit()
+                # else:
+                #     await self.session.flush()
                 await self.session.refresh(relation)
                 return relation
             else:
@@ -1008,8 +1058,8 @@ class ResourceHierarchyCRUD(
 ):
     """CRUD for resource hierarchies."""
 
-    def __init__(self):
-        super().__init__(ResourceHierarchy, ResourceHierarchy)
+    def __init__(self, session: Optional[AsyncSession] = None):
+        super().__init__(ResourceHierarchy, ResourceHierarchy, session=session)
 
     async def create(
         self,
@@ -1038,6 +1088,11 @@ class ResourceHierarchyCRUD(
         # Update the hierarchy with the order value:
         hierarchy.order = next_order
         await self.session.commit()
+        # TBD: consider gathering all the commits in one transaction:
+        # if self._owns_session:
+        #     await self.session.commit()
+        # else:
+        #     await self.session.flush()
         await self.session.refresh(hierarchy)
 
         return hierarchy
@@ -1111,6 +1166,11 @@ class ResourceHierarchyCRUD(
 
             # Update the database
             await self.session.commit()
+            # TBD: consider gathering all the commits in one transaction:
+            # if self._owns_session:
+            #     await self.session.commit()
+            # else:
+            #     await self.session.flush()
 
         except Exception as err:
             logger.error(f"Error in reordering children: {err}")
@@ -1122,5 +1182,5 @@ class IdentityHierarchyCRUD(
 ):
     """CRUD for resource hierarchies."""
 
-    def __init__(self):
-        super().__init__(IdentityHierarchy, IdentityHierarchy)
+    def __init__(self, session: Optional[AsyncSession] = None):
+        super().__init__(IdentityHierarchy, IdentityHierarchy, session=session)
