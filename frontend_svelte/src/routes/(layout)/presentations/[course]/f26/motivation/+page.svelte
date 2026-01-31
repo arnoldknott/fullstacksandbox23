@@ -147,11 +147,11 @@
 		});
 	});
 
-	let myIntention: MessageExtended = $state({
-		id: 'new_' + Math.random().toString(36).substring(2, 9),
-		content: '',
-		language: 'en'
-	});
+	// let myIntention: MessageExtended = $state({
+	// 	id: 'new_' + Math.random().toString(36).substring(2, 9),
+	// 	content: '',
+	// 	language: 'en'
+	// });
 
 	let motivationAnswersAverage: number = $derived.by(() => {
 		if (motivationAnswers.length <= 5) {
