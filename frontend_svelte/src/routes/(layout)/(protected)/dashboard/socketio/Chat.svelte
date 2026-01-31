@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { SocketIO, type SocketioConnection } from '$lib/socketio';
-	import { onDestroy } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 
 	// import { getContext, type Snippet } from 'svelte';
 	import { type Snippet } from 'svelte';
@@ -11,8 +11,11 @@
 		children
 	}: { connection: SocketioConnection; socketioEvent: string; children: Snippet } = $props();
 
-	// TBD: put in onMount!
-	const socketio = new SocketIO(connection);
+	let socketio: SocketIO = $state(undefined as unknown as SocketIO);
+	onMount(() => {
+		socketio = new SocketIO(connection);
+	});
+	onDestroy(() => socketio?.client.disconnect());
 
 	let status = $state(false);
 	$effect(() => {
@@ -44,8 +47,6 @@
 			old_messages.push(`${data}`);
 		});
 	});
-
-	onDestroy(() => socketio.client.disconnect());
 </script>
 
 {@render children?.()} in Chat / Connection

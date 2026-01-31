@@ -12,6 +12,7 @@
 	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio';
 	import type { UeberGroup, UeberGroupExtended } from '$lib/types';
 	import { initAccordion } from '$lib/userInterface';
+	import { onDestroy, onMount } from 'svelte';
 	let { data }: { data: PageData } = $props();
 
 	let debug = $state(page.url.searchParams.get('debug') === 'true' ? true : false);
@@ -48,12 +49,20 @@
 	};
 
 	let ueberGroups = $state<UeberGroup[]>(data.ueberGroups);
-	// TBD: pu in onMount!
-	const socketio = new SocketIO(connection, () => ueberGroups);
+	let socketio: SocketIO = $state(undefined as unknown as SocketIO);
+	onMount(() => {
+		socketio = new SocketIO(connection, () => ueberGroups);
 
-	socketio.client.on('transferred', (data: UeberGroupExtended) => socketio.handleTransferred(data));
-	socketio.client.on('deleted', (resource_id: string) => socketio.handleDeleted(resource_id));
-	socketio.client.on('status', (status: SocketioStatus) => socketio.handleStatus(status));
+		socketio.client.on('transferred', (data: UeberGroupExtended) =>
+			socketio.handleTransferred(data)
+		);
+		socketio.client.on('deleted', (resource_id: string) => socketio.handleDeleted(resource_id));
+		socketio.client.on('status', (status: SocketioStatus) => socketio.handleStatus(status));
+	});
+
+	onDestroy(() => {
+		socketio?.client.disconnect();
+	});
 
 	const newUeberGroup = $state<UeberGroup>({
 		id: 'new_' + Math.random().toString(36).substring(2, 9),

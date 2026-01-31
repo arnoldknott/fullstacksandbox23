@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import type { PageData } from './$types';
 	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio';
 	import type { MessageExtended, Numerical } from '$lib/types';
@@ -15,14 +16,14 @@
 		fragment: HTMLElement;
 		fragments: HTMLElement[];
 	}
-
+	const course = page.params.course || 'common';
 	let { data }: { data: PageData } = $props();
 
 	let revealInstance = $state<Api | undefined>(undefined);
 
 	// TBD: catch gracefully, if no intention or motivation question is available
-	let intentionAnswers = $state(data.questionsData?.intention?.messages || []);
-	let intentionQuestionId = data.questionsData?.intention?.id || '';
+	// let intentionAnswers = $state(data.questionsData?.intention?.messages || []);
+	// let intentionQuestionId = data.questionsData?.intention?.id || '';
 
 	let motivationAnswers = $state(data.questionsData?.motivation?.numericals || []);
 	let motivationQuestionId = data.questionsData?.motivation?.id || '';
@@ -30,53 +31,53 @@
 	let commentsAnswers = $state(data.questionsData?.comments?.messages || []);
 	let commentsQuestionId = data.questionsData?.comments?.id || '';
 
-	let intentionAnswersSorted: MessageExtended[] = $derived(
-		intentionAnswers.toSorted((a, b) => {
-			if (!a.creation_date || !b.creation_date) {
-				return 1;
-			} else {
-				return !a.creation_date < !b.creation_date ? -1 : 1;
-			}
-		})
-	);
+	// let intentionAnswersSorted: MessageExtended[] = $derived(
+	// 	intentionAnswers.toSorted((a, b) => {
+	// 		if (!a.creation_date || !b.creation_date) {
+	// 			return 1;
+	// 		} else {
+	// 			return !a.creation_date < !b.creation_date ? -1 : 1;
+	// 		}
+	// 	})
+	// );
 
-	let socketioIntention: SocketIO;
+	// let socketioIntention: SocketIO;
 	let socketioMotivation: SocketIO = $state(undefined as unknown as SocketIO);
 	let socketioComment: SocketIO;
 	onMount(() => {
-		const intentionConnection: SocketioConnection = {
-			namespace: '/message',
-			query_params: { 'parent-id': intentionQuestionId, 'request-access-data': true }
-		};
+		// const intentionConnection: SocketioConnection = {
+		// 	namespace: '/message',
+		// 	query_params: { 'parent-id': intentionQuestionId, 'request-access-data': true }
+		// };
 
-		socketioIntention = new SocketIO(intentionConnection, () => intentionAnswers);
-		socketioIntention.client.on('transferred', (data: MessageExtended) => {
-			// if (debug) {
-			// console.log(
-			// 	'=== 🧦 presentation - devF23 - INTENTION - received transferred update ==='
-			// );
-			// console.log(data);
-			// }
-			socketioIntention.handleTransferred(data);
-		});
+		// socketioIntention = new SocketIO(intentionConnection, () => intentionAnswers);
+		// socketioIntention.client.on('transferred', (data: MessageExtended) => {
+		// 	// if (debug) {
+		// 	// console.log(
+		// 	// 	'=== 🧦 presentation - devF23 - INTENTION - received transferred update ==='
+		// 	// );
+		// 	// console.log(data);
+		// 	// }
+		// 	socketioIntention.handleTransferred(data);
+		// });
 
-		socketioIntention.client.on('status', (data: SocketioStatus) => {
-			// if (debug) {
-			// console.log('=== 🧦 presentation - devF23 - INTENTION - received status update ===');
-			console.log('=== 🧦 INTENTION status update ===', data);
-			// }
-			socketioIntention.handleStatus(data);
-		});
+		// socketioIntention.client.on('status', (data: SocketioStatus) => {
+		// 	// if (debug) {
+		// 	// console.log('=== 🧦 presentation - devF23 - INTENTION - received status update ===');
+		// 	console.log('=== 🧦 INTENTION status update ===', data);
+		// 	// }
+		// 	socketioIntention.handleStatus(data);
+		// });
 
-		socketioIntention.client.on('deleted', (message_id: string) => {
-			// if (debug) {
-			// 	console.log(
-			// 		'=== presentation - devF23 - INTENTION - deleted messages ==='
-			// 	);
-			// 	console.log(message_id);
-			// }
-			socketioIntention.handleDeleted(message_id);
-		});
+		// socketioIntention.client.on('deleted', (message_id: string) => {
+		// 	// if (debug) {
+		// 	// 	console.log(
+		// 	// 		'=== presentation - devF23 - INTENTION - deleted messages ==='
+		// 	// 	);
+		// 	// 	console.log(message_id);
+		// 	// }
+		// 	socketioIntention.handleDeleted(message_id);
+		// });
 
 		// SocketIO for motivation numericals
 		const connectionMotivation: SocketioConnection = {
@@ -87,9 +88,7 @@
 
 		socketioMotivation.client.on('transferred', (data: Numerical) => {
 			// if (debug) {
-			// console.log(
-			// 	'=== 🧦 presentation - devF23 - MOTIVATION - received transferred update ==='
-			// );
+			console.log('=== 🧦 presentation - devF23 - MOTIVATION - received transferred ===');
 			// console.log(data);
 			// }
 			socketioMotivation.handleTransferred(data);
@@ -148,11 +147,11 @@
 		});
 	});
 
-	let myIntention: MessageExtended = $state({
-		id: 'new_' + Math.random().toString(36).substring(2, 9),
-		content: '',
-		language: 'en'
-	});
+	// let myIntention: MessageExtended = $state({
+	// 	id: 'new_' + Math.random().toString(36).substring(2, 9),
+	// 	content: '',
+	// 	language: 'en'
+	// });
 
 	let motivationAnswersAverage: number = $derived.by(() => {
 		if (motivationAnswers.length <= 5) {
@@ -231,7 +230,7 @@
 	});
 
 	onDestroy(() => {
-		socketioIntention?.client.disconnect();
+		// socketioIntention?.client.disconnect();
 		socketioMotivation?.client.disconnect();
 		socketioComment?.client.disconnect();
 	});
@@ -259,6 +258,16 @@
 	// const backgroundColor = true
 
 	// const backgroundColor = false;
+	const modules: Record<string, string[]> = {
+		common: ['Module 1', 'Module 2', 'Module 3', 'Module 4'],
+		'34601': ['Signals', 'Components', 'Circuits', 'Applications'],
+		'34620': [
+			'Introduction & components',
+			'Power converters & supportive circuits',
+			'Lab exercises',
+			'Inverters'
+		]
+	};
 </script>
 
 {#snippet messageAnswer(text: string, date: Date | undefined, index: number)}
@@ -278,7 +287,7 @@
 	<section>
 		<h1>Welcome</h1>
 	</section>
-	<section>
+	<!-- <section>
 		<SlideTitle>Sharing Round</SlideTitle>
 		<div class="mx-10 mt-8">
 			<div class="text-left">
@@ -321,7 +330,7 @@
 				{/each}
 			</div>
 		</div>
-	</section>
+	</section> -->
 	<!-- <section data-background-color={backgroundColor || 'rgb(var(--md-rgb-color-primary-container))'}> -->
 	<section data-background-color="rgb(var(--md-rgb-color-primary-container))">
 		<SlideTitle>Motivation</SlideTitle>
@@ -357,16 +366,16 @@
 					class="btn btn-accent btn-gradient shadow-outline heading-small flex h-full flex-col rounded-4xl shadow-sm"
 				>
 					Humans need to experince a sense of belonging and connection with other people. Feeling
-					cared for by others and to care for others
+					cared for by others and to care for others.
 				</div>
 			</div>
 			<div class="heading-large fragment flex flex-col">
-				<div>Meaning</div>
+				<div>(Meaning)</div>
 				<div
 					class="btn btn-info btn-gradient shadow-outline heading-small flex h-full flex-col rounded-4xl shadow-sm"
 				>
-					Humans need to feel theri positive impact on others and their influence on improving
-					welfare to contribute to a better society.
+					(Humans need to feel their positive impact on others and their influence to contribute to
+					their environment.)
 				</div>
 			</div>
 		</div>
@@ -415,37 +424,42 @@
 	<section>
 		<SlideTitle>Inclusion</SlideTitle>
 		<Heading>We have diversity on this course...</Heading>
-		<ul>
-			<li>About 10 different study lines,</li>
-			<li>More than 100 students,</li>
-			<li>Online and physical attendance,</li>
+		<ul class="display-small mt-5 list-inside list-disc">
+			<li class="mt-3">About 10 different study lines,</li>
+			<li class="mt-3">More than 100 students,</li>
+			<li class="mt-3">Online and physical attendance,</li>
 		</ul>
 		<div class="fragment">
 			<p>and everyone has their own</p>
-			<ul>
-				<li>individual learning preferences,</li>
-				<li>technical backgrounds,</li>
-				<li>life situations, and</li>
-				<li>intentions,</li>
+			<ul class="display-small mt-5 list-inside list-disc">
+				<li class="mt-3">individual learning preferences,</li>
+				<li class="mt-3">technical backgrounds,</li>
+				<li class="mt-3">life situations, and</li>
+				<li class="mt-3">intentions,</li>
 			</ul>
 		</div>
 		<p
-			class="btn btn-gradient btn-primary-container heading fragment mx-5 mt-5 h-fit rounded-xl p-4 px-5"
+			class="btn btn-gradient btn-primary-container heading-large fragment mx-5 mt-5 h-fit rounded-xl p-4 px-5"
 		>
 			What can you do, to make this a pleasureable learning environment where everyone feels
 			included and can strive?
 		</p>
 	</section>
-	<!-- <section>
-		<SlideTitle>My motivation</SlideTitle>
-		<p class="text-error">Consider removing?</p>
-	</section> -->
+	<section>
+		<SlideTitle>To pass the course, ...</SlideTitle>
+		<p class="display">... hand in the four learning reflections:</p>
+		<ol class="mt-5 list-inside list-decimal">
+			{#each modules[course] as module, index (index)}
+				<li class="display mt-5">{module}</li>
+			{/each}
+		</ol>
+	</section>
 	<section>
 		<SlideTitle>Thank you for joining and participating!</SlideTitle>
 		<!-- <Heading>Do you have comments or questions?</Heading> -->
 		<div class="mx-10 mt-8">
 			<div class="text-left">
-				<label class="heading" for="sharing"> Do you have comments or questions? 🤔 </label>
+				<label class="heading-large" for="sharing"> Do you have comments or questions? 🤔 </label>
 				<textarea
 					class="heading placeholder:title-large w-full border border-2 p-2 shadow-inner placeholder:italic"
 					placeholder="These questions and comments are publically available on the internet for everyone, who has a link to this presentation. Sharing is caring 🫶 Press Enter to send."
