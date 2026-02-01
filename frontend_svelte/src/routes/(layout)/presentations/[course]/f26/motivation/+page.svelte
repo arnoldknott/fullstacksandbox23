@@ -335,47 +335,39 @@
 	<section data-background-color="rgb(var(--md-rgb-color-primary-container))">
 		<SlideTitle>Motivation</SlideTitle>
 		<h2 class="heading-large text-primary-container-content">Self determination theory</h2>
-		<h3>
-			Ryan and Deci / Ib Ravn - <a
-				href="https://opentextbc.ca/peersupport/chapter/self-determination-theory/"
-				target="_blank"
-				class="title-large link text-secondary-content pb-5">Source of Definitions</a
-			>
-		</h3>
+		<h3>Ryan and Deci / Ib Ravn</h3>
 		<div class="mx-5 grid h-120 grid-cols-4 gap-4">
-			<div class="heading fragment flex flex-col">
+			<div class="heading-large fragment flex flex-col">
 				<div>Autonomy</div>
 				<div
-					class="btn btn-primary btn-gradient shadow-outline heading-small flex h-full flex-col rounded-4xl shadow-sm"
+					class="btn btn-primary btn-gradient shadow-outline heading flex h-full flex-col rounded-4xl shadow-sm"
 				>
-					Humans need to feel in control of their own life behaviours and goals.
+					Making your own decisions about your own life behaviours and goals.
 				</div>
 			</div>
 			<div class="heading-large fragment flex flex-col">
 				<div>Competence</div>
 				<div
-					class="btn btn-secondary btn-gradient shadow-outline heading-small flex h-full flex-col rounded-4xl shadow-sm"
+					class="btn btn-secondary btn-gradient shadow-outline heading flex h-full flex-col rounded-4xl shadow-sm"
 				>
-					Humans need to gain mastery and control of their own lives & their environment. Essential
-					for self-esteem.
+					Gaining mastery of your own live and environment to build self-esteem.
 				</div>
 			</div>
 			<div class="heading-large fragment flex flex-col">
 				<div>Relatedness</div>
 				<div
-					class="btn btn-accent btn-gradient shadow-outline heading-small flex h-full flex-col rounded-4xl shadow-sm"
+					class="btn btn-accent btn-gradient shadow-outline heading flex h-full flex-col rounded-4xl shadow-sm"
 				>
-					Humans need to experince a sense of belonging and connection with other people. Feeling
-					cared for by others and to care for others.
+					Your sense of belonging to a community and connection with other people to care for and
+					feeling cared for.
 				</div>
 			</div>
 			<div class="heading-large fragment flex flex-col">
 				<div>(Meaning)</div>
 				<div
-					class="btn btn-info btn-gradient shadow-outline heading-small flex h-full flex-col rounded-4xl shadow-sm"
+					class="btn btn-info btn-gradient shadow-outline heading flex h-full flex-col rounded-4xl shadow-sm"
 				>
-					(Humans need to feel their positive impact on others and their influence to contribute to
-					their environment.)
+					(Feeling your impact on others and your influence to contribute to your environment.)
 				</div>
 			</div>
 		</div>
@@ -424,7 +416,7 @@
 	<section>
 		<SlideTitle>Inclusion</SlideTitle>
 		<Heading>We have diversity on this course...</Heading>
-		<ul class="display-small mt-5 list-inside list-disc">
+		<ul class="display-small fragment mt-5 list-inside list-disc">
 			<li class="mt-3">About 10 different study lines,</li>
 			<li class="mt-3">More than 100 students,</li>
 			<li class="mt-3">Online and physical attendance,</li>
@@ -441,7 +433,7 @@
 		<p
 			class="btn btn-gradient btn-primary-container heading-large fragment mx-5 mt-5 h-fit rounded-xl p-4 px-5"
 		>
-			What can you do, to make this a pleasureable learning environment where everyone feels
+			What can you do, to make this course a pleasureable learning environment where everyone feels
 			included and can strive?
 		</p>
 	</section>
