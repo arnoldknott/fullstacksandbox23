@@ -3,6 +3,7 @@
 	import { SocketIO } from '$lib/socketio';
 
 	import type { SocketioConnection } from '$lib/socketio';
+	import { onDestroy, onMount } from 'svelte';
 
 	// let { keyboard = $bindable(false) }: { keyboard: boolean } = $props();
 	// let keyboard = false
@@ -12,7 +13,13 @@
 		namespace: '/interactive-documentation'
 	};
 
-	const socketio = new SocketIO(connection);
+	let socketio: SocketIO = $state(undefined as unknown as SocketIO);
+	onMount(() => {
+		socketio = new SocketIO(connection);
+	});
+	onDestroy(() => {
+		socketio?.client.disconnect();
+	});
 
 	type Reply = {
 		name: string;

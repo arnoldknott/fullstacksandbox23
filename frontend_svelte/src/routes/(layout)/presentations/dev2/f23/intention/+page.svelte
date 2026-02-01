@@ -87,9 +87,7 @@
 
 		socketioMotivation.client.on('transferred', (data: Numerical) => {
 			// if (debug) {
-			// console.log(
-			// 	'=== 🧦 presentation - devF23 - MOTIVATION - received transferred update ==='
-			// );
+			console.log('=== 🧦 presentation - devF23 - MOTIVATION - received transferred ===');
 			// console.log(data);
 			// }
 			socketioMotivation.handleTransferred(data);

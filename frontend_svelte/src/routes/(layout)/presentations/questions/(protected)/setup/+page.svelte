@@ -7,6 +7,7 @@
 	import Heading from '$components/Heading.svelte';
 	import Title from '$components/Title.svelte';
 	import Display from '$components/Display.svelte';
+	import { onDestroy, onMount } from 'svelte';
 
 	let { data }: { data: PageData } = $props();
 	let questionId = data.questionsData?.questions.id || '';
@@ -36,74 +37,82 @@
 		cookie_session_id: data?.session?.sessionId || '',
 		query_params: { 'parent-id': questionId, 'request-access-data': true }
 	};
-	// TBD: put in onMount!
-	const messageSocketio = new SocketIO(messageConnection, () => messageAnswers);
-
-	messageSocketio.client.on('transferred', (data: MessageExtended) => {
-		// if (debug) {
-		// 	console.log(
-		// 		'=== 🧦 dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
-		// 	);
-		// 	console.log(data);
-		// }
-		messageSocketio.handleTransferred(data);
-	});
-
-	messageSocketio.client.on('status', (data: SocketioStatus) => {
-		// if (debug) {
-		console.log(
-			'=== 🧦 dashboard - backend-demo-resource - socketio - +page.svelte - received status update ==='
-		);
-		console.log('Status update:', data);
-		// }
-		messageSocketio.handleStatus(data);
-	});
-
-	messageSocketio.client.on('deleted', (message_id: string) => {
-		// if (debug) {
-		// 	console.log(
-		// 		'=== dashboard - backend-demo-resource - socketio - +page.svelte - deleted DemoResources ==='
-		// 	);
-		// 	console.log(resource_id);
-		// }
-		messageSocketio.handleDeleted(message_id);
-	});
-
 	const numericalConnection: SocketioConnection = {
 		namespace: '/numerical',
 		cookie_session_id: data?.session?.sessionId || '',
 		query_params: { 'parent-id': questionId, 'request-access-data': true }
 	};
-	// TBD: put in onMount!
-	const numericalSocketio = new SocketIO(numericalConnection, () => numericalAnswers);
-	numericalSocketio.client.on('transferred', (data: MessageExtended) => {
-		// if (debug) {
-		// 	console.log(
-		// 		'=== 🧦 dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
-		// 	);
-		// 	console.log(data);
-		// }
-		numericalSocketio.handleTransferred(data);
-	});
+	let messageSocketio: SocketIO = $state(undefined as unknown as SocketIO);
+	let numericalSocketio: SocketIO = $state(undefined as unknown as SocketIO);
+	onMount(() => {
+		messageSocketio = new SocketIO(messageConnection, () => messageAnswers);
+		numericalSocketio = new SocketIO(numericalConnection, () => numericalAnswers);
 
-	numericalSocketio.client.on('status', (data: SocketioStatus) => {
-		// if (debug) {
-		console.log(
-			'=== 🧦 dashboard - backend-demo-resource - socketio - +page.svelte - received status update ==='
-		);
-		console.log('Status update:', data);
-		// }
-		numericalSocketio.handleStatus(data);
-	});
+		messageSocketio.client.on('transferred', (data: MessageExtended) => {
+			// if (debug) {
+			// 	console.log(
+			// 		'=== 🧦 dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
+			// 	);
+			// 	console.log(data);
+			// }
+			messageSocketio.handleTransferred(data);
+		});
 
-	numericalSocketio.client.on('deleted', (message_id: string) => {
-		// if (debug) {
-		// 	console.log(
-		// 		'=== dashboard - backend-demo-resource - socketio - +page.svelte - deleted DemoResources ==='
-		// 	);
-		// 	console.log(resource_id);
-		// }
-		numericalSocketio.handleDeleted(message_id);
+		messageSocketio.client.on('status', (data: SocketioStatus) => {
+			// if (debug) {
+			console.log(
+				'=== 🧦 dashboard - backend-demo-resource - socketio - +page.svelte - received status update ==='
+			);
+			console.log('Status update:', data);
+			// }
+			messageSocketio.handleStatus(data);
+		});
+
+		messageSocketio.client.on('deleted', (message_id: string) => {
+			// if (debug) {
+			// 	console.log(
+			// 		'=== dashboard - backend-demo-resource - socketio - +page.svelte - deleted DemoResources ==='
+			// 	);
+			// 	console.log(resource_id);
+			// }
+			messageSocketio.handleDeleted(message_id);
+		});
+
+		// TBD: put in onMount!
+
+		numericalSocketio.client.on('transferred', (data: MessageExtended) => {
+			// if (debug) {
+			// 	console.log(
+			// 		'=== 🧦 dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
+			// 	);
+			// 	console.log(data);
+			// }
+			numericalSocketio.handleTransferred(data);
+		});
+
+		numericalSocketio.client.on('status', (data: SocketioStatus) => {
+			// if (debug) {
+			console.log(
+				'=== 🧦 dashboard - backend-demo-resource - socketio - +page.svelte - received status update ==='
+			);
+			console.log('Status update:', data);
+			// }
+			numericalSocketio.handleStatus(data);
+		});
+
+		numericalSocketio.client.on('deleted', (message_id: string) => {
+			// if (debug) {
+			// 	console.log(
+			// 		'=== dashboard - backend-demo-resource - socketio - +page.svelte - deleted DemoResources ==='
+			// 	);
+			// 	console.log(resource_id);
+			// }
+			numericalSocketio.handleDeleted(message_id);
+		});
+	});
+	onDestroy(() => {
+		messageSocketio?.client.disconnect();
+		numericalSocketio?.client.disconnect();
 	});
 </script>
 

@@ -61,9 +61,11 @@ class BaseCRUD(
         directory: str = None,
         allow_standalone: Optional[bool] = False,
         allow_public_create: Optional[bool] = False,
+        session: Optional[AsyncSession] = None,
     ):
         """Provides a database session for CRUD operations."""
-        self.session = None
+        self.session = session
+        self._owns_session = False if session else True
         self.model = base_model
         self.data_directory = directory
         self.allow_standalone = allow_standalone
@@ -71,13 +73,13 @@ class BaseCRUD(
         if base_model.__name__ in ResourceType.list():
             self.entity_type = ResourceType(self.model.__name__)
             self.type = ResourceType
-            self.hierarchy_CRUD = ResourceHierarchyCRUD()
+            self.hierarchy_CRUD = ResourceHierarchyCRUD
             self.hierarchy = ResourceHierarchy
             self.relations = ResourceHierarchy.relations
         elif base_model.__name__ in IdentityType.list():
             self.entity_type = IdentityType(self.model.__name__)
             self.type = IdentityType
-            self.hierarchy_CRUD = IdentityHierarchyCRUD()
+            self.hierarchy_CRUD = IdentityHierarchyCRUD
             self.hierarchy = IdentityHierarchy
             self.relations = IdentityHierarchy.relations
         else:
@@ -85,17 +87,28 @@ class BaseCRUD(
                 f"{base_model.__name__} is not a valid ResourceType or IdentityType"
             )
 
-        self.policy_CRUD = AccessPolicyCRUD()
-        self.logging_CRUD = AccessLoggingCRUD()
+        self.policy_crud = (
+            AccessPolicyCRUD(session=self.session) if session else AccessPolicyCRUD()
+        )
+        self.logging_crud = (
+            AccessLoggingCRUD(session=self.session) if session else AccessLoggingCRUD()
+        )
 
     async def __aenter__(self) -> AsyncSession:
         """Returns a database session."""
-        self.session = await get_async_session()
+        if self.session is None:
+            self.session = await get_async_session()
+            self.policy_crud = AccessPolicyCRUD(session=self.session)
+            self.logging_crud = AccessLoggingCRUD(session=self.session)
+            self._owns_session = True
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """Closes the database session."""
-        await self.session.close()
+        if self._owns_session:
+            await self.session.close()
+            self.session = None
+            self._owns_session = False
 
     # async def _write_policy(
     #     self,
@@ -250,6 +263,38 @@ class BaseCRUD(
                 )
                 current_user = CurrentUserData(user_id=public_user_id)
 
+            if parent_id or self.allow_standalone:
+                if not self.allow_standalone:
+                    parent_access_request = AccessRequest(
+                        resource_id=parent_id,
+                        action=write,
+                        current_user=current_user,
+                    )
+                    # if not await self.policy_crud.allows(parent_access_request):
+                    if not await self.policy_crud.allows(parent_access_request):
+                        logger.error(f"Parent {parent_id} does not allow write access.")
+                        raise HTTPException(status_code=403, detail="Forbidden.")
+                    # check if requested parent exists:
+                    query = select(IdentifierTypeLink).where(
+                        IdentifierTypeLink.id == parent_id
+                    )
+                    parent_response = await self.session.exec(query)
+                    parent_results = parent_response.one()
+                    if not parent_results:
+                        raise HTTPException(
+                            status_code=404, detail="Parent resource does not exist."
+                        )
+                # async with self.policy_CRUD as policy_CRUD:
+            else:
+                # TBD: is it only admin that can create stand-alone resources?
+                logger.error(
+                    "Parent not provided and standalone creation is not allowed."
+                )
+                raise HTTPException(
+                    status_code=403,
+                    detail=f"{self.model.__name__} - Forbidden.",
+                )
+
             # Create and add database object
             database_object = self.model.model_validate(object)
             await self._write_identifier_type_link(database_object.id)
@@ -263,8 +308,7 @@ class BaseCRUD(
                 identity_id=current_user.user_id,
                 status_code=201,
             )
-            async with self.logging_CRUD as logging_CRUD:
-                await logging_CRUD.create(access_log)
+            await self.logging_crud.create(access_log)
 
             # TBD: merge the sessions for creating the policy and the log
             # maybe together with creating the object
@@ -287,33 +331,15 @@ class BaseCRUD(
                 identity_id=current_user.user_id,
             )
 
-            if parent_id or self.allow_standalone:
-                if not self.allow_standalone:
-                    parent_access_request = AccessRequest(
-                        resource_id=parent_id,
-                        action=write,
-                        current_user=current_user,
-                    )
-                    if not await self.policy_CRUD.allows(parent_access_request):
-                        logger.error(f"Parent {parent_id} does not allow write access.")
-                        raise HTTPException(status_code=403, detail="Forbidden.")
-                async with self.policy_CRUD as policy_CRUD:
-                    await policy_CRUD.create(
-                        access_policy, current_user, allow_override=True
-                    )
-                if parent_id:
-                    await self.add_child_to_parent(
-                        parent_id=parent_id,
-                        child_id=database_object.id,
-                        current_user=current_user,
-                        inherit=inherit,
-                    )
-            else:
-                # TBD: is it only admin that can create stand-alone resources?
-                logger.error(f"Resource {database_object.id} is not allowed.")
-                raise HTTPException(
-                    status_code=403,
-                    detail=f"{self.model.__name__} - Forbidden.",
+            await self.policy_crud.create(
+                access_policy, current_user, allow_override=True
+            )
+            if parent_id:
+                await self.add_child_to_parent(
+                    parent_id=parent_id,
+                    child_id=database_object.id,
+                    current_user=current_user,
+                    inherit=inherit,
                 )
 
             # Commit the object to the database
@@ -329,12 +355,12 @@ class BaseCRUD(
                     action=public_action,
                     public=True,
                 )
-                async with self.policy_CRUD as policy_CRUD:
-                    await policy_CRUD.create(
-                        public_access_policy,
-                        current_user=current_user,  # Will be None for public creation
-                        allow_override=True,  # Always True - public policies don't need authorization
-                    )
+                # async with self.policy_CRUD as policy_CRUD:
+                await self.policy_crud.create(
+                    public_access_policy,
+                    current_user=current_user,  # Will be None for public creation
+                    allow_override=True,  # Always True - public policies don't need authorization
+                )
 
             return database_object
 
@@ -348,8 +374,7 @@ class BaseCRUD(
                         identity_id=current_user.user_id,
                         status_code=404,
                     )
-                    async with self.logging_CRUD as logging_CRUD:
-                        await logging_CRUD.create(access_log)
+                    await self.logging_crud.create(access_log)
                     # await self._write_log(database_object.id, own, current_user, 404)
                 except Exception as log_error:
                     logger.error(
@@ -422,14 +447,14 @@ class BaseCRUD(
         inherit: Optional[bool] = False,
     ) -> BaseHierarchyModelRead:
         """Adds a member of this class to a parent (of another entity type)."""
-        async with self.hierarchy_CRUD as hierarchy_CRUD:
-            hierarchy = await hierarchy_CRUD.create(
-                current_user=current_user,
-                parent_id=parent_id,
-                child_type=self.entity_type,
-                child_id=child_id,
-                inherit=inherit,
-            )
+        hierarchy_CRUD = self.hierarchy_CRUD(session=self.session)
+        hierarchy = await hierarchy_CRUD.create(
+            current_user=current_user,
+            parent_id=parent_id,
+            child_type=self.entity_type,
+            child_id=child_id,
+            inherit=inherit,
+        )
 
         return hierarchy
 
@@ -442,14 +467,15 @@ class BaseCRUD(
         current_user: "CurrentUserData",
     ) -> None:
         """Reorders the children of a parent."""
-        async with self.hierarchy_CRUD as hierarchy_CRUD:
-            hierarchy = await hierarchy_CRUD.reorder_children(
-                current_user=current_user,
-                parent_id=parent_id,
-                child_id=child_id,
-                position=position,
-                other_child_id=other_child_id,
-            )
+        # async with self.hierarchy_CRUD as hierarchy_CRUD:
+        hierarchy_CRUD = self.hierarchy_CRUD(session=self.session)
+        hierarchy = await hierarchy_CRUD.reorder_children(
+            current_user=current_user,
+            parent_id=parent_id,
+            child_id=child_id,
+            position=position,
+            other_child_id=other_child_id,
+        )
 
         return hierarchy
 
@@ -480,7 +506,7 @@ class BaseCRUD(
             # TBD: select_args are not compatible with the return type of the method!
             statement = select(*select_args) if select_args else select(self.model)
 
-            statement = self.policy_CRUD.filters_allowed(
+            statement = self.policy_crud.filters_allowed(
                 statement=statement,
                 action=read,
                 model=self.model,
@@ -494,7 +520,8 @@ class BaseCRUD(
                 related_attribute = getattr(self.model, relationship.key)
                 related_type = self.type(related_model.__name__)
                 related_statement = select(related_model.id)
-                related_statement = self.policy_CRUD.filters_allowed(
+                # related_statement = self.policy_CRUD.filters_allowed(
+                related_statement = self.policy_crud.filters_allowed(
                     related_statement,
                     action=read,
                     model=related_model,
@@ -589,8 +616,7 @@ class BaseCRUD(
                     identity_id=current_user.user_id if current_user else None,
                     status_code=200,
                 )
-                async with self.logging_CRUD as logging_CRUD:
-                    await logging_CRUD.create(access_log)
+                await self.logging_crud.create(access_log)
 
             return results
         except Exception as err:
@@ -601,8 +627,7 @@ class BaseCRUD(
                     identity_id=current_user.user_id if current_user else None,
                     status_code=404,
                 )
-                async with self.logging_CRUD as logging_CRUD:
-                    await logging_CRUD.create(access_log)
+                await self.logging_crud.create(access_log)
             except Exception as log_error:
                 logger.error(
                     (
@@ -669,7 +694,7 @@ class BaseCRUD(
         try:
             statement = select(self.model).where(self.model.id == object_id)
 
-            statement = self.policy_CRUD.filters_allowed(
+            statement = self.policy_crud.filters_allowed(
                 statement=statement,
                 action=write,
                 model=self.model,
@@ -692,8 +717,7 @@ class BaseCRUD(
                 identity_id=current_user.user_id,
                 status_code=200,
             )
-            async with self.logging_CRUD as logging_CRUD:
-                await logging_CRUD.create(access_log)
+            await self.logging_crud.create(access_log)
             await session.commit()
             await session.refresh(current)
             return current
@@ -705,8 +729,7 @@ class BaseCRUD(
                     identity_id=current_user.user_id,
                     status_code=404,
                 )
-                async with self.logging_CRUD as logging_CRUD:
-                    await logging_CRUD.create(access_log)
+                await self.logging_crud.create(access_log)
             except Exception as log_error:
                 logger.error(
                     f"Error in BaseCRUD.update with parameters object_id: {object_id}, action: {write}, current_user: {current_user}, status_code: {404} results in {log_error}"
@@ -771,7 +794,8 @@ class BaseCRUD(
             subquery = (
                 select(model_alias.id).distinct().where(model_alias.id == object_id)
             )
-            subquery = self.policy_CRUD.filters_allowed(
+            # subquery = self.policy_CRUD.filters_allowed(
+            subquery = self.policy_crud.filters_allowed(
                 statement=subquery,
                 action=own,
                 model=model_alias,
@@ -790,62 +814,66 @@ class BaseCRUD(
             # Delete all stand-alone orphan children of the object
             # might leave some children, that the current_user does not have access to,
             # so they might be floating alone - should be ok for now.
-            async with self.hierarchy_CRUD as hierarchy_CRUD:
-                children_relationships = await hierarchy_CRUD.read(
-                    current_user=current_user, parent_id=object_id
-                )
+            hierarchy_CRUD = self.hierarchy_CRUD(session=self.session)
+            children_relationships = await hierarchy_CRUD.read(
+                current_user=current_user, parent_id=object_id
+            )
+
             children_ids = [child.child_id for child in children_relationships]
             children_typelinks = await self._get_types_from_ids(children_ids)
             for child in children_typelinks:
+                # TBD: refactor to auto recreation, of CRUD instane, when session changes.
                 crud = registry_CRUDs.get(child.type)
+                crud.session = self.session
+                crud.policy_crud.session = self.session  # Add this
+                crud.logging_crud.session = self.session  # Add this
                 if not crud.allow_standalone:
-                    async with self.hierarchy_CRUD as hierarchy_CRUD:
-                        all_parents = await hierarchy_CRUD.read(
-                            current_user=current_user, child_id=child.id
-                        )
-                        if len(all_parents) == 1:
-                            async with crud as child_crud:
-                                await child_crud.delete(
-                                    current_user=current_user, object_id=child.id
-                                )
+                    all_parents = await hierarchy_CRUD.read(
+                        current_user=current_user, child_id=child.id
+                    )
+                    if len(all_parents) == 1:
+                        # async with crud as child_crud:
+                        # child_crud = crud()
+                        crud.session = self.session
+                        await crud.delete(current_user=current_user, object_id=child.id)
 
             # Delete all hierarchy entries for the object
-            async with self.hierarchy_CRUD as hierarchy_CRUD:
-                # Delete all parent-child relationships, where object_id is parent:
-                try:
-                    await hierarchy_CRUD.delete(
-                        current_user=current_user, parent_id=object_id
-                    )
-                except Exception:
-                    pass
-                # Delete all parent-child relationships, where object_id is child:
-                try:
-                    await hierarchy_CRUD.delete(
-                        current_user=current_user, child_id=object_id
-                    )
-                except Exception:
-                    pass
+            # Delete all parent-child relationships, where object_id is parent:
+            try:
+                await hierarchy_CRUD.delete(
+                    current_user=current_user, parent_id=object_id
+                )
+            except Exception:
+                pass
+
+            # Delete all parent-child relationships, where object_id is child:
+            try:
+                await hierarchy_CRUD.delete(
+                    current_user=current_user, child_id=object_id
+                )
+            except Exception:
+                pass
 
             # Delete all access policies, where object_id is resource:
             # The resource_id can be an identity_id!
             # TBD: write a test for deleting a policy, where the resource_id is an identity_id
             try:
-                async with self.policy_CRUD as policy_CRUD:
-                    await policy_CRUD.delete(
-                        current_user,
-                        AccessPolicyDelete(
-                            resource_id=object_id,
-                        ),
-                    )
+                # async with self.policy_crud as policy_crud:
+                await self.policy_crud.delete(
+                    current_user,
+                    AccessPolicyDelete(
+                        resource_id=object_id,
+                    ),
+                )
             except Exception:
                 pass
             if self.type == IdentityType:
                 try:
-                    async with self.policy_CRUD as policy_CRUD:
-                        await policy_CRUD.delete(
-                            current_user,
-                            AccessPolicyDelete(identity_id=object_id),
-                        )
+                    # async with self.policy_crud as policy_crud:
+                    await self.policy_crud.delete(
+                        current_user,
+                        AccessPolicyDelete(identity_id=object_id),
+                    )
                 except Exception:
                     pass
 
@@ -856,8 +884,7 @@ class BaseCRUD(
                 identity_id=current_user.user_id,
                 status_code=200,
             )
-            async with self.logging_CRUD as logging_CRUD:
-                await logging_CRUD.create(access_log)
+            await self.logging_crud.create(access_log)
 
             # Leave the identifier type link, as it's referred to the log table, which stays even after deletion
             # Only identifier-type links and logs stay, when a resource is deleted.
@@ -877,8 +904,8 @@ class BaseCRUD(
                     identity_id=current_user.user_id,
                     status_code=404,
                 )
-                async with self.logging_CRUD as logging_CRUD:
-                    await logging_CRUD.create(access_log)
+
+                await self.logging_crud.create(access_log)
             except Exception as log_error:
                 logger.error(
                     f"Error in BaseCRUD.delete with parameters object_id: {object_id}, action: {own}, current_user: {current_user}, status_code: {404} results in  {log_error}"
@@ -899,14 +926,14 @@ class BaseCRUD(
         # if not, raise 404
         # if yes, delete the hierarchy entry
         if await self.check_identifier_type_link(child_id):
-            async with self.hierarchy_CRUD as hierarchy_CRUD:
-                deleted_rows = await hierarchy_CRUD.delete(
-                    current_user=current_user,
-                    parent_id=parent_id,
-                    child_id=child_id,
-                )
-                if deleted_rows == 0:
-                    raise HTTPException(status_code=404, detail="Hierarchy not found.")
+            hierarchy_CRUD = self.hierarchy_CRUD(session=self.session)
+            deleted_rows = await hierarchy_CRUD.delete(
+                current_user=current_user,
+                parent_id=parent_id,
+                child_id=child_id,
+            )
+            if deleted_rows == 0:
+                raise HTTPException(status_code=404, detail="Hierarchy not found.")
             return None
         else:
             raise HTTPException(
