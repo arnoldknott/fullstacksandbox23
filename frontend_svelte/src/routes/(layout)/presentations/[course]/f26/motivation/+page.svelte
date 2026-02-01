@@ -88,7 +88,7 @@
 
 		socketioMotivation.client.on('transferred', (data: Numerical) => {
 			// if (debug) {
-			console.log('=== 🧦 presentation - devF23 - MOTIVATION - received transferred ===');
+			// console.log('=== 🧦 presentation - devF23 - MOTIVATION - received transferred ===');
 			// console.log(data);
 			// }
 			socketioMotivation.handleTransferred(data);
@@ -96,7 +96,7 @@
 
 		socketioMotivation.client.on('status', (data: SocketioStatus) => {
 			// if (debug) {
-			console.log('=== 🧦 presentation - devF23 - MOTIVATION - received status update ===');
+			// console.log('=== 🧦 presentation - devF23 - MOTIVATION - received status update ===');
 			// console.log('Status update:', data);
 			// }
 			socketioMotivation.handleStatus(data);
@@ -118,9 +118,7 @@
 		socketioComment = new SocketIO(commentConnection, () => commentsAnswers);
 		socketioComment.client.on('transferred', (data: MessageExtended) => {
 			// if (debug) {
-			// console.log(
-			// 	'=== 🧦 presentation - devF23 - COMMENT - received transferred update ==='
-			// );
+			// console.log('=== 🧦 presentation - devF23 - COMMENT - received transferred ===');
 			// console.log(data);
 			// }
 			socketioComment.handleTransferred(data);
@@ -128,9 +126,7 @@
 
 		socketioComment.client.on('status', (data: SocketioStatus) => {
 			// if (debug) {
-			// console.log(
-			// 	'=== 🧦 presentation - devF23 - COMMENT - received status update ==='
-			// );
+			// console.log('=== 🧦 presentation - devF23 - COMMENT - received status ===');
 			// console.log('Status update:', data);
 			// }
 			socketioComment.handleStatus(data);

@@ -53,9 +53,13 @@ export class SocketIO {
 			path: `/socketio/v1`,
 			auth: { 'session-id': connection.cookie_session_id },
 			// TBD: refactor into an object to allow more flexible query parameters?
-			query: connection.query_params || {} // Use the query_params from the connection object
+			query: connection.query_params || {}, // Use the query_params from the connection object
 			// transports: ['websocket'] // Force WebSocket transport only (potentially Redis latency is too long and causing issues with polling fallback)
-			// forceNew: true // to avoid reusing existing connections and get clients in the same room. TBD: consider an override option ("reuseExisting")?
+			forceNew: true // to avoid reusing existing connections and get clients in the same room.
+			// TBD: consider an override option ("reuseExisting")?
+			// and/or send the query-paramters for all connections (but then it would also need to know, which namespace get's which query parameter!)
+			// other alternative is to send query-options as auth-parameter, as auth is sent per namespace.
+			// But the overhead for multiple connections shold be minimal anyway!
 			// multiplex: false // to avoid reusing existing connections and get clients in the same room. TBD: consider an override option ("reuseExisting")?
 		});
 		this.getEntities = getEntities;
