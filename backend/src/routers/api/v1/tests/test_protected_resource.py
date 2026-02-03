@@ -797,6 +797,56 @@ async def test_user_adds_child_to_parent_without_access_to_child(
     assert response.json() == {"detail": "Forbidden."}
 
 
+# @pytest.mark.anyio
+# @pytest.mark.parametrize(
+#     "mocked_provide_http_token_payload",
+#     [token_user1_read_write],
+#     indirect=True,
+# )
+# async def test_user_moves_child_order_down_insert_before_only_write_access_to_child(
+#     async_client: AsyncClient,
+#     app_override_provide_http_token_payload: FastAPI,
+#     mocked_provide_http_token_payload,
+#     current_user_from_azure_token,
+#     add_one_test_access_policy,
+#     add_many_test_protected_resources,
+#     add_many_test_protected_children,
+#     add_one_parent_child_resource_relationship,
+# ):
+#     """Tests if children get reordered and returned correctly from read afterwards."""
+
+#     app_override_provide_http_token_payload
+
+#     mocked_protected_resources = await add_many_test_protected_resources()
+#     mocked_protected_children = await add_many_test_protected_children()
+
+#     for protected_child in mocked_protected_children:
+#         await add_one_parent_child_resource_relationship(
+#             child_id=protected_child.id,
+#             parent_id=mocked_protected_resources[0].id,
+#             inherit=True,
+#         )
+
+#     parent_resource_id = mocked_protected_resources[0].id
+
+#     current_user = await current_user_from_azure_token(
+#         mocked_provide_http_token_payload
+#     )
+#     policy = {
+#         "resource_id": str(parent_resource_id),
+#         "identity_id": str(current_user.user_id),
+#         "action": Action.write,
+#     }
+#     await add_one_test_access_policy(policy)
+
+#     # Move the order of a protected child forward:
+#     response_moving = await async_client.post(
+#         f"/api/v1/protected/resource/{str(parent_resource_id)}/move/{str(mocked_protected_children[1].id)}/before/{str(mocked_protected_children[4].id)}"
+#     )
+#     assert response_moving.status_code == 403
+#     assert response_moving.json() == {"detail": "Forbidden."}
+
+
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_provide_http_token_payload",
@@ -834,6 +884,20 @@ async def test_user_moves_child_order_down_insert_before(
     )
     policy = {
         "resource_id": str(parent_resource_id),
+        "identity_id": str(current_user.user_id),
+        "action": Action.connect,
+    }
+    await add_one_test_access_policy(policy)
+
+    policy = {
+        "resource_id": str(mocked_protected_children[1].id),
+        "identity_id": str(current_user.user_id),
+        "action": Action.write,
+    }
+    await add_one_test_access_policy(policy)
+
+    policy = {
+        "resource_id": str(mocked_protected_children[4].id),
         "identity_id": str(current_user.user_id),
         "action": Action.write,
     }
@@ -906,6 +970,20 @@ async def test_user_moves_child_order_up_insert_before(
     policy = {
         "resource_id": str(parent_resource_id),
         "identity_id": str(current_user.user_id),
+        "action": Action.connect,
+    }
+    await add_one_test_access_policy(policy)
+
+    policy = {
+        "resource_id": str(mocked_protected_children[5].id),
+        "identity_id": str(current_user.user_id),
+        "action": Action.write,
+    }
+    await add_one_test_access_policy(policy)
+
+    policy = {
+        "resource_id": str(mocked_protected_children[2].id),
+        "identity_id": str(current_user.user_id),
         "action": Action.write,
     }
     await add_one_test_access_policy(policy)
@@ -977,6 +1055,20 @@ async def test_user_moves_child_order_down_insert_after(
     policy = {
         "resource_id": str(parent_resource_id),
         "identity_id": str(current_user.user_id),
+        "action": Action.connect,
+    }
+    await add_one_test_access_policy(policy)
+
+    policy = {
+        "resource_id": str(mocked_protected_children[1].id),
+        "identity_id": str(current_user.user_id),
+        "action": Action.write,
+    }
+    await add_one_test_access_policy(policy)
+
+    policy = {
+        "resource_id": str(mocked_protected_children[4].id),
+        "identity_id": str(current_user.user_id),
         "action": Action.write,
     }
     await add_one_test_access_policy(policy)
@@ -1047,6 +1139,20 @@ async def test_user_moves_child_order_up_insert_after(
     )
     policy = {
         "resource_id": str(parent_resource_id),
+        "identity_id": str(current_user.user_id),
+        "action": Action.connect,
+    }
+    await add_one_test_access_policy(policy)
+
+    policy = {
+        "resource_id": str(mocked_protected_children[5].id),
+        "identity_id": str(current_user.user_id),
+        "action": Action.write,
+    }
+    await add_one_test_access_policy(policy)
+
+    policy = {
+        "resource_id": str(mocked_protected_children[2].id),
         "identity_id": str(current_user.user_id),
         "action": Action.write,
     }
