@@ -4,7 +4,7 @@
 """add_connect_to_action_enum
 
 Revision ID: 79fcc94dd0a4
-Revises: 81db6c5b91e9
+Revises: 0ab37093b18c
 Create Date: 2026-02-03 22:51:19.577336+01:00
 
 """
@@ -17,7 +17,7 @@ import sqlmodel
 
 # revision identifiers, used by Alembic.
 revision: str = '79fcc94dd0a4'
-down_revision: Union[str, None] = '81db6c5b91e9'
+down_revision: Union[str, None] = '0ab37093b18c'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
