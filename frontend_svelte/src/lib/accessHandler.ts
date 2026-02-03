@@ -3,6 +3,7 @@ import type { AccessPolicy, AccessShareOption, Identity, MicrosoftTeamExtended }
 export enum Action {
 	OWN = 'own',
 	WRITE = 'write',
+	CONNECT = 'connect',
 	READ = 'read'
 }
 
@@ -24,6 +25,9 @@ export class AccessHandler {
 		const hasWriteRights = accessPolicies?.some(
 			(policy) => policy.identity_id === identityId && policy.action === Action.WRITE
 		);
+		const hasConnectRights = accessPolicies?.some(
+			(policy) => policy.identity_id === identityId && policy.action === Action.CONNECT
+		);
 		const hasReadRights = accessPolicies?.some(
 			(policy) => policy.identity_id === identityId && policy.action === Action.READ
 		);
@@ -31,6 +35,8 @@ export class AccessHandler {
 			return Action.OWN;
 		} else if (hasWriteRights) {
 			return Action.WRITE;
+		} else if (hasConnectRights) {
+			return Action.CONNECT;
 		} else if (hasReadRights) {
 			return Action.READ;
 		} else {
@@ -74,6 +80,8 @@ export class AccessHandler {
 				return `icon-[tabler--key-filled] bg-${this.rightsIconColor(right)}`;
 			case Action.WRITE:
 				return `icon-[material-symbols--edit-outline-rounded] bg-${this.rightsIconColor(right)}`;
+			case Action.CONNECT:
+				return `icon-[fa7-solid--link] bg-${this.rightsIconColor(right)}`;
 			case Action.READ:
 				return `icon-[tabler--eye] bg-${this.rightsIconColor(right)}`;
 			default:
@@ -87,6 +95,8 @@ export class AccessHandler {
 				return 'success';
 			case Action.WRITE:
 				return 'warning';
+			case Action.CONNECT:
+				return 'info';
 			case Action.READ:
 				return 'neutral';
 			default:
@@ -100,6 +110,8 @@ export class AccessHandler {
 				return '🔑';
 			case Action.WRITE:
 				return '✏️';
+			case Action.CONNECT:
+				return '🔗';
 			case Action.READ:
 				return '👁️';
 			default:
