@@ -166,8 +166,8 @@ resource "azurerm_container_app" "BackendAPIContainer" {
     container {
       name   = "backend"
       image  = "mcr.microsoft.com/azuredocs/containerapps-helloworld:latest"
-      cpu    = 0.25
-      memory = "0.5Gi"
+      cpu    = 0.5 #0.25 # load limited at around 100 users with 0.25 CPU!
+      memory = "1Gi" #"0.5Gi"
       volume_mounts {
         name = "${terraform.workspace}-application-data"
         path = "/data"
