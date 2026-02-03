@@ -1482,11 +1482,19 @@ async def test_admin_create_resource_hierarchy_with_nonexisting_parent(
 
 @pytest.mark.anyio
 async def test_user_create_resource_hierarchy(
-    register_current_user, add_many_test_access_policies, add_one_test_access_policy
+    register_current_user, add_one_test_access_policy
 ):
     """Test creating a resource hierarchy."""
     current_user_data = await register_current_user(current_user_data_user1)
-    access_policies = add_many_test_access_policies
+    # access_policies = add_many_test_access_policies
+
+    await add_one_test_access_policy(
+        {
+            "identity_id": current_user_data.user_id,
+            "resource_id": str(resource_id2),
+            "action": Action.connect,
+        }
+    )
 
     new_child_id = uuid.uuid4()
 
@@ -1506,7 +1514,7 @@ async def test_user_create_resource_hierarchy(
             child_id=new_child_id,
         )
 
-    assert created_hierarchy.parent_id == access_policies[1].resource_id
+    assert created_hierarchy.parent_id == uuid.UUID(resource_id2)
     assert created_hierarchy.child_id == new_child_id
     assert created_hierarchy.inherit is False
 

@@ -41,6 +41,7 @@ from models.access import (
 logger = logging.getLogger(__name__)
 
 read = Action.read
+connect = Action.connect
 write = Action.write
 own = Action.own
 
@@ -157,7 +158,9 @@ class AccessPolicyCRUD:
         # write includes read
         if action == read:
             # action = ["own", "write", "read"]
-            action = [own, write, read]
+            action = [own, write, connect, read]
+        elif action == connect:
+            action = [own, write, connect]
         elif action == write:
             # action = ["own", "write"]
             action = [own, write]
@@ -907,9 +910,9 @@ class BaseHierarchyCRUD(
             if not await self.policy_crud.allows(child_access_request):
                 raise HTTPException(status_code=403, detail="Forbidden.")
             statement = select(IdentifierTypeLink.type)
-            # only selects, the IdentifierTypeLinks, that the user has write access to.
+            # only selects, the IdentifierTypeLinks, that the user has at least connect access to.
             statement = self.policy_crud.filters_allowed(
-                statement, Action.write, IdentifierTypeLink, current_user
+                statement, Action.connect, IdentifierTypeLink, current_user
             )
             statement = statement.where(IdentifierTypeLink.id == parent_id)
 
@@ -1107,10 +1110,10 @@ class ResourceHierarchyCRUD(
     ) -> None:
         """Reorders the children of a parent resource."""
         try:
-            # Ensure user has write permissions on parent resource:
+            # Ensure user has connect permissions on parent resource:
             parent_access_request = AccessRequest(
                 resource_id=parent_id,
-                action=Action.write,
+                action=Action.connect,
                 current_user=current_user,
             )
             if not await self.policy_crud.allows(parent_access_request):

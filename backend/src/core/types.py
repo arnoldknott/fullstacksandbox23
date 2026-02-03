@@ -48,7 +48,9 @@ class Action(str, Enum):
     """Enum for the actions that can be performed on a resource"""
 
     read = "read"
+    connect = "connect"
     write = "write"
+    # consider adding share = "share"?
     own = "own"
 
 
