@@ -3,7 +3,7 @@
 """"c2279b95ca77c93b0cd0f1da196cde636c476900"
 
 Revision ID: 0ab37093b18c
-Revises: 0ab37093b18c
+Revises: 906b2a043f40
 Create Date: 2026-01-22 19:26:22.657651+01:00
 
 """
@@ -16,7 +16,7 @@ import sqlmodel
 
 # revision identifiers, used by Alembic.
 revision: str = '0ab37093b18c'
-down_revision: Union[str, None] = '0ab37093b18c'
+down_revision: Union[str, None] = '906b2a043f40'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
