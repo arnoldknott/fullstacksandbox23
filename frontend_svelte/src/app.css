@@ -1,4 +1,9 @@
 @import 'tailwindcss';
+
+/* Tailwind content sources - scan these files for classes */
+@source "src/**/*.{html,js,svelte,ts}";
+@source "../node_modules/flyonui/flyonui/index.js";
+
 @import './components/materialDesignExtensionsToFlyonUI/typography.css';
 @import './components/materialDesignExtensionsToFlyonUI/chat.css';
 @import './components/materialDesignExtensionsToFlyonUI/badge.css';
@@ -46,7 +51,7 @@
 	--color-error-content: rgb(var(--md-rgb-color-on-error));
 }
 
-@source "../node_modules/flyonui/flyonui/index.js";
+/* @source "../node_modules/flyonui/flyonui/index.js"; */ /* Moved to top */
 /* Import Third-party override css */
 /* @import "flyonui/src/vendor/flatpickr.css"; */
 /* @import "flyonui/src/vendor/notyf.css"; */
