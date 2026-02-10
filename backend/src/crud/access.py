@@ -407,6 +407,7 @@ class AccessPolicyCRUD:
             await self.session.refresh(policy)
             return policy
         except Exception as err:
+            await self.session.rollback()
             if "duplicate key value violates unique constraint" in str(err):
                 raise HTTPException(
                     status_code=409,
@@ -599,6 +600,7 @@ class AccessPolicyCRUD:
             return updated_policy
 
         except Exception as e:
+            await self.session.rollback()
             logger.error(f"Error in updating policy: {e}")
             raise HTTPException(status_code=404, detail="Access policy not found.")
 
@@ -643,6 +645,7 @@ class AccessPolicyCRUD:
             return response.rowcount
 
         except Exception as e:
+            await self.session.rollback()
             logger.error(f"Error in deleting policy: {e}")
             raise HTTPException(status_code=404, detail="Access policy not found.")
 
@@ -690,6 +693,7 @@ class AccessLoggingCRUD:
 
             return access_log
         except Exception as e:
+            await self.session.rollback()
             logger.error(f"Error in creating log: {e}")
             raise HTTPException(status_code=400, detail="Bad request: logging failed.")
 
@@ -944,6 +948,7 @@ class BaseHierarchyCRUD(
                     detail="Bad request: child type not allowed for parent.",
                 )
         except Exception as err:
+            await self.session.rollback()
             logger.error(f"Error in creating hierarchy: {err}")
             raise HTTPException(status_code=403, detail="Forbidden.")
 
@@ -1052,6 +1057,7 @@ class BaseHierarchyCRUD(
 
             return response.rowcount
         except Exception as e:
+            await self.session.rollback()
             logger.error(f"Error in deleting hierarchy: {e}")
             raise HTTPException(status_code=404, detail="Hierarchy not found.")
 
