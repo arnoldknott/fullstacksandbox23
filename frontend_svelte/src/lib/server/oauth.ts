@@ -266,6 +266,6 @@ if (!redisCache) {
 	throw new Error('🔑🔥 oauth - Authentication - redisCache not initialized');
 }
 const redisClient = !building ? await redisCache.provideClient() : ({} as RedisClientType);
-export const msalAuthProvider = new MicrosoftAuthenticationProvider(redisClient);
+export const msalAuthProvider = new MicrosoftAuthenticationProvider(redisClient!);
 
 console.log('👍 🔑 lib - server - oauth.ts - end');
