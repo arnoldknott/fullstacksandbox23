@@ -63,6 +63,7 @@ class PublicResourceCRUD:
             # TBD: add access log here!
             return database_public_resource
         except Exception as e:
+            await session.rollback()
             # TBD: add access logging here!
             logger.error(f"Error in PublicResourceCRUD.create: {e}")
             raise HTTPException(status_code=404, detail="Object not found")

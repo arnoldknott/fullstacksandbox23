@@ -75,6 +75,7 @@ class AzureGroupCRUD(
                 existing_group = database_group
             return existing_group
         except Exception as err:
+            await session.rollback()
             logging.error(err)
             raise HTTPException(status_code=404, detail="Group not found.")
 
@@ -353,6 +354,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             )
             await self.logging_crud.create(access_log)
         except Exception as err:
+            await self.session.rollback()
             logging.error(err)
             raise HTTPException(status_code=404, detail="User not found")
         return database_user
@@ -471,6 +473,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             await self.logging_crud.create(access_log)
             return me
         except Exception as err:
+            await self.session.rollback()
             logging.error(err)
             raise HTTPException(status_code=404, detail="User not updated.")
 
