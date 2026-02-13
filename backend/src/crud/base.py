@@ -365,6 +365,7 @@ class BaseCRUD(
             return database_object
 
         except Exception as e:
+            await self.session.rollback()
             # Only log errors for authenticated users
             if not is_public_creation:
                 try:
@@ -722,6 +723,7 @@ class BaseCRUD(
             await session.refresh(current)
             return current
         except Exception as e:
+            await session.rollback()
             try:
                 access_log = AccessLogCreate(
                     resource_id=current.id,
@@ -897,6 +899,7 @@ class BaseCRUD(
             return None
 
         except Exception as e:
+            await self.session.rollback()
             try:
                 access_log = AccessLogCreate(
                     resource_id=object_id,

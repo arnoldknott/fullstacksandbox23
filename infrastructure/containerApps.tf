@@ -166,8 +166,8 @@ resource "azurerm_container_app" "BackendAPIContainer" {
     container {
       name   = "backend"
       image  = "mcr.microsoft.com/azuredocs/containerapps-helloworld:latest"
-      cpu    = terraform.workspace == "stage" || terraform.workspace == "prod" ? 0.5 : 0.25 # load limited at around 100 users with 0.25 CPU!
-      memory = terraform.workspace == "stage" || terraform.workspace == "prod" ? "1Gi" : "0.5Gi"
+      cpu    = terraform.workspace == "stage" || terraform.workspace == "prod" ? 0.75 : 0.25 # 0.5 was still too small with 160 user hits # load limited at around 100 users with 0.25 CPU!
+      memory = terraform.workspace == "stage" || terraform.workspace == "prod" ? "1.5Gi" : "0.5Gi" # "1Gi"
       volume_mounts {
         name = "${terraform.workspace}-application-data"
         path = "/data"
