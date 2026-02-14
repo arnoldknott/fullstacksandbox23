@@ -135,7 +135,7 @@ export default class AppConfig {
 				this.redis_session_password = redisSessionPassword?.value || '';
 				this.authentication_cookie_options = {
 					httpOnly: true,
-					sameSite: false,
+					sameSite: 'none',
 					secure: true,
 					maxAge: this.authentication_timeout
 				};
