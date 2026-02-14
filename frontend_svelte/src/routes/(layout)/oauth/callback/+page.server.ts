@@ -14,15 +14,16 @@ const appConfig = await AppConfig.getInstance();
 
 export const load: PageServerLoad = async ({ url, cookies }) => {
 	let targetUrl = '/';
+	let sessionId: string | undefined;
 	try {
 		const code = url.searchParams.get('code');
-		const sessionId = cookies.get('session_id');
+		// const sessionId = cookies.get('session_id');
 		const state = url.searchParams.get('state');
+		if (state) {
+			[sessionId, targetUrl] = await msalAuthProvider.decodeState(state);
+		}
 		if (sessionId) {
 			// TBD CSRF protection check:
-			if (state) {
-				targetUrl = await msalAuthProvider.decodeState(sessionId, state);
-			}
 			// TBD: authenticationResult not used any more
 			// but still needs to execute, as this sets the access token in cache!
 			// const _authenticationResult: AuthenticationResult =
@@ -69,6 +70,8 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 				);
 			}
 			const currentUser = await responseMe.json();
+			console.log('=== oauth - callback - server - currentUser ===');
+			console.log(currentUser);
 			await redisCache.setSession(sessionId, '$.currentUser', JSON.stringify(currentUser));
 		} else {
 			console.error('🔥 🚪 oauth - callback - server - redirect failed');

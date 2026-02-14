@@ -174,6 +174,7 @@ class MicrosoftAuthenticationProvider extends BaseOauthProvider {
 			const csrfToken = this.cryptoProvider.createNewGuid();
 			const state = this.cryptoProvider.base64Encode(
 				JSON.stringify({
+					sessionId: sessionId,
 					csrfToken: csrfToken,
 					targetURL: targetUrl
 				})
@@ -196,11 +197,14 @@ class MicrosoftAuthenticationProvider extends BaseOauthProvider {
 		}
 	}
 
-	public async decodeState(sessionId: string, state: string): Promise<string> {
+	public async decodeState(
+		// sessionId: string,
+		state: string
+	): Promise<[string, string]> {
 		const stateJSON = JSON.parse(this.cryptoProvider.base64Decode(state));
-		const cachedCsrfToken = await redisCache.getSession(sessionId, '$.csrfToken');
+		const cachedCsrfToken = await redisCache.getSession(stateJSON.sessionId, '$.csrfToken');
 		if (stateJSON.csrfToken === cachedCsrfToken) {
-			return stateJSON.targetURL;
+			return [stateJSON.sessionId, stateJSON.targetURL];
 		} else {
 			throw new Error('CSRF Token mismatch');
 		}

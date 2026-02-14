@@ -23,8 +23,8 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 	// 	backendAPIConfiguration: backendAPIConfiguration,
 	// 	session: undefined
 	// };
-	// console.log('=== layout.server.ts - load - locals.sessionData ===');
-	// console.log(locals.sessionData.loggedIn);
+	console.log('=== layout.server.ts - load - locals.sessionData ===');
+	console.log(locals.sessionData?.loggedIn);
 	if (locals.sessionData && locals.sessionData.loggedIn) {
 		const globalClientData = {
 			backendAPIConfiguration: backendAPIConfiguration,

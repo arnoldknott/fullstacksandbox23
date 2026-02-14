@@ -6,7 +6,8 @@
 
 	// let { redirect = 'login', children } = $props();
 	let { children }: { children: Snippet } = $props();
-	const { loggedIn } = page.data.session || false;
+	// const { loggedIn } = page.data.session || false;
+	let loggedIn = $derived(page.data.session?.loggedIn || false);
 	// const forward = () => {
 	// 	onMount(() => {
 	// 		goto(redirect);

@@ -53,6 +53,13 @@
 				: true
 	);
 
+	// put potenitally in onMount to avoid SSR issues
+	let parentUrl = $derived(page.url.searchParams.get('parentURL') || undefined);
+	// $effect(() => {
+	// 	console.log('=== layout.svelte - parentURL ===');
+	// 	console.log(parentUrl);
+	// });
+
 	let session: Session | undefined = $state(data.session);
 
 	let welcomeModal: HTMLDivElement | null = $state(null);
@@ -893,12 +900,20 @@
 				</ul>
 			</div>
 			<div class="hidden items-center sm:flex md:ml-2">
+				{#if parentUrl}
+					<a
+						href={resolve('/(layout)/login/iframed') +
+							'?parentURL=' +
+							encodeURIComponent(parentUrl)}
+						aria-label="Login iframed"><span class="icon-[tabler--login-2]"></span></a
+					>
+				{/if}
 				<LoginOutButton {loggedIn} />
 			</div>
 		</div>
 	</nav>
 </header>
-
+<!--  -->
 <main
 	class="static w-screen transition-[padding-top] duration-300"
 	style="padding-top: {navBarBottom + 4}px;"
