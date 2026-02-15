@@ -36,13 +36,19 @@ export const load: PageServerLoad = async ({ url, request }) => {
 		// 	...appConfig.authentication_cookie_options
 		// });
 
-		const targetURL = url.searchParams.get('targetURL') || undefined;
+		let targetURL = url.searchParams.get('targetURL') || undefined;
+		const parentURL = url.searchParams.get('parentURL') || undefined;
 
-		loginUrl = await msalAuthProvider.signIn(sessionId, url.origin, targetURL);
+		// if (parentURL) {
+		// 	targetURL = parentURL;
+		// }
+
+		loginUrl = await msalAuthProvider.signIn(sessionId, url.origin, targetURL, parentURL);
 	} catch (err) {
 		console.error('🔥 🚪 login - server - sign in redirect failed');
 		console.error(err);
 		throw err; // TBD consider redirect to "/" instead here?
 	}
-	redirect(302, loginUrl);
+	// redirect(302, loginUrl);
+	return { loginUrl };
 };

@@ -906,15 +906,7 @@
 				</ul>
 			</div>
 			<div class="hidden items-center sm:flex md:ml-2">
-				{#if parentUrl}
-					<a
-						href={resolve('/(layout)/login/iframed') +
-							'?parentURL=' +
-							encodeURIComponent(parentUrl)}
-						aria-label="Login iframed"><span class="icon-[tabler--login-2]"></span></a
-					>
-				{/if}
-				<LoginOutButton {loggedIn} />
+				<LoginOutButton {loggedIn} {parentUrl}/>
 			</div>
 		</div>
 	</nav>
@@ -990,7 +982,7 @@
 				)} -->
 				<li>
 					<div class="items-center sm:hidden md:ml-2">
-						<LoginOutButton {loggedIn} />
+						<LoginOutButton {loggedIn} {parentUrl}/>
 					</div>
 				</li>
 			</ul>

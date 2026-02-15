@@ -31,7 +31,6 @@ export const load: PageServerLoad = async ({ url, cookies, request }) => {
 			appConfig.authentication_timeout
 		);
 
-		cookies.set('debug_session_id', sessionId, { path: '/' });
 		// cookies.set('session_id', sessionId, {
 		// 	path: '/',
 		// 	...appConfig.authentication_cookie_options
