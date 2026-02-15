@@ -133,6 +133,7 @@ export default class AppConfig {
 				this.az_authority = `https://login.microsoftonline.com/${azTenantId?.value}`;
 				this.az_logout_uri = `https://login.microsoftonline.com/${azTenantId?.value}/oauth2/v2.0/logout`;
 				this.redis_session_password = redisSessionPassword?.value || '';
+				// TBD: remove authentication_cookie_options - the session-id is now transferred inside state of OAuth-flow!
 				this.authentication_cookie_options = {
 					httpOnly: true,
 					sameSite: 'none',
@@ -163,6 +164,7 @@ export default class AppConfig {
 			this.az_authority = `https://login.microsoftonline.com/${process.env.AZURE_TENANT_ID}`;
 			this.az_logout_uri = `https://login.microsoftonline.com/${process.env.AZURE_TENANT_ID}/oauth2/v2.0/logout`;
 			this.redis_session_password = process.env.REDIS_SESSION_PASSWORD || '';
+			// TBD: remove authentication_cookie_options - the session-id is now transferred inside state of OAuth-flow!
 			this.authentication_cookie_options = {
 				httpOnly: true,
 				sameSite: 'lax',
@@ -171,7 +173,7 @@ export default class AppConfig {
 			};
 			this.session_cookie_options = {
 				httpOnly: true,
-				sameSite: 'lax',
+				sameSite: 'none', //'lax',
 				secure: false,
 				maxAge: this.session_timeout
 			};

@@ -19,6 +19,8 @@ const getSession = async (sessionId: string): Promise<Session | void> => {
 };
 
 export const handle = async ({ event, resolve }) => {
+	console.log('=== hooks.server.ts - cookies ===');
+	console.log(event.request.headers.get('cookie'));
 	const sessionId = event.cookies.get('session_id');
 	console.log('=== hooks.server.ts - handle - sessionId ===');
 	console.log(sessionId);
