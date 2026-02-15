@@ -142,7 +142,7 @@ export default class AppConfig {
 				};
 				this.session_cookie_options = {
 					httpOnly: true,
-					sameSite: 'lax',
+					sameSite: 'none', //'lax',
 					secure: true,
 					maxAge: this.session_timeout
 				};
