@@ -14,13 +14,14 @@ const appConfig = await AppConfig.getInstance();
 
 export const load: PageServerLoad = async ({ url, cookies }) => {
 	let targetUrl = '/';
+	let parentUrl: string | undefined;
 	let sessionId: string | undefined;
 	try {
 		const code = url.searchParams.get('code');
 		// const sessionId = cookies.get('session_id');
 		const state = url.searchParams.get('state');
 		if (state) {
-			[sessionId, targetUrl] = await msalAuthProvider.decodeState(state);
+			[sessionId, targetUrl, parentUrl] = await msalAuthProvider.decodeState(state);
 		}
 		if (sessionId) {
 			// TBD CSRF protection check:
@@ -30,11 +31,26 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 			await msalAuthProvider.authenticateWithCode(sessionId, code, url.origin);
 			await redisCache.setSession(sessionId, '$.loggedIn', JSON.stringify(true));
 			await redisCache.setSession(sessionId, '$.sessionId', JSON.stringify(sessionId));
-			// TBD: Does the cookie really need to set again in callback? It's set already in login endpoint!
-			cookies.set('debug_session_id', sessionId, { path: '/' });
+
+			const cookieOptions = appConfig.session_cookie_options as Record<string, unknown>;
+			// Check if targetURL is pointing to another origin - if yes, the page is embedded in an iframe
+			console.log('=== oauth - callback - server - targetUrl ===');
+			console.log(targetUrl);
+			console.log('=== oauth - callback - server - targetUrl ===');
+			console.log(parentUrl);
+			console.log('=== oauth - callback - server - url.origin ===');
+			console.log(url.origin);
+			// if (targetUrl && new URL(targetUrl).origin !== url.origin) {
+			// 	console.log('=== oauth - callback - server - targetUrl ===');
+			// 	console.log(targetUrl);
+			// 	console.log('=== oauth - callback - server - url.origin ===');
+			// 	console.log(url.origin);
+			if (parentUrl) {
+				cookieOptions.sameSite = 'none';
+			}
 			cookies.set('session_id', sessionId, {
 				path: '/',
-				...appConfig.session_cookie_options
+				...cookieOptions
 			});
 			// const response = await fetch(`${appConfig.ms_graph_base_uri}/me`, {
 			// 	headers: {
@@ -83,5 +99,9 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 		console.error(err);
 		throw err;
 	}
-	redirect(302, targetUrl);
+	if (parentUrl) {
+		redirect(302, parentUrl);
+	} else {
+		redirect(302, targetUrl);
+	}
 };

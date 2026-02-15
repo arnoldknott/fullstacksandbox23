@@ -2,7 +2,7 @@ import { v4 } from 'uuid';
 import { msalAuthProvider } from '$lib/server/oauth';
 import { redisCache } from '$lib/server/cache';
 import type { PageServerLoad } from './$types';
-import { redirect } from '@sveltejs/kit';
+// import { redirect } from '@sveltejs/kit';
 import type { Session } from '$lib/types';
 import { SessionStatus } from '$lib/session';
 import AppConfig from '$lib/server/config';
@@ -37,12 +37,18 @@ export const load: PageServerLoad = async ({ url, request }) => {
 		// });
 
 		const targetURL = url.searchParams.get('targetURL') || undefined;
+		const parentURL = url.searchParams.get('parentURL') || undefined;
 
-		loginUrl = await msalAuthProvider.signIn(sessionId, url.origin, targetURL);
+		// if (parentURL) {
+		// 	targetURL = parentURL;
+		// }
+
+		loginUrl = await msalAuthProvider.signIn(sessionId, url.origin, targetURL, parentURL);
 	} catch (err) {
 		console.error('🔥 🚪 login - server - sign in redirect failed');
 		console.error(err);
 		throw err; // TBD consider redirect to "/" instead here?
 	}
-	redirect(302, loginUrl);
+	// redirect(302, loginUrl);
+	return { loginUrl };
 };
