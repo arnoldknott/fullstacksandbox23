@@ -59,6 +59,12 @@
 	// 	console.log('=== layout.svelte - parentURL ===');
 	// 	console.log(parentUrl);
 	// });
+	// onMount(() => {
+	// 	// if (window.self !== window.top && window.top) {
+	// 	console.log('=== layout.svelte - running in iframe - window.top.location.href ===');
+	// 	console.log(document.referrer);
+	// 	// }
+	// });
 
 	let session: Session | undefined = $state(data.session);
 

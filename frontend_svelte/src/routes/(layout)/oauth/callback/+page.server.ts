@@ -31,6 +31,7 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 			await redisCache.setSession(sessionId, '$.loggedIn', JSON.stringify(true));
 			await redisCache.setSession(sessionId, '$.sessionId', JSON.stringify(sessionId));
 			// TBD: Does the cookie really need to set again in callback? It's set already in login endpoint!
+			cookies.set('debug_session_id', sessionId, { path: '/' });
 			cookies.set('session_id', sessionId, {
 				path: '/',
 				...appConfig.session_cookie_options
