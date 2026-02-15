@@ -9,8 +9,8 @@ import AppConfig from '$lib/server/config';
 
 const appConfig = await AppConfig.getInstance();
 
-export const load: PageServerLoad = async ({ url, cookies, request }) => {
-	// export const load: PageServerLoad = async ({ url, request }) => {
+// export const load: PageServerLoad = async ({ url, cookies, request }) => {
+export const load: PageServerLoad = async ({ url, request }) => {
 	let loginUrl: string;
 	try {
 		// create the session uuid here:

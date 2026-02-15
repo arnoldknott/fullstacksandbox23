@@ -906,7 +906,7 @@
 				</ul>
 			</div>
 			<div class="hidden items-center sm:flex md:ml-2">
-				<LoginOutButton {loggedIn} {parentUrl}/>
+				<LoginOutButton {loggedIn} {parentUrl} />
 			</div>
 		</div>
 	</nav>
@@ -982,7 +982,7 @@
 				)} -->
 				<li>
 					<div class="items-center sm:hidden md:ml-2">
-						<LoginOutButton {loggedIn} {parentUrl}/>
+						<LoginOutButton {loggedIn} {parentUrl} />
 					</div>
 				</li>
 			</ul>

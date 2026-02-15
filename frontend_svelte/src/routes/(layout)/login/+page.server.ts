@@ -2,7 +2,7 @@ import { v4 } from 'uuid';
 import { msalAuthProvider } from '$lib/server/oauth';
 import { redisCache } from '$lib/server/cache';
 import type { PageServerLoad } from './$types';
-import { redirect } from '@sveltejs/kit';
+// import { redirect } from '@sveltejs/kit';
 import type { Session } from '$lib/types';
 import { SessionStatus } from '$lib/session';
 import AppConfig from '$lib/server/config';
@@ -36,7 +36,7 @@ export const load: PageServerLoad = async ({ url, request }) => {
 		// 	...appConfig.authentication_cookie_options
 		// });
 
-		let targetURL = url.searchParams.get('targetURL') || undefined;
+		const targetURL = url.searchParams.get('targetURL') || undefined;
 		const parentURL = url.searchParams.get('parentURL') || undefined;
 
 		// if (parentURL) {
