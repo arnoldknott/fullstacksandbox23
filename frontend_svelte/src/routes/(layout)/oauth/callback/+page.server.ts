@@ -34,20 +34,11 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 
 			const cookieOptions = appConfig.session_cookie_options as Record<string, unknown>;
 			// Check if targetURL is pointing to another origin - if yes, the page is embedded in an iframe
-			console.log('=== oauth - callback - server - targetUrl ===');
-			console.log(targetUrl);
-			console.log('=== oauth - callback - server - targetUrl ===');
-			console.log(parentUrl);
-			console.log('=== oauth - callback - server - url.origin ===');
-			console.log(url.origin);
 			// if (targetUrl && new URL(targetUrl).origin !== url.origin) {
-			// 	console.log('=== oauth - callback - server - targetUrl ===');
-			// 	console.log(targetUrl);
-			// 	console.log('=== oauth - callback - server - url.origin ===');
-			// 	console.log(url.origin);
-			if (parentUrl) {
-				cookieOptions.sameSite = 'none';
-			}
+			// This worked in Chrome embedded in parent-page:
+			// if (parentUrl) {
+			// 	cookieOptions.sameSite = 'none';
+			// }
 			cookies.set('session_id', sessionId, {
 				path: '/',
 				...cookieOptions
@@ -87,8 +78,6 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 				);
 			}
 			const currentUser = await responseMe.json();
-			console.log('=== oauth - callback - server - currentUser ===');
-			console.log(currentUser);
 			await redisCache.setSession(sessionId, '$.currentUser', JSON.stringify(currentUser));
 		} else {
 			console.error('🔥 🚪 oauth - callback - server - redirect failed');
@@ -100,7 +89,8 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 		throw err;
 	}
 	if (parentUrl) {
-		redirect(302, parentUrl);
+		// redirect(302, parentUrl);
+		return { parentUrl: parentUrl, sessionId: sessionId };
 	} else {
 		redirect(302, targetUrl);
 	}

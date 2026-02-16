@@ -9,12 +9,12 @@ import AppConfig from '$lib/server/config';
 
 const appConfig = await AppConfig.getInstance();
 
-// export const load: PageServerLoad = async ({ url, cookies, request }) => {
-export const load: PageServerLoad = async ({ url, request }) => {
+export const load: PageServerLoad = async ({ url, cookies, request }) => {
+	// export const load: PageServerLoad = async ({ url, request }) => {
 	let loginUrl: string;
+	const sessionId = v4();
 	try {
 		// create the session uuid here:
-		const sessionId = v4();
 		const userAgent = request.headers.get('user-agent');
 		// TBD: check the typing of that one:
 		const sessionData: Session = {
@@ -31,10 +31,10 @@ export const load: PageServerLoad = async ({ url, request }) => {
 			appConfig.authentication_timeout
 		);
 
-		// cookies.set('session_id', sessionId, {
-		// 	path: '/',
-		// 	...appConfig.authentication_cookie_options
-		// });
+		cookies.set('session_id', sessionId, {
+			path: '/',
+			...appConfig.authentication_cookie_options
+		});
 
 		const targetURL = url.searchParams.get('targetURL') || undefined;
 		const parentURL = url.searchParams.get('parentURL') || undefined;
@@ -44,11 +44,13 @@ export const load: PageServerLoad = async ({ url, request }) => {
 		// }
 
 		loginUrl = await msalAuthProvider.signIn(sessionId, url.origin, targetURL, parentURL);
+		// console.log('=== login - server - loginUrl ===');
+		// console.log(loginUrl);
 	} catch (err) {
 		console.error('🔥 🚪 login - server - sign in redirect failed');
 		console.error(err);
 		throw err; // TBD consider redirect to "/" instead here?
 	}
 	// redirect(302, loginUrl);
-	return { loginUrl };
+	return { loginUrl: loginUrl, sessionId: sessionId };
 };
