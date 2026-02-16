@@ -15,7 +15,7 @@
 	import { type SubmitFunction } from '@sveltejs/kit';
 	import { resolve } from '$app/paths';
 	import WelcomeModal from './WelcomeModal.svelte';
-	import { afterNavigate, goto } from '$app/navigation';
+	import { afterNavigate, goto, invalidateAll } from '$app/navigation';
 	import type { SidebarItemContent, Session } from '$lib/types';
 	import SidebarItem from './SidebarItem.svelte';
 	import LoginOutButton from './LoginOutButton.svelte';
@@ -23,6 +23,9 @@
 	import { scrollY } from 'svelte/reactivity/window';
 
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
+
+	// console.log("=== layout - client - data ===")
+	// console.log(data)
 
 	let debug = $state(page.url.searchParams.get('debug') === 'true' ? true : false);
 
@@ -65,6 +68,59 @@
 	// 	console.log(document.referrer);
 	// 	// }
 	// });
+	onMount(async () => {
+		if (window.self !== window.top && window.top) {
+			// console.log('=== layout.svelte - running in iframe ===');
+			// console.log(document.referrer);
+
+			const localSessionId = localStorage.getItem('session_id');
+			const serverHasSession = data.session?.loggedIn === true;
+			const restoreKey = `restore-attempt:${page.url.pathname}${page.url.search}`;
+			// sessionStorage.getItem(restoreKey) === '1';
+			// console.log('=== layout.svelte - onMount - localSessionId ===');
+			// console.log(localSessionId);
+			if (localSessionId && !serverHasSession) {
+				// console.log('=== layout - restoring session - localSessionId ===');
+				// console.log(localSessionId);
+				const formData = new FormData();
+				formData.append('sessionId', localSessionId);
+				try {
+					await fetch('?/restoresession', {
+						method: 'POST',
+						body: formData
+					});
+					// Trigger SvelteKit data reload (uses fetch, so your auth header override can be applied)
+					await invalidateAll();
+					// If session is now present, clear guard and stop.
+					if (page.data.session?.loggedIn === true) {
+						sessionStorage.removeItem(restoreKey);
+						// console.log('=== layout.svelte - session restored ===');
+
+						return;
+					}
+					// One-time fallback navigation (no hard reload loop)
+					await goto(`${page.url.pathname}${page.url.search}`, {
+						replaceState: true,
+						invalidateAll: true,
+						keepFocus: true,
+						noScroll: true
+					});
+					// if (response.ok) {
+					// 	console.log('=== layout.svelte - onMount - session mismatch - reloading to sync session ===');
+					// 	// window.location.reload();
+					// } else {
+					// 	console.error('🔥 🚪 layout.svelte - onMount - session restore failed with status:', response.status);
+					// 	localStorage.removeItem('session_id');
+					// }
+				} catch (err) {
+					console.error('🔥 🚪 layout.svelte - onMount - session restore failed');
+					console.error(err);
+					// Optionally, you could choose to clear the local session ID if the restore fails
+					// localStorage.removeItem('session_id');
+				}
+			}
+		}
+	});
 
 	let session: Session | undefined = $state(data.session);
 
@@ -116,7 +172,14 @@
 		});
 	};
 
-	const { loggedIn } = page.data.session || false;
+	// const { loggedIn } = page.data.session || false;
+	const loggedIn = $derived.by(() => {
+		if (page.data && page.data.session && page.data.session.loggedIn === true) {
+			return true;
+		} else {
+			return false;
+		}
+	});
 
 	// Write theming to database:
 	let themeForm = $state<HTMLFormElement | null>(null);
