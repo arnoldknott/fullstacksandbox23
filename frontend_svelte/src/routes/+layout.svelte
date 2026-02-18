@@ -4,7 +4,7 @@
 	import type { Snippet } from 'svelte';
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
-	import { invalidateAll, goto } from '$app/navigation';
+	import { invalidateAll } from '$app/navigation';
 
 	// import InitialScrollspy from './InitialScrollspy.svelte';
 	// import type { LayoutData } from './$types';
@@ -43,14 +43,6 @@
 			});
 
 			await invalidateAll();
-			// if (page.data.session?.loggedIn !== true) {
-			// 	await goto(`${page.url.pathname}${page.url.search}`, {
-			// 		replaceState: true,
-			// 		invalidateAll: true,
-			// 		keepFocus: true,
-			// 		noScroll: true
-			// 	});
-			// }
 		} catch (err) {
 			console.error('🔥 🚪 layout.svelte - onMount - session restore failed');
 			console.error(err);

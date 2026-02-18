@@ -15,7 +15,7 @@
 	import { type SubmitFunction } from '@sveltejs/kit';
 	import { resolve } from '$app/paths';
 	import WelcomeModal from './WelcomeModal.svelte';
-	import { afterNavigate, goto, invalidateAll } from '$app/navigation';
+	import { afterNavigate, goto } from '$app/navigation';
 	import type { SidebarItemContent, Session } from '$lib/types';
 	import SidebarItem from './SidebarItem.svelte';
 	import LoginOutButton from './LoginOutButton.svelte';
@@ -122,11 +122,8 @@
 	// 	}
 	// });
 	let avatarUrl: string | null = $state(null);
-	let avatarLoading = $state(true);
 
 	async function loadAvatar() {
-		avatarLoading = true;
-
 		try {
 			const sessionId = localStorage.getItem('session_id');
 
@@ -144,8 +141,6 @@
 		} catch (err) {
 			console.error('Avatar load failed', err);
 			avatarUrl = null;
-		} finally {
-			avatarLoading = false;
 		}
 	}
 
