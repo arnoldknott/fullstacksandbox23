@@ -3,6 +3,8 @@
 	import { setContext } from 'svelte';
 	import type { Snippet } from 'svelte';
 	import { page } from '$app/state';
+	import { onMount } from 'svelte';
+	import { invalidateAll } from '$app/navigation';
 
 	// import InitialScrollspy from './InitialScrollspy.svelte';
 	// import type { LayoutData } from './$types';
@@ -19,6 +21,35 @@
 	// let { children, data }: { children: Snippet; data: LayoutData } = $props();
 
 	setContext('backendAPIConfiguration', page.data.backendAPIConfiguration);
+
+	let restoring = false;
+
+	onMount(async () => {
+		if (window.self === window.top) return;
+		if (restoring) return;
+
+		const localSessionId = localStorage.getItem('session_id');
+		const serverHasSession = page.data.session?.loggedIn === true;
+		if (!localSessionId || serverHasSession) return;
+
+		restoring = true;
+		// const formData = new FormData();
+		// formData.append('sessionId', localSessionId);
+		try {
+			await fetch('/session/', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ sessionId: localSessionId })
+			});
+
+			await invalidateAll();
+		} catch (err) {
+			console.error('🔥 🚪 layout.svelte - onMount - session restore failed');
+			console.error(err);
+		} finally {
+			restoring = false;
+		}
+	});
 
 	// let systemDark = $state(false);
 	// let mode: 'light' | 'dark' = $state('dark');

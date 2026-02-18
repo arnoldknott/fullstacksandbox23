@@ -4,34 +4,8 @@ import { fail } from '@sveltejs/kit';
 import { redisCache } from '$lib/server/cache';
 import { Variant } from '$lib/theming';
 import { SessionStatus } from '$lib/session';
-import AppConfig from '$lib/server/config';
-
-const appConfig = await AppConfig.getInstance();
 
 export const actions: Actions = {
-	restoresession: async ({ request, cookies }) => {
-		const data = await request.formData();
-		const sessionId = data.get('sessionId')?.toString();
-		// console.log('=== layout - +page.server.ts - restoresession -- sessionId ===');
-		// console.log(sessionId);
-
-		if (sessionId) {
-			// Validate session exists in Redis
-			const session = await redisCache.getSession(sessionId);
-
-			if (session && Object.prototype.hasOwnProperty.call(session, 'loggedIn')) {
-				// Set cookie
-				cookies.set('session_id', sessionId, {
-					path: '/',
-					...appConfig.session_cookie_options
-				});
-
-				return { success: true };
-			}
-		}
-
-		return { success: false };
-	},
 	putme: async ({ locals, request }) => {
 		const data = await request.formData();
 		const sessionId = locals.sessionData.sessionId;
