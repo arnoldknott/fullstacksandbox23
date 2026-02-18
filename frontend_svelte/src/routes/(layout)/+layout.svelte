@@ -75,7 +75,7 @@
 
 			const localSessionId = localStorage.getItem('session_id');
 			const serverHasSession = data.session?.loggedIn === true;
-			const restoreKey = `restore-attempt:${page.url.pathname}${page.url.search}`;
+			// const restoreKey = `restore-attempt:${page.url.pathname}${page.url.search}`;
 			// sessionStorage.getItem(restoreKey) === '1';
 			// console.log('=== layout.svelte - onMount - localSessionId ===');
 			// console.log(localSessionId);
@@ -93,7 +93,7 @@
 					await invalidateAll();
 					// If session is now present, clear guard and stop.
 					if (page.data.session?.loggedIn === true) {
-						sessionStorage.removeItem(restoreKey);
+						// sessionStorage.removeItem(restoreKey);
 						// console.log('=== layout.svelte - session restored ===');
 
 						return;
