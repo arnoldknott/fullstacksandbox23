@@ -31,10 +31,10 @@ export const load: PageServerLoad = async ({ url, cookies, request }) => {
 			appConfig.authentication_timeout
 		);
 
-		cookies.set('session_id', sessionId, {
-			path: '/',
-			...appConfig.authentication_cookie_options
-		});
+		// cookies.set('session_id', sessionId, {
+		// 	path: '/',
+		// 	...appConfig.authentication_cookie_options
+		// });
 
 		const targetURL = url.searchParams.get('targetURL') || undefined;
 		const parentURL = url.searchParams.get('parentURL') || undefined;

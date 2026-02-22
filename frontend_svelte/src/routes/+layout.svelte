@@ -36,19 +36,24 @@
 		// const formData = new FormData();
 		// formData.append('sessionId', localSessionId);
 		try {
-			await fetch('/session/', {
+			const response = await fetch('/session/', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ sessionId: localSessionId })
 			});
-
-			await invalidateAll();
+			if (response.ok) {
+				await invalidateAll();
+			} else {
+				localStorage.removeItem('session_id');
+			}
 		} catch (err) {
 			console.error('🔥 🚪 layout.svelte - onMount - session restore failed');
 			console.error(err);
-		} finally {
-			restoring = false;
+			localStorage.removeItem('session_id');
 		}
+		// } finally {
+		// 	restoring = false;
+		// }
 	});
 
 	// let systemDark = $state(false);

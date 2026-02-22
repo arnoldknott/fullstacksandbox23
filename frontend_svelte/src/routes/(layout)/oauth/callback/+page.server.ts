@@ -90,7 +90,8 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 	}
 	if (parentUrl) {
 		// redirect(302, parentUrl);
-		return { parentUrl: parentUrl, sessionId: sessionId };
+		// return { parentUrl: parentUrl, sessionId: sessionId };
+		return { parentUrl: parentUrl };
 	} else {
 		redirect(302, targetUrl);
 	}
