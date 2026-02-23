@@ -7,7 +7,7 @@
 	// console.log(data);
 
 	onMount(() => {
-		localStorage.setItem('session_id', data.sessionId);
+		// localStorage.setItem('session_id', data.sessionId);
 		if (window.top) {
 			window.top.location.href = data.parentUrl;
 		}

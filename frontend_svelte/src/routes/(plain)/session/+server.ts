@@ -10,7 +10,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 	if (!sessionId) return json({ success: false }, { status: 400 });
 
 	const session = await redisCache.getSession(sessionId);
-	if (session && Object.prototype.hasOwnProperty.call(session, 'loggedIn')) {
+	if (!session || !Object.prototype.hasOwnProperty.call(session, 'loggedIn')) {
 		return json({ success: false }, { status: 401 });
 	}
 

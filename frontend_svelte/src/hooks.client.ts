@@ -45,6 +45,9 @@ window.HSStaticMethods.autoInit();
 const native_fetch = window.fetch;
 
 export async function init() {
+	// Make the override conditional
+	// on the presence of session_id in localStorage
+	// to avoid unnecessary overhead when the page is not embedded?
 	window.fetch = (request, init) => {
 		const sessionId = localStorage.getItem('session_id');
 		// console.log('=== hooks.client.ts - fetch override in init() - sessionId ===');

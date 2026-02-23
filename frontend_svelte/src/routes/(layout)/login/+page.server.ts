@@ -9,8 +9,8 @@ import AppConfig from '$lib/server/config';
 
 const appConfig = await AppConfig.getInstance();
 
-export const load: PageServerLoad = async ({ url, cookies, request }) => {
-	// export const load: PageServerLoad = async ({ url, request }) => {
+// export const load: PageServerLoad = async ({ url, cookies, request }) => {
+export const load: PageServerLoad = async ({ url, request }) => {
 	let loginUrl: string;
 	const sessionId = v4();
 	try {
@@ -31,10 +31,10 @@ export const load: PageServerLoad = async ({ url, cookies, request }) => {
 			appConfig.authentication_timeout
 		);
 
-		cookies.set('session_id', sessionId, {
-			path: '/',
-			...appConfig.authentication_cookie_options
-		});
+		// cookies.set('session_id', sessionId, {
+		// 	path: '/',
+		// 	...appConfig.authentication_cookie_options
+		// });
 
 		const targetURL = url.searchParams.get('targetURL') || undefined;
 		const parentURL = url.searchParams.get('parentURL') || undefined;
