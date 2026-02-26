@@ -561,9 +561,9 @@
 	{#if data.questionsData?.feedback}
 		<FramedSlide section="new" content={['motivation', 'implementation', 'results', '']}>
 			<SlideTitle color="accent">Summary of 358 qualitative answers</SlideTitle>
-			<div class="title-large text-accent">
+			<!-- <div class="title-large text-accent">
 				(<i>208</i> positive, <i>92</i> neutral, <i>58</i> negative)
-			</div>
+			</div> -->
 			<QualitativeFeeback color="accent" messages={data.questionsData.feedback.messages} />
 		</FramedSlide>
 	{/if}
