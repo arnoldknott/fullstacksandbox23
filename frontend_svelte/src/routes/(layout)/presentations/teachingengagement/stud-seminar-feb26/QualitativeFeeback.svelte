@@ -1,6 +1,6 @@
 <script lang="ts">
 	import ChatBubble from '$components/ChatBubble.svelte';
-	import CourseSelector from './CourseSelector.svelte';
+	// import CourseSelector from './CourseSelector.svelte';
 	import { marked } from 'marked';
 	import { onDestroy } from 'svelte';
 
@@ -21,46 +21,47 @@
 		questions?: unknown[];
 	};
 
-	type ParsedFeedbackMessage = FeedbackMessage & {
-		course: string;
-		year: string;
-		markdown: string;
-	};
+	// type ParsedFeedbackMessage = FeedbackMessage & {
+	// 	course: string;
+	// 	year: string;
+	// 	number: number;
+	// 	markdown: string;
+	// };
 
-	const badgeClasses: Record<FeedbackColor, { solid: string; container: string }> = {
-		primary: {
-			solid: 'badge badge-sm badge-primary label-small shadow-outline shadow-inner',
-			container: 'badge badge-sm badge-primary-container label-small shadow-outline shadow-inner'
-		},
-		secondary: {
-			solid: 'badge badge-sm badge-secondary label-small shadow-outline shadow-inner',
-			container: 'badge badge-sm badge-secondary-container label-small shadow-outline shadow-inner'
-		},
-		accent: {
-			solid: 'badge badge-sm badge-accent label-small shadow-outline shadow-inner',
-			container: 'badge badge-sm badge-accent-container label-small shadow-outline shadow-inner'
-		},
-		neutral: {
-			solid: 'badge badge-sm badge-neutral label-small shadow-outline shadow-inner',
-			container: 'badge badge-sm badge-neutral-container label-small shadow-outline shadow-inner'
-		},
-		info: {
-			solid: 'badge badge-sm badge-info label-small shadow-outline shadow-inner',
-			container: 'badge badge-sm badge-info-container label-small shadow-outline shadow-inner'
-		},
-		success: {
-			solid: 'badge badge-sm badge-success label-small shadow-outline shadow-inner',
-			container: 'badge badge-sm badge-success-container label-small shadow-outline shadow-inner'
-		},
-		warning: {
-			solid: 'badge badge-sm badge-warning label-small shadow-outline shadow-inner',
-			container: 'badge badge-sm badge-warning-container label-small shadow-outline shadow-inner'
-		},
-		error: {
-			solid: 'badge badge-sm badge-error label-small shadow-outline shadow-inner',
-			container: 'badge badge-sm badge-error-container label-small shadow-outline shadow-inner'
-		}
-	};
+	// const badgeClasses: Record<FeedbackColor, { solid: string; container: string }> = {
+	// 	primary: {
+	// 		solid: 'badge badge-sm badge-primary label-small shadow-outline shadow-inner',
+	// 		container: 'badge badge-sm badge-primary-container label-small shadow-outline shadow-inner'
+	// 	},
+	// 	secondary: {
+	// 		solid: 'badge badge-sm badge-secondary label-small shadow-outline shadow-inner',
+	// 		container: 'badge badge-sm badge-secondary-container label-small shadow-outline shadow-inner'
+	// 	},
+	// 	accent: {
+	// 		solid: 'badge badge-sm badge-accent label-small shadow-outline shadow-inner',
+	// 		container: 'badge badge-sm badge-accent-container label-small shadow-outline shadow-inner'
+	// 	},
+	// 	neutral: {
+	// 		solid: 'badge badge-sm badge-neutral label-small shadow-outline shadow-inner',
+	// 		container: 'badge badge-sm badge-neutral-container label-small shadow-outline shadow-inner'
+	// 	},
+	// 	info: {
+	// 		solid: 'badge badge-sm badge-info label-small shadow-outline shadow-inner',
+	// 		container: 'badge badge-sm badge-info-container label-small shadow-outline shadow-inner'
+	// 	},
+	// 	success: {
+	// 		solid: 'badge badge-sm badge-success label-small shadow-outline shadow-inner',
+	// 		container: 'badge badge-sm badge-success-container label-small shadow-outline shadow-inner'
+	// 	},
+	// 	warning: {
+	// 		solid: 'badge badge-sm badge-warning label-small shadow-outline shadow-inner',
+	// 		container: 'badge badge-sm badge-warning-container label-small shadow-outline shadow-inner'
+	// 	},
+	// 	error: {
+	// 		solid: 'badge badge-sm badge-error label-small shadow-outline shadow-inner',
+	// 		container: 'badge badge-sm badge-error-container label-small shadow-outline shadow-inner'
+	// 	}
+	// };
 
 	let {
 		color = 'accent',
@@ -70,161 +71,166 @@
 		messages?: FeedbackMessage[];
 	} = $props();
 
-	function parseFeedbackContent(
-		content: string
-	): Pick<ParsedFeedbackMessage, 'course' | 'year' | 'markdown'> {
-		const frontmatterMatch = content.match(/^---\s*\n([\s\S]*?)\n---\s*\n?/);
+	// function parseFeedbackContent(
+	// 	content: string
+	// ): Pick<ParsedFeedbackMessage, 'course' | 'year' | 'number' | 'markdown'> {
+	// 	const frontmatterMatch = content.match(/^---\s*\n([\s\S]*?)\n---\s*\n?/);
 
-		if (!frontmatterMatch) {
-			return {
-				course: 'COURSE',
-				year: 'YEAR',
-				markdown: content.trim()
-			};
-		}
+	// 	if (!frontmatterMatch) {
+	// 		return {
+	// 			course: 'COURSE',
+	// 			year: 'YEAR',
+	// 			number: NaN,
+	// 			markdown: content.trim()
+	// 		};
+	// 	}
 
-		const frontmatter = frontmatterMatch[1];
-		const markdown = content.slice(frontmatterMatch[0].length).trim();
+	// 	// const frontmatter = frontmatterMatch[1];
+	// 	// const markdown = content.slice(frontmatterMatch[0].length).trim();
 
-		let course = 'COURSE';
-		let year = 'YEAR';
+	// 	// let course = 'COURSE';
+	// 	// let year = 'YEAR';
+	// 	// let number = NaN;
 
-		for (const line of frontmatter.split('\n')) {
-			const [rawKey, ...rawValue] = line.split(':');
-			if (!rawKey || rawValue.length === 0) {
-				continue;
-			}
+	// 	// for (const line of frontmatter.split('\n')) {
+	// 	// 	const [rawKey, ...rawValue] = line.split(':');
+	// 	// 	if (!rawKey || rawValue.length === 0) {
+	// 	// 		continue;
+	// 	// 	}
 
-			const key = rawKey.trim().toLowerCase();
-			const value = rawValue.join(':').trim();
+	// 	// 	const key = rawKey.trim().toLowerCase();
+	// 	// 	const value = rawValue.join(':').trim();
 
-			if (key === 'course' && value) {
-				course = value;
-			}
+	// 	// 	if (key === 'course' && value) {
+	// 	// 		course = value;
+	// 	// 	}
 
-			if (key === 'year' && value) {
-				year = value;
-			}
-		}
+	// 	// 	if (key === 'year' && value) {
+	// 	// 		year = value;
+	// 	// 	}
+	// 	// 	if (key === 'number' && value) {
+	// 	// 		number = Number(value);
+	// 	// 	}
+	// 	// }
 
-		return { course, year, markdown };
-	}
+	// 	return { course, year, number, markdown };
+	// }
 
 	function renderMarkdown(markdown: string): string {
 		return marked.parse(markdown, { async: false });
 	}
 
-	const parsedMessages = $derived(
-		messages.map((message) => ({
-			...message,
-			...parseFeedbackContent(message.content)
-		}))
-	);
+	// const parsedMessages = $derived(
+	// 	messages.map((message) => ({
+	// 		...message,
+	// 		...parseFeedbackContent(message.content)
+	// 	}))
+	// );
 
-	let courses = $derived(
-		[
-			...new Set(
-				parsedMessages
-					.map((message) => message.course)
-					.filter((course): course is string => Boolean(course))
-			)
-		].sort()
-	);
+	// let courses = $derived(
+	// 	[
+	// 		...new Set(
+	// 			parsedMessages
+	// 				.map((message) => message.course)
+	// 				.filter((course): course is string => Boolean(course))
+	// 		)
+	// 	].sort()
+	// );
 
-	let years = $derived(
-		[
-			...new Set(
-				parsedMessages
-					.map((message) => message.year)
-					.filter((year): year is string => Boolean(year))
-			)
-		].sort((left, right) => Number(left) - Number(right))
-	);
+	// let years = $derived(
+	// 	[
+	// 		...new Set(
+	// 			parsedMessages
+	// 				.map((message) => message.year)
+	// 				.filter((year): year is string => Boolean(year))
+	// 		)
+	// 	].sort((left, right) => Number(left) - Number(right))
+	// );
 
-	let courseSelection: Record<string, boolean> = $state({});
-	let yearSelection: Record<string, boolean> = $state({});
+	// let courseSelection: Record<string, boolean> = $state({});
+	// let yearSelection: Record<string, boolean> = $state({});
 
-	$effect(() => {
-		for (const course of courses) {
-			if (!(course in courseSelection)) {
-				courseSelection[course] = true;
-			}
-		}
-	});
+	// $effect(() => {
+	// 	for (const course of courses) {
+	// 		if (!(course in courseSelection)) {
+	// 			courseSelection[course] = true;
+	// 		}
+	// 	}
+	// });
 
-	$effect(() => {
-		for (const year of years) {
-			if (!(year in yearSelection)) {
-				yearSelection[year] = true;
-			}
-		}
-	});
+	// $effect(() => {
+	// 	for (const year of years) {
+	// 		if (!(year in yearSelection)) {
+	// 			yearSelection[year] = true;
+	// 		}
+	// 	}
+	// });
 
-	let selectedCourses = $derived(courses.filter((course) => courseSelection[course] === true));
-	let selectedYears = $derived(years.filter((year) => yearSelection[year] === true));
+	// let selectedCourses = $derived(courses.filter((course) => courseSelection[course] === true));
+	// let selectedYears = $derived(years.filter((year) => yearSelection[year] === true));
 
-	function selectAllCourses() {
-		for (const course of courses) {
-			courseSelection[course] = true;
-		}
-	}
+	// function selectAllCourses() {
+	// 	for (const course of courses) {
+	// 		courseSelection[course] = true;
+	// 	}
+	// }
 
-	function selectNoCourses() {
-		for (const course of courses) {
-			courseSelection[course] = false;
-		}
-	}
+	// function selectNoCourses() {
+	// 	for (const course of courses) {
+	// 		courseSelection[course] = false;
+	// 	}
+	// }
 
-	function toggleCourse(course: string) {
-		courseSelection[course] = !courseSelection[course];
-	}
+	// function toggleCourse(course: string) {
+	// 	courseSelection[course] = !courseSelection[course];
+	// }
 
-	function selectAllYears() {
-		for (const year of years) {
-			yearSelection[year] = true;
-		}
-	}
+	// function selectAllYears() {
+	// 	for (const year of years) {
+	// 		yearSelection[year] = true;
+	// 	}
+	// }
 
-	function selectNoYears() {
-		for (const year of years) {
-			yearSelection[year] = false;
-		}
-	}
+	// function selectNoYears() {
+	// 	for (const year of years) {
+	// 		yearSelection[year] = false;
+	// 	}
+	// }
 
-	function toggleYear(year: string) {
-		yearSelection[year] = !yearSelection[year];
-	}
+	// function toggleYear(year: string) {
+	// 	yearSelection[year] = !yearSelection[year];
+	// }
 
-	const filteredMessages = $derived(
-		parsedMessages.filter(
-			(message) =>
-				courseSelection[message.course] !== false && yearSelection[message.year] !== false
-		)
-	);
+	// const filteredMessages = $derived(
+	// 	parsedMessages.filter(
+	// 		(message) =>
+	// 			courseSelection[message.course] !== false && yearSelection[message.year] !== false
+	// 	)
+	// );
 
 	let activeIndex = $state(0);
 	let isCardVisible = $state(true);
 	let transitionTimer: ReturnType<typeof setTimeout> | null = null;
 
-	$effect(() => {
-		if (filteredMessages.length === 0) {
-			activeIndex = 0;
-			return;
-		}
+	// $effect(() => {
+	// 	if (filteredMessages.length === 0) {
+	// 		activeIndex = 0;
+	// 		return;
+	// 	}
 
-		if (activeIndex >= filteredMessages.length) {
-			activeIndex = filteredMessages.length - 1;
-		}
+	// 	if (activeIndex >= filteredMessages.length) {
+	// 		activeIndex = filteredMessages.length - 1;
+	// 	}
 
-		if (activeIndex < 0) {
-			activeIndex = 0;
-		}
-	});
+	// 	if (activeIndex < 0) {
+	// 		activeIndex = 0;
+	// 	}
+	// });
 
-	const activeMessage = $derived(filteredMessages[activeIndex]);
+	const activeMessage = $derived(messages[activeIndex]);
 
 	function navigateToIndex(nextIndex: number) {
-		if (filteredMessages.length === 0) {
+		if (messages.length === 0) {
 			return;
 		}
 
@@ -241,19 +247,19 @@
 	}
 
 	function showPrevious() {
-		if (filteredMessages.length === 0) {
+		if (messages.length === 0) {
 			return;
 		}
 
-		navigateToIndex((activeIndex - 1 + filteredMessages.length) % filteredMessages.length);
+		navigateToIndex((activeIndex - 1 + messages.length) % messages.length);
 	}
 
 	function showNext() {
-		if (filteredMessages.length === 0) {
+		if (messages.length === 0) {
 			return;
 		}
 
-		navigateToIndex((activeIndex + 1) % filteredMessages.length);
+		navigateToIndex((activeIndex + 1) % messages.length);
 	}
 
 	onDestroy(() => {
@@ -263,7 +269,7 @@
 	});
 </script>
 
-<div class="mx-auto mb-4 grid w-full max-w-[90rem] grid-cols-1 gap-3 xl:grid-cols-2">
+<!-- <div class="mx-auto mb-4 grid w-full max-w-[90rem] grid-cols-1 gap-3 xl:grid-cols-2">
 	{#if courses.length > 0}
 		<div class="min-w-0">
 			<CourseSelector
@@ -292,10 +298,10 @@
 			/>
 		</div>
 	{/if}
-</div>
+</div> -->
 
 <div class="relative flex h-full w-full items-center justify-center">
-	{#if filteredMessages.length === 0}
+	{#if messages.length === 0}
 		<div class="flex min-h-[16rem] w-full items-center justify-center p-6">
 			<div class="text-base-content/70 text-center text-3xl font-semibold">
 				No comments selected
@@ -316,13 +322,19 @@
 					class={`feedback-chat-bubble feedback-box-${color}-${boxScheme} w-full`}
 				>
 					<div class="markdown-comment feedback-content px-4">
-						<div class="feedback-meta">
+						<!-- <div class="flex gap-2">
 							<div class={badgeClasses[color][badgeScheme]}>{activeMessage.course}</div>
 							<div class={badgeClasses[color][badgeScheme]}>{activeMessage.year}</div>
+							<div class="grow"></div>
+							{#if !isNaN(Number(activeMessage.number))}
+								<div class={badgeClasses[color][badgeScheme]}>
+									based on {activeMessage.number} answers
+								</div>
+							{/if}
 						</div>
-						<hr />
+						<hr /> -->
 						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-						{@html renderMarkdown(activeMessage.markdown)}
+						{@html renderMarkdown(activeMessage.content)}
 					</div>
 				</ChatBubble>
 			</div>
@@ -332,9 +344,9 @@
 	<button
 		type="button"
 		class="bg-base-100 shadow-base-300/20 absolute start-5 top-1/2 z-10 flex size-9.5 -translate-y-1/2 items-center justify-center rounded-full shadow-sm max-sm:start-3"
-		class:opacity-50={filteredMessages.length <= 1}
+		class:opacity-50={messages.length <= 1}
 		onclick={showPrevious}
-		disabled={filteredMessages.length <= 1}
+		disabled={messages.length <= 1}
 	>
 		<span class="icon-[tabler--chevron-left] size-5 cursor-pointer"></span>
 		<span class="sr-only">Previous</span>
@@ -343,9 +355,9 @@
 	<button
 		type="button"
 		class="bg-base-100 shadow-base-300/20 absolute end-5 top-1/2 z-10 flex size-9.5 -translate-y-1/2 items-center justify-center rounded-full shadow-sm max-sm:end-3"
-		class:opacity-50={filteredMessages.length <= 1}
+		class:opacity-50={messages.length <= 1}
 		onclick={showNext}
-		disabled={filteredMessages.length <= 1}
+		disabled={messages.length <= 1}
 	>
 		<span class="icon-[tabler--chevron-right] size-5"></span>
 		<span class="sr-only">Next</span>

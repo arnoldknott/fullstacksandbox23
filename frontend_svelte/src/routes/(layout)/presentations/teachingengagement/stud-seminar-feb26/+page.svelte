@@ -11,8 +11,8 @@
 	// import { marked } from 'marked';
 
 	let { data }: { data: PageData } = $props();
-	console.log('=== 🧦 presentation - devF23 - motivation - page.questionsData.comments ===');
-	console.log(data.questionsData.comments);
+	// console.log('=== 🧦 presentation - devF23 - motivation - page.questionsData.feedback ===');
+	// console.log(data.questionsData.feedback);
 
 	type LearnSetupEntry = {
 		year: number;
@@ -323,12 +323,12 @@
 	</FramedSlide>
 	<FramedSlide section="old" content={['automation', '']}>
 		<SlideTitle color="secondary">Inspiration from back then</SlideTitle>
-		<ul class="display-small text-error/80 mt-5 list-inside">
+		<!-- <ul class="display-small text-error/80 mt-5 list-inside">
 			<li>Anywhere / Anytime</li>
 			<li>Personal</li>
 			<li>Flexible Delivery</li>
 			<li>Student Ownership</li>
-		</ul>
+		</ul> -->
 		<div class="fragment grid grid-cols-2 gap-2 pt-20">
 			<ChatBubble variant="error" tailAngle={130} shadow={true}>
 				<div class="heading-large">Save society for waste of time!</div>
@@ -340,7 +340,7 @@
 	</FramedSlide>
 	<section>
 		<div class="r-strech">
-			<Display><div class="text-warning">Design<br />(2010 - 2019)</div></Display>
+			<Display><div class="text-warning">Design<br />(2020 - 2023)</div></Display>
 		</div>
 	</section>
 	<FramedSlide section="old" content={['automation', 'design']}>
@@ -348,8 +348,8 @@
 		<ul class="display-small text-warning/80 mt-5 list-inside">
 			<li>2020: digitized slides</li>
 			<li>2021: video recordings and quizzes</li>
-			<li>2022: wepresentation I</li>
-			<li>2023: wepresentation II</li>
+			<li>2022: webpresentation I</li>
+			<li>2023: webpresentation II</li>
 		</ul>
 	</FramedSlide>
 	<FramedSlide section="old" content={['automation', 'design']}>
@@ -396,6 +396,11 @@
 			<Display><div class="text-primary">No Exam<br />(2023 - now)</div></Display>
 		</div>
 	</section>
+	<section>
+		<div class="r-strech">
+			<Display><div class="text-neutral">Theory</div></Display>
+		</div>
+	</section>
 	<FramedSlide section="new" content={['motivation', '', '', '']}>
 		<SlideTitle color="neutral">Talking with the Dean Lars Christoffersen</SlideTitle>
 		<ul class="display-small text-neutral/80 mt-5 list-inside">
@@ -421,7 +426,7 @@
 	<FramedSlide section="new" content={['motivation', '', '', '']}>
 		<SlideTitle color="neutral">Self determination theory</SlideTitle>
 		<div class="mx-5 grid h-120 grid-cols-3 gap-10">
-			<div class="heading-large fragment text-neutral flex flex-col">
+			<div class="heading-large text-neutral flex flex-col">
 				<div>Relatedness</div>
 				<div
 					class="btn btn-neutral-container btn-gradient shadow-outline heading flex h-full flex-col rounded-4xl shadow-sm"
@@ -430,7 +435,7 @@
 					feeling cared for.
 				</div>
 			</div>
-			<div class="heading-large fragment text-neutral flex flex-col">
+			<div class="heading-large text-neutral flex flex-col">
 				<div>Autonomy</div>
 				<div
 					class="btn btn-neutral-container btn-gradient shadow-outline heading flex h-full flex-col rounded-4xl shadow-sm"
@@ -438,7 +443,7 @@
 					Making your own decisions about your own life behaviours and goals.
 				</div>
 			</div>
-			<div class="heading-large fragment text-neutral flex flex-col">
+			<div class="heading-large text-neutral flex flex-col">
 				<div>Competence</div>
 				<div
 					class="btn btn-neutral-container btn-gradient shadow-outline heading flex h-full flex-col rounded-4xl shadow-sm"
@@ -460,6 +465,11 @@
 	<FramedSlide section="new" content={['motivation', '', '', '']}>
 		<MotivationTable color="neutral" />
 	</FramedSlide>
+	<section>
+		<div class="r-strech">
+			<Display><div class="text-info">Implementation</div></Display>
+		</div>
+	</section>
 	<FramedSlide section="new" content={['motivation', 'implementation', '', '']}>
 		<SlideTitle color="neutral">2024</SlideTitle>
 		<img
@@ -491,6 +501,11 @@
 			class="shadow-neutral h-fit w-fit rounded-4xl object-contain shadow-lg"
 		/>
 	</FramedSlide>
+	<section>
+		<div class="r-strech">
+			<Display><div class="text-accent">Results</div></Display>
+		</div>
+	</section>
 	<FramedSlide section="new" content={['motivation', 'implementation', 'results', '']}>
 		<SlideTitle color="accent"
 			>Reflecting on my own learning, I learn more, than in a course with exam</SlideTitle
@@ -525,11 +540,11 @@
 			color="accent"
 		/>
 	</FramedSlide>
-	{#if data.questionsData?.goodNoExam}
+	<!-- {#if data.questionsData?.goodNoExam}
 		<FramedSlide section="new" content={['motivation', 'implementation', 'results', '']}>
 			<SlideTitle color="accent">
-				What was <i>good</i> about having the learning reflections instead of other exam forms in this
-				course?
+				What was <i class="text-success-container-content">good</i> about having the learning reflections
+				instead of other exam forms in this course?
 			</SlideTitle>
 			<QualitativeFeeback color="accent" messages={data.questionsData.goodNoExam.messages} />
 		</FramedSlide>
@@ -537,10 +552,19 @@
 	{#if data.questionsData?.badNoExam}
 		<FramedSlide section="new" content={['motivation', 'implementation', 'results', '']}>
 			<SlideTitle color="accent">
-				What was <i>bad</i> about having the learning reflections instead of other exam forms in this
-				course?
+				What was <i class="text-error-container">bad</i> about having the learning reflections instead
+				of other exam forms in this course?
 			</SlideTitle>
 			<QualitativeFeeback color="accent" messages={data.questionsData.badNoExam.messages} />
+		</FramedSlide>
+	{/if} -->
+	{#if data.questionsData?.feedback}
+		<FramedSlide section="new" content={['motivation', 'implementation', 'results', '']}>
+			<SlideTitle color="accent">Summary of 358 qualitative answers</SlideTitle>
+			<div class="title-large text-accent">
+				(<i>208</i> positive, <i>92</i> neutral, <i>58</i> negative)
+			</div>
+			<QualitativeFeeback color="accent" messages={data.questionsData.feedback.messages} />
 		</FramedSlide>
 	{/if}
 	<!-- <FramedSlide section="new" content={['motivation', 'implementation', 'results', '']}>
@@ -585,12 +609,12 @@
 			</div>
 		</FramedSlide>
 	{/if} -->
-	{#if data.questionsData?.comments}
+	<!-- {#if data.questionsData?.comments}
 		<FramedSlide section="new" content={['motivation', 'implementation', 'results', '']}>
 			<SlideTitle color="accent">Summary of free comments</SlideTitle>
 			<QualitativeFeeback color="accent" messages={data.questionsData.comments.messages} />
 		</FramedSlide>
-	{/if}
+	{/if} -->
 	<FramedSlide section="new" content={['motivation', 'implementation', 'results', '']}>
 		<SlideTitle color="accent">New insights gained</SlideTitle>
 		<div class="grid grid-cols-2 gap-2 pt-20">
@@ -609,6 +633,11 @@
 			</ChatBubble>
 		</div>
 	</FramedSlide>
+	<section>
+		<div class="r-strech">
+			<Display><div class="text-primary">Outlook</div></Display>
+		</div>
+	</section>
 	<FramedSlide section="new" content={['motivation', 'implementation', 'results', 'outlook']}>
 		<SlideTitle color="primary">CoReLin</SlideTitle>
 		<div class="mt-5 grid grid-cols-3 content-center justify-center gap-3">
@@ -639,6 +668,11 @@
 			<div
 				class="btn btn-primary-container btn-gradient shadow-outline heading flex h-50 flex-col rounded-4xl shadow-sm"
 			>
+				Sense of Belonging
+			</div>
+			<div
+				class="btn btn-primary-container btn-gradient shadow-outline heading flex h-50 flex-col rounded-4xl shadow-sm"
+			>
 				Autonomy
 			</div>
 			<div
@@ -646,13 +680,14 @@
 			>
 				Competence
 			</div>
-			<div
-				class="btn btn-primary-container btn-gradient shadow-outline heading flex h-50 flex-col rounded-4xl shadow-sm"
-			>
-				Sense of Belonging
-			</div>
 		</div>
 	</FramedSlide>
+	<section class="display">
+		<Display>Thanks for listening!</Display>
+	</section>
+	<section class="display">
+		<Display>Questions, Reflections, Comments?</Display>
+	</section>
 </RevealJS>
 
 <style>

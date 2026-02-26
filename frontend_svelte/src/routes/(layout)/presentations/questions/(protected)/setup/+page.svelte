@@ -12,6 +12,7 @@
 
 	let { data }: { data: PageData } = $props();
 
+	// let messageMetaData = $state('{"course":"dev2","year":2023,"number": NaN}');
 	let messageMetaData = $state('');
 	let metadataError = $state('');
 	let myMessage: MessageExtended = $state({
@@ -134,10 +135,11 @@
 			if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
 				return parsed as Record<string, unknown>;
 			}
-			metadataError = 'Metadata must be a JSON object, e.g. {"course":"dev2","year":2023}';
+			metadataError =
+				'Metadata must be a JSON object, e.g. {"course":"dev2","year":2023,"number": 42}';
 			return null;
 		} catch {
-			metadataError = 'Invalid JSON metadata. Example: {"course":"dev2","year":2023}';
+			metadataError = 'Invalid JSON metadata. Example: {"course":"dev2","year":2023,"number": 42}';
 			return null;
 		}
 	};
@@ -226,7 +228,7 @@
 			<input
 				type="text"
 				bind:value={messageMetaData}
-				placeholder={'Metadata JSON, e.g. {"course":"dev2","year":2023}'}
+				placeholder={'Metadata JSON, e.g. {"course":"dev2","year":2023,"number": 42}'}
 				class="input mb-2 w-full"
 			/>
 			{#if metadataError}
