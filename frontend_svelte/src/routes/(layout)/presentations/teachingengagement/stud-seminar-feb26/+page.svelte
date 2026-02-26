@@ -622,7 +622,7 @@
 				<div class="heading-large">No ambitions on other peoples behalf!</div>
 			</ChatBubble>
 			<ChatBubble variant="accent" tailAngle={190} shadow={true}>
-				<div class="heading-large">No "deadlines" ☠️ only "living lines" 🌱.</div>
+				<div class="heading-large">No "deadlines" ☠️ only "life lines" 🌱.</div>
 			</ChatBubble>
 			<div class="col-span-2 h-30"></div>
 			<ChatBubble variant="accent" tailAngle={30} shadow={true}>
