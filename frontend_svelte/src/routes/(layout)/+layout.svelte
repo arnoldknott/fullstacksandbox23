@@ -24,6 +24,9 @@
 
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
 
+	// console.log("=== layout - client - data ===")
+	// console.log(data)
+
 	let debug = $state(page.url.searchParams.get('debug') === 'true' ? true : false);
 
 	$effect(() => {
@@ -52,6 +55,102 @@
 				? false
 				: true
 	);
+
+	// put potenitally in onMount to avoid SSR issues
+	let parentUrl = $derived(page.url.searchParams.get('parentURL') || undefined);
+	// $effect(() => {
+	// 	console.log('=== layout.svelte - parentURL ===');
+	// 	console.log(parentUrl);
+	// });
+	// onMount(() => {
+	// 	// if (window.self !== window.top && window.top) {
+	// 	console.log('=== layout.svelte - running in iframe - window.top.location.href ===');
+	// 	console.log(document.referrer);
+	// 	// }
+	// });
+	// onMount(async () => {
+	// 	if (window.self !== window.top && window.top) {
+	// 		// console.log('=== layout.svelte - running in iframe ===');
+	// 		// console.log(document.referrer);
+
+	// 		const localSessionId = localStorage.getItem('session_id');
+	// 		const serverHasSession = data.session?.loggedIn === true;
+	// 		// const restoreKey = `restore-attempt:${page.url.pathname}${page.url.search}`;
+	// 		// sessionStorage.getItem(restoreKey) === '1';
+	// 		// console.log('=== layout.svelte - onMount - localSessionId ===');
+	// 		// console.log(localSessionId);
+	// 		if (localSessionId && !serverHasSession) {
+	// 			// console.log('=== layout - restoring session - localSessionId ===');
+	// 			// console.log(localSessionId);
+	// 			const formData = new FormData();
+	// 			formData.append('sessionId', localSessionId);
+	// 			try {
+	// 				await fetch('?/restoresession', {
+	// 					method: 'POST',
+	// 					body: formData
+	// 				});
+	// 				// Trigger SvelteKit data reload (uses fetch, so your auth header override can be applied)
+	// 				await invalidateAll();
+	// 				// If session is now present, clear guard and stop.
+	// 				if (page.data.session?.loggedIn === true) {
+	// 					// sessionStorage.removeItem(restoreKey);
+	// 					// console.log('=== layout.svelte - session restored ===');
+
+	// 					return;
+	// 				}
+	// 				// One-time fallback navigation (no hard reload loop)
+	// 				await goto(`${page.url.pathname}${page.url.search}`, {
+	// 					replaceState: true,
+	// 					invalidateAll: true,
+	// 					keepFocus: true,
+	// 					noScroll: true
+	// 				});
+	// 				// if (response.ok) {
+	// 				// 	console.log('=== layout.svelte - onMount - session mismatch - reloading to sync session ===');
+	// 				// 	// window.location.reload();
+	// 				// } else {
+	// 				// 	console.error('🔥 🚪 layout.svelte - onMount - session restore failed with status:', response.status);
+	// 				// 	localStorage.removeItem('session_id');
+	// 				// }
+	// 			} catch (err) {
+	// 				console.error('🔥 🚪 layout.svelte - onMount - session restore failed');
+	// 				console.error(err);
+	// 				// Optionally, you could choose to clear the local session ID if the restore fails
+	// 				// localStorage.removeItem('session_id');
+	// 			}
+	// 		}
+	// 	}
+	// });
+	let avatarUrl: string | null = $state(null);
+
+	async function loadAvatar() {
+		try {
+			const sessionId = localStorage.getItem('session_id');
+
+			const response = await fetch('/apiproxies/msgraph?endpoint=/me/photo/$value', {
+				method: 'GET',
+				headers: sessionId ? { Authorization: `Bearer ${sessionId}` } : {}
+			});
+
+			if (!response.ok) {
+				throw new Error(`Avatar request failed: ${response.status}`);
+			}
+
+			const blob = await response.blob();
+			avatarUrl = URL.createObjectURL(blob);
+		} catch (err) {
+			console.error('Avatar load failed', err);
+			avatarUrl = null;
+		}
+	}
+
+	onMount(() => {
+		loadAvatar();
+
+		return () => {
+			if (avatarUrl) URL.revokeObjectURL(avatarUrl);
+		};
+	});
 
 	let session: Session | undefined = $state(data.session);
 
@@ -103,7 +202,14 @@
 		});
 	};
 
-	const { loggedIn } = page.data.session || false;
+	// const { loggedIn } = page.data.session || false;
+	const loggedIn = $derived.by(() => {
+		if (page.data && page.data.session && page.data.session.loggedIn === true) {
+			return true;
+		} else {
+			return false;
+		}
+	});
 
 	// Write theming to database:
 	let themeForm = $state<HTMLFormElement | null>(null);
@@ -845,9 +951,9 @@
 				>
 					{#if loggedIn}
 						<img
+							src={avatarUrl ?? ''}
+							alt="your profile"
 							class="not-hover:mask-radial-t-0% h-10 min-w-10 rounded-full not-hover:mask-radial-from-40%"
-							src={resolve('/apiproxies/msgraph') + '?endpoint=/me/photo/$value'}
-							alt="you"
 						/>
 					{/if}
 				</span>
@@ -893,12 +999,12 @@
 				</ul>
 			</div>
 			<div class="hidden items-center sm:flex md:ml-2">
-				<LoginOutButton {loggedIn} />
+				<LoginOutButton {loggedIn} {parentUrl} />
 			</div>
 		</div>
 	</nav>
 </header>
-
+<!--  -->
 <main
 	class="static w-screen transition-[padding-top] duration-300"
 	style="padding-top: {navBarBottom + 4}px;"
@@ -969,7 +1075,7 @@
 				)} -->
 				<li>
 					<div class="items-center sm:hidden md:ml-2">
-						<LoginOutButton {loggedIn} />
+						<LoginOutButton {loggedIn} {parentUrl} />
 					</div>
 				</li>
 			</ul>

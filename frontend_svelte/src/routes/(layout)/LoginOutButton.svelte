@@ -1,10 +1,14 @@
 <script lang="ts">
-	let { loggedIn }: { loggedIn: boolean } = $props();
+	let { loggedIn, parentUrl }: { loggedIn: boolean; parentUrl?: string } = $props();
 </script>
 
 {#if !loggedIn}
 	<button class="btn btn-neutral shadow-neutral ml-2 rounded-full shadow-sm" aria-label="Log In">
-		<a href="/login">Log in</a>
+		{#if parentUrl}
+			<a href={`/login?parentURL=${encodeURIComponent(parentUrl)}`}>Log in</a>
+		{:else}
+			<a href="/login">Log in</a>
+		{/if}
 	</button>
 {:else}
 	<button

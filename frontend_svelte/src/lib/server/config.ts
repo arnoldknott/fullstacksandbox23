@@ -24,7 +24,7 @@ export default class AppConfig {
 	public redis_session_db: string;
 	public redis_session_password: string;
 	public authentication_timeout: number;
-	public authentication_cookie_options: object;
+	// public authentication_cookie_options: object;
 	public session_timeout: number;
 	public session_cookie_options: object;
 
@@ -45,7 +45,7 @@ export default class AppConfig {
 		this.redis_session_db = process.env.REDIS_SESSION_DB || '';
 		this.redis_session_password = '';
 		this.authentication_timeout = 60 * 10; // 10 minutes to authenticate
-		this.authentication_cookie_options = {};
+		// this.authentication_cookie_options = {};
 		this.session_timeout = 60 * 60; // 1 hour
 		this.session_cookie_options = {};
 	}
@@ -133,12 +133,13 @@ export default class AppConfig {
 				this.az_authority = `https://login.microsoftonline.com/${azTenantId?.value}`;
 				this.az_logout_uri = `https://login.microsoftonline.com/${azTenantId?.value}/oauth2/v2.0/logout`;
 				this.redis_session_password = redisSessionPassword?.value || '';
-				this.authentication_cookie_options = {
-					httpOnly: true,
-					sameSite: false,
-					secure: true,
-					maxAge: this.authentication_timeout
-				};
+				// TBD: remove authentication_cookie_options - the session-id is now transferred inside state of OAuth-flow?
+				// this.authentication_cookie_options = {
+				// 	httpOnly: true,
+				// 	sameSite: 'none',
+				// 	secure: true,
+				// 	maxAge: this.authentication_timeout
+				// };
 				this.session_cookie_options = {
 					httpOnly: true,
 					sameSite: 'lax',
@@ -163,12 +164,13 @@ export default class AppConfig {
 			this.az_authority = `https://login.microsoftonline.com/${process.env.AZURE_TENANT_ID}`;
 			this.az_logout_uri = `https://login.microsoftonline.com/${process.env.AZURE_TENANT_ID}/oauth2/v2.0/logout`;
 			this.redis_session_password = process.env.REDIS_SESSION_PASSWORD || '';
-			this.authentication_cookie_options = {
-				httpOnly: true,
-				sameSite: 'lax',
-				secure: false,
-				maxAge: this.authentication_timeout
-			};
+			// TBD: remove authentication_cookie_options - the session-id is now transferred inside state of OAuth-flow!
+			// this.authentication_cookie_options = {
+			// 	httpOnly: true,
+			// 	sameSite: 'lax',
+			// 	secure: false,
+			// 	maxAge: this.authentication_timeout
+			// };
 			this.session_cookie_options = {
 				httpOnly: true,
 				sameSite: 'lax',

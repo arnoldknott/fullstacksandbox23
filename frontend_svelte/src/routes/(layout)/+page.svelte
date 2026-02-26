@@ -1,3 +1,6 @@
+<script lang="ts">
+</script>
+
 <div class="flex w-full justify-center">
 	<div class="flex flex-col justify-center">
 		<div class="heading-large md:display-small text-primary italic" style="line-height: 1;">

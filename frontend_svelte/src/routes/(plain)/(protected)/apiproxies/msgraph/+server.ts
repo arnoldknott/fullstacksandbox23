@@ -4,6 +4,8 @@ import { microsoftGraph } from '$lib/server/apis/msgraph';
 export const GET: RequestHandler = async ({ locals, url, setHeaders }): Promise<Response> => {
 	try {
 		const sessionId = locals.sessionData.sessionId;
+		// console.log('=== apiproxies/msgraph - GET - sessionId ===');
+		// console.log(sessionId);
 		const endpoint = url.searchParams.get('endpoint');
 		if (!endpoint) {
 			throw error(400, 'Missing endpoint parameter');

@@ -167,6 +167,7 @@ class MicrosoftAuthenticationProvider extends BaseOauthProvider {
 		sessionId: string,
 		origin: string,
 		targetUrl: string = '/',
+		parentUrl: string | undefined = undefined,
 		scopes: string[] = [...scopesBackend, ...scopesMsGraph, ...scopesAzure]
 	): Promise<string> {
 		try {
@@ -174,8 +175,10 @@ class MicrosoftAuthenticationProvider extends BaseOauthProvider {
 			const csrfToken = this.cryptoProvider.createNewGuid();
 			const state = this.cryptoProvider.base64Encode(
 				JSON.stringify({
+					sessionId: sessionId,
 					csrfToken: csrfToken,
-					targetURL: targetUrl
+					targetURL: targetUrl,
+					parentURL: parentUrl
 				})
 			);
 			await redisCache.setSession(sessionId, '$.csrfToken', JSON.stringify(csrfToken), 60 * 10);
@@ -196,11 +199,14 @@ class MicrosoftAuthenticationProvider extends BaseOauthProvider {
 		}
 	}
 
-	public async decodeState(sessionId: string, state: string): Promise<string> {
+	public async decodeState(
+		// sessionId: string,
+		state: string
+	): Promise<[string, string, string | undefined]> {
 		const stateJSON = JSON.parse(this.cryptoProvider.base64Decode(state));
-		const cachedCsrfToken = await redisCache.getSession(sessionId, '$.csrfToken');
+		const cachedCsrfToken = await redisCache.getSession(stateJSON.sessionId, '$.csrfToken');
 		if (stateJSON.csrfToken === cachedCsrfToken) {
-			return stateJSON.targetURL;
+			return [stateJSON.sessionId, stateJSON.targetURL, stateJSON.parentURL];
 		} else {
 			throw new Error('CSRF Token mismatch');
 		}
@@ -266,6 +272,6 @@ if (!redisCache) {
 	throw new Error('🔑🔥 oauth - Authentication - redisCache not initialized');
 }
 const redisClient = !building ? await redisCache.provideClient() : ({} as RedisClientType);
-export const msalAuthProvider = new MicrosoftAuthenticationProvider(redisClient);
+export const msalAuthProvider = new MicrosoftAuthenticationProvider(redisClient!);
 
 console.log('👍 🔑 lib - server - oauth.ts - end');

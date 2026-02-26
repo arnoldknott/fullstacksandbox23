@@ -14,25 +14,34 @@ const appConfig = await AppConfig.getInstance();
 
 export const load: PageServerLoad = async ({ url, cookies }) => {
 	let targetUrl = '/';
+	let parentUrl: string | undefined;
+	let sessionId: string | undefined;
 	try {
 		const code = url.searchParams.get('code');
-		const sessionId = cookies.get('session_id');
+		// const sessionId = cookies.get('session_id');
 		const state = url.searchParams.get('state');
+		if (state) {
+			[sessionId, targetUrl, parentUrl] = await msalAuthProvider.decodeState(state);
+		}
 		if (sessionId) {
 			// TBD CSRF protection check:
-			if (state) {
-				targetUrl = await msalAuthProvider.decodeState(sessionId, state);
-			}
 			// TBD: authenticationResult not used any more
 			// but still needs to execute, as this sets the access token in cache!
 			// const _authenticationResult: AuthenticationResult =
 			await msalAuthProvider.authenticateWithCode(sessionId, code, url.origin);
 			await redisCache.setSession(sessionId, '$.loggedIn', JSON.stringify(true));
 			await redisCache.setSession(sessionId, '$.sessionId', JSON.stringify(sessionId));
-			// TBD: Does the cookie really need to set again in callback? It's set already in login endpoint!
+
+			const cookieOptions = appConfig.session_cookie_options as Record<string, unknown>;
+			// Check if targetURL is pointing to another origin - if yes, the page is embedded in an iframe
+			// if (targetUrl && new URL(targetUrl).origin !== url.origin) {
+			// This worked in Chrome embedded in parent-page:
+			// if (parentUrl) {
+			// 	cookieOptions.sameSite = 'none';
+			// }
 			cookies.set('session_id', sessionId, {
 				path: '/',
-				...appConfig.session_cookie_options
+				...cookieOptions
 			});
 			// const response = await fetch(`${appConfig.ms_graph_base_uri}/me`, {
 			// 	headers: {
@@ -79,5 +88,11 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 		console.error(err);
 		throw err;
 	}
-	redirect(302, targetUrl);
+	if (parentUrl) {
+		// redirect(302, parentUrl);
+		// return { parentUrl: parentUrl, sessionId: sessionId };
+		return { parentUrl: parentUrl };
+	} else {
+		redirect(302, targetUrl);
+	}
 };
