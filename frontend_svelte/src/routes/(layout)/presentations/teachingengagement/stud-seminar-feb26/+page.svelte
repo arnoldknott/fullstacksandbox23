@@ -626,8 +626,11 @@
 			</ChatBubble>
 			<div class="col-span-2 h-30"></div>
 			<ChatBubble variant="accent" tailAngle={30} shadow={true}>
-				<div class="heading-large">Who am I to put a number on another person?</div>
+				<div class="heading-large">Everything is an invitation.</div>
 			</ChatBubble>
+			<!-- <ChatBubble variant="accent" tailAngle={30} shadow={true}>
+				<div class="heading-large">Who am I to put a number on another person?</div>
+			</ChatBubble> -->
 			<ChatBubble variant="accent" tailAngle={330} shadow={true}>
 				<div class="heading-large">I only support intrinsic motivation!</div>
 			</ChatBubble>
