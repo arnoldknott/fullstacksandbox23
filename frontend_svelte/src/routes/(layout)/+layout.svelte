@@ -950,11 +950,16 @@
 					aria-label="User Menu"
 				>
 					{#if loggedIn}
+						<!-- {#if avatarUrl} -->
 						<img
 							src={avatarUrl ?? ''}
 							alt="your profile"
 							class="not-hover:mask-radial-t-0% h-10 min-w-10 rounded-full not-hover:mask-radial-from-40%"
 						/>
+						<!-- {:else}
+							<span class="icon-[fa6-solid--user] bg-secondary size-5 h-10 w-10 rounded-full"
+							></span>
+						{/if} -->
 					{/if}
 				</span>
 				<ul
