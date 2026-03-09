@@ -1,4 +1,4 @@
-FROM node:24.6.0-alpine3.21 AS build
+FROM node:24.14.0-alpine3.23 AS build
 WORKDIR /app
 COPY package*.json svelte.config.js ./
 RUN npm install
@@ -8,7 +8,7 @@ COPY . .
 RUN npm run build
 # CMD ["sh" "-c"]
 
-FROM node:24.6.0-alpine3.21
+FROM node:24.14.0-alpine3.23
 WORKDIR /app
 # TBD: remove when error with internal ingres is fixed.
 # RUN apk add --no-cache redis tcptraceroute

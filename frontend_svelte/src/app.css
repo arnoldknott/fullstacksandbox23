@@ -1,8 +1,8 @@
 @import 'tailwindcss';
 
 /* Tailwind content sources - scan these files for classes */
-@source "src/**/*.{html,js,svelte,ts}";
-@source "../node_modules/flyonui/flyonui/index.js";
+@source 'src/**/*.{html,js,svelte,ts}';
+@source '../node_modules/flyonui/flyonui/index.js';
 
 @import './components/materialDesignExtensionsToFlyonUI/typography.css';
 @import './components/materialDesignExtensionsToFlyonUI/chat.css';
@@ -15,15 +15,15 @@
 @import './components/materialDesignExtensionsToFlyonUI/select.css';
 
 @import '../node_modules/flyonui/variants.css';
-@plugin "@iconify/tailwind4";
-@plugin "flyonui";
+@plugin '@iconify/tailwind4';
+@plugin 'flyonui';
 /* @plugin "flyonui" {
     themes: light --default, dark --prefersdark, soft;
   } */
 /* @plugin "flyonui" {
   themes: false;
 }; */
-@plugin "flyonui/theme" {
+@plugin 'flyonui/theme' {
 	name: 'materialdesign';
 	default: true;
 	prefersdark: true;

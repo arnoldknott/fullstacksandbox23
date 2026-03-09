@@ -63,8 +63,8 @@
 				<li><em>App registrations</em> for <em>Frontend and Backend</em></li>
 				<li><em>Managed Identities</em> for <em>CI/CD pieplines</em></li>
 				<li>
-					<em>OAuth2</em> for <em>Authentication</em> of users and <em>Authorization</em> in Backend
-					and MS Graph
+					<em>OAuth2</em> for <em>Authentication</em> of users and <em>Authorization</em> in Backend and
+					MS Graph
 				</li>
 				<li>
 					<em>Role, Scopes & Groups</em> configures tokens for
