@@ -158,7 +158,8 @@ class MicrosoftAuthenticationProvider extends BaseOauthProvider {
 			console.error('🔥 🔑 oauth - Authentication - MsalConfClient - createMsalConfClient failed');
 			console.log(error);
 			throw new Error(
-				'🔥 🔑 oauth - Authentication - MsalConfClient - createMsalConfClient failed ' + error
+				'🔥 🔑 oauth - Authentication - MsalConfClient - createMsalConfClient failed ',
+				{ cause: error }
 			);
 		}
 	}

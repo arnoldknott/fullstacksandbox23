@@ -10,11 +10,11 @@
 	let {
 		content,
 		topLevel = false,
-		// isActiveChild = $bindable(false)
+		isActiveChild = $bindable(false)
 	}: {
 		content: SideBarItemType;
 		topLevel?: boolean;
-		// isActiveChild?: boolean;
+		isActiveChild?: boolean;
 	} = $props();
 	let { id, name, pathname, hash, icon, items } = $derived({ ...content });
 	let isFolder = $derived(
@@ -24,16 +24,17 @@
 	);
 
 	// this variable tracks if any child item is active:
-	let hasActiveChild = $state(false);
+	// let hasActiveChild = $state(false);
 
 	// this variable tracks active states of all children (for folders only):
 	let childActiveStates: boolean[] = $state(content.items?.map(() => false) ?? []);
+	let hasActiveChild = $derived(childActiveStates.some((active) => active));
 
 	$effect(() => {
 		// communicates to parent (via bindable), that this folder is active because one of its children is active:
-		// isActiveChild = (hasActiveChild && isFolder) || isActive;
+		isActiveChild = (hasActiveChild && isFolder) || isActive;
 		// Checks if any of this folders children are active:
-		hasActiveChild = childActiveStates.some((active) => active);
+		// hasActiveChild = childActiveStates.some((active) => active);
 	});
 
 	const thisPage = $derived(pathname === page.url.pathname);
@@ -119,8 +120,8 @@
 					...item,
 					pathname: item.pathname || pathname
 				} as SideBarItemType}
+				bind:isActiveChild={childActiveStates[index]}
 			/>
-			<!-- bind:isActiveChild={childActiveStates[index]} -->
 		{/each}
 	</ul>
 {/snippet}

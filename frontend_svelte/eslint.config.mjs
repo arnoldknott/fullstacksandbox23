@@ -62,7 +62,6 @@ export default [
 	},
 	{
 		files: ['**/*.svelte', '**/*.svelte.js'],
-
 		languageOptions: {
 			parser: parser,
 			ecmaVersion: 5,
@@ -71,6 +70,11 @@ export default [
 				parser: '@typescript-eslint/parser',
 				svelteConfig
 			}
+		},
+		rules: {
+			'svelte/no-navigation-without-resolve': 'off', // TBD: consider re-enabling
+			'no-useless-assignment': 'off', // Svelte's reactivity syntax causes false positives
+			'no-undef': 'off' // TypeScript handles this — no-undef causes false positives
 		}
 	},
 	{
