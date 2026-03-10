@@ -172,12 +172,13 @@
 	let artificialIntelligenceForm = $state<HTMLFormElement | null>(null);
 
 	const theming = $state(new Theming());
-
+	// svelte-ignore state_referenced_locally
+	const initialThemeConfig = data?.session?.currentUser?.user_profile;
 	// TBD: refactor this to decently use the reactivity of Svelte - potentially use $derived!
 	let themeConfiguration: ColorConfig = $state({
-		sourceColor: data?.session?.currentUser?.user_profile.theme_color || '#941ff4', // <= That's a good color!// '#353c6e' // '#769CDF',
-		variant: data?.session?.currentUser?.user_profile.theme_variant || Variant.TONAL_SPOT, // Variant.FIDELITY,//
-		contrast: data?.session?.currentUser?.user_profile.contrast || 0.0
+		sourceColor: initialThemeConfig?.theme_color || '#941ff4', // <= That's a good color!// '#353c6e' // '#769CDF',
+		variant: initialThemeConfig?.theme_variant || Variant.TONAL_SPOT, // Variant.FIDELITY,//
+		contrast: initialThemeConfig?.contrast || 0.0
 	});
 
 	$effect(() => {
