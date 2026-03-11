@@ -2,14 +2,14 @@ import logging
 
 from core.types import EventGuard, GuardTypes
 from crud.quiz import (
-    QuestionCRUD,
     MessageCRUD,
     NumericalCRUD,
+    QuestionCRUD,
 )
 from models.quiz import (
-    Question,
     Message,
     Numerical,
+    Question,
 )
 
 from .base import BaseNamespace

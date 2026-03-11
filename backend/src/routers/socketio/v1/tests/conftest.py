@@ -23,9 +23,9 @@ from routers.socketio.v1.identities import (
 from routers.socketio.v1.interactive_documentation import InteractiveDocumentation
 from routers.socketio.v1.public_namespace import PublicNamespace
 from routers.socketio.v1.quiz_namespace import (
-    QuestionNamespace,
     MessageNamespace,
     NumericalNamespace,
+    QuestionNamespace,
 )
 from tests.utils import sessions
 

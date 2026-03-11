@@ -4,22 +4,22 @@ import pytest
 
 from crud.presentation import PresentationCRUD
 from models.presentation import Presentation
+from routers.api.v1.tests.base import BaseTest
 from tests.utils import (
-    token_admin_read_write,
-    token_user1_read_write,
+    token_admin,
     token_admin_read,
+    token_admin_read_write,
     token_admin_write,
     token_user1_read,
+    token_user1_read_write,
     token_user1_write,
-    token_admin,
 )
 from tests.utils_presentations import (
-    one_test_presentation,
-    wrong_test_presentations,
     many_test_presentations,
+    one_test_presentation,
     presentation_update_data,
+    wrong_test_presentations,
 )
-from routers.api.v1.tests.base import BaseTest
 
 
 class TestPresentation(BaseTest):

@@ -1,11 +1,8 @@
-from .base import BaseCRUD
-
-from models.presentation import (
+from models.presentation import (  # PresentationCreate,; PresentationRead,; PresentationUpdate,
     Presentation,
-    # PresentationCreate,
-    # PresentationRead,
-    # PresentationUpdate,
 )
+
+from .base import BaseCRUD
 
 
 class PresentationCRUD(

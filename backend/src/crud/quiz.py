@@ -1,24 +1,10 @@
-from .base import BaseCRUD
-
-from models.quiz import (
-    # Quiz,
-    # QuizCreate,
-    # QuizRead,
-    # QuizUpdate,
-    Question,
-    # QuestionCreate,
-    # QuestionRead,
-    # QuestionUpdate,
+from models.quiz import (  # Quiz,; QuizCreate,; QuizRead,; QuizUpdate,; QuestionCreate,; QuestionRead,; QuestionUpdate,; MessageCreate,; MessageRead,; MessageUpdate,; NumericalCreate,; NumericalRead,; NumericalUpdate,
     Message,
-    # MessageCreate,
-    # MessageRead,
-    # MessageUpdate,
     Numerical,
-    # NumericalCreate,
-    # NumericalRead,
-    # NumericalUpdate,
+    Question,
 )
 
+from .base import BaseCRUD
 
 # class QuizCRUD(
 #     BaseCRUD[

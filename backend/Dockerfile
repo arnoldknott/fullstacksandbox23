@@ -1,4 +1,4 @@
-FROM python:3.13.0-alpine3.20 AS base
+FROM python:3.14.3-alpine3.23 AS base
 COPY . /app
 WORKDIR /app
 ENV PYTHONPATH="/app"

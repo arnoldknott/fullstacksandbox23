@@ -1,10 +1,11 @@
 """Base test class for API endpoint testing."""
 
 from uuid import UUID, uuid4
-from core.types import CurrentUserData
+
 import pytest
 
-from tests.utils import token_admin_read_write, current_user_data_admin
+from core.types import CurrentUserData
+from tests.utils import current_user_data_admin, token_admin_read_write
 
 
 class AbstractTestMixin:

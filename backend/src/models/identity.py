@@ -7,21 +7,21 @@ from pydantic import AfterValidator, ConfigDict
 from sqlmodel import Field, Relationship, SQLModel
 
 from core.config import config
-from models.access import IdentityHierarchy
-from .base import (
-    create_model,
-    Attribute,
-    Relationship as AppRelationship,
-    RelationshipHierarchyType,
-    rebuild_model_forward_refs,
-)
 from core.types import IdentityType
+from models.access import IdentityHierarchy
 
 from .base import (
     AccessPolicyMixin,
     AccessRightsMixin,
+    Attribute,
     CreatedAtMixin,
+)
+from .base import Relationship as AppRelationship
+from .base import (
+    RelationshipHierarchyType,
     UpdatedAtMixin,
+    create_model,
+    rebuild_model_forward_refs,
 )
 
 # region account linking
