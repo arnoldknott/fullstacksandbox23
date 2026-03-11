@@ -22,13 +22,13 @@ BLACK_EXIT_CODE=$?
 git add ./backend/
 COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T backend_api sh -c "pytest"
 PYTEST_EXIT_CODE=$?
-COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T frontend_svelte sh -c "npm run format"
-NPM_FORMAT_EXIT_CODE=$?
-COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T frontend_svelte sh -c "npm run lint"
-NPM_LINT_EXIT_CODE=$?
+COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T frontend_svelte sh -c "bun format"
+BUN_FORMAT_EXIT_CODE=$?
+COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T frontend_svelte sh -c "bun lint"
+BUN_LINT_EXIT_CODE=$?
 git add ./frontend_svelte/
-COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T frontend_svelte sh -c "npm run test:unit"
-NPM_UNITTEST_EXIT_CODE=$?
+COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T frontend_svelte sh -c "bun test:unit"
+BUN_UNITTEST_EXIT_CODE=$?
 COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env down
 
 cd infrastructure
@@ -50,7 +50,7 @@ print_result $ISORT_EXIT_CODE "isort"
 print_result $RUFF_EXIT_CODE "ruff"
 print_result $BLACK_EXIT_CODE "black"
 print_result $PYTEST_EXIT_CODE "pytest"
-print_result $NPM_FORMAT_EXIT_CODE "npm format"
-print_result $NPM_LINT_EXIT_CODE "npm lint"
-print_result $NPM_UNITTEST_EXIT_CODE "npm unit test"
+print_result $BUN_FORMAT_EXIT_CODE "bun format"
+print_result $BUN_LINT_EXIT_CODE "bun lint"
+print_result $BUN_UNITTEST_EXIT_CODE "bun unit test"
 print_result $TOFU_FMT_EXIT_CODE "tofu fmt"

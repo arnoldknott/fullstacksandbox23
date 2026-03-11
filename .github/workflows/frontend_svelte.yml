@@ -74,21 +74,21 @@ jobs:
             -f compose.yml \
             -f compose.override.test.yml \
             exec -T frontend_svelte \
-            sh -c "npm run format"
+            sh -c "bun format"
       - name: Linting
         run: |
           docker compose \
             -f compose.yml \
             -f compose.override.test.yml \
             exec -T frontend_svelte \
-            sh -c "npm run lint"
+            sh -c "bun lint"
       - name: Unit testing
         run: |
           docker compose \
             -f compose.yml \
             -f compose.override.test.yml \
             exec -T frontend_svelte \
-            sh -c "npm run test:unit"
+            sh -c "bun test:unit"
       - name: Stop containers
         run: |
           docker compose \
