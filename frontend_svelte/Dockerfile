@@ -8,7 +8,7 @@ RUN bun install --frozen-lockfile
 
 FROM test AS build
 COPY . .
-RUN bun build
+RUN bun run build
 
 FROM setup
 COPY --from=build /app/build /app/
