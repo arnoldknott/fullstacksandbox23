@@ -88,7 +88,7 @@ services:
 
   frontend_svelte:
     build:
-      target: setup
+      target: test
       args:
         - REDIS_HOST=$REDIS_HOST
         - REDIS_PORT=$REDIS_PORT
