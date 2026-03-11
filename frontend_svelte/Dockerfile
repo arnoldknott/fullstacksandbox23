@@ -6,9 +6,9 @@ FROM setup As test
 COPY package.json bun.lock svelte.config.js ./
 RUN bun install --frozen-lockfile
 
-FROM setup AS build
+FROM test AS build
 COPY . .
-RUN bun run build
+RUN bun build
 
 FROM setup
 COPY --from=build /app/build /app/
