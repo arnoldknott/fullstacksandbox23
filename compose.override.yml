@@ -53,7 +53,7 @@ services:
 
   # Mainly replaced by pgadmin app - reinstate if changing from app to containerization for pgadmin:
   pgadmin:
-    image: dpage/pgadmin4:9.11.0
+    image: dpage/pgadmin4:9.13.0
     depends_on:
       - postgres
     env_file:
