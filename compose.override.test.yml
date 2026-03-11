@@ -88,7 +88,7 @@ services:
 
   frontend_svelte:
     build:
-      target: build
+      target: setup
       args:
         - REDIS_HOST=$REDIS_HOST
         - REDIS_PORT=$REDIS_PORT
@@ -109,7 +109,7 @@ services:
       # - API_SCOPE=$API_SCOPE
     networks:
       - test_network
-    command: sh -c "bin install && bun dev"
+    command: sh -c "bun install && bun dev"
     volumes:
       - ./frontend_svelte:/app
       - /app/node_modules

@@ -79,7 +79,7 @@ services:
 
   frontend_svelte:
     build:
-      target: build
+      target: setup
     env_file:
       - ./frontend_svelte/src/.env
     ports:
