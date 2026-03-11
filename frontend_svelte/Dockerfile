@@ -2,10 +2,11 @@ FROM node:24.14.0-alpine3.23 AS setup
 WORKDIR /app
 RUN npm install -g bun
 
-FROM setup As build
-WORKDIR /app
+FROM setup As test
 COPY package.json bun.lock svelte.config.js ./
 RUN bun install --frozen-lockfile
+
+FROM setup AS build
 COPY . .
 RUN bun run build
 
