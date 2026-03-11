@@ -2,23 +2,24 @@
 
 import pytest
 
-from crud.quiz import MessageCRUD, QuestionCRUD, NumericalCRUD
-from models.quiz import Message, Question, Numerical
+from crud.quiz import MessageCRUD, NumericalCRUD, QuestionCRUD
+from models.quiz import Message, Numerical, Question
 from tests.utils import (
     session_id_admin_read_write_socketio,
     session_id_user1_read_write_socketio,
 )
 from tests.utils_quiz import (
-    one_test_message,
     many_test_messages,
-    message_update_data,
-    one_test_question,
-    many_test_questions,
-    question_update_data,
-    one_test_numerical,
     many_test_numericals,
+    many_test_questions,
+    message_update_data,
     numerical_update_data,
+    one_test_message,
+    one_test_numerical,
+    one_test_question,
+    question_update_data,
 )
+
 from .base import BaseSocketIOTest
 
 

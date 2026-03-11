@@ -339,7 +339,7 @@
 </div>
 
 <div
-	class="mt-5 grid h-screen min-h-fit w-full grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4"
+	class="mt-5 grid h-fit w-full grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4"
 	id="design-playground"
 >
 	<div class="heading col-span-full w-full grow">Playground to preview color combinations</div>

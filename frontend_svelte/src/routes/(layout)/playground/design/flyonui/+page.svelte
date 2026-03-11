@@ -1821,14 +1821,14 @@
 				a line break.
 			</p>
 			<p class="title py-4">
-				And that is another <i>Title</i> typography with some text to fill the line, so we can get a
-				line break, which requires long enough text get the line breaking over into a new line.
+				And that is another <i>Title</i> typography with some text to fill the line, so we can get a line
+				break, which requires long enough text get the line breaking over into a new line.
 			</p>
 			<p class="title-small py-4">
 				And the third <i>Title - small</i> typography needs quite some extra meaningless text, just to
-				demonstrate the line break even on larger screens, where it might get hard to provoke a line
-				break with such small text, but we'll get there with to make the text long enough text to get
-				a line break.
+				demonstrate the line break even on larger screens, where it might get hard to provoke a line break
+				with such small text, but we'll get there with to make the text long enough text to get a line
+				break.
 			</p>
 		</div>
 		<p class="pt-5 text-center">Typography styles for Body</p>

@@ -54,15 +54,16 @@ Features:
     - Forward reference handling (call rebuild_model_forward_refs() after all models defined)
 """
 
+import sys
 import uuid
 from datetime import datetime
-from typing import Any, List, Optional, Set, Tuple, Type
 from enum import Enum
-from typing import get_origin, get_args
-import sys
+from typing import Any, List, Optional, Set, Tuple, Type, get_args, get_origin
 
 from pydantic import BaseModel
-from sqlmodel import Field, Relationship as SQLModelRelationship, SQLModel
+from sqlmodel import Field
+from sqlmodel import Relationship as SQLModelRelationship
+from sqlmodel import SQLModel
 from sqlmodel.main import SQLModelMetaclass
 
 from core.types import Action, IdentityType, ResourceType
@@ -138,7 +139,7 @@ class Relationship(BaseModel):
 # Utility functions
 def _get_hierarchy_model(model_name: str):
     """Determine if a model is a Resource or Identity and return the appropriate hierarchy model."""
-    from models.access import ResourceHierarchy, IdentityHierarchy
+    from models.access import IdentityHierarchy, ResourceHierarchy
 
     if model_name in ResourceType.list():
         return ResourceHierarchy, "ResourceHierarchy"

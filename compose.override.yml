@@ -53,7 +53,7 @@ services:
 
   # Mainly replaced by pgadmin app - reinstate if changing from app to containerization for pgadmin:
   pgadmin:
-    image: dpage/pgadmin4:9.11.0
+    image: dpage/pgadmin4:9.13.0
     depends_on:
       - postgres
     env_file:
@@ -79,7 +79,7 @@ services:
 
   frontend_svelte:
     build:
-      target: build
+      target: setup
     env_file:
       - ./frontend_svelte/src/.env
     ports:
@@ -91,9 +91,7 @@ services:
     restart: unless-stopped
     networks:
       - dev_network
-    command:
-      # sh -c "/bin/sh"
-      sh -c "npm install && npm run dev"
+    command: sh -c "bun install && bun dev"
 
   redis:
     container_name: dev_redis

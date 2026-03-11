@@ -15,11 +15,11 @@ from routers.api.v1.identities import (
     ueber_group_router,
     user_router,
 )
+from routers.api.v1.presentation import router as presentation_router
 from routers.api.v1.protected_resource import router as protected_resource_router
 from routers.api.v1.public_resource import router as public_resource_router
-from routers.api.v1.tag import router as tag_router
-from routers.api.v1.presentation import router as presentation_router
 from routers.api.v1.quiz import router as quiz_router
+from routers.api.v1.tag import router as tag_router
 from routers.ws.v1.websockets import router as websocket_router
 
 

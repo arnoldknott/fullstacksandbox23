@@ -166,7 +166,7 @@ resource "azurerm_container_app" "BackendAPIContainer" {
     container {
       name   = "backend"
       image  = "mcr.microsoft.com/azuredocs/containerapps-helloworld:latest"
-      cpu    = terraform.workspace == "stage" || terraform.workspace == "prod" ? 0.75 : 0.25 # 0.5 was still too small with 160 user hits # load limited at around 100 users with 0.25 CPU!
+      cpu    = terraform.workspace == "stage" || terraform.workspace == "prod" ? 0.75 : 0.25       # 0.5 was still too small with 160 user hits # load limited at around 100 users with 0.25 CPU!
       memory = terraform.workspace == "stage" || terraform.workspace == "prod" ? "1.5Gi" : "0.5Gi" # "1Gi"
       volume_mounts {
         name = "${terraform.workspace}-application-data"
@@ -612,7 +612,7 @@ resource "azurerm_container_app" "postgresAdmin" {
   template {
     container {
       name   = "pgadmin"
-      image  = "dpage/pgadmin4:9.11.0"
+      image  = "dpage/pgadmin4:9.13.0"
       cpu    = 0.25
       memory = "0.5Gi"
       # volume_mounts {

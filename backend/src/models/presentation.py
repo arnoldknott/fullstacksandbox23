@@ -1,14 +1,14 @@
 from typing import Optional
 
+# from .quiz import Quiz, QuizRead
+from core.types import ResourceType
+
 from .base import (
-    create_model,
     Attribute,
     Relationship,
     RelationshipHierarchyType,
+    create_model,
 )
-
-# from .quiz import Quiz, QuizRead
-from core.types import ResourceType
 
 Presentation = create_model(
     name="Presentation",

@@ -1,7 +1,7 @@
 import logging
+from typing import Annotated
 from uuid import UUID
 
-from typing import Annotated
 from fastapi import APIRouter, Depends, Query
 
 from core.security import (
@@ -11,8 +11,8 @@ from core.security import (
 from core.types import GuardTypes
 
 # from crud.quiz import QuizCRUD, QuestionCRUD, MessageCRUD, NumericalCRUD
-from crud.quiz import QuestionCRUD, MessageCRUD, NumericalCRUD
-from models.quiz import Question, Message, Numerical
+from crud.quiz import MessageCRUD, NumericalCRUD, QuestionCRUD
+from models.quiz import Message, Numerical, Question
 
 from .base import BaseView
 

@@ -88,7 +88,7 @@ async def run_migrations():
 
     async with postgres_async_engine.begin() as connection:
         await connection.run_sync(SQLModel.metadata.drop_all)
-        await postgres_async_engine.dispose()
+    await postgres_async_engine.dispose()
 
 
 @pytest.fixture(scope="function")

@@ -1,14 +1,15 @@
-from pydantic_extra_types.language_code import LanguageAlpha2
 from typing import Optional
 
+from pydantic_extra_types.language_code import LanguageAlpha2
+
+from core.types import ResourceType
+
 from .base import (
-    create_model,
     Attribute,
     Relationship,
     RelationshipHierarchyType,
+    create_model,
 )
-
-from core.types import ResourceType
 
 # Quiz = create_model(
 #     name="Quiz",

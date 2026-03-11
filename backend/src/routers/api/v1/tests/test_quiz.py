@@ -2,32 +2,32 @@
 
 import pytest
 
-from crud.quiz import QuestionCRUD, MessageCRUD, NumericalCRUD
-from models.quiz import Question, Message, Numerical
+from crud.quiz import MessageCRUD, NumericalCRUD, QuestionCRUD
+from models.quiz import Message, Numerical, Question
+from routers.api.v1.tests.base import BaseTest
 from tests.utils import (
-    token_admin_read_write,
-    token_user1_read_write,
+    token_admin,
     token_admin_read,
+    token_admin_read_write,
     token_admin_write,
     token_user1_read,
+    token_user1_read_write,
     token_user1_write,
-    token_admin,
 )
 from tests.utils_quiz import (
-    one_test_question,
-    many_test_questions,
-    wrong_test_questions,
-    question_update_data,
-    one_test_message,
     many_test_messages,
-    wrong_test_messages,
-    message_update_data,
-    one_test_numerical,
     many_test_numericals,
-    wrong_test_numericals,
+    many_test_questions,
+    message_update_data,
     numerical_update_data,
+    one_test_message,
+    one_test_numerical,
+    one_test_question,
+    question_update_data,
+    wrong_test_messages,
+    wrong_test_numericals,
+    wrong_test_questions,
 )
-from routers.api.v1.tests.base import BaseTest
 
 
 class TestQuestion(BaseTest):

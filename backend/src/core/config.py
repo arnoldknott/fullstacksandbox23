@@ -9,7 +9,6 @@ from azure.keyvault.secrets import SecretClient
 from pydantic import PostgresDsn, ValidationInfo, field_validator
 from pydantic_settings import BaseSettings
 
-
 logger = logging.getLogger(__name__)
 
 
