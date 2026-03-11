@@ -584,6 +584,7 @@ class Colorization {
 			tone: (_schemeLight) => (this.isMonochrome ? 0 : 40),
 			// consider using options from primary instead of error"
 			background: (_schemeLight) => surfaceContainerHighestLight, //MaterialDynamicColors.highestSurface(schemeLight),
+			// contrastCurve: (_schemeLight) => new ContrastCurve(3, 4.5, 7, 7),// TBD: use this one for material-color-utilities version 0.4.0 and higher.
 			contrastCurve: new ContrastCurve(3, 4.5, 7, 7),
 			toneDeltaPair: (_schemeLight) =>
 				new ToneDeltaPair(customPrimaryContainerLight, customPrimaryLight, 10, 'nearer', false)
@@ -595,7 +596,8 @@ class Colorization {
 			tone: (_schemeLight) => (this.isMonochrome ? 10 : 20),
 			// consider using options from primary instead of error"
 			background: (_schemeLight) => customPrimaryLight, //MaterialDynamicColors.primary,
-			contrastCurve: new ContrastCurve(4.5, 7, 11, 21)
+			// contrastCurve: (_schemeLight) => new ContrastCurve(4.5, 7, 11, 21)// TBD: use this one for material-color-utilities version 0.4.0 and higher.
+			contrastCurve: new ContrastCurve(4.5, 7, 11, 21) // TBD: use this one for material-color-utilities version 0.4.0 and higher.
 		});
 		const customPrimaryContainerLight = DynamicColor.fromPalette({
 			name: `${colorName}Container`,
@@ -606,6 +608,7 @@ class Colorization {
 			isBackground: true,
 			// consider using options from primary instead of error"
 			background: (_schemeLight) => surfaceContainerHighestLight, // MaterialDynamicColors.highestSurface(schemeLight),
+			// contrastCurve: (_schemeLight) => new ContrastCurve(1, 1, 3, 4.5),// TBD: use this one for material-color-utilities version 0.4.0 and higher.
 			contrastCurve: new ContrastCurve(1, 1, 3, 4.5),
 			toneDeltaPair: (_schemeLight) =>
 				new ToneDeltaPair(customPrimaryContainerLight, customPrimaryLight, 10, 'nearer', false)
@@ -622,6 +625,7 @@ class Colorization {
 						: 30,
 			// consider using options from primary instead of error"
 			background: (_schemeLight) => customPrimaryContainerLight, //MaterialDynamicColors.primaryContainer,
+			// contrastCurve: (_schemeLight) => new ContrastCurve(3, 4.5, 7, 11)// TBD: use this one for material-color-utilities version 0.4.0 and higher.
 			contrastCurve: new ContrastCurve(3, 4.5, 7, 11)
 		});
 
@@ -638,6 +642,7 @@ class Colorization {
 			tone: (_schemeDark) => (this.isMonochrome ? 100 : 80),
 			// consider using options from primary instead of error"
 			background: (_schemeDark) => surfaceContainerHighestDark, //MaterialDynamicColors.highestSurface(schemeDark),//
+			// contrastCurve: (_schemeDark) => new ContrastCurve(3, 4.5, 7, 7),// TBD: use this one for material-color-utilities version 0.4.0 and higher.
 			contrastCurve: new ContrastCurve(3, 4.5, 7, 7),
 			toneDeltaPair: (_schemeDark) =>
 				new ToneDeltaPair(customPrimaryContainerDark, customPrimaryDark, 10, 'nearer', false)
@@ -648,6 +653,7 @@ class Colorization {
 			tone: (_schemeDark) => (this.isMonochrome ? 90 : 100), // from error // consider making 90 in Monochrome!
 			// consider using options from primary instead of error"
 			background: (_schemeDark) => customPrimaryDark, // MaterialDynamicColors.primary,
+			// contrastCurve: (_schemeDark) => new ContrastCurve(4.5, 7, 11, 21)// TBD: use this one for material-color-utilities version 0.4.0 and higher.
 			contrastCurve: new ContrastCurve(4.5, 7, 11, 21)
 		});
 		const customPrimaryContainerDark = DynamicColor.fromPalette({
@@ -658,6 +664,8 @@ class Colorization {
 			isBackground: true,
 			// consider using options from primary instead of error"
 			background: (_schemeDark) => surfaceContainerHighestDark, //MaterialDynamicColors.highestSurface(schemeDark),//
+			// TBD: use this one for material-color-utilities version 0.4.0 and higher:
+			// contrastCurve: (_schemeDark) => new ContrastCurve(1, 1, 3, 4.5), // new ContrastCurve(1, 4.5, 7, 11),// new ContrastCurve(3, 4.5, 7, 7),
 			contrastCurve: new ContrastCurve(1, 1, 3, 4.5), // new ContrastCurve(1, 4.5, 7, 11),// new ContrastCurve(3, 4.5, 7, 7),
 			toneDeltaPair: (_schemeDark) =>
 				new ToneDeltaPair(customPrimaryContainerDark, customPrimaryDark, 10, 'nearer', false)
@@ -674,6 +682,7 @@ class Colorization {
 						: 90,
 			// consider using options from primary instead of error"
 			background: (_schemeDark) => customPrimaryContainerDark, //MaterialDynamicColors.primaryContainer,
+			// contrastCurve: (_schemeDark) => new ContrastCurve(3, 4.5, 7, 11)// TBD: use this one for material-color-utilities version 0.4.0 and higher.
 			contrastCurve: new ContrastCurve(3, 4.5, 7, 11)
 		});
 		// // before applying dynamic colors to custom colors:
