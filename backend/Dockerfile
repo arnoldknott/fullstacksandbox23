@@ -2,10 +2,11 @@ FROM python:3.14.3-alpine3.23 AS base
 COPY --from=ghcr.io/astral-sh/uv:0.10.9 /uv /uvx /bin/
 COPY . /app
 WORKDIR /app
-ENV PYTHONPATH="/app"
+ENV PYTHONPATH="/app/src"
 ENV VIRTUAL_ENV="/py"
 RUN uv venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+ENV UV_PROJECT_ENVIRONMENT="$VIRTUAL_ENV"
 EXPOSE 80
 
 FROM base AS api_dev
