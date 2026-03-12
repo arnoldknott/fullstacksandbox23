@@ -99,7 +99,7 @@ jobs:
         # echo $REDIS_PORT
         # echo "=== REDIS_SESSION_DB ==="
         # echo $REDIS_SESSION_DB
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       # - name: Build
       #   run: |
       #     docker compose \
@@ -189,7 +189,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 2
       - name: echos github variables
@@ -243,11 +243,11 @@ jobs:
       #     echo "=== Is this the correct tag: github.event.after? ==="
       #     echo ${{ github.event.after }}
       #     echo $CONTAINER_TAG
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -306,7 +306,7 @@ jobs:
       #     echo ${{ github.event.after }}
       #     echo $CONTAINER_TAG
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -367,7 +367,7 @@ jobs:
           echo "=== Contents of postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log ==="
           cat postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log
       - name: Upload migration upgrade artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: postgres_migration_upgrade_stage_results_${{ env.COMMIT_SHA }}
           path: postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log
@@ -420,7 +420,7 @@ jobs:
           echo "Alembic exit code: $ALEMBIC_EXIT_CODE"
           echo "alembic_check_exit_code=$ALEMBIC_EXIT_CODE" >> $GITHUB_OUTPUT
       - name: Upload migration check artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: postgres_migration_check_results_${{ env.COMMIT_SHA }}
           path: |
@@ -453,7 +453,7 @@ jobs:
     env:
       MIGRATION_FILES_PATH: backend/src/migrations/stage_prod/versions
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Check what directory we are in
         # maybe we need a checkout repo step?
         run: |
@@ -508,7 +508,7 @@ jobs:
         # For debugging enter container with:
         # az containerapp exec -n <resource_name> -g <resource_group> --command "/bin/sh"
       - name: Upload migration check artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: postgres_migration_revision_results_${{ env.COMMIT_SHA }}
           path: |
@@ -527,7 +527,7 @@ jobs:
       #   run: |
       #     git status
       - name: Create a pull request
-        uses: peter-evans/create-pull-request@v5
+        uses: peter-evans/create-pull-request@v8
         with:
           title: "[migrations] for postgres for commit ${{ env.COMMIT_SHA }}"
           add-paths: "${{ env.MIGRATION_FILES_PATH}}/*"
@@ -573,7 +573,7 @@ jobs:
       #     echo ${{ github.event.after }}
       #     echo $CONTAINER_TAG
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -634,7 +634,7 @@ jobs:
           echo "=== Contents of postgres_migration/upgrade_prod_${{ env.COMMIT_SHA }}.log ==="
           cat postgres_migration/upgrade_prod_${{ env.COMMIT_SHA }}.log
       - name: Upload migration upgrade artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: postgres_migration_upgrade_prod_results_${{ env.COMMIT_SHA }}
           path: postgres_migration/upgrade_prod_${{ env.COMMIT_SHA }}.log

@@ -73,7 +73,7 @@ jobs:
         working-directory: infrastructure
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       # # Add in those two steps to run as user instead:
       # - name: Install Azure CLI
@@ -210,7 +210,7 @@ jobs:
       #     ls -la ${{env.WORKSPACE}}_${{env.COMMIT_SHA}}.log
 
       - name: Upload migration upgrade artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{env.WORKSPACE}}_${{env.COMMIT_SHA}}.log
           path: infrastructure/${{env.WORKSPACE}}_${{env.COMMIT_SHA}}.log
@@ -240,7 +240,7 @@ jobs:
         working-directory: infrastructure
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       # # Add in those two steps to run as user instead:
       # - name: Install Azure CLI

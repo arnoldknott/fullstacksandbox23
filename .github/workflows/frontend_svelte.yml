@@ -153,7 +153,7 @@ jobs:
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -195,7 +195,7 @@ jobs:
       #     echo ${{ github.event.after }}
       #     echo $CONTAINER_TAG
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -243,7 +243,7 @@ jobs:
       #     echo ${{ github.event.after }}
       #     echo $CONTAINER_TAG
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
