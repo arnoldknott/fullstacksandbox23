@@ -25,9 +25,9 @@ There are 4 main environments, which are linked to 3 branches to be aware of:
 - `stage` branch: corresponding to environment `stage` - staging environment, which is deployed to Azure and is used for pre-production testing and should closely mirror the production environment. Manually check the deployed staging servers before approving deployment to production. When merging to `stage`, ensure that the staging environment is updated and tested before merging to `main`.
 - `main` branch: corresponding to environment `prod` - the production environment, which is deployed to Azure and should be stable and well-tested.
 
-All new features and bug fixes should be developed in feature branches off of `dev`. Feature branches are Called `feature/<description>` or `issue/<description>`. When a feature or bug fix is complete, it should be merged back into `dev`. When `dev` has accumulated enough changes and is stable, it can be merged into `stage` for staging testing. After staging testing is complete and the changes are verified, `stage` can be merged into `main` for production deployment.
+All new features and bug fixes should be developed in feature branches off of `dev`. Feature branches are Called `feature/<description>` or `fix/<description>`. When a feature or bug fix is complete, it should be merged back into `dev`. When `dev` has accumulated enough changes and is stable, it can be merged into `stage` for staging testing. After staging testing is complete and the changes are verified, `stage` can be merged into `main` for production deployment.
 
-Merging order: `feat/<description>` or `issue/<description>` -> `dev` -> `stage` -> `main`
+Merging order: `feat/<description>` or `fix/<description>` -> `dev` -> `stage` -> `main`
 
 ## Shared integration guidance
 
