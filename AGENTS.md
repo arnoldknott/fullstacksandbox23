@@ -75,8 +75,8 @@ Prefer the dedicated infrastructure container from the repository root:
 - Do not hard-code secrets, tokens, or environment-specific values.
 - Keep dependency usage aligned with versions and tooling already declared in `backend/pyproject.toml` and `frontend_svelte/package.json`.
 - Preserve established architecture patterns:
-  - Backend favors the existing CRUD, `BaseView`, guards, and generated model/schema patterns.
-  - Frontend favors existing SvelteKit route-group auth, shared session handling, and backend API wrappers.
+  - Backend uses Base versions of each architectual layer `BaseModel` (for database SQLmodels) , `BaseCRUD` (from which all application CRUDs inherit), `BaseView` (inherited for all REST-API endpoint views), `BaseNamespace` (from which SocketIO namespaces inherit), guards (checking OAuth2 authorization), and generated model/schema patterns.
+  - Frontend favors existing SvelteKit route-group auth, shared session handling, common MaterialDesign/FlyonUI theming, and backend API wrappers.
   - Infrastructure favors editing source `.tf` files and using the existing workspace model: `dev`, `stage`, `prod`.
 
 ## Branch And Environment Model

@@ -6,11 +6,11 @@ applyTo: "frontend_svelte/**"
 
 Use the package scripts from `frontend_svelte/package.json` when working directly in the app directory:
 
-- `npm run build` or `bun run build`
-- `npm run lint`
-- `npm run check`
-- `npm run test:unit`
-- Single test file: `npm run test:unit -- src/components/Guard.spec.ts`
+- `bun run build`
+- `bun lint`
+- `bun check`
+- `bun test:unit`
+- Single test file: `bun test:unit -- src/components/Guard.spec.ts`
 
 **Interactive shortcut for developers:** run `./scripts/enter_frontend_svelte_test.sh` from the repo root to build, start the test stack, and drop into the `frontend_svelte` container shell where you can run `bun lint`, `bun check`, `bun test:unit`, etc. directly.
 
@@ -37,16 +37,22 @@ Notes from the current baseline:
 - Real-time updates use `src/lib/socketio.ts`. Components/routes provide accessors for their current entity arrays and edit-id sets, while `SocketIO` mutates those collections in place to keep Svelte reactivity working as expected.
 - Theming is centralized in `src/routes/(layout)/+layout.svelte` and `src/lib/theming.ts`. `themeStore` only holds the computed theme object; the heavy Material/FlyonUI theme generation logic lives in `theming.ts`.
 - Shared application types live in `src/lib/types.d.ts`. Access-control logic is centralized in `src/lib/accessHandler.ts`, and many dashboard routes rely on those shared types and permission helpers.
-- `src/routes/(layout)/playground/dataflow/` is the canonical reference for how this repository expects SvelteKit load/action data to flow across `+layout.server.ts`, `+layout.ts`, `+page.server.ts`, and `+page.ts`.
+- `src/routes/(layout)/playground/` hosts several examples of completed and work in progress elements for the desin, and layout of pages and components as well as theri styling.
+- `src/routes/(layout)/(protected)/dashboard/` acts as a development playground for integration with backend-driven real-time data and access control. It is protected by user authentication and sends the access tokens to the backend. It integrates with various other services, such as Microsoft Graph. It has examples of many patterns used across the app, so it is a good reference when building new pages and features.
 
 ## Key conventions
 
 - Use Svelte 5 rune syntax in new Svelte files. Existing components/routes consistently use `$props`, `$state`, `$derived`, and `$effect`.
 - Prefer route-group protection over ad hoc auth checks. If a page must require authentication or admin access, place it under `(protected)` or `(admin)` so `hooks.server.ts` enforces it.
 - On the client, session data is expected at `page.data.session`. On the server, it is expected at `locals.sessionData`. Reuse those surfaces instead of adding a separate session store.
-- For component-level conditional rendering, reuse `src/components/Guard.svelte` instead of introducing a second login gate pattern.
 - When calling the backend from server loads/actions, use `backendAPI` instead of raw `fetch` so OAuth scopes and auth headers stay aligned with the rest of the app.
 - `backendAPIConfiguration` is passed through Svelte context from the root layout. Client-side utilities such as `SocketIO` expect that context to exist; do not bypass it with hard-coded URLs.
 - Keep shared domain types in `src/lib/types.d.ts` when they are reused across routes, components, and server helpers. This repository relies on those shared types heavily.
 - When wiring socket-driven pages, preserve the existing mutate-in-place pattern for entity arrays. Several pages rely on that instead of replacing arrays wholesale.
 - Logging in the auth/session/cache layers uses emoji-prefixed messages such as `🔑`, `🥞`, `🚪`, and `🔥`. Match that local style when adding logs near those systems.
+- For debug printing use two lines, where the first line marks the origin of the conosle output and the second line prints the relevant data. For example:
+
+```
+console.log("🔑 playground - design -flyonui - page - <function name>);
+console.log({ myVariable });
+```

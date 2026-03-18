@@ -10,10 +10,11 @@
 
 ## Repository structure
 
-This repository contains two distinct application surfaces:
+This repository contains the three main parts:
 
-- `frontend_svelte/`: SvelteKit frontend
+- `infrastructure/`: OpenTofu configuration and Azure-related setup
 - `backend/`: FastAPI + Socket.IO + Celery backend
+- `frontend_svelte/`: SvelteKit + MaterialDesign + FlyonUI frontend
 
 Detailed app-specific guidance lives in the path-specific instruction files under `.github/instructions/`.
 
