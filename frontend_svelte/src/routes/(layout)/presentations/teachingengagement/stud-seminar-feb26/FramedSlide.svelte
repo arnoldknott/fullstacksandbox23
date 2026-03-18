@@ -14,14 +14,14 @@
 		debug?: boolean;
 	} = $props();
 	// let color = $derived(symbol === 'history' ? 'info' : symbol === '' ? 'secondary' : 'success');
-	let icon = $state(
+	let icon = $derived(
 		section === 'old'
 			? 'icon-[game-icons--greek-temple]'
 			: section === 'new'
 				? 'icon-[healthicons--i-exam-multiple-choice-outline]'
 				: ''
 	);
-	let color = $state(section === 'old' ? 'secondary' : section === 'new' ? 'primary' : 'info');
+	let color = $derived(section === 'old' ? 'secondary' : section === 'new' ? 'primary' : 'info');
 	let contentIcons = new SvelteMap([
 		['automation', 'icon-[streamline-plump--cog-automation]'],
 		['design', 'icon-[tabler--palette]'],
