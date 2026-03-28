@@ -35,6 +35,7 @@ export type SocketioStatus =
 export class SocketIO {
 	public client: Socket;
 	private getEntities?: () => AnyEntityExtended[];
+	private entities?: AnyEntityExtended[];
 	private editIds?: SvelteSet<string>;
 
 	constructor(
@@ -63,6 +64,7 @@ export class SocketIO {
 			// multiplex: false // to avoid reusing existing connections and get clients in the same room. TBD: consider an override option ("reuseExisting")?
 		});
 		this.getEntities = getEntities;
+		// this.entities = this.getEntities?.();
 		if (getEditIds) {
 			this.editIds = getEditIds();
 		}
@@ -138,9 +140,15 @@ export class SocketIO {
 		const existingIndex = entities.findIndex((entity) => entity.id === data.id);
 		if (existingIndex > -1) {
 			// Update existing entity in place
+			// console.log('=== 🧦 SocketIO - handleTransferred - existing entity - before update ===');
+			// console.log(entities[existingIndex]);
+			// console.log('=== 🧦 SocketIO - handleTransferred - incoming data ===');
+			// console.log(data);
 			entities[existingIndex] = { ...entities[existingIndex], ...data };
+			// console.log('=== 🧦 SocketIO - handleTransferred - existing entity - after update ===');
+			// console.log(entities[existingIndex]);
 			// creates a new array and breaks reactivity:
-			// this.entities = this.entities.map((entity) =>
+			// this.entities = this.entities?.map((entity) =>
 			// 	// only replaces the keys, where the newly incoming data is defined.
 			// 	entity.id === data.id ? { ...entity, ...data } : entity
 			// );

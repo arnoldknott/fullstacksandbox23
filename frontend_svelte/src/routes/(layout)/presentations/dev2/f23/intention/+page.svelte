@@ -21,7 +21,13 @@
 	let revealInstance = $state<Api | undefined>(undefined);
 
 	// TBD: catch gracefully, if no intention or motivation question is available
-	let intentionAnswers = $state(data.questionsData?.intention?.messages || []);
+	let intentionAnswers = $state<MessageExtended[]>([]);
+	$effect(() => {
+		const intentionAnswersPreloaded = data.questionsData?.intention?.messages;
+		if (intentionAnswersPreloaded) {
+			intentionAnswers = intentionAnswersPreloaded;
+		}
+	});
 	let intentionQuestionId = data.questionsData?.intention?.id || '';
 
 	let motivationAnswers = $state(data.questionsData?.motivation?.numericals || []);
@@ -39,6 +45,10 @@
 			}
 		})
 	);
+	// $effect(() => {
+	// 	console.log('=== 🧦 presentation - devF23 - INTENTION - intentionAnswersSorted updated ===');
+	// 	console.log(intentionAnswersSorted);
+	// });
 
 	let socketioIntention: SocketIO;
 	let socketioMotivation: SocketIO = $state(undefined as unknown as SocketIO);
