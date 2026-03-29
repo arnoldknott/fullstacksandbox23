@@ -1092,8 +1092,8 @@
 					<SidebarItem
 						content={{ ...sidebarItem, pathname: sidebarItem.pathname || page.url.pathname }}
 						topLevel={true}
-						{scrollspyParent}
 					/>
+					<!-- {scrollspyParent} -->
 					<!-- topoffset={navBarBottom} -->
 					<!-- topoffset={internalNavigationTarget} -->
 					<!-- topoffset={navBarBottom} -->
@@ -1107,8 +1107,8 @@
 								pathname: protectedSidebarItem.pathname || page.url.pathname
 							}}
 							topLevel={true}
-							{scrollspyParent}
 						/>
+						<!-- {scrollspyParent} -->
 						<!-- topoffset={navBarBottom} -->
 					{/each}
 				</Guard>
@@ -1120,8 +1120,8 @@
 								pathname: debugSidebarItem.pathname || page.url.pathname
 							}}
 							topLevel={true}
-							{scrollspyParent}
 						/>
+						<!-- {scrollspyParent} -->
 						<!-- topoffset={navBarBottom} -->
 					{/each}
 				{/if}
