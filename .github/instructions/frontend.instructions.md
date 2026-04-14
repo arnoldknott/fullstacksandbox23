@@ -38,7 +38,7 @@ Notes from the current baseline:
 - Theming is centralized in `src/routes/(layout)/+layout.svelte` and `src/lib/theming.ts`. `themeStore` only holds the computed theme object; the heavy Material/FlyonUI theme generation logic lives in `theming.ts`.
 - Shared application types live in `src/lib/types.d.ts`. Access-control logic is centralized in `src/lib/accessHandler.ts`, and many dashboard routes rely on those shared types and permission helpers.
 - `src/routes/(layout)/playground/` hosts several examples of completed and work in progress elements for the desin, and layout of pages and components as well as theri styling.
-- `src/routes/(layout)/(protected)/dashboard/` acts as a development playground for integration with backend-driven real-time data and access control. It is protected by user authentication and sends the access tokens to the backend. It integrates with various other services, such as Microsoft Graph. It has examples of many patterns used across the app, so it is a good reference when building new pages and features.
+- `src/routes/(layout)/(protected)/` acts as a development playground for integration with backend-driven real-time data and access control. It is protected by user authentication and sends the access tokens to the backend. It integrates with various other services, such as Microsoft Graph. It has examples of many patterns used across the app, so it is a good reference when building new pages and features.
 
 ## Key conventions
 
