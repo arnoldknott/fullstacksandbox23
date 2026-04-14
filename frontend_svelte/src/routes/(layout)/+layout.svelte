@@ -236,7 +236,7 @@
 			items: []
 		},
 		{
-			name: 'Playground',
+			name: 'Open Playground',
 			pathname: resolve('/(layout)/playground'),
 			icon: 'icon-[mdi--playground-seesaw]',
 			id: 'playground',
@@ -356,9 +356,9 @@
 
 	let protectedSidebarLinks: SidebarItemContent[] = $state([
 		{
-			name: 'Dashboard',
+			name: 'Protected Data',
 			pathname: resolve('/(layout)/(protected)/dashboard'),
-			icon: 'icon-[material-symbols--dashboard-outline-rounded]',
+			icon: 'icon-[mingcute--lock-fill]',
 			id: 'dashboard',
 			items: [
 				{
