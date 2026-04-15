@@ -20,9 +20,9 @@
 		content: '',
 		language: 'en'
 	});
-	let questionId = data.questionsData?.questions.id || '';
-	let messageAnswers: MessageExtended[] = $state(data.questionsData?.questions.messages || []);
-	let numericalAnswers: NumericalExtended[] = $state(
+	let questionId = $derived(data.questionsData?.questions.id || '');
+	let messageAnswers: MessageExtended[] = $derived(data.questionsData?.questions.messages || []);
+	let numericalAnswers: NumericalExtended[] = $derived(
 		data.questionsData?.questions.numericals || []
 	);
 
@@ -42,16 +42,16 @@
 		})
 	);
 
-	const messageConnection: SocketioConnection = {
+	const messageConnection: SocketioConnection = $derived({
 		namespace: '/message',
 		cookie_session_id: data?.session?.sessionId || '',
 		query_params: { 'parent-id': questionId, 'request-access-data': true }
-	};
-	const numericalConnection: SocketioConnection = {
+	});
+	const numericalConnection: SocketioConnection = $derived({
 		namespace: '/numerical',
 		cookie_session_id: data?.session?.sessionId || '',
 		query_params: { 'parent-id': questionId, 'request-access-data': true }
-	};
+	});
 	let messageSocketio: SocketIO = $state(undefined as unknown as SocketIO);
 	let numericalSocketio: SocketIO = $state(undefined as unknown as SocketIO);
 	onMount(() => {
