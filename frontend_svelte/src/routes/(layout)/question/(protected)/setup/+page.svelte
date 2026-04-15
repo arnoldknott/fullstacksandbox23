@@ -21,8 +21,8 @@
 		language: 'en'
 	});
 	let questionId = $derived(data.questionsData?.questions.id || '');
-	let messageAnswers: MessageExtended[] = $derived(data.questionsData?.questions.messages || []);
-	let numericalAnswers: NumericalExtended[] = $derived(
+	let messageAnswers: MessageExtended[] = $state(data.questionsData?.questions.messages || []);
+	let numericalAnswers: NumericalExtended[] = $state(
 		data.questionsData?.questions.numericals || []
 	);
 
