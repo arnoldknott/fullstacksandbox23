@@ -236,7 +236,7 @@
 			items: []
 		},
 		{
-			name: 'Playground',
+			name: 'Open Playground',
 			pathname: resolve('/(layout)/playground'),
 			icon: 'icon-[mdi--playground-seesaw]',
 			id: 'playground',
@@ -356,26 +356,26 @@
 
 	let protectedSidebarLinks: SidebarItemContent[] = $state([
 		{
-			name: 'Dashboard',
-			pathname: resolve('/(layout)/(protected)/dashboard'),
-			icon: 'icon-[material-symbols--dashboard-outline-rounded]',
+			name: 'Protected Data',
+			pathname: resolve('/(layout)/(protected)/data'),
+			icon: 'icon-[mingcute--lock-fill]',
 			id: 'dashboard',
 			items: [
 				{
 					name: 'Demo Resources',
-					pathname: resolve('/(layout)/(protected)/dashboard/backend-demo-resource'),
+					pathname: resolve('/(layout)/(protected)/backend-demo-resource'),
 					icon: 'icon-[grommet-icons--resources]',
 					id: 'demo-resource',
 					items: [
 						{
 							name: 'Rest API',
-							pathname: resolve('/(layout)/(protected)/dashboard/backend-demo-resource/restapi'),
+							pathname: resolve('/(layout)/(protected)/backend-demo-resource/restapi'),
 							icon: 'icon-[dashicons--rest-api]',
 							id: 'demo-resource-restapi'
 						},
 						{
 							name: 'Socket IO',
-							pathname: resolve('/(layout)/(protected)/dashboard/backend-demo-resource/socketio'),
+							pathname: resolve('/(layout)/(protected)/backend-demo-resource/socketio'),
 							icon: 'icon-[tabler--brand-socket-io]',
 							id: 'demo-resource-socketio'
 						}
@@ -383,27 +383,19 @@
 				},
 				{
 					name: 'Presentations',
-					pathname: resolve('/(layout)/presentations'),
+					pathname: resolve('/(layout)/presentation/(protected)/setup'),
 					icon: 'icon-[fa6-solid--chalkboard]',
-					id: 'presentations',
-					items: [
-						{
-							name: 'Presentations Setup',
-							pathname: resolve('/(layout)/presentations/(protected)/setup'),
-							icon: 'icon-[fa6-solid--chalkboard]',
-							id: 'presentations--setup'
-						},
-						{
-							name: 'Questions Setup',
-							pathname: resolve('/(layout)/presentations/questions/(protected)/setup'),
-							icon: 'icon-[fa6-solid--chalkboard]',
-							id: 'presentations-questions-setup'
-						}
-					]
+					id: 'presentations'
+				},
+				{
+					name: 'Questions',
+					pathname: resolve('/(layout)/question/(protected)/setup'),
+					icon: 'icon-[fa6-solid--chalkboard]',
+					id: 'questions'
 				},
 				{
 					name: 'Hierarchical Resources',
-					pathname: resolve('/(layout)/(protected)/dashboard/backend-protected-hierarchy'),
+					pathname: resolve('/(layout)/(protected)/backend-protected-hierarchy'),
 					icon: 'icon-[fluent-mdl2--family]',
 					id: 'hierarchical-resources'
 				},
@@ -415,13 +407,13 @@
 					items: [
 						{
 							name: 'All identities',
-							pathname: resolve('/(layout)/(protected)/dashboard/identities'),
+							pathname: resolve('/(layout)/(protected)/identities'),
 							icon: 'icon-[mdi--account-multiple-outline]',
 							id: 'identities-all'
 						},
 						{
 							name: 'Microsoft',
-							pathname: resolve('/(layout)/(protected)/dashboard/msgraph'),
+							pathname: resolve('/(layout)/(protected)/msgraph'),
 							icon: 'icon-[fluent--person-20-filled]',
 							id: 'identities-microsoft'
 						}
@@ -429,7 +421,7 @@
 				},
 				{
 					name: 'Socket.IO',
-					pathname: resolve('/(layout)/(protected)/dashboard/socketio'),
+					pathname: resolve('/(layout)/(protected)/socketio'),
 					icon: 'icon-[tabler--brand-socket-io]',
 					id: 'socketio'
 				}

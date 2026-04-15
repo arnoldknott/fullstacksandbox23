@@ -244,31 +244,31 @@
 	let protectedSidebarLinks: SidebarItemContent[] = $state([
 		{
 			name: 'Dashboard',
-			pathname: resolve('/(layout)/(protected)/dashboard'),
+			pathname: resolve('/(layout)/(protected)/data'),
 			icon: 'icon-[material-symbols--dashboard-outline-rounded]',
 			id: 'dashboard',
 			items: [
 				{
 					name: 'Overview',
-					pathname: resolve('/(layout)/(protected)/dashboard') + '#top',
+					pathname: resolve('/(layout)/(protected)/data') + '#top',
 					icon: 'icon-[material-symbols--dashboard-outline-rounded]',
 					id: 'overview'
 				},
 				{
 					name: 'Demo Resources',
-					pathname: resolve('/(layout)/(protected)/dashboard/backend-demo-resource'),
+					pathname: resolve('/(layout)/(protected)/backend-demo-resource'),
 					icon: 'icon-[grommet-icons--resources]',
 					id: 'demo-resource',
 					items: [
 						{
 							name: 'Rest API',
-							pathname: resolve('/(layout)/(protected)/dashboard/backend-demo-resource/restapi'),
+							pathname: resolve('/(layout)/(protected)/backend-demo-resource/restapi'),
 							icon: 'icon-[dashicons--rest-api]',
 							id: 'demo-resource-restapi'
 						},
 						{
 							name: 'Socket IO',
-							pathname: resolve('/(layout)/(protected)/dashboard/backend-demo-resource/socketio'),
+							pathname: resolve('/(layout)/(protected)/backend-demo-resource/socketio'),
 							icon: 'icon-[tabler--brand-socket-io]',
 							id: 'demo-resource-socketio'
 						}
@@ -276,7 +276,7 @@
 				},
 				{
 					name: 'Hierarchical Resources',
-					pathname: resolve('/(layout)/(protected)/dashboard/backend-protected-hierarchy'),
+					pathname: resolve('/(layout)/(protected)/backend-protected-hierarchy'),
 					icon: 'icon-[fluent-mdl2--family]',
 					id: 'hierarchical-resources'
 				},
@@ -288,13 +288,13 @@
 					items: [
 						{
 							name: 'All identities',
-							pathname: resolve('/(layout)/(protected)/dashboard/identities'),
+							pathname: resolve('/(layout)/(protected)/identities'),
 							icon: 'icon-[mdi--account-multiple-outline]',
 							id: 'identities-all'
 						},
 						{
 							name: 'Microsoft',
-							pathname: resolve('/(layout)/(protected)/dashboard/msgraph'),
+							pathname: resolve('/(layout)/(protected)/msgraph'),
 							icon: 'icon-[fluent--person-20-filled]',
 							id: 'identities-microsoft'
 						}
@@ -302,7 +302,7 @@
 				},
 				{
 					name: 'Socket.IO',
-					pathname: resolve('/(layout)/(protected)/dashboard/socketio'),
+					pathname: resolve('/(layout)/(protected)/socketio'),
 					icon: 'icon-[tabler--brand-socket-io]',
 					id: 'socketio'
 				}

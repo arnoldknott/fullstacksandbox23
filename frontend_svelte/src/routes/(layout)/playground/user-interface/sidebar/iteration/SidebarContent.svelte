@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { SidebarContent, SidebarFolderContent } from '$lib/types';
+	import type { SidebarFolderContent } from '$lib/types';
 	import { page } from '$app/state';
 	import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
 	import type { Attachment } from 'svelte/attachments';
@@ -10,7 +10,7 @@
 	let {
 		contentList,
 		scrollspyParent
-	}: { contentList: SidebarContent[]; scrollspyParent: HTMLDivElement } = $props();
+	}: { contentList: SidebarFolderContent[]; scrollspyParent: HTMLDivElement } = $props();
 
 	// let sidebarList: HTMLUListElement | null = $state(null);
 
@@ -154,7 +154,7 @@
 		<li class="space-y-0.5">
 			<button
 				type="button"
-				class="collapse-toggle {thisPage(mainItem.pathname)
+				class="collapse-toggle {thisPage(mainItem.pathname!)
 					? 'open'
 					: ''} collapse-open:bg-base-content/10"
 				id={mainItem.id + '-control'}
@@ -205,7 +205,7 @@
 	{/if}
 	<ul
 		id={mainItem.id + '-collapse'}
-		class="collapse {thisPage(mainItem.pathname)
+		class="collapse {thisPage(mainItem.pathname!)
 			? 'open'
 			: 'hidden'} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
 		aria-labelledby={mainItem.id + '-control'}
@@ -230,8 +230,8 @@
 					</li>
 				{:else}
 					<SidebarLink
-						href={createHref(mainItem.pathname, item.hash)}
-						thisPage={thisPage(mainItem.pathname)}
+						href={createHref(mainItem.pathname!, item.hash)}
+						thisPage={thisPage(mainItem.pathname!)}
 						icon={item.icon}
 					>
 						{item.name}

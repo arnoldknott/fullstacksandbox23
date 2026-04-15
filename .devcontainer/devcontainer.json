@@ -1,0 +1,47 @@
+{
+  "name": "fullStackSandbox23",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
+    "ghcr.io/devcontainers/features/azure-cli:1": {}
+  },
+  "workspaceFolder": "/workspaces/fullStackSandbox23",
+  "postStartCommand": "docker compose up -d",
+  "forwardPorts": [8660, 8661, 5432, 5533, 5540, 5555, 8001],
+  "portsAttributes": {
+    "8660": {
+      "label": "backend_api"
+    },
+    "8661": {
+      "label": "frontend_svelte",
+      "onAutoForward": "openPreview"
+    },
+    "5432": {
+      "label": "postgres"
+    },
+    "5533": {
+      "label": "pgadmin"
+    },
+    "5540": {
+      "label": "redisInsight"
+    },
+    "5555": {
+      "label": "flower"
+    },
+    "8001": {
+      "label": "redis"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-azuretools.vscode-docker",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "svelte.svelte-vscode",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  }
+}

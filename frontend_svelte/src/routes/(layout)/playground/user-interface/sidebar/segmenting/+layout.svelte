@@ -38,6 +38,15 @@
 		console.log($state.snapshot(artificialIntelligenceConfiguration));
 	};
 
+	const updateProfileAccount = async () => {
+		console.log('=== sidebar - segmenting - updateProfileAccount - themeConfiguration ===');
+		console.log($state.snapshot(themeConfiguration));
+		console.log(
+			'=== sidebar - segmenting - updateProfileAccount - artificialIntelligenceConfiguration ==='
+		);
+		console.log($state.snapshot(artificialIntelligenceConfiguration));
+	};
+
 	// for theme picker:
 	let mode: 'light' | 'dark' = $state('dark');
 </script>
@@ -244,13 +253,20 @@
 			>
 				<ArtificialIntelligencePicker
 					{saveProfileAccount}
+					{updateProfileAccount}
 					bind:artificialIntelligenceForm
 					bind:artificialIntelligenceConfiguration
 				/>
 				<li>
 					<hr class="border-outline -mx-2 my-5" />
 				</li>
-				<ThemePicker {saveProfileAccount} bind:themeForm bind:mode bind:themeConfiguration />
+				<ThemePicker
+					{saveProfileAccount}
+					{updateProfileAccount}
+					bind:themeForm
+					bind:mode
+					bind:themeConfiguration
+				/>
 				<li>
 					<hr class="border-outline -mx-2 my-5" />
 				</li>

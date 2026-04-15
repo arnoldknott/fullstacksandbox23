@@ -3,7 +3,7 @@
 	import type { DemoResourceExtended, Identity, AccessShareOption } from '$lib/types';
 	import { fade } from 'svelte/transition';
 	import { Action } from '$lib/accessHandler';
-	import ShareItem from '../../../../playground/components/ShareItem.svelte';
+	import ShareItem from '../../../playground/components/ShareItem.svelte';
 	import { AccessHandler } from '$lib/accessHandler';
 	import IdBadge from '../../IdBadge.svelte';
 	import { SocketIO } from '$lib/socketio';
