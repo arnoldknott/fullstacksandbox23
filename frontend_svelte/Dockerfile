@@ -12,7 +12,7 @@ RUN bun run build
 
 FROM setup
 COPY --from=build /app/build /app/
-COPY --from=build /app/package*.json /app/
+COPY --from=build /app/package*.json /app/bun.lock /app/
 RUN bun install --frozen-lockfile --production
 RUN chown -R node:node /app
 EXPOSE 80
