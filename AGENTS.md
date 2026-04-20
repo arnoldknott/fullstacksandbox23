@@ -27,34 +27,51 @@ Use this file as the top-level guide for coding agents working in the repository
 - `backend/`: FastAPI app, backend tests, migrations, and Python project config
 - `infrastructure/`: OpenTofu configuration, Azure-related setup, and infra container workflow
 - `compose.yml` plus override files: main local development and test orchestration
-- `.devcontainer/`: containerized development entrypoints for frontend and backend
+- `.devcontainer/`: devcontainer configuration for local and Codespaces development
 - `hooks/`: local git hook examples used as guidance for formatting, linting, and testing
 
 ## Default Commands
 
-Use the narrowest command that verifies your change.
+Use the narrowest command that verifies your change. All formatting, linting, and testing
+MUST run inside the **test environment**, not in the dev environment or on the host.
 
-**Note:** For interactive human use, convenience scripts exist under `scripts/` (e.g., `./scripts/enter_backend_test.sh`, `./scripts/enter_frontend_svelte_test.sh`, `./scripts/enter_infrastructure.sh`). These build, start, and enter the relevant container. The non-interactive commands below are preferred for CI and automated agents.
+### Test Environment Lifecycle
 
-### Backend
+The test environment is a separate Docker Compose stack from the dev environment.
+Use the existing scripts under `scripts/` to manage it:
 
-Run from `backend/` unless you are explicitly mirroring the container workflow:
+- **Build:** `./scripts/build_test.sh`
+- **Enter backend container:** `./scripts/enter_backend_test.sh` (starts the stack and opens a shell)
+- **Enter frontend container:** `./scripts/enter_frontend_svelte_test.sh` (starts the stack and opens a shell)
+- **Stop:** `./scripts/stop_test.sh`
 
-- Install/update dev environment: `uv sync --frozen --extra dev`
-- Format check: `uv run black --check .`
-- Lint: `uv run ruff check .`
-- Full tests: `uv run pytest -v`
-- Single test: `uv run pytest -v src/core/tests/test_security.py::test_get_azure_jwks`
+The test containers can be reused across runs — you do not need to stop and rebuild
+between each task. Only stop when the user asks or when you are done with all validation.
 
-### Frontend
+### Backend (inside test backend container)
 
-Run from `frontend_svelte/`:
+After entering via `./scripts/enter_backend_test.sh`, run:
 
-- Build: `bun run build`
+- Format: `black --check .`
+- Lint: `ruff check .`
+- Full tests: `pytest -v`
+- Single test: `pytest -v src/core/tests/test_security.py::test_get_azure_jwks`
+
+### Frontend (inside test frontend container)
+
+After entering via `./scripts/enter_frontend_svelte_test.sh`, run:
+
 - Format: `bun format`
-- Lint: `bin lint`
-- Check: `bin check`
+- Lint: `bun lint`
+- Check: `bun check`
 - Unit tests: `bun test:unit`
+
+### Non-interactive alternative
+
+For non-interactive or CI-style execution, refer to the GitHub Actions workflows
+`.github/workflows/backendAPI.yml` and `.github/workflows/frontend_svelte.yml` —
+they are the source of truth for how to run formatting, linting, and testing
+against the test compose stack without an interactive shell.
 
 ### Infrastructure
 
@@ -64,10 +81,14 @@ Prefer the dedicated infrastructure container from the repository root:
 - Open shell: `docker compose -f infrastructure/compose.yml run --rm tofu /bin/sh`
 - Format: `docker compose -f infrastructure/compose.yml run --rm tofu tofu fmt`
 
-### Root Compose Workflow
+### Dev Environment
 
-- Local development: `docker compose build` then `docker compose up`
-- Use `compose.override.test.yml` when you need to mirror the repository's test-oriented container setup
+The dev environment is started automatically by the devcontainer (`docker compose up -d`).
+Do **not** use it for validation. It is for interactive development and browsing only.
+
+- Dev backend shell: `./scripts/enter_backend_dev.sh`
+- Dev frontend shell: `./scripts/enter_frontend_svelte_dev.sh`
+- Stop dev: `./scripts/stop_dev.sh`
 
 ## Repo-Specific Expectations
 
