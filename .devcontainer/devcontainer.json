@@ -6,7 +6,10 @@
     "ghcr.io/devcontainers/features/azure-cli:1": {}
   },
   "workspaceFolder": "/workspaces/fullStackSandbox23",
-  "postStartCommand": "docker compose up -d",
+  "postStartCommand": {
+    "start": "docker compose up -d",
+    "logs": "docker compose logs -f"
+  },
   "forwardPorts": [8660, 8661, 5432, 5533, 5540, 5555, 8001],
   "portsAttributes": {
     "8660": {
