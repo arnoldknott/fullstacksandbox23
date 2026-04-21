@@ -5,7 +5,8 @@
     "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
     "ghcr.io/devcontainers/features/azure-cli:1": {}
   },
-  "workspaceFolder": "/workspaces/fullStackSandbox23",
+  "workspaceMount": "source=${localWorkspaceFolder},target=${localWorkspaceFolder},type=bind,consistency=cached",
+  "workspaceFolder": "${localWorkspaceFolder}",
   "postStartCommand": {
     "start": "docker compose up -d",
     "logs": "docker compose logs -f"
