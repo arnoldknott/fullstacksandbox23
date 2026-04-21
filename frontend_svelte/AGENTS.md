@@ -26,6 +26,7 @@ To mirror the repository's containerized workflow non-interactively (used by CI 
 - Build: `docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T frontend_svelte sh -lc "bun run build"`
 
 The `--env-file backend/src/tests/.env` flag is required; without it compose will not resolve the test-stack environment variables. The scripts under `scripts/` already pass this flag for you.
+
 - Use `backend/src/.env.example` as the reference for the required local env surface.
 
 ## Build command
