@@ -1,6 +1,6 @@
 <script lang="ts">
 	import '/src/app.css';
-	import type { LayoutData } from '../$types';
+	import type { LayoutData } from './$types';
 	import { Theming, Variant, type ColorConfig } from '$lib/theming';
 	import type { Action } from 'svelte/action';
 	import type { Snippet } from 'svelte';

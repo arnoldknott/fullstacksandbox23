@@ -2,13 +2,13 @@ import type { PageServerLoad } from './$types';
 
 import { backendAPI } from '$lib/server/apis/backendApi';
 
-export const load: PageServerLoad = async ({ url }) => {
-	const questionId = url.searchParams.get('id');
-	const response = await backendAPI.get(null, '/quiz/question/public/' + questionId);
-	let questionsData = null;
-	if (response.status === 200) {
-		const questionData = await response.json();
-		questionsData = { questions: questionData };
+export const load: PageServerLoad = async ({ locals }) => {
+	const sessionId = locals.sessionData.sessionId;
+	const responseQuestions = await backendAPI.get(sessionId, '/quiz/question/');
+	if (responseQuestions.status === 200) {
+		const questionsData = await responseQuestions.json();
+		return { questionsData: questionsData };
+	} else {
+		return { questionsData: [] };
 	}
-	return { questionsData };
 };
