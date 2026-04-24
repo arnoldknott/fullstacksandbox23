@@ -19,6 +19,7 @@
 	let { data }: { data: PageData } = $props();
 
 	let revealInstance = $state<Api | undefined>(undefined);
+	// const questions = $derived(data.questionsData || []);
 
 	// TBD: catch gracefully, if no intention or motivation question is available
 	let intentionAnswers = $state<MessageExtended[]>([]);
@@ -34,6 +35,13 @@
 	let motivationQuestionId = data.questionsData?.motivation?.id || '';
 
 	let commentsAnswers = $state(data.questionsData?.comments?.messages || []);
+	// let commentsAnswers = $state(questions.comments?.messages || []);
+	// let commentsAnswers = $state<MessageExtended[]>([]);
+	// $effect(() => {
+	// 	if (questions.comments?.messages) commentsAnswers = questions.comments.messages;
+	// });
+	// let commentsAnswers = $derived(data.questionsData?.comments?.messages || []);
+	// let commentsAnswers = (): MessageExtended[] => data.questionsData?.comments?.messages || [];
 	let commentsQuestionId = data.questionsData?.comments?.id || '';
 
 	let intentionAnswersSorted: MessageExtended[] = $derived(
@@ -463,6 +471,7 @@
 						if (event.key === 'Enter' && !event.shiftKey) {
 							event.preventDefault();
 							commentsAnswers = [myComment, ...commentsAnswers];
+							// commentsAnswers.unshift(myComment);
 							// socketioComment.addEntity(myComment);
 							socketioComment.submitEntity(myComment, commentsQuestionId, true, true, Action.READ);
 							myComment = {

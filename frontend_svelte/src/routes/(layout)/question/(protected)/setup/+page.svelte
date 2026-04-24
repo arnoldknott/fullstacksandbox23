@@ -1,11 +1,13 @@
 <script lang="ts">
 	import Heading from '$components/Heading.svelte';
 	import type { PageData } from './$types';
-	import type { Question } from '$lib/types';
+	// import type { Question } from '$lib/types';
 	import { resolve } from '$app/paths';
 	let { data }: { data: PageData } = $props();
 
-	const allQuestions: Question[] = data.questionsData || [];
+	// const allQuestions: Question[] = $derived(data.questionsData || []);
+	// const allQuestions: Question[] = data.questionsData || [];
+	// const allQuestions = (): Question[] => data.questionsData || [];
 </script>
 
 <Heading id="overview-presentations">Overview of existing questions</Heading>
@@ -19,14 +21,14 @@
 			</tr>
 		</thead>
 		<tbody>
-			{#each allQuestions as question (question.id)}
+			{#each data.questionsData as question (question.id)}
+				<!-- {#each allQuestions as question (question.id)} -->
+				<!-- {#each allQuestions() as question (question.id)} -->
 				<tr>
 					<td>
 						<a href={resolve(`/question/setup/${question.id}`)}>
 							<!-- <a href={resolve(`/question/setup`) + `?question-id=${question.id}`}> -->
-							<button
-								class="btn btn-accent-container btn-gradient shadow-outline rounded-full shadow-sm"
-							>
+							<button class="btn btn-primary-container btn-gradient shadow-outline shadow-sm">
 								<span class="icon-[codicon--question]"></span>
 								{question.question}
 							</button></a
