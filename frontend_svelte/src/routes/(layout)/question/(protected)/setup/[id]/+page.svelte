@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio.svelte';
+	import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
 	import type { MessageExtended, NumericalExtended } from '$lib/types';
 	import { Action } from '$lib/accessHandler';
 	import { flip } from 'svelte/animate';
@@ -21,10 +21,10 @@
 		language: 'en'
 	});
 	let questionId = $derived(data.questionsData?.questions.id || '');
-	let messageAnswers: MessageExtended[] = $state(data.questionsData?.questions.messages || []);
-	let numericalAnswers: NumericalExtended[] = $state(
-		data.questionsData?.questions.numericals || []
-	);
+	let messageSocketio: SocketIO<MessageExtended> = $state()!;
+	let numericalSocketio: SocketIO<NumericalExtended> = $state()!;
+	let messageAnswers = $derived(messageSocketio?.entities ?? []);
+	let numericalAnswers = $derived(numericalSocketio?.entities ?? []);
 
 	let messageAnswersSorted: MessageExtended[] = $derived(
 		messageAnswers.toSorted((a, b) => {
@@ -52,72 +52,12 @@
 		cookie_session_id: data?.session?.sessionId || '',
 		query_params: { 'parent-id': questionId, 'request-access-data': true }
 	});
-	let messageSocketio: SocketIO = $state(undefined as unknown as SocketIO);
-	let numericalSocketio: SocketIO = $state(undefined as unknown as SocketIO);
 	onMount(() => {
-		messageSocketio = new SocketIO(messageConnection, () => messageAnswers);
-		numericalSocketio = new SocketIO(numericalConnection, () => numericalAnswers);
-
-		messageSocketio.client.on('transferred', (data: MessageExtended) => {
-			// if (debug) {
-			// 	console.log(
-			// 		'=== 🧦 dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
-			// 	);
-			// 	console.log(data);
-			// }
-			messageSocketio.handleTransferred(data);
+		messageSocketio = new SocketIO<MessageExtended>(messageConnection, {
+			subscribeEntities: () => data.questionsData?.questions.messages
 		});
-
-		messageSocketio.client.on('status', (data: SocketioStatus) => {
-			// if (debug) {
-			console.log(
-				'=== 🧦 dashboard - backend-demo-resource - socketio - +page.svelte - received status update ==='
-			);
-			console.log('Status update:', data);
-			// }
-			messageSocketio.handleStatus(data);
-		});
-
-		messageSocketio.client.on('deleted', (message_id: string) => {
-			// if (debug) {
-			// 	console.log(
-			// 		'=== dashboard - backend-demo-resource - socketio - +page.svelte - deleted DemoResources ==='
-			// 	);
-			// 	console.log(resource_id);
-			// }
-			messageSocketio.handleDeleted(message_id);
-		});
-
-		// TBD: put in onMount!
-
-		numericalSocketio.client.on('transferred', (data: MessageExtended) => {
-			// if (debug) {
-			// 	console.log(
-			// 		'=== 🧦 dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
-			// 	);
-			// 	console.log(data);
-			// }
-			numericalSocketio.handleTransferred(data);
-		});
-
-		numericalSocketio.client.on('status', (data: SocketioStatus) => {
-			// if (debug) {
-			console.log(
-				'=== 🧦 dashboard - backend-demo-resource - socketio - +page.svelte - received status update ==='
-			);
-			console.log('Status update:', data);
-			// }
-			numericalSocketio.handleStatus(data);
-		});
-
-		numericalSocketio.client.on('deleted', (message_id: string) => {
-			// if (debug) {
-			// 	console.log(
-			// 		'=== dashboard - backend-demo-resource - socketio - +page.svelte - deleted DemoResources ==='
-			// 	);
-			// 	console.log(resource_id);
-			// }
-			numericalSocketio.handleDeleted(message_id);
+		numericalSocketio = new SocketIO<NumericalExtended>(numericalConnection, {
+			subscribeEntities: () => data.questionsData?.questions.numericals
 		});
 	});
 	onDestroy(() => {
@@ -173,7 +113,7 @@
 			content: buildMessageContent(parsedMetadata, myMessage.content)
 		};
 
-		messageAnswers = [outgoingMessage, ...messageAnswers];
+		messageSocketio.entities = [outgoingMessage, ...messageSocketio.entities];
 		messageSocketio.submitEntity(outgoingMessage, questionId, true, true, Action.READ);
 		myMessage = {
 			id: 'new_' + Math.random().toString(36).substring(2, 9),

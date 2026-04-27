@@ -59,10 +59,11 @@ Use the same docker compose handling as for validation
 - When wiring socket-driven pages, preserve the existing mutate-in-place pattern for entity arrays. Several pages rely on that instead of replacing arrays wholesale.
 - Logging in the layers security, cache and integrations use emoji-prefixed messages `🔑`, `🥞`, `🚪` respectively, and `🔥` for errors. Match that local style when adding logs near those systems.
 - For debug printing use two lines, where the first line marks the origin of the console
- output, framed by "===", and the second line prints the relevant data. Never combine them, unless explicitly asked for. For example:
+  output, framed by "===", and the second line prints the relevant data. Never combine them, unless explicitly asked for. For example:
 
 ```
 console.log("🔑 === playground - design - flyonui - page - <function name> - <variable name> ===");
 console.log({ myVariable });
 ```
+
 - When refactoring never delete comments in the code that is being refactored, unless the comment is no longer relevant. If the comment is relevant but needs to be updated, update it instead of deleting it. If the comment is not relevant, but you are not sure if it is safe to delete it, leave it in place and add a TBD comment with your question for the next developer who works on the code.

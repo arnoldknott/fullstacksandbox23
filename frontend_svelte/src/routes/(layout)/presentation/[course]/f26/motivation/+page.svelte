@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import type { PageData } from './$types';
-	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio.svelte';
-	import type { MessageExtended, Numerical } from '$lib/types';
+	import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
+	import type { MessageExtended, NumericalExtended } from '$lib/types';
 	import RevealJS from '$components/RevealJS.svelte';
 	import type { Api } from 'reveal.js';
 	import MotivationTable from './MotivationTable.svelte';
@@ -25,11 +25,8 @@
 	// let intentionAnswers = $state(data.questionsData?.intention?.messages || []);
 	// let intentionQuestionId = data.questionsData?.intention?.id || '';
 
-	let motivationAnswers = $state(data.questionsData?.motivation?.numericals || []);
-	let motivationQuestionId = data.questionsData?.motivation?.id || '';
-
-	let commentsAnswers = $state(data.questionsData?.comments?.messages || []);
-	let commentsQuestionId = data.questionsData?.comments?.id || '';
+	let motivationQuestionId = $derived(data.questionsData?.motivation?.id || '');
+	let commentsQuestionId = $derived(data.questionsData?.comments?.id || '');
 
 	// let intentionAnswersSorted: MessageExtended[] = $derived(
 	// 	intentionAnswers.toSorted((a, b) => {
@@ -42,104 +39,25 @@
 	// );
 
 	// let socketioIntention: SocketIO;
-	let socketioMotivation: SocketIO = $state(undefined as unknown as SocketIO);
-	let socketioComment: SocketIO;
+	let socketioMotivation: SocketIO<NumericalExtended> = $state()!;
+	let socketioComment: SocketIO<MessageExtended> = $state()!;
+	let motivationAnswers = $derived(socketioMotivation?.entities ?? []);
+	let commentsAnswers = $derived(socketioComment?.entities ?? []);
 	onMount(() => {
-		// const intentionConnection: SocketioConnection = {
-		// 	namespace: '/message',
-		// 	query_params: { 'parent-id': intentionQuestionId, 'request-access-data': true }
-		// };
-
-		// socketioIntention = new SocketIO(intentionConnection, () => intentionAnswers);
-		// socketioIntention.client.on('transferred', (data: MessageExtended) => {
-		// 	// if (debug) {
-		// 	// console.log(
-		// 	// 	'=== 🧦 presentation - devF23 - INTENTION - received transferred update ==='
-		// 	// );
-		// 	// console.log(data);
-		// 	// }
-		// 	socketioIntention.handleTransferred(data);
-		// });
-
-		// socketioIntention.client.on('status', (data: SocketioStatus) => {
-		// 	// if (debug) {
-		// 	// console.log('=== 🧦 presentation - devF23 - INTENTION - received status update ===');
-		// 	console.log('=== 🧦 INTENTION status update ===', data);
-		// 	// }
-		// 	socketioIntention.handleStatus(data);
-		// });
-
-		// socketioIntention.client.on('deleted', (message_id: string) => {
-		// 	// if (debug) {
-		// 	// 	console.log(
-		// 	// 		'=== presentation - devF23 - INTENTION - deleted messages ==='
-		// 	// 	);
-		// 	// 	console.log(message_id);
-		// 	// }
-		// 	socketioIntention.handleDeleted(message_id);
-		// });
-
-		// SocketIO for motivation numericals
 		const connectionMotivation: SocketioConnection = {
 			namespace: '/numerical',
 			query_params: { 'parent-id': motivationQuestionId }
 		};
-		socketioMotivation = new SocketIO(connectionMotivation, () => motivationAnswers);
-
-		socketioMotivation.client.on('transferred', (data: Numerical) => {
-			// if (debug) {
-			// console.log('=== 🧦 presentation - devF23 - MOTIVATION - received transferred ===');
-			// console.log(data);
-			// }
-			socketioMotivation.handleTransferred(data);
+		socketioMotivation = new SocketIO<NumericalExtended>(connectionMotivation, {
+			subscribeEntities: () => data.questionsData?.motivation?.numericals
 		});
 
-		socketioMotivation.client.on('status', (data: SocketioStatus) => {
-			// if (debug) {
-			// console.log('=== 🧦 presentation - devF23 - MOTIVATION - received status update ===');
-			// console.log('Status update:', data);
-			// }
-			socketioMotivation.handleStatus(data);
-		});
-
-		socketioMotivation.client.on('deleted', (message_id: string) => {
-			// if (debug) {
-			// 	console.log(
-			// 		'=== presentation - devF23 - MOTIVATION - deleted messages ==='
-			// 	);
-			// 	console.log(message_id);
-			// }
-			socketioMotivation.handleDeleted(message_id);
-		});
 		const commentConnection: SocketioConnection = {
 			namespace: '/message',
 			query_params: { 'parent-id': commentsQuestionId, 'request-access-data': true }
 		};
-		socketioComment = new SocketIO(commentConnection, () => commentsAnswers);
-		socketioComment.client.on('transferred', (data: MessageExtended) => {
-			// if (debug) {
-			// console.log('=== 🧦 presentation - devF23 - COMMENT - received transferred ===');
-			// console.log(data);
-			// }
-			socketioComment.handleTransferred(data);
-		});
-
-		socketioComment.client.on('status', (data: SocketioStatus) => {
-			// if (debug) {
-			// console.log('=== 🧦 presentation - devF23 - COMMENT - received status ===');
-			// console.log('Status update:', data);
-			// }
-			socketioComment.handleStatus(data);
-		});
-
-		socketioComment.client.on('deleted', (message_id: string) => {
-			// if (debug) {
-			// 	console.log(
-			// 		'=== presentation - devF23 - COMMENT - deleted messages ==='
-			// 	);
-			// 	console.log(message_id);
-			// }
-			socketioComment.handleDeleted(message_id);
+		socketioComment = new SocketIO<MessageExtended>(commentConnection, {
+			subscribeEntities: () => data.questionsData?.comments?.messages
 		});
 	});
 
@@ -456,7 +374,7 @@
 					onkeydown={(event) => {
 						if (event.key === 'Enter' && !event.shiftKey) {
 							event.preventDefault();
-							commentsAnswers = [myComment, ...commentsAnswers];
+							socketioComment.entities = [myComment, ...socketioComment.entities];
 							// socketioComment.addEntity(myComment);
 							socketioComment.submitEntity(myComment, commentsQuestionId, true, true, Action.READ);
 							myComment = {
