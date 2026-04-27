@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio';
+	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio.svelte';
 	import type { MessageExtended, NumericalExtended } from '$lib/types';
 	import { Action } from '$lib/accessHandler';
 	import { flip } from 'svelte/animate';

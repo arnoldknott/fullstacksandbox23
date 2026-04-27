@@ -4,7 +4,7 @@
 	import JsonData from '$components/JsonData.svelte';
 	import type { PageData } from './$types';
 	import Heading from '$components/Heading.svelte';
-	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio';
+	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio.svelte';
 	import type { Group, Hierarchy, UeberGroup } from '$lib/types';
 	import type { User as MicrosoftUser } from '@microsoft/microsoft-graph-types';
 	import Card from '$components/Card.svelte';

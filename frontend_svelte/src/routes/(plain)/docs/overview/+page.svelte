@@ -1,8 +1,8 @@
 <script lang="ts">
 	import RevealJs from '$components/RevealJS.svelte';
-	import { SocketIO } from '$lib/socketio';
+	import { SocketIO } from '$lib/socketio.svelte';
 
-	import type { SocketioConnection } from '$lib/socketio';
+	import type { SocketioConnection } from '$lib/socketio.svelte';
 	import { onDestroy, onMount } from 'svelte';
 
 	// let { keyboard = $bindable(false) }: { keyboard: boolean } = $props();

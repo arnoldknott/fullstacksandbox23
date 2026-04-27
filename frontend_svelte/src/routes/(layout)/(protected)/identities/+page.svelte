@@ -9,7 +9,7 @@
 	import IdentityListItem from './IdentityListItem.svelte';
 	import { AccessHandler, IdentityType } from '$lib/accessHandler';
 
-	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio';
+	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio.svelte';
 	import type { UeberGroup, UeberGroupExtended } from '$lib/types';
 	import { initAccordion } from '$lib/userInterface';
 	import { onDestroy, onMount } from 'svelte';

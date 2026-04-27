@@ -42,7 +42,7 @@ Use the same docker compose handling as for validation
 - Route groups are important. `src/routes/(layout)` is the main authenticated application shell with sidebar, theming, and account UI. `src/routes/(plain)` is the stripped-down shell used for docs/session flows. Nested `(protected)` and `(admin)` groups are enforced centrally in `src/hooks.server.ts`.
 - Authentication/session state is split across Redis, cookies, and local storage. `src/hooks.server.ts` reads a bearer token or `session_id` cookie, loads the session from Redis, and guards protected routes. `src/routes/+layout.svelte`, `src/routes/(plain)/session/+server.ts`, and `src/hooks.client.ts` implement the iframe/embed flow that restores a cookie-backed server session from `localStorage`.
 - Server-side backend access goes through `src/lib/server/apis/base.ts` and `src/lib/server/apis/backendApi.ts`. Those wrappers are responsible for token acquisition and consistent REST API scope/header handling.
-- Real-time updates use `src/lib/socketio.ts`. Components/routes provide accessors for their current entity arrays and edit-id sets, while `SocketIO` mutates those collections in place to keep Svelte reactivity working as expected.
+- Real-time updates use `src/lib/socketio.svelte.ts`. Components/routes provide accessors for their current entity arrays and edit-id sets, while `SocketIO` mutates those collections in place to keep Svelte reactivity working as expected.
 - Theming is centralized in `src/routes/(layout)/+layout.svelte` and `src/lib/theming.ts`. `themeStore` only holds the computed theme object; the heavy Material/FlyonUI theme generation logic lives in `theming.ts`.
 - Shared application types live in `src/lib/types.d.ts`. Access-control logic is centralized in `src/lib/accessHandler.ts`, and many dashboard routes rely on those shared types and permission helpers.
 - `src/routes/(layout)/playground/` hosts several examples of completed and work in progress elements for the desin, and layout of pages and components as well as theri styling.
@@ -58,9 +58,11 @@ Use the same docker compose handling as for validation
 - Keep shared domain types in `src/lib/types.d.ts` when they are reused across routes, components, and server helpers. This repository relies on those shared types heavily.
 - When wiring socket-driven pages, preserve the existing mutate-in-place pattern for entity arrays. Several pages rely on that instead of replacing arrays wholesale.
 - Logging in the layers security, cache and integrations use emoji-prefixed messages `🔑`, `🥞`, `🚪` respectively, and `🔥` for errors. Match that local style when adding logs near those systems.
-- For debug printing use two lines, where the first line marks the origin of the conosle output and the second line prints the relevant data. For example:
+- For debug printing use two lines, where the first line marks the origin of the console
+ output, framed by "===", and the second line prints the relevant data. Never combine them, unless explicitly asked for. For example:
 
 ```
-console.log("🔑 playground - design - flyonui - page - <function name> - <variable name>);
+console.log("🔑 === playground - design - flyonui - page - <function name> - <variable name> ===");
 console.log({ myVariable });
 ```
+- When refactoring never delete comments in the code that is being refactored, unless the comment is no longer relevant. If the comment is relevant but needs to be updated, update it instead of deleting it. If the comment is not relevant, but you are not sure if it is safe to delete it, leave it in place and add a TBD comment with your question for the next developer who works on the code.

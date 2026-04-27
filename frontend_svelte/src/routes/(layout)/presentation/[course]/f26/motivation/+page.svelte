@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import type { PageData } from './$types';
-	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio';
+	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio.svelte';
 	import type { MessageExtended, Numerical } from '$lib/types';
 	import RevealJS from '$components/RevealJS.svelte';
 	import type { Api } from 'reveal.js';
