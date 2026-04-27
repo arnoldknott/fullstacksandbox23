@@ -200,5 +200,5 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended> {
 				this.client.emit('read', status.id);
 			}
 		}
-}
+	}
 }
