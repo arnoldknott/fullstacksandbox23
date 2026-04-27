@@ -39,10 +39,7 @@ export const renderSocketIO = (options: RenderSocketIOOptions = {}) => {
 			}
 		},
 		context: new Map<string, unknown>([
-			[
-				'backendAPIConfiguration',
-				options.backendAPIConfiguration ?? defaultBackendAPIConfiguration
-			]
+			['backendAPIConfiguration', options.backendAPIConfiguration ?? defaultBackendAPIConfiguration]
 		])
 	});
 
