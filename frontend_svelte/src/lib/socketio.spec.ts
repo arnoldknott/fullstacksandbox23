@@ -9,21 +9,39 @@ import { renderSocketIO } from '../test/renderSocketIO';
 // references must also be defined before normal module evaluation. `vi.hoisted`
 // is the supported escape hatch. We inline the state here instead of importing
 // the `mocks/socketIoClient.ts` helper because hoisted code runs before imports
-// resolve. The helper remains available for tests that mock at runtime instead
-// of via `vi.mock`.
+// resolve. Keep the shape mirrored against `createSocketIoClientState` so that
+// future tests that don't need `vi.mock` can switch to the helper unchanged.
 const socketIoClient = vi.hoisted(() => {
+	const listeners = new Map<string, Array<(...args: unknown[]) => void>>();
+
+	const onImpl = (event: string, listener: (...args: unknown[]) => void) => {
+		const existing = listeners.get(event) ?? [];
+		existing.push(listener);
+		listeners.set(event, existing);
+	};
+
 	const socket = {
-		on: vi.fn(),
+		on: vi.fn(onImpl),
 		emit: vi.fn(),
 		connect: vi.fn(),
 		disconnect: vi.fn()
 	};
 	const io = vi.fn(() => socket);
+
+	const trigger = (event: string, ...args: unknown[]) => {
+		const handlers = listeners.get(event) ?? [];
+		for (const handler of handlers) handler(...args);
+	};
+
 	return {
 		socket,
 		io,
+		listeners,
+		trigger,
 		reset: () => {
+			listeners.clear();
 			socket.on.mockReset();
+			socket.on.mockImplementation(onImpl);
 			socket.emit.mockReset();
 			socket.connect.mockReset();
 			socket.disconnect.mockReset();
@@ -108,7 +126,7 @@ describe('SocketIO', () => {
 		expect(rendered.instance.entities.map((entity) => entity.id)).toEqual(['second', 'third']);
 	});
 
-	it('addEntity prepends, handleTransferred updates in place or prepends, handleDeleted removes by id', async () => {
+	it('addEntity prepends, handleTransferred updates existing or prepends new, handleDeleted removes by id', async () => {
 		const rendered = renderSocketIO({
 			entities: [createDemoResource({ id: 'kept', name: 'before' })]
 		});
@@ -169,11 +187,44 @@ describe('SocketIO', () => {
 		expect(socketIoClient.socket.emit).toHaveBeenLastCalledWith('delete', 'server-1');
 	});
 
+	it('shareEntity emits "share" with the access policy', () => {
+		const rendered = renderSocketIO();
+		const accessPolicy = {
+			resource_id: 'res-1',
+			identity_id: 'user-1',
+			action: Action.READ
+		};
+
+		rendered.instance.shareEntity(accessPolicy);
+
+		expect(socketIoClient.socket.emit).toHaveBeenCalledWith('share', accessPolicy);
+	});
+
+	it('linkEntities emits "link" with the hierarchy', () => {
+		const rendered = renderSocketIO();
+		const hierarchy = { parent_id: 'parent-1', child_id: 'child-1', inherit: true };
+
+		rendered.instance.linkEntities(hierarchy);
+
+		expect(socketIoClient.socket.emit).toHaveBeenCalledWith('link', hierarchy);
+	});
+
+	it('unlinkEntities emits "unlink" with the hierarchy', () => {
+		const rendered = renderSocketIO();
+		const hierarchy = { parent_id: 'parent-1', child_id: 'child-1' };
+
+		rendered.instance.unlinkEntities(hierarchy);
+
+		expect(socketIoClient.socket.emit).toHaveBeenCalledWith('unlink', hierarchy);
+	});
+
 	it('handleStatus swaps created submitted_id in place and re-reads on shared/unshared', async () => {
 		const rendered = renderSocketIO({
 			entities: [createDemoResource({ id: 'new_42', name: 'draft' })]
 		});
 		await tick();
+
+		const originalEntity = rendered.instance.entities[0];
 
 		rendered.instance.handleStatus({
 			success: 'created',
@@ -181,7 +232,8 @@ describe('SocketIO', () => {
 			submitted_id: 'new_42'
 		});
 		expect(rendered.instance.entities[0]?.id).toBe('server-42');
-		// Existing object identity is preserved (mutated in place).
+		// Existing object identity is preserved (id mutated in place, not replaced).
+		expect(rendered.instance.entities[0]).toBe(originalEntity);
 		expect(rendered.instance.entities[0]?.name).toBe('draft');
 
 		rendered.instance.handleStatus({ success: 'shared', id: 'server-42' });
@@ -210,5 +262,66 @@ describe('SocketIO', () => {
 
 		expect(rendered.instance.entities[0]?.id).toBe('untouched');
 		expect(socketIoClient.socket.emit).not.toHaveBeenCalledWith('read', expect.anything());
+	});
+
+	describe('listener wiring (server-emitted events)', () => {
+		it('routes inbound `transferred` events into entity state', async () => {
+			const rendered = renderSocketIO({
+				entities: [createDemoResource({ id: 'existing', name: 'before' })]
+			});
+			await tick();
+
+			socketIoClient.trigger('transferred', createDemoResource({ id: 'existing', name: 'after' }));
+			expect(rendered.instance.entities.find((entity) => entity.id === 'existing')?.name).toBe(
+				'after'
+			);
+
+			socketIoClient.trigger('transferred', createDemoResource({ id: 'fresh' }));
+			expect(rendered.instance.entities.map((entity) => entity.id)).toEqual(['fresh', 'existing']);
+		});
+
+		it('routes inbound `deleted` events into entity state', async () => {
+			const rendered = renderSocketIO({
+				entities: [createDemoResource({ id: 'a' }), createDemoResource({ id: 'b' })]
+			});
+			await tick();
+
+			socketIoClient.trigger('deleted', 'a');
+			expect(rendered.instance.entities.map((entity) => entity.id)).toEqual(['b']);
+		});
+
+		it('routes inbound `status` events: created swaps id; shared/unshared re-read', async () => {
+			const rendered = renderSocketIO({
+				entities: [createDemoResource({ id: 'new_77', name: 'draft' })]
+			});
+			await tick();
+
+			socketIoClient.trigger('status', {
+				success: 'created',
+				id: 'server-77',
+				submitted_id: 'new_77'
+			});
+			expect(rendered.instance.entities[0]?.id).toBe('server-77');
+
+			socketIoClient.trigger('status', { success: 'shared', id: 'server-77' });
+			socketIoClient.trigger('status', { success: 'unshared', id: 'server-77' });
+			const readEmits = socketIoClient.socket.emit.mock.calls.filter(([event]) => event === 'read');
+			expect(readEmits).toEqual([
+				['read', 'server-77'],
+				['read', 'server-77']
+			]);
+		});
+
+		it('does not route events for opted-out default handlers', async () => {
+			const rendered = renderSocketIO({
+				entities: [createDemoResource({ id: 'survives' })],
+				defaultHandlers: { deleted: false }
+			});
+			await tick();
+
+			// No `deleted` listener was registered, so the trigger is a no-op.
+			socketIoClient.trigger('deleted', 'survives');
+			expect(rendered.instance.entities.map((entity) => entity.id)).toEqual(['survives']);
+		});
 	});
 });

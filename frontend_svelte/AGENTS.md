@@ -78,8 +78,8 @@ the Testing Library / Vitest / common JS conventions:
   Library's `test-utils/index.ts` convention.
 - `src/test/helpers/` — small reusable test-only utilities and Svelte
   **wrapper** components that mount a system-under-test inside a real Svelte
-  runtime (e.g. `SocketIOWrapper.svelte`). Use the term `wrapper` for these
-  components — it matches Testing Library's `render(C, { wrapper })` option.
+  runtime (e.g. `SocketIOWrapper.svelte`). Use the term `wrapper` for test-only
+  Svelte components that host a system under test.
 - `src/test/factories/` — typed object factories (e.g. `createDemoResource`)
   that build domain entities for tests with sensible defaults plus overrides.
 - `src/test/mocks/` — shared `vi.mock` / `vi.fn` setup helpers and stand-ins
