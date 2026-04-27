@@ -118,6 +118,7 @@
 		});
 		socketioGroup.client.on('status', (status: SocketioStatus) => {
 			if ('success' in status) {
+				// TBD: refactor to use (or extend) default handlers
 				if (status.success === 'created') {
 					if (newGroupIdsSuffixes.has(status.submitted_id)) {
 						const suffix = newGroupIdsSuffixes.get(status.submitted_id);
@@ -134,6 +135,7 @@
 							}
 						}
 					}
+					// TBD: build default handlers for "link" and "unlink":
 				} else if (status.success === 'linked') {
 					linkedGroups.push(
 						socketioGroup.entities.find((group) => group.id === status.id) as Group
