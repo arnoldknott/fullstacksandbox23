@@ -67,3 +67,36 @@ console.log({ myVariable });
 ```
 
 - When refactoring never delete comments in the code that is being refactored, unless the comment is no longer relevant. If the comment is relevant but needs to be updated, update it instead of deleting it. If the comment is not relevant, but you are not sure if it is safe to delete it, leave it in place and add a TBD comment with your question for the next developer who works on the code.
+
+## Frontend test organization
+
+Reusable frontend test support lives under `frontend_svelte/src/test/` using
+the Testing Library / Vitest / common JS conventions:
+
+- `src/test/` (top level) — composed render helpers (e.g. `renderSocketIO.ts`)
+  that wire context, props, mocks, and factories together. Mirrors Testing
+  Library's `test-utils/index.ts` convention.
+- `src/test/helpers/` — small reusable test-only utilities and Svelte
+  **wrapper** components that mount a system-under-test inside a real Svelte
+  runtime (e.g. `SocketIOWrapper.svelte`). Use the term `wrapper` for these
+  components — it matches Testing Library's `render(C, { wrapper })` option.
+- `src/test/factories/` — typed object factories (e.g. `createDemoResource`)
+  that build domain entities for tests with sensible defaults plus overrides.
+- `src/test/mocks/` — shared `vi.mock` / `vi.fn` setup helpers and stand-ins
+  for external modules.
+- `src/test/fixtures/` — static test data or Vitest `test.extend` fixtures.
+
+Conventions:
+
+- Specs live next to the production code as `*.spec.ts` (component specs in
+  `src/components/`, library specs in `src/lib/`). Vitest is configured to
+  pick up `src/**/*.{test,spec}.{js,ts}`.
+- Provide Svelte context to a wrapper through Testing Library's `context`
+  render option (`render(Wrapper, { context: new Map([...]) })`) instead of
+  calling `setContext` inside the wrapper, so the wrapper stays minimal.
+- For modules that must be replaced before any production code imports them
+  (e.g. `socket.io-client`), declare `vi.mock(...)` at module top level in the
+  spec and define the mock state inside `vi.hoisted(...)` — hoisted code runs
+  before imports resolve, so it cannot import from `src/test/mocks/`.
+- **Production code must not import from `src/test/`.** Tests may freely
+  import from `$lib`, components, or other production paths.
