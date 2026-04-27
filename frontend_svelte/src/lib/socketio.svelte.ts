@@ -86,7 +86,7 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended> {
 			: `https://${backendFqdn}`;
 
 		this.client = io(socketioServerUrl + connection.namespace, {
-			path: `/socketio/v1`,
+			path: backendAPIConfiguration.socketIOPath || `/socketio/v1`,
 			auth: { 'session-id': connection.cookie_session_id },
 			query: connection.query_params || {},
 			forceNew: true
