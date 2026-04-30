@@ -1,6 +1,6 @@
 <script lang="ts">
 	import JsonData from '$components/JsonData.svelte';
-	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio';
+	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio.svelte';
 	import { page } from '$app/state';
 	import type { DemoResourceExtended } from '$lib/types';
 	import { goto } from '$app/navigation';
@@ -25,8 +25,10 @@
 		}
 	});
 
-	let socketio: SocketIO = $state(undefined as unknown as SocketIO);
-	let demoResources = $state<DemoResourceExtended[]>([]);
+	let socketio: SocketIO<DemoResourceExtended> = $state()!;
+	// let socketio: SocketIO<DemoResourceExtended> = $state(
+	// 	undefined as unknown as SocketIO<DemoResourceExtended>
+	// );
 	let editIds = new SvelteSet<string>();
 	let statusMessages = $state<SocketioStatus[]>([]);
 	onMount(() => {
@@ -41,41 +43,24 @@
 		};
 		// TBD: populate by REST-API call initially?
 
-		socketio = new SocketIO(
-			connection,
-			() => demoResources,
-			() => editIds
-		);
+		socketio = new SocketIO<DemoResourceExtended>(connection);
 
-		socketio.client.on('transferred', (data: DemoResourceExtended) => {
-			// if (debug) {
-			// 	console.log(
-			// 		'=== dashboard - backend-demo-resource - socketio - +page.svelte - received DemoResources ==='
-			// 	);
-			// 	console.log(data);
-			// }
-			socketio?.handleTransferred(data);
-		});
-
-		socketio.client.on('deleted', (resource_id: string) => {
-			// if (debug) {
-			// 	console.log(
-			// 		'=== dashboard - backend-demo-resource - socketio - +page.svelte - deleted DemoResources ==='
-			// 	);
-			// 	console.log(resource_id);
-			// }
-			socketio?.handleDeleted(resource_id);
-		});
-
+		// Extra `status` listener — runs alongside the default one. Maintains the local
+		// `statusMessages` log and the `editIds` set across the create round-trip.
 		socketio.client.on('status', (data: SocketioStatus) => {
-			// if (debug) {
-			// 	console.log(
-			// 		'=== dashboard - backend-demo-resource - socketio - +page.svelte - received status update ==='
-			// 	);
-			// 	console.log('Status update:', data);
-			// }
 			statusMessages.unshift(data);
-			socketio?.handleStatus(data);
+			if ('success' in data && data.success === 'created') {
+				// The default handler swaps the preliminary `new_...` id for the real server id
+				// in the entities array. Mirror that swap inside `editIds` so editing stays active
+				// on the newly created resource.
+				editIds.delete(data.submitted_id);
+				editIds.add(data.id);
+			}
+		});
+
+		// Extra `deleted` listener — drop the id from `editIds` once the server confirms deletion.
+		socketio.client.on('deleted', (resource_id: string) => {
+			editIds.delete(resource_id);
 		});
 	});
 
@@ -104,7 +89,7 @@
 	};
 
 	let ownedDemoResources: DemoResourceExtended[] = $derived(
-		demoResources
+		(socketio?.entities ?? [])
 			.filter((demoResource) => {
 				if (demoResource.access_right === Action.OWN) {
 					return demoResource;
@@ -114,7 +99,7 @@
 	);
 
 	let writeDemoResources: DemoResourceExtended[] = $derived(
-		demoResources
+		(socketio?.entities ?? [])
 			.filter((demoResource) => {
 				if (demoResource.access_right === Action.WRITE) {
 					return demoResource;
@@ -124,7 +109,7 @@
 	);
 
 	let readDemoResources: DemoResourceExtended[] = $derived(
-		demoResources
+		(socketio?.entities ?? [])
 			.filter((demoResource) => {
 				if (demoResource.access_right === Action.READ) {
 					return demoResource;

@@ -4,9 +4,7 @@
 	import Heading from '$components/Heading.svelte';
 
 	let { data }: { data: PageData } = $props();
-	const backend_fqdn = data.backend_fqdn;
-	console.log('=== playground - backend_fqdn ===');
-	console.log(backend_fqdn);
+	const backend_fqdn = $derived(data.backend_fqdn);
 
 	let new_message = $state('');
 	let socket: WebSocket | undefined = $state(undefined);

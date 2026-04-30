@@ -6,7 +6,7 @@
 	import ShareItem from '../../../playground/components/ShareItem.svelte';
 	import { AccessHandler } from '$lib/accessHandler';
 	import IdBadge from '../../IdBadge.svelte';
-	import { SocketIO } from '$lib/socketio';
+	import { SocketIO } from '$lib/socketio.svelte';
 
 	let {
 		demoResource = $bindable(),

@@ -4,7 +4,7 @@
 	import { Hct, hexFromArgb } from '@material/material-color-utilities';
 	import { Theming } from '$lib/theming';
 	import { onDestroy } from 'svelte';
-	import { SocketIO } from '$lib/socketio';
+	import { SocketIO } from '$lib/socketio.svelte';
 	import { Action } from '$lib/accessHandler';
 
 	type ColorSet = {

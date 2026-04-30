@@ -9,7 +9,7 @@
 	import IdentityListItem from './IdentityListItem.svelte';
 	import { AccessHandler, IdentityType } from '$lib/accessHandler';
 
-	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio';
+	import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
 	import type { UeberGroup, UeberGroupExtended } from '$lib/types';
 	import { initAccordion } from '$lib/userInterface';
 	import { onDestroy, onMount } from 'svelte';
@@ -17,21 +17,21 @@
 
 	let debug = $state(page.url.searchParams.get('debug') === 'true' ? true : false);
 
-	let azureAccountLink = $state({
+	let azureAccountLink = $derived({
 		azure_user_id: data.session?.currentUser?.azure_user_id,
 		azure_tenant_id: data.session?.currentUser?.azure_tenant_id,
 		azure_grous: data.session?.currentUser?.azure_groups,
 		azure_token_roles: data.session?.currentUser?.azure_token_roles,
 		azure_token_groups: data.session?.currentUser?.azure_token_groups
 	});
-	let memberships = $state({
+	let memberships = $derived({
 		ueber_groups: data.session?.currentUser?.ueber_groups,
 		groups: data.session?.currentUser?.groups,
 		sub_groups: data.session?.currentUser?.sub_groups,
 		sub_sub_groups: data.session?.currentUser?.sub_sub_groups
 	});
-	let userAccount = $state(data.session?.currentUser?.user_account);
-	let userProfile = $state(data.session?.currentUser?.user_profile);
+	let userAccount = $derived(data.session?.currentUser?.user_account);
+	let userProfile = $derived(data.session?.currentUser?.user_profile);
 	$effect(() => {
 		if (debug) {
 			goto(`?debug=true`, { replaceState: true });
@@ -48,18 +48,13 @@
 		// }
 	};
 
-	let ueberGroups = $state<UeberGroup[]>(data.ueberGroups);
-	let socketio: SocketIO = $state(undefined as unknown as SocketIO);
+	let socketio: SocketIO<UeberGroupExtended> = $state()!;
 	onMount(() => {
-		socketio = new SocketIO(connection, () => ueberGroups);
-
-		socketio.client.on('transferred', (data: UeberGroupExtended) =>
-			socketio.handleTransferred(data)
-		);
-		socketio.client.on('deleted', (resource_id: string) => socketio.handleDeleted(resource_id));
-		socketio.client.on('status', (status: SocketioStatus) => socketio.handleStatus(status));
+		socketio = new SocketIO<UeberGroupExtended>(connection, {
+			subscribeEntities: () => data.ueberGroups
+		});
 	});
-
+	let ueberGroups = $derived(socketio?.entities ?? []);
 	onDestroy(() => {
 		socketio?.client.disconnect();
 	});

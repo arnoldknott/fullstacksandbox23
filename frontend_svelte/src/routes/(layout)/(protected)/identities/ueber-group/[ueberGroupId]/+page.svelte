@@ -4,7 +4,7 @@
 	import JsonData from '$components/JsonData.svelte';
 	import type { PageData } from './$types';
 	import Heading from '$components/Heading.svelte';
-	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio';
+	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio.svelte';
 	import type { Group, Hierarchy, UeberGroup } from '$lib/types';
 	import type { User as MicrosoftUser } from '@microsoft/microsoft-graph-types';
 	import Card from '$components/Card.svelte';
@@ -40,7 +40,9 @@
 	// };
 
 	let linkedGroups = $state<Group[]>(data.thisUeberGroup?.groups || []);
-	let allGroups = $state<Group[]>(data.allOtherGroups || []);
+	let socketioUeberGroup: SocketIO<UeberGroup> = $state()!;
+	let socketioGroup: SocketIO<Group> = $state()!;
+	let allGroups = $derived(socketioGroup?.entities ?? []);
 	const [sendGroupCrossfade, receiveGroupCrossfade] = crossfade({ duration: 400 });
 	// const [sendIdentityCrossfade, receiveIdentityCrossfade] = crossfade({ duration: 400 });
 	const newGroup = $state<Group>({
@@ -84,10 +86,10 @@
 		// }
 	};
 	// and not read-all callback on connect
-	let socketioUeberGroup: SocketIO = $state(undefined as unknown as SocketIO);
-	let socketioGroup: SocketIO = $state(undefined as unknown as SocketIO);
 	onMount(() => {
-		socketioUeberGroup = new SocketIO(ueberGroupConnection);
+		socketioUeberGroup = new SocketIO<UeberGroup>(ueberGroupConnection, {
+			defaultHandlers: { transferred: false, deleted: false }
+		});
 
 		socketioUeberGroup.client.on('deleted', (resource_id: string) => {
 			if (ueberGroup && ueberGroup.id === resource_id) {
@@ -101,7 +103,10 @@
 			}
 		});
 
-		socketioGroup = new SocketIO(groupConnection, () => allGroups);
+		socketioGroup = new SocketIO<Group>(groupConnection, {
+			subscribeEntities: () => data.allOtherGroups,
+			defaultHandlers: { transferred: false }
+		});
 		socketioGroup.client.emit('read');
 		socketioGroup.client.on('transferred', (data: Group) => {
 			if (!linkedGroups.some((group) => group.id === data.id)) {
@@ -113,6 +118,7 @@
 		});
 		socketioGroup.client.on('status', (status: SocketioStatus) => {
 			if ('success' in status) {
+				// TBD: refactor to use (or extend) default handlers
 				if (status.success === 'created') {
 					if (newGroupIdsSuffixes.has(status.submitted_id)) {
 						const suffix = newGroupIdsSuffixes.get(status.submitted_id);
@@ -129,11 +135,16 @@
 							}
 						}
 					}
+					// TBD: build default handlers for "link" and "unlink":
 				} else if (status.success === 'linked') {
-					linkedGroups.push(allGroups.find((group) => group.id === status.id) as Group);
-					allGroups = allGroups.filter((group) => group.id !== status.id);
+					linkedGroups.push(
+						socketioGroup.entities.find((group) => group.id === status.id) as Group
+					);
+					socketioGroup.entities = socketioGroup.entities.filter((group) => group.id !== status.id);
 				} else if (status.success === 'unlinked') {
-					allGroups.push(linkedGroups.find((group) => group.id === status.id) as Group);
+					socketioGroup.entities.push(
+						linkedGroups.find((group) => group.id === status.id) as Group
+					);
 					linkedGroups = linkedGroups.filter((group) => group.id !== status.id);
 				}
 			}
