@@ -116,12 +116,12 @@ resource "azurerm_private_dns_zone" "privateDNSZone" {
   }
 }
 
-# resource "azurerm_private_dns_zone_virtual_network_link" "privateDNSZoneLink" {
-#   name                  = "${var.project_short_name}vnetlink"
-#   private_dns_zone_name = azurerm_private_dns_zone.privateDNSZone.name
-#   virtual_network_id    = azurerm_virtual_network.virtualNetwork.id
-#   resource_group_name   = azurerm_resource_group.resourceGroup.name
-# }
+resource "azurerm_private_dns_zone_virtual_network_link" "privateDNSZoneLink" {
+  name                  = "${var.project_short_name}vnetlink"
+  private_dns_zone_name = azurerm_private_dns_zone.privateDNSZone.name
+  virtual_network_id    = azurerm_virtual_network.virtualNetwork.id
+  resource_group_name   = azurerm_resource_group.resourceGroup.name
+}
 
 
 
