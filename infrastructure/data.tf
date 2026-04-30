@@ -322,7 +322,6 @@ resource "azurerm_recovery_services_vault" "recoveryServiceVault" {
   storage_mode_type             = "LocallyRedundant"
   immutability                  = "Disabled"
   public_network_access_enabled = true
-  soft_delete_enabled           = true
 
 
   tags = {
