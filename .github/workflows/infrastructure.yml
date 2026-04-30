@@ -199,7 +199,7 @@ jobs:
             -var "postgres_port=${POSTGRES_PORT}" \
             -var "pgadmin_default_email=${PGADMIN_DEFAULT_EMAIL}" \
             -var "redis_port=${REDIS_PORT}" \
-            -var "redis_insight_port=${REDIS_INSIGHT_PORT}"
+            -var "redis_insight_port=${REDIS_INSIGHT_PORT}" | tee ${WORKSPACE}_${COMMIT_SHA}.log
             cat ${WORKSPACE}_${COMMIT_SHA}.log
             
       # -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}" | tee ${WORKSPACE}_${COMMIT_SHA}.log
