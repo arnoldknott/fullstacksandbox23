@@ -74,13 +74,13 @@ else
 fi
 echo "==> workspace is set to: $WORKSPACE <=="
 
-echo ""
-echo "=== get public ssh keys from localhost ==="
-local_public_ssh_key_path=$(eval echo $(grep SSH_KEY_PATH_LOCALHOST .env | cut -d '=' -f 2 | tr -d ' "'))
-public_ssh_key_path=$(eval echo $(grep PUBLIC_SSH_KEY_PATH .env | cut -d '=' -f 2 | tr -d ' "'))
-# echo "local_public_ssh_key_path: $local_public_ssh_key_path"
-# echo "public_ssh_key_path: $public_ssh_key_path"
-cp $local_public_ssh_key_path $public_ssh_key_path
+# echo ""
+# echo "=== get public ssh keys from localhost ==="
+# local_public_ssh_key_path=$(eval echo $(grep SSH_KEY_PATH_LOCALHOST .env | cut -d '=' -f 2 | tr -d ' "'))
+# public_ssh_key_path=$(eval echo $(grep PUBLIC_SSH_KEY_PATH .env | cut -d '=' -f 2 | tr -d ' "'))
+# # echo "local_public_ssh_key_path: $local_public_ssh_key_path"
+# # echo "public_ssh_key_path: $public_ssh_key_path"
+# cp $local_public_ssh_key_path $public_ssh_key_path
 
 
 echo ""
@@ -187,8 +187,8 @@ tofu plan -out=${WORKSPACE}.tfplan \
         -var "postgres_port=${POSTGRES_PORT}" \
         -var "pgadmin_default_email=${PGADMIN_DEFAULT_EMAIL}" \
         -var "redis_port=${REDIS_PORT}" \
-        -var "redis_insight_port=${REDIS_INSIGHT_PORT}" \
-        -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}"'
+        -var "redis_insight_port=${REDIS_INSIGHT_PORT}"'
+# -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}"'
 
 # Comes from ARM_ environment variable, as it is not needed with managed identity in the Github Actions workflow:
 # -var "azure_client_secret=${AZURE_CLIENT_SECRET}" \
@@ -260,9 +260,9 @@ else
     tofu_changes_applied=1
 fi
 
-echo ""
-echo "=== remove the public ssh from working directory ==="
-rm -f $public_ssh_key_path
+# echo ""
+# echo "=== remove the public ssh from working directory ==="
+# rm -f $public_ssh_key_path
 
 echo ""
 echo "=== remove the azure login information ==="

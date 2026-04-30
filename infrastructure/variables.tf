@@ -128,8 +128,8 @@ variable "redis_celery_backend_db" {
 }
 
 
-# Public SSH key configuration for virtual machines:
-variable "public_ssh_key_path" {
-  description = "Path to public SSH key"
-  type        = string
-}
+# # Public SSH key configuration for virtual machines:
+# variable "public_ssh_key_path" {
+#   description = "Path to public SSH key"
+#   type        = string
+# }

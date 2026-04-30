@@ -65,7 +65,7 @@ echo ""
 echo "=== entering the tofu container with \$TOFU_VARIABLES and 't' function ==="
 docker compose run --rm -it --entrypoint "/bin/sh" tofu -c '
 cp -fR .azure/ ~/.azure
-export TOFU_VARIABLES="-var \"azure_tenant_id=${AZURE_TENANT_ID}\" -var \"azure_client_id=${AZURE_CLIENT_ID}\" -var \"azure_subscription_id=${AZURE_SUBSCRIPTION_ID}\" -var \"developer_localhost_object_id=${DEVELOPER_LOCALHOST_OBJECT_ID}\" -var \"managed_identity_github_actions_object_id=${MANAGED_IDENTITY_GITHUB_ACTIONS_OBJECT_ID}\" -var \"project_name=${PROJECT_NAME}\" -var \"project_short_name=${PROJECT_SHORT_NAME}\" -var \"project_repository_name=${PROJECT_REPOSITORY_NAME}\" -var \"costcenter=${COSTCENTER}\" -var \"owner_name=${OWNER_NAME}\" -var \"budget_notification_email=${BUDGET_NOTIFICATION_EMAIL}\" -var \"owner_object_id=${OWNER_OBJECT_ID}\" -var \"postgres_port=${POSTGRES_PORT}\" -var \"pgadmin_default_email=${PGADMIN_DEFAULT_EMAIL}\" -var \"redis_port=${REDIS_PORT}\" -var \"redis_insight_port=${REDIS_INSIGHT_PORT}\" -var \"public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}\""
+export TOFU_VARIABLES="-var \"azure_tenant_id=${AZURE_TENANT_ID}\" -var \"azure_client_id=${AZURE_CLIENT_ID}\" -var \"azure_subscription_id=${AZURE_SUBSCRIPTION_ID}\" -var \"developer_localhost_object_id=${DEVELOPER_LOCALHOST_OBJECT_ID}\" -var \"managed_identity_github_actions_object_id=${MANAGED_IDENTITY_GITHUB_ACTIONS_OBJECT_ID}\" -var \"project_name=${PROJECT_NAME}\" -var \"project_short_name=${PROJECT_SHORT_NAME}\" -var \"project_repository_name=${PROJECT_REPOSITORY_NAME}\" -var \"costcenter=${COSTCENTER}\" -var \"owner_name=${OWNER_NAME}\" -var \"budget_notification_email=${BUDGET_NOTIFICATION_EMAIL}\" -var \"owner_object_id=${OWNER_OBJECT_ID}\" -var \"postgres_port=${POSTGRES_PORT}\" -var \"pgadmin_default_email=${PGADMIN_DEFAULT_EMAIL}\" -var \"redis_port=${REDIS_PORT}\" -var \"redis_insight_port=${REDIS_INSIGHT_PORT}\""
 echo ""
 echo "Environment variable TOFU_VARIABLES is set with all required -var flags."
 echo "Usage: tofu plan \$TOFU_VARIABLES"
@@ -86,3 +86,4 @@ echo "Try it with '\''t validate'\''."
 echo ""
 ENV=~/.tofu_alias /bin/sh
 '
+# -var \"public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}\"
