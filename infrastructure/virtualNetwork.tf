@@ -77,16 +77,16 @@ resource "azurerm_subnet" "subnetPostgres" {
   }
 }
 
-resource "azurerm_subnet" "subnetAdminVirtualMachine" {
-  name                 = "${var.project_name}-adminVirtualMachine-${terraform.workspace}"
-  resource_group_name  = azurerm_resource_group.resourceGroup.name
-  virtual_network_name = azurerm_virtual_network.virtualNetwork.name
-  address_prefixes     = ["10.0.10.0/24"]
+# resource "azurerm_subnet" "subnetAdminVirtualMachine" {
+#   name                 = "${var.project_name}-adminVirtualMachine-${terraform.workspace}"
+#   resource_group_name  = azurerm_resource_group.resourceGroup.name
+#   virtual_network_name = azurerm_virtual_network.virtualNetwork.name
+#   address_prefixes     = ["10.0.10.0/24"]
 
-  lifecycle {
-    ignore_changes = [private_endpoint_network_policies]
-  }
-}
+#   lifecycle {
+#     ignore_changes = [private_endpoint_network_policies]
+#   }
+# }
 
 # resource "azurerm_subnet" "subnetFileStorage" {
 #   name                 = "${var.project_name}-fileStorage-${terraform.workspace}"
@@ -125,41 +125,41 @@ resource "azurerm_private_dns_zone_virtual_network_link" "privateDNSZoneLink" {
 
 
 
-resource "azurerm_public_ip" "adminVirtualMachineIPadress" {
-  count               = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
-  name                = "${var.project_name}-adminVirtualMachineIPadress-${terraform.workspace}"
-  resource_group_name = azurerm_resource_group.resourceGroup.name
-  location            = azurerm_resource_group.resourceGroup.location
-  allocation_method   = "Static"
+# resource "azurerm_public_ip" "adminVirtualMachineIPadress" {
+#   count               = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+#   name                = "${var.project_name}-adminVirtualMachineIPadress-${terraform.workspace}"
+#   resource_group_name = azurerm_resource_group.resourceGroup.name
+#   location            = azurerm_resource_group.resourceGroup.location
+#   allocation_method   = "Static"
 
-  sku = "Standard"
+#   sku = "Standard"
 
-  tags = {
-    Costcenter  = var.costcenter
-    Owner       = var.owner_name
-    Environment = terraform.workspace
-  }
-}
+#   tags = {
+#     Costcenter  = var.costcenter
+#     Owner       = var.owner_name
+#     Environment = terraform.workspace
+#   }
+# }
 
-resource "azurerm_network_interface" "adminVirtualMachineNetworkInterface" {
-  count               = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
-  name                = "${var.project_name}-virtualMachineNetworkInterface-${terraform.workspace}"
-  resource_group_name = azurerm_resource_group.resourceGroup.name
-  location            = azurerm_resource_group.resourceGroup.location
+# resource "azurerm_network_interface" "adminVirtualMachineNetworkInterface" {
+#   count               = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+#   name                = "${var.project_name}-virtualMachineNetworkInterface-${terraform.workspace}"
+#   resource_group_name = azurerm_resource_group.resourceGroup.name
+#   location            = azurerm_resource_group.resourceGroup.location
 
-  ip_configuration {
-    name                          = "${var.project_name}-virtualMachineIPConfiguration-${terraform.workspace}"
-    subnet_id                     = azurerm_subnet.subnetAdminVirtualMachine.id
-    private_ip_address_allocation = "Dynamic"
-    public_ip_address_id          = azurerm_public_ip.adminVirtualMachineIPadress[0].id
-  }
+#   ip_configuration {
+#     name                          = "${var.project_name}-virtualMachineIPConfiguration-${terraform.workspace}"
+#     subnet_id                     = azurerm_subnet.subnetAdminVirtualMachine.id
+#     private_ip_address_allocation = "Dynamic"
+#     public_ip_address_id          = azurerm_public_ip.adminVirtualMachineIPadress[0].id
+#   }
 
-  tags = {
-    Costcenter  = var.costcenter
-    Owner       = var.owner_name
-    Environment = terraform.workspace
-  }
-}
+#   tags = {
+#     Costcenter  = var.costcenter
+#     Owner       = var.owner_name
+#     Environment = terraform.workspace
+#   }
+# }
 
 
 resource "azurerm_network_security_group" "adminVirtualMachineNetworkSecurityGroup" {
@@ -199,8 +199,17 @@ resource "azurerm_network_security_group" "adminVirtualMachineNetworkSecurityGro
   }
 }
 
-resource "azurerm_subnet_network_security_group_association" "adminVirtualMachineNetworkSecurityGroupAssociation" {
-  count                     = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
-  subnet_id                 = azurerm_subnet.subnetAdminVirtualMachine.id
-  network_security_group_id = azurerm_network_security_group.adminVirtualMachineNetworkSecurityGroup[0].id
+# Forget the association from state without calling the Azure API.
+# The subnet destroy below removes the association atomically in Azure,
+# avoiding the "subnets must have NSG" policy that blocks the explicit
+# disassociation call.
+removed {
+  from = azurerm_subnet_network_security_group_association.adminVirtualMachineNetworkSecurityGroupAssociation
+  lifecycle { destroy = false }
 }
+
+# resource "azurerm_subnet_network_security_group_association" "adminVirtualMachineNetworkSecurityGroupAssociation" {
+#   count                     = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+#   subnet_id                 = azurerm_subnet.subnetAdminVirtualMachine.id
+#   network_security_group_id = azurerm_network_security_group.adminVirtualMachineNetworkSecurityGroup[0].id
+# }
