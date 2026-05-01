@@ -11,7 +11,7 @@
 		children
 	}: { connection: SocketioConnection; socketioEvent: string; children: Snippet } = $props();
 
-	let socketio: SocketIO = $state(undefined as unknown as SocketIO);
+	let socketio: SocketIO = $state()!;
 	onMount(() => {
 		socketio = new SocketIO(connection);
 	});

@@ -13,7 +13,7 @@
 		namespace: '/interactive-documentation'
 	};
 
-	let socketio: SocketIO = $state(undefined as unknown as SocketIO);
+	let socketio: SocketIO = $state()!;
 	onMount(() => {
 		socketio = new SocketIO(connection);
 	});
