@@ -20,7 +20,7 @@ Presentation = create_model(
         # Path is the endpoint path to access the presentation
         # some might be hard coded and
         # some might have the [id] as a slug in the path
-        # TBD: add unique contraint and valid path check
+        # TBD: add unique constraint and valid path check
         Attribute(name="path", type=Optional[str], field_value=None),
     ],
     # These could be comments - not needed yet
