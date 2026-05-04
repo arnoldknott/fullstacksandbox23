@@ -2,12 +2,11 @@ import type { PageServerLoad } from './$types';
 
 import { backendAPI } from '$lib/server/apis/backendApi';
 import type { Presentation } from '$lib/types';
-import { resolve } from '$app/paths';
 
-export const load: PageServerLoad = async ({ locals}) => {
+export const load: PageServerLoad = async ({ locals }) => {
 	const sessionId = locals.sessionData.sessionId;
 	const responsePresentations = await backendAPI.get(sessionId, '/presentation/');
-	let payload = {
+	const payload = {
 		presentations: [] as Presentation[]
 	};
 	if (responsePresentations.status === 200) {

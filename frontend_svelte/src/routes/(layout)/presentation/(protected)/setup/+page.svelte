@@ -5,7 +5,6 @@
 	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
 	import type { PresentationExtended } from '$lib/types';
-	import Presentation from '$components/Presentation.svelte';
 
 	let { data }: { data: PageData } = $props();
 
