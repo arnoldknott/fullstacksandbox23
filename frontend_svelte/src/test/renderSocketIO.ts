@@ -14,9 +14,9 @@ const defaultConnection: SocketioConnection = {
 	namespace: '/socketio-test'
 };
 
-export type RenderSocketIOOptions = {
+export type RenderSocketIOOptions<T extends AnyEntityExtended = AnyEntityExtended> = {
 	connection?: SocketioConnection;
-	entities?: AnyEntityExtended[] | undefined | null;
+	entities?: T[] | undefined | null;
 	defaultHandlers?: SocketIODefaultHandlers;
 	backendAPIConfiguration?: BackendAPIConfiguration;
 };
@@ -26,8 +26,10 @@ export type RenderSocketIOOptions = {
  * containing `backendAPIConfiguration`. Returns the underlying Testing Library
  * `render` result plus an `instance` accessor for the constructed SocketIO.
  */
-export const renderSocketIO = (options: RenderSocketIOOptions = {}) => {
-	let instance: SocketIO<AnyEntityExtended> | undefined;
+export const renderSocketIO = <T extends AnyEntityExtended = AnyEntityExtended>(
+	options: RenderSocketIOOptions<T> = {}
+) => {
+	let instance: SocketIO<T> | undefined;
 
 	const rendered = render(SocketIOWrapper, {
 		props: {
@@ -35,7 +37,7 @@ export const renderSocketIO = (options: RenderSocketIOOptions = {}) => {
 			entities: options.entities,
 			defaultHandlers: options.defaultHandlers,
 			onInstance: (created: SocketIO<AnyEntityExtended>) => {
-				instance = created;
+				instance = created as unknown as SocketIO<T>;
 			}
 		},
 		context: new Map<string, unknown>([
@@ -48,7 +50,7 @@ export const renderSocketIO = (options: RenderSocketIOOptions = {}) => {
 
 	return {
 		...rendered,
-		get instance(): SocketIO<AnyEntityExtended> {
+		get instance(): SocketIO<T> {
 			if (!instance) throw new Error('SocketIO instance was not initialized');
 			return instance;
 		}
