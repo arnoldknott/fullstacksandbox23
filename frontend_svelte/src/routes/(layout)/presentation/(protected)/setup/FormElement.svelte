@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import HelpTooltip from '../../../playground/components/HelpTooltip.svelte';
 
 	let {
 		title,
@@ -11,12 +12,12 @@
 
 <dl class={classes}>
 	<dt>
-		<div class="label text-base-content label-large">{title}</div>
-		{#if description}
-			<p class="ml-5">
-				{@render description()}
-			</p>
-		{/if}
+		<div class="label text-base-content label-large">
+			{title}
+			{#if description}
+				<HelpTooltip text={description} />
+			{/if}
+		</div>
 	</dt>
 	<dd class="text-base-content mb-5 ml-5">
 		{@render children()}

@@ -67,9 +67,9 @@
 {/snippet}
 
 {#snippet accessDescription()}
-	Who has which access to this presentation? Default is public <span
-		class="icon-[gis--globe-earth-alt] size-4"
-	></span>
+	Who has which access to this presentation?
+	<br />
+	Default is public <span class="icon-[gis--globe-earth-alt] size-4"></span>
 	and have read
 	<span
 		class={`${AccessHandler.rightsIcon(Action.READ)} ${AccessHandler.rightsIconColor(Action.READ)} size-4`}

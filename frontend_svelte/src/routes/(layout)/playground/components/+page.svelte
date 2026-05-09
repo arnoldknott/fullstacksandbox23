@@ -29,6 +29,7 @@
 	import ArtificialIntelligencePicker from './ArtificialIntelligencePicker.svelte';
 	import { Model, type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
 	import Panes, { type PaneData } from './Panes.svelte';
+	import HelpTooltip from './HelpTooltip.svelte';
 	// import Panes from './Panes.svelte';
 	// import JsonData from '$components/JsonData.svelte';
 
@@ -1320,6 +1321,12 @@
 				</span>
 			</div>
 		</div>
+		<HelpTooltip text={'Plain text as tooltip'} />
+		{#snippet helpToolTipText()}
+			<span class="icon-[tabler--home]"></span> Some HTML text in a Snippet as tooltip<br />
+			<p class="text-accent-container">even with different colors</p>
+		{/snippet}
+		<HelpTooltip text={helpToolTipText} />
 		<HorizontalRule />
 	</div>
 
