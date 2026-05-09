@@ -1320,13 +1320,14 @@
 					<span class="tooltip-body">Tooltip on top</span>
 				</span>
 			</div>
+			<HelpTooltip text="Plain text as tooltip" />
+			{#snippet helpToolTipText()}
+				<span class="icon-[tabler--home]"></span> Some HTML text in a Snippet as tooltip<br />
+				<p class="text-accent">even with different colors</p>
+			{/snippet}
+			<HelpTooltip text={helpToolTipText} />
 		</div>
-		<HelpTooltip text={'Plain text as tooltip'} />
-		{#snippet helpToolTipText()}
-			<span class="icon-[tabler--home]"></span> Some HTML text in a Snippet as tooltip<br />
-			<p class="text-accent-container">even with different colors</p>
-		{/snippet}
-		<HelpTooltip text={helpToolTipText} />
+
 		<HorizontalRule />
 	</div>
 
