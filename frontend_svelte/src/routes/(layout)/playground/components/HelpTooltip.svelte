@@ -14,8 +14,6 @@
 		}
 		tipVisibility = !tipVisibility;
 	};
-	// text =
-	// 	'Where is the source code for this presentation stored? For example, intern - as part of the source code of this platform - a github or gitlab repository. <span class="text-accent">Consider adding the option for a staging environemnt.</span>';
 </script>
 
 <div class="tooltip" bind:this={tooltip} {@attach initTooltip}>
@@ -35,9 +33,6 @@
 			{:else}
 				{@render text()}
 			{/if}
-			<!-- Where is the source code for this presentation stored? For example, intern - as part of the source
-			code of this platform - a github or gitlab repository.
-			<span class="text-accent">Consider adding the option for a staging environemnt.</span> -->
 		</div>
 	</div>
 </div>
