@@ -390,7 +390,7 @@
 				{
 					name: 'Questions',
 					pathname: resolve('/(layout)/question/(protected)/setup'),
-					icon: 'icon-[fa6-solid--chalkboard]',
+					icon: 'icon-[codicon--question]',
 					id: 'questions'
 				},
 				{
@@ -424,6 +424,12 @@
 					pathname: resolve('/(layout)/(protected)/socketio'),
 					icon: 'icon-[tabler--brand-socket-io]',
 					id: 'socketio'
+				},
+				{
+					name: 'Session Data',
+					pathname: resolve('/(layout)/(protected)/sessiondata'),
+					icon: 'icon-[solar--hashtag-circle-linear]',
+					id: 'sessiondata'
 				}
 			]
 		}

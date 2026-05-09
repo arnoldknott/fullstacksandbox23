@@ -146,6 +146,12 @@ export interface DemoResource {
 	tags?: string[];
 }
 
+export interface Presentation {
+	id: string;
+	source: string;
+	path?: string;
+}
+
 export interface Question {
 	id: string;
 	question: string;
@@ -168,6 +174,7 @@ export interface Numerical {
 
 // add all specific resources that share the extension properties here:
 export type DemoResourceExtended = ExtendEntity<DemoResource>;
+export type PresentationExtended = ExtendEntity<Presentation>;
 export type QuestionExtended = ExtendEntity<Question>;
 export type MessageExtended = ExtendEntity<Message>;
 export type NumericalExtended = ExtendEntity<Numerical>;
@@ -268,6 +275,7 @@ export type MicrosoftTeamExtended = MicrosoftTeam & Partial<WithAccessRights & W
 
 export type AnyEntityExtended =
 	| DemoResourceExtended
+	| PresentationExtended
 	| NumericalExtended
 	| UserExtended
 	| MessageExtended

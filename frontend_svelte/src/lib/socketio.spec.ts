@@ -2,8 +2,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { tick } from 'svelte';
 import { Action } from '$lib/accessHandler';
 import type { SocketioStatus } from '$lib/socketio.svelte';
+import type { DemoResourceExtended } from '$lib/types.d.ts';
 import { createDemoResource } from '../test/factories/entities';
-import { renderSocketIO } from '../test/renderSocketIO';
+import { renderSocketIO, type RenderSocketIOOptions } from '../test/renderSocketIO';
+
+const renderDemoSocketIO = (options: RenderSocketIOOptions<DemoResourceExtended> = {}) =>
+	renderSocketIO<DemoResourceExtended>(options);
 
 // `vi.mock` is hoisted to the top of the file by Vitest, so the mock state it
 // references must also be defined before normal module evaluation. `vi.hoisted`
@@ -61,7 +65,7 @@ beforeEach(() => {
 
 describe('SocketIO', () => {
 	it('connects with localhost http URL and registers the three default listeners', () => {
-		renderSocketIO({
+		renderDemoSocketIO({
 			connection: {
 				namespace: '/demo-resource',
 				cookie_session_id: 'session-123',
@@ -84,7 +88,7 @@ describe('SocketIO', () => {
 	});
 
 	it('builds an https URL when backendFqdn is not localhost', () => {
-		renderSocketIO({
+		renderDemoSocketIO({
 			backendAPIConfiguration: {
 				backendFqdn: 'api.example.com',
 				restApiPath: '/api/v1',
@@ -101,7 +105,7 @@ describe('SocketIO', () => {
 	});
 
 	it('honors defaultHandlers opt-outs', () => {
-		renderSocketIO({
+		renderDemoSocketIO({
 			defaultHandlers: { transferred: false, status: false }
 		});
 
@@ -112,7 +116,7 @@ describe('SocketIO', () => {
 		const initial = [createDemoResource({ id: 'first' })];
 		const next = [createDemoResource({ id: 'second' }), createDemoResource({ id: 'third' })];
 
-		const rendered = renderSocketIO({ entities: initial });
+		const rendered = renderDemoSocketIO({ entities: initial });
 		await tick();
 		expect(rendered.instance.entities.map((entity) => entity.id)).toEqual(['first']);
 
@@ -127,7 +131,7 @@ describe('SocketIO', () => {
 	});
 
 	it('addEntity prepends, handleTransferred updates existing or prepends new, handleDeleted removes by id', async () => {
-		const rendered = renderSocketIO({
+		const rendered = renderDemoSocketIO({
 			entities: [createDemoResource({ id: 'kept', name: 'before' })]
 		});
 		await tick();
@@ -150,7 +154,7 @@ describe('SocketIO', () => {
 	});
 
 	it('submitEntity emits without optional flags when none are passed', () => {
-		const rendered = renderSocketIO();
+		const rendered = renderDemoSocketIO();
 		const payload = createDemoResource({ id: 'plain' });
 
 		rendered.instance.submitEntity(payload);
@@ -159,7 +163,7 @@ describe('SocketIO', () => {
 	});
 
 	it('submitEntity emits parent_id / inherit / public / public_action when provided', () => {
-		const rendered = renderSocketIO();
+		const rendered = renderDemoSocketIO();
 		const payload = createDemoResource({ id: 'with-options' });
 
 		rendered.instance.submitEntity(payload, 'parent-1', true, true, Action.READ);
@@ -174,7 +178,7 @@ describe('SocketIO', () => {
 	});
 
 	it('deleteEntity removes new_* ids locally and emits delete for server-side ids', async () => {
-		const rendered = renderSocketIO({
+		const rendered = renderDemoSocketIO({
 			entities: [createDemoResource({ id: 'new_draft' }), createDemoResource({ id: 'server-1' })]
 		});
 		await tick();
@@ -188,7 +192,7 @@ describe('SocketIO', () => {
 	});
 
 	it('shareEntity emits "share" with the access policy', () => {
-		const rendered = renderSocketIO();
+		const rendered = renderDemoSocketIO();
 		const accessPolicy = {
 			resource_id: 'res-1',
 			identity_id: 'user-1',
@@ -201,7 +205,7 @@ describe('SocketIO', () => {
 	});
 
 	it('linkEntities emits "link" with the hierarchy', () => {
-		const rendered = renderSocketIO();
+		const rendered = renderDemoSocketIO();
 		const hierarchy = { parent_id: 'parent-1', child_id: 'child-1', inherit: true };
 
 		rendered.instance.linkEntities(hierarchy);
@@ -210,7 +214,7 @@ describe('SocketIO', () => {
 	});
 
 	it('unlinkEntities emits "unlink" with the hierarchy', () => {
-		const rendered = renderSocketIO();
+		const rendered = renderDemoSocketIO();
 		const hierarchy = { parent_id: 'parent-1', child_id: 'child-1' };
 
 		rendered.instance.unlinkEntities(hierarchy);
@@ -219,7 +223,7 @@ describe('SocketIO', () => {
 	});
 
 	it('handleStatus swaps created submitted_id in place and re-reads on shared/unshared', async () => {
-		const rendered = renderSocketIO({
+		const rendered = renderDemoSocketIO({
 			entities: [createDemoResource({ id: 'new_42', name: 'draft' })]
 		});
 		await tick();
@@ -247,7 +251,7 @@ describe('SocketIO', () => {
 	});
 
 	it('handleStatus is a no-op for updated / deleted / linked / unlinked / error branches', () => {
-		const rendered = renderSocketIO({
+		const rendered = renderDemoSocketIO({
 			entities: [createDemoResource({ id: 'untouched' })]
 		});
 
@@ -266,7 +270,7 @@ describe('SocketIO', () => {
 
 	describe('listener wiring (server-emitted events)', () => {
 		it('routes inbound `transferred` events into entity state', async () => {
-			const rendered = renderSocketIO({
+			const rendered = renderDemoSocketIO({
 				entities: [createDemoResource({ id: 'existing', name: 'before' })]
 			});
 			await tick();
@@ -281,7 +285,7 @@ describe('SocketIO', () => {
 		});
 
 		it('routes inbound `deleted` events into entity state', async () => {
-			const rendered = renderSocketIO({
+			const rendered = renderDemoSocketIO({
 				entities: [createDemoResource({ id: 'a' }), createDemoResource({ id: 'b' })]
 			});
 			await tick();
@@ -291,7 +295,7 @@ describe('SocketIO', () => {
 		});
 
 		it('routes inbound `status` events: created swaps id; shared/unshared re-read', async () => {
-			const rendered = renderSocketIO({
+			const rendered = renderDemoSocketIO({
 				entities: [createDemoResource({ id: 'new_77', name: 'draft' })]
 			});
 			await tick();
@@ -313,7 +317,7 @@ describe('SocketIO', () => {
 		});
 
 		it('does not route events for opted-out default handlers', async () => {
-			const rendered = renderSocketIO({
+			const rendered = renderDemoSocketIO({
 				entities: [createDemoResource({ id: 'survives' })],
 				defaultHandlers: { deleted: false }
 			});
