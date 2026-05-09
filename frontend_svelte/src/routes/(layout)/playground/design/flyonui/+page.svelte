@@ -2053,6 +2053,18 @@
 				</p>
 				<span class="icon-[gis--globe-earth-alt] size-12"></span>
 			</div>
+			<div>
+				<p class="label text-center">
+					<span class="label-prominent badge min-h-fit">Codicon</span>
+				</p>
+				<span class="icon-[codicon--question] size-12"></span>
+			</div>
+			<div>
+				<p class="label text-center">
+					<span class="label-prominent badge min-h-fit">Solar</span>
+				</p>
+				<span class="icon-[solar--hashtag-circle-linear] size-12"></span>
+			</div>
 		</div>
 		<HorizontalRule />
 	</div>
