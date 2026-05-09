@@ -14,7 +14,8 @@ export enum IdentityType {
 	GROUP,
 	SUB_GROUP,
 	SUB_SUB_GROUP,
-	MICROSOFT_TEAM
+	MICROSOFT_TEAM,
+	PUBLIC
 }
 
 export class AccessHandler {
@@ -133,6 +134,8 @@ export class AccessHandler {
 				return 'icon-[fa6-solid--user-group]';
 			case IdentityType.MICROSOFT_TEAM:
 				return 'icon-[fluent--people-team-16-filled]';
+			case IdentityType.PUBLIC:
+				return 'icon-[gis--globe-earth-alt]';
 			default:
 				return 'icon-[ic--round-question-mark]';
 		}
