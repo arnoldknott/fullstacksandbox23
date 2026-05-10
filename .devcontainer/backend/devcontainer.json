@@ -1,0 +1,41 @@
+{
+  "name": "fssb23-backend",
+  "build": {
+    "context": "../../backend",
+    "dockerfile": "../../backend/Dockerfile",
+    "target": "api_dev"
+  },
+  "mounts": [
+    "source=/var/run/docker.sock,target=/var/run/docker-host.sock,type=bind"
+  ],
+  "workspaceMount": "source=${localWorkspaceFolder},target=${localWorkspaceFolder},type=bind,consistency=cached",
+  "workspaceFolder": "${localWorkspaceFolder}/backend",
+  "forwardPorts": [8660, 5432, 5555, 8001],
+  "portsAttributes": {
+    "8660": {
+      "label": "backend_api"
+    },
+    "5432": {
+      "label": "postgres"
+    },
+    "5555": {
+      "label": "flower"
+    },
+    "8001": {
+      "label": "redis"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "git.openRepositoryInParentFolders": "always"
+      },
+      "extensions": [
+        "ms-azuretools.vscode-docker",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "openai.chatgpt"
+      ]
+    }
+  }
+}

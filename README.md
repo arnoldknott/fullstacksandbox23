@@ -27,6 +27,31 @@ docker compose build
 docker compose up
 ```
 
+## Devcontainer modes
+
+This repository supports three devcontainer entry points:
+
+- Orchestrator: [.devcontainer/devcontainer.json](.devcontainer/devcontainer.json)
+- Backend editor: [.devcontainer/backend/devcontainer.json](.devcontainer/backend/devcontainer.json)
+- Frontend editor: [.devcontainer/frontend/devcontainer.json](.devcontainer/frontend/devcontainer.json)
+
+### What each mode is for
+
+- Orchestrator mode uses Ubuntu 26.04 and is intended to control the full Docker Compose stack, shared scripts, and infrastructure-oriented tasks.
+- Backend mode builds from [backend/Dockerfile](backend/Dockerfile) target `api_dev` so Python tooling in the editor stays aligned with backend runtime versions.
+- Frontend mode builds from [frontend_svelte/Dockerfile](frontend_svelte/Dockerfile) target `setup` so Node and Bun tooling in the editor stays aligned with frontend runtime versions.
+
+All three modes mount the same workspace path, so source code and Git state are shared.
+
+### Working with modes
+
+Use one mode as your primary workspace and open additional windows only when needed:
+
+1. Open the repository in a Dev Container and select one of the three devcontainer configurations.
+2. Use orchestrator mode for stack operations and shared scripts.
+3. Use backend or frontend mode for focused code editing with runtime-aligned language tooling.
+4. Open additional VS Code windows only for parallel cross-stack work.
+
 
 ## Testing:
 

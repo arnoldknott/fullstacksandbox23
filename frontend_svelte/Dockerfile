@@ -2,7 +2,10 @@ FROM node:24.14.0-alpine3.23 AS setup
 WORKDIR /app
 RUN npm install -g bun
 
-FROM setup As test
+FROM setup AS dev
+RUN apk add --no-cache docker-cli git
+
+FROM dev As test
 COPY package.json bun.lock svelte.config.js ./
 RUN bun install --frozen-lockfile
 

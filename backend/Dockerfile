@@ -10,6 +10,7 @@ ENV UV_PROJECT_ENVIRONMENT="$VIRTUAL_ENV"
 EXPOSE 80
 
 FROM base AS api_dev
+RUN apk add --no-cache docker-cli git
 RUN uv sync --frozen --extra dev
 # TBD: switch to log-level warning, when app is more mature:
 # CMD ["uvicorn", "main:app", "--reload", "--log-level", "warning" ,"--host", "0.0.0.0", "--port", "80"]
