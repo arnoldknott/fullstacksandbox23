@@ -54,6 +54,26 @@ class TestPresentation(BaseTest):
     @pytest.mark.parametrize(
         "mocked_provide_http_token_payload", [token_admin_read_write], indirect=True
     )
+    async def test_post_success_with_query_and_fragment(
+        self, mocked_provide_http_token_payload
+    ):
+        """Test POST presentation accepts endpoint paths with query and fragment."""
+        presentation_with_query_fragment = {
+            "source": "https://example.com/presentation-with-metadata",
+            "path": "/presentations/intro-to-fullstack-sandbox23?slide=2&mode=share#overview",
+        }
+
+        response = await self.async_client.post(
+            self.router_path, json=presentation_with_query_fragment
+        )
+
+        assert response.status_code == 201
+        assert response.json()["path"] == presentation_with_query_fragment["path"]
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "mocked_provide_http_token_payload", [token_admin_read_write], indirect=True
+    )
     async def test_post_duplicate_path_fails(
         self, test_data_single, mocked_provide_http_token_payload
     ):
