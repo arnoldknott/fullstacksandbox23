@@ -10,10 +10,7 @@
   ],
   "workspaceMount": "source=${localWorkspaceFolder},target=${localWorkspaceFolder},type=bind,consistency=cached",
   "workspaceFolder": "${localWorkspaceFolder}",
-  "postStartCommand": {
-    "start": "docker compose up -d",
-    "logs": "docker compose logs -f"
-  },
+  "postStartCommand": "docker compose up -d",
   "forwardPorts": [8660, 8661, 5432, 5533, 5540, 5555, 8001],
   "portsAttributes": {
     "8660": {
