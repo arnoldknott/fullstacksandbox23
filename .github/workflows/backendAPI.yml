@@ -367,7 +367,7 @@ jobs:
           echo "=== Contents of postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log ==="
           cat postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log
       - name: Upload migration upgrade artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: postgres_migration_upgrade_stage_results_${{ env.COMMIT_SHA }}
           path: postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log
@@ -420,7 +420,7 @@ jobs:
           echo "Alembic exit code: $ALEMBIC_EXIT_CODE"
           echo "alembic_check_exit_code=$ALEMBIC_EXIT_CODE" >> $GITHUB_OUTPUT
       - name: Upload migration check artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: postgres_migration_check_results_${{ env.COMMIT_SHA }}
           path: |
@@ -508,7 +508,7 @@ jobs:
         # For debugging enter container with:
         # az containerapp exec -n <resource_name> -g <resource_group> --command "/bin/sh"
       - name: Upload migration check artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: postgres_migration_revision_results_${{ env.COMMIT_SHA }}
           path: |
@@ -634,7 +634,7 @@ jobs:
           echo "=== Contents of postgres_migration/upgrade_prod_${{ env.COMMIT_SHA }}.log ==="
           cat postgres_migration/upgrade_prod_${{ env.COMMIT_SHA }}.log
       - name: Upload migration upgrade artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: postgres_migration_upgrade_prod_results_${{ env.COMMIT_SHA }}
           path: postgres_migration/upgrade_prod_${{ env.COMMIT_SHA }}.log

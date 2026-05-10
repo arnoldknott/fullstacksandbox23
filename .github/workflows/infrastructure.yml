@@ -149,7 +149,7 @@ jobs:
         # echo "ARM_USE_AZUREAD=true" >> "$GITHUB_ENV"
 
       - name: Setup OpenTofu
-        uses: opentofu/setup-opentofu@v1
+        uses: opentofu/setup-opentofu@v2
         with:
           tofu_version: ${{ env.TOFU_VERSION }}
 
@@ -170,7 +170,7 @@ jobs:
 
       # commit the lock file to the repository - if changed?
       - name: Commit .terraform.lock.hcl file
-        uses: EndBug/add-and-commit@v9
+        uses: EndBug/add-and-commit@v10
         with:
           add: "infrastructure/.terraform.lock.hcl"
           fetch: false
@@ -212,7 +212,7 @@ jobs:
       #     ls -la ${{env.WORKSPACE}}_${{env.COMMIT_SHA}}.log
 
       - name: Upload migration upgrade artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ${{env.WORKSPACE}}_${{env.COMMIT_SHA}}.log
           path: infrastructure/${{env.WORKSPACE}}_${{env.COMMIT_SHA}}.log
@@ -290,7 +290,7 @@ jobs:
             --file ${WORKSPACE}_${COMMIT_SHA}.tfplan
 
       - name: Setup OpenTofu
-        uses: opentofu/setup-opentofu@v1
+        uses: opentofu/setup-opentofu@v2
         with:
           tofu_version: ${{ env.TOFU_VERSION }}
 
