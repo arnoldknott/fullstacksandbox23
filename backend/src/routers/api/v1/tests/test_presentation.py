@@ -51,6 +51,24 @@ class TestPresentation(BaseTest):
         )
 
     @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "mocked_provide_http_token_payload", [token_admin_read_write], indirect=True
+    )
+    async def test_post_duplicate_path_fails(
+        self, test_data_single, mocked_provide_http_token_payload
+    ):
+        """Test POST presentation rejects a duplicate path."""
+        response = await self.async_client.post(self.router_path, json=test_data_single)
+        assert response.status_code == 201
+
+        duplicate_response = await self.async_client.post(
+            self.router_path, json=test_data_single
+        )
+
+        assert duplicate_response.status_code == 403
+        assert duplicate_response.json()["detail"] == "Presentation - Forbidden."
+
+    @pytest.mark.anyio
     async def test_post_missing_auth(self, test_data_single):
         """Test POST fails without authentication."""
         await super().run_post_missing_auth(test_data_single)
