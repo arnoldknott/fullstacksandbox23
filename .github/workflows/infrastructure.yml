@@ -118,7 +118,7 @@ jobs:
       #   --scope /subscriptions/<subscription_id>/resourceGroups/<resource_group_name>
 
       - name: Login to Azure using managed identity
-        uses: azure/login@v2
+        uses: azure/login@v3
         with:
           # use the client_id from above registered identity
           client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
@@ -256,7 +256,7 @@ jobs:
       #     echo "Set subscription"
 
       - name: Login to Azure as managed identity
-        uses: azure/login@v2
+        uses: azure/login@v3
         with:
           # use the client_id from above registered identity
           client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
