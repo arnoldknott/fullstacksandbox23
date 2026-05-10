@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, TypeAlias
 
 from pydantic_extra_types.language_code import LanguageAlpha2
 
@@ -68,6 +68,12 @@ Question = create_model(
     ],
 )
 
+# TBD: Figure out how to do this better - maybe a generic way to create these type aliases?
+QuestionCreate: TypeAlias = Question.Create
+QuestionRead: TypeAlias = Question.Read
+QuestionUpdate: TypeAlias = Question.Update
+QuestionExtended: TypeAlias = Question.Extended
+
 # TBD: add another step: A Question has many Answers
 # Intention: the parent needs to have write access to create answers
 # So the parent to a mesage / numerical should be an Answer entity, not a Question.
@@ -93,6 +99,12 @@ Message = create_model(
     ],
 )
 
+# TBD: Figure out how to do this better - maybe a generic way to create these type aliases?
+MessageCreate: TypeAlias = Message.Create
+MessageRead: TypeAlias = Message.Read
+MessageUpdate: TypeAlias = Message.Update
+MessageExtended: TypeAlias = Message.Extended
+
 # For numerical answers, create Numerical model:
 # For now float also covers integers,
 # can be extended later if needed
@@ -111,3 +123,9 @@ Numerical = create_model(
         )
     ],
 )
+
+# TBD: Figure out how to do this better - maybe a generic way to create these type aliases?
+NumericalCreate: TypeAlias = Numerical.Create
+NumericalRead: TypeAlias = Numerical.Read
+NumericalUpdate: TypeAlias = Numerical.Update
+NumericalExtended: TypeAlias = Numerical.Extended

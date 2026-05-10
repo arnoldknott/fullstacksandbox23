@@ -1,4 +1,5 @@
-from typing import Optional
+from typing import Optional, TypeAlias
+from sqlmodel import Field
 
 # from .quiz import Quiz, QuizRead
 from core.types import ResourceType
@@ -47,3 +48,9 @@ Presentation = create_model(
         ),
     ],
 )
+
+# TBD: Figure out how to do this better - maybe a generic way to create these type aliases?
+PresentationCreate: TypeAlias = Presentation.Create
+PresentationRead: TypeAlias = Presentation.Read
+PresentationUpdate: TypeAlias = Presentation.Update
+PresentationExtended: TypeAlias = Presentation.Extended

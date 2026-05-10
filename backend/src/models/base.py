@@ -472,8 +472,7 @@ def create_model(
 
         return TableModel
     else:
-        # Return a container class with nested schemas
-        # TBD: Where is that useful? If anywhere, write tests for it!
+        # Return a container class with nested schemas for model validation without a table
         Container = type(name, (BaseModel,), {})
         Container.Create = Create
         Container.Read = Read

@@ -9,7 +9,7 @@ from core.security import (
 )
 from core.types import GuardTypes
 from crud.presentation import PresentationCRUD
-from models.presentation import Presentation
+from models.presentation import PresentationCreate, PresentationRead, PresentationUpdate
 
 # from models import PresentationCreate, PresentationRead, PresentationUpdate
 from .base import BaseView
@@ -25,12 +25,12 @@ presentation_view = BaseView(PresentationCRUD)
 
 @router.post("/", status_code=201)
 async def post_presentation(
-    presentation: Presentation.Create,
+    presentation: PresentationCreate,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(
         Guards(scopes=["api.read", "api.write"], roles=["User"])
     ),
-) -> Presentation:
+) -> PresentationRead:
     """Creates a new presentation."""
     return await presentation_view.post(presentation, token_payload, guards)
 
@@ -39,7 +39,7 @@ async def post_presentation(
 async def get_presentations(
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
-) -> list[Presentation.Read]:
+) -> list[PresentationRead]:
     """Returns all presentations."""
     return await presentation_view.get(token_payload, guards)
 
@@ -49,7 +49,7 @@ async def get_presentation_by_id(
     resource_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
-) -> Presentation.Read:
+) -> PresentationRead:
     """Returns a presentation."""
     return await presentation_view.get_by_id(resource_id, token_payload, guards)
 
@@ -57,7 +57,7 @@ async def get_presentation_by_id(
 @router.get("/public/{resource_id}", status_code=200)
 async def get_public_presentation_by_id(
     resource_id: UUID,
-) -> Presentation.Read:
+) -> PresentationRead:
     """Returns a public presentation without authentication."""
     return await presentation_view.get_by_id(
         resource_id, token_payload=None, guards=None
@@ -67,12 +67,12 @@ async def get_public_presentation_by_id(
 @router.put("/{resource_id}", status_code=200)
 async def put_presentation(
     resource_id: UUID,
-    presentation: Presentation.Update,
+    presentation: PresentationUpdate,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(
         Guards(scopes=["api.read", "api.write"], roles=["User"])
     ),
-) -> Presentation:
+) -> PresentationRead:
     """Updates a presentation."""
     return await presentation_view.put(resource_id, presentation, token_payload, guards)
 
