@@ -39,10 +39,11 @@
   },
   "customizations": {
     "vscode": {
+      "settings": {
+        "task.allowAutomaticTasks": "on"
+      },
       "extensions": [
         "ms-azuretools.vscode-docker",
-        "ms-python.python",
-        "ms-python.vscode-pylance",
         "svelte.svelte-vscode",
         "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
