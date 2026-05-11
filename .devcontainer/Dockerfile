@@ -19,10 +19,11 @@ COPY --from=python-base /usr/local /usr/local
 COPY --from=uv-base /uv /uvx /bin/
 RUN npm install -g bun@${BUN_VERSION}
 
-RUN apk add --no-cache bash ca-certificates curl git openssh-client \
+RUN apk add --no-cache bash ca-certificates curl docker-cli docker-cli-compose git openssh-client \
     && uv venv /opt/az \
     && apk add --no-cache --virtual=build gcc musl-dev python3-dev libffi-dev openssl-dev cargo make \
-    && uv pip install --python /opt/az/bin/python --no-cache azure-cli \
+    && uv pip install --python /opt/az/bin/python --no-cache --prerelease=allow azure-cli \
+    && sed -i 's|^python -m azure.cli|/opt/az/bin/python -m azure.cli|' /opt/az/bin/az \
     && apk del build \
     && ln -sf /opt/az/bin/az /usr/local/bin/az
 
