@@ -2,6 +2,9 @@
 
 REPO_ROOT_DIR=$(git rev-parse --show-toplevel)
 BRANCH_NAME=$(git branch --show-current)
+# When running inside a devcontainer the host-side workspace path is injected
+# as HOST_WORKSPACE_FOLDER. Fall back to the repo root for host-side usage.
+export HOST_WORKSPACE_FOLDER="${HOST_WORKSPACE_FOLDER:-$REPO_ROOT_DIR}"
 cd $REPO_ROOT_DIR/infrastructure
 
 echo ""
