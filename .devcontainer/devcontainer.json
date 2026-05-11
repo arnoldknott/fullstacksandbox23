@@ -12,7 +12,7 @@
   "remoteEnv": {
     "HOST_WORKSPACE_FOLDER": "${localWorkspaceFolder}"
   },
-  "postCreateCommand": "uv pip install --system -e ${containerWorkspaceFolder}/backend",
+  "postCreateCommand": "uv pip install --system -e ${containerWorkspaceFolder}/backend[dev]",
   "forwardPorts": [8660, 8661, 5432, 5533, 5540, 5555, 8001],
   "portsAttributes": {
     "8660": {
