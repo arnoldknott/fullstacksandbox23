@@ -1,5 +1,12 @@
-FROM python:3.14.3-alpine3.23 AS base
-COPY --from=ghcr.io/astral-sh/uv:0.11.12 /uv /uvx /bin/
+# check=skip=InvalidDefaultArgInFrom
+ARG PYTHON_VERSION
+ARG ALPINE_VERSION
+ARG UV_VERSION
+
+FROM ghcr.io/astral-sh/uv:${UV_VERSION} AS uv-base
+
+FROM python:${PYTHON_VERSION}-alpine${ALPINE_VERSION} AS base
+COPY --from=uv-base /uv /uvx /bin/
 COPY . /app
 WORKDIR /app
 ENV PYTHONPATH="/app/src"

@@ -1,17 +1,14 @@
 {
   "name": "fssb23-orchestrator",
-  "image": "ubuntu:24.04",
-  "features": {
-    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
-    "ghcr.io/devcontainers/features/azure-cli:1": {}
-  },
-  "mounts": [
-    "source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind,readonly"
+  "initializeCommand": "ln -sf versions.env .env",
+  "dockerComposeFile": [
+    "../compose.yml",
+    "compose.devcontainer.yml"
   ],
+  "service": "devcontainer",
+  "runServices": ["devcontainer"],
   "workspaceMount": "source=${localWorkspaceFolder},target=${localWorkspaceFolder},type=bind,consistency=cached",
-  "workspaceFolder": "${localWorkspaceFolder}",
-  "postCreateCommand": "apt-get update && apt-get install -y --no-install-recommends openssh-client && rm -rf /var/lib/apt/lists/*",
-  "postStartCommand": "docker compose up -d",
+  "workspaceFolder": "/workspaces/fullStackSandbox23",
   "forwardPorts": [8660, 8661, 5432, 5533, 5540, 5555, 8001],
   "portsAttributes": {
     "8660": {

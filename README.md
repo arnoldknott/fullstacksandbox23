@@ -16,7 +16,9 @@ see [license file](LICENSE)
 
 ## Development:
 
-Use a local `.env` file for the environment variables in development. If you specify a variable `AZURE_KEYVAULT_HOST`, the application will retrieve all variables from there. Make sure your app has access to this keyvault then from the host you are running the development containers on. You might still need to specify the necessary variables to start the postgres container.
+The repository root [versions.env](versions.env) is committed and only stores shared build-tool version pins for Docker and the devcontainer.
+
+Use app-local `.env` files for the environment variables in development. If you specify a variable `AZURE_KEYVAULT_HOST`, the application will retrieve all variables from there. Make sure your app has access to this keyvault then from the host you are running the development containers on. You might still need to specify the necessary variables to start the postgres container.
 Feel free to ask the repository owner for an example of the `.env` file.
 
 Here's how you run the application locally in development:
@@ -27,30 +29,27 @@ docker compose build
 docker compose up
 ```
 
+The default Codespaces and VS Code devcontainer entry point is the root devcontainer in [.devcontainer/devcontainer.json](.devcontainer/devcontainer.json). Its initialize step links `.env` to [versions.env](versions.env) so Docker Compose interpolation and build arguments use the same pinned Python, Node, Bun, Alpine, and `uv` values as the app containers.
+
+Use this file only for shared image/tool version pins. Do not put secrets there.
+
 ## Devcontainer modes
 
-This repository supports three devcontainer entry points:
+This repository uses a single primary devcontainer entry point [.devcontainer/devcontainer.json](.devcontainer/devcontainer.json).
 
-- Orchestrator: [.devcontainer/devcontainer.json](.devcontainer/devcontainer.json)
-- Backend editor: [.devcontainer/backend/devcontainer.json](.devcontainer/backend/devcontainer.json)
-- Frontend editor: [.devcontainer/frontend/devcontainer.json](.devcontainer/frontend/devcontainer.json)
+### What it is for
 
-### What each mode is for
+- The devcontainer is intended to control the full Docker Compose stack, shared scripts, and infrastructure-oriented tasks.
+- It keeps the editor toolchain aligned with the app container versions while leaving the app containers themselves as the runtime source of truth.
 
-- Orchestrator mode uses Ubuntu 26.04 and is intended to control the full Docker Compose stack, shared scripts, and infrastructure-oriented tasks.
-- Backend mode builds from [backend/Dockerfile](backend/Dockerfile) target `api_dev` so Python tooling in the editor stays aligned with backend runtime versions.
-- Frontend mode builds from [frontend_svelte/Dockerfile](frontend_svelte/Dockerfile) target `setup` so Node and Bun tooling in the editor stays aligned with frontend runtime versions.
+### Working with it
 
-All three modes mount the same workspace path, so source code and Git state are shared.
+Use the devcontainer as the primary workspace and open additional windows only when needed:
 
-### Working with modes
-
-Use one mode as your primary workspace and open additional windows only when needed:
-
-1. Open the repository in a Dev Container and select one of the three devcontainer configurations.
-2. Use orchestrator mode for stack operations and shared scripts.
-3. Use backend or frontend mode for focused code editing with runtime-aligned language tooling.
-4. Open additional VS Code windows only for parallel cross-stack work.
+1. Open the repository in a Dev Container and select the devcontainer configuration.
+2. Start the Compose stack manually in the first window with `docker compose up`.
+3. Open additional VS Code windows for other branches, worktrees, or focused edits when needed.
+4. Keep the running stack in the first window if you want real-time logs and manual control over startup and shutdown.
 
 
 ## Testing:

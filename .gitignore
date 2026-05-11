@@ -1,5 +1,6 @@
 **.DS_Store
 **.env
+!/versions.env
 
 **/node_modules
 **/dist

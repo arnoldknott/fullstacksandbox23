@@ -53,6 +53,7 @@ services:
 
   # Mainly replaced by pgadmin app - reinstate if changing from app to containerization for pgadmin:
   pgadmin:
+    # TBD: centralize with ${PGADMIN_IMAGE_TAG} from versions.env and align infrastructure references.
     image: dpage/pgadmin4:9.14.0
     depends_on:
       - postgres
@@ -114,6 +115,7 @@ services:
       - dev_network
 
   redisInsight:
+    # TBD: centralize with ${REDISINSIGHT_IMAGE_TAG} from versions.env and align infrastructure references.
     image: redis/redisinsight:2.70
     container_name: redisinsight
     depends_on:

@@ -44,12 +44,14 @@ jobs:
       - name: Build
         run: |
           docker compose \
+            --env-file versions.env \
             -f compose.yml \
             -f compose.override.test.yml \
             build frontend_svelte
       - name: Spin up containers
         run: |
           docker compose \
+            --env-file versions.env \
             -f compose.yml \
             -f compose.override.test.yml \
             up frontend_svelte -d
@@ -71,6 +73,7 @@ jobs:
       - name: Code Formating
         run: |
           docker compose \
+            --env-file versions.env \
             -f compose.yml \
             -f compose.override.test.yml \
             exec -T frontend_svelte \
@@ -78,6 +81,7 @@ jobs:
       - name: Linting
         run: |
           docker compose \
+            --env-file versions.env \
             -f compose.yml \
             -f compose.override.test.yml \
             exec -T frontend_svelte \
@@ -85,6 +89,7 @@ jobs:
       - name: Unit testing
         run: |
           docker compose \
+            --env-file versions.env \
             -f compose.yml \
             -f compose.override.test.yml \
             exec -T frontend_svelte \
@@ -92,6 +97,7 @@ jobs:
       - name: Stop containers
         run: |
           docker compose \
+            --env-file versions.env \
             -f compose.yml \
             -f compose.override.test.yml \
             down
@@ -160,7 +166,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build for production
         run: |
-          docker compose -f compose.yml -f compose.prod.yml build --build-arg COMMIT_SHA=${{env.COMMIT_SHA}} frontend_svelte
+          docker compose --env-file versions.env -f compose.yml -f compose.prod.yml build --build-arg COMMIT_SHA=${{env.COMMIT_SHA}} frontend_svelte
       - name: Show images
         run: docker image list
       - name: Tag and push with latest and commit hash
