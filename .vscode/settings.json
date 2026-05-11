@@ -1,5 +1,10 @@
 {
+  "python.defaultInterpreterPath": "/usr/local/bin/python",
+  "python.terminal.activateEnvironment": false,
+  "python.analysis.autoSearchPaths": true,
+  "python.analysis.diagnosticMode": "workspace",
   "python.analysis.extraPaths": ["./backend/src"],
+  "python.analysis.typeCheckingMode": "basic",
   "python.autoComplete.extraPaths": ["./backend/src"],
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter",

@@ -1,5 +1,4 @@
 {
-  "python.defaultInterpreterPath": "/py/bin/python",
   "python.analysis.autoSearchPaths": true,
   "python.analysis.diagnosticMode": "workspace",
   "python.analysis.extraPaths": ["./src"],
