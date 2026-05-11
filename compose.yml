@@ -10,7 +10,7 @@ services:
         ALPINE_VERSION: ${ALPINE_VERSION}
         UV_VERSION: ${UV_VERSION}
     volumes:
-      - ./backend:/app
+      - ${HOST_WORKSPACE_FOLDER:-.}/backend:/app
     # ports:
     #     - "80:80"
 
@@ -23,7 +23,7 @@ services:
         ALPINE_VERSION: ${ALPINE_VERSION}
         UV_VERSION: ${UV_VERSION}
     volumes:
-      - ./backend:/app
+      - ${HOST_WORKSPACE_FOLDER:-.}/backend:/app
 
   postgres:
     container_name: "postgres"
