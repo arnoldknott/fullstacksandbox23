@@ -266,7 +266,7 @@ fi
 
 echo ""
 echo "=== remove the azure login information ==="
-rm -rfd .azure/*
+rm -rf .azure/*
 
 echo ""
 echo "=== tofu - finished ==="
