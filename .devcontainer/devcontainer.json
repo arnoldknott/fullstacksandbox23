@@ -1,5 +1,5 @@
 {
-  "name": "fssb23-orchestrator",
+  "name": "fssb23",
   "initializeCommand": "ln -sf versions.env .env",
   "dockerComposeFile": [
     "../compose.yml",
@@ -12,6 +12,7 @@
   "remoteEnv": {
     "HOST_WORKSPACE_FOLDER": "${localWorkspaceFolder}"
   },
+  "postCreateCommand": "uv pip install --system -e ${containerWorkspaceFolder}/backend",
   "forwardPorts": [8660, 8661, 5432, 5533, 5540, 5555, 8001],
   "portsAttributes": {
     "8660": {
