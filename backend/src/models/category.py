@@ -3,6 +3,8 @@ from typing import TYPE_CHECKING, List, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
 
+from .base import BaseSQLModel
+
 if TYPE_CHECKING:
     from .demo_resource import DemoResource
 
@@ -12,7 +14,7 @@ class CategoryCreate(SQLModel):
     description: Optional[str] = None
 
 
-class Category(CategoryCreate, table=True):
+class Category(CategoryCreate, BaseSQLModel, table=True):
     id: Optional[uuid.UUID] = Field(
         default_factory=uuid.uuid4,
         foreign_key="identifiertypelink.id",
@@ -25,7 +27,7 @@ class Category(CategoryCreate, table=True):
 
 
 class CategoryUpdate(CategoryCreate):
-    name: Optional[str] = None
+    name: Optional[str] = None  # type: ignore[assignment]
 
 
 class CategoryRead(CategoryCreate):

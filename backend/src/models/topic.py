@@ -4,6 +4,8 @@ from typing import Optional
 
 from sqlmodel import Field, SQLModel
 
+from .base import BaseSQLModel
+
 
 class TopicCreate(SQLModel):
     """Schema for creating a group."""
@@ -11,7 +13,7 @@ class TopicCreate(SQLModel):
     is_active: bool = True
 
 
-class Topic(TopicCreate, table=True):
+class Topic(TopicCreate, BaseSQLModel, table=True):
     """Schema for a group in the database."""
 
     id: Optional[uuid.UUID] = Field(
@@ -37,4 +39,4 @@ class TopicRead(TopicCreate):
 class TopicUpdate(TopicCreate):
     """Schema for updating a group."""
 
-    is_active: Optional[bool] = None
+    is_active: Optional[bool] = None  # type: ignore[assignment]

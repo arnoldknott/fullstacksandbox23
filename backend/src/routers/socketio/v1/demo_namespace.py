@@ -44,7 +44,7 @@ class DemoNamespace(BaseNamespace):
     async def callback_on_connect(self, sid, *args, **kwargs):
         """Callback on connect for socket.io namespaces."""
         session = await self._get_session_data(sid)
-        user_name = session["user_name"] if session else "ANONYMOUS"
+        user_name = (session.get("user_name") if session else None) or "ANONYMOUS"
         await self.server.emit(
             "demo_message",
             f"Welcome {user_name} to {self.namespace}.",
@@ -61,7 +61,7 @@ class DemoNamespace(BaseNamespace):
     async def on_demo_message(self, sid, data):
         """Demo message event for socket.io namespaces with guards."""
         session = await self._get_session_data(sid)
-        user_name = session["user_name"] if session else "ANONYMOUS"
+        user_name = (session.get("user_name") if session else None) or "ANONYMOUS"
         await self.server.emit(
             "demo_message",
             f"{user_name}: {data}",
@@ -74,7 +74,7 @@ class DemoNamespace(BaseNamespace):
         session = await self._get_session_data(sid)
         # print("=== demo_namespace - callback_on_disconnect - session ===")
         # print(session, flush=True)
-        user_name = session["user_name"] if session else "ANONYMOUS"
+        user_name = (session.get("user_name") if session else None) or "ANONYMOUS"
         # print(
         #     f"=== demo_namespace - callback_on_disconnect - session['user_name'] === {user_name}"
         # )

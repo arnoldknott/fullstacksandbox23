@@ -2,7 +2,6 @@ import uuid
 from pprint import pprint
 
 import pytest
-from fastapi import HTTPException
 
 from core.types import Action, CurrentUserData, IdentityType, ResourceType
 from crud.access import (
@@ -68,14 +67,14 @@ async def test_admin_creates_access_policy(
 
     current_admin_user = await register_current_user(current_user_data_admin)
 
-    policy = AccessPolicy(**one_test_policy_read)
-    await register_one_resource(uuid.UUID(policy.resource_id), ProtectedResource)
+    policy = AccessPolicy.model_validate(one_test_policy_read)
+    await register_one_resource(policy.resource_id, ProtectedResource)
 
     async with AccessPolicyCRUD() as policy_crud:
         await register_current_user(current_user_data_user1)
         created_policy = await policy_crud.create(policy, current_admin_user)
 
-    modelled_test_policy = AccessPolicyCreate(**one_test_policy_read)
+    modelled_test_policy = AccessPolicyCreate.model_validate(one_test_policy_read)
     assert int(created_policy.id)
     assert created_policy.identity_id == modelled_test_policy.identity_id
     assert created_policy.resource_id == modelled_test_policy.resource_id
@@ -99,10 +98,10 @@ async def test_owner_creates_access_policy(
 
     # User 1 shares with user 3:
     async with AccessPolicyCRUD() as policy_crud:
-        policy = AccessPolicy(**one_test_policy_share)
+        policy = AccessPolicy.model_validate(one_test_policy_share)
         created_policy = await policy_crud.create(policy, sharing_user)
 
-    modelled_test_policy = AccessPolicyCreate(**one_test_policy_share)
+    modelled_test_policy = AccessPolicyCreate.model_validate(one_test_policy_share)
     assert int(created_policy.id)
     assert created_policy.identity_id == modelled_test_policy.identity_id
     assert created_policy.resource_id == modelled_test_policy.resource_id
@@ -121,7 +120,7 @@ async def test_reader_creates_access_policy_fails(
     await register_current_user(current_user_data_user3)
 
     # # resources need to be registered for the policies to be created:
-    # policy = AccessPolicy(**one_test_policy_share)
+    # policy = AccessPolicy.model_validate(one_test_policy_share)
 
     # Admin needs to register the first resource - owned by user 1:
     current_admin_user = await register_current_user(current_user_data_admin)
@@ -130,11 +129,11 @@ async def test_reader_creates_access_policy_fails(
     try:
         # User 1 (with read-only permissions) tries to share with user 3:
         async with AccessPolicyCRUD() as policy_crud:
-            policy = AccessPolicy(**one_test_policy_share)
+            policy = AccessPolicy.model_validate(one_test_policy_share)
             await policy_crud.create(policy, sharing_user)
     except Exception as err:
-        assert err.status_code == 403
-        assert err.detail == "Forbidden."
+        assert err.status_code == 403  # type: ignore[attr-defined]
+        assert err.detail == "Forbidden."  # type: ignore[attr-defined]
 
 
 @pytest.mark.anyio
@@ -149,7 +148,7 @@ async def test_writer_creates_access_policy_fails(
     await register_current_user(current_user_data_user3)
 
     # # resources need to be registered for the policies to be created:
-    # policy = AccessPolicy(**one_test_policy_share)
+    # policy = AccessPolicy.model_validate(one_test_policy_share)
 
     # Admin needs to register the first resource - owned by user 1:
     current_admin_user = await register_current_user(current_user_data_admin)
@@ -158,11 +157,11 @@ async def test_writer_creates_access_policy_fails(
     try:
         # User 1 (with read-only permissions) tries to share with user 3:
         async with AccessPolicyCRUD() as policy_crud:
-            policy = AccessPolicy(**one_test_policy_share)
+            policy = AccessPolicy.model_validate(one_test_policy_share)
             await policy_crud.create(policy, sharing_user)
     except Exception as err:
-        assert err.status_code == 403
-        assert err.detail == "Forbidden."
+        assert err.status_code == 403  # type: ignore[attr-defined]
+        assert err.detail == "Forbidden."  # type: ignore[attr-defined]
 
 
 @pytest.mark.anyio
@@ -174,18 +173,16 @@ async def test_prevent_create_duplicate_access_policy(
     """Test preventing the creation of a duplicate access policy."""
 
     current_users = register_many_current_users
-    register_many_resources
-
-    add_many_test_access_policies
-
+    _ = register_many_resources
+    _ = add_many_test_access_policies
     async with AccessPolicyCRUD() as policy_crud:
         try:
             policy = await policy_crud.create(many_test_policies[2], current_users[0])
             print(policy)
         except Exception as err:
-            assert err.status_code == 409
+            assert err.status_code == 409  # type: ignore[attr-defined]
             assert (
-                err.detail
+                err.detail  # type: ignore[attr-defined]
                 == "Access policy for identity and resource already exists. Update instead of create."
             )
         else:
@@ -199,13 +196,12 @@ async def test_create_access_policy_for_public_resource(
     """Test preventing the creation of a duplicate access policy."""
 
     current_admin_user = await register_current_user(current_user_data_admin)
-    register_many_resources
-
-    modelled_policy = AccessPolicy(**one_test_policy_public_read)
+    _ = register_many_resources
+    modelled_policy = AccessPolicy.model_validate(one_test_policy_public_read)
     async with AccessPolicyCRUD() as policy_crud:
         created_policy = await policy_crud.create(modelled_policy, current_admin_user)
 
-    assert created_policy.resource_id == uuid.UUID(modelled_policy.resource_id)
+    assert created_policy.resource_id == modelled_policy.resource_id
     assert created_policy.identity_id is None
     assert created_policy.action == modelled_policy.action
 
@@ -222,14 +218,16 @@ async def test_create_access_policy_for_public_resource_with_identity_fails(
         **one_test_policy_public_read,
         "identity_id": str(uuid.uuid4()),
     }
-    modelled_policy = AccessPolicy(**public_resource_policy_with_identity)
+    # Intentionally bypass pydantic validation so the CRUD layer's authorization
+    # check (not the model validator) is what rejects the policy.
+    modelled_policy = AccessPolicy(**public_resource_policy_with_identity)  # type: ignore[arg-type]
 
     try:
         async with AccessPolicyCRUD() as policy_crud:
             await policy_crud.create(modelled_policy, current_admin_user)
     except Exception as err:
-        assert err.status_code == 403
-        assert err.detail == "Forbidden."
+        assert err.status_code == 403  # type: ignore[attr-defined]
+        assert err.detail == "Forbidden."  # type: ignore[attr-defined]
 
 
 @pytest.mark.anyio
@@ -247,11 +245,11 @@ async def test_create_access_policy_for_non_public_resource_without_identity_fai
 
     try:
         async with AccessPolicyCRUD() as policy_crud:
-            await policy_crud.create(invalid_policy, current_admin_user)
+            await policy_crud.create(invalid_policy, current_admin_user)  # type: ignore[arg-type]
     except Exception as err:
         # TBD: change to 422?
-        assert err.status_code == 403
-        assert err.detail == "Forbidden."
+        assert err.status_code == 403  # type: ignore[attr-defined]
+        assert err.detail == "Forbidden."  # type: ignore[attr-defined]
 
 
 @pytest.mark.anyio
@@ -260,9 +258,8 @@ async def test_create_access_policy_with_allow_override_without_current_user(
 ):
     """Test creating a public access policy with allow_override=True and no current_user."""
 
-    register_many_resources
-
-    modelled_policy = AccessPolicy(**one_test_policy_public_read)
+    _ = register_many_resources
+    modelled_policy = AccessPolicy.model_validate(one_test_policy_public_read)
     async with AccessPolicyCRUD() as policy_crud:
         created_policy = await policy_crud.create(
             modelled_policy,
@@ -270,7 +267,7 @@ async def test_create_access_policy_with_allow_override_without_current_user(
             allow_override=True,  # Bypass authorization
         )
 
-    assert created_policy.resource_id == uuid.UUID(modelled_policy.resource_id)
+    assert created_policy.resource_id == modelled_policy.resource_id
     assert created_policy.identity_id is None
     assert created_policy.action == modelled_policy.action
     assert created_policy.public is True
@@ -280,9 +277,8 @@ async def test_create_access_policy_with_allow_override_without_current_user(
 async def test_create_access_policy_without_current_user_fails(register_many_resources):
     """Test that creating access policy without current_user and without allow_override raises 401."""
 
-    register_many_resources
-
-    modelled_policy = AccessPolicy(**one_test_policy_public_read)
+    _ = register_many_resources
+    modelled_policy = AccessPolicy.model_validate(one_test_policy_public_read)
 
     try:
         async with AccessPolicyCRUD() as policy_crud:
@@ -291,9 +287,9 @@ async def test_create_access_policy_without_current_user_fails(register_many_res
                 current_user=None,  # No authentication
                 allow_override=False,  # Don't bypass authorization
             )
-    except HTTPException as err:
-        assert err.status_code == 403
-        assert err.detail == "Forbidden."
+    except Exception as err:
+        assert err.status_code == 403  # type: ignore[attr-defined]
+        assert err.detail == "Forbidden."  # type: ignore[attr-defined]
     else:
         pytest.fail("Expected HTTPException with 403 status code")
 
@@ -307,11 +303,10 @@ async def test_create_access_policy_with_allow_override_bypasses_authorization(
     # Register both users
     user1 = await register_current_user(current_user_data_user1)
     current_user = await register_current_user(current_user_data_user2)
-    register_many_resources
-
+    _ = register_many_resources
     # Try to create policy for resource user2 doesn't own, granting access to user1
     policy = AccessPolicyCreate(
-        resource_id=resource_id1,  # User2 doesn't own this
+        resource_id=uuid.UUID(resource_id1),  # User2 doesn't own this
         identity_id=user1.user_id,  # Grant access to user1
         action=Action.read,
     )
@@ -336,8 +331,7 @@ async def test_create_access_policy_for_own_user_object(
 
     current_user = await register_current_user(current_user_data_user1)
     user2 = await register_current_user(current_user_data_user2)
-    register_many_resources
-
+    _ = register_many_resources
     # Create policy for own user_id (should be allowed by __always_allow)
     policy = AccessPolicyCreate(
         resource_id=current_user.user_id,
@@ -362,8 +356,7 @@ async def test_create_non_public_policy_with_allow_override_without_current_user
 ):
     """Test that creating non-public access policy with allow_override but no current_user raises 403."""
 
-    register_many_resources
-
+    _ = register_many_resources
     # Try to create a non-public policy without authentication
     non_public_policy = AccessPolicyCreate(
         resource_id=uuid.uuid4(),
@@ -379,9 +372,9 @@ async def test_create_non_public_policy_with_allow_override_without_current_user
                 current_user=None,  # No authentication
                 allow_override=True,  # Even with override, shouldn't allow non-public without auth
             )
-    except HTTPException as err:
-        assert err.status_code == 403
-        assert err.detail == "Forbidden."
+    except Exception as err:
+        assert err.status_code == 403  # type: ignore[attr-defined]
+        assert err.detail == "Forbidden."  # type: ignore[attr-defined]
     else:
         pytest.fail(
             "Expected HTTPException with 403 status code - cannot create non-public policy without authentication"
@@ -399,8 +392,7 @@ async def test_admin_read_access_policy_by_resource(
 ):
     """Test reading an access policy for a given resource."""
     current_admin_user = register_many_current_users[0]
-    register_many_resources
-
+    _ = register_many_resources
     policies = add_many_test_access_policies
     async with AccessPolicyCRUD() as policy_crud:
         # read_policy = await policy_crud.read_by_resource(
@@ -429,7 +421,7 @@ async def test_user_read_access_policy_by_resource_id(
 ):
     """Test user reading an access policy by id."""
 
-    (register_many_resources,)
+    _ = register_many_resources
     policies = add_many_test_access_policies
     current_user1 = register_many_current_users[1]
 
@@ -455,8 +447,8 @@ async def test_read_access_policy_by_id_without_permission(
     add_many_test_access_policies,
 ):
     """Test reading an access policy by id without permission."""
-    (register_many_current_users,)
-    register_many_resources
+    _ = register_many_current_users
+    _ = register_many_resources
     policies = add_many_test_access_policies
     async with AccessPolicyCRUD() as policy_crud:
         result = await policy_crud.read(resource_id=policies[2].resource_id)
@@ -474,9 +466,9 @@ async def test_read_access_policy_for_nonexisting_resource_id(
     add_many_test_access_policies,
 ):
     """Test reading an access policy by id."""
-    register_many_resources
+    _ = register_many_resources
     current_admin_user = register_many_current_users[0]
-    add_many_test_access_policies
+    _ = add_many_test_access_policies
     async with AccessPolicyCRUD() as policy_crud:
         result = await policy_crud.read(
             resource_id=uuid.uuid4(),
@@ -492,7 +484,7 @@ async def test_read_access_policy_by_identity(
     add_many_test_access_policies,
 ):
     """Test reading multiple access policies for a given identity."""
-    register_many_resources
+    _ = register_many_resources
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
     async with AccessPolicyCRUD() as policy_crud:
@@ -521,9 +513,9 @@ async def test_read_access_policy_for_nonexisting_identity(
     add_many_test_access_policies,
 ):
     """Test reading an access policy for an identity, that does not exist."""
-    (register_many_resources,)
+    _ = register_many_resources
     current_admin_user = register_many_current_users[0]
-    (add_many_test_access_policies,)
+    _ = add_many_test_access_policies
     async with AccessPolicyCRUD() as policy_crud:
         result = await policy_crud.read(
             identity_id=uuid.UUID(user_id_nonexistent),
@@ -539,7 +531,7 @@ async def test_read_access_policy_by_resource_missing_resource_type(
     add_many_test_access_policies,
 ):
     """Test reading an access policy for a given resource."""
-    register_many_resources
+    _ = register_many_resources
     current_admin_user = register_many_current_users
     policies = add_many_test_access_policies
     async with AccessPolicyCRUD() as policy_crud:
@@ -550,8 +542,8 @@ async def test_read_access_policy_by_resource_missing_resource_type(
                 current_user=current_admin_user,
             )
         except Exception as err:
-            assert err.status_code == 404
-            assert err.detail == "Access policy not found."
+            assert err.status_code == 404  # type: ignore[attr-defined]
+            assert err.detail == "Access policy not found."  # type: ignore[attr-defined]
         else:
             pytest.fail("No HTTPexception raised!")
 
@@ -563,13 +555,13 @@ async def test_read_access_policy_for_wrong_resource_type(
     add_many_test_access_policies,
 ):
     """Test reading an access policy for a given resource."""
-    (register_many_resources,)
+    _ = register_many_resources
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
     async with AccessPolicyCRUD() as policy_crud:
         result = await policy_crud.read(
             resource_id=policies[1].resource_id,
-            resource_type="wrong_resource_type",
+            resource_type="wrong_resource_type",  # type: ignore[arg-type]
             current_user=current_admin_user,
         )
         assert result == []
@@ -582,7 +574,7 @@ async def test_read_access_policy_by_identity_and_resource(
     add_many_test_access_policies,
 ):
     """Test reading an access policy by identity and resource."""
-    (register_many_resources,)
+    _ = register_many_resources
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
     async with AccessPolicyCRUD() as policy_crud:
@@ -608,7 +600,7 @@ async def test_read_access_policy_by_identity_and_resource_and_action(
     add_many_test_access_policies,
 ):
     """Test reading an access policy by identity and resource."""
-    register_many_resources
+    _ = register_many_resources
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
     async with AccessPolicyCRUD() as policy_crud:
@@ -634,7 +626,7 @@ async def test_admin_changes_access_policy_from_write_to_own(
     add_many_test_access_policies,
 ):
     """Test updating an access policy."""
-    register_many_resources
+    _ = register_many_resources
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
     update_policy = AccessPolicyUpdate(
@@ -679,7 +671,7 @@ async def test_owner_user_changes_access_policy_from_write_to_own(
     add_many_test_access_policies,
 ):
     """Test updating an access policy."""
-    register_many_resources
+    _ = register_many_resources
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
     update_policy = AccessPolicyUpdate(
@@ -724,11 +716,13 @@ async def test_owner_user_creates_new_access_policy_through_update(
     add_many_test_access_policies,
 ):
     """Test updating an access policy."""
-    register_many_resources
+    _ = register_many_resources
     current_admin_user = register_many_current_users[0]
-    add_many_test_access_policies
+    _ = add_many_test_access_policies
     create_policy = AccessPolicyUpdate(
-        identity_id=identity_id_user2, resource_id=resource_id2, new_action=Action.write
+        identity_id=uuid.UUID(identity_id_user2),
+        resource_id=uuid.UUID(resource_id2),
+        new_action=Action.write,
     )
     del create_policy.action
     async with AccessPolicyCRUD() as policy_crud:
@@ -744,8 +738,8 @@ async def test_owner_user_creates_new_access_policy_through_update(
 
     async with AccessPolicyCRUD() as policy_crud:
         read_policy = await policy_crud.read(
-            identity_id=identity_id_user2,
-            resource_id=resource_id2,
+            identity_id=uuid.UUID(identity_id_user2),
+            resource_id=uuid.UUID(resource_id2),
             action=Action.write,
             current_user=current_admin_user,
         )
@@ -759,10 +753,12 @@ async def test_user_fails_to_create_new_access_policy_through_update_missing_acc
     register_many_current_users,
 ):
     """Test updating an access policy."""
-    register_many_resources
-    register_many_current_users
+    _ = register_many_resources
+    _ = register_many_current_users
     create_policy = AccessPolicyUpdate(
-        identity_id=identity_id_user2, resource_id=resource_id2, new_action=Action.write
+        identity_id=uuid.UUID(identity_id_user2),
+        resource_id=uuid.UUID(resource_id2),
+        new_action=Action.write,
     )
     del create_policy.action
     try:
@@ -772,8 +768,8 @@ async def test_user_fails_to_create_new_access_policy_through_update_missing_acc
                 current_user=CurrentUserData(**current_user_data_user1),
             )
     except Exception as err:
-        assert err.status_code == 404
-        assert str(err.detail) == "Access policy not found."
+        assert err.status_code == 404  # type: ignore[attr-defined]
+        assert str(err.detail) == "Access policy not found."  # type: ignore[attr-defined]
     else:
         pytest.fail("No HTTPexception raised!")
 
@@ -785,7 +781,7 @@ async def test_non_owner_user_tries_to_change_access_policy_from_write_to_own(
     add_many_test_access_policies,
 ):
     """Test updating an access policy."""
-    register_many_resources
+    _ = register_many_resources
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
     update_policy = AccessPolicyUpdate(
@@ -798,8 +794,8 @@ async def test_non_owner_user_tries_to_change_access_policy_from_write_to_own(
                 current_user=CurrentUserData(**current_user_data_user2),
             )
         except Exception as err:
-            assert err.status_code == 404
-            assert err.detail == "Access policy not found."
+            assert err.status_code == 404  # type: ignore[attr-defined]
+            assert err.detail == "Access policy not found."  # type: ignore[attr-defined]
         else:
             pytest.fail("No HTTPexception raised!")
 
@@ -824,7 +820,7 @@ async def test_admin_deletes_access_policy(
     add_many_test_access_policies,
 ):
     """Test deleting an access policy."""
-    register_many_resources
+    _ = register_many_resources
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
 
@@ -866,7 +862,7 @@ async def test_admin_deletes_all_access_policies_for_a_resource(
     add_many_test_access_policies,
 ):
     """Test deleting an access policy."""
-    register_many_resources
+    _ = register_many_resources
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
 
@@ -877,7 +873,7 @@ async def test_admin_deletes_all_access_policies_for_a_resource(
 
     assert len(all_policies_before_deletion) == len(policies)
 
-    delete_policies = AccessPolicyDelete(resource_id=resource_id1)
+    delete_policies = AccessPolicyDelete(resource_id=uuid.UUID(resource_id1))
     async with AccessPolicyCRUD() as policy_crud:
         await policy_crud.delete(
             access_policy=delete_policies,
@@ -922,7 +918,7 @@ async def test_admin_deletes_all_access_policies_for_an_identity(
     add_many_test_access_policies,
 ):
     """Test deleting an access policy."""
-    register_many_resources
+    _ = register_many_resources
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
 
@@ -933,7 +929,7 @@ async def test_admin_deletes_all_access_policies_for_an_identity(
 
     assert len(all_policies_before_deletion) == len(policies)
 
-    delete_policies = AccessPolicyDelete(identity_id=identity_id_user1)
+    delete_policies = AccessPolicyDelete(identity_id=uuid.UUID(identity_id_user1))
     async with AccessPolicyCRUD() as policy_crud:
         await policy_crud.delete(
             access_policy=delete_policies,
@@ -978,7 +974,7 @@ async def test_user_deletes_all_access_policies_for_a_resource_with_owner_rights
     add_many_test_access_policies,
 ):
     """Test deleting an access policy."""
-    register_many_resources
+    _ = register_many_resources
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
 
@@ -989,7 +985,7 @@ async def test_user_deletes_all_access_policies_for_a_resource_with_owner_rights
 
     assert len(all_policies_before_deletion) == len(policies)
 
-    delete_policies = AccessPolicyDelete(resource_id=resource_id1)
+    delete_policies = AccessPolicyDelete(resource_id=uuid.UUID(resource_id1))
     async with AccessPolicyCRUD() as policy_crud:
         await policy_crud.delete(
             access_policy=delete_policies,
@@ -1034,7 +1030,7 @@ async def test_admin_tries_to_delete_all_public_access_policies(
     add_many_test_access_policies,
 ):
     """Test deleting an access policy."""
-    register_many_resources
+    _ = register_many_resources
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
 
@@ -1076,7 +1072,7 @@ async def test_admin_tries_to_delete_all_own_access_policies(
     add_many_test_access_policies,
 ):
     """Test deleting an access policy."""
-    register_many_resources
+    _ = register_many_resources
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
 
@@ -1089,7 +1085,7 @@ async def test_admin_tries_to_delete_all_own_access_policies(
 
     async with AccessPolicyCRUD() as policy_crud:
         try:
-            delete_policies = AccessPolicyDelete(Action=Action.own)
+            delete_policies = AccessPolicyDelete(action=Action.own)
             await policy_crud.delete(
                 access_policy=delete_policies,
                 current_user=current_admin_user,
@@ -1120,7 +1116,7 @@ async def test_admin_tries_to_delete_all_write_access_policies(
     add_many_test_access_policies,
 ):
     """Test deleting an access policy."""
-    register_many_resources
+    _ = register_many_resources
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
 
@@ -1133,7 +1129,7 @@ async def test_admin_tries_to_delete_all_write_access_policies(
 
     async with AccessPolicyCRUD() as policy_crud:
         try:
-            delete_policies = AccessPolicyDelete(Action=Action.write)
+            delete_policies = AccessPolicyDelete(action=Action.write)
             await policy_crud.delete(
                 access_policy=delete_policies,
                 current_user=current_admin_user,
@@ -1164,7 +1160,7 @@ async def test_admin_tries_to_delete_all_read_access_policies(
     add_many_test_access_policies,
 ):
     """Test deleting an access policy."""
-    register_many_resources
+    _ = register_many_resources
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
 
@@ -1177,7 +1173,7 @@ async def test_admin_tries_to_delete_all_read_access_policies(
 
     async with AccessPolicyCRUD() as policy_crud:
         try:
-            delete_policies = AccessPolicyDelete(Action=Action.read)
+            delete_policies = AccessPolicyDelete(action=Action.read)
             await policy_crud.delete(
                 access_policy=delete_policies,
                 current_user=current_admin_user,
@@ -1208,7 +1204,7 @@ async def test_user_deletes_all_access_policies_for_a_resource_without_owner_rig
     add_many_test_access_policies,
 ):
     """Test deleting an access policy."""
-    register_many_resources
+    _ = register_many_resources
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
 
@@ -1219,7 +1215,7 @@ async def test_user_deletes_all_access_policies_for_a_resource_without_owner_rig
 
     assert len(all_policies_before_deletion) == len(policies)
 
-    delete_policies = AccessPolicyDelete(resource_id=resource_id2)
+    delete_policies = AccessPolicyDelete(resource_id=uuid.UUID(resource_id2))
     async with AccessPolicyCRUD() as policy_crud:
         await policy_crud.delete(
             access_policy=delete_policies,
@@ -1242,7 +1238,7 @@ async def test_user_deletes_access_policy_with_owner_rights(
     add_many_test_access_policies,
 ):
     """Test deleting an access policy."""
-    register_many_resources
+    _ = register_many_resources
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
 
@@ -1286,7 +1282,7 @@ async def test_user_deletes_access_policy_without_owner_rights(
     add_many_test_access_policies,
 ):
     """Test deleting an access policy."""
-    register_many_resources
+    _ = register_many_resources
     current_admin_user = register_many_current_users[0]
     policies = add_many_test_access_policies
 
@@ -1336,7 +1332,7 @@ async def test_create_access_log(register_many_current_users, register_many_reso
     current_user = register_many_current_users[1]
     resource2_id = register_many_resources[1]
     access_log = AccessLogCreate(
-        identity_id=str(current_user.user_id),
+        identity_id=current_user.user_id,
         resource_id=resource2_id,
         action=Action.read,
         status_code=200,
@@ -1345,7 +1341,7 @@ async def test_create_access_log(register_many_current_users, register_many_reso
     async with AccessLoggingCRUD() as logging_crud:
         created_log = await logging_crud.create(access_log)
 
-    assert int(created_log.id)
+    assert created_log.id is not None
     assert created_log.identity_id == access_log.identity_id
     assert created_log.resource_id == access_log.resource_id
     assert created_log.action == access_log.action
@@ -1380,7 +1376,7 @@ async def test_admin_create_resource_hierarchy(
     assert created_hierarchy.parent_id == uuid.UUID(resources[0])
     assert created_hierarchy.child_id == new_child_id
     assert created_hierarchy.inherit is False
-    assert created_hierarchy.order == 1
+    assert created_hierarchy.order == 1  # type: ignore[attr-defined]
 
 
 @pytest.mark.anyio
@@ -1405,7 +1401,7 @@ async def test_admin_create_resource_hierarchy_with_inheritance(
     assert created_hierarchy.parent_id == uuid.UUID(resources[0])
     assert created_hierarchy.child_id == new_child_id
     assert created_hierarchy.inherit is True
-    assert created_hierarchy.order == 1
+    assert created_hierarchy.order == 1  # type: ignore[attr-defined]
 
 
 @pytest.mark.anyio
@@ -1427,8 +1423,8 @@ async def test_admin_create_resource_hierarchy_with_not_allowed_child_type(
                 child_id=new_child_id,
             )
         except Exception as err:
-            assert err.status_code == 403
-            assert err.detail == "Forbidden."
+            assert err.status_code == 403  # type: ignore[attr-defined]
+            assert err.detail == "Forbidden."  # type: ignore[attr-defined]
         else:
             pytest.fail("No HTTPexception raised!")
 
@@ -1451,8 +1447,8 @@ async def test_admin_create_resource_hierarchy_parent_is_child_to_itself(
                 child_id=resources[0],
             )
         except Exception as err:
-            assert err.status_code == 403
-            assert err.detail == "Forbidden."
+            assert err.status_code == 403  # type: ignore[attr-defined]
+            assert err.detail == "Forbidden."  # type: ignore[attr-defined]
 
 
 @pytest.mark.anyio
@@ -1462,7 +1458,7 @@ async def test_admin_create_resource_hierarchy_with_nonexisting_parent(
 ):
     """Test creating a resource hierarchy."""
     current_admin_user = await register_current_user(current_user_data_admin)
-    register_many_resources
+    _ = register_many_resources
     new_child_id = uuid.uuid4()
 
     async with ResourceHierarchyCRUD() as hierarchy_crud:
@@ -1474,8 +1470,8 @@ async def test_admin_create_resource_hierarchy_with_nonexisting_parent(
                 child_id=new_child_id,
             )
         except Exception as err:
-            assert err.status_code == 403
-            assert err.detail == "Forbidden."
+            assert err.status_code == 403  # type: ignore[attr-defined]
+            assert err.detail == "Forbidden."  # type: ignore[attr-defined]
         else:
             pytest.fail("No HTTPexception raised!")
 
@@ -1536,8 +1532,8 @@ async def test_user_create_resource_hierarchy_without_access(
                 child_id=new_child_id,
             )
         except Exception as err:
-            assert err.status_code == 403
-            assert err.detail == "Forbidden."
+            assert err.status_code == 403  # type: ignore[attr-defined]
+            assert err.detail == "Forbidden."  # type: ignore[attr-defined]
         else:
             pytest.fail("No HTTPexception raised!")
 
@@ -1548,8 +1544,7 @@ async def test_user_create_resource_hierarchy_without_access_to_child(
 ):
     """Test creating a resource hierarchy."""
     current_user_data = await register_current_user(current_user_data_user1)
-    add_many_test_access_policies
-
+    _ = add_many_test_access_policies
     new_child_id = uuid.uuid4()
 
     async with ResourceHierarchyCRUD() as hierarchy_crud:
@@ -1561,8 +1556,8 @@ async def test_user_create_resource_hierarchy_without_access_to_child(
                 child_id=new_child_id,
             )
         except Exception as err:
-            assert err.status_code == 403
-            assert err.detail == "Forbidden."
+            assert err.status_code == 403  # type: ignore[attr-defined]
+            assert err.detail == "Forbidden."  # type: ignore[attr-defined]
         else:
             pytest.fail("No HTTPexception raised!")
 
@@ -1587,7 +1582,7 @@ async def test_admin_reads_resource_hierarchy_single_child_of_a_parent(
     assert read_relation[0].child_id == new_child_id
     assert read_relation[0].parent_id == relationship.parent_id
     assert read_relation[0].inherit == relationship.inherit
-    assert "order" not in read_relation[0]
+    assert "order" not in read_relation[0]  # type: ignore[operator]
 
 
 @pytest.mark.anyio
@@ -1600,7 +1595,7 @@ async def test_admin_reads_resource_hierarchy_multiple_children_of_a_parent(
 
     async with ResourceHierarchyCRUD() as hierarchy_crud:
         read_relation = await hierarchy_crud.read(
-            current_user=current_admin_user, parent_id=resource_id3
+            current_user=current_admin_user, parent_id=uuid.UUID(resource_id3)
         )
 
     assert len(read_relation) == 10
@@ -1647,7 +1642,7 @@ async def test_user_reads_resource_hierarchy_all_allowed_children_of_a_parent(
 
     async with ResourceHierarchyCRUD() as hierarchy_crud:
         read_relation = await hierarchy_crud.read(
-            current_user=current_user, parent_id=resource_id3
+            current_user=current_user, parent_id=uuid.UUID(resource_id3)
         )
 
     assert len(read_relation) == 6
@@ -1668,7 +1663,7 @@ async def test_user_reads_resource_hierarchy_all_children_of_a_parent_without_pa
 
     async with ResourceHierarchyCRUD() as hierarchy_crud:
         result = await hierarchy_crud.read(
-            current_user=current_user_data, parent_id=resource_id3
+            current_user=current_user_data, parent_id=uuid.UUID(resource_id3)
         )
         assert result == []
 
@@ -1685,8 +1680,8 @@ async def test_admin_reads_resource_hierarchy_all_relationships(
         try:
             await hierarchy_crud.read(current_user=current_admin_user)
         except Exception as err:
-            assert err.status_code == 404
-            assert err.detail == "Hierarchy not found."
+            assert err.status_code == 404  # type: ignore[attr-defined]
+            assert err.detail == "Hierarchy not found."  # type: ignore[attr-defined]
         else:
             pytest.fail("No HTTPexception raised!")
 
@@ -1711,7 +1706,7 @@ async def test_admin_reads_resource_hierarchy_single_parent_of_child(
     assert read_relation[0].child_id == child_id
     assert read_relation[0].parent_id == relationship.parent_id
     assert read_relation[0].inherit == relationship.inherit
-    assert "order" not in read_relation[0]
+    assert "order" not in read_relation[0]  # type: ignore[operator]
 
 
 @pytest.mark.anyio
@@ -1901,8 +1896,7 @@ async def test_user_deletes_resource_hierarchy_child_with_owner_rights(
 ):
     """Test deleting a child."""
     current_user = await register_current_user(current_user_data_user1)
-    add_many_parent_child_resource_relationships
-
+    _ = add_many_parent_child_resource_relationships
     await add_one_test_access_policy(
         {
             "identity_id": current_user.user_id,
@@ -1914,13 +1908,13 @@ async def test_user_deletes_resource_hierarchy_child_with_owner_rights(
     async with ResourceHierarchyCRUD() as hierarchy_crud:
         await hierarchy_crud.delete(
             current_user=current_user,
-            parent_id=resource_id3,
-            child_id=child_resource_id8,
+            parent_id=uuid.UUID(resource_id3),
+            child_id=uuid.UUID(child_resource_id8),
         )
 
     async with ResourceHierarchyCRUD() as hierarchy_crud:
         result = await hierarchy_crud.read(
-            current_user=current_user, child_id=child_resource_id8
+            current_user=current_user, child_id=uuid.UUID(child_resource_id8)
         )
         assert result == []
 
@@ -1933,13 +1927,12 @@ async def test_user_deletes_resource_hierarchy_child_without_owner_rights(
 ):
     """Test deleting a child."""
     current_user = await register_current_user(current_user_data_user1)
-    add_many_parent_child_resource_relationships
-
+    _ = add_many_parent_child_resource_relationships
     async with ResourceHierarchyCRUD() as hierarchy_crud:
         deleted_rows = await hierarchy_crud.delete(
             current_user=current_user,
-            parent_id=resource_id3,
-            child_id=child_resource_id8,
+            parent_id=uuid.UUID(resource_id3),
+            child_id=uuid.UUID(child_resource_id8),
         )
         assert deleted_rows == 0
 
@@ -2045,8 +2038,8 @@ async def test_admin_create_identity_hierarchy_with_not_allowed_child_type(
                 child_id=new_child_id,
             )
         except Exception as err:
-            assert err.status_code == 403
-            assert err.detail == "Forbidden."
+            assert err.status_code == 403  # type: ignore[attr-defined]
+            assert err.detail == "Forbidden."  # type: ignore[attr-defined]
         else:
             pytest.fail("No HTTPexception raised!")
 
@@ -2070,8 +2063,8 @@ async def test_admin_create_identity_hierarchy_parent_is_child_to_itself(
                 child_id=parent_id,
             )
         except Exception as err:
-            assert err.status_code == 403
-            assert err.detail == "Forbidden."
+            assert err.status_code == 403  # type: ignore[attr-defined]
+            assert err.detail == "Forbidden."  # type: ignore[attr-defined]
 
 
 @pytest.mark.anyio
@@ -2093,8 +2086,8 @@ async def test_admin_create_identity_hierarchy_with_nonexisting_parent(
                 child_id=new_child_id,
             )
         except Exception as err:
-            assert err.status_code == 403
-            assert err.detail == "Forbidden."
+            assert err.status_code == 403  # type: ignore[attr-defined]
+            assert err.detail == "Forbidden."  # type: ignore[attr-defined]
         else:
             pytest.fail("No HTTPexception raised!")
 
@@ -2156,8 +2149,8 @@ async def test_user_create_identity_hierarchy_without_access(
                 child_id=new_child_id,
             )
         except Exception as err:
-            assert err.status_code == 403
-            assert err.detail == "Forbidden."
+            assert err.status_code == 403  # type: ignore[attr-defined]
+            assert err.detail == "Forbidden."  # type: ignore[attr-defined]
         else:
             pytest.fail("No HTTPexception raised!")
 
@@ -2189,8 +2182,8 @@ async def test_user_create_identity_hierarchy_without_access_to_child(
                 child_id=new_child_id,
             )
         except Exception as err:
-            assert err.status_code == 403
-            assert err.detail == "Forbidden."
+            assert err.status_code == 403  # type: ignore[attr-defined]
+            assert err.detail == "Forbidden."  # type: ignore[attr-defined]
         else:
             pytest.fail("No HTTPexception raised!")
 
@@ -2227,7 +2220,7 @@ async def test_admin_reads_identity_hierarchy_multiple_children_of_a_parent(
 
     async with IdentityHierarchyCRUD() as hierarchy_crud:
         read_relation = await hierarchy_crud.read(
-            current_user=current_admin_user, parent_id=identity_id_group2
+            current_user=current_admin_user, parent_id=uuid.UUID(identity_id_group2)
         )
 
     expected_children = [
@@ -2283,7 +2276,7 @@ async def test_user_reads_identity_hierarchy_all_allowed_children_of_a_parent(
 
     async with IdentityHierarchyCRUD() as hierarchy_crud:
         read_relation = await hierarchy_crud.read(
-            current_user=current_user, parent_id=identity_id_group2
+            current_user=current_user, parent_id=uuid.UUID(identity_id_group2)
         )
 
     assert len(read_relation) == 4
@@ -2304,7 +2297,7 @@ async def test_user_reads_identity_hierarchy_all_children_of_a_parent_without_pa
 
     async with IdentityHierarchyCRUD() as hierarchy_crud:
         result = await hierarchy_crud.read(
-            current_user=current_user_data, parent_id=identity_id_group2
+            current_user=current_user_data, parent_id=uuid.UUID(identity_id_group2)
         )
         assert result == []
 
@@ -2321,8 +2314,8 @@ async def test_admin_reads_identity_hierarchy_all_relationships(
         try:
             await hierarchy_crud.read(current_user=current_admin_user)
         except Exception as err:
-            assert err.status_code == 404
-            assert err.detail == "Hierarchy not found."
+            assert err.status_code == 404  # type: ignore[attr-defined]
+            assert err.detail == "Hierarchy not found."  # type: ignore[attr-defined]
         else:
             pytest.fail("No HTTPexception raised!")
 
@@ -2546,8 +2539,7 @@ async def test_user_deletes_identity_hierarchy_child_with_owner_rights(
 ):
     """Test deleting a child."""
     current_user = await register_current_user(current_user_data_user1)
-    add_many_parent_child_identity_relationships
-
+    _ = add_many_parent_child_identity_relationships
     await add_one_test_access_policy(
         {
             "identity_id": current_user.user_id,
@@ -2559,13 +2551,13 @@ async def test_user_deletes_identity_hierarchy_child_with_owner_rights(
     async with IdentityHierarchyCRUD() as hierarchy_crud:
         await hierarchy_crud.delete(
             current_user=current_user,
-            parent_id=identity_id_group2,
-            child_id=child_identity_id5,
+            parent_id=uuid.UUID(identity_id_group2),
+            child_id=uuid.UUID(child_identity_id5),
         )
 
     async with IdentityHierarchyCRUD() as hierarchy_crud:
         result = await hierarchy_crud.read(
-            current_user=current_user, child_id=child_identity_id5
+            current_user=current_user, child_id=uuid.UUID(child_identity_id5)
         )
         assert result == []
 
@@ -2578,8 +2570,7 @@ async def test_admin_tries_to_delete_identity_hierarchy_without_parent_id_and_ch
 ):
     """Test deleting a child."""
     current_user = await register_current_user(current_user_data_admin)
-    add_many_parent_child_identity_relationships
-
+    _ = add_many_parent_child_identity_relationships
     await add_one_test_access_policy(
         {
             "identity_id": current_user.user_id,
@@ -2594,12 +2585,12 @@ async def test_admin_tries_to_delete_identity_hierarchy_without_parent_id_and_ch
                 current_user=current_user,
             )
         except Exception as err:
-            assert err.status_code == 422
-            assert err.detail == "At least one of parent_id and child_id are required."
+            assert err.status_code == 422  # type: ignore[attr-defined]
+            assert err.detail == "At least one of parent_id and child_id are required."  # type: ignore[attr-defined]
 
     async with IdentityHierarchyCRUD() as hierarchy_crud:
         result = await hierarchy_crud.read(
-            current_user=current_user, child_id=child_identity_id5
+            current_user=current_user, child_id=uuid.UUID(child_identity_id5)
         )
         assert result[0].child_id == uuid.UUID(child_identity_id5)
         assert result[0].parent_id == uuid.UUID(identity_id_group2)
@@ -2613,13 +2604,12 @@ async def test_user_deletes_identity_hierarchy_child_without_owner_rights(
 ):
     """Test deleting a child."""
     current_user = await register_current_user(current_user_data_user1)
-    add_many_parent_child_identity_relationships
-
+    _ = add_many_parent_child_identity_relationships
     async with IdentityHierarchyCRUD() as hierarchy_crud:
         deleted_rows = await hierarchy_crud.delete(
             current_user=current_user,
-            parent_id=identity_id_group2,
-            child_id=child_identity_id5,
+            parent_id=uuid.UUID(identity_id_group2),
+            child_id=uuid.UUID(child_identity_id5),
         )
         assert deleted_rows == 0
 

@@ -102,7 +102,7 @@ async def test_get_all_tags(
 ):
     """Tests GET all tags."""
     app_override_provide_http_token_payload
-    tags = await add_test_tags(mocked_provide_http_token_payload)
+    tags = await add_test_tags(mocked_provide_http_token_payload)  # type: ignore[call-arg]
     response = await async_client.get("/api/v1/tag/")
 
     assert response.status_code == 200
@@ -134,7 +134,7 @@ async def test_get_tag_by_id(
 ):
     """Tests GET all tags."""
     app_override_provide_http_token_payload
-    tags = await add_test_tags(mocked_provide_http_token_payload)
+    tags = await add_test_tags(mocked_provide_http_token_payload)  # type: ignore[call-arg]
 
     response = await async_client.get(f"/api/v1/tag/{str(tags[1].id)}")
 
@@ -189,7 +189,7 @@ async def test_put_tag(
 
     app_override_provide_http_token_payload
 
-    tags = await add_test_tags(mocked_provide_http_token_payload)
+    tags = await add_test_tags(mocked_provide_http_token_payload)  # type: ignore[call-arg]
 
     updated_tag = {
         "name": "NewTag",
@@ -226,7 +226,7 @@ async def test_put_tag_does_not_exist(
 
     app_override_provide_http_token_payload
 
-    await add_test_tags(mocked_provide_http_token_payload)
+    await add_test_tags(mocked_provide_http_token_payload)  # type: ignore[call-arg]
 
     updated_tag = {
         "name": "Uptag",
@@ -264,7 +264,7 @@ async def test_delete_tag(
 
     app_override_provide_http_token_payload
 
-    tags = await add_test_tags(mocked_provide_http_token_payload)
+    tags = await add_test_tags(mocked_provide_http_token_payload)  # type: ignore[call-arg]
     # the get endpoints are public, so no current user is passed -
     # that means all tags need a public access policy in the fine grained access control!
     # TBD: should this be solved in the tags_CRUD, create method;
@@ -347,7 +347,7 @@ async def test_delete_tag_does_not_exist(
 
     app_override_provide_http_token_payload
 
-    await add_test_tags(mocked_provide_http_token_payload)
+    await add_test_tags(mocked_provide_http_token_payload)  # type: ignore[call-arg]
     response = await async_client.delete(f"/api/v1/tag/{str(uuid.uuid4())}")
 
     assert response.status_code == 404

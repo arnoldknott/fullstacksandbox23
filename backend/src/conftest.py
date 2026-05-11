@@ -1,4 +1,13 @@
-from typing import AsyncGenerator, Generator, List, Optional, Union
+from typing import (
+    Any,
+    AsyncGenerator,
+    Awaitable,
+    Callable,
+    Generator,
+    List,
+    Optional,
+    cast,
+)
 from uuid import UUID, uuid4
 
 import pytest
@@ -28,8 +37,8 @@ from crud.identity import (
 )
 from main import fastapi_app
 from models.access import (
+    AccessLog,
     AccessLogCreate,
-    AccessLogRead,
     AccessPolicyCreate,
     AccessPolicyRead,
     IdentifierTypeLink,
@@ -56,6 +65,9 @@ from tests.utils import (
     token_admin,
 )
 
+CurrentUserFactory = Callable[..., Awaitable[CurrentUserData]]
+ParentAccessFactory = Callable[..., Awaitable[UUID]]
+
 
 @pytest.fixture(scope="session")
 def anyio_backend():
@@ -64,13 +76,13 @@ def anyio_backend():
 
 
 @pytest.fixture(scope="session")
-def client() -> Generator:
+def client() -> Generator[TestClient, None, None]:
     """Returns a TestClient instance."""
     yield TestClient(fastapi_app)
 
 
 @pytest.fixture(scope="session")
-async def async_client(client) -> AsyncGenerator:
+async def async_client(client: TestClient) -> AsyncGenerator[AsyncClient, None]:
     """Returns an AsyncClient instance."""
     async with AsyncClient(
         transport=ASGITransport(app=fastapi_app), base_url=client.base_url
@@ -79,7 +91,7 @@ async def async_client(client) -> AsyncGenerator:
 
 
 @pytest.fixture(scope="function", autouse=True)
-async def run_migrations():
+async def run_migrations() -> AsyncGenerator[None, None]:
     """Runs the migrations before each test function."""
     async with postgres_async_engine.begin() as connection:
         await connection.run_sync(SQLModel.metadata.create_all)
@@ -92,7 +104,7 @@ async def run_migrations():
 
 
 @pytest.fixture(scope="function")
-async def get_async_test_session() -> AsyncSession:
+async def get_async_test_session() -> AsyncGenerator[AsyncSession, None]:
     """Provides a database session."""
     print("=== get_async_test_session started ===")
     async_session = async_sessionmaker(
@@ -105,7 +117,7 @@ async def get_async_test_session() -> AsyncSession:
 
 
 @pytest.fixture(scope="function")
-def mocked_provide_http_token_payload(request):
+def mocked_provide_http_token_payload(request: Any) -> Optional[dict[str, Any]]:
     """Returns a mocked token payload."""
     # print("=== conftest - mocked_provide_http_token_payload - request ===")
     # pprint(request.param)
@@ -126,7 +138,9 @@ def mocked_provide_http_token_payload(request):
 
 
 @pytest.fixture(scope="function")
-def app_override_provide_http_token_payload(mocked_provide_http_token_payload):
+def app_override_provide_http_token_payload(
+    mocked_provide_http_token_payload: Optional[dict[str, Any]],
+) -> Generator[Any, None, None]:
     """Returns the FastAPI app with dependency override for provide_http_token_payload."""
     fastapi_app.dependency_overrides[provide_http_token_payload] = (
         lambda: mocked_provide_http_token_payload
@@ -136,20 +150,26 @@ def app_override_provide_http_token_payload(mocked_provide_http_token_payload):
 
 
 @pytest.fixture(scope="function")
-async def current_test_user(mocked_provide_http_token_payload):
+async def current_test_user(
+    mocked_provide_http_token_payload: dict[str, Any],
+) -> CurrentUserData:
     """Returns the current test user."""
     token = CurrentAccessToken(mocked_provide_http_token_payload)
     return await token.provides_current_user()
 
 
 @pytest.fixture(scope="function")
-def mock_guards():
+def mock_guards() -> Generator[
+    Callable[[List[str], List[str], List[UUID]], Guards],
+    None,
+    None,
+]:
     """Mocks the guards for the routes."""
 
     def _mock_guards(
-        scopes: Optional[list[str]] = [],
-        roles: Optional[list[str]] = [],
-        groups: Optional[list[str]] = [],
+        scopes: List[str] = [],
+        roles: List[str] = [],
+        groups: List[UUID] = [],
     ):
         return Guards(scopes=scopes, roles=roles, groups=groups)
 
@@ -187,7 +207,7 @@ async def current_user_from_azure_token():
     """Returns a mock current user based on provided payload and adds to user database."""
 
     async def _current_user_from_azure_token(
-        token_payload: dict = None,
+        token_payload: Optional[dict[str, Any]] = None,
     ) -> CurrentUserData:
         current_user = None
         if token_payload is None:
@@ -216,13 +236,14 @@ async def setup_redis_session_data():
 
 
 async def register_entity_to_identity_type_link_table(
-    entity_id: UUID, model: Union["ResourceType", "IdentityType"] = ProtectedResource
+    entity_id: UUID, model: type[Any] = ProtectedResource
 ):
     """Registers an identity to the identifier link table."""
     async with BaseCRUD(model) as crud:
+        session = cast(AsyncSession, crud.session)
         statement = crud._add_identifier_type_link_to_session(entity_id)
-        await crud.session.exec(statement)
-        await crud.session.commit()
+        await session.exec(statement)
+        await session.commit()
 
     return
 
@@ -245,12 +266,12 @@ async def register_entity_to_identity_type_link_table(
 async def register_current_user():
     """Returns a mock current user and registers in identity link table."""
 
-    async def _register_current_user(current_user_data: dict = None) -> CurrentUserData:
-        current_user_data = CurrentUserData(**current_user_data)
-        await register_entity_to_identity_type_link_table(
-            current_user_data.user_id, User
-        )
-        return current_user_data
+    async def _register_current_user(
+        current_user_data: Optional[dict[str, Any]] = None,
+    ) -> CurrentUserData:
+        current_user = CurrentUserData(**(current_user_data or current_user_data_admin))
+        await register_entity_to_identity_type_link_table(current_user.user_id, User)
+        return current_user
 
     yield _register_current_user
 
@@ -272,7 +293,7 @@ async def register_many_current_users():
 
 
 async def register_one_resource_helper(
-    resource_id: UUID, model: ResourceType = ProtectedResource
+    resource_id: UUID, model: type[Any] = ProtectedResource
 ):
     """Registers a resource id and its type in the database."""
     await register_entity_to_identity_type_link_table(resource_id, model)
@@ -284,7 +305,7 @@ async def register_one_resource_helper(
 async def register_one_resource():
     """Registers a resource id and its type in the database."""
 
-    async def _register_one_resource(resource_id: UUID, model: ResourceType):
+    async def _register_one_resource(resource_id: UUID, model: type[Any]):
         await register_one_resource_helper(resource_id, model)
 
     yield _register_one_resource
@@ -307,7 +328,7 @@ async def register_many_resources():
 async def register_one_identity():
     """Registers a resource id and its type in the database."""
 
-    async def _register_one_identity(identity_id: UUID, model: IdentityType = Group):
+    async def _register_one_identity(identity_id: UUID, model: type[Any] = Group):
         """Registers a resource id and its type in the database."""
         await register_entity_to_identity_type_link_table(identity_id, model)
         return identity_id
@@ -337,7 +358,7 @@ async def register_many_entities(get_async_test_session: AsyncSession):
 
     identity_type_links = []
     for entity in many_entity_type_links:
-        entity_instance = IdentifierTypeLink(**entity)
+        entity_instance = IdentifierTypeLink(**{**entity, "id": UUID(entity["id"])})
         session.add(entity_instance)
         await session.commit()
         await session.refresh(entity_instance)
@@ -367,8 +388,8 @@ async def access_to_one_parent(
 
     async def _access_to_one_parent(
         # model: Union["ResourceType", "IdentityType"], current_user: CurrentUserData
-        model: Union["ResourceType", "IdentityType"],
-        token_payload: dict = None,
+        model: type[Any],
+        token_payload: Optional[dict[str, Any]] = None,
     ):
         """Registers a parent and adds a write policy for a the current user token to the database."""
         public = True if not token_payload else False
@@ -399,7 +420,9 @@ async def access_to_one_parent(
     yield _access_to_one_parent
 
 
-async def add_test_access_policy(policy: dict, current_user: CurrentUserData = None):
+async def add_test_access_policy(
+    policy: dict[str, Any], current_user: Optional[CurrentUserData] = None
+):
     """Adds a test policy to the database."""
     async with AccessPolicyCRUD() as crud:
         if current_user is None:
@@ -407,8 +430,8 @@ async def add_test_access_policy(policy: dict, current_user: CurrentUserData = N
         await register_entity_to_identity_type_link_table(
             UUID(policy["resource_id"]), ProtectedResource
         )
-        policy = await crud.create(AccessPolicyCreate(**policy), current_user)
-        return policy
+        created_policy = await crud.create(AccessPolicyCreate(**policy), current_user)
+        return created_policy
 
 
 @pytest.fixture(scope="function")
@@ -417,7 +440,7 @@ async def add_one_test_access_policy():
 
     # TBD: refactor policy from type dict to AccessPolicyCreate
     async def _add_one_test_access_policy(
-        policy: dict, current_user: CurrentUserData = None
+        policy: dict[str, Any], current_user: Optional[CurrentUserData] = None
     ):
         """Adds test policies to the database."""
         return await add_test_access_policy(policy, current_user)
@@ -437,7 +460,7 @@ async def add_one_test_access_policy():
 async def add_many_test_access_policies(
     register_many_current_users,
     register_many_resources,
-) -> list[AccessPolicyRead]:
+) -> AsyncGenerator[List[AccessPolicyRead], None]:
     """Adds a category to the database."""
     mocked_admin_user = CurrentUserData(**current_user_data_admin)
     async with AccessPolicyCRUD() as crud:
@@ -452,7 +475,7 @@ async def add_many_test_access_policies(
     yield policies
 
 
-async def add_test_access_log(access_log: dict) -> AccessLogRead:
+async def add_test_access_log(access_log: dict[str, Any]) -> AccessLog:
     """Adds a test access log to the database."""
     async with AccessLoggingCRUD() as crud:
         access_log_instance = AccessLogCreate(**access_log)
@@ -464,7 +487,7 @@ async def add_test_access_log(access_log: dict) -> AccessLogRead:
 async def add_one_test_access_log():
     """Adds a test access log to the database."""
 
-    async def _add_one_test_access_log(access_log: dict) -> AccessLogRead:
+    async def _add_one_test_access_log(access_log: dict[str, Any]) -> AccessLog:
         access_log_instance = await add_test_access_log(access_log)
         return access_log_instance
 
@@ -475,7 +498,7 @@ async def add_one_test_access_log():
 async def add_many_test_access_logs(
     register_many_current_users,
     register_many_resources,
-) -> list[AccessLogRead]:
+) -> AsyncGenerator[List[AccessLog], None]:
     """Adds many test access logs to the database."""
 
     access_logs = []
@@ -541,7 +564,7 @@ async def add_many_parent_child_resource_relationships(
     relationships = []
     for child in many_test_child_resource_entities:
         relationship = await add_parent_child_resource_relationship(
-            parent_id, UUID(child["id"]), child["type"]
+            UUID(parent_id), UUID(child["id"]), ResourceType(child["type"])
         )
         relationships.append(relationship)
     yield relationships
@@ -571,7 +594,7 @@ async def add_parent_child_identity_relationship(
 
 @pytest.fixture(scope="function")
 async def add_one_parent_child_identity_relationship(
-    register_many_entities: list[{UUID, str}],
+    register_many_entities: List[IdentifierTypeLink],
 ):
     """Adds a parent-child identity relationship to the database."""
 
@@ -594,7 +617,7 @@ async def add_one_parent_child_identity_relationship(
 
 @pytest.fixture(scope="function")
 async def add_many_parent_child_identity_relationships(
-    register_many_entities: list[{UUID, str}],
+    register_many_entities: List[IdentifierTypeLink],
 ):
     """Adds many parent-child relationships to the identity hierarchy table."""
 
@@ -608,7 +631,7 @@ async def add_many_parent_child_identity_relationships(
     ]
     for child in children_for_group:
         relationship = await add_parent_child_identity_relationship(
-            parent_id, UUID(child["id"]), child["type"]
+            UUID(parent_id), UUID(child["id"]), IdentityType(child["type"])
         )
         relationships.append(relationship)
     # TBD: add more hierarchy levels!
@@ -618,13 +641,15 @@ async def add_many_parent_child_identity_relationships(
 # Adds a test user based on identity provider token payload to database and returns the user
 @pytest.fixture(scope="function")
 # async def add_one_azure_test_user(current_user_from_azure_token: User):
-async def add_one_azure_test_user(current_user_from_azure_token: User):
+async def add_one_azure_test_user(
+    current_user_from_azure_token: CurrentUserFactory,
+):
     """Adds many test users to the database."""
 
     # async def _add_one_azure_test_user(
     #     user_number: int = None, token_payload: dict = None
     # ) -> UserRead:
-    async def _add_one_azure_test_user(user_number: int = None) -> UserRead:
+    async def _add_one_azure_test_user(user_number: int = 0) -> UserRead:
         # await add_test_access_policy(
         #     {
         #         "identity_id": current_user_from_azure_token().user_id,
@@ -635,7 +660,7 @@ async def add_one_azure_test_user(current_user_from_azure_token: User):
         # TBD: Fix that the current_user is not the same as the many_test_azure_users[user_number]!
         # therefore access policy missing form current_user to the created user.
         async with UserCRUD() as crud:
-            user, _ = await crud.azure_user_self_sign_up(
+            user, _status_code = await crud.azure_user_self_sign_up(
                 **many_test_azure_users[user_number]
             )
         return user
@@ -661,9 +686,9 @@ async def add_many_azure_test_users():
 
 
 async def add_test_ueber_group(
-    current_user_from_azure_token: User,
-    ueber_group: dict,
-    current_user: CurrentUserData = None,
+    current_user_from_azure_token: CurrentUserFactory,
+    ueber_group: dict[str, Any],
+    current_user: Optional[CurrentUserData] = None,
     # parent_id: UUID = None,
     # inherit: bool = False,
 ):
@@ -682,13 +707,13 @@ async def add_test_ueber_group(
 
 @pytest.fixture(scope="function")
 async def add_one_test_ueber_group(
-    current_user_from_azure_token: User,
+    current_user_from_azure_token: CurrentUserFactory,
 ):
     """Adds a test ueber-group to the database."""
 
     async def _add_one_test_ueber_group(
-        ueber_group: dict,
-        current_user: CurrentUserData = None,
+        ueber_group: dict[str, Any],
+        current_user: Optional[CurrentUserData] = None,
         # parent_id: UUID = None,
         # inherit: bool = False,
     ):
@@ -705,11 +730,13 @@ async def add_one_test_ueber_group(
 
 @pytest.fixture(scope="function")
 async def add_many_test_ueber_groups(
-    current_user_from_azure_token: User,
+    current_user_from_azure_token: CurrentUserFactory,
 ):
     """Adds test ueber-groups to the database."""
 
-    async def _add_many_test_ueber_groups(token_payload: dict = None):
+    async def _add_many_test_ueber_groups(
+        token_payload: Optional[dict[str, Any]] = None,
+    ):
         ueber_groups = []
         for ueber_group in many_test_ueber_groups:
             current_user = await current_user_from_azure_token(token_payload)
@@ -725,9 +752,9 @@ async def add_many_test_ueber_groups(
 
 
 async def add_test_group(
-    current_user_from_azure_token: User,
-    group: dict,
-    current_user: CurrentUserData = None,
+    current_user_from_azure_token: CurrentUserFactory,
+    group: dict[str, Any],
+    current_user: Optional[CurrentUserData] = None,
     # parent_id: UUID = None,
     # inherit: bool = False,
 ):
@@ -743,13 +770,13 @@ async def add_test_group(
 
 @pytest.fixture(scope="function")
 async def add_one_test_group(
-    current_user_from_azure_token: User,
+    current_user_from_azure_token: CurrentUserFactory,
 ):
     """Adds a test group to the database."""
 
     async def _add_one_test_group(
-        group: dict,
-        current_user: CurrentUserData = None,
+        group: dict[str, Any],
+        current_user: Optional[CurrentUserData] = None,
         # parent_id: UUID = None,
         # inherit: bool = False,
     ):
@@ -766,11 +793,11 @@ async def add_one_test_group(
 
 @pytest.fixture(scope="function")
 async def add_many_test_groups(
-    current_user_from_azure_token: User,
+    current_user_from_azure_token: CurrentUserFactory,
 ):
     """Adds test groups to the database."""
 
-    async def _add_many_test_groups(token_payload: dict = None):
+    async def _add_many_test_groups(token_payload: Optional[dict[str, Any]] = None):
         groups = []
         for group in many_test_groups:
             current_user = await current_user_from_azure_token(token_payload)
@@ -786,10 +813,10 @@ async def add_many_test_groups(
 
 
 async def add_test_sub_group(
-    current_user_from_azure_token: User,
-    sub_group: dict,
-    current_user: CurrentUserData = None,
-    parent_id: UUID = None,
+    current_user_from_azure_token: CurrentUserFactory,
+    sub_group: dict[str, Any],
+    current_user: Optional[CurrentUserData] = None,
+    parent_id: Optional[UUID] = None,
     inherit: bool = False,
 ):
     """Adds a test sub-group to the database."""
@@ -804,14 +831,14 @@ async def add_test_sub_group(
 
 @pytest.fixture(scope="function")
 async def add_one_test_sub_group(
-    current_user_from_azure_token: User,
+    current_user_from_azure_token: CurrentUserFactory,
 ):
     """Adds a test sub-group to the database."""
 
     async def _add_one_test_sub_group(
-        sub_group: dict,
-        current_user: CurrentUserData = None,
-        parent_id: UUID = None,
+        sub_group: dict[str, Any],
+        current_user: Optional[CurrentUserData] = None,
+        parent_id: Optional[UUID] = None,
         inherit: bool = False,
     ):
         return await add_test_sub_group(
@@ -827,12 +854,12 @@ async def add_one_test_sub_group(
 
 @pytest.fixture(scope="function")
 async def add_many_test_sub_groups(
-    current_user_from_azure_token: User,
-    access_to_one_parent: UUID,
+    current_user_from_azure_token: CurrentUserFactory,
+    access_to_one_parent: ParentAccessFactory,
 ):
     """Adds test sub-groups to the database."""
 
-    async def _add_many_test_sub_groups(token_payload: dict = None):
+    async def _add_many_test_sub_groups(token_payload: Optional[dict[str, Any]] = None):
         sub_groups = []
         parent_identity_id = await access_to_one_parent(Group)
         for sub_group in many_test_sub_groups:
@@ -851,9 +878,9 @@ async def add_many_test_sub_groups(
 
 
 async def add_test_sub_sub_group(
-    current_user_from_azure_token: User,
-    sub_sub_group: dict,
-    current_user: CurrentUserData = None,
+    current_user_from_azure_token: CurrentUserFactory,
+    sub_sub_group: dict[str, Any],
+    current_user: Optional[CurrentUserData] = None,
     # parent_id: UUID = None,
     # inherit: bool = False,
 ):
@@ -872,13 +899,13 @@ async def add_test_sub_sub_group(
 
 @pytest.fixture(scope="function")
 async def add_one_test_sub_sub_group(
-    current_user_from_azure_token: User,
+    current_user_from_azure_token: CurrentUserFactory,
 ):
     """Adds a test sub-sub-group to the database."""
 
     async def _add_one_test_sub_sub_group(
-        sub_sub_group: dict,
-        current_user: CurrentUserData = None,
+        sub_sub_group: dict[str, Any],
+        current_user: Optional[CurrentUserData] = None,
         # parent_id: UUID = None,
         # inherit: bool = False,
     ):
@@ -895,12 +922,14 @@ async def add_one_test_sub_sub_group(
 
 @pytest.fixture(scope="function")
 async def add_many_test_sub_sub_groups(
-    current_user_from_azure_token: User,
-    access_to_one_parent: UUID,
+    current_user_from_azure_token: CurrentUserFactory,
+    access_to_one_parent: ParentAccessFactory,
 ):
     """Adds test sub-sub-groups to the database."""
 
-    async def _add_many_test_sub_sub_groups(token_payload: dict = None):
+    async def _add_many_test_sub_sub_groups(
+        token_payload: Optional[dict[str, Any]] = None,
+    ):
         sub_sub_groups = []
         parent_identity_id = await access_to_one_parent(SubGroup)
         for sub_sub_group in many_test_sub_sub_groups:
@@ -923,15 +952,15 @@ async def add_many_test_sub_sub_groups(
 
 @pytest.fixture(scope="function")
 async def add_one_test_resource(
-    current_user_from_azure_token: User,
+    current_user_from_azure_token: CurrentUserFactory,
 ):
     """Generic fixture to add one test resource to the database."""
 
     async def _add_one_test_resource(
         crud_class,
-        resource_data: dict,
-        current_user: CurrentUserData = None,
-        parent_id: UUID = None,
+        resource_data: dict[str, Any],
+        current_user: Optional[CurrentUserData] = None,
+        parent_id: Optional[UUID] = None,
     ):
         """Adds a single test resource using the provided CRUD class."""
         if not current_user:
@@ -947,15 +976,15 @@ async def add_one_test_resource(
 
 @pytest.fixture(scope="function")
 async def add_many_test_resources(
-    current_user_from_azure_token: User,
+    current_user_from_azure_token: CurrentUserFactory,
 ):
     """Generic fixture to add many test resources to the database."""
 
     async def _add_many_test_resources(
         crud,
-        resources_data: list[dict],
-        token_payload: dict = None,
-        parent_id: UUID = None,
+        resources_data: List[dict[str, Any]],
+        token_payload: Optional[dict[str, Any]] = None,
+        parent_id: Optional[UUID] = None,
     ):
         """Adds multiple test resources using the provided CRUD class."""
         resources = []

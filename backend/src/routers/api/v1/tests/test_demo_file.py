@@ -260,7 +260,7 @@ async def test_get_demo_file(
 ):
     """Tests GET a demo file."""
     app_override_provide_http_token_payload
-    files_metadata = await add_many_test_demo_files(mocked_provide_http_token_payload)
+    files_metadata = await add_many_test_demo_files(mocked_provide_http_token_payload)  # type: ignore[call-arg]
     response = await async_client.get(f"/api/v1/demo/file/{files_metadata[1].id}")
 
     assert response.status_code == 200
@@ -301,7 +301,7 @@ async def test_put_demo_file(
 ):
     """Test PUT a demo file."""
     app_override_provide_http_token_payload
-    files_metadata = await add_many_test_demo_files(mocked_provide_http_token_payload)
+    files_metadata = await add_many_test_demo_files(mocked_provide_http_token_payload)  # type: ignore[call-arg]
     with open(f"src/tests/{files_metadata[0].name}", "rb") as old_file:
         with open(
             f"/data/appdata/demo_files/{files_metadata[0].name}", "rb"
@@ -367,7 +367,7 @@ async def test_rename_file(
 ):
     """Test PUT a demo file."""
     app_override_provide_http_token_payload
-    files_metadata = await add_many_test_demo_files(mocked_provide_http_token_payload)
+    files_metadata = await add_many_test_demo_files(mocked_provide_http_token_payload)  # type: ignore[call-arg]
     with open(f"src/tests/{files_metadata[1].name}", "rb") as old_file:
         with open(
             f"/data/appdata/demo_files/{files_metadata[1].name}", "rb"
@@ -420,7 +420,7 @@ async def test_delete_demo_file(
 ):
     """Test DELETE a demo file."""
     app_override_provide_http_token_payload
-    files_metadata = await add_many_test_demo_files(mocked_provide_http_token_payload)
+    files_metadata = await add_many_test_demo_files(mocked_provide_http_token_payload)  # type: ignore[call-arg]
     with open(f"src/tests/{files_metadata[1].name}", "rb") as old_file:
         with open(
             f"/data/appdata/demo_files/{files_metadata[1].name}", "rb"

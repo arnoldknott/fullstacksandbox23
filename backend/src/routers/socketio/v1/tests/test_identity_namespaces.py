@@ -878,12 +878,12 @@ async def test_get_requested_existing_groups_on_connect(
     indirect=True,
 )
 async def test_user_reads_all_groups(
-    add_many_test_groups: list[Group],
+    add_many_test_groups: list[Group],  # type: ignore[valid-type]
     socketio_test_client,
 ):
     """Test the demo resource read event without argument reads all resources."""
     connection = await socketio_test_client(group_client_config)
-    existing_groups = await add_many_test_groups(connection.token_payload())
+    existing_groups = await add_many_test_groups(connection.token_payload())  # type: ignore[call-arg]
 
     await connection.connect()
 
@@ -909,12 +909,12 @@ async def test_user_reads_all_groups(
     indirect=True,
 )
 async def test_user_reads_one_group(
-    add_many_test_groups: list[Group],
+    add_many_test_groups: list[Group],  # type: ignore[valid-type]
     socketio_test_client,
 ):
     """Test the demo resource read event without argument reads all resources."""
     connection = await socketio_test_client(group_client_config)
-    existing_groups = await add_many_test_groups(connection.token_payload())
+    existing_groups = await add_many_test_groups(connection.token_payload())  # type: ignore[call-arg]
 
     await connection.connect()
 
@@ -968,16 +968,16 @@ async def test_user_links_group_to_ueber_group(
     session_ids,
     socketio_test_client,
     socketio_test_client_ueber_group_namespace,
-    add_many_test_ueber_groups: list[UeberGroup],
-    add_many_test_groups: list[Group],
+    add_many_test_ueber_groups: list[UeberGroup],  # type: ignore[valid-type]
+    add_many_test_groups: list[Group],  # type: ignore[valid-type]
     add_one_test_access_policy,
 ):
     """Test the demo resource read event without argument reads all resources."""
     connection1 = await socketio_test_client(group_and_ueber_group_client_config)
-    existing_ueber_groups = await add_many_test_ueber_groups(
+    existing_ueber_groups = await add_many_test_ueber_groups(  # type: ignore[call-arg]
         connection1.token_payload()
     )
-    existing_groups = await add_many_test_groups(connection1.token_payload())
+    existing_groups = await add_many_test_groups(connection1.token_payload())  # type: ignore[call-arg]
     connection2 = await socketio_test_client_ueber_group_namespace(session_ids[1])
     current_user2 = await connection2.current_user()
     connection3 = await socketio_test_client(group_client_config, session_ids[2])
@@ -1065,17 +1065,17 @@ async def test_user_unlinks_group_from_ueber_group(
     session_ids,
     socketio_test_client,
     socketio_test_client_ueber_group_namespace,
-    add_many_test_ueber_groups: list[UeberGroup],
-    add_many_test_groups: list[Group],
+    add_many_test_ueber_groups: list[UeberGroup],  # type: ignore[valid-type]
+    add_many_test_groups: list[Group],  # type: ignore[valid-type]
     add_one_parent_child_identity_relationship,
     add_one_test_access_policy,
 ):
     """Test the demo resource read event without argument reads all resources."""
     connection1 = await socketio_test_client(group_and_ueber_group_client_config)
-    existing_ueber_groups = await add_many_test_ueber_groups(
+    existing_ueber_groups = await add_many_test_ueber_groups(  # type: ignore[call-arg]
         connection1.token_payload()
     )
-    existing_groups = await add_many_test_groups(connection1.token_payload())
+    existing_groups = await add_many_test_groups(connection1.token_payload())  # type: ignore[call-arg]
     await add_one_parent_child_identity_relationship(
         parent_id=existing_ueber_groups[1].id,
         child_id=existing_groups[2].id,

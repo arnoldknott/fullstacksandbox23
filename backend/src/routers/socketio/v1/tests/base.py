@@ -64,13 +64,13 @@ class BaseSocketIOTest:
         await connection.client.sleep(0.2)
 
         # Submit new resource
-        test_data = {**self._test_data_single}
+        test_data = {**self._test_data_single}  # type: ignore[misc]
         submit_data = {"payload": test_data}
 
         if token_payload is None:
-            submit_data["public"] = True
+            submit_data["public"] = True  # type: ignore[arg-type]
         if parent_id:
-            submit_data["parent_id"] = str(parent_id)
+            submit_data["parent_id"] = str(parent_id)  # type: ignore[arg-type]
 
         await connection.client.emit(
             "submit",
@@ -136,7 +136,7 @@ class BaseSocketIOTest:
         for status in status_data:
             if (
                 isinstance(status, dict)
-                and status.get("error") == f"403: {self.model.__name__} - Forbidden."
+                and status.get("error") == f"403: {self.model.__name__} - Forbidden."  # type: ignore[attr-defined]
             ):
                 created_status = status
                 break
@@ -178,7 +178,7 @@ class BaseSocketIOTest:
         await connection.client.sleep(0.2)
 
         # Submit update
-        update_data = {**self._test_data_update, "id": str(resource.id)}
+        update_data = {**self._test_data_update, "id": str(resource.id)}  # type: ignore[misc]
         await connection.client.emit(
             "submit",
             {"payload": update_data},
@@ -195,12 +195,12 @@ class BaseSocketIOTest:
         assert transfer_data[0]["id"] == str(resource.id)
 
         # Verify original fields
-        for key, value in self._test_data_single.items():
+        for key, value in self._test_data_single.items():  # type: ignore[attr-defined]
             assert transfer_data[0][key] == value
 
         # Verify updated fields
         assert transfer_data[1]["id"] == str(resource.id)
-        for key, value in self._test_data_update.items():
+        for key, value in self._test_data_update.items():  # type: ignore[attr-defined]
             assert transfer_data[1][key] == value
 
         await connection.client.disconnect()

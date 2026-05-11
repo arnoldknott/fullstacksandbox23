@@ -25,26 +25,30 @@ from routers.ws.v1.websockets import router as websocket_router
 
 def attach_middeleware(app: FastAPI):
     """Attaches middleware to the FastAPI application."""
+    allow_origins_list = [
+        config.FRONTEND_SVELTE_ORIGIN,
+        (
+            f"https://{config.FRONTEND_SVELTE_FQDN}:80"
+            if config.FRONTEND_SVELTE_FQDN
+            else None
+        ),
+        (
+            f"https://{config.FRONTEND_SVELTE_FQDN}"
+            if config.FRONTEND_SVELTE_FQDN
+            else None
+        ),
+        (
+            "https://admin.socket.io"
+            if config.SOCKETIO_ADMIN_USERNAME and config.SOCKETIO_ADMIN_PASSWORD
+            else None
+        ),
+    ]
+    # Filter out None values
+    allow_origins_filtered = [origin for origin in allow_origins_list if origin]
+
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[
-            config.FRONTEND_SVELTE_ORIGIN,
-            (
-                f"https://{config.FRONTEND_SVELTE_FQDN}:80"
-                if config.FRONTEND_SVELTE_FQDN
-                else None
-            ),
-            (
-                f"https://{config.FRONTEND_SVELTE_FQDN}"
-                if config.FRONTEND_SVELTE_FQDN
-                else None
-            ),
-            (
-                "https://admin.socket.io"
-                if config.SOCKETIO_ADMIN_USERNAME and config.SOCKETIO_ADMIN_PASSWORD
-                else None
-            ),
-        ],
+        allow_origins=allow_origins_filtered,
         allow_credentials=True,
         allow_methods=["POST", "GET", "PUT", "DELETE"],  # or ["*"],
         allow_headers=["*"],

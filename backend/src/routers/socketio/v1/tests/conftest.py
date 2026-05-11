@@ -197,7 +197,7 @@ class SocketIOTestConnection:
         self.client_config = client_config
         self.session_id = session_id
         self.query_parameters = {}
-        self.client = socketio.AsyncClient(logger=True, engineio_logger=True)
+        self.client = socketio.AsyncClient(logger=True, engineio_logger=True)  # type: ignore[attr-defined]
         self.responseData = {}
 
         # Attaching the event handlers for the client during initialization:
@@ -211,13 +211,13 @@ class SocketIOTestConnection:
 
         responses = self.responseData
         for config in client_config:
-            namespace = config["namespace"]
+            namespace = config["namespace"]  # type: ignore[arg-type,call-arg]
             responses[namespace] = {}
             if "events" in config:
-                events = config["events"]
+                events = config["events"]  # type: ignore[arg-type,call-arg]
                 for event in events:
                     responses[namespace][event] = []
-                    self.client.on(
+                    self.client.on(  # type: ignore[attr-defined]
                         event, handler=make_handler(event), namespace=namespace
                     )
 
@@ -228,9 +228,9 @@ class SocketIOTestConnection:
 
     async def __aexit__(self, exc_type, exc_value, traceback):
         """Disconnect the client when exiting the context."""
-        await self.client.disconnect()
+        await self.client.disconnect()  # type: ignore[attr-defined]
 
-    async def connect(self, query_parameters: dict = None):
+    async def connect(self, query_parameters: dict = None):  # type: ignore[arg-type]
         if query_parameters is not None:
             self.query_parameters = query_parameters
         """Connects to the socket.io server with the specified namespaces."""
@@ -242,8 +242,8 @@ class SocketIOTestConnection:
                 f"{key}={value}" for key, value in self.query_parameters.items()
             )
             server_url += f"?{query_string}"
-        all_namespaces = [namespace["namespace"] for namespace in self.client_config]
-        await self.client.connect(
+        all_namespaces = [namespace["namespace"] for namespace in self.client_config]  # type: ignore[arg-type,call-arg]
+        await self.client.connect(  # type: ignore[attr-defined]
             server_url,
             socketio_path="socketio/v1",
             namespaces=all_namespaces,
@@ -259,14 +259,14 @@ class SocketIOTestConnection:
         # print("=== self.responseData ===")
         # print(self.responseData, flush=True)
         if namespace is None:
-            namespace = self.client_config[0]["namespace"]
+            namespace = self.client_config[0]["namespace"]  # type: ignore[index]
         if event is None:
             index = next(
                 i
                 for i, obj in enumerate(self.client_config)
-                if obj.get("namespace") == namespace
+                if obj.get("namespace") == namespace  # type: ignore[attr-defined]
             )
-            event = self.client_config[index]["events"][0]
+            event = self.client_config[index]["events"][0]  # type: ignore[index]
         if namespace in self.responseData and event in self.responseData[namespace]:
             return self.responseData[namespace][event]
         else:

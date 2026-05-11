@@ -170,7 +170,7 @@ async def delete_access_policy(
     public: Annotated[bool | None, Query()] = None,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> None:
+) -> int:
     """Deletes an access policy."""
     logger.info("DELETE access policy")
     current_user = await check_token_against_guards(token_payload, guards)

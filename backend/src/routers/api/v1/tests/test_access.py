@@ -1067,7 +1067,7 @@ async def test_user_get_access_policies_for_resource_type(
 
     for read_policy in payload:
         assert read_policy["resource_id"] in expected_results
-        policy["type"] = ResourceType.demo_resource
+        policy["type"] = ResourceType.demo_resource  # type: ignore[possibly-undefined]
 
 
 @pytest.mark.anyio
@@ -1811,7 +1811,7 @@ async def test_user_get_access_policies_for_identity_type(
 
     for read_policy in payload:
         assert read_policy["resource_id"] in expected_results
-        policy["type"] = ResourceType.demo_resource
+        policy["type"] = ResourceType.demo_resource  # type: ignore[possibly-undefined]
 
 
 @pytest.mark.anyio

@@ -1,4 +1,4 @@
-from typing import Annotated, Optional, TypeAlias
+from typing import Annotated, Optional
 
 from pydantic import AfterValidator, HttpUrl
 from sqlmodel import Field
@@ -70,7 +70,7 @@ Presentation = create_model(
 )
 
 # TBD: Figure out how to do this better - maybe a generic way to create these type aliases?
-PresentationCreate: TypeAlias = Presentation.Create
-PresentationRead: TypeAlias = Presentation.Read
-PresentationUpdate: TypeAlias = Presentation.Update
-PresentationExtended: TypeAlias = Presentation.Extended
+PresentationCreate = Presentation.Create
+PresentationRead = Presentation.Read
+PresentationUpdate = Presentation.Update
+PresentationExtended = Presentation.Extended

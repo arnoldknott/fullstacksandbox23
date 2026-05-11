@@ -156,7 +156,7 @@ async def test_admin_posts_user(
     current_user_from_azure_token,
 ):
     """Tests the post_user endpoint of the API."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     # Make a POST request to create the user
     before_time = datetime.now()
@@ -177,10 +177,10 @@ async def test_admin_posts_user(
 
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
-            resource_id=created_user.id, current_user=current_user
+            resource_id=created_user.id, current_user=current_user  # type: ignore[arg-type]
         )
         last_accessed_at = await crud.read_resource_last_accessed_at(
-            resource_id=created_user.id, current_user=current_user
+            resource_id=created_user.id, current_user=current_user  # type: ignore[arg-type]
         )
 
     assert created_at > before_time - timedelta(seconds=1)
@@ -189,7 +189,7 @@ async def test_admin_posts_user(
 
     # Verify that the user was created in the database
     db_user = await get_user_by_id(
-        created_user.id, mocked_provide_http_token_payload, mock_guards(roles=["User"])
+        created_user.id, mocked_provide_http_token_payload, mock_guards(roles=["User"])  # type: ignore[arg-type]
     )
     assert db_user is not None
     assert db_user.id is not None
@@ -221,7 +221,7 @@ async def test_post_user_with_integer_user_id(
     current_user_from_azure_token,
 ):
     """Tests posting a integer user_id to user_post endpoint fails"""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     # Make a POST request to create the user
     before_time = datetime.now()
@@ -242,10 +242,10 @@ async def test_post_user_with_integer_user_id(
 
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
-            resource_id=created_user.id, current_user=current_user
+            resource_id=created_user.id, current_user=current_user  # type: ignore[arg-type]
         )
         last_accessed_at = await crud.read_resource_last_accessed_at(
-            resource_id=created_user.id, current_user=current_user
+            resource_id=created_user.id, current_user=current_user  # type: ignore[arg-type]
         )
 
     assert created_at > before_time - timedelta(seconds=1)
@@ -254,9 +254,9 @@ async def test_post_user_with_integer_user_id(
 
     # Verify that the user was created in the database
     db_user = await get_user_by_id(
-        created_user.id, mocked_provide_http_token_payload, mock_guards(roles=["User"])
+        created_user.id, mocked_provide_http_token_payload, mock_guards(roles=["User"])  # type: ignore[arg-type]
     )
-    assert db_user.id == uuid.UUID(created_user.id)
+    assert db_user.id == uuid.UUID(created_user.id)  # type: ignore[arg-type]
     assert db_user.id != 1
     assert db_user.azure_user_id == uuid.UUID(many_test_azure_users[2]["azure_user_id"])
     assert db_user.azure_tenant_id == uuid.UUID(
@@ -286,7 +286,7 @@ async def test_post_user_with_uuid_user_id(
     current_user_from_azure_token,
 ):
     """Tests the post_user endpoint of the API."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     test_uuid = str(uuid.uuid4())
 
     # Make a POST request to create the user
@@ -308,10 +308,10 @@ async def test_post_user_with_uuid_user_id(
 
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
-            resource_id=created_user.id, current_user=current_user
+            resource_id=created_user.id, current_user=current_user  # type: ignore[arg-type]
         )
         last_accessed_at = await crud.read_resource_last_accessed_at(
-            resource_id=created_user.id, current_user=current_user
+            resource_id=created_user.id, current_user=current_user  # type: ignore[arg-type]
         )
 
     assert created_at > before_time - timedelta(seconds=1)
@@ -320,9 +320,9 @@ async def test_post_user_with_uuid_user_id(
 
     # Verify that the user was created in the database
     db_user = await get_user_by_id(
-        created_user.id, mocked_provide_http_token_payload, mock_guards(roles=["User"])
+        created_user.id, mocked_provide_http_token_payload, mock_guards(roles=["User"])  # type: ignore[arg-type]
     )
-    assert db_user.id == uuid.UUID(created_user.id)
+    assert db_user.id == uuid.UUID(created_user.id)  # type: ignore[arg-type]
     assert db_user.id != uuid.UUID(test_uuid)
     assert db_user.azure_user_id == uuid.UUID(many_test_azure_users[2]["azure_user_id"])
     assert db_user.azure_tenant_id == uuid.UUID(
@@ -348,7 +348,7 @@ async def test_user_posts_user(
     async_client: AsyncClient, app_override_provide_http_token_payload: FastAPI
 ):
     """Tests the post_user endpoint of the API."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     # Make a POST request to create the user
     response = await async_client.post(
@@ -392,7 +392,7 @@ async def test_post_user_invalid_token(
     async_client: AsyncClient, app_override_provide_http_token_payload: FastAPI
 ):
     """Tests the post_user endpoint of the API."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     # Make a POST request to create the user
     response = await async_client.post(
@@ -414,7 +414,7 @@ async def test_post_user_invites_azure_user(
     async_client: AsyncClient, app_override_provide_http_token_payload: FastAPI
 ):
     """Tests the post_user endpoint of the API."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     # Make a POST request to invite an azure user
     response = await async_client.post(
@@ -422,8 +422,10 @@ async def test_post_user_invites_azure_user(
     )
 
     assert response.status_code == 201
-    created_user = User(**response.json())
-    assert created_user.azure_user_id == many_test_azure_users[1]["azure_user_id"]
+    created_user = User.model_validate(response.json())
+    assert created_user.azure_user_id == uuid.UUID(
+        many_test_azure_users[1]["azure_user_id"]
+    )
     assert created_user.azure_tenant_id == config.AZURE_TENANT_ID
     assert created_user.is_active is False
     assert created_user.id is not None
@@ -441,7 +443,7 @@ async def test_post_user_invites_azure_user_from_another_tenant(
     async_client: AsyncClient, app_override_provide_http_token_payload: FastAPI
 ):
     """Tests the post_user endpoint of the API."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     # Make a POST request to invite an azure user
     response = await async_client.post(
@@ -470,7 +472,7 @@ async def test_invited_azure_user_self_signup_creates_profile_and_account(
     mock_guards,
 ):
     """Tests the post_user endpoint of the API."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     # Call function of POST request as user1 to invite an user2:
     created_user = await post_invite_azure_user(
@@ -531,10 +533,10 @@ async def test_user_gets_own_user_through_me_endpoint(
     """Test a user GETs it's own user by id"""
 
     # mocks the access token:
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     # the target user:
 
-    await add_one_azure_test_user(0)
+    await add_one_azure_test_user(0)  # type: ignore[call-arg]
 
     before_time = datetime.now()
     response = await async_client.get("/api/v1/user/me")
@@ -597,8 +599,8 @@ async def test_user_gets_own_user_through_me_endpoint_with_ueber_groups(
     """Test a user GETs it's own user by id"""
 
     # mocks the access token:
-    app_override_provide_http_token_payload
-    current_user = await current_user_from_azure_token(
+    _ = app_override_provide_http_token_payload
+    current_user = await current_user_from_azure_token(  # type: ignore[call-arg]
         mocked_provide_http_token_payload
     )
 
@@ -625,7 +627,7 @@ async def test_user_gets_own_user_through_me_endpoint_with_ueber_groups(
     group_uuids = [uuid.UUID(g) for g in mocked_provide_http_token_payload["groups"]]
     if "groups" in mocked_provide_http_token_payload:
         assert modelled_user.azure_token_groups == group_uuids
-        assert len(modelled_user.azure_token_groups) == len(
+        assert len(modelled_user.azure_token_groups) == len(  # type: ignore[arg-type]
             mocked_provide_http_token_payload["groups"]
         )
     assert "id" in user
@@ -636,18 +638,18 @@ async def test_user_gets_own_user_through_me_endpoint_with_ueber_groups(
     assert modelled_user.azure_tenant_id == uuid.UUID(
         mocked_provide_http_token_payload["tid"]
     )
-    assert modelled_user.user_account.id is not None
-    assert uuid.UUID(modelled_user.user_account.user_id) == modelled_user.id
-    assert modelled_user.user_account.ai_enabled is False
+    assert modelled_user.user_account.id is not None  # type: ignore[union-attr]
+    assert uuid.UUID(modelled_user.user_account.user_id) == modelled_user.id  # type: ignore[arg-type,union-attr]
+    assert modelled_user.user_account.ai_enabled is False  # type: ignore[union-attr]
     assert modelled_user.user_profile is not None
     assert modelled_user.user_profile.theme_color == "#353c6e"
     assert modelled_user.user_profile.theme_variant == ThemeVariants.tonal_spot
     assert modelled_user.user_profile.contrast == 0.0
-    assert len(modelled_user.ueber_groups) == 1
-    assert modelled_user.ueber_groups[0].id == mocked_ueber_groups[1].id
-    assert modelled_user.ueber_groups[0].name == mocked_ueber_groups[1].name
+    assert len(modelled_user.ueber_groups) == 1  # type: ignore[arg-type]
+    assert modelled_user.ueber_groups[0].id == mocked_ueber_groups[1].id  # type: ignore[attr-defined,index]
+    assert modelled_user.ueber_groups[0].name == mocked_ueber_groups[1].name  # type: ignore[attr-defined,index]
     assert (
-        modelled_user.ueber_groups[0].description == mocked_ueber_groups[1].description
+        modelled_user.ueber_groups[0].description == mocked_ueber_groups[1].description  # type: ignore[attr-defined,index]
     )
 
 
@@ -665,10 +667,10 @@ async def test_admin_gets_users(
     """Test GET one user"""
 
     # mocks the access token:
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     # adds a user to the database, which is the one to GET:
-    users = await add_many_azure_test_users()
+    users = await add_many_azure_test_users()  # type: ignore[call-arg]
 
     response = await async_client.get("/api/v1/user/")
     assert response.status_code == 200
@@ -701,10 +703,10 @@ async def test_user_gets_users(
     """Test GET all users"""
 
     # mocks the access token:
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     # adds users to the database
-    await add_many_azure_test_users()
+    await add_many_azure_test_users()  # type: ignore[call-arg]
 
     response = await async_client.get("/api/v1/user/")
     assert response.status_code == 401
@@ -717,7 +719,7 @@ async def test_get_users_without_token(
     add_many_azure_test_users: List[User],
 ):
     """Test GET one user"""
-    await add_many_azure_test_users()
+    await add_many_azure_test_users()  # type: ignore[call-arg]
 
     response = await async_client.get("/api/v1/user/")
     assert response.status_code == 401
@@ -746,9 +748,9 @@ async def test_user_gets_user_by_azure_user_id(
     """Test a user GETs it's own user id from it's linked azure user account"""
 
     # mocks the access token:
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     # the target user:
-    user_in_database = await add_one_azure_test_user(4)
+    user_in_database = await add_one_azure_test_user(4)  # type: ignore[call-arg]
     # the accessing user:
     accessing_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -783,7 +785,7 @@ async def test_user_gets_user_by_azure_user_id(
     assert modelled_response_user.id is not None
     assert modelled_response_user.azure_user_id == user_in_database.azure_user_id
     assert modelled_response_user.azure_tenant_id == user_in_database.azure_tenant_id
-    assert len(modelled_response_user.azure_groups) == 3
+    assert len(modelled_response_user.azure_groups) == 3  # type: ignore[arg-type]
     assert not hasattr(modelled_response_user, "user_account")
     assert not hasattr(modelled_response_user, "user_profile")
 
@@ -824,9 +826,9 @@ async def test_user_gets_user_by_azure_user_id_with_common_groups(
     """Test a user GETs it's own user id from it's linked azure user account"""
 
     # mocks the access token:
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     # the target user:
-    user_in_database = await add_one_azure_test_user(4)
+    user_in_database = await add_one_azure_test_user(4)  # type: ignore[call-arg]
     # the accessing user:
     accessing_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -868,7 +870,7 @@ async def test_user_gets_user_by_azure_user_id_with_common_groups(
     assert modelled_response_user.azure_tenant_id == user_in_database.azure_tenant_id
     assert not hasattr(modelled_response_user, "user_account")
     assert not hasattr(modelled_response_user, "user_profile")
-    assert len(modelled_response_user.azure_groups) == 3
+    assert len(modelled_response_user.azure_groups) == 3  # type: ignore[arg-type]
 
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
@@ -906,9 +908,9 @@ async def test_user_gets_user_by_azure_user_id_with_partial_access_to_other_user
     """Test a user GETs it's own user id from it's linked azure user account"""
 
     # mocks the access token:
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     # the target user:
-    user_in_database = await add_one_azure_test_user(0)
+    user_in_database = await add_one_azure_test_user(0)  # type: ignore[call-arg]
     # the accessing user:
     accessing_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -948,12 +950,12 @@ async def test_user_gets_user_by_azure_user_id_with_partial_access_to_other_user
     assert modelled_response_user.azure_tenant_id == user_in_database.azure_tenant_id
     assert not hasattr(modelled_response_user, "user_account")
     assert not hasattr(modelled_response_user, "user_profile")
-    assert len(modelled_response_user.azure_groups) == 2
-    modelled_response_user.azure_groups = sorted(
-        modelled_response_user.azure_groups, key=lambda x: x.id
+    assert len(modelled_response_user.azure_groups) == 2  # type: ignore[arg-type]
+    modelled_response_user.azure_groups = sorted(  # type: ignore[call-arg]
+        modelled_response_user.azure_groups, key=lambda x: x.id  # type: ignore[arg-type]
     )
 
-    response_group_ids = {group.id for group in modelled_response_user.azure_groups}
+    response_group_ids = {group.id for group in modelled_response_user.azure_groups}  # type: ignore[union-attr]
 
     assert all(
         uuid.UUID(group_id) in response_group_ids
@@ -1003,9 +1005,9 @@ async def test_user_gets_user_by_azure_user_id_with_no_access_to_other_users_gro
     """Test a user GETs it's own user id from it's linked azure user account"""
 
     # mocks the access token:
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     # the target user:
-    user_in_database = await add_one_azure_test_user(0)
+    user_in_database = await add_one_azure_test_user(0)  # type: ignore[call-arg]
     # the accessing user:
     accessing_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -1031,7 +1033,7 @@ async def test_user_gets_user_by_azure_user_id_with_no_access_to_other_users_gro
     assert modelled_response_user.id is not None
     assert modelled_response_user.azure_user_id == user_in_database.azure_user_id
     assert modelled_response_user.azure_tenant_id == user_in_database.azure_tenant_id
-    assert len(modelled_response_user.azure_groups) == 0
+    assert len(modelled_response_user.azure_groups) == 0  # type: ignore[arg-type]
 
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
@@ -1063,8 +1065,8 @@ async def test_admin_gets_user_by_azure_user_id(
     """Test a user GETs it's own user id from it's linked azure user account"""
 
     # mocks the access token:
-    app_override_provide_http_token_payload
-    user_in_database = await add_one_azure_test_user(1)
+    _ = app_override_provide_http_token_payload
+    user_in_database = await add_one_azure_test_user(1)  # type: ignore[call-arg]
 
     before_time = datetime.now()
     response = await async_client.get(
@@ -1109,9 +1111,9 @@ async def test_user_gets_another_user_by_azure_user_id(
     """Test a user GETs it's own user id from it's linked azure user account"""
 
     # mocks the access token:
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     # the target user:
-    user_in_database = await add_one_azure_test_user(2)
+    user_in_database = await add_one_azure_test_user(2)  # type: ignore[call-arg]
 
     response = await async_client.get(
         f"/api/v1/user/azure/{str(user_in_database.azure_user_id)}"
@@ -1127,7 +1129,7 @@ async def test_get_user_by_azure_id_without_token(
     add_one_azure_test_user: List[User],
 ):
     """Test GET one user"""
-    user_in_db = await add_one_azure_test_user(0)
+    user_in_db = await add_one_azure_test_user(0)  # type: ignore[call-arg]
 
     response = await async_client.get(
         f"/api/v1/user/azure/{str(user_in_db.azure_user_id)}"
@@ -1154,9 +1156,9 @@ async def test_user_gets_user_by_id(
     """Test a user GETs it's own user by id"""
 
     # mocks the access token:
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     # the target user:
-    user_in_database = await add_one_azure_test_user(1)
+    user_in_database = await add_one_azure_test_user(1)  # type: ignore[call-arg]
     # the accessing user:
     accessing_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -1221,8 +1223,8 @@ async def test_admin_gets_user_by_id(
     """Test a user GETs it's own user by id"""
 
     # mocks the access token:
-    app_override_provide_http_token_payload
-    user_in_database = await add_one_azure_test_user(1)
+    _ = app_override_provide_http_token_payload
+    user_in_database = await add_one_azure_test_user(1)  # type: ignore[call-arg]
 
     before_time = datetime.now()
     response = await async_client.get(f"/api/v1/user/{str(user_in_database.id)}")
@@ -1266,8 +1268,8 @@ async def test_user_gets_another_user_by_user_id(
     """Test a user GETs it's another user id by its user id."""
 
     # mocks the access token:
-    app_override_provide_http_token_payload
-    user_in_database = await add_one_azure_test_user(1)
+    _ = app_override_provide_http_token_payload
+    user_in_database = await add_one_azure_test_user(1)  # type: ignore[call-arg]
 
     response = await async_client.get(f"/api/v1/user/{str(user_in_database.id)}")
     assert response.status_code == 404
@@ -1281,7 +1283,7 @@ async def test_get_user_by_id_without_token(
     async_client: AsyncClient, add_one_azure_test_user: List[User], mock_guards
 ):
     """Test GET one user"""
-    user_in_db = await add_one_azure_test_user(0)
+    user_in_db = await add_one_azure_test_user(0)  # type: ignore[call-arg]
 
     response = await async_client.get(f"/api/v1/user/azure/{str(user_in_db.id)}")
     assert response.status_code == 401
@@ -1317,8 +1319,8 @@ async def test_get_user_by_id_with_missing_scope(
     """Test a user GETs it's own user by id"""
 
     # mocks the access token:
-    app_override_provide_http_token_payload
-    user_in_database = await add_one_azure_test_user(0)
+    _ = app_override_provide_http_token_payload
+    user_in_database = await add_one_azure_test_user(0)  # type: ignore[call-arg]
 
     response = await async_client.get(f"/api/v1/user/{str(user_in_database.id)}")
     assert response.status_code == 401
@@ -1352,8 +1354,8 @@ async def test_get_user_by_id_invalid_token(
     """Test a user GETs it's own user by id"""
 
     # mocks the access token:
-    app_override_provide_http_token_payload
-    user_in_database = await add_one_azure_test_user(0)
+    _ = app_override_provide_http_token_payload
+    user_in_database = await add_one_azure_test_user(0)  # type: ignore[call-arg]
 
     response = await async_client.get(f"/api/v1/user/{str(user_in_database.id)}")
     assert response.status_code == 401
@@ -1379,7 +1381,7 @@ async def test_user_put_user(
     """Tests PUT user endpoint"""
 
     # mocks the access token:
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     current_user = current_test_user
 
     response = await async_client.get(f"/api/v1/user/{str(current_user.user_id)}")
@@ -1418,7 +1420,7 @@ async def test_user_puts_own_user_account(
     """Tests PUT user endpoint"""
 
     # mocks the access token:
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     current_user = current_test_user
 
     # Make a PUT request to update the user
@@ -1431,7 +1433,7 @@ async def test_user_puts_own_user_account(
     )
     assert response.status_code == 200
     updated_user = Me(**response.json())
-    assert updated_user.user_account.ai_enabled is True
+    assert updated_user.user_account.ai_enabled is True  # type: ignore[union-attr]
 
     response_read = await async_client.get("/api/v1/user/me")
 
@@ -1471,7 +1473,7 @@ async def test_user_puts_own_user_profile(
     """Tests PUT user endpoint"""
 
     # mocks the access token:
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     current_user = current_test_user
 
     # Make a PUT request to update the user
@@ -1488,9 +1490,9 @@ async def test_user_puts_own_user_profile(
     )
     assert response.status_code == 200
     updated_user = Me(**response.json())
-    assert updated_user.user_profile.theme_color == "#769CDF"
-    assert updated_user.user_profile.theme_variant == ThemeVariants.vibrant
-    assert updated_user.user_profile.contrast == 1.0
+    assert updated_user.user_profile.theme_color == "#769CDF"  # type: ignore[union-attr]
+    assert updated_user.user_profile.theme_variant == ThemeVariants.vibrant  # type: ignore[union-attr]
+    assert updated_user.user_profile.contrast == 1.0  # type: ignore[union-attr]
 
     response_read = await async_client.get("/api/v1/user/me")
 
@@ -1530,7 +1532,7 @@ async def test_user_puts_own_user_account_and_profile(
     """Tests PUT user endpoint"""
 
     # mocks the access token:
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     current_user = current_test_user
 
     # Make a PUT request to update the user
@@ -1548,10 +1550,10 @@ async def test_user_puts_own_user_account_and_profile(
     )
     assert response.status_code == 200
     updated_user = Me(**response.json())
-    assert updated_user.user_account.ai_enabled is True
-    assert updated_user.user_profile.theme_color == "#769CDF"
-    assert updated_user.user_profile.theme_variant == ThemeVariants.vibrant
-    assert updated_user.user_profile.contrast == 1.0
+    assert updated_user.user_account.ai_enabled is True  # type: ignore[union-attr]
+    assert updated_user.user_profile.theme_color == "#769CDF"  # type: ignore[union-attr]
+    assert updated_user.user_profile.theme_variant == ThemeVariants.vibrant  # type: ignore[union-attr]
+    assert updated_user.user_profile.contrast == 1.0  # type: ignore[union-attr]
 
     response_read = await async_client.get("/api/v1/user/me")
 
@@ -1591,7 +1593,7 @@ async def test_user_puts_user_profile_with_missing_hashtag_in_color(
     """Tests PUT user endpoint"""
 
     # mocks the access token:
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     current_user = current_test_user
 
     # Make a PUT request to update the user
@@ -1626,7 +1628,7 @@ async def test_user_puts_user_profile_with_short_color(
     """Tests put user endpoint"""
 
     # mocks the access token:
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     current_user = current_test_user
 
     # Make a PUT request to update the user
@@ -1661,7 +1663,7 @@ async def test_user_puts_user_profile_with_wrong_color(
     """Tests PUT user endpoint"""
 
     # mocks the access token:
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     current_user = current_test_user
 
     # Make a PUT request to update the user
@@ -1696,7 +1698,7 @@ async def test_user_puts_user_profile_with_wrong_theme(
     """Tests PUT user endpoint"""
 
     # mocks the access token:
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     current_user = current_test_user
 
     # Make a PUT request to update the user
@@ -1731,7 +1733,7 @@ async def test_user_puts_user_profile_contrast_too_low(
     """Tests put user endpoint"""
 
     # mocks the access token:
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     current_user = current_test_user
 
     # Make a PUT request to update the user
@@ -1765,7 +1767,7 @@ async def test_user_puts_user_profile_contrast_too_high(
     """Tests PUT user endpoint"""
 
     # mocks the access token:
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     current_user = current_test_user
 
     # Make a PUT request to update the user
@@ -1799,8 +1801,8 @@ async def test_user_puts_other_users_user_account(
     """Tests PUT user endpoint"""
 
     # mocks the access token:
-    app_override_provide_http_token_payload
-    current_test_user
+    _ = app_override_provide_http_token_payload
+    _ = current_test_user
     other_user = await add_one_azure_test_user(2)
 
     # Make a PUT request to update the user
@@ -1831,8 +1833,8 @@ async def test_user_puts_other_users_user_profile(
     """Tests PUT user endpoint"""
 
     # mocks the access token:
-    app_override_provide_http_token_payload
-    current_test_user
+    _ = app_override_provide_http_token_payload
+    _ = current_test_user
     other_user = await add_one_azure_test_user(2)
 
     # Make a PUT request to update the user
@@ -1899,7 +1901,7 @@ async def test_user_reactives_and_keeps_old_profile(
     """Test a admin updates a user"""
 
     # mocks the access token:
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     # access get me endpoint
     response_me = await async_client.get("/api/v1/user/me")
@@ -1915,10 +1917,10 @@ async def test_user_reactives_and_keeps_old_profile(
         mocked_provide_http_token_payload["tid"]
     )
     assert current_user.azure_token_roles == mocked_provide_http_token_payload["roles"]
-    assert current_user.user_account.ai_enabled is False
-    assert current_user.user_profile.theme_color == "#353c6e"
-    assert current_user.user_profile.theme_variant == ThemeVariants.tonal_spot
-    assert current_user.user_profile.contrast == 0.0
+    assert current_user.user_account.ai_enabled is False  # type: ignore[union-attr]
+    assert current_user.user_profile.theme_color == "#353c6e"  # type: ignore[union-attr]
+    assert current_user.user_profile.theme_variant == ThemeVariants.tonal_spot  # type: ignore[union-attr]
+    assert current_user.user_profile.contrast == 0.0  # type: ignore[union-attr]
 
     # deactivate self
     response_deactivate = await async_client.put(
@@ -1944,10 +1946,10 @@ async def test_user_reactives_and_keeps_old_profile(
     assert reactivated_user.azure_tenant_id == current_user.azure_tenant_id
     assert reactivated_user.azure_token_roles == current_user.azure_token_roles
     assert reactivated_user.is_active is True
-    assert reactivated_user.user_account.ai_enabled is True
-    assert reactivated_user.user_profile.theme_color == "#B0FA22"
-    assert reactivated_user.user_profile.theme_variant == ThemeVariants.tonal_spot
-    assert reactivated_user.user_profile.contrast == 0.0
+    assert reactivated_user.user_account.ai_enabled is True  # type: ignore[union-attr]
+    assert reactivated_user.user_profile.theme_color == "#B0FA22"  # type: ignore[union-attr]
+    assert reactivated_user.user_profile.theme_variant == ThemeVariants.tonal_spot  # type: ignore[union-attr]
+    assert reactivated_user.user_profile.contrast == 0.0  # type: ignore[union-attr]
 
 
 @pytest.mark.anyio
@@ -1966,11 +1968,11 @@ async def test_put_user_from_admin(
     """Test a admin updates a user"""
 
     # mocks the access token:
-    app_override_provide_http_token_payload
-    existing_user = await add_one_azure_test_user(2)
+    _ = app_override_provide_http_token_payload
+    existing_user = await add_one_azure_test_user(2)  # type: ignore[call-arg]
 
     existing_db_user = await get_user_by_id(
-        str(existing_user.id),
+        str(existing_user.id),  # type: ignore[arg-type]
         mocked_provide_http_token_payload,
         mock_guards(roles=["User"]),
     )
@@ -1996,11 +1998,11 @@ async def test_put_user_from_admin(
 
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
-            resource_id=db_user.id,
+            resource_id=db_user.id,  # type: ignore[arg-type]
             current_user=CurrentUserData(**current_user_data_admin),
         )
         last_accessed_at = await crud.read_resource_last_accessed_at(
-            resource_id=db_user.id,
+            resource_id=db_user.id,  # type: ignore[arg-type]
             current_user=CurrentUserData(**current_user_data_admin),
         )
 
@@ -2027,10 +2029,10 @@ async def test_put_user_with_integer_user_id(
     """Tests put user endpoint"""
 
     # mocks the access token:
-    app_override_provide_http_token_payload
-    existing_user = await add_one_azure_test_user(0)
+    _ = app_override_provide_http_token_payload
+    existing_user = await add_one_azure_test_user(0)  # type: ignore[call-arg]
     existing_db_user = await get_user_by_id(
-        str(existing_user.id),
+        str(existing_user.id),  # type: ignore[arg-type]
         mocked_provide_http_token_payload,
         mock_guards(roles=["User"]),
     )
@@ -2058,11 +2060,11 @@ async def test_put_user_with_integer_user_id(
 
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
-            resource_id=db_user.id,
+            resource_id=db_user.id,  # type: ignore[arg-type]
             current_user=CurrentUserData(**current_user_data_admin),
         )
         last_accessed_at = await crud.read_resource_last_accessed_at(
-            resource_id=db_user.id,
+            resource_id=db_user.id,  # type: ignore[arg-type]
             current_user=CurrentUserData(**current_user_data_admin),
         )
 
@@ -2095,11 +2097,11 @@ async def test_admin_put_user_with_uuid_user_id(
     test_uuid = str(uuid.uuid4())
 
     # mocks the access token:
-    app_override_provide_http_token_payload
-    existing_user = await add_one_azure_test_user(0)
+    _ = app_override_provide_http_token_payload
+    existing_user = await add_one_azure_test_user(0)  # type: ignore[call-arg]
 
     existing_db_user = await get_user_by_id(
-        str(existing_user.id),
+        str(existing_user.id),  # type: ignore[arg-type]
         mocked_provide_http_token_payload,
         mock_guards(roles=["User"]),
     )
@@ -2126,11 +2128,11 @@ async def test_admin_put_user_with_uuid_user_id(
 
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
-            resource_id=db_user.id,
+            resource_id=db_user.id,  # type: ignore[arg-type]
             current_user=CurrentUserData(**current_user_data_admin),
         )
         last_accessed_at = await crud.read_resource_last_accessed_at(
-            resource_id=db_user.id,
+            resource_id=db_user.id,  # type: ignore[arg-type]
             current_user=CurrentUserData(**current_user_data_admin),
         )
 
@@ -2184,11 +2186,11 @@ async def test_put_user_invalid_token(
     """Test a admin updates a user"""
 
     # mocks the access token:
-    app_override_provide_http_token_payload
-    existing_user = await add_one_azure_test_user(0)
+    _ = app_override_provide_http_token_payload
+    existing_user = await add_one_azure_test_user(0)  # type: ignore[call-arg]
 
     existing_db_user = await get_user_by_id(
-        str(existing_user.id), token_admin_read, mock_guards(roles=["User"])
+        str(existing_user.id), token_admin_read, mock_guards(roles=["User"])  # type: ignore[arg-type]
     )
     assert existing_db_user.azure_user_id == existing_user.azure_user_id
     assert existing_db_user.id is not None
@@ -2218,11 +2220,11 @@ async def test_user_puts_another_user(
     """Test a admin updates a user"""
 
     # mocks the access token:
-    app_override_provide_http_token_payload
-    existing_user = await add_one_azure_test_user(1)
+    _ = app_override_provide_http_token_payload
+    existing_user = await add_one_azure_test_user(1)  # type: ignore[call-arg]
 
     existing_db_user = await get_user_by_id(
-        str(existing_user.id), token_admin_read, mock_guards(roles=["User"])
+        str(existing_user.id), token_admin_read, mock_guards(roles=["User"])  # type: ignore[arg-type]
     )
     assert existing_db_user.is_active is True
 
@@ -2256,10 +2258,10 @@ async def test_user_deletes_itself(
     """Test user deletes itself"""
 
     # mocks the access token:
-    app_override_provide_http_token_payload
-    existing_user = await add_one_azure_test_user(0)
+    _ = app_override_provide_http_token_payload
+    existing_user = await add_one_azure_test_user(0)  # type: ignore[call-arg]
     existing_db_user = await get_user_by_id(
-        str(existing_user.id), token_admin_read, mock_guards(roles=["User"])
+        str(existing_user.id), token_admin_read, mock_guards(roles=["User"])  # type: ignore[arg-type]
     )
     assert existing_db_user.azure_user_id == existing_user.azure_user_id
     assert existing_db_user.id is not None
@@ -2306,11 +2308,11 @@ async def test_admin_deletes_user(
     """Test admin deletes a user"""
 
     # mocks the access token:
-    app_override_provide_http_token_payload
-    existing_user = await add_one_azure_test_user(0)
+    _ = app_override_provide_http_token_payload
+    existing_user = await add_one_azure_test_user(0)  # type: ignore[call-arg]
 
     existing_db_user = await get_user_by_id(
-        str(existing_user.id),
+        str(existing_user.id),  # type: ignore[arg-type]
         mocked_provide_http_token_payload,
         mock_guards(roles=["User"]),
     )
@@ -2368,11 +2370,11 @@ async def test_delete_user_invalid_token(
     """Test deleting a user with invalid token fails"""
 
     # mocks the access token:
-    app_override_provide_http_token_payload
-    existing_user = await add_one_azure_test_user(2)
+    _ = app_override_provide_http_token_payload
+    existing_user = await add_one_azure_test_user(2)  # type: ignore[call-arg]
 
     existing_db_user = await get_user_by_id(
-        str(existing_user.id),
+        str(existing_user.id),  # type: ignore[arg-type]
         token_admin_read,
         mock_guards(roles=["User"]),
     )
@@ -2389,7 +2391,7 @@ async def test_delete_user_invalid_token(
 
     # check if user is still there:
     existing_db_user = await get_user_by_id(
-        str(existing_user.id),
+        str(existing_user.id),  # type: ignore[arg-type]
         token_admin_read,
         mock_guards(roles=["User"]),
     )
@@ -2414,11 +2416,11 @@ async def test_user_deletes_another_user(
     """Test delete another user fails"""
 
     # mocks the access token:
-    app_override_provide_http_token_payload
-    existing_user = await add_one_azure_test_user(2)
+    _ = app_override_provide_http_token_payload
+    existing_user = await add_one_azure_test_user(2)  # type: ignore[call-arg]
 
     existing_db_user = await get_user_by_id(
-        str(existing_user.id), token_admin_read, mock_guards(roles=["User"])
+        str(existing_user.id), token_admin_read, mock_guards(roles=["User"])  # type: ignore[arg-type]
     )
     assert existing_db_user.azure_user_id == existing_user.azure_user_id
     assert existing_db_user.id is not None
@@ -2433,7 +2435,7 @@ async def test_user_deletes_another_user(
 
     # check if user is still there:
     existing_db_user = await get_user_by_id(
-        str(existing_user.id), token_admin_read, mock_guards(roles=["User"])
+        str(existing_user.id), token_admin_read, mock_guards(roles=["User"])  # type: ignore[arg-type]
     )
     assert existing_db_user.azure_user_id == existing_user.azure_user_id
     assert existing_db_user.id is not None
@@ -2458,7 +2460,7 @@ async def test_all_ueber_group_endpoints(
     add_many_test_ueber_groups,
 ):
     """Tests the ueber_group endpoints of the API."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     # Make a POST request to create the ueber-group
     response = await async_client.post(
@@ -2469,15 +2471,15 @@ async def test_all_ueber_group_endpoints(
     assert response.status_code == 201
     created_ueber_group = UeberGroup(**response.json())
     assert created_ueber_group.id is not None
-    assert created_ueber_group.name == many_test_ueber_groups[0]["name"]
-    assert created_ueber_group.description == many_test_ueber_groups[0]["description"]
+    assert created_ueber_group.name == many_test_ueber_groups[0]["name"]  # type: ignore[attr-defined]
+    assert created_ueber_group.description == many_test_ueber_groups[0]["description"]  # type: ignore[attr-defined]
 
     # add some more ueber groups:
     # note: the first one is going to be double with different id's
     mocked_ueber_groups = await add_many_test_ueber_groups(
         mocked_provide_http_token_payload
     )
-    created_ueber_group.id = uuid.UUID(created_ueber_group.id)
+    created_ueber_group.id = uuid.UUID(created_ueber_group.id)  # type: ignore[arg-type]
     expected_ueber_groups = [created_ueber_group] + mocked_ueber_groups
     expected_ueber_groups = sorted(expected_ueber_groups, key=lambda x: x.id)
 
@@ -2490,9 +2492,9 @@ async def test_all_ueber_group_endpoints(
     assert len(read_ueber_groups) == len(expected_ueber_groups)
     for read_child, expected_child in zip(read_ueber_groups, expected_ueber_groups):
         modelled_ueber_group = UeberGroupRead(**read_child)
-        assert modelled_ueber_group.id == expected_child.id
-        assert modelled_ueber_group.name == expected_child.name
-        assert modelled_ueber_group.description == expected_child.description
+        assert modelled_ueber_group.id == expected_child.id  # type: ignore[attr-defined]
+        assert modelled_ueber_group.name == expected_child.name  # type: ignore[attr-defined]
+        assert modelled_ueber_group.description == expected_child.description  # type: ignore[attr-defined]
 
     # Make a GET request to get one ueber-group by id
     response = await async_client.get(
@@ -2501,9 +2503,9 @@ async def test_all_ueber_group_endpoints(
     assert response.status_code == 200
     read_ueber_group = response.json()
     modelled_ueber_group = UeberGroupRead(**read_ueber_group)
-    assert modelled_ueber_group.id == mocked_ueber_groups[2].id
-    assert modelled_ueber_group.name == mocked_ueber_groups[2].name
-    assert modelled_ueber_group.description == mocked_ueber_groups[2].description
+    assert modelled_ueber_group.id == mocked_ueber_groups[2].id  # type: ignore[attr-defined]
+    assert modelled_ueber_group.name == mocked_ueber_groups[2].name  # type: ignore[attr-defined]
+    assert modelled_ueber_group.description == mocked_ueber_groups[2].description  # type: ignore[attr-defined]
 
     # Make a PUT request to update one ueber-group
     new_data = {"name": "The updated title of a child."}
@@ -2515,9 +2517,9 @@ async def test_all_ueber_group_endpoints(
     assert response.status_code == 200
     read_ueber_group = response.json()
     modelled_ueber_group = UeberGroupRead(**read_ueber_group)
-    assert modelled_ueber_group.id == mocked_ueber_groups[1].id
-    assert modelled_ueber_group.name == new_data["name"]
-    assert modelled_ueber_group.description == mocked_ueber_groups[1].description
+    assert modelled_ueber_group.id == mocked_ueber_groups[1].id  # type: ignore[attr-defined]
+    assert modelled_ueber_group.name == new_data["name"]  # type: ignore[attr-defined]
+    assert modelled_ueber_group.description == mocked_ueber_groups[1].description  # type: ignore[attr-defined]
 
     # Make a DELETE request to delete one ueber-group
     response = await async_client.delete(
@@ -2553,7 +2555,7 @@ async def test_all_group_endpoints(
     add_many_test_groups,
 ):
     """Tests the group endpoints of the API."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     # Make a POST request to create a standalone group
     response = await async_client.post(
@@ -2566,8 +2568,8 @@ async def test_all_group_endpoints(
     assert response.status_code == 201
     created_group = Group(**response.json())
     assert created_group.id is not None
-    assert created_group.name == many_test_groups[0]["name"]
-    assert created_group.description == many_test_groups[0]["description"]
+    assert created_group.name == many_test_groups[0]["name"]  # type: ignore[attr-defined]
+    assert created_group.description == many_test_groups[0]["description"]  # type: ignore[attr-defined]
 
     # Make a POST request to create a group as child of existing ueber-group
     response = await async_client.post(
@@ -2578,14 +2580,14 @@ async def test_all_group_endpoints(
     assert response.status_code == 201
     created_group_as_child = Group(**response.json())
     assert created_group_as_child.id is not None
-    assert created_group_as_child.name == many_test_groups[0]["name"]
-    assert created_group_as_child.description == many_test_groups[0]["description"]
+    assert created_group_as_child.name == many_test_groups[0]["name"]  # type: ignore[attr-defined]
+    assert created_group_as_child.description == many_test_groups[0]["description"]  # type: ignore[attr-defined]
 
     # add some more groups:
     # note: the first one is going to be double with different id's
     mocked_groups = await add_many_test_groups(mocked_provide_http_token_payload)
-    created_group.id = uuid.UUID(created_group.id)
-    created_group_as_child.id = uuid.UUID(created_group_as_child.id)
+    created_group.id = uuid.UUID(created_group.id)  # type: ignore[arg-type]
+    created_group_as_child.id = uuid.UUID(created_group_as_child.id)  # type: ignore[arg-type]
     expected_groups = [created_group, created_group_as_child] + mocked_groups
     expected_groups = sorted(expected_groups, key=lambda x: x.id)
 
@@ -2598,9 +2600,9 @@ async def test_all_group_endpoints(
     assert len(read_groups) == len(expected_groups)
     for read_child, expected_child in zip(read_groups, expected_groups):
         modelled_group = GroupRead(**read_child)
-        assert modelled_group.id == expected_child.id
-        assert modelled_group.name == expected_child.name
-        assert modelled_group.description == expected_child.description
+        assert modelled_group.id == expected_child.id  # type: ignore[attr-defined]
+        assert modelled_group.name == expected_child.name  # type: ignore[attr-defined]
+        assert modelled_group.description == expected_child.description  # type: ignore[attr-defined]
 
     # Make a GET request to get one group by id
     response = await async_client.get(
@@ -2609,9 +2611,9 @@ async def test_all_group_endpoints(
     assert response.status_code == 200
     read_group = response.json()
     modelled_group = GroupRead(**read_group)
-    assert modelled_group.id == mocked_groups[2].id
-    assert modelled_group.name == mocked_groups[2].name
-    assert modelled_group.description == mocked_groups[2].description
+    assert modelled_group.id == mocked_groups[2].id  # type: ignore[attr-defined]
+    assert modelled_group.name == mocked_groups[2].name  # type: ignore[attr-defined]
+    assert modelled_group.description == mocked_groups[2].description  # type: ignore[attr-defined]
 
     # Make a PUT request to update one group
     new_data = {"name": "The updated title of a child."}
@@ -2623,9 +2625,9 @@ async def test_all_group_endpoints(
     assert response.status_code == 200
     read_group = response.json()
     modelled_group = GroupRead(**read_group)
-    assert modelled_group.id == mocked_groups[1].id
-    assert modelled_group.name == new_data["name"]
-    assert modelled_group.description == mocked_groups[1].description
+    assert modelled_group.id == mocked_groups[1].id  # type: ignore[attr-defined]
+    assert modelled_group.name == new_data["name"]  # type: ignore[attr-defined]
+    assert modelled_group.description == mocked_groups[1].description  # type: ignore[attr-defined]
 
     # Make a DELETE request to delete one group
     response = await async_client.delete(
@@ -2660,7 +2662,7 @@ async def test_all_sub_group_endpoints(
     add_many_test_sub_groups,
 ):
     """Tests the sub_group endpoints of the API."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     parent_identity_id = await access_to_one_parent(Group)
 
@@ -2678,15 +2680,15 @@ async def test_all_sub_group_endpoints(
     assert response.status_code == 201
     created_sub_group = SubGroup(**response.json())
     assert created_sub_group.id is not None
-    assert created_sub_group.name == many_test_sub_groups[0]["name"]
-    assert created_sub_group.description == many_test_sub_groups[0]["description"]
+    assert created_sub_group.name == many_test_sub_groups[0]["name"]  # type: ignore[attr-defined]
+    assert created_sub_group.description == many_test_sub_groups[0]["description"]  # type: ignore[attr-defined]
 
     # add some more sub groups:
     # note: the first one is going to be double with different id's
     mocked_sub_groups = await add_many_test_sub_groups(
         mocked_provide_http_token_payload
     )
-    created_sub_group.id = uuid.UUID(created_sub_group.id)
+    created_sub_group.id = uuid.UUID(created_sub_group.id)  # type: ignore[arg-type]
     expected_sub_groups = [created_sub_group] + mocked_sub_groups
     expected_sub_groups = sorted(expected_sub_groups, key=lambda x: x.id)
 
@@ -2699,9 +2701,9 @@ async def test_all_sub_group_endpoints(
     assert len(read_sub_groups) == len(expected_sub_groups)
     for read_child, expected_child in zip(read_sub_groups, expected_sub_groups):
         modelled_sub_group = SubGroupRead(**read_child)
-        assert modelled_sub_group.id == expected_child.id
-        assert modelled_sub_group.name == expected_child.name
-        assert modelled_sub_group.description == expected_child.description
+        assert modelled_sub_group.id == expected_child.id  # type: ignore[attr-defined]
+        assert modelled_sub_group.name == expected_child.name  # type: ignore[attr-defined]
+        assert modelled_sub_group.description == expected_child.description  # type: ignore[attr-defined]
 
     # Make a GET request to get one sub-group by id
     response = await async_client.get(
@@ -2710,9 +2712,9 @@ async def test_all_sub_group_endpoints(
     assert response.status_code == 200
     read_sub_group = response.json()
     modelled_sub_group = SubGroupRead(**read_sub_group)
-    assert modelled_sub_group.id == mocked_sub_groups[2].id
-    assert modelled_sub_group.name == mocked_sub_groups[2].name
-    assert modelled_sub_group.description == mocked_sub_groups[2].description
+    assert modelled_sub_group.id == mocked_sub_groups[2].id  # type: ignore[attr-defined]
+    assert modelled_sub_group.name == mocked_sub_groups[2].name  # type: ignore[attr-defined]
+    assert modelled_sub_group.description == mocked_sub_groups[2].description  # type: ignore[attr-defined]
 
     # Make a PUT request to update one sub-group
     new_data = {"name": "The updated title of a child."}
@@ -2724,9 +2726,9 @@ async def test_all_sub_group_endpoints(
     assert response.status_code == 200
     read_sub_group = response.json()
     modelled_sub_group = SubGroupRead(**read_sub_group)
-    assert modelled_sub_group.id == mocked_sub_groups[1].id
-    assert modelled_sub_group.name == new_data["name"]
-    assert modelled_sub_group.description == mocked_sub_groups[1].description
+    assert modelled_sub_group.id == mocked_sub_groups[1].id  # type: ignore[attr-defined]
+    assert modelled_sub_group.name == new_data["name"]  # type: ignore[attr-defined]
+    assert modelled_sub_group.description == mocked_sub_groups[1].description  # type: ignore[attr-defined]
 
     # Make a DELETE request to delete one sub-group
     response = await async_client.delete(
@@ -2762,7 +2764,7 @@ async def test_all_sub_sub_group_endpoints(
     add_many_test_sub_sub_groups,
 ):
     """Tests the sub_sub_group endpoints of the API."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     subgroup_id = await access_to_one_parent(SubGroup)
 
@@ -2780,9 +2782,9 @@ async def test_all_sub_sub_group_endpoints(
     assert response.status_code == 201
     created_sub_sub_group = SubSubGroup(**response.json())
     assert created_sub_sub_group.id is not None
-    assert created_sub_sub_group.name == many_test_sub_sub_groups[0]["name"]
+    assert created_sub_sub_group.name == many_test_sub_sub_groups[0]["name"]  # type: ignore[attr-defined]
     assert (
-        created_sub_sub_group.description == many_test_sub_sub_groups[0]["description"]
+        created_sub_sub_group.description == many_test_sub_sub_groups[0]["description"]  # type: ignore[attr-defined]
     )
 
     # add some more sub-sub groups:
@@ -2790,7 +2792,7 @@ async def test_all_sub_sub_group_endpoints(
     mocked_sub_sub_groups = await add_many_test_sub_sub_groups(
         mocked_provide_http_token_payload
     )
-    created_sub_sub_group.id = uuid.UUID(created_sub_sub_group.id)
+    created_sub_sub_group.id = uuid.UUID(created_sub_sub_group.id)  # type: ignore[arg-type]
     expected_sub_sub_groups = [created_sub_sub_group] + mocked_sub_sub_groups
     expected_sub_sub_groups = sorted(expected_sub_sub_groups, key=lambda x: x.id)
 
@@ -2803,9 +2805,9 @@ async def test_all_sub_sub_group_endpoints(
     assert len(read_sub_sub_groups) == len(expected_sub_sub_groups)
     for read_child, expected_child in zip(read_sub_sub_groups, expected_sub_sub_groups):
         modelled_sub_sub_group = SubSubGroupRead(**read_child)
-        assert modelled_sub_sub_group.id == expected_child.id
-        assert modelled_sub_sub_group.name == expected_child.name
-        assert modelled_sub_sub_group.description == expected_child.description
+        assert modelled_sub_sub_group.id == expected_child.id  # type: ignore[attr-defined]
+        assert modelled_sub_sub_group.name == expected_child.name  # type: ignore[attr-defined]
+        assert modelled_sub_sub_group.description == expected_child.description  # type: ignore[attr-defined]
 
     # Make a GET request to get one sub-sub-group by id
     response = await async_client.get(
@@ -2814,9 +2816,9 @@ async def test_all_sub_sub_group_endpoints(
     assert response.status_code == 200
     read_sub_sub_group = response.json()
     modelled_sub_sub_group = SubSubGroupRead(**read_sub_sub_group)
-    assert modelled_sub_sub_group.id == mocked_sub_sub_groups[2].id
-    assert modelled_sub_sub_group.name == mocked_sub_sub_groups[2].name
-    assert modelled_sub_sub_group.description == mocked_sub_sub_groups[2].description
+    assert modelled_sub_sub_group.id == mocked_sub_sub_groups[2].id  # type: ignore[attr-defined]
+    assert modelled_sub_sub_group.name == mocked_sub_sub_groups[2].name  # type: ignore[attr-defined]
+    assert modelled_sub_sub_group.description == mocked_sub_sub_groups[2].description  # type: ignore[attr-defined]
 
     # Make a PUT request to update one sub-sub-group
     new_data = {"name": "The updated title of a child."}
@@ -2828,9 +2830,9 @@ async def test_all_sub_sub_group_endpoints(
     assert response.status_code == 200
     read_sub_sub_group = response.json()
     modelled_sub_sub_group = SubSubGroupRead(**read_sub_sub_group)
-    assert modelled_sub_sub_group.id == mocked_sub_sub_groups[1].id
-    assert modelled_sub_sub_group.name == new_data["name"]
-    assert modelled_sub_sub_group.description == mocked_sub_sub_groups[1].description
+    assert modelled_sub_sub_group.id == mocked_sub_sub_groups[1].id  # type: ignore[attr-defined]
+    assert modelled_sub_sub_group.name == new_data["name"]  # type: ignore[attr-defined]
+    assert modelled_sub_sub_group.description == mocked_sub_sub_groups[1].description  # type: ignore[attr-defined]
 
     # Make a DELETE request to delete one sub-sub-group
     response = await async_client.delete(
@@ -2865,9 +2867,9 @@ async def test_add_user_to_ueber_group_and_remove_again(
     add_many_test_ueber_groups,
 ):
     """Tests adding user to an ueber-group and remove again."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
-    existing_user = await add_one_azure_test_user(0)
+    existing_user = await add_one_azure_test_user(0)  # type: ignore[call-arg]
 
     mocked_ueber_groups = await add_many_test_ueber_groups()
 
@@ -2887,8 +2889,8 @@ async def test_add_user_to_ueber_group_and_remove_again(
 
     assert ueber_group_response.status_code == 200
     ueber_group = UeberGroupRead(**ueber_group_response.json())
-    assert len(ueber_group.users) == 1
-    assert any(user.id == existing_user.id for user in ueber_group.users)
+    assert len(ueber_group.users) == 1  # type: ignore[attr-defined]
+    assert any(user.id == existing_user.id for user in ueber_group.users)  # type: ignore[attr-defined]
 
     # remove user from ueber group
     remove_response = await async_client.delete(
@@ -2904,8 +2906,8 @@ async def test_add_user_to_ueber_group_and_remove_again(
     ueber_group_after_delete = UeberGroupRead(
         **ueber_group_after_delete_response.json()
     )
-    assert len(ueber_group_after_delete.users) == 0
-    assert all(user.id != existing_user.id for user in ueber_group_after_delete.users)
+    assert len(ueber_group_after_delete.users) == 0  # type: ignore[attr-defined]
+    assert all(user.id != existing_user.id for user in ueber_group_after_delete.users)  # type: ignore[attr-defined]
 
 
 @pytest.mark.anyio
@@ -2921,9 +2923,9 @@ async def test_bulk_add_users_to_ueber_group_and_bulk_remove(
     add_many_test_ueber_groups,
 ):
     """Tests bulk adding users to an ueber-group and remove some fo them again."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
-    existing_users = await add_many_azure_test_users()
+    existing_users = await add_many_azure_test_users()  # type: ignore[call-arg]
 
     mocked_ueber_groups = await add_many_test_ueber_groups()
 
@@ -2946,10 +2948,10 @@ async def test_bulk_add_users_to_ueber_group_and_bulk_remove(
 
     assert ueber_group_response.status_code == 200
     ueber_group = UeberGroupRead(**ueber_group_response.json())
-    assert len(ueber_group.users) == 5
+    assert len(ueber_group.users) == 5  # type: ignore[attr-defined]
     assert all(
         user.id in [existing_user.id for existing_user in existing_users]
-        for user in ueber_group.users
+        for user in ueber_group.users  # type: ignore[attr-defined]
     )
 
     # bulk remove users from ueber group
@@ -2968,13 +2970,13 @@ async def test_bulk_add_users_to_ueber_group_and_bulk_remove(
     ueber_group_after_delete = UeberGroupRead(
         **ueber_group_after_delete_response.json()
     )
-    assert len(ueber_group_after_delete.users) == 3
+    assert len(ueber_group_after_delete.users) == 3  # type: ignore[attr-defined]
     assert any(
         user.id not in [existing_user.id for existing_user in existing_users[0:2]]
-        for user in ueber_group.users
+        for user in ueber_group.users  # type: ignore[attr-defined]
     )
     expected_ids = [existing_user.id for existing_user in existing_users[2:]]
-    ueber_group_user_ids = [user.id for user in ueber_group.users]
+    ueber_group_user_ids = [user.id for user in ueber_group.users]  # type: ignore[attr-defined]
     assert all(user_id in ueber_group_user_ids for user_id in expected_ids)
 
 
@@ -2991,7 +2993,7 @@ async def test_bulk_add_groups_to_ueber_group_and_bulk_remove(
     add_many_test_groups,
 ):
     """Tests bulk adding groups to an ueber-group and remove some of them again."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_groups = await add_many_test_groups()
 
@@ -3016,10 +3018,10 @@ async def test_bulk_add_groups_to_ueber_group_and_bulk_remove(
 
     assert ueber_group_response.status_code == 200
     ueber_group = UeberGroupRead(**ueber_group_response.json())
-    assert len(ueber_group.groups) == 4
+    assert len(ueber_group.groups) == 4  # type: ignore[attr-defined]
     assert all(
         group.id in [mocked_group.id for mocked_group in mocked_groups]
-        for group in ueber_group.groups
+        for group in ueber_group.groups  # type: ignore[attr-defined]
     )
 
     # bulk remove groups from ueber group
@@ -3038,13 +3040,13 @@ async def test_bulk_add_groups_to_ueber_group_and_bulk_remove(
     ueber_group_after_delete = UeberGroupRead(
         **ueber_group_after_delete_response.json()
     )
-    assert len(ueber_group_after_delete.groups) == 2
+    assert len(ueber_group_after_delete.groups) == 2  # type: ignore[attr-defined]
     assert any(
         group.id not in [mocked_group.id for mocked_group in mocked_groups[0:2]]
-        for group in ueber_group.groups
+        for group in ueber_group.groups  # type: ignore[attr-defined]
     )
     expected_ids = [mocked_group.id for mocked_group in mocked_groups[2:]]
-    ueber_group_group_ids = [group.id for group in ueber_group.groups]
+    ueber_group_group_ids = [group.id for group in ueber_group.groups]  # type: ignore[attr-defined]
     assert all(group_id in ueber_group_group_ids for group_id in expected_ids)
 
 
@@ -3058,14 +3060,14 @@ async def test_add_user_to_group_and_remove_again(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
     add_one_azure_test_user: List[User],
-    add_many_test_groups: List[Group],
+    add_many_test_groups: List[Group],  # type: ignore[valid-type]
 ):
     """Tests adding user to a group and remove again."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
-    existing_user = await add_one_azure_test_user(0)
+    existing_user = await add_one_azure_test_user(0)  # type: ignore[call-arg]
 
-    mocked_groups = await add_many_test_groups()
+    mocked_groups = await add_many_test_groups()  # type: ignore[call-arg]
 
     response = await async_client.post(
         f"/api/v1/user/{existing_user.id}/group/{str(mocked_groups[3].id)}"
@@ -3081,8 +3083,8 @@ async def test_add_user_to_group_and_remove_again(
 
     assert group_response.status_code == 200
     group = GroupRead(**group_response.json())
-    assert len(group.users) == 1
-    assert any(user.id == existing_user.id for user in group.users)
+    assert len(group.users) == 1  # type: ignore[attr-defined]
+    assert any(user.id == existing_user.id for user in group.users)  # type: ignore[attr-defined]
 
     # remove user from group
     remove_response = await async_client.delete(
@@ -3096,8 +3098,8 @@ async def test_add_user_to_group_and_remove_again(
 
     assert group_after_delete_response.status_code == 200
     group_after_delete = GroupRead(**group_after_delete_response.json())
-    assert len(group_after_delete.users) == 0
-    assert all(user.id != existing_user.id for user in group_after_delete.users)
+    assert len(group_after_delete.users) == 0  # type: ignore[attr-defined]
+    assert all(user.id != existing_user.id for user in group_after_delete.users)  # type: ignore[attr-defined]
 
 
 @pytest.mark.anyio
@@ -3113,9 +3115,9 @@ async def test_bulk_add_users_to_group_and_bulk_remove(
     add_many_test_groups,
 ):
     """Tests bulk adding users to a group and bulk remove some of them again."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
-    existing_users = await add_many_azure_test_users()
+    existing_users = await add_many_azure_test_users()  # type: ignore[call-arg]
 
     mocked_groups = await add_many_test_groups()
 
@@ -3136,10 +3138,10 @@ async def test_bulk_add_users_to_group_and_bulk_remove(
 
     assert group_response.status_code == 200
     group = GroupRead(**group_response.json())
-    assert len(group.users) == 5
+    assert len(group.users) == 5  # type: ignore[attr-defined]
     assert all(
         user.id in [existing_user.id for existing_user in existing_users]
-        for user in group.users
+        for user in group.users  # type: ignore[attr-defined]
     )
 
     # bulk remove users from group
@@ -3156,13 +3158,13 @@ async def test_bulk_add_users_to_group_and_bulk_remove(
 
     assert group_after_delete_response.status_code == 200
     group_after_delete = GroupRead(**group_after_delete_response.json())
-    assert len(group_after_delete.users) == 3
+    assert len(group_after_delete.users) == 3  # type: ignore[attr-defined]
     assert any(
         user.id not in [existing_user.id for existing_user in existing_users[0:2]]
-        for user in group.users
+        for user in group.users  # type: ignore[attr-defined]
     )
     expected_ids = [existing_user.id for existing_user in existing_users[2:]]
-    group_user_ids = [user.id for user in group.users]
+    group_user_ids = [user.id for user in group.users]  # type: ignore[attr-defined]
     assert all(user_id in group_user_ids for user_id in expected_ids)
 
 
@@ -3179,7 +3181,7 @@ async def test_bulk_add_sub_groups_to_group_and_bulk_remove(
     add_many_test_sub_groups,
 ):
     """Tests bulk adding sub-groups to a group and bulk remove some of them again."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_sub_groups = await add_many_test_sub_groups()
 
@@ -3202,10 +3204,10 @@ async def test_bulk_add_sub_groups_to_group_and_bulk_remove(
 
     assert group_response.status_code == 200
     group = GroupRead(**group_response.json())
-    assert len(group.sub_groups) == 5
+    assert len(group.sub_groups) == 5  # type: ignore[attr-defined]
     assert all(
         sub_group.id in [mocked_sub_group.id for mocked_sub_group in mocked_sub_groups]
-        for sub_group in group.sub_groups
+        for sub_group in group.sub_groups  # type: ignore[attr-defined]
     )
 
     # bulk remove sub-groups from group
@@ -3222,14 +3224,14 @@ async def test_bulk_add_sub_groups_to_group_and_bulk_remove(
 
     assert group_after_delete_response.status_code == 200
     group_after_delete = GroupRead(**group_after_delete_response.json())
-    assert len(group_after_delete.sub_groups) == 3
+    assert len(group_after_delete.sub_groups) == 3  # type: ignore[attr-defined]
     assert any(
         sub_group.id
         not in [mocked_sub_group.id for mocked_sub_group in mocked_sub_groups[0:2]]
-        for sub_group in group.sub_groups
+        for sub_group in group.sub_groups  # type: ignore[attr-defined]
     )
     expected_ids = [mocked_sub_group.id for mocked_sub_group in mocked_sub_groups[2:]]
-    group_sub_group_ids = [sub_group.id for sub_group in group.sub_groups]
+    group_sub_group_ids = [sub_group.id for sub_group in group.sub_groups]  # type: ignore[attr-defined]
     assert all(sub_group_id in group_sub_group_ids for sub_group_id in expected_ids)
 
 
@@ -3246,9 +3248,9 @@ async def test_add_user_to_sub_group_and_remove_again(
     add_many_test_sub_groups,
 ):
     """Tests adding users to a sub-group."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
-    existing_user = await add_one_azure_test_user(0)
+    existing_user = await add_one_azure_test_user(0)  # type: ignore[call-arg]
 
     mocked_sub_groups = await add_many_test_sub_groups()
 
@@ -3268,8 +3270,8 @@ async def test_add_user_to_sub_group_and_remove_again(
 
     assert sub_group_response.status_code == 200
     sub_group = SubGroupRead(**sub_group_response.json())
-    assert len(sub_group.users) == 1
-    assert any(user.id == existing_user.id for user in sub_group.users)
+    assert len(sub_group.users) == 1  # type: ignore[attr-defined]
+    assert any(user.id == existing_user.id for user in sub_group.users)  # type: ignore[attr-defined]
 
     # remove user from sub group
     remove_response = await async_client.delete(
@@ -3283,8 +3285,8 @@ async def test_add_user_to_sub_group_and_remove_again(
 
     assert sub_group_after_delete_response.status_code == 200
     sub_group_after_delete = SubGroupRead(**sub_group_after_delete_response.json())
-    assert len(sub_group_after_delete.users) == 0
-    assert all(user.id != existing_user.id for user in sub_group_after_delete.users)
+    assert len(sub_group_after_delete.users) == 0  # type: ignore[attr-defined]
+    assert all(user.id != existing_user.id for user in sub_group_after_delete.users)  # type: ignore[attr-defined]
 
 
 @pytest.mark.anyio
@@ -3300,9 +3302,9 @@ async def test_bulk_add_users_to_sub_group_and_bulk_remove(
     add_many_test_sub_groups,
 ):
     """Tests bulk adding users to a sub-group and remove some of them again."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
-    existing_users = await add_many_azure_test_users()
+    existing_users = await add_many_azure_test_users()  # type: ignore[call-arg]
 
     mocked_sub_groups = await add_many_test_sub_groups()
 
@@ -3325,10 +3327,10 @@ async def test_bulk_add_users_to_sub_group_and_bulk_remove(
 
     assert sub_group_response.status_code == 200
     sub_group = UeberGroupRead(**sub_group_response.json())
-    assert len(sub_group.users) == 5
+    assert len(sub_group.users) == 5  # type: ignore[attr-defined]
     assert all(
         user.id in [existing_user.id for existing_user in existing_users]
-        for user in sub_group.users
+        for user in sub_group.users  # type: ignore[attr-defined]
     )
 
     # bulk remove users from sub group
@@ -3345,13 +3347,13 @@ async def test_bulk_add_users_to_sub_group_and_bulk_remove(
 
     assert sub_group_after_delete_response.status_code == 200
     sub_group_after_delete = SubGroupRead(**sub_group_after_delete_response.json())
-    assert len(sub_group_after_delete.users) == 3
+    assert len(sub_group_after_delete.users) == 3  # type: ignore[attr-defined]
     assert any(
         user.id not in [existing_user.id for existing_user in existing_users[0:2]]
-        for user in sub_group.users
+        for user in sub_group.users  # type: ignore[attr-defined]
     )
     expected_ids = [existing_user.id for existing_user in existing_users[2:]]
-    sub_group_user_ids = [user.id for user in sub_group.users]
+    sub_group_user_ids = [user.id for user in sub_group.users]  # type: ignore[attr-defined]
     assert all(user_id in sub_group_user_ids for user_id in expected_ids)
 
 
@@ -3368,7 +3370,7 @@ async def test_bulk_add_sub_sub_groups_to_sub_group_and_bulk_remove(
     add_many_test_sub_sub_groups,
 ):
     """Tests bulk adding sub-sub-groups to a sub-group and bulk remove some of them again."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_sub_sub_groups = await add_many_test_sub_sub_groups()
 
@@ -3395,11 +3397,11 @@ async def test_bulk_add_sub_sub_groups_to_sub_group_and_bulk_remove(
 
     assert sub_group_response.status_code == 200
     sub_group = SubGroupRead(**sub_group_response.json())
-    assert len(sub_group.sub_sub_groups) == 6
+    assert len(sub_group.sub_sub_groups) == 6  # type: ignore[attr-defined]
     assert all(
         sub_sub_group.id
         in [mocked_sub_sub_group.id for mocked_sub_sub_group in mocked_sub_sub_groups]
-        for sub_sub_group in sub_group.sub_sub_groups
+        for sub_sub_group in sub_group.sub_sub_groups  # type: ignore[attr-defined]
     )
 
     # bulk remove sub-sub-groups from sub-group
@@ -3416,20 +3418,20 @@ async def test_bulk_add_sub_sub_groups_to_sub_group_and_bulk_remove(
 
     assert sub_group_after_delete_response.status_code == 200
     sub_group_after_delete = SubGroupRead(**sub_group_after_delete_response.json())
-    assert len(sub_group_after_delete.sub_sub_groups) == 4
+    assert len(sub_group_after_delete.sub_sub_groups) == 4  # type: ignore[attr-defined]
     assert any(
         sub_sub_group.id
         not in [
             mocked_sub_sub_group.id
             for mocked_sub_sub_group in mocked_sub_sub_groups[0:2]
         ]
-        for sub_sub_group in sub_group.sub_sub_groups
+        for sub_sub_group in sub_group.sub_sub_groups  # type: ignore[attr-defined]
     )
     expected_ids = [
         mocked_sub_sub_group.id for mocked_sub_sub_group in mocked_sub_sub_groups[2:]
     ]
     sub_group_sub_sub_group_ids = [
-        sub_sub_group.id for sub_sub_group in sub_group_after_delete.sub_sub_groups
+        sub_sub_group.id for sub_sub_group in sub_group_after_delete.sub_sub_groups  # type: ignore[attr-defined]
     ]
     assert all(
         sub_sub_group_id in sub_group_sub_sub_group_ids
@@ -3450,9 +3452,9 @@ async def test_add_user_to_sub_sub_group_and_remove_again(
     add_many_test_sub_sub_groups,
 ):
     """Tests adding user to a sub-sub-group and remove again."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
-    existing_user = await add_one_azure_test_user(0)
+    existing_user = await add_one_azure_test_user(0)  # type: ignore[call-arg]
 
     mocked_sub_sub_groups = await add_many_test_sub_sub_groups()
 
@@ -3474,8 +3476,8 @@ async def test_add_user_to_sub_sub_group_and_remove_again(
 
     assert sub_sub_group_response.status_code == 200
     sub_sub_group = SubSubGroupRead(**sub_sub_group_response.json())
-    assert len(sub_sub_group.users) == 1
-    assert any(user.id == existing_user.id for user in sub_sub_group.users)
+    assert len(sub_sub_group.users) == 1  # type: ignore[attr-defined]
+    assert any(user.id == existing_user.id for user in sub_sub_group.users)  # type: ignore[attr-defined]
 
     # remove user from sub-sub-group
     remove_response = await async_client.delete(
@@ -3491,8 +3493,8 @@ async def test_add_user_to_sub_sub_group_and_remove_again(
     sub_sub_group_after_delete = SubSubGroupRead(
         **sub_sub_group_after_delete_response.json()
     )
-    assert len(sub_sub_group_after_delete.users) == 0
-    assert all(user.id != existing_user.id for user in sub_sub_group_after_delete.users)
+    assert len(sub_sub_group_after_delete.users) == 0  # type: ignore[attr-defined]
+    assert all(user.id != existing_user.id for user in sub_sub_group_after_delete.users)  # type: ignore[attr-defined]
 
 
 @pytest.mark.anyio
@@ -3508,9 +3510,9 @@ async def test_bulk_add_users_to_sub_sub_group_and_bulk_remove(
     add_many_test_sub_sub_groups,
 ):
     """Tests bulk adding users to a sub-sub-group"""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
-    existing_users = await add_many_azure_test_users()
+    existing_users = await add_many_azure_test_users()  # type: ignore[call-arg]
 
     mocked_sub_sub_groups = await add_many_test_sub_sub_groups()
 
@@ -3533,10 +3535,10 @@ async def test_bulk_add_users_to_sub_sub_group_and_bulk_remove(
 
     assert sub_sub_group_response.status_code == 200
     sub_sub_group = SubSubGroupRead(**sub_sub_group_response.json())
-    assert len(sub_sub_group.users) == 5
+    assert len(sub_sub_group.users) == 5  # type: ignore[attr-defined]
     assert all(
         user.id in [existing_user.id for existing_user in existing_users]
-        for user in sub_sub_group.users
+        for user in sub_sub_group.users  # type: ignore[attr-defined]
     )
 
     # bulk remove users from sub-sub group
@@ -3555,13 +3557,13 @@ async def test_bulk_add_users_to_sub_sub_group_and_bulk_remove(
     sub_sub_group_after_delete = SubSubGroupRead(
         **sub_sub_group_after_delete_response.json()
     )
-    assert len(sub_sub_group_after_delete.users) == 3
+    assert len(sub_sub_group_after_delete.users) == 3  # type: ignore[attr-defined]
     assert any(
         user.id not in [existing_user.id for existing_user in existing_users[0:2]]
-        for user in sub_sub_group.users
+        for user in sub_sub_group.users  # type: ignore[attr-defined]
     )
     expected_ids = [existing_user.id for existing_user in existing_users[2:]]
-    sub_sub_group_user_ids = [user.id for user in sub_sub_group.users]
+    sub_sub_group_user_ids = [user.id for user in sub_sub_group.users]  # type: ignore[attr-defined]
     assert all(user_id in sub_sub_group_user_ids for user_id in expected_ids)
 
 
@@ -3578,9 +3580,9 @@ async def test_add_user_to_groups_without_inheritance(
     add_many_test_groups,
 ):
     """Tests adding users to an ueber-group, group, sub-group, and sub-sub-group."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
-    existing_user = await add_one_azure_test_user(0)
+    existing_user = await add_one_azure_test_user(0)  # type: ignore[call-arg]
 
     mocked_groups = await add_many_test_groups()
 
@@ -3608,7 +3610,7 @@ async def test_add_group_to_ueber_group(
     add_many_test_groups,
 ):
     """Tests adding groups to an ueber-group."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_ueber_groups = await add_many_test_ueber_groups()
     mocked_groups = await add_many_test_groups()
@@ -3633,9 +3635,9 @@ async def test_add_group_to_ueber_group(
 
     assert ueber_group_response.status_code == 200
     ueber_group = UeberGroupRead(**ueber_group_response.json())
-    assert len(ueber_group.groups) == 2
-    assert any(group.id == mocked_groups[1].id for group in ueber_group.groups)
-    assert any(group.id == mocked_groups[3].id for group in ueber_group.groups)
+    assert len(ueber_group.groups) == 2  # type: ignore[attr-defined]
+    assert any(group.id == mocked_groups[1].id for group in ueber_group.groups)  # type: ignore[attr-defined]
+    assert any(group.id == mocked_groups[3].id for group in ueber_group.groups)  # type: ignore[attr-defined]
 
     # remove a group from the ueber-group:
     remove_response = await async_client.delete(
@@ -3651,12 +3653,12 @@ async def test_add_group_to_ueber_group(
     ueber_group_after_delete = UeberGroupRead(
         **ueber_group_after_delete_response.json()
     )
-    assert len(ueber_group_after_delete.groups) == 1
+    assert len(ueber_group_after_delete.groups) == 1  # type: ignore[attr-defined]
     assert all(
-        group.id != mocked_groups[1].id for group in ueber_group_after_delete.groups
+        group.id != mocked_groups[1].id for group in ueber_group_after_delete.groups  # type: ignore[attr-defined]
     )
     assert any(
-        group.id == mocked_groups[3].id for group in ueber_group_after_delete.groups
+        group.id == mocked_groups[3].id for group in ueber_group_after_delete.groups  # type: ignore[attr-defined]
     )
 
 
@@ -3673,7 +3675,7 @@ async def test_add_sub_group_to_group(
     add_many_test_sub_groups,
 ):
     """Tests adding groups to an ueber-group."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_groups = await add_many_test_groups()
     mocked_sub_groups = await add_many_test_sub_groups()
@@ -3692,7 +3694,7 @@ async def test_add_sub_group_to_group(
     assert group_response.status_code == 200
     group = GroupRead(**group_response.json())
     assert any(
-        sub_group.id == mocked_sub_groups[3].id for sub_group in group.sub_groups
+        sub_group.id == mocked_sub_groups[3].id for sub_group in group.sub_groups  # type: ignore[attr-defined]
     )
 
     # add another sub_group to the group:
@@ -3704,12 +3706,12 @@ async def test_add_sub_group_to_group(
 
     assert group_response.status_code == 200
     group = GroupRead(**group_response.json())
-    assert len(group.sub_groups) == 2
+    assert len(group.sub_groups) == 2  # type: ignore[attr-defined]
     assert any(
-        sub_group.id == mocked_sub_groups[3].id for sub_group in group.sub_groups
+        sub_group.id == mocked_sub_groups[3].id for sub_group in group.sub_groups  # type: ignore[attr-defined]
     )
     assert any(
-        sub_group.id == mocked_sub_groups[0].id for sub_group in group.sub_groups
+        sub_group.id == mocked_sub_groups[0].id for sub_group in group.sub_groups  # type: ignore[attr-defined]
     )
 
     # remove a sub_group from the group:
@@ -3724,14 +3726,14 @@ async def test_add_sub_group_to_group(
 
     assert group_after_delete_response.status_code == 200
     group_after_delete = GroupRead(**group_after_delete_response.json())
-    assert len(group_after_delete.sub_groups) == 1
+    assert len(group_after_delete.sub_groups) == 1  # type: ignore[attr-defined]
     assert all(
         sub_group.id != mocked_sub_groups[0].id
-        for sub_group in group_after_delete.sub_groups
+        for sub_group in group_after_delete.sub_groups  # type: ignore[attr-defined]
     )
     assert any(
         sub_group.id == mocked_sub_groups[3].id
-        for sub_group in group_after_delete.sub_groups
+        for sub_group in group_after_delete.sub_groups  # type: ignore[attr-defined]
     )
 
 
@@ -3748,7 +3750,7 @@ async def test_add_sub_sub_group_to_sub_group(
     add_many_test_sub_sub_groups,
 ):
     """Tests adding groups to an ueber-group."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_sub_groups = await add_many_test_sub_groups()
     mocked_sub_sub_groups = await add_many_test_sub_sub_groups()
@@ -3770,7 +3772,7 @@ async def test_add_sub_sub_group_to_sub_group(
     sub_group = SubGroupRead(**sub_group_response.json())
     assert any(
         sub_sub_group.id == mocked_sub_sub_groups[4].id
-        for sub_sub_group in sub_group.sub_sub_groups
+        for sub_sub_group in sub_group.sub_sub_groups  # type: ignore[attr-defined]
     )
 
     # add another sub_sub_group to the sub_group:
@@ -3784,14 +3786,14 @@ async def test_add_sub_sub_group_to_sub_group(
 
     assert sub_group_response.status_code == 200
     sub_group = SubGroupRead(**sub_group_response.json())
-    assert len(sub_group.sub_sub_groups) == 2
+    assert len(sub_group.sub_sub_groups) == 2  # type: ignore[attr-defined]
     assert any(
         sub_sub_group.id == mocked_sub_sub_groups[3].id
-        for sub_sub_group in sub_group.sub_sub_groups
+        for sub_sub_group in sub_group.sub_sub_groups  # type: ignore[attr-defined]
     )
     assert any(
         sub_sub_group.id == mocked_sub_sub_groups[4].id
-        for sub_sub_group in sub_group.sub_sub_groups
+        for sub_sub_group in sub_group.sub_sub_groups  # type: ignore[attr-defined]
     )
 
     # remove a sub_sub_group from the sub_group:
@@ -3806,14 +3808,14 @@ async def test_add_sub_sub_group_to_sub_group(
 
     assert sub_group_after_delete_response.status_code == 200
     sub_group_after_delete = SubGroupRead(**sub_group_after_delete_response.json())
-    assert len(sub_group_after_delete.sub_sub_groups) == 1
+    assert len(sub_group_after_delete.sub_sub_groups) == 1  # type: ignore[attr-defined]
     assert all(
         sub_sub_group.id != mocked_sub_sub_groups[4].id
-        for sub_sub_group in sub_group_after_delete.sub_sub_groups
+        for sub_sub_group in sub_group_after_delete.sub_sub_groups  # type: ignore[attr-defined]
     )
     assert any(
         sub_sub_group.id == mocked_sub_sub_groups[3].id
-        for sub_sub_group in sub_group_after_delete.sub_sub_groups
+        for sub_sub_group in sub_group_after_delete.sub_sub_groups  # type: ignore[attr-defined]
     )
 
 
@@ -3831,7 +3833,7 @@ async def test_add_prohibited_groups_to_ueber_group(
     add_many_test_sub_sub_groups,
 ):
     """Tests adding groups to an ueber-group."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_ueber_groups = await add_many_test_ueber_groups()
     mocked_sub_groups = await add_many_test_sub_groups()
@@ -3880,7 +3882,7 @@ async def test_add_prohibited_groups_to_group(
     add_many_test_sub_sub_groups,
 ):
     """Tests adding groups to an ueber-group."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_ueber_groups = await add_many_test_ueber_groups()
     mocked_groups = await add_many_test_groups()
@@ -3932,7 +3934,7 @@ async def test_user_access_through_inheritance_from_direct_group_membership(
     current_user_from_azure_token,
 ):
     """Tests user access through inheritance from direct group membership."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     current_user = current_test_user
 
@@ -3964,9 +3966,9 @@ async def test_user_access_through_inheritance_from_direct_group_membership(
     )
     assert response.status_code == 200
     read_resource = ProtectedResourceRead(**response.json())
-    assert read_resource.id == mocked_protected_resources[2].id
-    assert read_resource.name == mocked_protected_resources[2].name
-    assert read_resource.description == mocked_protected_resources[2].description
+    assert read_resource.id == mocked_protected_resources[2].id  # type: ignore[attr-defined]
+    assert read_resource.name == mocked_protected_resources[2].name  # type: ignore[attr-defined]
+    assert read_resource.description == mocked_protected_resources[2].description  # type: ignore[attr-defined]
 
     current_admin_user = await current_user_from_azure_token(token_admin_read_write)
     async with AccessLoggingCRUD() as crud:
@@ -3997,7 +3999,7 @@ async def test_user_access_prohibited_through_inheritance_missing_group_membersh
     current_user_from_azure_token,
 ):
     """Tests user access through inheritance from direct group membership."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     current_user = current_test_user
 
@@ -4042,7 +4044,7 @@ async def test_user_access_through_inheritance_from_indirect_group_membership(
     current_user_from_azure_token,
 ):
     """Tests user access through inheritance from direct group membership."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     current_user = current_test_user
 
@@ -4103,9 +4105,9 @@ async def test_user_access_through_inheritance_from_indirect_group_membership(
     )
     assert response.status_code == 200
     read_resource = ProtectedResourceRead(**response.json())
-    assert read_resource.id == mocked_protected_resources[2].id
-    assert read_resource.name == mocked_protected_resources[2].name
-    assert read_resource.description == mocked_protected_resources[2].description
+    assert read_resource.id == mocked_protected_resources[2].id  # type: ignore[attr-defined]
+    assert read_resource.name == mocked_protected_resources[2].name  # type: ignore[attr-defined]
+    assert read_resource.description == mocked_protected_resources[2].description  # type: ignore[attr-defined]
 
     current_admin_user = await current_user_from_azure_token(token_admin_read_write)
     async with AccessLoggingCRUD() as crud:
@@ -4138,7 +4140,7 @@ async def test_user_access_prohibited_from_indirect_group_membership_missing_inh
     current_user_from_azure_token,
 ):
     """Tests user access through inheritance from direct group membership."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     current_user = current_test_user
 
@@ -4218,15 +4220,15 @@ async def test_user_access_prohibited_after_deleting_group_with_direct_group_mem
     current_user_from_azure_token,
 ):
     """Tests user access through inheritance from direct group membership."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     current_user = current_test_user
 
     mocked_groups = await add_many_test_groups()
 
     created_hierarchy = await post_existing_user_to_group(
-        str(current_user.user_id),
-        str(mocked_groups[1].id),
+        str(current_user.user_id),  # type: ignore[arg-type]
+        str(mocked_groups[1].id),  # type: ignore[arg-type]
         inherit=True,
         token_payload=token_admin_read_write,
         guards=mock_guards(scopes=["api.write"], roles=["Admin"]),
@@ -4250,9 +4252,9 @@ async def test_user_access_prohibited_after_deleting_group_with_direct_group_mem
     )
     assert response.status_code == 200
     read_resource = ProtectedResourceRead(**response.json())
-    assert read_resource.id == mocked_protected_resources[2].id
-    assert read_resource.name == mocked_protected_resources[2].name
-    assert read_resource.description == mocked_protected_resources[2].description
+    assert read_resource.id == mocked_protected_resources[2].id  # type: ignore[attr-defined]
+    assert read_resource.name == mocked_protected_resources[2].name  # type: ignore[attr-defined]
+    assert read_resource.description == mocked_protected_resources[2].description  # type: ignore[attr-defined]
 
     current_admin_user = await current_user_from_azure_token(token_admin_read_write)
     async with AccessLoggingCRUD() as crud:
@@ -4267,7 +4269,7 @@ async def test_user_access_prohibited_after_deleting_group_with_direct_group_mem
 
     # Delete group:
     await delete_group(
-        str(mocked_groups[1].id),
+        str(mocked_groups[1].id),  # type: ignore[arg-type]
         token_payload=token_admin_read_write,
         guards=mock_guards(scopes=["api.write"], roles=["Admin"]),
     )
@@ -4292,7 +4294,7 @@ async def test_admin_deletes_parent_and_all_nonstandalone_children_without_other
     add_one_test_sub_group,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     # setting up the database:
     parent_group = await add_one_test_group(many_test_groups[0])
@@ -4347,7 +4349,7 @@ async def test_admin_deletes_parent_and_standalone_child_stays(
     add_one_parent_child_identity_relationship,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     # setting up the database:
     parent_ueber_group = await add_one_test_ueber_group(many_test_ueber_groups[0])
@@ -4402,7 +4404,7 @@ async def test_admin_deletes_parent_and_nonstandalone_child_with_other_parent_st
     add_one_parent_child_identity_relationship,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     # setting up the database:
     parent_group0 = await add_one_test_group(many_test_groups[0])

@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import Generic, List, Optional, Type, TypeVar
+from typing import Any, Generic, List, Optional, Self, Type, TypeVar, cast
 from uuid import UUID
 
 # from pprint import pprint
@@ -54,7 +54,7 @@ class AccessPolicyCRUD:
         self.session = session
         self._owns_session = False if session else True
 
-    async def __aenter__(self) -> AsyncSession:
+    async def __aenter__(self) -> Self:
         """Returns a database session."""
         if self.session is None:
             self.session = await get_async_session()
@@ -64,27 +64,35 @@ class AccessPolicyCRUD:
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """Closes the database session."""
         if self._owns_session:
-            await self.session.close()
+            session = cast(AsyncSession, self.session)
+            await session.close()
             self.session = None
             self._owns_session = False
 
+    def _session(self) -> AsyncSession:
+        return cast(AsyncSession, self.session)
+
     def __get_resource_inheritance_common_table_expression(
         self,
-        base_resource_ids: select,  # TBD: change this to List[UUID]?
-    ):
+        base_resource_ids: Any,  # TBD: change this to List[UUID]?
+    ) -> Any:
         """Checks if the resource inherits permissions from a parent resource"""
         ResourceHierarchyAlias = aliased(ResourceHierarchy)
+        parent_id = cast(Any, ResourceHierarchy.parent_id)
+        child_id = cast(Any, ResourceHierarchyAlias.child_id)
+        alias_parent_id = cast(Any, ResourceHierarchyAlias.parent_id)
+        inherit = cast(Any, ResourceHierarchyAlias.inherit)
 
         hierarchy_cte = (
-            select(ResourceHierarchy.parent_id.label("resource_id"))
-            .where(ResourceHierarchy.parent_id.in_(base_resource_ids))
+            select(parent_id.label("resource_id"))
+            .where(parent_id.in_(base_resource_ids))
             .cte(recursive=True)
         )
 
         hierarchy_cte = hierarchy_cte.union_all(
-            select(ResourceHierarchyAlias.child_id.label("resource_id")).where(
-                ResourceHierarchyAlias.parent_id == hierarchy_cte.c.resource_id,
-                ResourceHierarchyAlias.inherit.is_(True),
+            select(child_id.label("resource_id")).where(
+                alias_parent_id == hierarchy_cte.c.resource_id,
+                inherit.is_(True),
             ),
         )
 
@@ -92,20 +100,24 @@ class AccessPolicyCRUD:
 
     def __get_identity_inheritance_common_table_expression(
         self, base_identity_id: UUID
-    ):
+    ) -> Any:
         """Checks if the resource inherits permissions from a parent resource"""
         IdentityHierarchyAlias = aliased(IdentityHierarchy)
+        child_id = cast(Any, IdentityHierarchy.child_id)
+        alias_parent_id = cast(Any, IdentityHierarchyAlias.parent_id)
+        alias_child_id = cast(Any, IdentityHierarchyAlias.child_id)
+        inherit = cast(Any, IdentityHierarchyAlias.inherit)
 
         hierarchy_cte = (
-            select(IdentityHierarchy.child_id.label("identity_id"))
-            .where(IdentityHierarchy.child_id == base_identity_id)
+            select(child_id.label("identity_id"))
+            .where(child_id == base_identity_id)
             .cte(recursive=True)
         )
 
         hierarchy_cte = hierarchy_cte.union_all(
-            select(IdentityHierarchyAlias.parent_id.label("identity_id")).where(
-                IdentityHierarchyAlias.child_id == hierarchy_cte.c.identity_id,
-                IdentityHierarchyAlias.inherit.is_(True),
+            select(alias_parent_id.label("identity_id")).where(
+                alias_child_id == hierarchy_cte.c.identity_id,
+                inherit.is_(True),
             ),
         )
 
@@ -116,8 +128,8 @@ class AccessPolicyCRUD:
         policy: AccessPolicyCreate,
         current_user: CurrentUserData,
     ):
-
-        if "Admin" in current_user.azure_token_roles:
+        roles = current_user.azure_token_roles or []
+        if "Admin" in roles:
             return True
         # users can always create access policy for their own user object:
         elif policy.resource_id == current_user.user_id:
@@ -138,11 +150,11 @@ class AccessPolicyCRUD:
 
     def filters_allowed(
         self,
-        statement: select,
+        statement: Any,
         action: "Action",
-        model: SQLModel = AccessPolicy,
+        model: Type[SQLModel] = AccessPolicy,
         current_user: Optional["CurrentUserData"] = None,
-    ):
+    ) -> Any:
         """Finds all resources of a certain type and action that the user has permission to access"""
         # TBD: implement this
         # ✔︎ find all public resources of the given type and action
@@ -156,17 +168,15 @@ class AccessPolicyCRUD:
         # Permission overrides:
         # own includes write and read
         # write includes read
+        action_values: List[Action]
         if action == read:
-            # action = ["own", "write", "read"]
-            action = [own, write, connect, read]
+            action_values = [own, write, connect, read]
         elif action == connect:
-            action = [own, write, connect]
+            action_values = [own, write, connect]
         elif action == write:
-            # action = ["own", "write"]
-            action = [own, write]
+            action_values = [own, write]
         elif action == own:
-            # action = ["own"]
-            action = [own]
+            action_values = [own]
         else:
             # TBD: write test for this: if pydantic works on verifying action types,
             # a 422 or type error should be raised before this line!
@@ -180,6 +190,9 @@ class AccessPolicyCRUD:
         # get all parent identity id's, that the identity inherits from
         # How do all the actions get into play - do I really need to check all possible combinations for the required action?
 
+        model_columns = cast(Any, model)
+        policy_action = cast(Any, AccessPolicy.action)
+        policy_identity_id = cast(Any, AccessPolicy.identity_id)
         # only public resources can be accessed without a user:
         if not current_user:
             # TBD: refactor into using resource hierarchy and access policy also for public resources!
@@ -188,13 +201,13 @@ class AccessPolicyCRUD:
             # - public must be set to true
             subquery = (
                 select(AccessPolicy.resource_id)
-                .where(AccessPolicy.action.in_(action))
+                .where(policy_action.in_(action_values))
                 .where(AccessPolicy.public)
             )
             if (model == AccessPolicy) or (model == AccessLog):
-                statement = statement.where(model.resource_id.in_(subquery))
+                statement = statement.where(model_columns.resource_id.in_(subquery))
             else:
-                statement = statement.where(model.id.in_(subquery))
+                statement = statement.where(model_columns.id.in_(subquery))
             # TBD: avoid a return in the the middle of the function!
             return statement
         # Admins can access everything:
@@ -214,12 +227,12 @@ class AccessPolicyCRUD:
 
             # Base resources for access check
             base_resource_ids = select(AccessPolicy.resource_id).where(
-                AccessPolicy.action.in_(action),
+                policy_action.in_(action_values),
                 or_(
-                    AccessPolicy.identity_id.in_(
+                    policy_identity_id.in_(
                         select(identity_hierarchy_cte.c.identity_id)
                     ),
-                    AccessPolicy.identity_id == current_user.user_id,
+                    policy_identity_id == current_user.user_id,
                     AccessPolicy.public,
                 ),
             )
@@ -235,10 +248,10 @@ class AccessPolicyCRUD:
             statement = statement.where(
                 or_(
                     # TBD: both should be returned in the new function "__get_accessible_resource_ids"
-                    model.resource_id.in_(
+                    model_columns.resource_id.in_(
                         select(resource_hierarchy_cte.c.resource_id)
                     ),  # all inherited resources
-                    model.resource_id.in_(
+                    model_columns.resource_id.in_(
                         # subquery
                         base_resource_ids
                     ),  # all resources with direct access
@@ -247,10 +260,10 @@ class AccessPolicyCRUD:
         else:
             statement = statement.where(
                 or_(
-                    model.id.in_(
+                    model_columns.id.in_(
                         select(resource_hierarchy_cte.c.resource_id)
                     ),  # all inherited resources
-                    model.id.in_(
+                    model_columns.id.in_(
                         # subquery
                         base_resource_ids
                     ),  # all resources with direct access
@@ -277,18 +290,22 @@ class AccessPolicyCRUD:
             return True
 
         try:
+            session = self._session()
+            required_action = cast(Action, action)
             query = select(AccessPolicy)
             if resource_id:
                 query = query.where(
                     AccessPolicy.resource_id == resource_id,
                 )
 
-            query = self.filters_allowed(query, action, current_user=current_user)
+            query = self.filters_allowed(
+                query, required_action, current_user=current_user
+            )
 
             # TBD: refactor for correct session handling!
             # async with self:
             # Only one policy per resource - action - identity combination is allowed!
-            response = await self.session.exec(query)
+            response = await session.exec(query)
             results = response.all()
 
             for result in results:
@@ -370,6 +387,7 @@ class AccessPolicyCRUD:
         """
         # Note: the current_user is the one who creates the policy for the identity_id in the policy!
         try:
+            session = self._session()
             policy = AccessPolicy.model_validate(policy)
 
             # Handle authorization
@@ -397,17 +415,18 @@ class AccessPolicyCRUD:
                         status_code=404, detail="Access policy not found."
                     )
 
-            self.session.add(policy)
-            await self.session.commit()
+            session.add(policy)
+            await session.commit()
             # TBD: consider gathering all the commits in one transaction:
             # if self._owns_session:
             #     await self.session.commit()
             # else:
             #     await self.session.flush()
-            await self.session.refresh(policy)
-            return policy
+            await session.refresh(policy)
+            return cast(AccessPolicyRead, policy)
         except Exception as err:
-            await self.session.rollback()
+            session = self._session()
+            await session.rollback()
             if "duplicate key value violates unique constraint" in str(err):
                 raise HTTPException(
                     status_code=409,
@@ -436,6 +455,7 @@ class AccessPolicyCRUD:
         """Reads access control policies based on the provided parameters."""
 
         try:
+            session = self._session()
             query = select(AccessPolicy)
             query = self.filters_allowed(query, own, current_user=current_user)
 
@@ -462,7 +482,7 @@ class AccessPolicyCRUD:
             if public is True:
                 query = query.where(AccessPolicy.public)
 
-            response = await self.session.exec(query)
+            response = await session.exec(query)
             results = response.all()
 
             if not results:
@@ -535,6 +555,7 @@ class AccessPolicyCRUD:
         """Deletes an existing policy if exists already and creates a new access control policy."""
 
         try:
+            session = self._session()
             # TBD: add business logic: can last owner delete it's owner rights?
             # => no, there needs to be another owner left, so last downgrade from owner should not be accepted.
             updated_policy = None
@@ -544,7 +565,7 @@ class AccessPolicyCRUD:
                     AccessPolicy.resource_id == access_policy.resource_id
                 )
                 query = self.filters_allowed(query, own, current_user=current_user)
-                access_check_response = await self.session.exec(query)
+                access_check_response = await session.exec(query)
                 current_access_policy = access_check_response.unique().all()
                 if not current_access_policy:
                     logger.info("Access policy not found for update.")
@@ -562,7 +583,7 @@ class AccessPolicyCRUD:
                 old_policy = AccessPolicy(
                     resource_id=access_policy.resource_id,
                     identity_id=access_policy.identity_id,
-                    action=access_policy.action,
+                    action=cast(Action, access_policy.action),
                     public=access_policy.public,
                 )
                 query = select(AccessPolicy).where(
@@ -572,7 +593,7 @@ class AccessPolicyCRUD:
                     AccessPolicy.public == old_policy.public,
                 )
                 query = self.filters_allowed(query, own, current_user=current_user)
-                access_check_response = await self.session.exec(query)
+                access_check_response = await session.exec(query)
                 current_access_policy = access_check_response.unique().one()
                 if not current_access_policy:
                     logger.info("Access policy not found for update.")
@@ -580,7 +601,9 @@ class AccessPolicyCRUD:
                         status_code=404, detail="Access policy not found."
                     )
 
-                await self.delete(current_user, old_policy)
+                await self.delete(
+                    current_user, AccessPolicyDelete.model_validate(old_policy)
+                )
                 new_policy = AccessPolicy(
                     id=current_access_policy.id,  # keep the id of the old policy
                     resource_id=access_policy.resource_id,
@@ -588,19 +611,20 @@ class AccessPolicyCRUD:
                     action=access_policy.new_action,
                     public=access_policy.public,
                 )
-                self.session.add(new_policy)
-                await self.session.commit()
+                session.add(new_policy)
+                await session.commit()
                 # TBD: consider gathering all the commits in one transaction:
                 # if self._owns_session:
                 #     await self.session.commit()
                 # else:
                 #     await self.session.flush()
-                await self.session.refresh(new_policy)
-                updated_policy = new_policy
-            return updated_policy
+                await session.refresh(new_policy)
+                updated_policy = cast(AccessPolicyRead, new_policy)
+            return cast(AccessPolicyRead, updated_policy)
 
         except Exception as e:
-            await self.session.rollback()
+            session = self._session()
+            await session.rollback()
             logger.error(f"Error in updating policy: {e}")
             raise HTTPException(status_code=404, detail="Access policy not found.")
 
@@ -613,6 +637,7 @@ class AccessPolicyCRUD:
         """Deletes an access control policy."""
 
         try:
+            session = self._session()
             resource_id, identity_id, action, public = (
                 access_policy.resource_id,
                 access_policy.identity_id,
@@ -638,14 +663,15 @@ class AccessPolicyCRUD:
 
             # TBD: at least one owner needs to be left!
 
-            response = await self.session.exec(statement)
+            response = await session.exec(statement)
 
-            await self.session.commit()
+            await session.commit()
 
             return response.rowcount
 
         except Exception as e:
-            await self.session.rollback()
+            session = self._session()
+            await session.rollback()
             logger.error(f"Error in deleting policy: {e}")
             raise HTTPException(status_code=404, detail="Access policy not found.")
 
@@ -660,7 +686,7 @@ class AccessLoggingCRUD:
             AccessPolicyCRUD(session=self.session) if session else AccessPolicyCRUD()
         )
 
-    async def __aenter__(self) -> AsyncSession:
+    async def __aenter__(self) -> Self:
         """Returns a database session."""
         if self.session is None:
             self.session = await get_async_session()
@@ -671,29 +697,35 @@ class AccessLoggingCRUD:
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """Closes the database session."""
         if self._owns_session:
-            await self.session.close()
+            session = cast(AsyncSession, self.session)
+            await session.close()
             self.session = None
             self._owns_session = False
+
+    def _session(self) -> AsyncSession:
+        return cast(AsyncSession, self.session)
 
     async def create(self, access_log: AccessLogCreate) -> AccessLog:
         """Creates an access log entry."""
         try:
+            session = self._session()
             access_log = AccessLog.model_validate(access_log)
-            self.session.add(access_log)
-            await self.session.commit()
+            session.add(access_log)
+            await session.commit()
             # TBD: consider gathering all the commits in one transaction:
             # if self._owns_session:
             #     await self.session.commit()
             # else:
             #     await self.session.flush()
-            await self.session.refresh(access_log)
+            await session.refresh(access_log)
 
             # print("=== AccessLoggingCRUD.create - access_log ===")
             # pprint(access_log)
 
             return access_log
         except Exception as e:
-            await self.session.rollback()
+            session = self._session()
+            await session.rollback()
             logger.error(f"Error in creating log: {e}")
             raise HTTPException(status_code=400, detail="Bad request: logging failed.")
 
@@ -703,15 +735,15 @@ class AccessLoggingCRUD:
         resource_id: Optional[UUID] = None,
         identity_id: Optional[UUID] = None,
         action: Optional[Action] = None,
-        ascending_order_by: Optional[str] = None,
-        descending_order_by: Optional[str] = None,
+        ascending_order_by: Optional[Any] = None,
+        descending_order_by: Optional[Any] = None,
         limit: Optional[int] = None,
         status_code: Optional[int | None] = 200,
-        required_action: Optional[Action] = Action.own,
+        required_action: Action = Action.own,
     ) -> List[AccessLogRead]:
         """Reads access logs based on the provided parameters."""
         try:
-            session = self.session
+            session = self._session()
             statement = select(AccessLog)
             # statement = self.policy_crud.filters_allowed(
             policy_crud = AccessPolicyCRUD(session=session)
@@ -869,7 +901,7 @@ class BaseHierarchyCRUD(
 
     def __init__(
         self,
-        hierarchy: BaseHierarchy,
+        hierarchy: Type[BaseHierarchy],
         base_model: Type[BaseHierarchyModel],
         session: Optional[AsyncSession] = None,
     ):
@@ -881,7 +913,7 @@ class BaseHierarchyCRUD(
             AccessPolicyCRUD(session=session) if session else AccessPolicyCRUD()
         )
 
-    async def __aenter__(self) -> AsyncSession:
+    async def __aenter__(self) -> Self:
         """Returns a database session."""
         if self.session is None:
             self.session = await get_async_session()
@@ -892,20 +924,25 @@ class BaseHierarchyCRUD(
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """Closes the database session."""
         if self._owns_session:
-            await self.session.close()
+            session = cast(AsyncSession, self.session)
+            await session.close()
             self.session = None
             self._owns_session = False
+
+    def _session(self) -> AsyncSession:
+        return cast(AsyncSession, self.session)
 
     async def create(
         self,
         current_user: CurrentUserData,
         parent_id: UUID,
-        child_type: ResourceType,
+        child_type: ResourceType | IdentityType,
         child_id: UUID,
         inherit: Optional[bool] = False,
     ) -> BaseHierarchyModelRead:
         """Checks access and type matching and potentially creates parent-child relationship."""
         try:
+            session = self._session()
             child_access_request = AccessRequest(
                 resource_id=child_id,
                 action=Action.own,
@@ -920,7 +957,7 @@ class BaseHierarchyCRUD(
             )
             statement = statement.where(IdentifierTypeLink.id == parent_id)
 
-            result = await self.session.exec(statement)
+            result = await session.exec(statement)
 
             parent_type = result.one()
 
@@ -932,15 +969,15 @@ class BaseHierarchyCRUD(
                     inherit=inherit,
                 )
                 relation = self.model.model_validate(relation)
-                self.session.add(relation)
-                await self.session.commit()
+                session.add(relation)
+                await session.commit()
                 # TBD: consider gathering all the commits in one transaction:
                 # if self._owns_session:
                 #     await self.session.commit()
                 # else:
                 #     await self.session.flush()
-                await self.session.refresh(relation)
-                return relation
+                await session.refresh(relation)
+                return cast(BaseHierarchyModelRead, relation)
             else:
                 logger.error("Bad request: child type not allowed for parent.")
                 raise HTTPException(
@@ -948,7 +985,8 @@ class BaseHierarchyCRUD(
                     detail="Bad request: child type not allowed for parent.",
                 )
         except Exception as err:
-            await self.session.rollback()
+            session = self._session()
+            await session.rollback()
             logger.error(f"Error in creating hierarchy: {err}")
             raise HTTPException(status_code=403, detail="Forbidden.")
 
@@ -963,6 +1001,8 @@ class BaseHierarchyCRUD(
     ) -> List[BaseHierarchyModelRead]:
         """Reads all parent-child relationships."""
         try:
+            session = self._session()
+            model = cast(Any, self.model)
             if parent_id is None and child_id is None:
                 raise HTTPException(
                     status_code=400, detail="Bad request: no id provided."
@@ -975,11 +1015,11 @@ class BaseHierarchyCRUD(
                 select(self.model)
                 .join(
                     identifier_type_link_parent,
-                    identifier_type_link_parent.id == self.model.parent_id,
+                    identifier_type_link_parent.id == model.parent_id,
                 )
                 .join(
                     identifier_type_link_child,
-                    identifier_type_link_child.id == self.model.child_id,
+                    identifier_type_link_child.id == model.child_id,
                 )
             )
             statement = self.policy_crud.filters_allowed(
@@ -989,11 +1029,11 @@ class BaseHierarchyCRUD(
                 statement, Action.read, identifier_type_link_child, current_user
             )
             if parent_id:
-                statement = statement.where(self.model.parent_id == parent_id)
+                statement = statement.where(model.parent_id == parent_id)
             if child_id:
-                statement = statement.where(self.model.child_id == child_id)
+                statement = statement.where(model.child_id == child_id)
 
-            response = await self.session.exec(statement)
+            response = await session.exec(statement)
             results = response.all()
 
             if not results:
@@ -1020,7 +1060,9 @@ class BaseHierarchyCRUD(
                 detail="At least one of parent_id and child_id are required.",
             )
         try:
-            model_alias = aliased(self.model)
+            session = self._session()
+            model = cast(Any, self.model)
+            model_alias = cast(Any, aliased(self.model))
             subquery = select(model_alias.child_id).join(
                 IdentifierTypeLink,
                 IdentifierTypeLink.id == model_alias.child_id,
@@ -1043,21 +1085,22 @@ class BaseHierarchyCRUD(
             if parent_id and child_id:
                 statement = statement.where(
                     and_(
-                        self.model.child_id.in_(subquery),
-                        self.model.parent_id == parent_id,
+                        model.child_id.in_(subquery),
+                        model.parent_id == parent_id,
                     )
                 )
             if parent_id:
-                statement = statement.where(self.model.parent_id == parent_id)
+                statement = statement.where(model.parent_id == parent_id)
             if child_id:
-                statement = statement.where(self.model.child_id == child_id)
+                statement = statement.where(model.child_id == child_id)
 
-            response = await self.session.exec(statement)
-            await self.session.commit()
+            response = await session.exec(statement)
+            await session.commit()
 
             return response.rowcount
         except Exception as e:
-            await self.session.rollback()
+            session = self._session()
+            await session.rollback()
             logger.error(f"Error in deleting hierarchy: {e}")
             raise HTTPException(status_code=404, detail="Hierarchy not found.")
 
@@ -1070,23 +1113,25 @@ class ResourceHierarchyCRUD(
     def __init__(self, session: Optional[AsyncSession] = None):
         super().__init__(ResourceHierarchy, ResourceHierarchy, session=session)
 
-    async def create(
+    async def create(  # type: ignore[override]
         self,
         current_user: CurrentUserData,
         parent_id: UUID,
         child_type: ResourceType,
         child_id: UUID,
         inherit: Optional[bool] = False,
-    ) -> ResourceHierarchy:
+    ) -> ResourceHierarchyRead:
         """Creates a new resource hierarchy."""
         hierarchy = await super().create(
             current_user, parent_id, child_type, child_id, inherit
         )
+        hierarchy_row = cast(ResourceHierarchy, hierarchy)
+        session = self._session()
 
         # Add order to the hierarchy:
 
         # Get the next order value
-        result = await self.session.exec(
+        result = await session.exec(
             select(func.max(ResourceHierarchy.order)).where(
                 ResourceHierarchy.parent_id == parent_id
             )
@@ -1095,16 +1140,16 @@ class ResourceHierarchyCRUD(
         next_order = (max_order or 0) + 1
 
         # Update the hierarchy with the order value:
-        hierarchy.order = next_order
-        await self.session.commit()
+        hierarchy_row.order = next_order
+        await session.commit()
         # TBD: consider gathering all the commits in one transaction:
         # if self._owns_session:
         #     await self.session.commit()
         # else:
         #     await self.session.flush()
-        await self.session.refresh(hierarchy)
+        await session.refresh(hierarchy_row)
 
-        return hierarchy
+        return cast(ResourceHierarchyRead, hierarchy_row)
 
     async def reorder_children(  # noqa: C901
         self,
@@ -1116,6 +1161,8 @@ class ResourceHierarchyCRUD(
     ) -> None:
         """Reorders the children of a parent resource."""
         try:
+            session = self._session()
+            model = cast(Any, self.model)
             # Ensure user has connect permissions on parent resource:
             parent_access_request = AccessRequest(
                 resource_id=parent_id,
@@ -1145,24 +1192,28 @@ class ResourceHierarchyCRUD(
 
             # Get all children of the parent resource - no matter the access rights:
             statement = select(self.model)
-            statement = statement.where(self.model.parent_id == parent_id)
-            statement = statement.order_by(self.model.order)
-            children = await self.session.exec(statement)
-            children = children.all()
+            statement = statement.where(model.parent_id == parent_id)
+            statement = statement.order_by(model.order)
+            children_result = await session.exec(statement)
+            children = cast(List[ResourceHierarchy], children_result.all())
 
             # Find the old and new positions of the child
-            old_position = None
-            moving_child = None
-            new_position = None
+            old_position: Optional[int] = None
+            moving_child: Optional[ResourceHierarchy] = None
+            new_position: Optional[int] = None
             for child in children:
                 if child.child_id == child_id:
                     old_position = child.order
                     moving_child = child
                 if other_child_id and child.child_id == other_child_id:
                     if position == "before":
-                        new_position = child.order - 1
+                        new_position = cast(int, child.order) - 1
                     elif position == "after":
-                        new_position = child.order
+                        new_position = cast(int, child.order)
+
+            old_position = cast(int, old_position)
+            new_position = cast(int, new_position)
+            moving_child = cast(ResourceHierarchy, moving_child)
 
             if old_position < new_position:
                 moving_child.order = new_position
@@ -1171,10 +1222,10 @@ class ResourceHierarchyCRUD(
             else:
                 moving_child.order = new_position + 1
                 for i in range(new_position, old_position - 1):
-                    children[i].order += 1
+                    children[i].order = cast(int, children[i].order) + 1
 
             # Update the database
-            await self.session.commit()
+            await session.commit()
             # TBD: consider gathering all the commits in one transaction:
             # if self._owns_session:
             #     await self.session.commit()

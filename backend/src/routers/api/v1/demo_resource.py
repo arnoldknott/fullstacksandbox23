@@ -107,7 +107,7 @@ async def get_all_in_category(
     category_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
-) -> list[DemoResource]:
+) -> list[DemoResourceRead]:
     """Gets all demo resources that belong to specific category."""
     current_user = await check_token_against_guards(token_payload, guards)
     async with demo_resource_view.crud() as crud:

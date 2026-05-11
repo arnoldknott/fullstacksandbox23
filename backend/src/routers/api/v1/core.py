@@ -92,7 +92,7 @@ async def run_demo_task_in_celery(
 ):
     """Executes a demo task in celery - adding two numbers."""
     logger.info("Celery demo task executed")
-    celery_result = demo_task.delay(x, y)
+    celery_result = demo_task.delay(x, y)  # type: ignore[attr-defined]
     print("=== api - v1 - core - celery - celery_result ===")
     print(celery_result)
     result = celery_result.get(timeout=10)
@@ -130,6 +130,7 @@ async def get_onbehalfof(
     await check_token_against_guards(token_payload, guards)
     # print("=== header ===")
     # print(authorization)
+    assert authorization is not None, "Authorization header is missing"
     token = authorization.split("Bearer ")[1]
     # token = get_token_from_header(authorization)
     logger.info("🔑 Acquiring token on behalf of")
