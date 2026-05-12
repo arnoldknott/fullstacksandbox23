@@ -4,5 +4,5 @@
 
 # only export orchestrator - nothing else.
 __all__ = [
-    "orchestrator",
+    "orchestrator",  # pyright: ignore[reportUnsupportedDunderAll]
 ]
