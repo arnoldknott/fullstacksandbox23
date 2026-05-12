@@ -1,5 +1,7 @@
 {
+  "python.useEnvironmentsExtension": false,
   "python.defaultInterpreterPath": "/usr/local/bin/python",
+  "python.terminal.activateEnvInCurrentTerminal": false,
   "python.terminal.activateEnvironment": false,
   "python.analysis.autoSearchPaths": true,
   "python.analysis.diagnosticMode": "workspace",
