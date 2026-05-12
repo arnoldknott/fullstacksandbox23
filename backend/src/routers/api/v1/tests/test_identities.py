@@ -426,7 +426,7 @@ async def test_post_user_invites_azure_user(
     assert created_user.azure_user_id == uuid.UUID(
         many_test_azure_users[1]["azure_user_id"]
     )
-    assert created_user.azure_tenant_id == config.AZURE_TENANT_ID
+    assert created_user.azure_tenant_id == uuid.UUID(config.AZURE_TENANT_ID)
     assert created_user.is_active is False
     assert created_user.id is not None
     assert created_user.user_account is None
