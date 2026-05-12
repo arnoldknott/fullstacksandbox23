@@ -13,6 +13,9 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	const payload = {
 		presentation: null as Presentation | null
 	};
+	// TBD: merge the two API calls into one in the backend to avoid making two calls here
+	// Backend should try with slug first and then uuid, or use a query parameter?
+	// TBD: also need to handle the case where the presentation is not found, and return a 404 page?
 	const slugResponse = await backendAPI.get(sessionId, `/presentation/${presentationSlug}`);
 	if (slugResponse.status === 200) {
 		const presentationData = await slugResponse.json();
