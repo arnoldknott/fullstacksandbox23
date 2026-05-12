@@ -3,12 +3,14 @@ from typing import Optional
 
 from sqlmodel import Field, SQLModel
 
+from .base import BaseSQLModel
+
 
 class DemoFileCreate(SQLModel):
     name: str
 
 
-class DemoFile(DemoFileCreate, table=True):
+class DemoFile(DemoFileCreate, BaseSQLModel, table=True):
     name: str = Field(index=True, unique=True)
     id: Optional[uuid.UUID] = Field(
         default_factory=uuid.uuid4,

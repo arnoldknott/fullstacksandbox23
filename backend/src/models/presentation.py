@@ -1,6 +1,10 @@
-from typing import Optional
+from typing import Annotated, Optional
+
+from pydantic import AfterValidator, HttpUrl
+from sqlmodel import Field
 
 # from .quiz import Quiz, QuizRead
+from core.config import config
 from core.types import ResourceType
 
 from .base import (
@@ -10,6 +14,17 @@ from .base import (
     create_model,
 )
 
+
+def validate_endpoint_path(path: str | None) -> str | None:
+    """Validates that path forms a valid http/https URL when combined with the
+    frontend origin, ensuring the stored relative path is a reachable endpoint.
+    Falls back to 'http://localhost' when FRONTEND_SVELTE_ORIGIN is unset."""
+    if path is None:
+        return None
+    HttpUrl(f"{config.FRONTEND_SVELTE_ORIGIN}{path}")
+    return path
+
+
 Presentation = create_model(
     name="Presentation",
     attributes=[
@@ -18,10 +33,16 @@ Presentation = create_model(
         # or somewhere in another repo
         Attribute(name="source", type=str),
         # Path is the endpoint path to access the presentation
-        # some might be hard coded and
-        # some might have the [id] as a slug in the path
-        # TBD: add unique constraint and valid path check
-        Attribute(name="path", type=Optional[str], field_value=None),
+        # If Path is set, the presentation is accessible via the API at this path
+        # otherwise it is accessible via the API at /presentations/{id} using the uuid of the presentation
+        Attribute(
+            name="path",
+            type=Annotated[Optional[str], AfterValidator(validate_endpoint_path)],
+            field_value=Field(
+                unique=True,
+                index=True,
+            ),
+        ),
     ],
     # These could be comments - not needed yet
     # relationships=[
@@ -47,3 +68,9 @@ Presentation = create_model(
         ),
     ],
 )
+
+# TBD: Figure out how to do this better - maybe a generic way to create these type aliases?
+PresentationCreate = Presentation.Create
+PresentationRead = Presentation.Read
+PresentationUpdate = Presentation.Update
+PresentationExtended = Presentation.Extended

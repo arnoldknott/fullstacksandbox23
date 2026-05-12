@@ -1,10 +1,13 @@
 """Base test class for API endpoint testing."""
 
+from typing import Any, ClassVar, List, Optional, Type
 from uuid import UUID, uuid4
 
 import pytest
+from sqlmodel import SQLModel
 
 from core.types import CurrentUserData
+from crud.base import BaseCRUD
 from tests.utils import current_user_data_admin, token_admin_read_write
 
 
@@ -34,9 +37,18 @@ class BaseTest:
         _parent_model: The SQLModel table model for parent (e.g., Question)
     """
 
+    # Required: subclasses override these.
+    crud: ClassVar[Type[BaseCRUD]]
+    model: ClassVar[Type[Any]]
+    router_path: ClassVar[str]
+    _test_data_single: ClassVar[dict]
+    _test_data_wrong: ClassVar[List[dict]]
+    _test_data_many: ClassVar[List[dict]]
+    _test_data_update: ClassVar[dict]
+
     # Optional: Override in child classes that require parent resources
-    _hierarchical_router_path = None
-    _parent_model = None
+    _hierarchical_router_path: ClassVar[Optional[str]] = None
+    _parent_model: ClassVar[Optional[Type[SQLModel]]] = None
 
     ## Fixtures
     @pytest.fixture(autouse=True)
@@ -78,7 +90,7 @@ class BaseTest:
         else:
             token_payload = mocked_provide_http_token_payload
 
-        async def _added_resources(parent_id: UUID = None):
+        async def _added_resources(parent_id: Optional[UUID] = None):
             """Factory function to add resources with optional parent_id."""
             # If no parent_id provided but this resource requires a parent, create one
             if parent_id is None and self._parent_model is not None:
@@ -101,7 +113,7 @@ class BaseTest:
         self,
         test_data_single,
         mocked_provide_http_token_payload,
-        access_to_one_parent=None,
+        access_to_one_parent: Any = None,
     ):
         """Test successful POST creation."""
         # Determine which path to use (hierarchical or standalone)
@@ -125,7 +137,9 @@ class BaseTest:
         for key, value in test_data_single.items():
             assert data[key] == value
 
-    async def run_post_missing_auth(self, test_data_single, access_to_one_parent=None):
+    async def run_post_missing_auth(
+        self, test_data_single, access_to_one_parent: Any = None
+    ):
         """Test POST fails without authentication."""
         # For hierarchical resources, we still need the path format (even though auth will fail)
         if self._hierarchical_router_path and self._parent_model:
@@ -144,7 +158,7 @@ class BaseTest:
         self,
         test_data_single,
         mocked_provide_http_token_payload,
-        access_to_one_parent=None,
+        access_to_one_parent: Any = None,
     ):
         """Test POST fails without proper authorization."""
         # Determine which path to use
@@ -163,7 +177,7 @@ class BaseTest:
         self,
         test_data_wrong,
         mocked_provide_http_token_payload,
-        access_to_one_parent=None,
+        access_to_one_parent: Any = None,
     ):
         """Test POST with invalid data fails."""
         # Determine which path to use

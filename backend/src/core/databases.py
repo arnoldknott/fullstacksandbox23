@@ -6,7 +6,11 @@ from core.config import config
 # from sqlmodel import SQLmodel  # noqa: F401
 
 postgres_async_engine = create_async_engine(
-    config.POSTGRES_URL.unicode_string(),
+    (
+        config.POSTGRES_URL.unicode_string()
+        if config.POSTGRES_URL
+        else "postgresql+asyncpg://postgres:postgres@postgres/postgres"
+    ),
     # TBD: nested context managers require architectural fix!
     # Pass session as optional argument from calling CRUD to nested CRUDs
     # for example from DemoResourceCRUD to BaseCrud to AccessPolicyCRUD

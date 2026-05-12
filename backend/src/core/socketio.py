@@ -55,7 +55,7 @@ async def disconnect(sid):
     logger.warning(f"Client with session id {sid} disconnected / outside namespaces.")
 
 
-@socketio_server.on("*")
+@socketio_server.on("*")  # pyright: ignore[reportOptionalCall]
 async def catch_all(event, sid, data):
     """Catch all events for socket.io, that don't have an event handler defined."""
     logger.warning(

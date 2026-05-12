@@ -1,5 +1,13 @@
 {
+  "python.useEnvironmentsExtension": false,
+  "python.defaultInterpreterPath": "/usr/local/bin/python",
+  "python.terminal.activateEnvInCurrentTerminal": false,
+  "python.terminal.activateEnvironment": false,
+  "python.analysis.autoSearchPaths": true,
+  "python.analysis.diagnosticMode": "workspace",
   "python.analysis.extraPaths": ["./backend/src"],
+  "python.analysis.exclude": ["backend/src/migrations/**", "**/.venv/**", "backend/.venv/**"],
+  "python.analysis.typeCheckingMode": "basic",
   "python.autoComplete.extraPaths": ["./backend/src"],
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter",

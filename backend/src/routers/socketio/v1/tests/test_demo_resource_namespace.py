@@ -103,7 +103,7 @@ async def test_owner_connects_to_demo_resource_namespace_and_gets_all_demoresour
 
     transfer_data = []
     connection = await socketio_test_client_demo_resource_namespace()
-    resources = await add_test_demo_resources(connection.token_payload())
+    resources = await add_test_demo_resources(connection.token_payload())  # type: ignore[call-arg]
     await connection.connect()
 
     await connection.client.sleep(0.3)
@@ -129,7 +129,7 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
 ):
     """Test the demo resource connect event."""
     connection = await socketio_test_client_demo_resource_namespace()
-    resources = await add_test_demo_resources(token_admin_read_write_socketio)
+    resources = await add_test_demo_resources(token_admin_read_write_socketio)  # type: ignore[call-arg]
     current_user = await connection.current_user()
 
     policies = [
@@ -145,7 +145,7 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
         },
     ]
     for policy in policies:
-        await add_test_policy_for_resource(policy)
+        await add_test_policy_for_resource(policy)  # type: ignore[call-arg]
 
     await connection.connect()
     transfer_data = []
@@ -185,7 +185,7 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
     current_user = await connection.current_user()
 
     time_before_creation = datetime.now()
-    resources = await add_test_demo_resources(token_admin_read_write_socketio)
+    resources = await add_test_demo_resources(token_admin_read_write_socketio)  # type: ignore[call-arg]
     time_after_creation = datetime.now()
 
     policies = [
@@ -201,7 +201,7 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
         },
     ]
     for policy in policies:
-        await add_test_policy_for_resource(policy)
+        await add_test_policy_for_resource(policy)  # type: ignore[call-arg]
 
     await connection.connect(query_parameters={"request-access-data": "true"})
 
@@ -218,8 +218,8 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
         modelled_response = DemoResourceExtended.model_validate(response)
         assert "category" in response
         assert "tags" in response
-        assert modelled_response.creation_date >= time_before_creation
-        assert modelled_response.creation_date <= time_after_creation
+        assert modelled_response.creation_date >= time_before_creation  # type: ignore[misc]
+        assert modelled_response.creation_date <= time_after_creation  # type: ignore[misc]
         assert modelled_response.last_modified_date == modelled_response.creation_date
         assert DemoResource.model_validate(response) == resource
 
@@ -391,7 +391,7 @@ async def test_user_submits_resource_without_id_for_creation_missing_write_scope
     """Test the demo resource submit event without ID."""
     connection = await socketio_test_client_demo_resource_namespace()
 
-    existing_demo_resources = await add_test_demo_resources()
+    existing_demo_resources = await add_test_demo_resources()  # type: ignore[call-arg]
     current_user = await connection.current_user()
 
     if "Admin" not in current_user.azure_token_roles:
@@ -401,7 +401,7 @@ async def test_user_submits_resource_without_id_for_creation_missing_write_scope
                 "identity_id": current_user.user_id,
                 "action": "read",
             }
-            await add_test_policy_for_resource(policy)
+            await add_test_policy_for_resource(policy)  # type: ignore[call-arg]
 
     await connection.connect()
 
@@ -684,7 +684,7 @@ async def test_user_submits_existing_resource_for_update(
 ):
     """Test the demo resource connect event."""
     connection = await socketio_test_client_demo_resource_namespace()
-    resources = await add_test_demo_resources(connection.token_payload())
+    resources = await add_test_demo_resources(connection.token_payload())  # type: ignore[call-arg]
 
     index_of_resource_to_update = next(
         i for i, r in enumerate(resources) if r.name == "A second cat 2 resource"
@@ -749,7 +749,7 @@ async def test_user_updates_demo_resource_missing_write_scope_in_token_fails(
 ):
     """Test the demo resource connect event."""
     connection = await socketio_test_client_demo_resource_namespace()
-    resources = await add_test_demo_resources(token_admin_read_write_socketio)
+    resources = await add_test_demo_resources(token_admin_read_write_socketio)  # type: ignore[call-arg]
     current_user = await connection.current_user()
 
     if "Admin" not in current_user.azure_token_roles:
@@ -758,7 +758,7 @@ async def test_user_updates_demo_resource_missing_write_scope_in_token_fails(
             "identity_id": current_user.user_id,
             "action": "write",
         }
-        await add_test_policy_for_resource(policy)
+        await add_test_policy_for_resource(policy)  # type: ignore[call-arg]
 
     await connection.connect()
 
@@ -799,7 +799,7 @@ async def test_user_updates_demo_resource_not_having_write_access_fails(
     """Test the demo resource connect event."""
     connection = await socketio_test_client_demo_resource_namespace()
 
-    resources = await add_test_demo_resources(token_admin_read_write_socketio)
+    resources = await add_test_demo_resources(token_admin_read_write_socketio)  # type: ignore[call-arg]
     current_user = await connection.current_user()
 
     policy = {
@@ -807,7 +807,7 @@ async def test_user_updates_demo_resource_not_having_write_access_fails(
         "identity_id": current_user.user_id,
         "action": "read",
     }
-    await add_test_policy_for_resource(policy)
+    await add_test_policy_for_resource(policy)  # type: ignore[call-arg]
 
     await connection.connect()
 
@@ -843,7 +843,7 @@ async def test_one_client_deletes_a_demo_resource_and_another_client_from_same_u
 ):
     """Test the demo resource delete event."""
     connection1 = await socketio_test_client_demo_resource_namespace()
-    resources = await add_test_demo_resources(connection1.token_payload())
+    resources = await add_test_demo_resources(connection1.token_payload())  # type: ignore[call-arg]
 
     # Two clients from same user - coming from token_payload()!
     await connection1.connect()
@@ -885,7 +885,7 @@ async def test_one_client_deletes_a_demo_resource_and_another_client_with_differ
     # Two clients from different users
     connection1 = await socketio_test_client_demo_resource_namespace()
     connection2 = await socketio_test_client_demo_resource_namespace(session_ids[1])
-    resources = await add_test_demo_resources(connection1.token_payload())
+    resources = await add_test_demo_resources(connection1.token_payload())  # type: ignore[call-arg]
 
     other_user = await connection2.current_user()
     policy = {
@@ -927,7 +927,7 @@ async def test_user_deletes_a_demo_resource_missing_write_scope_in_token(
 ):
     """Test the demo resource delete event."""
     connection = await socketio_test_client_demo_resource_namespace()
-    resources = await add_test_demo_resources(connection.token_payload())
+    resources = await add_test_demo_resources(connection.token_payload())  # type: ignore[call-arg]
     await connection.connect()
 
     await connection.client.emit(
@@ -959,7 +959,7 @@ async def test_client_tries_to_delete_demo_resource_without_owner_rights_fails_a
     """Test the demo resource delete event."""
     connection = await socketio_test_client_demo_resource_namespace()
     await connection.connect()
-    resources = await add_test_demo_resources(token_admin_read_write_socketio)
+    resources = await add_test_demo_resources(token_admin_read_write_socketio)  # type: ignore[call-arg]
 
     await connection.client.emit(
         "delete", str(resources[2].id), namespace="/demo-resource"
@@ -1043,7 +1043,7 @@ async def test_user_shares_owned_resource_with_groups_in_azure_token(
         identity_ids_user3 = [identity_id for identity_id in token_user3["groups"]]
         query_parameters_user3 = {"identity-ids": ",".join(identity_ids_user3)}
 
-    resources = await add_test_demo_resources(token_user1)
+    resources = await add_test_demo_resources(token_user1)  # type: ignore[call-arg]
     # resources = await add_test_demo_resources(token_admin_read_write_socketio)
 
     await connection1.connect(query_parameters=query_parameters_user1)
@@ -1109,7 +1109,7 @@ async def test_user_shares_owned_resource_with_groups_in_azure_token(
 async def test_user_updates_access_to_owned_resource_for_a_group_identity(
     session_ids,
     add_test_demo_resources: list[DemoResource],
-    add_many_test_groups: list[Group],
+    add_many_test_groups: list[Group],  # type: ignore[valid-type]
     add_one_parent_child_identity_relationship,
     add_one_test_access_policy,
     socketio_test_client_demo_resource_namespace,
@@ -1119,7 +1119,7 @@ async def test_user_updates_access_to_owned_resource_for_a_group_identity(
     connection2 = await socketio_test_client_demo_resource_namespace(session_ids[1])
     connection3 = await socketio_test_client_demo_resource_namespace(session_ids[2])
 
-    many_test_groups = await add_many_test_groups()
+    many_test_groups = await add_many_test_groups()  # type: ignore[call-arg]
     common_group_id = many_test_groups[2].id
     query_parameters_user1 = {"identity-ids": str(common_group_id)}
     query_parameters_user2 = {"identity-ids": str(common_group_id)}
@@ -1137,7 +1137,7 @@ async def test_user_updates_access_to_owned_resource_for_a_group_identity(
         current_user2.user_id, common_group_id, IdentityType.user, inherit=True
     )
 
-    resources = await add_test_demo_resources(token_user1)
+    resources = await add_test_demo_resources(token_user1)  # type: ignore[call-arg]
 
     await add_one_test_access_policy(
         {
@@ -1208,7 +1208,7 @@ async def test_user_updates_access_to_owned_resource_for_a_group_identity(
 async def test_user_updates_access_to_owned_resource_for_a_group_identity_to_same_access(
     session_ids,
     add_test_demo_resources: list[DemoResource],
-    add_many_test_groups: list[Group],
+    add_many_test_groups: list[Group],  # type: ignore[valid-type]
     add_one_parent_child_identity_relationship,
     add_one_test_access_policy,
     socketio_test_client_demo_resource_namespace,
@@ -1219,7 +1219,7 @@ async def test_user_updates_access_to_owned_resource_for_a_group_identity_to_sam
     connection2 = await socketio_test_client_demo_resource_namespace(session_ids[1])
     connection3 = await socketio_test_client_demo_resource_namespace(session_ids[2])
 
-    many_test_groups = await add_many_test_groups()
+    many_test_groups = await add_many_test_groups()  # type: ignore[call-arg]
     common_group_id = many_test_groups[2].id
     query_parameters_user1 = {"identity-ids": str(common_group_id)}
     query_parameters_user2 = {"identity-ids": str(common_group_id)}
@@ -1235,7 +1235,7 @@ async def test_user_updates_access_to_owned_resource_for_a_group_identity_to_sam
         current_user2.user_id, common_group_id, IdentityType.user, inherit=True
     )
 
-    resources = await add_test_demo_resources(token_user1)
+    resources = await add_test_demo_resources(token_user1)  # type: ignore[call-arg]
 
     await add_one_test_access_policy(
         {
@@ -1309,7 +1309,7 @@ async def test_user_updates_access_to_owned_resource_for_a_group_identity_to_sam
 async def test_user_removes_share_with_group(
     session_ids,
     add_test_demo_resources: list[DemoResource],
-    add_many_test_groups: list[Group],
+    add_many_test_groups: list[Group],  # type: ignore[valid-type]
     add_one_parent_child_identity_relationship,
     add_one_test_access_policy,
     socketio_test_client_demo_resource_namespace,
@@ -1320,7 +1320,7 @@ async def test_user_removes_share_with_group(
     connection3 = await socketio_test_client_demo_resource_namespace(session_ids[2])
 
     # First user owns the resources:
-    many_test_groups = await add_many_test_groups()
+    many_test_groups = await add_many_test_groups()  # type: ignore[call-arg]
     common_group_id = many_test_groups[2].id
     query_parameters_user1 = {"identity-ids": str(common_group_id)}
     query_parameters_user2 = {"identity-ids": str(common_group_id)}
@@ -1336,7 +1336,7 @@ async def test_user_removes_share_with_group(
         current_user2.user_id, common_group_id, IdentityType.user, inherit=True
     )
 
-    resources = await add_test_demo_resources(token_user1)
+    resources = await add_test_demo_resources(token_user1)  # type: ignore[call-arg]
 
     await add_one_test_access_policy(
         {
@@ -1424,7 +1424,7 @@ async def test_user_shares_tries_to_share_resource_without_having_access(
     """Test the demo resource connect event."""
     # First user owns the resources:
 
-    resources = await add_test_demo_resources(token_admin_read_write_socketio)
+    resources = await add_test_demo_resources(token_admin_read_write_socketio)  # type: ignore[call-arg]
 
     connection = await socketio_test_client_demo_resource_namespace()
     token_user1 = connection.token_payload()
@@ -1461,14 +1461,14 @@ async def test_user_shares_tries_to_share_resource_without_having_access(
 async def test_user_downgrades_last_inherited_owner_access(
     socketio_test_client_demo_resource_namespace,
     add_test_demo_resources: list[DemoResource],
-    add_many_test_ueber_groups: list[UeberGroup],
+    add_many_test_ueber_groups: list[UeberGroup],  # type: ignore[valid-type]
     add_one_parent_child_identity_relationship,
     add_one_test_access_policy,
 ):
     """Test the demo resource connect event."""
 
-    resources = await add_test_demo_resources(token_admin_read_write_socketio)
-    ueber_groups = await add_many_test_ueber_groups(token_admin_read_write_socketio)
+    resources = await add_test_demo_resources(token_admin_read_write_socketio)  # type: ignore[call-arg]
+    ueber_groups = await add_many_test_ueber_groups(token_admin_read_write_socketio)  # type: ignore[call-arg]
     connection = await socketio_test_client_demo_resource_namespace()
 
     current_user = await connection.current_user()
@@ -1556,14 +1556,14 @@ async def test_user_downgrades_last_inherited_owner_access(
 async def test_user_removes_last_inherited_owner_access_and_reread_fails(
     socketio_test_client_demo_resource_namespace,
     add_test_demo_resources: list[DemoResource],
-    add_many_test_ueber_groups: list[UeberGroup],
+    add_many_test_ueber_groups: list[UeberGroup],  # type: ignore[valid-type]
     add_one_parent_child_identity_relationship,
     add_one_test_access_policy,
 ):
     """Test the demo resource connect event."""
 
-    resources = await add_test_demo_resources(token_admin_read_write_socketio)
-    ueber_groups = await add_many_test_ueber_groups(token_admin_read_write_socketio)
+    resources = await add_test_demo_resources(token_admin_read_write_socketio)  # type: ignore[call-arg]
+    ueber_groups = await add_many_test_ueber_groups(token_admin_read_write_socketio)  # type: ignore[call-arg]
     connection = await socketio_test_client_demo_resource_namespace()
 
     current_user = await connection.current_user()

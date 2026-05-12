@@ -1,10 +1,10 @@
 import logging
 import uuid
+from typing import Self, cast
 
 from fastapi import HTTPException
 from sqlalchemy.dialects.postgresql import insert
 from sqlmodel import select
-from sqlmodel.ext.asyncio.session import AsyncSession
 
 from core.databases import get_async_session
 from core.types import ResourceType
@@ -12,7 +12,6 @@ from models.access import IdentifierTypeLink
 from models.public_resource import (
     PublicResource,
     PublicResourceCreate,
-    PublicResourceRead,
     PublicResourceUpdate,
 )
 
@@ -28,7 +27,7 @@ class PublicResourceCRUD:
         """Initializes the CRUD for PublicResource."""
         pass
 
-    async def __aenter__(self) -> AsyncSession:
+    async def __aenter__(self) -> Self:
         """Returns a database session."""
         self.session = await get_async_session()
         return self
@@ -44,11 +43,11 @@ class PublicResourceCRUD:
         """Creates a new public resource."""
         logger.info("PublicResourceCRUD.create")
 
+        session = self.session
         try:
-            session = self.session
             database_public_resource = PublicResource.model_validate(public_resource)
             identifier_type_link = IdentifierTypeLink(
-                id=database_public_resource.id,
+                id=cast(uuid.UUID, database_public_resource.id),
                 type=ResourceType.public_resource,
             )
             statement = insert(IdentifierTypeLink).values(
@@ -72,7 +71,7 @@ class PublicResourceCRUD:
 
     # TBD: add skip and limit
     # async def read_all(self, skip: int = 0, limit: int = 100)  -> list[BaseModelType]:
-    async def read_all(self) -> list[PublicResourceRead]:
+    async def read_all(self) -> list[PublicResource]:
         """Returns all public resources."""
         session = self.session
         # statement = select(self.model).offset(skip).limit(limit)
@@ -81,12 +80,12 @@ class PublicResourceCRUD:
             # TBD: add access logging here!
             return []
         # TBD: add access logging here!
-        return response.all()
+        return list(response.all())
 
     async def read_by_id(
         self,
         public_resource_id: uuid.UUID,
-    ) -> PublicResourceRead:
+    ) -> PublicResource:
         """Returns a public resource by id."""
         session = self.session
         public_resource = await session.get(PublicResource, public_resource_id)

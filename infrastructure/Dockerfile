@@ -26,9 +26,11 @@
 # COPY . .
 
 FROM alpine:3.22.1
+# TBD: centralize this Alpine base version with versions.env once infrastructure image versions are unified.
 # Get installation script
 
 ARG OPENTOFU_VERSION=1.11.1
+# TBD: centralize OPENTOFU_VERSION with versions.env once infrastructure and compose version pins are unified.
 
 # Get installation script and install OpenTofu (standalone)
 RUN apk add --no-cache ca-certificates curl gnupg bash && \

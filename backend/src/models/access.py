@@ -71,7 +71,7 @@ class AccessPolicy(AccessPolicyCreate, table=True):
 class AccessPolicyUpdate(AccessPolicyCreate):
     """Update model for access policies"""
 
-    action: Optional[Action] = None
+    action: Optional[Action] = None  # type: ignore[assignment]
     new_action: Action
 
 

@@ -1,5 +1,5 @@
 import logging
-from typing import Annotated
+from typing import Annotated, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
@@ -11,7 +11,7 @@ from core.security import (
     get_http_access_token_payload,
 )
 from core.types import GuardTypes
-from crud.access import BaseHierarchyModelRead
+from models.access import IdentityHierarchyRead
 from crud.identity import (
     GroupCRUD,
     SubGroupCRUD,
@@ -74,7 +74,7 @@ async def post_user(
 async def post_invite_azure_user(
     azure_user_id: str,  # The Azure user ID to invite as path parameter
     azure_tenant_id: Annotated[
-        UUID, Query()
+        Optional[UUID], Query()
     ] = None,  # The Azure tenant ID as optional query parameter
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
@@ -84,7 +84,7 @@ async def post_invite_azure_user(
     current_user = await check_token_against_guards(token_payload, guards)
     async with UserCRUD() as crud:
         invited_user = await crud.create_invited_azure_user(
-            current_user, azure_user_id, azure_tenant_id
+            current_user, UUID(azure_user_id), azure_tenant_id
         )
     return User.model_validate(invited_user)
 
@@ -96,7 +96,7 @@ async def post_existing_user_to_group(
     inherit: Annotated[bool, Query()] = True,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> BaseHierarchyModelRead:
+) -> IdentityHierarchyRead:
     """Adds a user to an ueber-group, group, sub-group or sub-sub-group."""
     logger.info("POST user to group")
     return await user_view.post_add_child_to_parent(
@@ -236,7 +236,7 @@ async def post_ueber_group(
     ueber_group: UeberGroupCreate,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["Admin"])),
-) -> UeberGroup:
+) -> UeberGroup:  # type: ignore[valid-type]
     """Creates a new ueber_group."""
     logger.info("POST ueber_group")
     return await ueber_group_view.post(
@@ -253,7 +253,7 @@ async def post_existing_users_to_uebergroup(
     inherit: Annotated[bool, Query()] = True,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> list[BaseHierarchyModelRead]:
+) -> list[IdentityHierarchyRead]:
     """Adds bulk of users to an ueber_group."""
     logger.info("POST users to ueber_group")
     hierarchy_response = []
@@ -276,7 +276,7 @@ async def post_group_to_uebergroup(
     inherit: Annotated[bool, Query()] = True,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["Admin"])),
-) -> SubGroup:
+) -> SubGroup:  # type: ignore[valid-type]
     """Creates a new group as a child of an ueber_group with ueber_group_id."""
     logger.info("POST group to ueber_group")
     return await group_view.post(
@@ -291,7 +291,7 @@ async def post_existing_groups_to_uebergroup(
     inherit: Annotated[bool, Query()] = True,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> list[BaseHierarchyModelRead]:
+) -> list[IdentityHierarchyRead]:
     """Adds bulk of groups to an ueber_group."""
     logger.info("POST groups to ueber_group")
     hierarchy_response = []
@@ -336,7 +336,7 @@ async def put_ueber_group(
     ueber_group: UeberGroupUpdate,
     token_payload=Depends(get_http_access_token_payload),
     guards=Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> UeberGroup:
+) -> UeberGroup:  # type: ignore[valid-type]
     """Updates an ueber_group."""
     return await ueber_group_view.put(
         ueber_group_id,
@@ -406,7 +406,7 @@ async def post_group(
     group: GroupCreate,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["Admin"])),
-) -> Group:
+) -> Group:  # type: ignore[valid-type]
     """Creates a new group without a parent ueber-group."""
     logger.info("POST group")
     return await group_view.post(
@@ -423,7 +423,7 @@ async def post_group_to_existing_uebergroup(
     inherit: Annotated[bool, Query()] = True,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> BaseHierarchyModelRead:
+) -> IdentityHierarchyRead:
     """Adds an existing group to an ueber_group."""
     logger.info("POST group to ueber_group")
     return await group_view.post_add_child_to_parent(
@@ -442,7 +442,7 @@ async def post_existing_users_to_group(
     inherit: Annotated[bool, Query()] = True,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> list[BaseHierarchyModelRead]:
+) -> list[IdentityHierarchyRead]:
     """Adds bulk of existing users to a group."""
     logger.info("POST users to group")
     hierarchy_response = []
@@ -465,7 +465,7 @@ async def post_sub_group_to_group(
     inherit: Annotated[bool, Query()] = True,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["Admin"])),
-) -> SubGroup:
+) -> SubGroup:  # type: ignore[valid-type]
     """Creates a new sub_group as a child of group with group_id."""
     logger.info("POST sub_group to group")
     return await sub_group_view.post(
@@ -480,7 +480,7 @@ async def post_existing_subgroups_to_group(
     inherit: Annotated[bool, Query()] = True,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> list[BaseHierarchyModelRead]:
+) -> list[IdentityHierarchyRead]:
     """Adds bulk of existing sub-groups by their id to a group."""
     logger.info("POST sub-groups to group")
     hierarchy_response = []
@@ -525,7 +525,7 @@ async def put_group(
     group: UeberGroupUpdate,
     token_payload=Depends(get_http_access_token_payload),
     guards=Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> Group:
+) -> Group:  # type: ignore[valid-type]
     """Updates a group."""
     return await group_view.put(
         group_id,
@@ -631,7 +631,7 @@ async def post_existing_subgroup_to_group(
     inherit: Annotated[bool, Query()] = True,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> BaseHierarchyModelRead:
+) -> IdentityHierarchyRead:
     """Adds an existing sub_group to a group."""
     logger.info("POST sub_group to group")
     return await sub_group_view.post_add_child_to_parent(
@@ -650,7 +650,7 @@ async def post_existing_users_to_subgroup(
     inherit: Annotated[bool, Query()] = True,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> list[BaseHierarchyModelRead]:
+) -> list[IdentityHierarchyRead]:
     """Adds bulk of users to a sub_group."""
     logger.info("POST users to sub_group")
     hierarchy_response = []
@@ -673,7 +673,7 @@ async def post_sub_sub_group_to_sub_group(
     inherit: Annotated[bool, Query()] = True,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> SubGroup:
+) -> SubGroup:  # type: ignore[valid-type]
     """Creates a new sub_sub_group as a child of sub_group with sub_group_id."""
     logger.info("POST sub_sub_group to sub_group")
     return await sub_sub_group_view.post(
@@ -688,7 +688,7 @@ async def post_existing_subsubgroups_to_subgroup(
     inherit: Annotated[bool, Query()] = True,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> list[BaseHierarchyModelRead]:
+) -> list[IdentityHierarchyRead]:
     """Adds bulk of sub-sub-groups to a sub-group."""
     logger.info("POST sub-sub-groups to sub-group")
     hierarchy_response = []
@@ -733,7 +733,7 @@ async def put_sub_group(
     sub_group: SubGroupUpdate,
     token_payload=Depends(get_http_access_token_payload),
     guards=Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> SubGroup:
+) -> SubGroup:  # type: ignore[valid-type]
     """Updates a sub_group."""
     return await sub_group_view.put(
         sub_group_id,
@@ -841,7 +841,7 @@ async def post_existing_subsubgroup_to_subgroup(
     inherit: Annotated[bool, Query()] = True,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> BaseHierarchyModelRead:
+) -> IdentityHierarchyRead:
     """Adds an existing sub_sub_group to a sub_group."""
     logger.info("POST sub_sub_group to sub_group")
     return await sub_sub_group_view.post_add_child_to_parent(
@@ -860,7 +860,7 @@ async def post_existing_users_to_subsubgroup(
     inherit: Annotated[bool, Query()] = True,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> list[BaseHierarchyModelRead]:
+) -> list[IdentityHierarchyRead]:
     """Adds bulk of users to a sub_sub_group."""
     logger.info("POST users to sub_sub_group")
     hierarchy_response = []
@@ -905,7 +905,7 @@ async def put_sub_sub_group(
     sub_sub_group: SubGroupUpdate,
     token_payload=Depends(get_http_access_token_payload),
     guards=Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> SubGroup:
+) -> SubGroup:  # type: ignore[valid-type]
     """Updates a sub_sub_group."""
     return await sub_sub_group_view.put(
         sub_sub_group_id,

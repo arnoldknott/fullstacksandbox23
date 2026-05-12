@@ -39,6 +39,7 @@ dev = [
     "isort>=8.0.1,<9",
     'pytest>=9.0.2,<10',
     'flower>=2.0.1,<3',
+    "pyright[nodejs]>=1.1.409,<2",
 ]
 
 [tool.isort]
@@ -51,3 +52,11 @@ extend-exclude = 'src/migrations/'
 line-length = 88  # Match Black's default line length
 lint.select = ["E", "F", "W", "C90"]  # Customize as needed
 lint.ignore = ["E501"]  # Ignore line length to avoid conflicts with Black
+
+[tool.pyright]
+exclude = [
+    "src/migrations",
+    "**/__pycache__",
+    "**/.venv",
+    ".venv",
+]

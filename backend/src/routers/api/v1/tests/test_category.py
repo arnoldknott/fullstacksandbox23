@@ -25,7 +25,7 @@ async def test_post_category(
 ):
     """Tests POST of a category."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     category = {
         "name": "Test Cat",
@@ -52,7 +52,7 @@ async def test_post_category_name_too_long(
     app_override_provide_http_token_payload: FastAPI,
 ):
     """Tests POST of a category."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     category = {
         "name": "Test Category Name That Is Too Long",
@@ -85,8 +85,8 @@ async def test_get_all_categories(
 ):
     """Tests GET all categories."""
 
-    app_override_provide_http_token_payload
-    categories = await add_test_categories(mocked_provide_http_token_payload)
+    _ = app_override_provide_http_token_payload
+    categories = await add_test_categories(mocked_provide_http_token_payload)  # type: ignore[call-arg]
 
     response = await async_client.get("/api/v1/category/")
 
@@ -119,8 +119,8 @@ async def test_get_category_by_id(
 ):
     """Tests GET all categories."""
 
-    app_override_provide_http_token_payload
-    categories = await add_test_categories(mocked_provide_http_token_payload)
+    _ = app_override_provide_http_token_payload
+    categories = await add_test_categories(mocked_provide_http_token_payload)  # type: ignore[call-arg]
     response = await async_client.get(f"/api/v1/category/{str(categories[1].id)}")
 
     assert response.status_code == 200
@@ -141,7 +141,7 @@ async def test_get_category_by_invalid_id(
 ):
     """Tests GET of a category with invalid id."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     response = await async_client.get("/api/v1/category/invalid_id")
     assert response.status_code == 422
     # print("=== response.json() ===")
@@ -164,9 +164,9 @@ async def test_put_category(
 ):
     """Tests PUT of a category."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     categories = add_test_categories
-    categories = await add_test_categories(mocked_provide_http_token_payload)
+    categories = await add_test_categories(mocked_provide_http_token_payload)  # type: ignore[call-arg]
     updated_category = {
         "name": "Test Cat",
         "description": "A new description for this category",
@@ -195,8 +195,8 @@ async def test_put_category_partial_update(
 ):
     """Tests PUT of a category."""
 
-    app_override_provide_http_token_payload
-    categories = await add_test_categories(mocked_provide_http_token_payload)
+    _ = app_override_provide_http_token_payload
+    categories = await add_test_categories(mocked_provide_http_token_payload)  # type: ignore[call-arg]
     updated_category = {
         "description": "An updated description for this category",
     }
@@ -223,8 +223,8 @@ async def test_put_category_does_not_exist(
 ):
     """Tests PUT of a category."""
 
-    app_override_provide_http_token_payload
-    await add_test_categories(mocked_provide_http_token_payload)
+    _ = app_override_provide_http_token_payload
+    await add_test_categories(mocked_provide_http_token_payload)  # type: ignore[call-arg]
     updated_category = {
         "name": "Test Cat",
         "description": "A new description for this category",
@@ -252,8 +252,8 @@ async def test_put_category_wrong_data(
 ):
     """Tests PUT of a category."""
 
-    app_override_provide_http_token_payload
-    categories = await add_test_categories(mocked_provide_http_token_payload)
+    _ = app_override_provide_http_token_payload
+    categories = await add_test_categories(mocked_provide_http_token_payload)  # type: ignore[call-arg]
     wrong_category_data = {
         "comments": "There is no field comments in category",
         "emoji": "❌",
@@ -287,8 +287,8 @@ async def test_delete_category(
 ):
     """Tests DELETE of a category."""
 
-    app_override_provide_http_token_payload
-    categories = await add_test_categories(mocked_provide_http_token_payload)
+    _ = app_override_provide_http_token_payload
+    categories = await add_test_categories(mocked_provide_http_token_payload)  # type: ignore[call-arg]
     response = await async_client.get(f"/api/v1/category/{str(categories[1].id)}")
 
     # Check if category exists before deleting:
@@ -324,7 +324,7 @@ async def test_delete_category_by_invalid_id(
 ):
     """Tests DELETE of a category with invalid id."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     response = await async_client.delete("/api/v1/category/invalid_id")
 
     assert response.status_code == 422
@@ -344,8 +344,8 @@ async def test_delete_category_does_not_exist(
 ):
     """Tests DELETE of a category."""
 
-    app_override_provide_http_token_payload
-    await add_test_categories(mocked_provide_http_token_payload)
+    _ = app_override_provide_http_token_payload
+    await add_test_categories(mocked_provide_http_token_payload)  # type: ignore[call-arg]
     response = await async_client.delete(f"/api/v1/category/{str(uuid.uuid4())}")
 
     assert response.status_code == 404

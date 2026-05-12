@@ -3,12 +3,14 @@ from typing import Optional
 
 from sqlmodel import Field, SQLModel
 
+from .base import BaseSQLModel
+
 
 class PublicResourceCreate(SQLModel):
     comment: str = Field(max_length=500)
 
 
-class PublicResource(PublicResourceCreate, table=True):
+class PublicResource(PublicResourceCreate, BaseSQLModel, table=True):
     id: Optional[uuid.UUID] = Field(
         default_factory=uuid.uuid4,
         foreign_key="identifiertypelink.id",

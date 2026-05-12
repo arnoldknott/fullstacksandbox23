@@ -1,8 +1,17 @@
-FROM node:24.14.0-alpine3.23 AS setup
-WORKDIR /app
-RUN npm install -g bun
+# check=skip=InvalidDefaultArgInFrom
+ARG NODE_VERSION
+ARG ALPINE_VERSION
+ARG BUN_VERSION
 
-FROM setup As test
+FROM node:${NODE_VERSION}-alpine${ALPINE_VERSION} AS setup
+ARG BUN_VERSION
+WORKDIR /app
+RUN npm install -g bun@${BUN_VERSION}
+
+FROM setup AS dev
+RUN apk add --no-cache docker-cli git
+
+FROM dev AS test
 COPY package.json bun.lock svelte.config.js ./
 RUN bun install --frozen-lockfile
 

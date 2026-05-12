@@ -50,7 +50,7 @@ async def test_post_protected_resource_with_logs_and_policies(
     current_test_user,
 ):
     """Tests the post_protected_resource endpoint of the API."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     # Make a POST request to create the protected resource
     before_time = datetime.now()
@@ -62,26 +62,26 @@ async def test_post_protected_resource_with_logs_and_policies(
 
     assert response.status_code == 201
     created_protected_resource = ProtectedResource(**response.json())
-    assert created_protected_resource.name == many_test_protected_resources[0]["name"]
+    assert created_protected_resource.name == many_test_protected_resources[0]["name"]  # type: ignore[attr-defined]
     assert (
-        created_protected_resource.description
+        created_protected_resource.description  # type: ignore[attr-defined]
         == many_test_protected_resources[0]["description"]
     )
 
     # Test for created logs:
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
-            resource_id=created_protected_resource.id,
+            resource_id=created_protected_resource.id,  # type: ignore[arg-type]
             current_user=CurrentUserData(**current_user_data_admin),
         )
         last_accessed_at = await crud.read_resource_last_accessed_at(
-            resource_id=created_protected_resource.id,
+            resource_id=created_protected_resource.id,  # type: ignore[arg-type]
             current_user=CurrentUserData(**current_user_data_admin),
         )
 
     assert created_at > before_time - timedelta(seconds=1)
     assert created_at < after_time + timedelta(seconds=1)
-    assert last_accessed_at.resource_id == UUID(created_protected_resource.id)
+    assert last_accessed_at.resource_id == UUID(created_protected_resource.id)  # type: ignore[arg-type]
     assert last_accessed_at.identity_id == current_test_user.user_id
     assert last_accessed_at.action == Action.own
     assert last_accessed_at.time == created_at
@@ -94,9 +94,9 @@ async def test_post_protected_resource_with_logs_and_policies(
         )
 
     assert len(db_protected_resource) == 1
-    assert db_protected_resource[0].name == many_test_protected_resources[0]["name"]
+    assert db_protected_resource[0].name == many_test_protected_resources[0]["name"]  # type: ignore[attr-defined]
     assert (
-        db_protected_resource[0].description
+        db_protected_resource[0].description  # type: ignore[attr-defined]
         == many_test_protected_resources[0]["description"]
     )
 
@@ -104,11 +104,11 @@ async def test_post_protected_resource_with_logs_and_policies(
     async with AccessPolicyCRUD() as crud:
         policies = await crud.read(
             current_test_user,
-            resource_id=db_protected_resource[0].id,
+            resource_id=db_protected_resource[0].id,  # type: ignore[attr-defined]
         )
     assert len(policies) == 1
     assert policies[0].id is not None
-    assert policies[0].resource_id == db_protected_resource[0].id
+    assert policies[0].resource_id == db_protected_resource[0].id  # type: ignore[attr-defined]
     assert policies[0].identity_id == current_test_user.user_id
     assert policies[0].action == Action.own
 
@@ -127,7 +127,7 @@ async def test_get_all_protected_resources(
     current_test_user,
 ):
     """Tests the post_protected_resource endpoint of the API."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     mocked_protected_resources = await add_many_test_protected_resources(
         mocked_provide_http_token_payload
     )
@@ -145,9 +145,9 @@ async def test_get_all_protected_resources(
         read_protected_resources, mocked_protected_resources
     ):
         modelled_protected_resource = ProtectedResourceRead(**read_resource)
-        assert modelled_protected_resource.id == mocked_resource.id
-        assert modelled_protected_resource.name == mocked_resource.name
-        assert modelled_protected_resource.description == mocked_resource.description
+        assert modelled_protected_resource.id == mocked_resource.id  # type: ignore[attr-defined]
+        assert modelled_protected_resource.name == mocked_resource.name  # type: ignore[attr-defined]
+        assert modelled_protected_resource.description == mocked_resource.description  # type: ignore[attr-defined]
 
     all_last_accessed_at = []
     async with AccessLoggingCRUD() as crud:
@@ -185,7 +185,7 @@ async def test_get_protected_resource_by_id(
     current_test_user,
 ):
     """Tests the post_protected_resource endpoint of the API."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     mocked_protected_resources = await add_many_test_protected_resources(
         mocked_provide_http_token_payload
     )
@@ -199,10 +199,10 @@ async def test_get_protected_resource_by_id(
     assert response.status_code == 200
     read_protected_resources = response.json()
     modelled_protected_resource = ProtectedResourceRead(**read_protected_resources)
-    assert modelled_protected_resource.id == mocked_protected_resources[3].id
-    assert modelled_protected_resource.name == mocked_protected_resources[3].name
+    assert modelled_protected_resource.id == mocked_protected_resources[3].id  # type: ignore[attr-defined]
+    assert modelled_protected_resource.name == mocked_protected_resources[3].name  # type: ignore[attr-defined]
     assert (
-        modelled_protected_resource.description
+        modelled_protected_resource.description  # type: ignore[attr-defined]
         == mocked_protected_resources[3].description
     )
 
@@ -236,7 +236,7 @@ async def test_put_protected_resource(
     current_test_user,
 ):
     """Tests the post_protected_resource endpoint of the API."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     mocked_protected_resources = await add_many_test_protected_resources(
         mocked_provide_http_token_payload
     )
@@ -256,9 +256,9 @@ async def test_put_protected_resource(
     assert response.status_code == 200
     read_protected_resources = response.json()
     modelled_protected_resource = ProtectedResourceRead(**read_protected_resources)
-    assert modelled_protected_resource.id == mocked_protected_resources[2].id
-    assert modelled_protected_resource.name == mocked_protected_resources[2].name
-    assert modelled_protected_resource.description == new_data["description"]
+    assert modelled_protected_resource.id == mocked_protected_resources[2].id  # type: ignore[attr-defined]
+    assert modelled_protected_resource.name == mocked_protected_resources[2].name  # type: ignore[attr-defined]
+    assert modelled_protected_resource.description == new_data["description"]  # type: ignore[attr-defined]
 
     async with AccessLoggingCRUD() as crud:
         last_accessed_at = await crud.read_resource_last_accessed_at(
@@ -290,7 +290,7 @@ async def test_delete_protected_resource(
     current_test_user,
 ):
     """Tests the post_protected_resource endpoint of the API."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     mocked_protected_resources = await add_many_test_protected_resources(
         mocked_provide_http_token_payload
     )
@@ -348,7 +348,7 @@ async def test_all_protected_child_endpoints(
     add_many_test_protected_children,
 ):
     """Tests the post_protected_child endpoint of the API."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     parent_resource_id = await access_to_one_parent(ProtectedResource)
 
@@ -361,7 +361,7 @@ async def test_all_protected_child_endpoints(
     assert response.status_code == 201
     created_protected_child = ProtectedChild(**response.json())
     assert (
-        created_protected_child.title == many_test_protected_child_resources[0]["title"]
+        created_protected_child.title == many_test_protected_child_resources[0]["title"]  # type: ignore[attr-defined]
     )
 
     # Make a POST request to create the protected child without access to parent
@@ -380,7 +380,7 @@ async def test_all_protected_child_endpoints(
     mocked_protected_children = await add_many_test_protected_children(
         mocked_provide_http_token_payload
     )
-    created_protected_child.id = UUID(created_protected_child.id)
+    created_protected_child.id = UUID(created_protected_child.id)  # type: ignore[arg-type]
     expected_protected_children = [created_protected_child] + mocked_protected_children
     expected_protected_children = sorted(
         expected_protected_children, key=lambda x: x.id
@@ -397,8 +397,8 @@ async def test_all_protected_child_endpoints(
         read_protected_children, expected_protected_children
     ):
         modelled_protected_child = ProtectedChildRead(**read_child)
-        assert modelled_protected_child.id == expected_child.id
-        assert modelled_protected_child.title == expected_child.title
+        assert modelled_protected_child.id == expected_child.id  # type: ignore[attr-defined]
+        assert modelled_protected_child.title == expected_child.title  # type: ignore[attr-defined]
 
     # Make a GET request to get one protected child by id
     response = await async_client.get(
@@ -407,8 +407,8 @@ async def test_all_protected_child_endpoints(
     assert response.status_code == 200
     read_protected_child = response.json()
     modelled_protected_child = ProtectedChildRead(**read_protected_child)
-    assert modelled_protected_child.id == mocked_protected_children[2].id
-    assert modelled_protected_child.title == mocked_protected_children[2].title
+    assert modelled_protected_child.id == mocked_protected_children[2].id  # type: ignore[attr-defined]
+    assert modelled_protected_child.title == mocked_protected_children[2].title  # type: ignore[attr-defined]
 
     # Make a PUT request to update one protected child
     new_data = {"title": "The updated title of a child."}
@@ -420,8 +420,8 @@ async def test_all_protected_child_endpoints(
     assert response.status_code == 200
     read_protected_child = response.json()
     modelled_protected_child = ProtectedChildRead(**read_protected_child)
-    assert modelled_protected_child.id == mocked_protected_children[4].id
-    assert modelled_protected_child.title == new_data["title"]
+    assert modelled_protected_child.id == mocked_protected_children[4].id  # type: ignore[attr-defined]
+    assert modelled_protected_child.title == new_data["title"]  # type: ignore[attr-defined]
 
     # Make a DELETE request to delete one protected child
     response = await async_client.delete(
@@ -451,7 +451,7 @@ async def test_all_protected_grandchild_endpoints(
     add_many_test_protected_grandchildren,
 ):
     """Tests the all protected_child endpoints of the API."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     parent_resource_id = await access_to_one_parent(ProtectedChild)
 
@@ -464,7 +464,7 @@ async def test_all_protected_grandchild_endpoints(
     assert response.status_code == 201
     created_protected_grandchild = ProtectedGrandChild(**response.json())
     assert (
-        created_protected_grandchild.text
+        created_protected_grandchild.text  # type: ignore[attr-defined]
         == many_test_protected_grandchild_resources[0]["text"]
     )
 
@@ -479,7 +479,7 @@ async def test_all_protected_grandchild_endpoints(
     assert response.status_code == 201
     created_protected_grandchild_of_resource = ProtectedGrandChild(**response.json())
     assert (
-        created_protected_grandchild_of_resource.text
+        created_protected_grandchild_of_resource.text  # type: ignore[attr-defined]
         == many_test_protected_grandchild_resources[0]["text"]
     )
 
@@ -499,9 +499,9 @@ async def test_all_protected_grandchild_endpoints(
     mocked_protected_grandchildren = await add_many_test_protected_grandchildren(
         mocked_provide_http_token_payload
     )
-    created_protected_grandchild.id = UUID(created_protected_grandchild.id)
+    created_protected_grandchild.id = UUID(created_protected_grandchild.id)  # type: ignore[arg-type]
     created_protected_grandchild_of_resource.id = UUID(
-        created_protected_grandchild_of_resource.id
+        created_protected_grandchild_of_resource.id  # type: ignore[arg-type]
     )
     expected_protected_grandchildren = [
         created_protected_grandchild,
@@ -522,8 +522,8 @@ async def test_all_protected_grandchild_endpoints(
         read_protected_grandchildren, expected_protected_grandchildren
     ):
         modelled_protected_grandchild = ProtectedGrandChildRead(**read_grandchild)
-        assert modelled_protected_grandchild.id == expected_grandchild.id
-        assert modelled_protected_grandchild.text == expected_grandchild.text
+        assert modelled_protected_grandchild.id == expected_grandchild.id  # type: ignore[attr-defined]
+        assert modelled_protected_grandchild.text == expected_grandchild.text  # type: ignore[attr-defined]
 
     # Make a GET request to get one protected child by id
     response = await async_client.get(
@@ -532,8 +532,8 @@ async def test_all_protected_grandchild_endpoints(
     assert response.status_code == 200
     read_protected_grandchild = response.json()
     modelled_protected_grandchild = ProtectedGrandChildRead(**read_protected_grandchild)
-    assert modelled_protected_grandchild.id == mocked_protected_grandchildren[2].id
-    assert modelled_protected_grandchild.text == mocked_protected_grandchildren[2].text
+    assert modelled_protected_grandchild.id == mocked_protected_grandchildren[2].id  # type: ignore[attr-defined]
+    assert modelled_protected_grandchild.text == mocked_protected_grandchildren[2].text  # type: ignore[attr-defined]
 
     # Make a PUT request to update one protected child
     new_data = {"text": "The updated text string for a grandchild."}
@@ -545,8 +545,8 @@ async def test_all_protected_grandchild_endpoints(
     assert response.status_code == 200
     read_protected_grandchild = response.json()
     modelled_protected_grandchild = ProtectedGrandChildRead(**read_protected_grandchild)
-    assert modelled_protected_grandchild.id == mocked_protected_grandchildren[4].id
-    assert modelled_protected_grandchild.text == new_data["text"]
+    assert modelled_protected_grandchild.id == mocked_protected_grandchildren[4].id  # type: ignore[attr-defined]
+    assert modelled_protected_grandchild.text == new_data["text"]  # type: ignore[attr-defined]
 
     # Make a DELETE request to delete one protected child
     response = await async_client.delete(
@@ -583,7 +583,7 @@ async def test_post_protected_child_resource_and_add_to_parent(
     mocked_provide_http_token_payload,
 ):
     """Tests the add protected_child to parent endpoint of the API."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     protected_resources = await add_many_test_protected_resources(
         mocked_provide_http_token_payload
     )
@@ -604,23 +604,23 @@ async def test_post_protected_child_resource_and_add_to_parent(
     assert response.status_code == 201
     created_protected_child = ProtectedChild(**response.json())
     assert (
-        created_protected_child.title == many_test_protected_child_resources[0]["title"]
+        created_protected_child.title == many_test_protected_child_resources[0]["title"]  # type: ignore[attr-defined]
     )
 
     # Check for created logs:
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(
-            resource_id=created_protected_child.id,
+            resource_id=created_protected_child.id,  # type: ignore[arg-type]
             current_user=CurrentUserData(**current_user_data_admin),
         )
         last_accessed_at = await crud.read_resource_last_accessed_at(
-            resource_id=created_protected_child.id,
+            resource_id=created_protected_child.id,  # type: ignore[arg-type]
             current_user=CurrentUserData(**current_user_data_admin),
         )
 
     assert created_at > before_time - timedelta(seconds=1)
     assert created_at < after_time + timedelta(seconds=1)
-    assert last_accessed_at.resource_id == UUID(created_protected_child.id)
+    assert last_accessed_at.resource_id == UUID(created_protected_child.id)  # type: ignore[arg-type]
     assert last_accessed_at.identity_id == current_test_user.user_id
     assert last_accessed_at.action == Action.own
     assert last_accessed_at.time == created_at
@@ -633,17 +633,17 @@ async def test_post_protected_child_resource_and_add_to_parent(
             filters=[ProtectedResource.id == str(test_parent.id)],
         )
     assert len(db_protected_resource) == 1
-    assert db_protected_resource[0].name == many_test_protected_resources[0]["name"]
+    assert db_protected_resource[0].name == many_test_protected_resources[0]["name"]  # type: ignore[attr-defined]
     assert (
-        db_protected_resource[0].description
+        db_protected_resource[0].description  # type: ignore[attr-defined]
         == many_test_protected_resources[0]["description"]
     )
-    assert len(db_protected_resource[0].protected_children) == 1
-    assert db_protected_resource[0].protected_children[0].id == UUID(
-        created_protected_child.id
+    assert len(db_protected_resource[0].protected_children) == 1  # type: ignore[attr-defined]
+    assert db_protected_resource[0].protected_children[0].id == UUID(  # type: ignore[attr-defined]
+        created_protected_child.id  # type: ignore[arg-type]
     )
     assert (
-        db_protected_resource[0].protected_children[0].title
+        db_protected_resource[0].protected_children[0].title  # type: ignore[attr-defined]
         == many_test_protected_child_resources[0]["title"]
     )
 
@@ -655,18 +655,18 @@ async def test_post_protected_child_resource_and_add_to_parent(
         )
     assert len(db_protected_child) == 1
     assert (
-        db_protected_child[0].title == many_test_protected_child_resources[0]["title"]
+        db_protected_child[0].title == many_test_protected_child_resources[0]["title"]  # type: ignore[attr-defined]
     )
 
     # Check for created access policies:
     async with AccessPolicyCRUD() as crud:
         policies = await crud.read(
             current_test_user,
-            resource_id=db_protected_child[0].id,
+            resource_id=db_protected_child[0].id,  # type: ignore[attr-defined]
         )
     assert len(policies) == 1
     assert policies[0].id is not None
-    assert policies[0].resource_id == db_protected_child[0].id
+    assert policies[0].resource_id == db_protected_child[0].id  # type: ignore[attr-defined]
     assert policies[0].identity_id == current_test_user.user_id
     assert policies[0].action == Action.own
 
@@ -675,11 +675,11 @@ async def test_post_protected_child_resource_and_add_to_parent(
         hierarchy_entry = await crud.read(
             current_test_user,
             parent_id=test_parent.id,
-            child_id=db_protected_child[0].id,
+            child_id=db_protected_child[0].id,  # type: ignore[attr-defined]
         )
     assert len(hierarchy_entry) == 1
     assert hierarchy_entry[0].parent_id == test_parent.id
-    assert hierarchy_entry[0].child_id == db_protected_child[0].id
+    assert hierarchy_entry[0].child_id == db_protected_child[0].id  # type: ignore[attr-defined]
     assert hierarchy_entry[0].inherit is False
 
 
@@ -697,7 +697,7 @@ async def test_user_adds_child_to_parent(
     add_many_test_protected_children,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources(
         mocked_provide_http_token_payload
@@ -729,7 +729,7 @@ async def test_user_adds_child_to_parent_without_access(
     add_many_test_protected_children,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources()
     mocked_protected_children = await add_many_test_protected_children()
@@ -755,7 +755,7 @@ async def test_user_adds_child_to_parent_without_access_to_parent(
     add_many_test_protected_children,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources()
     mocked_protected_children = await add_many_test_protected_children(
@@ -783,7 +783,7 @@ async def test_user_adds_child_to_parent_without_access_to_child(
     add_many_test_protected_children,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources(
         mocked_provide_http_token_payload
@@ -865,7 +865,7 @@ async def test_user_moves_child_order_down_insert_before(
 ):
     """Tests if children get reordered and returned correctly from read afterwards."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources()
     mocked_protected_children = await add_many_test_protected_children()
@@ -918,18 +918,18 @@ async def test_user_moves_child_order_down_insert_before(
     )
     parent_new = ProtectedResourceRead(**response_new_parent.json())
 
-    assert parent_new.protected_children[0].id == mocked_protected_children[0].id
-    assert parent_new.protected_children[0].title == mocked_protected_children[0].title
-    assert parent_new.protected_children[1].id == mocked_protected_children[2].id
-    assert parent_new.protected_children[1].title == mocked_protected_children[2].title
-    assert parent_new.protected_children[2].id == mocked_protected_children[3].id
-    assert parent_new.protected_children[2].title == mocked_protected_children[3].title
-    assert parent_new.protected_children[3].id == mocked_protected_children[1].id
-    assert parent_new.protected_children[3].title == mocked_protected_children[1].title
-    assert parent_new.protected_children[4].id == mocked_protected_children[4].id
-    assert parent_new.protected_children[4].title == mocked_protected_children[4].title
-    assert parent_new.protected_children[5].id == mocked_protected_children[5].id
-    assert parent_new.protected_children[5].title == mocked_protected_children[5].title
+    assert parent_new.protected_children[0].id == mocked_protected_children[0].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[0].title == mocked_protected_children[0].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[1].id == mocked_protected_children[2].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[1].title == mocked_protected_children[2].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[2].id == mocked_protected_children[3].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[2].title == mocked_protected_children[3].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[3].id == mocked_protected_children[1].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[3].title == mocked_protected_children[1].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[4].id == mocked_protected_children[4].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[4].title == mocked_protected_children[4].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[5].id == mocked_protected_children[5].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[5].title == mocked_protected_children[5].title  # type: ignore[attr-defined]
 
 
 @pytest.mark.anyio
@@ -950,7 +950,7 @@ async def test_user_moves_child_order_up_insert_before(
 ):
     """Tests if children get reordered and returned correctly from read afterwards."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources()
     mocked_protected_children = await add_many_test_protected_children()
@@ -1003,18 +1003,18 @@ async def test_user_moves_child_order_up_insert_before(
     )
     parent_new = ProtectedResourceRead(**response_new_parent.json())
 
-    assert parent_new.protected_children[0].id == mocked_protected_children[0].id
-    assert parent_new.protected_children[0].title == mocked_protected_children[0].title
-    assert parent_new.protected_children[1].id == mocked_protected_children[1].id
-    assert parent_new.protected_children[1].title == mocked_protected_children[1].title
-    assert parent_new.protected_children[2].id == mocked_protected_children[5].id
-    assert parent_new.protected_children[2].title == mocked_protected_children[5].title
-    assert parent_new.protected_children[3].id == mocked_protected_children[2].id
-    assert parent_new.protected_children[3].title == mocked_protected_children[2].title
-    assert parent_new.protected_children[4].id == mocked_protected_children[3].id
-    assert parent_new.protected_children[4].title == mocked_protected_children[3].title
-    assert parent_new.protected_children[5].id == mocked_protected_children[4].id
-    assert parent_new.protected_children[5].title == mocked_protected_children[4].title
+    assert parent_new.protected_children[0].id == mocked_protected_children[0].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[0].title == mocked_protected_children[0].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[1].id == mocked_protected_children[1].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[1].title == mocked_protected_children[1].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[2].id == mocked_protected_children[5].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[2].title == mocked_protected_children[5].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[3].id == mocked_protected_children[2].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[3].title == mocked_protected_children[2].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[4].id == mocked_protected_children[3].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[4].title == mocked_protected_children[3].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[5].id == mocked_protected_children[4].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[5].title == mocked_protected_children[4].title  # type: ignore[attr-defined]
 
 
 @pytest.mark.anyio
@@ -1035,7 +1035,7 @@ async def test_user_moves_child_order_down_insert_after(
 ):
     """Tests if children get reordered and returned correctly from read afterwards."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources()
     mocked_protected_children = await add_many_test_protected_children()
@@ -1088,18 +1088,18 @@ async def test_user_moves_child_order_down_insert_after(
     )
     parent_new = ProtectedResourceRead(**response_new_parent.json())
 
-    assert parent_new.protected_children[0].id == mocked_protected_children[0].id
-    assert parent_new.protected_children[0].title == mocked_protected_children[0].title
-    assert parent_new.protected_children[1].id == mocked_protected_children[2].id
-    assert parent_new.protected_children[1].title == mocked_protected_children[2].title
-    assert parent_new.protected_children[2].id == mocked_protected_children[3].id
-    assert parent_new.protected_children[2].title == mocked_protected_children[3].title
-    assert parent_new.protected_children[3].id == mocked_protected_children[4].id
-    assert parent_new.protected_children[3].title == mocked_protected_children[4].title
-    assert parent_new.protected_children[4].id == mocked_protected_children[1].id
-    assert parent_new.protected_children[4].title == mocked_protected_children[1].title
-    assert parent_new.protected_children[5].id == mocked_protected_children[5].id
-    assert parent_new.protected_children[5].title == mocked_protected_children[5].title
+    assert parent_new.protected_children[0].id == mocked_protected_children[0].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[0].title == mocked_protected_children[0].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[1].id == mocked_protected_children[2].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[1].title == mocked_protected_children[2].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[2].id == mocked_protected_children[3].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[2].title == mocked_protected_children[3].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[3].id == mocked_protected_children[4].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[3].title == mocked_protected_children[4].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[4].id == mocked_protected_children[1].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[4].title == mocked_protected_children[1].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[5].id == mocked_protected_children[5].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[5].title == mocked_protected_children[5].title  # type: ignore[attr-defined]
 
 
 @pytest.mark.anyio
@@ -1120,7 +1120,7 @@ async def test_user_moves_child_order_up_insert_after(
 ):
     """Tests if children get reordered and returned correctly from read afterwards."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources()
     mocked_protected_children = await add_many_test_protected_children()
@@ -1173,18 +1173,18 @@ async def test_user_moves_child_order_up_insert_after(
     )
     parent_new = ProtectedResourceRead(**response_new_parent.json())
 
-    assert parent_new.protected_children[0].id == mocked_protected_children[0].id
-    assert parent_new.protected_children[0].title == mocked_protected_children[0].title
-    assert parent_new.protected_children[1].id == mocked_protected_children[1].id
-    assert parent_new.protected_children[1].title == mocked_protected_children[1].title
-    assert parent_new.protected_children[2].id == mocked_protected_children[2].id
-    assert parent_new.protected_children[2].title == mocked_protected_children[2].title
-    assert parent_new.protected_children[3].id == mocked_protected_children[5].id
-    assert parent_new.protected_children[3].title == mocked_protected_children[5].title
-    assert parent_new.protected_children[4].id == mocked_protected_children[3].id
-    assert parent_new.protected_children[4].title == mocked_protected_children[3].title
-    assert parent_new.protected_children[5].id == mocked_protected_children[4].id
-    assert parent_new.protected_children[5].title == mocked_protected_children[4].title
+    assert parent_new.protected_children[0].id == mocked_protected_children[0].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[0].title == mocked_protected_children[0].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[1].id == mocked_protected_children[1].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[1].title == mocked_protected_children[1].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[2].id == mocked_protected_children[2].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[2].title == mocked_protected_children[2].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[3].id == mocked_protected_children[5].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[3].title == mocked_protected_children[5].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[4].id == mocked_protected_children[3].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[4].title == mocked_protected_children[3].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[5].id == mocked_protected_children[4].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[5].title == mocked_protected_children[4].title  # type: ignore[attr-defined]
 
 
 @pytest.mark.anyio
@@ -1205,7 +1205,7 @@ async def test_user_moves_child_missing_access_to_children(
 ):
     """Tests if children get reordered and returned correctly from read afterwards."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources()
     mocked_protected_children = await add_many_test_protected_children()
@@ -1254,7 +1254,7 @@ async def test_user_moves_child_missing_access_to_children(
     parent = ProtectedResourceRead(**response_parent.json())
 
     for parent_child, mocked_protected_child in zip(
-        parent.protected_children, mocked_protected_children
+        parent.protected_children, mocked_protected_children  # type: ignore[attr-defined]
     ):
         assert parent_child.id == mocked_protected_child.id
         assert parent_child.title == mocked_protected_child.title
@@ -1278,7 +1278,7 @@ async def test_user_moves_child_missing_access_to_parent(
 ):
     """Tests if children get reordered and returned correctly from read afterwards."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources()
     mocked_protected_children = await add_many_test_protected_children()
@@ -1328,7 +1328,7 @@ async def test_user_moves_child_missing_access_to_parent(
     parent = ProtectedResourceRead(**response_parent.json())
 
     for parent_child, mocked_protected_child in zip(
-        parent.protected_children, mocked_protected_children
+        parent.protected_children, mocked_protected_children  # type: ignore[attr-defined]
     ):
         assert parent_child.id == mocked_protected_child.id
         assert parent_child.title == mocked_protected_child.title
@@ -1349,7 +1349,7 @@ async def test_get_protected_child_resource_from_a_parent_through_inheritance(
     get_async_test_session,
 ):
     """Tests resource inheritance."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     current_user = current_test_user
     # Make a POST request to create the protected resource
@@ -1360,9 +1360,9 @@ async def test_get_protected_child_resource_from_a_parent_through_inheritance(
 
     assert response.status_code == 201
     created_protected_resource = ProtectedResource(**response.json())
-    assert created_protected_resource.name == many_test_protected_resources[0]["name"]
+    assert created_protected_resource.name == many_test_protected_resources[0]["name"]  # type: ignore[attr-defined]
     assert (
-        created_protected_resource.description
+        created_protected_resource.description  # type: ignore[attr-defined]
         == many_test_protected_resources[0]["description"]
     )
 
@@ -1375,7 +1375,7 @@ async def test_get_protected_child_resource_from_a_parent_through_inheritance(
     created_protected_child = ProtectedChild(**response.json())
     assert response.status_code == 201
     assert (
-        created_protected_child.title == many_test_protected_child_resources[0]["title"]
+        created_protected_child.title == many_test_protected_child_resources[0]["title"]  # type: ignore[attr-defined]
     )
     assert created_protected_child.id is not None
 
@@ -1387,8 +1387,8 @@ async def test_get_protected_child_resource_from_a_parent_through_inheritance(
             child_id=created_protected_child.id,
         )
     assert len(hierarchy_entry) == 1
-    assert hierarchy_entry[0].parent_id == UUID(created_protected_resource.id)
-    assert hierarchy_entry[0].child_id == UUID(created_protected_child.id)
+    assert hierarchy_entry[0].parent_id == UUID(created_protected_resource.id)  # type: ignore[arg-type]
+    assert hierarchy_entry[0].child_id == UUID(created_protected_child.id)  # type: ignore[arg-type]
     assert hierarchy_entry[0].inherit is True
 
     current_user2 = await register_current_user(current_user_data_user2)
@@ -1409,7 +1409,7 @@ async def test_get_protected_child_resource_from_a_parent_through_inheritance(
         )
     assert len(policies) == 1
     assert policies[0].id is not None
-    assert policies[0].resource_id == UUID(created_protected_resource.id)
+    assert policies[0].resource_id == UUID(created_protected_resource.id)  # type: ignore[arg-type]
     assert policies[0].identity_id == UUID(current_user_data_user2["user_id"])
     assert policies[0].action == Action.read
 
@@ -1420,19 +1420,19 @@ async def test_get_protected_child_resource_from_a_parent_through_inheritance(
             current_user2,
         )
 
-    assert db_protected_child.title == many_test_protected_child_resources[0]["title"]
-    assert db_protected_child.id == UUID(created_protected_child.id)
+    assert db_protected_child.title == many_test_protected_child_resources[0]["title"]  # type: ignore[attr-defined]
+    assert db_protected_child.id == UUID(created_protected_child.id)  # type: ignore[arg-type,attr-defined]
     # Check if parent is returned with child:
     assert (
-        db_protected_child.protected_resources[0].name
-        == created_protected_resource.name
+        db_protected_child.protected_resources[0].name  # type: ignore[attr-defined]
+        == created_protected_resource.name  # type: ignore[attr-defined]
     )
     assert (
-        db_protected_child.protected_resources[0].description
-        == created_protected_resource.description
+        db_protected_child.protected_resources[0].description  # type: ignore[attr-defined]
+        == created_protected_resource.description  # type: ignore[attr-defined]
     )
-    assert db_protected_child.protected_resources[0].id == UUID(
-        created_protected_resource.id
+    assert db_protected_child.protected_resources[0].id == UUID(  # type: ignore[attr-defined]
+        created_protected_resource.id  # type: ignore[arg-type]
     )
 
 
@@ -1451,7 +1451,7 @@ async def test_get_protected_child_resource_from_a_parent_through_inheritance_mi
     get_async_test_session,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     current_user = current_test_user
     # Make a POST request to create the protected resource
@@ -1462,9 +1462,9 @@ async def test_get_protected_child_resource_from_a_parent_through_inheritance_mi
 
     assert response.status_code == 201
     created_protected_resource = ProtectedResource(**response.json())
-    assert created_protected_resource.name == many_test_protected_resources[0]["name"]
+    assert created_protected_resource.name == many_test_protected_resources[0]["name"]  # type: ignore[attr-defined]
     assert (
-        created_protected_resource.description
+        created_protected_resource.description  # type: ignore[attr-defined]
         == many_test_protected_resources[0]["description"]
     )
 
@@ -1477,7 +1477,7 @@ async def test_get_protected_child_resource_from_a_parent_through_inheritance_mi
     assert response.status_code == 201
     created_protected_child = ProtectedChild(**response.json())
     assert (
-        created_protected_child.title == many_test_protected_child_resources[0]["title"]
+        created_protected_child.title == many_test_protected_child_resources[0]["title"]  # type: ignore[attr-defined]
     )
     assert created_protected_child.id is not None
 
@@ -1489,8 +1489,8 @@ async def test_get_protected_child_resource_from_a_parent_through_inheritance_mi
             child_id=created_protected_child.id,
         )
     assert len(hierarchy_entry) == 1
-    assert hierarchy_entry[0].parent_id == UUID(created_protected_resource.id)
-    assert hierarchy_entry[0].child_id == UUID(created_protected_child.id)
+    assert hierarchy_entry[0].parent_id == UUID(created_protected_resource.id)  # type: ignore[arg-type]
+    assert hierarchy_entry[0].child_id == UUID(created_protected_child.id)  # type: ignore[arg-type]
     assert hierarchy_entry[0].inherit is True
 
     current_user2 = await register_current_user(current_user_data_user2)
@@ -1502,8 +1502,8 @@ async def test_get_protected_child_resource_from_a_parent_through_inheritance_mi
                 current_user2,
             )
         except Exception as err:
-            assert err.status_code == 404
-            assert err.detail == "ProtectedChild not found."
+            assert err.status_code == 404  # type: ignore[attr-defined]
+            assert err.detail == "ProtectedChild not found."  # type: ignore[attr-defined]
         else:
             pytest.fail("No HTTPexception raised!")
 
@@ -1523,7 +1523,7 @@ async def test_get_protected_child_resource_from_a_parent_missing_inheritance(
     get_async_test_session,
 ):
     """Tests if missing inheritance for child resource is handled correctly."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     current_user = current_test_user
     # Make a POST request to create the protected resource
@@ -1534,9 +1534,9 @@ async def test_get_protected_child_resource_from_a_parent_missing_inheritance(
 
     assert response.status_code == 201
     created_protected_resource = ProtectedResource(**response.json())
-    assert created_protected_resource.name == many_test_protected_resources[0]["name"]
+    assert created_protected_resource.name == many_test_protected_resources[0]["name"]  # type: ignore[attr-defined]
     assert (
-        created_protected_resource.description
+        created_protected_resource.description  # type: ignore[attr-defined]
         == many_test_protected_resources[0]["description"]
     )
 
@@ -1549,7 +1549,7 @@ async def test_get_protected_child_resource_from_a_parent_missing_inheritance(
     assert response.status_code == 201
     created_protected_child = ProtectedChild(**response.json())
     assert (
-        created_protected_child.title == many_test_protected_child_resources[0]["title"]
+        created_protected_child.title == many_test_protected_child_resources[0]["title"]  # type: ignore[attr-defined]
     )
     assert created_protected_child.id is not None
 
@@ -1561,8 +1561,8 @@ async def test_get_protected_child_resource_from_a_parent_missing_inheritance(
             child_id=created_protected_child.id,
         )
     assert len(hierarchy_entry) == 1
-    assert hierarchy_entry[0].parent_id == UUID(created_protected_resource.id)
-    assert hierarchy_entry[0].child_id == UUID(created_protected_child.id)
+    assert hierarchy_entry[0].parent_id == UUID(created_protected_resource.id)  # type: ignore[arg-type]
+    assert hierarchy_entry[0].child_id == UUID(created_protected_child.id)  # type: ignore[arg-type]
     assert hierarchy_entry[0].inherit is False
 
     current_user2 = await register_current_user(current_user_data_user2)
@@ -1583,7 +1583,7 @@ async def test_get_protected_child_resource_from_a_parent_missing_inheritance(
         )
     assert len(policies) == 1
     assert policies[0].id is not None
-    assert policies[0].resource_id == UUID(created_protected_resource.id)
+    assert policies[0].resource_id == UUID(created_protected_resource.id)  # type: ignore[arg-type]
     assert policies[0].identity_id == UUID(current_user_data_user2["user_id"])
     assert policies[0].action == Action.read
 
@@ -1594,8 +1594,8 @@ async def test_get_protected_child_resource_from_a_parent_missing_inheritance(
                 current_user2,
             )
         except Exception as err:
-            assert err.status_code == 404
-            assert err.detail == "ProtectedChild not found."
+            assert err.status_code == 404  # type: ignore[attr-defined]
+            assert err.detail == "ProtectedChild not found."  # type: ignore[attr-defined]
         else:
             pytest.fail("No HTTPexception raised!")
 
@@ -1615,7 +1615,7 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
     get_async_test_session,
 ):
     """Tests ."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     # Make a POST request to create the protected resource
     response = await async_client.post(
@@ -1623,13 +1623,13 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
         json=many_test_protected_resources[0],
     )
 
-    current_test_user
+    _ = current_test_user
 
     assert response.status_code == 201
     created_protected_resource = ProtectedResource(**response.json())
-    assert created_protected_resource.name == many_test_protected_resources[0]["name"]
+    assert created_protected_resource.name == many_test_protected_resources[0]["name"]  # type: ignore[attr-defined]
     assert (
-        created_protected_resource.description
+        created_protected_resource.description  # type: ignore[attr-defined]
         == many_test_protected_resources[0]["description"]
     )
 
@@ -1661,15 +1661,15 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
 
     async with ProtectedGrandChildCRUD() as crud:
         db_protected_grand_child = await crud.read_by_id(
-            created_protected_grand_child.id,
+            created_protected_grand_child.id,  # type: ignore[arg-type]
             current_user2,
         )
 
     assert (
-        db_protected_grand_child.text
+        db_protected_grand_child.text  # type: ignore[attr-defined]
         == many_test_protected_grandchild_resources[0]["text"]
     )
-    assert db_protected_grand_child.id == UUID(created_protected_grand_child.id)
+    assert db_protected_grand_child.id == UUID(created_protected_grand_child.id)  # type: ignore[arg-type,attr-defined]
 
 
 @pytest.mark.anyio
@@ -1687,7 +1687,7 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
     get_async_test_session,
 ):
     """Tests ."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     # Make a POST request to create the protected resource
     response = await async_client.post(
@@ -1697,9 +1697,9 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
 
     assert response.status_code == 201
     created_protected_resource = ProtectedResource(**response.json())
-    assert created_protected_resource.name == many_test_protected_resources[0]["name"]
+    assert created_protected_resource.name == many_test_protected_resources[0]["name"]  # type: ignore[attr-defined]
     assert (
-        created_protected_resource.description
+        created_protected_resource.description  # type: ignore[attr-defined]
         == many_test_protected_resources[0]["description"]
     )
 
@@ -1724,12 +1724,12 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
     async with ProtectedGrandChildCRUD() as crud:
         try:
             await crud.read_by_id(
-                created_protected_grand_child.id,
+                created_protected_grand_child.id,  # type: ignore[arg-type]
                 current_user2,
             )
         except Exception as err:
-            assert err.status_code == 404
-            assert err.detail == "ProtectedGrandChild not found."
+            assert err.status_code == 404  # type: ignore[attr-defined]
+            assert err.detail == "ProtectedGrandChild not found."  # type: ignore[attr-defined]
         else:
             pytest.fail("No HTTPexception raised!")
 
@@ -1749,7 +1749,7 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
     get_async_test_session,
 ):
     """Tests ."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     # Make a POST request to create the protected resource
     response = await async_client.post(
@@ -1759,9 +1759,9 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
 
     assert response.status_code == 201
     created_protected_resource = ProtectedResource(**response.json())
-    assert created_protected_resource.name == many_test_protected_resources[0]["name"]
+    assert created_protected_resource.name == many_test_protected_resources[0]["name"]  # type: ignore[attr-defined]
     assert (
-        created_protected_resource.description
+        created_protected_resource.description  # type: ignore[attr-defined]
         == many_test_protected_resources[0]["description"]
     )
 
@@ -1793,12 +1793,12 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
     async with ProtectedGrandChildCRUD() as crud:
         try:
             await crud.read_by_id(
-                created_protected_grand_child.id,
+                created_protected_grand_child.id,  # type: ignore[arg-type]
                 current_user2,
             )
         except Exception as err:
-            assert err.status_code == 404
-            assert err.detail == "ProtectedGrandChild not found."
+            assert err.status_code == 404  # type: ignore[attr-defined]
+            assert err.detail == "ProtectedGrandChild not found."  # type: ignore[attr-defined]
         else:
             pytest.fail("No HTTPexception raised!")
 
@@ -1818,7 +1818,7 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
     get_async_test_session,
 ):
     """Tests ."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     # Make a POST request to create the protected resource
     response = await async_client.post(
@@ -1828,9 +1828,9 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
 
     assert response.status_code == 201
     created_protected_resource = ProtectedResource(**response.json())
-    assert created_protected_resource.name == many_test_protected_resources[0]["name"]
+    assert created_protected_resource.name == many_test_protected_resources[0]["name"]  # type: ignore[attr-defined]
     assert (
-        created_protected_resource.description
+        created_protected_resource.description  # type: ignore[attr-defined]
         == many_test_protected_resources[0]["description"]
     )
 
@@ -1862,12 +1862,12 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
     async with ProtectedGrandChildCRUD() as crud:
         try:
             await crud.read_by_id(
-                created_protected_grand_child.id,
+                created_protected_grand_child.id,  # type: ignore[arg-type]
                 current_user2,
             )
         except Exception as err:
-            assert err.status_code == 404
-            assert err.detail == "ProtectedGrandChild not found."
+            assert err.status_code == 404  # type: ignore[attr-defined]
+            assert err.detail == "ProtectedGrandChild not found."  # type: ignore[attr-defined]
         else:
             pytest.fail("No HTTPexception raised!")
 
@@ -1886,7 +1886,7 @@ async def test_admin_adds_and_gets_protected_children_as_relationship_from_prote
     add_many_test_protected_children,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources()
     mocked_protected_children = await add_many_test_protected_children()
@@ -1915,27 +1915,27 @@ async def test_admin_adds_and_gets_protected_children_as_relationship_from_prote
     assert response.status_code == 200
     read_protected_resource = response.json()
     modelled_protected_resource = ProtectedResourceRead(**read_protected_resource)
-    assert modelled_protected_resource.id == mocked_protected_resources[0].id
-    assert modelled_protected_resource.name == mocked_protected_resources[0].name
+    assert modelled_protected_resource.id == mocked_protected_resources[0].id  # type: ignore[attr-defined]
+    assert modelled_protected_resource.name == mocked_protected_resources[0].name  # type: ignore[attr-defined]
     assert (
-        modelled_protected_resource.description
+        modelled_protected_resource.description  # type: ignore[attr-defined]
         == mocked_protected_resources[0].description
     )
-    assert len(modelled_protected_resource.protected_children) == 2
+    assert len(modelled_protected_resource.protected_children) == 2  # type: ignore[attr-defined]
     assert (
-        modelled_protected_resource.protected_children[0].id
+        modelled_protected_resource.protected_children[0].id  # type: ignore[attr-defined]
         == mocked_protected_children[0].id
     )
     assert (
-        modelled_protected_resource.protected_children[0].title
+        modelled_protected_resource.protected_children[0].title  # type: ignore[attr-defined]
         == mocked_protected_children[0].title
     )
     assert (
-        modelled_protected_resource.protected_children[1].id
+        modelled_protected_resource.protected_children[1].id  # type: ignore[attr-defined]
         == mocked_protected_children[1].id
     )
     assert (
-        modelled_protected_resource.protected_children[1].title
+        modelled_protected_resource.protected_children[1].title  # type: ignore[attr-defined]
         == mocked_protected_children[1].title
     )
 
@@ -1957,7 +1957,7 @@ async def test_user_gets_protected_children_with_access_to_all_as_relationship_f
     add_one_parent_child_resource_relationship,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources(
         mocked_provide_http_token_payload
@@ -2005,27 +2005,27 @@ async def test_user_gets_protected_children_with_access_to_all_as_relationship_f
     read_protected_resource = response.json()
     modelled_protected_resource = ProtectedResourceRead(**read_protected_resource)
 
-    assert modelled_protected_resource.id == mocked_protected_resources[0].id
-    assert modelled_protected_resource.name == mocked_protected_resources[0].name
+    assert modelled_protected_resource.id == mocked_protected_resources[0].id  # type: ignore[attr-defined]
+    assert modelled_protected_resource.name == mocked_protected_resources[0].name  # type: ignore[attr-defined]
     assert (
-        modelled_protected_resource.description
+        modelled_protected_resource.description  # type: ignore[attr-defined]
         == mocked_protected_resources[0].description
     )
-    assert len(modelled_protected_resource.protected_children) == 2
+    assert len(modelled_protected_resource.protected_children) == 2  # type: ignore[attr-defined]
     assert (
-        modelled_protected_resource.protected_children[0].id
+        modelled_protected_resource.protected_children[0].id  # type: ignore[attr-defined]
         == mocked_protected_children[0].id
     )
     assert (
-        modelled_protected_resource.protected_children[0].title
+        modelled_protected_resource.protected_children[0].title  # type: ignore[attr-defined]
         == mocked_protected_children[0].title
     )
     assert (
-        modelled_protected_resource.protected_children[1].id
+        modelled_protected_resource.protected_children[1].id  # type: ignore[attr-defined]
         == mocked_protected_children[1].id
     )
     assert (
-        modelled_protected_resource.protected_children[1].title
+        modelled_protected_resource.protected_children[1].title  # type: ignore[attr-defined]
         == mocked_protected_children[1].title
     )
 
@@ -2047,7 +2047,7 @@ async def test_user_gets_only_protected_children_with_access_as_relationship_fro
     add_one_parent_child_resource_relationship,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources(
         mocked_provide_http_token_payload
@@ -2095,27 +2095,27 @@ async def test_user_gets_only_protected_children_with_access_as_relationship_fro
     assert response.status_code == 200
     read_protected_resource = response.json()
     modelled_protected_resource = ProtectedResourceRead(**read_protected_resource)
-    assert modelled_protected_resource.id == mocked_protected_resources[0].id
-    assert modelled_protected_resource.name == mocked_protected_resources[0].name
+    assert modelled_protected_resource.id == mocked_protected_resources[0].id  # type: ignore[attr-defined]
+    assert modelled_protected_resource.name == mocked_protected_resources[0].name  # type: ignore[attr-defined]
     assert (
-        modelled_protected_resource.description
+        modelled_protected_resource.description  # type: ignore[attr-defined]
         == mocked_protected_resources[0].description
     )
-    assert len(modelled_protected_resource.protected_children) == 1
+    assert len(modelled_protected_resource.protected_children) == 1  # type: ignore[attr-defined]
 
     assert (
-        modelled_protected_resource.protected_children[0].id
+        modelled_protected_resource.protected_children[0].id  # type: ignore[attr-defined]
         == mocked_protected_children[0].id
     )
     assert (
-        modelled_protected_resource.protected_children[0].title
+        modelled_protected_resource.protected_children[0].title  # type: ignore[attr-defined]
         == mocked_protected_children[0].title
     )
     modelled_protected_children_ids = [
-        child.id for child in modelled_protected_resource.protected_children
+        child.id for child in modelled_protected_resource.protected_children  # type: ignore[attr-defined]
     ]
     modelled_protected_children_titles = [
-        child.title for child in modelled_protected_resource.protected_children
+        child.title for child in modelled_protected_resource.protected_children  # type: ignore[attr-defined]
     ]
     assert mocked_protected_children[1].id not in modelled_protected_children_ids
     assert mocked_protected_children[1].title not in modelled_protected_children_titles
@@ -2138,7 +2138,7 @@ async def test_user_gets_only_protected_resource_and_none_of_the_existing_childr
     add_one_parent_child_resource_relationship,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources(
         mocked_provide_http_token_payload
@@ -2186,13 +2186,13 @@ async def test_user_gets_only_protected_resource_and_none_of_the_existing_childr
     assert response.status_code == 200
     read_protected_resource = response.json()
     modelled_protected_resource = ProtectedResourceRead(**read_protected_resource)
-    assert modelled_protected_resource.id == mocked_protected_resources[0].id
-    assert modelled_protected_resource.name == mocked_protected_resources[0].name
+    assert modelled_protected_resource.id == mocked_protected_resources[0].id  # type: ignore[attr-defined]
+    assert modelled_protected_resource.name == mocked_protected_resources[0].name  # type: ignore[attr-defined]
     assert (
-        modelled_protected_resource.description
+        modelled_protected_resource.description  # type: ignore[attr-defined]
         == mocked_protected_resources[0].description
     )
-    assert len(modelled_protected_resource.protected_children) == 0
+    assert len(modelled_protected_resource.protected_children) == 0  # type: ignore[attr-defined]
 
 
 @pytest.mark.anyio
@@ -2212,7 +2212,7 @@ async def test_admin_removes_a_child_resource_from_a_parent_protected_resource(
     add_one_parent_child_resource_relationship,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources(
         mocked_provide_http_token_payload
@@ -2260,27 +2260,27 @@ async def test_admin_removes_a_child_resource_from_a_parent_protected_resource(
     read_protected_resource = response.json()
     modelled_protected_resource = ProtectedResourceRead(**read_protected_resource)
 
-    assert modelled_protected_resource.id == mocked_protected_resources[0].id
-    assert modelled_protected_resource.name == mocked_protected_resources[0].name
+    assert modelled_protected_resource.id == mocked_protected_resources[0].id  # type: ignore[attr-defined]
+    assert modelled_protected_resource.name == mocked_protected_resources[0].name  # type: ignore[attr-defined]
     assert (
-        modelled_protected_resource.description
+        modelled_protected_resource.description  # type: ignore[attr-defined]
         == mocked_protected_resources[0].description
     )
-    assert len(modelled_protected_resource.protected_children) == 2
+    assert len(modelled_protected_resource.protected_children) == 2  # type: ignore[attr-defined]
     assert (
-        modelled_protected_resource.protected_children[0].id
+        modelled_protected_resource.protected_children[0].id  # type: ignore[attr-defined]
         == mocked_protected_children[0].id
     )
     assert (
-        modelled_protected_resource.protected_children[0].title
+        modelled_protected_resource.protected_children[0].title  # type: ignore[attr-defined]
         == mocked_protected_children[0].title
     )
     assert (
-        modelled_protected_resource.protected_children[1].id
+        modelled_protected_resource.protected_children[1].id  # type: ignore[attr-defined]
         == mocked_protected_children[1].id
     )
     assert (
-        modelled_protected_resource.protected_children[1].title
+        modelled_protected_resource.protected_children[1].title  # type: ignore[attr-defined]
         == mocked_protected_children[1].title
     )
 
@@ -2297,19 +2297,19 @@ async def test_admin_removes_a_child_resource_from_a_parent_protected_resource(
     read_protected_resource = response.json()
     modelled_protected_resource = ProtectedResourceRead(**read_protected_resource)
 
-    assert modelled_protected_resource.id == mocked_protected_resources[0].id
-    assert modelled_protected_resource.name == mocked_protected_resources[0].name
+    assert modelled_protected_resource.id == mocked_protected_resources[0].id  # type: ignore[attr-defined]
+    assert modelled_protected_resource.name == mocked_protected_resources[0].name  # type: ignore[attr-defined]
     assert (
-        modelled_protected_resource.description
+        modelled_protected_resource.description  # type: ignore[attr-defined]
         == mocked_protected_resources[0].description
     )
-    assert len(modelled_protected_resource.protected_children) == 1
+    assert len(modelled_protected_resource.protected_children) == 1  # type: ignore[attr-defined]
     assert (
-        modelled_protected_resource.protected_children[0].id
+        modelled_protected_resource.protected_children[0].id  # type: ignore[attr-defined]
         == mocked_protected_children[0].id
     )
     assert (
-        modelled_protected_resource.protected_children[0].title
+        modelled_protected_resource.protected_children[0].title  # type: ignore[attr-defined]
         == mocked_protected_children[0].title
     )
 
@@ -2331,7 +2331,7 @@ async def test_user_removes_a_child_resource_from_a_parent_protected_resource(
     add_one_parent_child_resource_relationship,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources(
         mocked_provide_http_token_payload
@@ -2379,27 +2379,27 @@ async def test_user_removes_a_child_resource_from_a_parent_protected_resource(
     read_protected_resource = response.json()
     modelled_protected_resource = ProtectedResourceRead(**read_protected_resource)
 
-    assert modelled_protected_resource.id == mocked_protected_resources[0].id
-    assert modelled_protected_resource.name == mocked_protected_resources[0].name
+    assert modelled_protected_resource.id == mocked_protected_resources[0].id  # type: ignore[attr-defined]
+    assert modelled_protected_resource.name == mocked_protected_resources[0].name  # type: ignore[attr-defined]
     assert (
-        modelled_protected_resource.description
+        modelled_protected_resource.description  # type: ignore[attr-defined]
         == mocked_protected_resources[0].description
     )
-    assert len(modelled_protected_resource.protected_children) == 2
+    assert len(modelled_protected_resource.protected_children) == 2  # type: ignore[attr-defined]
     assert (
-        modelled_protected_resource.protected_children[0].id
+        modelled_protected_resource.protected_children[0].id  # type: ignore[attr-defined]
         == mocked_protected_children[0].id
     )
     assert (
-        modelled_protected_resource.protected_children[0].title
+        modelled_protected_resource.protected_children[0].title  # type: ignore[attr-defined]
         == mocked_protected_children[0].title
     )
     assert (
-        modelled_protected_resource.protected_children[1].id
+        modelled_protected_resource.protected_children[1].id  # type: ignore[attr-defined]
         == mocked_protected_children[1].id
     )
     assert (
-        modelled_protected_resource.protected_children[1].title
+        modelled_protected_resource.protected_children[1].title  # type: ignore[attr-defined]
         == mocked_protected_children[1].title
     )
 
@@ -2416,19 +2416,19 @@ async def test_user_removes_a_child_resource_from_a_parent_protected_resource(
     read_protected_resource = response.json()
     modelled_protected_resource = ProtectedResourceRead(**read_protected_resource)
 
-    assert modelled_protected_resource.id == mocked_protected_resources[0].id
-    assert modelled_protected_resource.name == mocked_protected_resources[0].name
+    assert modelled_protected_resource.id == mocked_protected_resources[0].id  # type: ignore[attr-defined]
+    assert modelled_protected_resource.name == mocked_protected_resources[0].name  # type: ignore[attr-defined]
     assert (
-        modelled_protected_resource.description
+        modelled_protected_resource.description  # type: ignore[attr-defined]
         == mocked_protected_resources[0].description
     )
-    assert len(modelled_protected_resource.protected_children) == 1
+    assert len(modelled_protected_resource.protected_children) == 1  # type: ignore[attr-defined]
     assert (
-        modelled_protected_resource.protected_children[0].id
+        modelled_protected_resource.protected_children[0].id  # type: ignore[attr-defined]
         == mocked_protected_children[0].id
     )
     assert (
-        modelled_protected_resource.protected_children[0].title
+        modelled_protected_resource.protected_children[0].title  # type: ignore[attr-defined]
         == mocked_protected_children[0].title
     )
 
@@ -2450,7 +2450,7 @@ async def test_user_removes_a_child_resource_from_a_parent_protected_resource_mi
     add_one_parent_child_resource_relationship,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources(
         mocked_provide_http_token_payload
@@ -2498,19 +2498,19 @@ async def test_user_removes_a_child_resource_from_a_parent_protected_resource_mi
     read_protected_resource = response.json()
     modelled_protected_resource = ProtectedResourceRead(**read_protected_resource)
 
-    assert modelled_protected_resource.id == mocked_protected_resources[0].id
-    assert modelled_protected_resource.name == mocked_protected_resources[0].name
+    assert modelled_protected_resource.id == mocked_protected_resources[0].id  # type: ignore[attr-defined]
+    assert modelled_protected_resource.name == mocked_protected_resources[0].name  # type: ignore[attr-defined]
     assert (
-        modelled_protected_resource.description
+        modelled_protected_resource.description  # type: ignore[attr-defined]
         == mocked_protected_resources[0].description
     )
-    assert len(modelled_protected_resource.protected_children) == 1
+    assert len(modelled_protected_resource.protected_children) == 1  # type: ignore[attr-defined]
     assert (
-        modelled_protected_resource.protected_children[0].id
+        modelled_protected_resource.protected_children[0].id  # type: ignore[attr-defined]
         == mocked_protected_children[0].id
     )
     assert (
-        modelled_protected_resource.protected_children[0].title
+        modelled_protected_resource.protected_children[0].title  # type: ignore[attr-defined]
         == mocked_protected_children[0].title
     )
 
@@ -2538,7 +2538,7 @@ async def test_admin_deletes_child_and_all_hierarchy_table_entries_for_child_are
     add_one_parent_child_resource_relationship,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources(
         mocked_provide_http_token_payload
@@ -2600,7 +2600,7 @@ async def test_admin_deletes_parent_and_all_hierarchy_table_entries_for_parent_a
     add_one_parent_child_resource_relationship,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources(
         mocked_provide_http_token_payload
@@ -2663,7 +2663,7 @@ async def test_user_deletes_child_and_all_hierarchy_table_entries_for_child_are_
     add_one_parent_child_resource_relationship,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources(
         mocked_provide_http_token_payload

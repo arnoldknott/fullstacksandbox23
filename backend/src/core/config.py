@@ -2,8 +2,7 @@ import logging
 import os
 from functools import lru_cache
 from time import sleep
-from typing import Any, Optional
-
+from typing import Any, Optional, cast
 from azure.identity import ManagedIdentityCredential
 from azure.keyvault.secrets import SecretClient
 from pydantic import PostgresDsn, ValidationInfo, field_validator
@@ -17,10 +16,12 @@ def get_variable(variable_name):
 
     # note: the existence of the environment variable AZURE_KEYVAULT_URL is used to determine whether to use keyvault or not.
     if os.getenv("AZ_KEYVAULT_HOST"):
-        credential = ManagedIdentityCredential(client_id=os.getenv("AZ_CLIENT_ID"))
+        credential = ManagedIdentityCredential(
+            client_id=cast(str, os.getenv("AZ_CLIENT_ID"))
+        )
         logger.info("Accessing keyvault")
         client = SecretClient(
-            vault_url=os.getenv("AZ_KEYVAULT_HOST"),
+            vault_url=cast(str, os.getenv("AZ_KEYVAULT_HOST")),
             credential=credential,
         )
 
@@ -86,9 +87,9 @@ class Config(BaseSettings):
     # TBD: refactor: this should no longer be necessary from the environment since database is now an Azure postgres database:
     # Hmmm, why not?
     POSTGRES_HOST: Optional[str] = os.getenv("POSTGRES_HOST")
-    POSTGRES_USER: str = os.getenv("POSTGRES_USER")
-    POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD")
-    POSTGRES_DB: str = os.getenv("POSTGRES_DB")
+    POSTGRES_USER: str = cast(str, os.getenv("POSTGRES_USER"))
+    POSTGRES_PASSWORD: str = cast(str, os.getenv("POSTGRES_PASSWORD"))
+    POSTGRES_DB: str = cast(str, os.getenv("POSTGRES_DB"))
     POSTGRES_URL: Optional[PostgresDsn] = None  # Field(None, validate_default=True)
 
     @field_validator("POSTGRES_URL")
@@ -109,18 +110,24 @@ class Config(BaseSettings):
         )
 
     # Redis configuration:
-    REDIS_HOST: str = os.getenv("REDIS_HOST")
-    REDIS_PORT: int = int(os.getenv("REDIS_PORT"))
+    REDIS_HOST: str = cast(str, os.getenv("REDIS_HOST"))
+    REDIS_PORT: int = int(cast(str, os.getenv("REDIS_PORT")))
     if os.getenv("REDIS_SESSION_DB"):
-        REDIS_SESSION_DB: int = int(os.getenv("REDIS_SESSION_DB"))
-        REDIS_SESSION_PASSWORD: str = get_variable("REDIS_SESSION_PASSWORD")
+        REDIS_SESSION_DB: int = int(cast(str, os.getenv("REDIS_SESSION_DB")))
+        REDIS_SESSION_PASSWORD: str = cast(str, get_variable("REDIS_SESSION_PASSWORD"))
     if os.getenv("REDIS_SOCKETIO_DB"):
-        REDIS_SOCKETIO_DB: int = int(os.getenv("REDIS_SOCKETIO_DB"))
-        REDIS_SOCKETIO_PASSWORD: str = get_variable("REDIS_SOCKETIO_PASSWORD")
+        REDIS_SOCKETIO_DB: int = int(cast(str, os.getenv("REDIS_SOCKETIO_DB")))
+        REDIS_SOCKETIO_PASSWORD: str = cast(
+            str, get_variable("REDIS_SOCKETIO_PASSWORD")
+        )
     if os.getenv("REDIS_CELERY_BROKER_DB") and os.getenv("REDIS_CELERY_BACKEND_DB"):
-        REDIS_CELERY_BROKER_DB: int = int(os.getenv("REDIS_CELERY_BROKER_DB"))
-        REDIS_CELERY_BACKEND_DB: int = int(os.getenv("REDIS_CELERY_BACKEND_DB"))
-        REDIS_CELERY_PASSWORD: str = get_variable("REDIS_CELERY_PASSWORD")
+        REDIS_CELERY_BROKER_DB: int = int(
+            cast(str, os.getenv("REDIS_CELERY_BROKER_DB"))
+        )
+        REDIS_CELERY_BACKEND_DB: int = int(
+            cast(str, os.getenv("REDIS_CELERY_BACKEND_DB"))
+        )
+        REDIS_CELERY_PASSWORD: str = cast(str, get_variable("REDIS_CELERY_PASSWORD"))
 
     # Socket.io configuration:
     SOCKETIO_ADMIN_USERNAME: Optional[str] = get_variable("SOCKETIO_ADMIN_USERNAME")

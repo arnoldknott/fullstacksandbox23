@@ -68,6 +68,12 @@ Question = create_model(
     ],
 )
 
+# TBD: Figure out how to do this better - maybe a generic way to create these type aliases?
+QuestionCreate = Question.Create
+QuestionRead = Question.Read
+QuestionUpdate = Question.Update
+QuestionExtended = Question.Extended
+
 # TBD: add another step: A Question has many Answers
 # Intention: the parent needs to have write access to create answers
 # So the parent to a mesage / numerical should be an Answer entity, not a Question.
@@ -93,6 +99,12 @@ Message = create_model(
     ],
 )
 
+# TBD: Figure out how to do this better - maybe a generic way to create these type aliases?
+MessageCreate = Message.Create
+MessageRead = Message.Read
+MessageUpdate = Message.Update
+MessageExtended = Message.Extended
+
 # For numerical answers, create Numerical model:
 # For now float also covers integers,
 # can be extended later if needed
@@ -111,3 +123,9 @@ Numerical = create_model(
         )
     ],
 )
+
+# TBD: Figure out how to do this better - maybe a generic way to create these type aliases?
+NumericalCreate = Numerical.Create
+NumericalRead = Numerical.Read
+NumericalUpdate = Numerical.Update
+NumericalExtended = Numerical.Extended

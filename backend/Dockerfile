@@ -1,5 +1,12 @@
-FROM python:3.14.3-alpine3.23 AS base
-COPY --from=ghcr.io/astral-sh/uv:0.11.12 /uv /uvx /bin/
+# check=skip=InvalidDefaultArgInFrom
+ARG PYTHON_VERSION
+ARG ALPINE_VERSION
+ARG UV_VERSION
+
+FROM ghcr.io/astral-sh/uv:${UV_VERSION} AS uv-base
+
+FROM python:${PYTHON_VERSION}-alpine${ALPINE_VERSION} AS base
+COPY --from=uv-base /uv /uvx /bin/
 COPY . /app
 WORKDIR /app
 ENV PYTHONPATH="/app/src"
@@ -10,6 +17,7 @@ ENV UV_PROJECT_ENVIRONMENT="$VIRTUAL_ENV"
 EXPOSE 80
 
 FROM base AS api_dev
+RUN apk add --no-cache docker-cli git
 RUN uv sync --frozen --extra dev
 # TBD: switch to log-level warning, when app is more mature:
 # CMD ["uvicorn", "main:app", "--reload", "--log-level", "warning" ,"--host", "0.0.0.0", "--port", "80"]

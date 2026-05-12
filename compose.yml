@@ -5,8 +5,12 @@ services:
     build:
       context: ./backend
       target: api_prod
+      args:
+        PYTHON_VERSION: ${PYTHON_VERSION}
+        ALPINE_VERSION: ${ALPINE_VERSION}
+        UV_VERSION: ${UV_VERSION}
     volumes:
-      - ./backend:/app
+      - ${HOST_WORKSPACE_FOLDER:-.}/backend:/app
     # ports:
     #     - "80:80"
 
@@ -14,11 +18,16 @@ services:
     build:
       context: ./backend
       target: worker_prod
+      args:
+        PYTHON_VERSION: ${PYTHON_VERSION}
+        ALPINE_VERSION: ${ALPINE_VERSION}
+        UV_VERSION: ${UV_VERSION}
     volumes:
-      - ./backend:/app
+      - ${HOST_WORKSPACE_FOLDER:-.}/backend:/app
 
   postgres:
     container_name: "postgres"
+    # TBD: centralize with ${POSTGRES_IMAGE_TAG} from versions.env and align infrastructure references.
     # Works in dev - wait until terraform azurerm supports version 18 for postgres, then update stage & prod!
     # image: postgres:18.0-alpine3.22
     image: postgres:16.1-alpine
@@ -26,9 +35,14 @@ services:
   frontend_svelte:
     build:
       context: ./frontend_svelte
+      args:
+        NODE_VERSION: ${NODE_VERSION}
+        ALPINE_VERSION: ${ALPINE_VERSION}
+        BUN_VERSION: ${BUN_VERSION}
 
   redis:
     container_name: "redis"
+    # TBD: centralize with ${REDIS_IMAGE_TAG} from versions.env and align infrastructure references.
     image: redis:8.2.2-alpine3.22
     command:
       - /bin/sh

@@ -1,13 +1,23 @@
 import logging
 import uuid
 from os import makedirs, path, remove, rename
-from typing import TYPE_CHECKING, Generic, List, Optional, Type, TypeVar
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Generic,
+    List,
+    Optional,
+    Self,
+    Type,
+    TypeVar,
+    cast,
+)
 
 from fastapi import HTTPException, UploadFile
 from fastapi.responses import FileResponse
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import aliased, class_mapper, contains_eager, foreign, noload
-from sqlmodel import SQLModel, asc, delete, func, or_, select
+from sqlmodel import SQLModel, asc, col, delete, func, or_, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from core.databases import get_async_session
@@ -15,7 +25,7 @@ from crud import registry_CRUDs
 from crud.access import (
     AccessLoggingCRUD,
     AccessPolicyCRUD,
-    BaseHierarchyModelRead,
+    BaseHierarchyCRUD,
     IdentityHierarchyCRUD,
     ResourceHierarchyCRUD,
 )
@@ -26,8 +36,11 @@ from models.access import (
     AccessRequest,
     IdentifierTypeLink,
     IdentityHierarchy,
+    IdentityHierarchyRead,
     ResourceHierarchy,
+    ResourceHierarchyRead,
 )
+from models.base import BaseSQLModel
 
 if TYPE_CHECKING:
     pass
@@ -39,7 +52,7 @@ read = Action.read
 write = Action.write
 own = Action.own
 
-BaseModelType = TypeVar("BaseModelType", bound=SQLModel)
+BaseModelType = TypeVar("BaseModelType", bound=BaseSQLModel)
 BaseSchemaTypeCreate = TypeVar("BaseSchemaTypeCreate", bound=SQLModel)
 BaseSchemaTypeRead = TypeVar("BaseSchemaTypeRead", bound=SQLModel)
 BaseSchemaTypeUpdate = TypeVar("BaseSchemaTypeUpdate", bound=SQLModel)
@@ -58,13 +71,21 @@ class BaseCRUD(
     def __init__(
         self,
         base_model: Type[BaseModelType],
-        directory: str = None,
+        directory: Optional[str] = None,
         allow_standalone: Optional[bool] = False,
         allow_public_create: Optional[bool] = False,
         session: Optional[AsyncSession] = None,
     ):
-        """Provides a database session for CRUD operations."""
-        self.session = session
+        """Provides a database session for CRUD operations.
+
+        The session is typed as non-Optional `AsyncSession` because the contract
+        of this class requires usage via `async with crud_instance:` which
+        guarantees `__aenter__` populates the session before any method runs.
+        When `session=None` is passed in, the attribute is initialised with a
+        sentinel cast and replaced inside `__aenter__`.
+        """
+        # Cast acknowledges the contract: usage outside of `async with` is unsupported.
+        self.session: AsyncSession = cast(AsyncSession, session)
         self._owns_session = False if session else True
         self.model = base_model
         self.data_directory = directory
@@ -94,9 +115,9 @@ class BaseCRUD(
             AccessLoggingCRUD(session=self.session) if session else AccessLoggingCRUD()
         )
 
-    async def __aenter__(self) -> AsyncSession:
+    async def __aenter__(self) -> Self:
         """Returns a database session."""
-        if self.session is None:
+        if not self.session:
             self.session = await get_async_session()
             self.policy_crud = AccessPolicyCRUD(session=self.session)
             self.logging_crud = AccessLoggingCRUD(session=self.session)
@@ -107,7 +128,7 @@ class BaseCRUD(
         """Closes the database session."""
         if self._owns_session:
             await self.session.close()
-            self.session = None
+            self.session = cast(AsyncSession, None)
             self._owns_session = False
 
     # async def _write_policy(
@@ -157,7 +178,7 @@ class BaseCRUD(
     def _add_identifier_type_link_to_session(
         self,
         object_id: uuid.UUID,
-        type: IdentityType = None,
+        type: Optional[ResourceType | IdentityType] = None,
     ):
         """Adds resource type link entry to session."""
         type = type or self.entity_type
@@ -171,7 +192,7 @@ class BaseCRUD(
         return statement
 
     async def _write_identifier_type_link(
-        self, object_id: uuid.UUID, type: IdentityType = None
+        self, object_id: uuid.UUID, type: Optional[ResourceType | IdentityType] = None
     ):
         """Creates an resource type link entry."""
         statement = self._add_identifier_type_link_to_session(object_id, type)
@@ -180,11 +201,13 @@ class BaseCRUD(
 
     async def _get_types_from_ids(
         self, ids: List[uuid.UUID]
-    ) -> List[IdentityType | ResourceType]:
+    ) -> List[IdentifierTypeLink]:
         """Gets the resource types for a list of object IDs."""
-        statement = select(IdentifierTypeLink).where(IdentifierTypeLink.id.in_(ids))
+        statement = select(IdentifierTypeLink).where(
+            col(IdentifierTypeLink.id).in_(ids)
+        )
         response = await self.session.exec(statement)
-        return response.all()
+        return list(response.all())
 
     async def check_identifier_type_link(
         self,
@@ -216,7 +239,7 @@ class BaseCRUD(
 
     async def create(  # noqa: C901
         self,
-        object: BaseSchemaTypeCreate,
+        object: BaseSchemaTypeCreate | dict[str, Any],
         current_user: Optional["CurrentUserData"] = None,
         parent_id: Optional[uuid.UUID] = None,
         inherit: Optional[bool] = False,
@@ -237,6 +260,8 @@ class BaseCRUD(
         """
         logger.info("BaseCRUD.create")
 
+        is_public_creation = False
+        database_object: Optional[BaseModelType] = None
         try:
             # Early validation
             if inherit and not parent_id:
@@ -297,6 +322,8 @@ class BaseCRUD(
 
             # Create and add database object
             database_object = self.model.model_validate(object)
+            # `id` is populated by `default_factory=uuid.uuid4` on the model field.
+            assert database_object.id is not None
             await self._write_identifier_type_link(database_object.id)
             self.session.add(database_object)
 
@@ -305,7 +332,7 @@ class BaseCRUD(
             access_log = AccessLogCreate(
                 resource_id=database_object.id,
                 action=own,
-                identity_id=current_user.user_id,
+                identity_id=current_user.user_id if current_user else None,
                 status_code=201,
             )
             await self.logging_crud.create(access_log)
@@ -328,7 +355,7 @@ class BaseCRUD(
             access_policy = AccessPolicyCreate(
                 resource_id=database_object.id,
                 action=own,
-                identity_id=current_user.user_id,
+                identity_id=current_user.user_id if current_user else None,
             )
 
             await self.policy_crud.create(
@@ -369,13 +396,17 @@ class BaseCRUD(
             # Only log errors for authenticated users
             if not is_public_creation:
                 try:
-                    access_log = AccessLogCreate(
-                        resource_id=database_object.id,
-                        action=own,
-                        identity_id=current_user.user_id,
-                        status_code=404,
+                    database_object_id: Optional[uuid.UUID] = getattr(
+                        database_object, "id", None
                     )
-                    await self.logging_crud.create(access_log)
+                    if database_object_id and current_user:
+                        access_log = AccessLogCreate(
+                            resource_id=database_object_id,
+                            action=own,
+                            identity_id=current_user.user_id,
+                            status_code=404,
+                        )
+                        await self.logging_crud.create(access_log)
                     # await self._write_log(database_object.id, own, current_user, 404)
                 except Exception as log_error:
                     logger.error(
@@ -396,7 +427,7 @@ class BaseCRUD(
     ) -> BaseModelType:
         """Creates new files."""
         file_object = await self.create(
-            object={"name": file.filename},
+            object={"name": file.filename or "unnamed"},
             current_user=current_user,
             parent_id=parent_id,
             inherit=inherit,
@@ -446,10 +477,14 @@ class BaseCRUD(
         parent_id: uuid.UUID,
         current_user: "CurrentUserData",
         inherit: Optional[bool] = False,
-    ) -> BaseHierarchyModelRead:
+    ) -> ResourceHierarchyRead | IdentityHierarchyRead:
         """Adds a member of this class to a parent (of another entity type)."""
         hierarchy_CRUD = self.hierarchy_CRUD(session=self.session)
-        hierarchy = await hierarchy_CRUD.create(
+        # The runtime invariant guarantees `self.entity_type` matches the
+        # `child_type` parameter of the concrete hierarchy CRUD (Resource vs
+        # Identity). Pyright cannot correlate the two unions, so we view the
+        # instance through the base class which accepts the full union.
+        hierarchy = await cast(BaseHierarchyCRUD[Any, Any, Any], hierarchy_CRUD).create(
             current_user=current_user,
             parent_id=parent_id,
             child_type=self.entity_type,
@@ -468,7 +503,12 @@ class BaseCRUD(
         current_user: "CurrentUserData",
     ) -> None:
         """Reorders the children of a parent."""
-        # async with self.hierarchy_CRUD as hierarchy_CRUD:
+        # Only resource hierarchies support reordering (they have an `order` column).
+        if not issubclass(self.hierarchy_CRUD, ResourceHierarchyCRUD):
+            raise HTTPException(
+                status_code=400,
+                detail=f"{self.model.__name__} does not support reordering.",
+            )
         hierarchy_CRUD = self.hierarchy_CRUD(session=self.session)
         hierarchy = await hierarchy_CRUD.reorder_children(
             current_user=current_user,
@@ -536,28 +576,36 @@ class BaseCRUD(
                         # self.model is a parent, join on parent_id
                         statement = statement.outerjoin(
                             aliased_hierarchy,
-                            self.model.id == foreign(aliased_hierarchy.parent_id),
+                            col(self.model.id)
+                            == foreign(col(aliased_hierarchy.parent_id)),
                         )
                         statement = statement.outerjoin(
                             related_model,
-                            related_model.id == foreign(aliased_hierarchy.child_id),
+                            col(related_model.id)
+                            == foreign(col(aliased_hierarchy.child_id)),
                         )
-                        if self.hierarchy == ResourceHierarchy:
-                            statement = statement.order_by(asc(aliased_hierarchy.order))
+                        if self.hierarchy is ResourceHierarchy:
+                            # `aliased_hierarchy` was built from `self.hierarchy`, so in
+                            # this branch its underlying class is ResourceHierarchy and
+                            # therefore has an `order` column. Pyright cannot follow this
+                            # correlation across the `aliased(...)` call.
+                            statement = statement.order_by(asc(col(aliased_hierarchy.order)))  # type: ignore[attr-defined]
                         else:
-                            statement = statement.order_by(asc(related_model.id))
+                            statement = statement.order_by(asc(col(related_model.id)))
                     elif self.entity_type in children and related_type == parent:
                         # self.model is a child, join on child_id
                         statement = statement.outerjoin(
                             aliased_hierarchy,
-                            self.model.id == foreign(aliased_hierarchy.child_id),
+                            col(self.model.id)
+                            == foreign(col(aliased_hierarchy.child_id)),
                         )
                         statement = statement.outerjoin(
                             related_model,
-                            related_model.id == foreign(aliased_hierarchy.parent_id),
+                            col(related_model.id)
+                            == foreign(col(aliased_hierarchy.parent_id)),
                         )
                         # here no ordering, as parents don't have an order seen from the child:
-                        statement = statement.order_by(asc(related_model.id))
+                        statement = statement.order_by(asc(col(related_model.id)))
 
                 count_related_statement = select(func.count()).select_from(
                     related_statement.alias()
@@ -588,7 +636,7 @@ class BaseCRUD(
                 for order in order_by:
                     statement = statement.order_by(order)
             elif hasattr(self.model, "id"):
-                statement = statement.order_by(asc(self.model.id))
+                statement = statement.order_by(asc(col(self.model.id)))
 
             if group_by:
                 statement = statement.group_by(*group_by)
@@ -623,7 +671,7 @@ class BaseCRUD(
         except Exception as err:
             try:
                 access_log = AccessLogCreate(
-                    resource_id=result.id,
+                    resource_id=result.id,  # type: ignore[possibly-undefined]
                     action=read,
                     identity_id=current_user.user_id if current_user else None,
                     status_code=404,
@@ -654,6 +702,7 @@ class BaseCRUD(
                 raise HTTPException(
                     status_code=404, detail=f"{self.model.__name__} not found."
                 )
+            return []  # type: ignore[unreachable]
 
     async def read_by_id(
         self,
@@ -664,7 +713,7 @@ class BaseCRUD(
 
         object = await self.read(
             current_user=current_user,
-            filters=[self.model.id == id],
+            filters=[col(self.model.id) == id],
         )
         if not object:
             raise HTTPException(
@@ -680,20 +729,22 @@ class BaseCRUD(
         """Reads a file from disk by id."""
 
         file = await self.read_by_id(id, current_user)
+        file_name = getattr(file, "name", None) or "file"
         return FileResponse(
-            f"/data/appdata/{self.data_directory}/{file.name}", filename=file.name
+            f"/data/appdata/{self.data_directory}/{file_name}",
+            filename=file_name,
         )
 
     async def update(
         self,
         current_user: "CurrentUserData",
         object_id: uuid.UUID,
-        new: BaseSchemaTypeUpdate,
+        new: BaseSchemaTypeUpdate | SQLModel,
     ) -> BaseModelType:
         """Updates an object."""
         session = self.session
         try:
-            statement = select(self.model).where(self.model.id == object_id)
+            statement = select(self.model).where(col(self.model.id) == object_id)
 
             statement = self.policy_crud.filters_allowed(
                 statement=statement,
@@ -712,6 +763,7 @@ class BaseCRUD(
             for key, value in updated.items():
                 setattr(current, key, value)
             session.add(current)
+            assert current.id is not None
             access_log = AccessLogCreate(
                 resource_id=current.id,
                 action=write,
@@ -725,13 +777,17 @@ class BaseCRUD(
         except Exception as e:
             await session.rollback()
             try:
-                access_log = AccessLogCreate(
-                    resource_id=current.id,
-                    action=write,
-                    identity_id=current_user.user_id,
-                    status_code=404,
+                current_id = (
+                    getattr(current, "id", None) if "current" in locals() else None  # type: ignore[possibly-undefined]
                 )
-                await self.logging_crud.create(access_log)
+                if current_id and current_user:
+                    access_log = AccessLogCreate(
+                        resource_id=current_id,
+                        action=write,
+                        identity_id=current_user.user_id,
+                        status_code=404,
+                    )
+                    await self.logging_crud.create(access_log)
             except Exception as log_error:
                 logger.error(
                     f"Error in BaseCRUD.update with parameters object_id: {object_id}, action: {write}, current_user: {current_user}, status_code: {404} results in {log_error}"
@@ -749,9 +805,12 @@ class BaseCRUD(
             # This does not really change anything in the metadata, but ensures that the access control is applied:
             # TBD: refactor into only checking the access control and not updating the metadata
             old_metadata = await self.read_by_id(file_id, current_user)
+            old_metadata_name = getattr(old_metadata, "name", None) or "file"
+            # Use the read result directly for update; only access control matters here.
             same_metadata = await self.update(current_user, file_id, old_metadata)
             with open(
-                f"/data/appdata/{self.data_directory}/{old_metadata.name}", "wb"
+                f"/data/appdata/{self.data_directory}/{old_metadata_name}",
+                "wb",
             ) as disk_file:
                 disk_file.write(file.file.read())
             return same_metadata
@@ -773,9 +832,10 @@ class BaseCRUD(
             old_metadata = await self.read_by_id(file_id, current_user)
             old_metadata = old_metadata.model_dump()
             new_metadata = await self.update(current_user, file_id, metadata)
+            new_metadata_name = getattr(new_metadata, "name", None) or "file"
             rename(
-                f"/data/appdata/{self.data_directory}/{old_metadata["name"]}",
-                f"/data/appdata/{self.data_directory}/{new_metadata.name}",
+                f"/data/appdata/{self.data_directory}/{old_metadata['name']}",
+                f"/data/appdata/{self.data_directory}/{new_metadata_name}",
             )
             return new_metadata
         except Exception as e:
@@ -794,7 +854,9 @@ class BaseCRUD(
         try:
             model_alias = aliased(self.model)
             subquery = (
-                select(model_alias.id).distinct().where(model_alias.id == object_id)
+                select(col(model_alias.id))
+                .distinct()
+                .where(col(model_alias.id) == object_id)
             )
             # subquery = self.policy_CRUD.filters_allowed(
             subquery = self.policy_crud.filters_allowed(
@@ -803,7 +865,7 @@ class BaseCRUD(
                 model=model_alias,
                 current_user=current_user,
             )
-            statement = delete(self.model).where(self.model.id.in_(subquery))
+            statement = delete(self.model).where(col(self.model.id).in_(subquery))
             result = await self.session.exec(statement)
 
             if result.rowcount == 0:
@@ -826,18 +888,23 @@ class BaseCRUD(
             for child in children_typelinks:
                 # TBD: refactor to auto recreation, of CRUD instane, when session changes.
                 crud = registry_CRUDs.get(child.type)
-                crud.session = self.session
-                crud.policy_crud.session = self.session  # Add this
-                crud.logging_crud.session = self.session  # Add this
-                if not crud.allow_standalone:
-                    all_parents = await hierarchy_CRUD.read(
-                        current_user=current_user, child_id=child.id
-                    )
-                    if len(all_parents) == 1:
-                        # async with crud as child_crud:
-                        # child_crud = crud()
-                        crud.session = self.session
-                        await crud.delete(current_user=current_user, object_id=child.id)
+                if crud:
+                    crud.session = self.session
+                    if crud.policy_crud:
+                        crud.policy_crud.session = self.session
+                    if crud.logging_crud:
+                        crud.logging_crud.session = self.session
+                    if not crud.allow_standalone:
+                        all_parents = await hierarchy_CRUD.read(
+                            current_user=current_user, child_id=child.id
+                        )
+                        if len(all_parents) == 1:
+                            # async with crud as child_crud:
+                            # child_crud = crud()
+                            crud.session = self.session
+                            await crud.delete(
+                                current_user=current_user, object_id=child.id
+                            )
 
             # Delete all hierarchy entries for the object
             # Delete all parent-child relationships, where object_id is parent:

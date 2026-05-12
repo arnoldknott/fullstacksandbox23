@@ -1,16 +1,17 @@
 {
-  "name": "fullStackSandbox23",
-  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
-  "features": {
-    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
-    "ghcr.io/devcontainers/features/azure-cli:1": {}
+  "name": "fssb23",
+  "initializeCommand": "ln -sf versions.env .env",
+  "dockerComposeFile": [
+    "../compose.yml",
+    "compose.devcontainer.yml"
+  ],
+  "service": "devcontainer",
+  "runServices": ["devcontainer"],
+  "workspaceFolder": "/workspaces/fullStackSandbox23",
+  "remoteEnv": {
+    "HOST_WORKSPACE_FOLDER": "${localWorkspaceFolder}"
   },
-  "workspaceMount": "source=${localWorkspaceFolder},target=${localWorkspaceFolder},type=bind,consistency=cached",
-  "workspaceFolder": "${localWorkspaceFolder}",
-  "postStartCommand": {
-    "start": "docker compose up -d",
-    "logs": "docker compose logs -f"
-  },
+  "postCreateCommand": "uv pip install --system -e ${containerWorkspaceFolder}/backend[dev] && npm install -g @google/gemini-cli",
   "forwardPorts": [8660, 8661, 5432, 5533, 5540, 5555, 8001],
   "portsAttributes": {
     "8660": {
@@ -38,13 +39,22 @@
   },
   "customizations": {
     "vscode": {
+      "settings": {
+        "task.allowAutomaticTasks": "on"
+      },
       "extensions": [
-        "ms-azuretools.vscode-docker",
         "ms-python.python",
         "ms-python.vscode-pylance",
+        "ms-python.black-formatter",
+        "ms-azuretools.vscode-docker",
         "svelte.svelte-vscode",
         "dbaeumer.vscode-eslint",
-        "esbenp.prettier-vscode"
+        "esbenp.prettier-vscode",
+        "openai.chatgpt",
+        "hashicorp.terraform",
+        "google.geminiclicompanion",
+        "tamasfe.even-better-toml",
+        "google.gemini-cli-vscode-ide-companion"
       ]
     }
   }

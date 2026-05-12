@@ -38,6 +38,7 @@ Keep edits focused, preserve existing patterns, and prefer small changes over br
 - Never use abbreviations without explaining them. For example, write "Application Programming Interface (API)" on first use before using "API" in the rest of the text.
 - Do not hard-code secrets, tokens, or environment-specific values.
 - Use environment variables from local `.env` files in development and testing. If `AZURE_KEYVAULT_HOST` is set, the apps may load variables from Azure Key Vault.
+- For follow-up notes in code comments and workflows, prefer `TBD:` as the marker instead of `TODO:`.
 
 ## Shared Integration Guidance
 
