@@ -7,7 +7,6 @@
   ],
   "service": "devcontainer",
   "runServices": ["devcontainer"],
-  "workspaceMount": "source=${localWorkspaceFolder},target=${localWorkspaceFolder},type=bind,consistency=cached",
   "workspaceFolder": "/workspaces/fullStackSandbox23",
   "remoteEnv": {
     "HOST_WORKSPACE_FOLDER": "${localWorkspaceFolder}"
