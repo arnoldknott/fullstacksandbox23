@@ -513,7 +513,7 @@ async def test_user_get_access_policies_for_resources(
     """Tests GET multiple access policies, i.e. share."""
 
     _ = app_override_provide_http_token_payload
-    add_many_test_access_policies  # not used - but added so there's more stuff in the database
+    _ = add_many_test_access_policies  # not used - but added so there's more stuff in the database
 
     resource_id_for_query = str(uuid.uuid4())
     current_user = await current_user_from_azure_token(
@@ -791,7 +791,7 @@ async def test_user_get_access_policies_for_resource(
     """Tests GET access policies, i.e. share."""
 
     _ = app_override_provide_http_token_payload
-    add_many_test_access_policies  # not used - but added so there's more stuff in the database
+    _ = add_many_test_access_policies  # not used - but added so there's more stuff in the database
 
     resource_id_for_query = str(uuid.uuid4())
     current_user = await current_user_from_azure_token(
@@ -873,7 +873,7 @@ async def test_user_get_access_policies_for_resource_without_being_owner(
     """Tests GET access policies, i.e. share."""
 
     _ = app_override_provide_http_token_payload
-    add_many_test_access_policies  # not used - but added so there's more stuff in the database
+    _ = add_many_test_access_policies  # not used - but added so there's more stuff in the database
 
     resource_id_for_query = str(uuid.uuid4())
 
@@ -1330,7 +1330,7 @@ async def test_user_get_access_policies_for_identity(
     """Tests GET access policies, i.e. share."""
 
     _ = app_override_provide_http_token_payload
-    add_many_test_access_policies  # not used - but added so there's more stuff in the database
+    _ = add_many_test_access_policies  # not used - but added so there's more stuff in the database
 
     resource_id = str(uuid.uuid4())
     resource_id_other = str(uuid.uuid4())
@@ -1541,7 +1541,7 @@ async def test_user_get_access_policies_for_another_users_identity_being_owner_o
     """Tests GET access policies, i.e. share."""
 
     _ = app_override_provide_http_token_payload
-    add_many_test_access_policies  # not used - but added so there's more stuff in the database
+    _ = add_many_test_access_policies  # not used - but added so there's more stuff in the database
 
     resource_id = str(uuid.uuid4())
     resource_id_other = str(uuid.uuid4())
@@ -1643,7 +1643,7 @@ async def test_user_get_access_policies_for_another_users_identity_without_owner
     """Tests GET access policies, i.e. share."""
 
     _ = app_override_provide_http_token_payload
-    add_many_test_access_policies  # not used - but added so there's more stuff in the database
+    _ = add_many_test_access_policies  # not used - but added so there's more stuff in the database
 
     resource_id = str(uuid.uuid4())
     current_user = await current_user_from_azure_token(
@@ -2611,7 +2611,7 @@ async def test_user_get_access_permission_for_resources(
     """Tests GET access policies, i.e. share."""
 
     _ = app_override_provide_http_token_payload
-    add_many_test_access_policies  # not used - but added so there's more stuff in the database
+    _ = add_many_test_access_policies  # not used - but added so there's more stuff in the database
 
     current_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -2880,7 +2880,7 @@ async def test_get_logs_for_resource(
 ):
     """Tests GET access logs."""
     _ = app_override_provide_http_token_payload
-    add_many_test_access_policies  # not relevant - just filling some data in the table
+    _ = add_many_test_access_policies  # not relevant - just filling some data in the table
 
     current_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -2936,7 +2936,7 @@ async def test_get_logs_for_resource_and_identity(
 ):
     """Tests GET access logs."""
     _ = app_override_provide_http_token_payload
-    add_many_test_access_policies  # not relevant - just filling some data in the table
+    _ = add_many_test_access_policies  # not relevant - just filling some data in the table
 
     database_logs = add_many_test_access_logs
 
@@ -2979,7 +2979,7 @@ async def test_get_logs_for_resource_without_permissions_from_policies(
 ):
     """Tests GET access logs."""
     _ = app_override_provide_http_token_payload
-    add_many_test_access_policies  # not relevant - just filling some data in the table
+    _ = add_many_test_access_policies  # not relevant - just filling some data in the table
 
     _ = add_many_test_access_logs
 
@@ -3007,7 +3007,7 @@ async def test_get_logs_for_resource_with_write_permission_only(
 ):
     """Tests GET access logs."""
     _ = app_override_provide_http_token_payload
-    add_many_test_access_policies  # not relevant - just filling some data in the table
+    _ = add_many_test_access_policies  # not relevant - just filling some data in the table
 
     current_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -3045,7 +3045,7 @@ async def test_get_logs_for_resource_with_read_permission_only(
 ):
     """Tests GET access logs."""
     _ = app_override_provide_http_token_payload
-    add_many_test_access_policies  # not relevant - just filling some data in the table
+    _ = add_many_test_access_policies  # not relevant - just filling some data in the table
 
     current_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
