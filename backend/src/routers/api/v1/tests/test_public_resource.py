@@ -100,7 +100,7 @@ async def test_put_public_resource_does_not_exist(
     async_client: AsyncClient, add_test_public_resources: list[PublicResource]
 ):
     """Tests PUT of a public_resource."""
-    add_test_public_resources
+    _ = add_test_public_resources
     updated_public_resource = {
         "comment": "update public resource",
     }
@@ -159,7 +159,7 @@ async def test_delete_public_resource_does_not_exist(
     async_client: AsyncClient, add_test_public_resources: list[PublicResource]
 ):
     """Tests DELETE of a public_resource."""
-    add_test_public_resources
+    _ = add_test_public_resources
     response = await async_client.delete(f"/api/v1/publicresource/{str(uuid.uuid4())}")
 
     assert response.status_code == 404

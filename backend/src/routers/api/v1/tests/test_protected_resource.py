@@ -50,7 +50,7 @@ async def test_post_protected_resource_with_logs_and_policies(
     current_test_user,
 ):
     """Tests the post_protected_resource endpoint of the API."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     # Make a POST request to create the protected resource
     before_time = datetime.now()
@@ -127,7 +127,7 @@ async def test_get_all_protected_resources(
     current_test_user,
 ):
     """Tests the post_protected_resource endpoint of the API."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     mocked_protected_resources = await add_many_test_protected_resources(
         mocked_provide_http_token_payload
     )
@@ -185,7 +185,7 @@ async def test_get_protected_resource_by_id(
     current_test_user,
 ):
     """Tests the post_protected_resource endpoint of the API."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     mocked_protected_resources = await add_many_test_protected_resources(
         mocked_provide_http_token_payload
     )
@@ -236,7 +236,7 @@ async def test_put_protected_resource(
     current_test_user,
 ):
     """Tests the post_protected_resource endpoint of the API."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     mocked_protected_resources = await add_many_test_protected_resources(
         mocked_provide_http_token_payload
     )
@@ -290,7 +290,7 @@ async def test_delete_protected_resource(
     current_test_user,
 ):
     """Tests the post_protected_resource endpoint of the API."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     mocked_protected_resources = await add_many_test_protected_resources(
         mocked_provide_http_token_payload
     )
@@ -348,7 +348,7 @@ async def test_all_protected_child_endpoints(
     add_many_test_protected_children,
 ):
     """Tests the post_protected_child endpoint of the API."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     parent_resource_id = await access_to_one_parent(ProtectedResource)
 
@@ -451,7 +451,7 @@ async def test_all_protected_grandchild_endpoints(
     add_many_test_protected_grandchildren,
 ):
     """Tests the all protected_child endpoints of the API."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     parent_resource_id = await access_to_one_parent(ProtectedChild)
 
@@ -583,7 +583,7 @@ async def test_post_protected_child_resource_and_add_to_parent(
     mocked_provide_http_token_payload,
 ):
     """Tests the add protected_child to parent endpoint of the API."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     protected_resources = await add_many_test_protected_resources(
         mocked_provide_http_token_payload
     )
@@ -697,7 +697,7 @@ async def test_user_adds_child_to_parent(
     add_many_test_protected_children,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources(
         mocked_provide_http_token_payload
@@ -729,7 +729,7 @@ async def test_user_adds_child_to_parent_without_access(
     add_many_test_protected_children,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources()
     mocked_protected_children = await add_many_test_protected_children()
@@ -755,7 +755,7 @@ async def test_user_adds_child_to_parent_without_access_to_parent(
     add_many_test_protected_children,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources()
     mocked_protected_children = await add_many_test_protected_children(
@@ -783,7 +783,7 @@ async def test_user_adds_child_to_parent_without_access_to_child(
     add_many_test_protected_children,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources(
         mocked_provide_http_token_payload
@@ -865,7 +865,7 @@ async def test_user_moves_child_order_down_insert_before(
 ):
     """Tests if children get reordered and returned correctly from read afterwards."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources()
     mocked_protected_children = await add_many_test_protected_children()
@@ -950,7 +950,7 @@ async def test_user_moves_child_order_up_insert_before(
 ):
     """Tests if children get reordered and returned correctly from read afterwards."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources()
     mocked_protected_children = await add_many_test_protected_children()
@@ -1035,7 +1035,7 @@ async def test_user_moves_child_order_down_insert_after(
 ):
     """Tests if children get reordered and returned correctly from read afterwards."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources()
     mocked_protected_children = await add_many_test_protected_children()
@@ -1120,7 +1120,7 @@ async def test_user_moves_child_order_up_insert_after(
 ):
     """Tests if children get reordered and returned correctly from read afterwards."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources()
     mocked_protected_children = await add_many_test_protected_children()
@@ -1205,7 +1205,7 @@ async def test_user_moves_child_missing_access_to_children(
 ):
     """Tests if children get reordered and returned correctly from read afterwards."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources()
     mocked_protected_children = await add_many_test_protected_children()
@@ -1278,7 +1278,7 @@ async def test_user_moves_child_missing_access_to_parent(
 ):
     """Tests if children get reordered and returned correctly from read afterwards."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources()
     mocked_protected_children = await add_many_test_protected_children()
@@ -1349,7 +1349,7 @@ async def test_get_protected_child_resource_from_a_parent_through_inheritance(
     get_async_test_session,
 ):
     """Tests resource inheritance."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     current_user = current_test_user
     # Make a POST request to create the protected resource
@@ -1451,7 +1451,7 @@ async def test_get_protected_child_resource_from_a_parent_through_inheritance_mi
     get_async_test_session,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     current_user = current_test_user
     # Make a POST request to create the protected resource
@@ -1523,7 +1523,7 @@ async def test_get_protected_child_resource_from_a_parent_missing_inheritance(
     get_async_test_session,
 ):
     """Tests if missing inheritance for child resource is handled correctly."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     current_user = current_test_user
     # Make a POST request to create the protected resource
@@ -1615,7 +1615,7 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
     get_async_test_session,
 ):
     """Tests ."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     # Make a POST request to create the protected resource
     response = await async_client.post(
@@ -1623,7 +1623,7 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
         json=many_test_protected_resources[0],
     )
 
-    current_test_user
+    _ = current_test_user
 
     assert response.status_code == 201
     created_protected_resource = ProtectedResource(**response.json())
@@ -1687,7 +1687,7 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
     get_async_test_session,
 ):
     """Tests ."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     # Make a POST request to create the protected resource
     response = await async_client.post(
@@ -1749,7 +1749,7 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
     get_async_test_session,
 ):
     """Tests ."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     # Make a POST request to create the protected resource
     response = await async_client.post(
@@ -1818,7 +1818,7 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
     get_async_test_session,
 ):
     """Tests ."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     # Make a POST request to create the protected resource
     response = await async_client.post(
@@ -1886,7 +1886,7 @@ async def test_admin_adds_and_gets_protected_children_as_relationship_from_prote
     add_many_test_protected_children,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources()
     mocked_protected_children = await add_many_test_protected_children()
@@ -1957,7 +1957,7 @@ async def test_user_gets_protected_children_with_access_to_all_as_relationship_f
     add_one_parent_child_resource_relationship,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources(
         mocked_provide_http_token_payload
@@ -2047,7 +2047,7 @@ async def test_user_gets_only_protected_children_with_access_as_relationship_fro
     add_one_parent_child_resource_relationship,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources(
         mocked_provide_http_token_payload
@@ -2138,7 +2138,7 @@ async def test_user_gets_only_protected_resource_and_none_of_the_existing_childr
     add_one_parent_child_resource_relationship,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources(
         mocked_provide_http_token_payload
@@ -2212,7 +2212,7 @@ async def test_admin_removes_a_child_resource_from_a_parent_protected_resource(
     add_one_parent_child_resource_relationship,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources(
         mocked_provide_http_token_payload
@@ -2331,7 +2331,7 @@ async def test_user_removes_a_child_resource_from_a_parent_protected_resource(
     add_one_parent_child_resource_relationship,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources(
         mocked_provide_http_token_payload
@@ -2450,7 +2450,7 @@ async def test_user_removes_a_child_resource_from_a_parent_protected_resource_mi
     add_one_parent_child_resource_relationship,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources(
         mocked_provide_http_token_payload
@@ -2538,7 +2538,7 @@ async def test_admin_deletes_child_and_all_hierarchy_table_entries_for_child_are
     add_one_parent_child_resource_relationship,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources(
         mocked_provide_http_token_payload
@@ -2600,7 +2600,7 @@ async def test_admin_deletes_parent_and_all_hierarchy_table_entries_for_parent_a
     add_one_parent_child_resource_relationship,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources(
         mocked_provide_http_token_payload
@@ -2663,7 +2663,7 @@ async def test_user_deletes_child_and_all_hierarchy_table_entries_for_child_are_
     add_one_parent_child_resource_relationship,
 ):
     """Tests if missing permission for parent resource is handled correctly."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     mocked_protected_resources = await add_many_test_protected_resources(
         mocked_provide_http_token_payload

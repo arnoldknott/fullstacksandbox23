@@ -34,7 +34,7 @@ async def test_post_demo_resource(
 ):
     """Tests POST of a demo_resource."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     resource = one_test_demo_resource
     before_time = datetime.now()
@@ -76,7 +76,7 @@ async def test_post_demo_resource_with_nonexisting_category(
 ):
     """Tests POST of a demo_resource."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     resource = one_test_demo_resource
     resource["category_id"] = str(uuid.uuid4())
@@ -108,7 +108,7 @@ async def test_get_all_demo_resources(
     mocked_provide_http_token_payload,
 ):
     """Tests GET all demo resources."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     resources = await add_test_demo_resources(mocked_provide_http_token_payload)  # type: ignore[call-arg]
     response = await async_client.get("/api/v1/demoresource/")
 
@@ -150,7 +150,7 @@ async def test_get_all_public_demo_resources(
     mocked_provide_http_token_payload,
 ):
     """Tests GET all demo resources."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     resources = await add_test_demo_resources(token_admin_read_write)  # type: ignore[call-arg]
     for resource in resources:
@@ -200,7 +200,7 @@ async def test_get_demo_resource_by_id(
     mocked_provide_http_token_payload,
 ):
     """Tests GET of a demo resources."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     resources = await add_test_demo_resources(mocked_provide_http_token_payload)  # type: ignore[call-arg]
 
     # before_time = datetime.now()
@@ -229,7 +229,7 @@ async def test_get_public_demo_resource_by_id(
     mocked_provide_http_token_payload,
 ):
     """Tests GET of a demo resources."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     resources = await add_test_demo_resources(token_admin_read_write)  # type: ignore[call-arg]
     policy = {
@@ -264,7 +264,7 @@ async def test_get_demo_resource_by_invalid_id_type(
     mocked_provide_http_token_payload,
 ):
     """Tests GET of a demo resources with invalid id."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     response = await async_client.get("/api/v1/demoresource/invalid_id")
     assert response.status_code == 422
@@ -282,7 +282,7 @@ async def test_get_demo_resource_by_nonexisting_uuid(
     mocked_provide_http_token_payload,
 ):
     """Tests GET of a demo resources with invalid id."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     response = await async_client.get(f"/api/v1/demoresource/{str(uuid.uuid4())}")
     assert response.status_code == 404
@@ -305,7 +305,7 @@ async def test_put_demo_resource(
 ):
     """Tests PUT of a demo resource."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     resources = await add_test_demo_resources(mocked_provide_http_token_payload)  # type: ignore[call-arg]
     updated_resource = {
@@ -355,7 +355,7 @@ async def test_put_demo_resource_partial_update(
 ):
     """Tests PUT of a demo resource, where not all fields are updated."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     resources = await add_test_demo_resources(mocked_provide_http_token_payload)  # type: ignore[call-arg]
     updated_resource = {
@@ -387,7 +387,7 @@ async def test_put_demo_resource_by_invalid_id(
 ):
     """Tests PUT of a demo resources with invalid id."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     await add_test_demo_resources(mocked_provide_http_token_payload)  # type: ignore[call-arg]
     updated_resource = {
@@ -415,7 +415,7 @@ async def test_put_demo_resource_by_resource_does_not_exist(
 ):
     """Tests PUT of nonexisting demo resources."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     await add_test_demo_resources(mocked_provide_http_token_payload)  # type: ignore[call-arg]
     updated_resource = {
@@ -463,7 +463,7 @@ async def test_delete_demo_resource(
 ):
     """Tests DELETE of a demo resource."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     resources = await add_test_demo_resources(mocked_provide_http_token_payload)  # type: ignore[call-arg]
     current_user = current_test_user
@@ -524,7 +524,7 @@ async def test_delete_demo_resource_by_invalid_id(
 ):
     """Tests DELETE of a demo resources with invalid id."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     response = await async_client.delete("/api/v1/demoresource/invalid_id")
 
@@ -543,7 +543,7 @@ async def test_delete_demo_resource_by_resource_does_not_exist(
 ):
     """Tests GET of a demo resources."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     response = await async_client.delete(f"/api/v1/demoresource/{str(uuid.uuid4())}")
 
@@ -567,7 +567,7 @@ async def test_attach_tag_to_demo_resource(
 ):
     """Tests POST of a tag to a demo resource."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     resources = await add_test_demo_resources(mocked_provide_http_token_payload)  # type: ignore[call-arg]
     tags = await add_test_tags(mocked_provide_http_token_payload)  # type: ignore[call-arg]
@@ -606,7 +606,7 @@ async def test_get_all_demo_resources_by_category_id(
 ):
     """Tests GET all demo resources by category id."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     resources = await add_test_demo_resources(mocked_provide_http_token_payload)  # type: ignore[call-arg]
 
     categories = await async_client.get("/api/v1/category/")
@@ -651,7 +651,7 @@ async def test_get_demo_resources_for_lonely_category(
 ):
     """Tests GET error for category, that has no demo resources attached."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     await add_test_demo_resources(mocked_provide_http_token_payload)  # type: ignore[call-arg]
     # add_test_demo_resources
@@ -687,7 +687,7 @@ async def test_get_all_demo_resources_by_tag_id(
 ):
     """Tests GET all demo resources by category id."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     resources = await add_test_demo_resources(mocked_provide_http_token_payload)  # type: ignore[call-arg]
     tags = await add_test_tags(mocked_provide_http_token_payload)  # type: ignore[call-arg]
 

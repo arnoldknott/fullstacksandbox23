@@ -85,9 +85,9 @@ async def test_admin_posts_access_policies(
     register_many_resources,
 ):
     """Tests POST access policies, i.e. share."""
-    app_override_provide_http_token_payload
-    register_many_current_users
-    register_many_resources
+    _ = app_override_provide_http_token_payload
+    _ = register_many_current_users
+    _ = register_many_resources
 
     for policy in many_test_policies:
         response = await async_client.post("/api/v1/access/policy", json=policy)
@@ -118,8 +118,8 @@ async def test_admin_posts_access_policies_for_non_existing_resources(
     # register_many_resources,
 ):
     """Tests POST access policies, i.e. share."""
-    app_override_provide_http_token_payload
-    register_many_current_users
+    _ = app_override_provide_http_token_payload
+    _ = register_many_current_users
 
     for policy in many_test_policies:
         response = await async_client.post("/api/v1/access/policy", json=policy)
@@ -140,8 +140,8 @@ async def test_admin_posts_non_public_access_policies_for_non_existing_identitie
     register_many_resources,
 ):
     """Tests POST access policies, i.e. share."""
-    app_override_provide_http_token_payload
-    register_many_resources
+    _ = app_override_provide_http_token_payload
+    _ = register_many_resources
 
     private_test_policies = many_test_policies[0:9].copy()
 
@@ -164,8 +164,8 @@ async def test_admin_posts_public_access_policies_for_non_existing_identities(
     register_many_resources,
 ):
     """Tests POST access policies, i.e. share."""
-    app_override_provide_http_token_payload
-    register_many_resources
+    _ = app_override_provide_http_token_payload
+    _ = register_many_resources
 
     public_test_policy = many_test_policies[9].copy()
 
@@ -196,7 +196,7 @@ async def test_user_with_owner_rights_posts_access_policy(
     register_one_identity,
 ):
     """Tests POST access policies, i.e. share."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     policies_in_database = add_many_test_access_policies
 
@@ -250,9 +250,9 @@ async def test_user_with_owner_rights_posts_public_read_access_policy(
     add_one_test_access_policy,
 ):
     """Tests POST access policies, i.e. share."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
-    add_many_test_access_policies
+    _ = add_many_test_access_policies
 
     current_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -298,9 +298,9 @@ async def test_user_with_owner_rights_posts_public_write_policy(
     add_one_test_access_policy,
 ):
     """Tests POST access policies, i.e. share."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
-    add_many_test_access_policies
+    _ = add_many_test_access_policies
 
     current_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -347,9 +347,9 @@ async def test_user_with_owner_rights_posts_public_own_policy(
     add_one_test_access_policy,
 ):
     """Tests POST access policies, i.e. share."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
-    add_many_test_access_policies
+    _ = add_many_test_access_policies
 
     current_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -396,9 +396,9 @@ async def test_user_with_write_rights_posts_public_access_policy_fails(
     add_one_test_access_policy,
 ):
     """Tests POST access policies, i.e. share."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
-    add_many_test_access_policies
+    _ = add_many_test_access_policies
 
     current_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -442,9 +442,9 @@ async def test_user_with_read_rights_posts_public_access_policy_fails(
     add_one_test_access_policy,
 ):
     """Tests POST access policies, i.e. share."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
-    add_many_test_access_policies
+    _ = add_many_test_access_policies
 
     current_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -484,7 +484,7 @@ async def test_user_posts_access_policies_without_access(
 ):
     """Tests POST access policies, i.e. share."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     for policy in many_test_policies:
         response = await async_client.post("/api/v1/access/policy", json=policy)
@@ -512,7 +512,7 @@ async def test_user_get_access_policies_for_resources(
 ):
     """Tests GET multiple access policies, i.e. share."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     add_many_test_access_policies  # not used - but added so there's more stuff in the database
 
     resource_id_for_query = str(uuid.uuid4())
@@ -607,7 +607,7 @@ async def test_admin_gets_access_policies(
     add_many_test_access_policies,
 ):
     """Tests GET access policies, i.e. share."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     policies_in_database = add_many_test_access_policies
 
@@ -648,8 +648,8 @@ async def test_users_get_all_access_policies_only_return_own_policies(
     mocked_provide_http_token_payload,
 ):
     """Tests GET access policies, i.e. share."""
-    app_override_provide_http_token_payload
-    add_many_test_access_policies
+    _ = app_override_provide_http_token_payload
+    _ = add_many_test_access_policies
 
     current_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -697,7 +697,7 @@ async def test_admin_get_access_policies_for_resource(
     add_many_test_access_policies,
 ):
     """Tests GET access policies, i.e. share."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     existing_policies = add_many_test_access_policies
 
     response = await async_client.get(
@@ -734,8 +734,8 @@ async def test_admin_get_access_policies_with_string_resource_id(
     add_many_test_access_policies,
 ):
     """Tests GET access policies, i.e. share."""
-    app_override_provide_http_token_payload
-    add_many_test_access_policies
+    _ = app_override_provide_http_token_payload
+    _ = add_many_test_access_policies
 
     response = await async_client.get("/api/v1/access/policy/resource/wrong-format")
     payload = response.json()
@@ -760,8 +760,8 @@ async def test_admin_get_access_policies_with_integer_resource_id(
     add_many_test_access_policies,
 ):
     """Tests GET access policies, i.e. share."""
-    app_override_provide_http_token_payload
-    add_many_test_access_policies
+    _ = app_override_provide_http_token_payload
+    _ = add_many_test_access_policies
 
     response = await async_client.get("/api/v1/access/policy/resource/45392874598")
     payload = response.json()
@@ -790,7 +790,7 @@ async def test_user_get_access_policies_for_resource(
 ):
     """Tests GET access policies, i.e. share."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     add_many_test_access_policies  # not used - but added so there's more stuff in the database
 
     resource_id_for_query = str(uuid.uuid4())
@@ -872,7 +872,7 @@ async def test_user_get_access_policies_for_resource_without_being_owner(
 ):
     """Tests GET access policies, i.e. share."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     add_many_test_access_policies  # not used - but added so there's more stuff in the database
 
     resource_id_for_query = str(uuid.uuid4())
@@ -944,7 +944,7 @@ async def test_get_access_policies_for_resource_missing_read_scope(
     add_many_test_access_policies,
 ):
     """Tests GET existing access policies for specific resource without read scope."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     existing_policies = add_many_test_access_policies
 
     response = await async_client.get(
@@ -975,7 +975,7 @@ async def test_user_get_access_policies_for_resource_type(
 ):
     """Tests GET access policies, i.e. share."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     entities = register_many_entities
 
@@ -1090,7 +1090,7 @@ async def test_user_get_access_policies_for_resource_type_with_write_rights_only
 ):
     """Tests GET access policies, i.e. share."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     entities = register_many_entities
 
@@ -1199,7 +1199,7 @@ async def test_user_get_access_policies_for_resource_type_with_read_rights_only(
 ):
     """Tests GET access policies, i.e. share."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     entities = register_many_entities
 
@@ -1300,7 +1300,7 @@ async def test_user_get_access_policies_for_non_existing_resource_type(
 ):
     """Tests GET access policies, i.e. share."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     response = await async_client.get("/api/v1/access/policy/resource/type/blablabla")
     payload = response.json()
@@ -1329,7 +1329,7 @@ async def test_user_get_access_policies_for_identity(
 ):
     """Tests GET access policies, i.e. share."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     add_many_test_access_policies  # not used - but added so there's more stuff in the database
 
     resource_id = str(uuid.uuid4())
@@ -1433,8 +1433,8 @@ async def test_admin_get_access_policies_for_identity(
 ):
     """Tests GET access policies, i.e. share."""
 
-    app_override_provide_http_token_payload
-    add_many_test_access_policies
+    _ = app_override_provide_http_token_payload
+    _ = add_many_test_access_policies
 
     resource_id = str(uuid.uuid4())
     resource_id_other = str(uuid.uuid4())
@@ -1540,7 +1540,7 @@ async def test_user_get_access_policies_for_another_users_identity_being_owner_o
 ):
     """Tests GET access policies, i.e. share."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     add_many_test_access_policies  # not used - but added so there's more stuff in the database
 
     resource_id = str(uuid.uuid4())
@@ -1642,7 +1642,7 @@ async def test_user_get_access_policies_for_another_users_identity_without_owner
 ):
     """Tests GET access policies, i.e. share."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     add_many_test_access_policies  # not used - but added so there's more stuff in the database
 
     resource_id = str(uuid.uuid4())
@@ -1716,7 +1716,7 @@ async def test_user_get_access_policies_for_identity_type(
 ):
     """Tests GET access policies, i.e. share."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     entities = register_many_entities
 
@@ -1834,7 +1834,7 @@ async def test_user_get_access_policies_for_identity_type_missing_owner_rights(
 ):
     """Tests GET access policies, i.e. share."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     entities = register_many_entities
 
@@ -1933,7 +1933,7 @@ async def test_user_get_access_policies_for_non_existing_identity_type(
 ):
     """Tests GET access policies, i.e. share."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     response = await async_client.get("/api/v1/access/policy/identity/type/blablabla")
     payload = response.json()
@@ -1960,7 +1960,7 @@ async def test_admin_puts_access_policy(
     add_many_test_access_policies,
 ):
     """Tests GET access policies, i.e. share."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     policies_in_database = add_many_test_access_policies
 
@@ -1998,7 +1998,7 @@ async def test_user_with_owner_rights_puts_access_policy(
     add_one_test_access_policy,
 ):
     """Tests GET access policies, i.e. share."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     policies_in_database = add_many_test_access_policies
 
@@ -2049,9 +2049,9 @@ async def test_user_with_owner_rights_puts_wrong_access_policy(
     add_one_test_access_policy,
 ):
     """Tests GET access policies, i.e. share."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
-    add_many_test_access_policies
+    _ = add_many_test_access_policies
 
     current_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -2091,9 +2091,9 @@ async def test_user_without_owner_rights_puts_access_policy(
     add_many_test_access_policies,
 ):
     """Tests GET access policies, i.e. share."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
-    add_many_test_access_policies
+    _ = add_many_test_access_policies
 
     update_policy = {
         **many_test_policies[2],
@@ -2125,7 +2125,7 @@ async def test_admin_deletes_access_policy(
     add_many_test_access_policies,
 ):
     """Tests GET access policies, i.e. share."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     policies_in_database = add_many_test_access_policies
 
@@ -2185,7 +2185,7 @@ async def test_admin_tries_to_delete_public_access_policy_without_resource_id(
     add_many_test_access_policies,
 ):
     """Tests GET access policies, i.e. share."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     policies_in_database = add_many_test_access_policies
 
@@ -2213,7 +2213,7 @@ async def test_admin_tries_to_delete_all_access_policy_with_owner_rights(
     add_many_test_access_policies,
 ):
     """Tests GET access policies, i.e. share."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     policies_in_database = add_many_test_access_policies
 
@@ -2246,7 +2246,7 @@ async def test_user_deletes_access_policy(
     add_one_test_access_policy,
 ):
     """Tests DELETE access policy, i.e. stop sharing."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     policies_in_database = add_many_test_access_policies
 
@@ -2329,7 +2329,7 @@ async def test_user_get_access_permission_for_resource_with_owner_permission(
 ):
     """Tests GET access policies, i.e. share."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     current_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -2385,7 +2385,7 @@ async def test_user_tries_to_add_write_policy_where_an_owner_policy_exists_alrea
 ):
     """Tests GET access policies, i.e. share."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     current_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -2440,7 +2440,7 @@ async def test_user_get_access_permission_for_resource_with_write_permission(
 ):
     """Tests GET access policies, i.e. share."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     current_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -2496,7 +2496,7 @@ async def test_user_get_access_permission_for_resource_with_read_permission(
 ):
     """Tests GET access policies, i.e. share."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     current_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -2552,7 +2552,7 @@ async def test_user_get_access_permission_for_resource_without_permission(
 ):
     """Tests GET access policies, i.e. share."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     # current_user = await current_user_from_azure_token(
     #     mocked_provide_http_token_payload
@@ -2610,7 +2610,7 @@ async def test_user_get_access_permission_for_resources(
 ):
     """Tests GET access policies, i.e. share."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     add_many_test_access_policies  # not used - but added so there's more stuff in the database
 
     current_user = await current_user_from_azure_token(
@@ -2728,7 +2728,7 @@ async def test_admin_gets_created_access_all_logs(
     add_many_test_access_logs,
 ):
     """Tests GET access logs."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     database_logs = add_many_test_access_logs
 
@@ -2758,7 +2758,7 @@ async def test_admin_gets_access_all_logs_with_non_existing_status_code_in_datab
     app_override_provide_http_token_payload: FastAPI,
 ):
     """Tests GET access logs."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     # No logs in the database
     # other than the ones created when the user logs in
@@ -2786,7 +2786,7 @@ async def test_user_gets_access_all_logs(
     add_one_test_access_policy,
 ):
     """Tests GET access logs."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     access_logs = add_many_test_access_logs
 
     current_user = await current_user_from_azure_token(
@@ -2840,7 +2840,7 @@ async def test_admin_gets_all_logs_with_status_code(
     mocked_provide_http_token_payload,
 ):
     """Tests GET access logs."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     # getting the one, that's created due to admin accessing the endpoint
     before_time = datetime.now()
@@ -2879,7 +2879,7 @@ async def test_get_logs_for_resource(
     add_one_test_access_policy,
 ):
     """Tests GET access logs."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     add_many_test_access_policies  # not relevant - just filling some data in the table
 
     current_user = await current_user_from_azure_token(
@@ -2935,7 +2935,7 @@ async def test_get_logs_for_resource_and_identity(
     add_many_test_access_logs,
 ):
     """Tests GET access logs."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     add_many_test_access_policies  # not relevant - just filling some data in the table
 
     database_logs = add_many_test_access_logs
@@ -2978,10 +2978,10 @@ async def test_get_logs_for_resource_without_permissions_from_policies(
     add_many_test_access_logs,
 ):
     """Tests GET access logs."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     add_many_test_access_policies  # not relevant - just filling some data in the table
 
-    add_many_test_access_logs
+    _ = add_many_test_access_logs
 
     response = await async_client.get(f"/api/v1/access/log/{resource_id2}")
     payload = response.json()
@@ -3006,7 +3006,7 @@ async def test_get_logs_for_resource_with_write_permission_only(
     add_one_test_access_policy,
 ):
     """Tests GET access logs."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     add_many_test_access_policies  # not relevant - just filling some data in the table
 
     current_user = await current_user_from_azure_token(
@@ -3019,7 +3019,7 @@ async def test_get_logs_for_resource_with_write_permission_only(
     }
     await add_one_test_access_policy(policy)
 
-    add_many_test_access_logs
+    _ = add_many_test_access_logs
 
     response = await async_client.get(f"/api/v1/access/log/{resource_id2}")
     payload = response.json()
@@ -3044,7 +3044,7 @@ async def test_get_logs_for_resource_with_read_permission_only(
     add_one_test_access_policy,
 ):
     """Tests GET access logs."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     add_many_test_access_policies  # not relevant - just filling some data in the table
 
     current_user = await current_user_from_azure_token(
@@ -3057,7 +3057,7 @@ async def test_get_logs_for_resource_with_read_permission_only(
     }
     await add_one_test_access_policy(policy)
 
-    add_many_test_access_logs
+    _ = add_many_test_access_logs
 
     response = await async_client.get(f"/api/v1/access/log/{resource_id2}")
     payload = response.json()
@@ -3078,7 +3078,7 @@ async def test_admin_get_logs_for_identity(
     add_many_test_access_logs,
 ):
     """Tests GET access logs."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     database_logs = add_many_test_access_logs
 
@@ -3126,7 +3126,7 @@ async def test_user_get_logs_for_identity(
     mocked_provide_http_token_payload,
 ):
     """Tests GET access logs."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     current_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -3238,7 +3238,7 @@ async def test_user_get_logs_for_identity_with_write_and_read_permission_only(
     mocked_provide_http_token_payload,
 ):
     """Tests GET access logs."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     current_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -3342,7 +3342,7 @@ async def test_get_creation_datetime_for_resource(
     add_one_test_access_policy,
 ):
     """Tests GET access logs."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     current_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -3378,7 +3378,7 @@ async def test_get_creation_datetime_for_resource_with_only_write_permission(
     add_one_test_access_policy,
 ):
     """Tests GET access logs."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     current_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -3390,7 +3390,7 @@ async def test_get_creation_datetime_for_resource_with_only_write_permission(
     }
     await add_one_test_access_policy(policy)
 
-    add_many_test_access_logs
+    _ = add_many_test_access_logs
 
     response = await async_client.get(f"/api/v1/access/log/{resource_id1}/created")
     payload = response.json()
@@ -3416,7 +3416,7 @@ async def test_get_creation_datetime_for_resource_with_only_read_permission(
     add_one_test_access_policy,
 ):
     """Tests GET access logs."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     current_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -3428,7 +3428,7 @@ async def test_get_creation_datetime_for_resource_with_only_read_permission(
     }
     await add_one_test_access_policy(policy)
 
-    add_many_test_access_logs
+    _ = add_many_test_access_logs
 
     response = await async_client.get(f"/api/v1/access/log/{resource_id1}/created")
     payload = response.json()
@@ -3451,9 +3451,9 @@ async def test_get_creation_datetime_for_resource_without_access_fails(
     add_many_test_access_logs,
 ):
     """Tests GET access logs."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
-    add_many_test_access_logs
+    _ = add_many_test_access_logs
 
     response = await async_client.get(f"/api/v1/access/log/{resource_id1}/created")
     payload = response.json()
@@ -3477,7 +3477,7 @@ async def test_get_creation_datetime_for_resources(
     add_one_test_access_policy,
 ):
     """Tests GET access logs."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     current_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -3530,7 +3530,7 @@ async def test_get_creation_datetime_for_resources_with_write_permission_on_one_
     add_one_test_access_policy,
 ):
     """Tests GET access logs."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     current_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -3583,7 +3583,7 @@ async def test_get_creation_datetime_for_resources_with_read_permission_on_resou
     add_one_test_access_policy,
 ):
     """Tests GET access logs."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     current_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -3635,7 +3635,7 @@ async def test_get_creation_datetime_for_resources_without_access_on_one_resourc
     add_one_test_access_policy,
 ):
     """Tests GET access logs."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     current_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -3679,7 +3679,7 @@ async def test_get_modification_datetime_for_resource(
     add_one_test_access_policy,
 ):
     """Tests GET access logs."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     current_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -3714,7 +3714,7 @@ async def test_get_modification_datetime_is_creation_time_for_never_accessed_res
     add_test_demo_resources,
 ):
     """Tests GET access logs."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     demo_resources = await add_test_demo_resources()
 
@@ -3748,7 +3748,7 @@ async def test_get_modification_datetime_for_resource_with_only_write_permission
     add_one_test_access_policy,
 ):
     """Tests GET access logs."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     current_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -3760,7 +3760,7 @@ async def test_get_modification_datetime_for_resource_with_only_write_permission
     }
     await add_one_test_access_policy(policy)
 
-    add_many_test_access_logs
+    _ = add_many_test_access_logs
 
     response = await async_client.get(
         f"/api/v1/access/log/{resource_id1}/last-modified"
@@ -3788,7 +3788,7 @@ async def test_get_modification_datetime_for_resource_with_only_read_permission(
     add_one_test_access_policy,
 ):
     """Tests GET access logs."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     current_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -3800,7 +3800,7 @@ async def test_get_modification_datetime_for_resource_with_only_read_permission(
     }
     await add_one_test_access_policy(policy)
 
-    add_many_test_access_logs
+    _ = add_many_test_access_logs
 
     response = await async_client.get(
         f"/api/v1/access/log/{resource_id1}/last-modified"
@@ -3825,9 +3825,9 @@ async def test_get_modification_datetime_for_resource_without_access_fails(
     add_many_test_access_logs,
 ):
     """Tests GET access logs."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
-    add_many_test_access_logs
+    _ = add_many_test_access_logs
 
     response = await async_client.get(
         f"/api/v1/access/log/{resource_id1}/last-modified"
@@ -3853,7 +3853,7 @@ async def test_get_modification_datetime_for_resources(
     add_one_test_access_policy,
 ):
     """Tests GET access logs."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     current_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -3907,7 +3907,7 @@ async def test_get_modification_datetime_for_resources_with_write_permission_on_
     add_one_test_access_policy,
 ):
     """Tests GET access logs."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     current_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -3961,7 +3961,7 @@ async def test_get_modification_datetime_for_resources_with_read_permission_on_r
     add_one_test_access_policy,
 ):
     """Tests GET access logs."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     current_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -4014,7 +4014,7 @@ async def test_get_modification_datetime_for_resources_without_access_on_one_res
     add_one_test_access_policy,
 ):
     """Tests GET access logs."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     current_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -4059,7 +4059,7 @@ async def test_get_last_access_log_for_resource(
     add_one_test_access_policy,
 ):
     """Tests GET access logs."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     current_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -4103,7 +4103,7 @@ async def test_get_last_access_log_for_resource_only_write_permission(
     add_one_test_access_policy,
 ):
     """Tests GET access logs."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     current_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -4115,7 +4115,7 @@ async def test_get_last_access_log_for_resource_only_write_permission(
     }
     await add_one_test_access_policy(policy)
 
-    add_many_test_access_logs
+    _ = add_many_test_access_logs
 
     response = await async_client.get(
         f"/api/v1/access/log/{resource_id3}/last-accessed"
@@ -4141,7 +4141,7 @@ async def test_get_last_access_log_for_resource_only_read_permission(
     add_one_test_access_policy,
 ):
     """Tests GET access logs."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     current_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -4153,7 +4153,7 @@ async def test_get_last_access_log_for_resource_only_read_permission(
     }
     await add_one_test_access_policy(policy)
 
-    add_many_test_access_logs
+    _ = add_many_test_access_logs
 
     response = await async_client.get(
         f"/api/v1/access/log/{resource_id3}/last-accessed"
@@ -4176,9 +4176,9 @@ async def test_get_last_access_log_for_resource_missing_access(
     add_many_test_access_logs,
 ):
     """Tests GET access logs."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
-    add_many_test_access_logs
+    _ = add_many_test_access_logs
 
     response = await async_client.get(
         f"/api/v1/access/log/{resource_id3}/last-accessed"
@@ -4204,7 +4204,7 @@ async def test_get_last_access_datetime_for_resources(
     add_one_test_access_policy,
 ):
     """Tests GET access logs."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     current_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -4258,7 +4258,7 @@ async def test_get_last_access_datetime_for_resources_with_read_and_write_access
     add_one_test_access_policy,
 ):
     """Tests GET access logs."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     current_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -4308,7 +4308,7 @@ async def test_get_last_access_datetime_for_resources_without_access_fails(
     app_override_provide_http_token_payload: FastAPI,
 ):
     """Tests GET access logs."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     response = await async_client.post(
         "/api/v1/access/logs/last-accessed",
@@ -4335,7 +4335,7 @@ async def test_get_access_count_for_resource(
     add_one_test_access_policy,
 ):
     """Tests GET access logs."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     current_user = await current_user_from_azure_token(
         mocked_provide_http_token_payload
@@ -4347,7 +4347,7 @@ async def test_get_access_count_for_resource(
     }
     await add_one_test_access_policy(policy)
 
-    add_many_test_access_logs
+    _ = add_many_test_access_logs
 
     response = await async_client.get(f"/api/v1/access/log/{resource_id2}/count")
     payload = response.json()
@@ -4373,9 +4373,9 @@ async def test_get_access_count_for_resource_without_access_fails(
     add_many_test_access_logs,
 ):
     """Tests GET access logs."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
-    add_many_test_access_logs
+    _ = add_many_test_access_logs
 
     response = await async_client.get(f"/api/v1/access/log/{resource_id2}/count")
     payload = response.json()
