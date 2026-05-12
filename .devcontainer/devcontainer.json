@@ -50,7 +50,8 @@
         "svelte.svelte-vscode",
         "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
-        "openai.chatgpt"
+        "openai.chatgpt",
+        "tamasfe.even-better-toml"
       ]
     }
   }
