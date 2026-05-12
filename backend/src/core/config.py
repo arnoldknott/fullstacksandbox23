@@ -3,8 +3,6 @@ import os
 from functools import lru_cache
 from time import sleep
 from typing import Any, Optional, cast
-from uuid import UUID
-
 from azure.identity import ManagedIdentityCredential
 from azure.keyvault.secrets import SecretClient
 from pydantic import PostgresDsn, ValidationInfo, field_validator
@@ -56,19 +54,12 @@ class Config(BaseSettings):
     KEYVAULT_HEALTH: Optional[str] = get_variable("KEYVAULT_HEALTH")
 
     # Microsoft Azure OAuth 2.0 configuration:
-    AZURE_TENANT_ID_RAW: Optional[str] = get_variable("AZURE_TENANT_ID")
-    AZURE_TENANT_ID: Optional[UUID] = (
-        UUID(AZURE_TENANT_ID_RAW) if AZURE_TENANT_ID_RAW else None
-    )
+    AZURE_TENANT_ID: Optional[str] = get_variable("AZURE_TENANT_ID")
     AZURE_OPENID_CONFIG_URL: Optional[str] = (
         f"https://login.microsoftonline.com/{AZURE_TENANT_ID}/v2.0/.well-known/openid-configuration"
-        if AZURE_TENANT_ID
-        else None
     )
     AZURE_ISSUER_URL: Optional[str] = (
         f"https://login.microsoftonline.com/{AZURE_TENANT_ID}/v2.0"
-        if AZURE_TENANT_ID
-        else None
     )
     BACKEND_API_CLIENT_ID: Optional[str] = get_variable("BACKEND_API_CLIENT_ID")
     API_SCOPE: Optional[str] = get_variable("API_SCOPE")
@@ -85,8 +76,6 @@ class Config(BaseSettings):
     )
     AZURE_AUTHORITY: Optional[str] = (
         f"https://login.microsoftonline.com/{AZURE_TENANT_ID}"
-        if AZURE_TENANT_ID
-        else None
     )
     # uses devleopert clients app registration for the integrated OpenAPI (former SwaggerUI):
     DEVELOPER_CLIENTS_CLIENT_ID: Optional[str] = get_variable(
