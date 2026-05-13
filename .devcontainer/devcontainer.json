@@ -19,7 +19,7 @@
     },
     "8661": {
       "label": "frontend_svelte",
-      "onAutoForward": "openPreview"
+      "onAutoForward": "silent"
     },
     "5432": {
       "label": "postgres"
