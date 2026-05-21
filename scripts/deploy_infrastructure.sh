@@ -64,13 +64,10 @@ echo ""
 echo "=== set workspace ==="
 if [ "$BRANCH_NAME" == "dev" ]; then
     WORKSPACE=dev
-    DTU_CAMPUSAI_API_KEY=$DTU_CAMPUSAI_API_KEY_DEV
 elif [ "$BRANCH_NAME" == "stage" ]; then
     WORKSPACE=stage
-    DTU_CAMPUSAI_API_KEY=$DTU_CAMPUSAI_API_KEY_STAGE
 elif [ "$BRANCH_NAME" == "main" ]; then
     WORKSPACE=prod
-    DTU_CAMPUSAI_API_KEY=$DTU_CAMPUSAI_API_KEY_PROD
 else
     echo "Branch name not recognized"
     exit 1
@@ -172,6 +169,12 @@ set +e
 # docker compose run --rm -e "WORKSPACE=${WORKSPACE}" tofu plan -out=${WORKSPACE}.tfplan \
 # docker compose cp ./ssh_key.pub tofu:$local_public_ssh_key_path
 docker compose run --rm -e "WORKSPACE=${WORKSPACE}" --entrypoint '/bin/sh -c' tofu 'cp -fR .azure/ ~/.azure &&
+case "$WORKSPACE" in
+  dev)   export DTU_CAMPUSAI_API_KEY="$DTU_CAMPUSAI_API_KEY_DEV" ;;
+  stage) export DTU_CAMPUSAI_API_KEY="$DTU_CAMPUSAI_API_KEY_STAGE" ;;
+  prod)  export DTU_CAMPUSAI_API_KEY="$DTU_CAMPUSAI_API_KEY_PROD" ;;
+  *) echo "Unknown WORKSPACE: $WORKSPACE"; exit 1 ;;
+esac &&
 ARM_CLIENT_SECRET=$AZURE_CLIENT_SECRET &&
 tofu plan -out=${WORKSPACE}.tfplan \
         -detailed-exitcode \
