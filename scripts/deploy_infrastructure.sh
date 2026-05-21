@@ -191,7 +191,7 @@ tofu plan -out=${WORKSPACE}.tfplan \
         -var "pgadmin_default_email=${PGADMIN_DEFAULT_EMAIL}" \
         -var "redis_port=${REDIS_PORT}" \
         -var "redis_insight_port=${REDIS_INSIGHT_PORT}" \
-        -var "dtu_campus_ai_api_key=${DTU_CAMPUSAI_API_KEY}"'
+        -var "dtu_campusai_api_key=${DTU_CAMPUSAI_API_KEY}"'
 # -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}"'
 
 # Comes from ARM_ environment variable, as it is not needed with managed identity in the Github Actions workflow:
