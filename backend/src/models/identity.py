@@ -51,7 +51,7 @@ class AzureGroupCreate(SQLModel):
 
     id: uuid.UUID
     # enables multi-tenancy, if None, then it's the internal tenant:
-    azure_tenant_id: Optional[uuid.UUID] = config.AZURE_TENANT_ID
+    azure_tenant_id: Optional[uuid.UUID] = uuid.UUID(config.AZURE_TENANT_ID)
     is_active: bool = True
 
 
@@ -127,7 +127,7 @@ class UserCreate(SQLModel):
 
     azure_user_id: Optional[uuid.UUID] = None
     # # enables multi-tenancy, if None, then it's the internal tenant:
-    azure_tenant_id: Optional[uuid.UUID] = config.AZURE_TENANT_ID
+    azure_tenant_id: Optional[uuid.UUID] = uuid.UUID(config.AZURE_TENANT_ID)
     # Could be an option in future to implement roles for the app:
     # app_roles: Optional[List[AppRoles]] = None
     is_active: bool = False

@@ -19,7 +19,7 @@
     },
     "8661": {
       "label": "frontend_svelte",
-      "onAutoForward": "openPreview"
+      "onAutoForward": "silent"
     },
     "5432": {
       "label": "postgres"
@@ -51,7 +51,7 @@
         "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
         "openai.chatgpt",
-        "hashicorp.terraform",
+        "opentofu.vscode-opentofu",
         "google.geminiclicompanion",
         "tamasfe.even-better-toml",
         "google.gemini-cli-vscode-ide-companion"

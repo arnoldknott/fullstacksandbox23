@@ -69,6 +69,9 @@ jobs:
       # Redis settings:
       REDIS_PORT: ${{ secrets.REDIS_PORT }}
       REDIS_INSIGHT_PORT: ${{ secrets.REDIS_INSIGHT_PORT }}
+      DTU_CAMPUSAI_API_KEY_DEV: ${{ secrets.DTU_CAMPUSAI_API_KEY_DEV }}
+      DTU_CAMPUSAI_API_KEY_STAGE: ${{ secrets.DTU_CAMPUSAI_API_KEY_STAGE }}
+      DTU_CAMPUSAI_API_KEY_PROD: ${{ secrets.DTU_CAMPUSAI_API_KEY_PROD }}
     defaults:
       run:
         working-directory: infrastructure
@@ -130,10 +133,13 @@ jobs:
         run: |
           if [ ${{ github.ref }} == 'refs/heads/dev' ]; then
             echo "WORKSPACE=dev" >> "$GITHUB_ENV"
+            echo "DTU_CAMPUSAI_API_KEY=${{ secrets.DTU_CAMPUSAI_API_KEY_DEV }}" >> "$GITHUB_ENV"
           elif [ ${{ github.ref }} == 'refs/heads/stage' ]; then
             echo "WORKSPACE=stage" >> "$GITHUB_ENV"
+            echo "DTU_CAMPUSAI_API_KEY=${{ secrets.DTU_CAMPUSAI_API_KEY_STAGE }}" >> "$GITHUB_ENV"
           elif [ ${{ github.ref }} == 'refs/heads/main' ]; then
             echo "WORKSPACE=prod" >> "$GITHUB_ENV"
+            echo "DTU_CAMPUSAI_API_KEY=${{ secrets.DTU_CAMPUSAI_API_KEY_PROD }}" >> "$GITHUB_ENV"
           else
             echo "This branch does not support infrastructure deployment"
             exit 1
@@ -176,6 +182,10 @@ jobs:
           fetch: false
           message: "ci: updates terraform lock file based on workflow run triggered by commit SHA ${{ env.COMMIT_SHA }}."
 
+      - name: Capture plan commit SHA
+        id: plan_commit
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
       - name: tofu workspace select
         run: tofu workspace select -or-create ${WORKSPACE}
 
@@ -200,7 +210,8 @@ jobs:
             -var "postgres_port=${POSTGRES_PORT}" \
             -var "pgadmin_default_email=${PGADMIN_DEFAULT_EMAIL}" \
             -var "redis_port=${REDIS_PORT}" \
-            -var "redis_insight_port=${REDIS_INSIGHT_PORT}" | tee ${WORKSPACE}_${COMMIT_SHA}.log
+            -var "redis_insight_port=${REDIS_INSIGHT_PORT}" \
+            -var "dtu_campusai_api_key=${DTU_CAMPUSAI_API_KEY}" | tee ${WORKSPACE}_${COMMIT_SHA}.log
             cat ${WORKSPACE}_${COMMIT_SHA}.log
             
       # -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}" | tee ${WORKSPACE}_${COMMIT_SHA}.log
@@ -229,6 +240,7 @@ jobs:
 
     outputs:
       tofu_plan_exit_code: ${{ steps.tofu_plan.outputs.exitcode }}
+      plan_commit_sha: ${{ steps.plan_commit.outputs.sha }}
 
   apply:
     needs: plan
@@ -243,6 +255,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.plan.outputs.plan_commit_sha }}
+          fetch-depth: 0
 
       # # Add in those two steps to run as user instead:
       # - name: Install Azure CLI
