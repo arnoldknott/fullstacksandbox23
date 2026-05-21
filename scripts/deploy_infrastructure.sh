@@ -64,10 +64,13 @@ echo ""
 echo "=== set workspace ==="
 if [ "$BRANCH_NAME" == "dev" ]; then
     WORKSPACE=dev
+    DTU_CAMPUSAI_API_KEY=$DTU_CAMPUSAI_API_KEY_DEV
 elif [ "$BRANCH_NAME" == "stage" ]; then
     WORKSPACE=stage
+    DTU_CAMPUSAI_API_KEY=$DTU_CAMPUSAI_API_KEY_STAGE
 elif [ "$BRANCH_NAME" == "main" ]; then
     WORKSPACE=prod
+    DTU_CAMPUSAI_API_KEY=$DTU_CAMPUSAI_API_KEY_PROD
 else
     echo "Branch name not recognized"
     exit 1
@@ -187,7 +190,8 @@ tofu plan -out=${WORKSPACE}.tfplan \
         -var "postgres_port=${POSTGRES_PORT}" \
         -var "pgadmin_default_email=${PGADMIN_DEFAULT_EMAIL}" \
         -var "redis_port=${REDIS_PORT}" \
-        -var "redis_insight_port=${REDIS_INSIGHT_PORT}"'
+        -var "redis_insight_port=${REDIS_INSIGHT_PORT}" \
+        -var "dtu_campus_ai_api_key=${DTU_CAMPUSAI_API_KEY}"'
 # -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}"'
 
 # Comes from ARM_ environment variable, as it is not needed with managed identity in the Github Actions workflow:

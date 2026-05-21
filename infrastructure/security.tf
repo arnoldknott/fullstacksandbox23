@@ -526,6 +526,12 @@ resource "azurerm_key_vault_secret" "pgadminOauth2Config" {
   key_vault_id = azurerm_key_vault.keyVault.id
 }
 
+resource "azurerm_key_vault_secret" "dtuCampusAiApiKey" {
+  name         = "dtu-campus-ai-api-key"
+  value        = var.dtu_campusai_api_key
+  key_vault_id = azurerm_key_vault.keyVault.id
+}
+
 # Container apps need to have the secrets in the key vault to be able to use them.
 # data "azurerm_key_vault_secrets" "keyVaultAllSecrets" {
 #   key_vault_id = azurerm_key_vault.keyVault.id
