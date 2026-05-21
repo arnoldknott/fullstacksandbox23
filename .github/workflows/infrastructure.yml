@@ -182,6 +182,10 @@ jobs:
           fetch: false
           message: "ci: updates terraform lock file based on workflow run triggered by commit SHA ${{ env.COMMIT_SHA }}."
 
+      - name: Capture plan commit SHA
+        id: plan_commit
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
       - name: tofu workspace select
         run: tofu workspace select -or-create ${WORKSPACE}
 
@@ -236,6 +240,7 @@ jobs:
 
     outputs:
       tofu_plan_exit_code: ${{ steps.tofu_plan.outputs.exitcode }}
+      plan_commit_sha: ${{ steps.plan_commit.outputs.sha }}
 
   apply:
     needs: plan
@@ -250,6 +255,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.plan.outputs.plan_commit_sha }}
+          fetch-depth: 0
 
       # # Add in those two steps to run as user instead:
       # - name: Install Azure CLI
