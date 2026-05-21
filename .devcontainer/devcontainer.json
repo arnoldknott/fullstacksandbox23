@@ -51,7 +51,7 @@
         "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
         "openai.chatgpt",
-        "hashicorp.terraform",
+        "opentofu.vscode-opentofu",
         "google.geminiclicompanion",
         "tamasfe.even-better-toml",
         "google.gemini-cli-vscode-ide-companion"
