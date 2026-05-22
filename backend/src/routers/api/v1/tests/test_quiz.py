@@ -1101,7 +1101,7 @@ class TestNumerical(BaseTest):
 #     await async_client.post("/api/v1/quiz/message/", json=child_with_parent)
 #
 #     # GET the public parent endpoint
-#     response = await async_client.get(f"/api/v1/quiz/question/public/{parent.id}")
+#     response = await async_client.get(f"/api/v1/quiz/question/{parent.id}")
 #
 #     assert response.status_code == 200
 #     content = response.json()
