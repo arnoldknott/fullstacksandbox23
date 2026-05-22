@@ -2,6 +2,7 @@
 
 import pytest
 
+from core.types import CurrentUserData
 from crud.presentation import PresentationCRUD
 from models.presentation import Presentation
 from routers.api.v1.tests.base import BaseTest
@@ -13,6 +14,7 @@ from tests.utils import (
     token_user1_read,
     token_user1_read_write,
     token_user1_write,
+    current_user_data_admin,
 )
 from tests.utils_presentations import (
     many_test_presentations,
@@ -174,10 +176,24 @@ class TestPresentation(BaseTest):
         """Test GET by ID returns 404 for non-existent presentation."""
         await super().run_get_by_id_not_found(mocked_provide_http_token_payload)
 
-    @pytest.mark.anyio
-    async def test_get_by_id_missing_auth(self, added_resources):
-        """Test GET by ID fails without authentication."""
-        await super().run_get_by_id_missing_auth(added_resources)
+    # @pytest.mark.anyio
+    # async def test_get_by_id_missing_auth(self, added_resources):
+    #     """Test GET by ID fails without authentication."""
+    #     await super().run_get_by_id_missing_auth(added_resources)
+
+    # @pytest.mark.anyio
+    # @pytest.mark.parametrize(
+    #     "mocked_provide_http_token_payload",
+    #     [token_admin, token_admin_write, token_user1_write],
+    #     indirect=True,
+    # )
+    # async def test_get_by_id_fails_authorization(
+    #     self, added_resources, mocked_provide_http_token_payload
+    # ):
+    #     """Test GET presentation by ID fails without proper authorization."""
+    #     await super().run_get_by_id_fails_authorization(
+    #         added_resources, mocked_provide_http_token_payload
+    #     )
 
     @pytest.mark.anyio
     @pytest.mark.parametrize(
@@ -185,22 +201,110 @@ class TestPresentation(BaseTest):
         [token_admin, token_admin_write, token_user1_write],
         indirect=True,
     )
-    async def test_get_by_id_fails_authorization(
-        self, added_resources, mocked_provide_http_token_payload
+    async def test_get_by_id_with_auth(
+        self,
+        register_current_user,
+        add_one_test_resource,
+        add_one_test_access_policy,
     ):
-        """Test GET presentation by ID fails without proper authorization."""
-        await super().run_get_by_id_fails_authorization(
-            added_resources, mocked_provide_http_token_payload
+        """Test public GET presentation by ID success without authentication and without public access policy."""
+        await register_current_user(current_user_data_admin)
+        presentation = await add_one_test_resource(
+            PresentationCRUD,
+            one_test_presentation,
+            CurrentUserData(**current_user_data_admin),
+        )
+        await add_one_test_access_policy(
+            {
+                "resource_id": str(presentation.id),
+                "action": "read",
+                "public": True,
+            },
+            CurrentUserData(**current_user_data_admin),
         )
 
+        response = await self.async_client.get(f"{self.router_path}{presentation.id}")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["id"] == str(presentation.id)
+        assert data["source"] == presentation.source
+        assert data["path"] == presentation.path
+
     @pytest.mark.anyio
-    async def test_get_public_by_id_success(
-        self, add_one_test_access_policy, added_resources
+    @pytest.mark.parametrize(
+        "mocked_provide_http_token_payload", [token_user1_write], indirect=True
+    )
+    async def test_get_by_id_with_auth_and_without_public_access_policy_fails(
+        self, register_current_user, add_one_test_resource
     ):
-        """Test public GET presentation by ID success (no auth)."""
-        await super().run_get_public_by_id_success(
-            add_one_test_access_policy, added_resources
+        """Test public GET presentation by ID success without authentication and without public access policy."""
+        await register_current_user(current_user_data_admin)
+        presentation = await add_one_test_resource(
+            PresentationCRUD,
+            one_test_presentation,
+            CurrentUserData(**current_user_data_admin),
         )
+
+        response = await self.async_client.get(f"{self.router_path}{presentation.id}")
+        assert response.status_code == 404
+        data = response.json()
+        assert data["detail"] == "Presentation not found."
+
+    @pytest.mark.anyio
+    async def test_get_by_id_without_auth(
+        self,
+        register_current_user,
+        add_one_test_resource,
+        add_one_test_access_policy,
+    ):
+        """Test public GET presentation by ID success without authentication and without public access policy."""
+        await register_current_user(current_user_data_admin)
+        presentation = await add_one_test_resource(
+            PresentationCRUD,
+            one_test_presentation,
+            CurrentUserData(**current_user_data_admin),
+        )
+        await add_one_test_access_policy(
+            {
+                "resource_id": str(presentation.id),
+                "action": "read",
+                "public": True,
+            },
+            CurrentUserData(**current_user_data_admin),
+        )
+
+        response = await self.async_client.get(f"{self.router_path}{presentation.id}")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["id"] == str(presentation.id)
+        assert data["source"] == presentation.source
+        assert data["path"] == presentation.path
+
+    @pytest.mark.anyio
+    async def test_get_by_id_without_auth_and_without_public_access_policy_fails(
+        self, register_current_user, add_one_test_resource
+    ):
+        """Test public GET presentation by ID success without authentication and without public access policy."""
+        await register_current_user(current_user_data_admin)
+        presentation = await add_one_test_resource(
+            PresentationCRUD,
+            one_test_presentation,
+            CurrentUserData(**current_user_data_admin),
+        )
+
+        response = await self.async_client.get(f"{self.router_path}{presentation.id}")
+        assert response.status_code == 404
+        data = response.json()
+        assert data["detail"] == "Presentation not found."
+
+    # @pytest.mark.anyio
+    # async def test_get_public_by_id_success(
+    #     self, add_one_test_access_policy, added_resources
+    # ):
+    #     """Test public GET presentation by ID success (no auth)."""
+    #     await super().run_get_public_by_id_success(
+    #         add_one_test_access_policy, added_resources
+    #     )
 
     ## PUT tests
     @pytest.mark.anyio

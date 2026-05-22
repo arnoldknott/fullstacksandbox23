@@ -1,11 +1,13 @@
 import logging
 from uuid import UUID
+from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends
 
 from core.security import (
     Guards,
     get_http_access_token_payload,
+    provide_http_token_payload,
 )
 from core.types import GuardTypes
 from crud.presentation import PresentationCRUD
@@ -47,11 +49,12 @@ async def get_presentations(
 @router.get("/{resource_id}", status_code=200)
 async def get_presentation_by_id(
     resource_id: UUID,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
+    token_payload: Annotated[
+        Optional[dict], Depends(provide_http_token_payload)
+    ] = None,
 ) -> PresentationRead:
     """Returns a presentation."""
-    return await presentation_view.get_by_id(resource_id, token_payload, guards)
+    return await presentation_view.get_by_id(resource_id, token_payload, guards=None)
 
 
 # TBD: redesign to remove the public endpooint and
@@ -59,14 +62,14 @@ async def get_presentation_by_id(
 # First try with authentication if provided
 # if not straight go to fetching the presentation without authentication and return it if it is public
 # Also allow filtering for path instead / before UUID from resource_id
-@router.get("/public/{resource_id}", status_code=200)
-async def get_public_presentation_by_id(
-    resource_id: UUID,
-) -> PresentationRead:
-    """Returns a public presentation without authentication."""
-    return await presentation_view.get_by_id(
-        resource_id, token_payload=None, guards=None
-    )
+# @router.get("/public/{resource_id}", status_code=200)
+# async def get_public_presentation_by_id(
+#     resource_id: UUID,
+# ) -> PresentationRead:
+#     """Returns a public presentation without authentication."""
+#     return await presentation_view.get_by_id(
+#         resource_id, token_payload=None, guards=None
+#     )
 
 
 @router.put("/{resource_id}", status_code=200)
