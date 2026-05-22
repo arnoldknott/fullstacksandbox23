@@ -19,6 +19,9 @@ from tests.utils import (
 from tests.utils_presentations import (
     many_test_presentations,
     one_test_presentation,
+    one_test_presentation_multi_segment_path,
+    one_test_presentation_uuid_like_path,
+    one_test_presentation_without_path,
     presentation_update_data,
     wrong_test_presentations,
 )
@@ -296,6 +299,220 @@ class TestPresentation(BaseTest):
         assert response.status_code == 404
         data = response.json()
         assert data["detail"] == "Presentation not found."
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "mocked_provide_http_token_payload",
+        [token_admin, token_admin_write, token_user1_write],
+        indirect=True,
+    )
+    async def test_get_by_path_with_auth(
+        self,
+        register_current_user,
+        add_one_test_resource,
+        add_one_test_access_policy,
+    ):
+        """Test GET presentation by path success with authentication."""
+        await register_current_user(current_user_data_admin)
+        presentation = await add_one_test_resource(
+            PresentationCRUD,
+            one_test_presentation,
+            CurrentUserData(**current_user_data_admin),
+        )
+        await add_one_test_access_policy(
+            {
+                "resource_id": str(presentation.id),
+                "action": "read",
+                "public": True,
+            },
+            CurrentUserData(**current_user_data_admin),
+        )
+
+        response = await self.async_client.get(
+            f"{self.router_path}path{presentation.path}"
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["id"] == str(presentation.id)
+        assert data["source"] == presentation.source
+        assert data["path"] == presentation.path
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "mocked_provide_http_token_payload", [token_user1_write], indirect=True
+    )
+    async def test_get_by_path_with_auth_and_without_public_access_policy_fails(
+        self, register_current_user, add_one_test_resource
+    ):
+        """Test GET presentation by path fails without public access policy."""
+        await register_current_user(current_user_data_admin)
+        presentation = await add_one_test_resource(
+            PresentationCRUD,
+            one_test_presentation,
+            CurrentUserData(**current_user_data_admin),
+        )
+
+        response = await self.async_client.get(
+            f"{self.router_path}path{presentation.path}"
+        )
+        assert response.status_code == 404
+        data = response.json()
+        assert data["detail"] == "Presentation not found."
+
+    @pytest.mark.anyio
+    async def test_get_by_path_without_auth(
+        self,
+        register_current_user,
+        add_one_test_resource,
+        add_one_test_access_policy,
+    ):
+        """Test GET presentation by path success without authentication."""
+        await register_current_user(current_user_data_admin)
+        presentation = await add_one_test_resource(
+            PresentationCRUD,
+            one_test_presentation,
+            CurrentUserData(**current_user_data_admin),
+        )
+        await add_one_test_access_policy(
+            {
+                "resource_id": str(presentation.id),
+                "action": "read",
+                "public": True,
+            },
+            CurrentUserData(**current_user_data_admin),
+        )
+
+        response = await self.async_client.get(
+            f"{self.router_path}path{presentation.path}"
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["id"] == str(presentation.id)
+        assert data["source"] == presentation.source
+        assert data["path"] == presentation.path
+
+    @pytest.mark.anyio
+    async def test_get_by_path_without_auth_and_without_public_access_policy_fails(
+        self, register_current_user, add_one_test_resource
+    ):
+        """Test GET presentation by path fails without auth and policy."""
+        await register_current_user(current_user_data_admin)
+        presentation = await add_one_test_resource(
+            PresentationCRUD,
+            one_test_presentation,
+            CurrentUserData(**current_user_data_admin),
+        )
+
+        response = await self.async_client.get(
+            f"{self.router_path}path{presentation.path}"
+        )
+        assert response.status_code == 404
+        data = response.json()
+        assert data["detail"] == "Presentation not found."
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "mocked_provide_http_token_payload", [token_admin_read_write], indirect=True
+    )
+    async def test_get_by_path_multi_segment_success(
+        self, register_current_user, add_one_test_resource
+    ):
+        """Test GET presentation by multi-segment path success."""
+        await register_current_user(current_user_data_admin)
+        presentation = await add_one_test_resource(
+            PresentationCRUD,
+            one_test_presentation_multi_segment_path,
+            CurrentUserData(**current_user_data_admin),
+        )
+
+        response = await self.async_client.get(
+            f"{self.router_path}path{presentation.path}"
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["id"] == str(presentation.id)
+        assert data["path"] == presentation.path
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "mocked_provide_http_token_payload", [token_admin_read_write], indirect=True
+    )
+    async def test_get_by_path_without_leading_slash_resolves(
+        self, register_current_user, add_one_test_resource
+    ):
+        """Test GET presentation by path resolves even when request omits leading slash."""
+        await register_current_user(current_user_data_admin)
+        presentation = await add_one_test_resource(
+            PresentationCRUD,
+            one_test_presentation_multi_segment_path,
+            CurrentUserData(**current_user_data_admin),
+        )
+
+        response = await self.async_client.get(
+            f"{self.router_path}path/{presentation.path.lstrip('/')}"
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["id"] == str(presentation.id)
+        assert data["path"] == presentation.path
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "mocked_provide_http_token_payload", [token_admin_read_write], indirect=True
+    )
+    async def test_get_by_path_with_uuid_like_string_success(
+        self, register_current_user, add_one_test_resource
+    ):
+        """Test GET presentation by UUID-like path string success."""
+        await register_current_user(current_user_data_admin)
+        presentation = await add_one_test_resource(
+            PresentationCRUD,
+            one_test_presentation_uuid_like_path,
+            CurrentUserData(**current_user_data_admin),
+        )
+
+        response = await self.async_client.get(
+            f"{self.router_path}path{presentation.path}"
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["id"] == str(presentation.id)
+        assert data["path"] == presentation.path
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "mocked_provide_http_token_payload", [token_admin_read_write], indirect=True
+    )
+    async def test_get_by_path_not_found(self, mocked_provide_http_token_payload):
+        """Test GET presentation by path returns 404 for non-existent path."""
+        response = await self.async_client.get(
+            f"{self.router_path}path/presentation/this-path-does-not-exist"
+        )
+        assert response.status_code == 404
+        data = response.json()
+        assert data["detail"] == "Presentation not found."
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "mocked_provide_http_token_payload", [token_admin_read_write], indirect=True
+    )
+    async def test_get_by_id_success_when_presentation_path_is_none(
+        self, register_current_user, add_one_test_resource
+    ):
+        """Test GET presentation by id works when presentation path is None."""
+        await register_current_user(current_user_data_admin)
+        presentation = await add_one_test_resource(
+            PresentationCRUD,
+            one_test_presentation_without_path,
+            CurrentUserData(**current_user_data_admin),
+        )
+
+        response = await self.async_client.get(f"{self.router_path}{presentation.id}")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["id"] == str(presentation.id)
+        assert data["source"] == presentation.source
+        assert data["path"] is None
 
     # @pytest.mark.anyio
     # async def test_get_public_by_id_success(
