@@ -9,16 +9,10 @@ export const load: PageServerLoad = async ({ url }) => {
 	const questionCommentsId = url.searchParams.get('q-comments');
 	// const responseIntention = await backendAPI.get(
 	// 	null,
-	// 	'/quiz/question/public/' + questionIntentionId
+	// 	'/quiz/question/' + questionIntentionId
 	// );
-	const responseMotivation = await backendAPI.get(
-		null,
-		'/quiz/question/public/' + questionMotivationId
-	);
-	const responseComments = await backendAPI.get(
-		null,
-		'/quiz/question/public/' + questionCommentsId
-	);
+	const responseMotivation = await backendAPI.get(null, '/quiz/question/' + questionMotivationId);
+	const responseComments = await backendAPI.get(null, '/quiz/question/' + questionCommentsId);
 	type QuestionData = {
 		// intention?: Question;
 		motivation?: Question;

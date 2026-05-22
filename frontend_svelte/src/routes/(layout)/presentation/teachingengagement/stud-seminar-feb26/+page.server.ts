@@ -36,20 +36,17 @@ export const load: PageServerLoad = async ({ url }) => {
 	// 	console.log(answer);
 	// const responseGoodNoExam = await backendAPI.get(
 	// 	null,
-	// 	'/quiz/question/public/' + questionGoodNoExamId
+	// 	'/quiz/question/' + questionGoodNoExamId
 	// );
 	// const responseBadNoExam = await backendAPI.get(
 	// 	null,
-	// 	'/quiz/question/public/' + questionBadNoExamId
+	// 	'/quiz/question/' + questionBadNoExamId
 	// );
 	// const responseComments = await backendAPI.get(
 	// 	null,
-	// 	'/quiz/question/public/' + questionCommentsId
+	// 	'/quiz/question/' + questionCommentsId
 	// );
-	const responseFeedback = await backendAPI.get(
-		null,
-		'/quiz/question/public/' + questionFeedbackId
-	);
+	const responseFeedback = await backendAPI.get(null, '/quiz/question/' + questionFeedbackId);
 	type QuestionData = {
 		// goodNoExam?: Question;
 		// badNoExam?: Question;
