@@ -3,7 +3,6 @@ from uuid import UUID
 from typing import Annotated, Any, Optional, cast
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import col
 
 from core.security import (
     Guards,
@@ -54,44 +53,41 @@ async def get_presentations(
     return await presentation_view.get(token_payload, guards)
 
 
-@router.get("/{resource:path}", status_code=200)
+@router.get("/{resource_id}", status_code=200)
 async def get_presentation_by_id(
-    resource: str,
+    resource_id: UUID,
     token_payload: Annotated[
         Optional[dict], Depends(provide_http_token_payload)
     ] = None,
 ) -> PresentationRead:
-    """Returns a presentation by path first, then UUID fallback."""
+    """Returns a presentation by resource_id."""
+    return await presentation_view.get_by_id(resource_id, token_payload, guards=None)
+
+
+@router.get("/path/{path:path}", status_code=200)
+async def get_presentation_by_path(
+    path: str,
+    token_payload: Annotated[
+        Optional[dict], Depends(provide_http_token_payload)
+    ] = None,
+) -> PresentationRead:
+    """Returns a presentation by path."""
     current_user = None
     if token_payload:
         current_user = await check_token_against_guards(token_payload, guards=None)
 
     # Normalize to leading slash so "/a/b" and "a/b" resolve consistently.
-    normalized_path = resource if resource.startswith("/") else f"/{resource}"
+    normalized_path = path if path.startswith("/") else f"/{path}"
 
     async with PresentationCRUD() as crud:
-        # 1) Path-first lookup (also covers UUID-looking path values).
-        try:
-            validated_path = validate_endpoint_path(normalized_path)
-            presentation_path = cast(Any, getattr(Presentation, "path"))
-            by_path = await crud.read(
-                current_user=current_user,
-                filters=[presentation_path == validated_path],
-                limit=1,
-            )
-            if by_path:
-                return by_path[0]
-        except Exception:
-            # Not a valid presentation path; continue with UUID fallback.
-            pass
-
-        # 2) UUID fallback only if no path match.
-        try:
-            resource_id = UUID(resource)
-        except ValueError:
-            raise HTTPException(status_code=404, detail="Presentation not found.")
-
-        return await crud.read_by_id(resource_id, current_user)
+        validated_path = validate_endpoint_path(normalized_path)
+        presentation_path = cast(Any, getattr(Presentation, "path"))
+        by_path = await crud.read(
+            current_user=current_user,
+            filters=[presentation_path == validated_path],
+            limit=1,
+        )
+        return by_path[0]
 
 
 # TBD: redesign to remove the public endpooint and
