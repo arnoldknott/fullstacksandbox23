@@ -7,7 +7,6 @@ from fastapi import APIRouter, Depends, Query
 from core.security import (
     Guards,
     get_http_access_token_payload,
-    provide_http_token_payload,
     provide_http_token_payload_optional,
 )
 from core.types import GuardTypes
