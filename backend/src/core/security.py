@@ -152,10 +152,10 @@ async def get_azure_token_payload(token: str) -> Optional[dict]:
         return payload
 
 
-oauth2_scheme = OAuth2AuthorizationCodeBearer(
-    authorizationUrl=f"https://login.microsoftonline.com/{config.AZURE_TENANT_ID}/oauth2/v2.0/authorize",
-    tokenUrl=f"https://login.microsoftonline.com/{config.AZURE_TENANT_ID}/oauth2/v2.0/token",
-    scopes={
+oauth2_config = {
+    "authorizationUrl": f"https://login.microsoftonline.com/{config.AZURE_TENANT_ID}/oauth2/v2.0/authorize",
+    "tokenUrl": f"https://login.microsoftonline.com/{config.AZURE_TENANT_ID}/oauth2/v2.0/token",
+    "scopes": {
         # 'User.Read' : "Read user profile",
         # "openid": "OpenID Connect scope",
         # "profile": "Read user profile",
@@ -164,8 +164,17 @@ oauth2_scheme = OAuth2AuthorizationCodeBearer(
         f"api://{config.API_SCOPE}/api.write": "Write API",
         # f"api://{config.API_SCOPE}/socketio": "Socket.io",
     },
-    scheme_name="OAuth2 Authorization Code",
-    description="OAuth2 Authorization Code Bearer implementation for Swagger UI - identity provider is Microsoft Azure AD",
+    "scheme_name": "OAuth2 Authorization Code",
+    "description": "OAuth2 Authorization Code Bearer implementation for Swagger UI - identity provider is Microsoft Azure AD",
+}
+
+oauth2_scheme = OAuth2AuthorizationCodeBearer(
+    **oauth2_config,
+)
+
+oauth2_scheme_optional = OAuth2AuthorizationCodeBearer(
+    **oauth2_config,
+    auto_error=False,
 )
 
 
@@ -177,6 +186,22 @@ async def provide_http_token_payload(
         return await get_azure_token_payload(token)
     except Exception as err:
         logger.error(f"🔑 Token validation failed: ${err}")
+        return None
+
+
+async def provide_http_token_payload_optional(
+    token: Annotated[Optional[str], Depends(oauth2_scheme_optional)],
+) -> Optional[dict]:
+    """General function to get the access token payload"""
+    try:
+        if token is None:
+            logger.debug("🔑 optional_auth: no token provided")
+            return None
+        return await get_azure_token_payload(token)
+    except Exception as err:
+        logger.warning(
+            f"🔑 optional_auth: invalid token provided; treating as unauthenticated: {err}"
+        )
         return None
 
 

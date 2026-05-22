@@ -130,7 +130,10 @@
 					<th>Source</th>
 					<th>Access</th>
 					<th>Actions</th>
-					<th># Questions</th>
+					<th># <span class="icon-[codicon--question]"></span></th>
+					<th># <span class="icon-[line-md--link]"></span></th>
+					<th># <span class="icon-[tabler--file]"></span></th>
+					<th><span class="icon-[fluent-mdl2--offline-storage]"></span></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -162,6 +165,12 @@
 							<td>{presentation.path}</td>
 							<td>{presentation.source}</td>
 							<td>{presentation.id}</td>
+							<td>[Access identity]</td>
+							<td>[Access action]</td>
+							<td>[Number]</td>
+							<td>[Number]</td>
+							<td>[Number]</td>
+							<td>[Mb / Gb]</td>
 						</tr>
 					{/each}
 				{/if}

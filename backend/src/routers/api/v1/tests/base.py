@@ -50,6 +50,49 @@ class BaseTest:
     _hierarchical_router_path: ClassVar[Optional[str]] = None
     _parent_model: ClassVar[Optional[Type[SQLModel]]] = None
 
+    async def _create_one_resource_as_admin(
+        self,
+        register_current_user,
+        add_one_test_resource,
+        access_to_one_parent: Any = None,
+    ):
+        """Create one resource owned by admin for optional-auth visibility tests."""
+        await register_current_user(current_user_data_admin)
+
+        current_user = CurrentUserData(**current_user_data_admin)
+        parent_id = None
+        if self._parent_model is not None:
+            if access_to_one_parent is None:
+                pytest.fail(
+                    "access_to_one_parent fixture is required for hierarchical resources"
+                )
+            parent_id = await access_to_one_parent(
+                self._parent_model, token_admin_read_write
+            )
+
+        return await add_one_test_resource(
+            self.crud,
+            self._test_data_single,
+            current_user,
+            parent_id=parent_id,
+        )
+
+    async def _add_public_read_policy(self, resource_id, add_one_test_access_policy):
+        """Attach a public read policy for a resource."""
+        current_user = CurrentUserData(**current_user_data_admin)
+        await add_one_test_access_policy(
+            {
+                "resource_id": str(resource_id),
+                "action": "read",
+                "public": True,
+            },
+            current_user=current_user,
+        )
+
+    async def _get_by_id(self, resource_id):
+        """Execute GET by id for the resource under test."""
+        return await self.async_client.get(f"{self.router_path}{resource_id}")
+
     ## Fixtures
     @pytest.fixture(autouse=True)
     def setup(self, async_client, app_override_provide_http_token_payload):
@@ -296,33 +339,83 @@ class BaseTest:
         assert validated is not None
         assert data["id"] == str(resource_id)
 
-    async def run_get_public_by_id_success(
-        self, add_one_test_access_policy, added_resources
+    async def run_get_by_id_with_auth_and_public_policy_success(
+        self,
+        register_current_user,
+        add_one_test_resource,
+        add_one_test_access_policy,
+        access_to_one_parent: Any = None,
     ):
-        """Test successful public GET by ID without authentication."""
-        resources = await added_resources()
-        resource_id = resources[0].id
-        current_user = CurrentUserData(**current_user_data_admin)
-        await add_one_test_access_policy(
-            {
-                "resource_id": str(resource_id),
-                "action": "read",
-                "public": True,
-            },
-            current_user=current_user,
+        """Test optional-auth GET by ID succeeds with authentication and public policy."""
+        resource = await self._create_one_resource_as_admin(
+            register_current_user,
+            add_one_test_resource,
+            access_to_one_parent,
         )
+        await self._add_public_read_policy(resource.id, add_one_test_access_policy)
 
-        response = await self.async_client.get(
-            f"{self.router_path}public/{resource_id}"
-        )
-
+        response = await self._get_by_id(resource.id)
         assert response.status_code == 200
         data = response.json()
 
-        # Validate response
         validated = self.model.Read(**data)
         assert validated is not None
-        assert data["id"] == str(resource_id)
+        assert data["id"] == str(resource.id)
+
+    async def run_get_by_id_with_auth_and_without_public_policy_fails(
+        self,
+        register_current_user,
+        add_one_test_resource,
+        access_to_one_parent: Any = None,
+    ):
+        """Test optional-auth GET by ID returns 404 with authentication and no public policy."""
+        resource = await self._create_one_resource_as_admin(
+            register_current_user,
+            add_one_test_resource,
+            access_to_one_parent,
+        )
+
+        response = await self._get_by_id(resource.id)
+        assert response.status_code == 404
+
+    async def run_get_by_id_without_auth_and_public_policy_success(
+        self,
+        register_current_user,
+        add_one_test_resource,
+        add_one_test_access_policy,
+        access_to_one_parent: Any = None,
+    ):
+        """Test optional-auth GET by ID succeeds without authentication when public policy exists."""
+        resource = await self._create_one_resource_as_admin(
+            register_current_user,
+            add_one_test_resource,
+            access_to_one_parent,
+        )
+        await self._add_public_read_policy(resource.id, add_one_test_access_policy)
+
+        response = await self._get_by_id(resource.id)
+        assert response.status_code == 200
+        data = response.json()
+
+        validated = self.model.Read(**data)
+        assert validated is not None
+        assert data["id"] == str(resource.id)
+
+    async def run_get_by_id_without_auth_and_without_public_policy_fails(
+        self,
+        register_current_user,
+        add_one_test_resource,
+        access_to_one_parent: Any = None,
+    ):
+        """Test optional-auth GET by ID returns 404 without authentication and no public policy."""
+        resource = await self._create_one_resource_as_admin(
+            register_current_user,
+            add_one_test_resource,
+            access_to_one_parent,
+        )
+
+        response = await self._get_by_id(resource.id)
+        assert response.status_code == 404
 
     async def run_put_success(
         self, added_resources, update_data, mocked_provide_http_token_payload

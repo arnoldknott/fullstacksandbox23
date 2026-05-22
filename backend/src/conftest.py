@@ -19,7 +19,12 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from core.cache import redis_session_client
 from core.databases import postgres_async_engine  # should be SQLite here only!
-from core.security import CurrentAccessToken, Guards, provide_http_token_payload
+from core.security import (
+    CurrentAccessToken,
+    Guards,
+    provide_http_token_payload,
+    provide_http_token_payload_optional,
+)
 from core.types import Action, CurrentUserData, IdentityType, ResourceType
 from crud.access import (
     AccessLoggingCRUD,
@@ -143,6 +148,9 @@ def app_override_provide_http_token_payload(
 ) -> Generator[Any, None, None]:
     """Returns the FastAPI app with dependency override for provide_http_token_payload."""
     fastapi_app.dependency_overrides[provide_http_token_payload] = (
+        lambda: mocked_provide_http_token_payload
+    )
+    fastapi_app.dependency_overrides[provide_http_token_payload_optional] = (
         lambda: mocked_provide_http_token_payload
     )
     yield fastapi_app

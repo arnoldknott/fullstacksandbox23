@@ -1,17 +1,21 @@
 import uuid
 from datetime import datetime, timedelta
-from typing import Annotated, Any, Awaitable, Callable
+from typing import Annotated, Any, Awaitable, Callable, Optional
 
 import pytest
 from fastapi import Depends, FastAPI
 from httpx import AsyncClient
 
+from main import fastapi_app
 from core.security import (
     CurrentAccessTokenHasRole,
     CurrentAccessTokenHasScope,
     CurrentAccessTokenIsValid,
     CurrentAzureUserInDatabase,
     get_azure_jwks,
+    get_http_access_token_payload,
+    provide_http_token_payload,
+    provide_http_token_payload_optional,
     get_user_account_from_session_cache,
 )
 from core.types import Action, CurrentUserData
@@ -517,6 +521,114 @@ async def test_get_user_account_from_session_cache_nonexistent():
 
 
 # endregion: Testing Session and Cache interaction
+
+
+# region: Non-mocked dependency behavior
+
+
+@pytest.mark.anyio
+async def test_optional_token_dependency_missing_authorization_header_returns_none(
+    async_client: AsyncClient,
+):
+    """Optional dependency should not fail when Authorization header is absent."""
+
+    @fastapi_app.get("/test_optional_dependency_without_authorization")
+    def temp_endpoint(
+        payload: Annotated[
+            Optional[dict], Depends(provide_http_token_payload_optional)
+        ],
+    ) -> dict[str, Any]:
+        return {"is_none": payload is None}
+
+    response = await async_client.get("/test_optional_dependency_without_authorization")
+
+    assert response.status_code == 200
+    assert response.json() == {"is_none": True}
+
+
+@pytest.mark.anyio
+async def test_optional_token_dependency_with_invalid_bearer_token_returns_none(
+    async_client: AsyncClient,
+):
+    """Optional dependency should treat invalid bearer token as unauthenticated."""
+
+    @fastapi_app.get("/test_optional_dependency_with_invalid_bearer")
+    def temp_endpoint(
+        payload: Annotated[
+            Optional[dict], Depends(provide_http_token_payload_optional)
+        ],
+    ) -> dict[str, Any]:
+        return {"is_none": payload is None}
+
+    response = await async_client.get(
+        "/test_optional_dependency_with_invalid_bearer",
+        headers={"Authorization": "Bearer definitely-not-a-jwt"},
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {"is_none": True}
+
+
+@pytest.mark.anyio
+async def test_strict_token_dependency_missing_authorization_header_returns_401(
+    async_client: AsyncClient,
+):
+    """Strict dependency should fail fast when Authorization header is absent."""
+
+    @fastapi_app.get("/test_strict_dependency_without_authorization")
+    def temp_endpoint(
+        payload: Annotated[Optional[dict], Depends(provide_http_token_payload)],
+    ) -> dict[str, Any]:
+        return {"is_none": payload is None}
+
+    response = await async_client.get("/test_strict_dependency_without_authorization")
+
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Not authenticated"}
+
+
+@pytest.mark.anyio
+async def test_strict_access_token_payload_missing_authorization_header_returns_401(
+    async_client: AsyncClient,
+):
+    """Strict access token dependency should return 401 without Authorization header."""
+
+    @fastapi_app.get("/test_strict_access_token_without_authorization")
+    def temp_endpoint(
+        payload: Annotated[dict, Depends(get_http_access_token_payload)],
+    ) -> dict[str, Any]:
+        return {"payload_present": payload is not None}
+
+    response = await async_client.get("/test_strict_access_token_without_authorization")
+
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Not authenticated"}
+
+
+@pytest.mark.anyio
+async def test_optional_token_dependency_with_non_bearer_authorization_returns_none(
+    async_client: AsyncClient,
+):
+    """Optional dependency should treat non-bearer Authorization as unauthenticated."""
+
+    @fastapi_app.get("/test_optional_dependency_with_non_bearer_authorization")
+    def temp_endpoint(
+        payload: Annotated[
+            Optional[dict], Depends(provide_http_token_payload_optional)
+        ],
+    ) -> dict[str, Any]:
+        return {"is_none": payload is None}
+
+    response = await async_client.get(
+        "/test_optional_dependency_with_non_bearer_authorization",
+        headers={"Authorization": "Basic invalid"},
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {"is_none": True}
+
+
+# endregion: Non-mocked dependency behavior
 
 
 # region: Testing guards:

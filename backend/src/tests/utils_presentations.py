@@ -3,6 +3,21 @@ one_test_presentation = {
     "path": "/presentation/intro-to-fastapi",
 }
 
+one_test_presentation_multi_segment_path = {
+    "source": "https://example.com/presentation-multi-segment",
+    "path": "/presentation/chapter-1/section-a/slide-3",
+}
+
+one_test_presentation_uuid_like_path = {
+    "source": "https://example.com/presentation-uuid-like-path",
+    "path": "/presentation/550e8400-e29b-41d4-a716-446655440000",
+}
+
+one_test_presentation_without_path = {
+    "source": "https://example.com/presentation-without-path",
+    "path": None,
+}
+
 wrong_test_presentations = [
     {
         "source": 12345,  # Invalid type, should be str

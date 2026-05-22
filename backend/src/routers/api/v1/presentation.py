@@ -1,15 +1,24 @@
 import logging
 from uuid import UUID
+from typing import Annotated, Any, Optional, cast
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 
 from core.security import (
     Guards,
+    check_token_against_guards,
     get_http_access_token_payload,
+    provide_http_token_payload_optional,
 )
 from core.types import GuardTypes
 from crud.presentation import PresentationCRUD
-from models.presentation import PresentationCreate, PresentationRead, PresentationUpdate
+from models.presentation import (
+    Presentation,
+    PresentationCreate,
+    PresentationRead,
+    PresentationUpdate,
+    validate_endpoint_path,
+)
 
 # from models import PresentationCreate, PresentationRead, PresentationUpdate
 from .base import BaseView
@@ -47,26 +56,40 @@ async def get_presentations(
 @router.get("/{resource_id}", status_code=200)
 async def get_presentation_by_id(
     resource_id: UUID,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
+    token_payload: Annotated[
+        Optional[dict], Depends(provide_http_token_payload_optional)
+    ] = None,
 ) -> PresentationRead:
-    """Returns a presentation."""
-    return await presentation_view.get_by_id(resource_id, token_payload, guards)
+    """Returns a presentation by resource_id."""
+    return await presentation_view.get_by_id(resource_id, token_payload, guards=None)
 
 
-# TBD: redesign to remove the public endpooint and
-# make authentication optional in the get_by_id method
-# First try with authentication if provided
-# if not straight go to fetching the presentation without authentication and return it if it is public
-# Also allow filtering for path instead / before UUID from resource_id
-@router.get("/public/{resource_id}", status_code=200)
-async def get_public_presentation_by_id(
-    resource_id: UUID,
+@router.get("/path/{path:path}", status_code=200)
+async def get_presentation_by_path(
+    path: str,
+    token_payload: Annotated[
+        Optional[dict], Depends(provide_http_token_payload_optional)
+    ] = None,
 ) -> PresentationRead:
-    """Returns a public presentation without authentication."""
-    return await presentation_view.get_by_id(
-        resource_id, token_payload=None, guards=None
-    )
+    """Returns a presentation by path."""
+    current_user = None
+    if token_payload:
+        current_user = await check_token_against_guards(token_payload, guards=None)
+
+    # Normalize to leading slash so "/a/b" and "a/b" resolve consistently.
+    normalized_path = path if path.startswith("/") else f"/{path}"
+
+    async with PresentationCRUD() as crud:
+        validated_path = validate_endpoint_path(normalized_path)
+        presentation_path = cast(Any, getattr(Presentation, "path"))
+        by_path = await crud.read(
+            current_user=current_user,
+            filters=[presentation_path == validated_path],
+            limit=1,
+        )
+        if not by_path:
+            raise HTTPException(status_code=404, detail="Presentation not found.")
+        return by_path[0]
 
 
 @router.put("/{resource_id}", status_code=200)
