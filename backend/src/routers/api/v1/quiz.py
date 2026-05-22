@@ -1,5 +1,5 @@
 import logging
-from typing import Annotated
+from typing import Annotated, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, Query
 from core.security import (
     Guards,
     get_http_access_token_payload,
+    provide_http_token_payload,
 )
 from core.types import GuardTypes
 
@@ -175,11 +176,12 @@ async def get_questions(
 @router.get("/question/{resource_id}", status_code=200)
 async def get_question_by_id(
     resource_id: UUID,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
+    token_payload: Annotated[
+        Optional[dict], Depends(provide_http_token_payload)
+    ] = None,
 ) -> QuestionRead:
     """Returns a question."""
-    return await question_view.get_by_id(resource_id, token_payload, guards)
+    return await question_view.get_by_id(resource_id, token_payload, guards=None)
 
 
 @router.get("/question/public/{resource_id}", status_code=200)
@@ -254,11 +256,12 @@ async def get_messages(
 @router.get("/message/{resource_id}", status_code=200)
 async def get_message_by_id(
     resource_id: UUID,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
+    token_payload: Annotated[
+        Optional[dict], Depends(provide_http_token_payload)
+    ] = None,
 ) -> MessageRead:
     """Returns a message."""
-    return await message_view.get_by_id(resource_id, token_payload, guards)
+    return await message_view.get_by_id(resource_id, token_payload, guards=None)
 
 
 @router.get("/message/public/{resource_id}", status_code=200)
@@ -333,11 +336,12 @@ async def get_numericals(
 @router.get("/numerical/{resource_id}", status_code=200)
 async def get_numerical_by_id(
     resource_id: UUID,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
+    token_payload: Annotated[
+        Optional[dict], Depends(provide_http_token_payload)
+    ] = None,
 ) -> NumericalRead:
     """Returns a numerical answer."""
-    return await numerical_view.get_by_id(resource_id, token_payload, guards)
+    return await numerical_view.get_by_id(resource_id, token_payload, guards=None)
 
 
 @router.get("/numerical/public/{resource_id}", status_code=200)
