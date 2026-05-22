@@ -70,14 +70,6 @@ numerical_view = BaseView(NumericalCRUD)
 #     return await quiz_view.get_by_id(resource_id, token_payload, guards)
 
 
-# @router.get("/public/{resource_id}", status_code=200)
-# async def get_public_quiz_by_id(
-#     resource_id: UUID,
-# ) -> Quiz.Read:
-#     """Returns a public quiz without authentication."""
-#     return await quiz_view.get_by_id(resource_id, token_payload=None, guards=None)
-
-
 # @router.put("/{resource_id}", status_code=200)
 # async def put_quiz(
 #     resource_id: UUID,
@@ -184,14 +176,6 @@ async def get_question_by_id(
     return await question_view.get_by_id(resource_id, token_payload, guards=None)
 
 
-@router.get("/question/public/{resource_id}", status_code=200)
-async def get_public_question_by_id(
-    resource_id: UUID,
-) -> QuestionRead:
-    """Returns a public question without authentication."""
-    return await question_view.get_by_id(resource_id, token_payload=None, guards=None)
-
-
 @router.put("/question/{resource_id}", status_code=200)
 async def put_question(
     resource_id: UUID,
@@ -232,16 +216,6 @@ async def post_message(
 ) -> MessageRead:
     """Creates a new message."""
     return await message_view.post(message, token_payload, guards)
-
-
-# @router.post("/message/public", status_code=201)
-# async def post_public_message(
-#     message: Message.Create,
-# ) -> Message:
-#     """Creates a new public message without authentication."""
-#     return await message_view.post_with_public_access(
-#         message, token_payload=None, guards=None
-#     )
 
 
 @router.get("/message/", status_code=200)
@@ -312,16 +286,6 @@ async def delete_message(
 # ) -> Numerical:
 #     """Creates a new numerical answer."""
 #     return await numerical_view.post(numerical, token_payload, guards)
-
-
-# @router.post("/numerical/public", status_code=201)
-# async def post_public_numerical(
-#     numerical: Numerical.Create,
-# ) -> Numerical:
-#     """Creates a new public numerical answer without authentication."""
-#     return await numerical_view.post_with_public_access(
-#         numerical, token_payload=None, guards=None
-#     )
 
 
 @router.get("/numerical/", status_code=200)

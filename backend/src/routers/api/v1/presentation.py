@@ -92,21 +92,6 @@ async def get_presentation_by_path(
         return by_path[0]
 
 
-# TBD: redesign to remove the public endpooint and
-# make authentication optional in the get_by_id method
-# First try with authentication if provided
-# if not straight go to fetching the presentation without authentication and return it if it is public
-# Also allow filtering for path instead / before UUID from resource_id
-# @router.get("/public/{resource_id}", status_code=200)
-# async def get_public_presentation_by_id(
-#     resource_id: UUID,
-# ) -> PresentationRead:
-#     """Returns a public presentation without authentication."""
-#     return await presentation_view.get_by_id(
-#         resource_id, token_payload=None, guards=None
-#     )
-
-
 @router.put("/{resource_id}", status_code=200)
 async def put_presentation(
     resource_id: UUID,

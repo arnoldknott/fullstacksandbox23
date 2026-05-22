@@ -468,15 +468,6 @@ class TestPresentation(BaseTest):
         assert data["source"] == presentation.source
         assert data["path"] is None
 
-    # @pytest.mark.anyio
-    # async def test_get_public_by_id_success(
-    #     self, add_one_test_access_policy, added_resources
-    # ):
-    #     """Test public GET presentation by ID success (no auth)."""
-    #     await super().run_get_public_by_id_success(
-    #         add_one_test_access_policy, added_resources
-    #     )
-
     ## PUT tests
     @pytest.mark.anyio
     @pytest.mark.parametrize(

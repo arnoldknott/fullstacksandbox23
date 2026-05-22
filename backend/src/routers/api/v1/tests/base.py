@@ -417,35 +417,6 @@ class BaseTest:
         response = await self._get_by_id(resource.id)
         assert response.status_code == 404
 
-    # TBD: remove when public routes (for presentation, question, message & numericals) are removed.
-    async def run_get_public_by_id_success(
-        self, add_one_test_access_policy, added_resources
-    ):
-        """Test successful public GET by ID without authentication."""
-        resources = await added_resources()
-        resource_id = resources[0].id
-        current_user = CurrentUserData(**current_user_data_admin)
-        await add_one_test_access_policy(
-            {
-                "resource_id": str(resource_id),
-                "action": "read",
-                "public": True,
-            },
-            current_user=current_user,
-        )
-
-        response = await self.async_client.get(
-            f"{self.router_path}public/{resource_id}"
-        )
-
-        assert response.status_code == 200
-        data = response.json()
-
-        # Validate response
-        validated = self.model.Read(**data)
-        assert validated is not None
-        assert data["id"] == str(resource_id)
-
     async def run_put_success(
         self, added_resources, update_data, mocked_provide_http_token_payload
     ):
