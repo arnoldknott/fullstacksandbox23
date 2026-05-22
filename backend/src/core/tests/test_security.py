@@ -547,6 +547,29 @@ async def test_optional_token_dependency_missing_authorization_header_returns_no
 
 
 @pytest.mark.anyio
+async def test_optional_token_dependency_with_invalid_bearer_token_returns_none(
+    async_client: AsyncClient,
+):
+    """Optional dependency should treat invalid bearer token as unauthenticated."""
+
+    @fastapi_app.get("/test_optional_dependency_with_invalid_bearer")
+    def temp_endpoint(
+        payload: Annotated[
+            Optional[dict], Depends(provide_http_token_payload_optional)
+        ],
+    ) -> dict[str, Any]:
+        return {"is_none": payload is None}
+
+    response = await async_client.get(
+        "/test_optional_dependency_with_invalid_bearer",
+        headers={"Authorization": "Bearer definitely-not-a-jwt"},
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {"is_none": True}
+
+
+@pytest.mark.anyio
 async def test_strict_token_dependency_missing_authorization_header_returns_401(
     async_client: AsyncClient,
 ):
