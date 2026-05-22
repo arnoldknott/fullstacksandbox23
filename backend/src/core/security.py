@@ -195,7 +195,7 @@ async def provide_http_token_payload_optional(
     """General function to get the access token payload"""
     try:
         if token is None:
-            logger.warning("🔑 optional_auth: no token provided")
+            logger.debug("🔑 optional_auth: no token provided")
             return None
         return await get_azure_token_payload(token)
     except Exception as err:
