@@ -238,14 +238,6 @@ async def get_message_by_id(
     return await message_view.get_by_id(resource_id, token_payload, guards=None)
 
 
-@router.get("/message/public/{resource_id}", status_code=200)
-async def get_public_message_by_id(
-    resource_id: UUID,
-) -> MessageRead:
-    """Returns a public message without authentication."""
-    return await message_view.get_by_id(resource_id, token_payload=None, guards=None)
-
-
 @router.put("/message/{resource_id}", status_code=200)
 async def put_message(
     resource_id: UUID,
@@ -306,14 +298,6 @@ async def get_numerical_by_id(
 ) -> NumericalRead:
     """Returns a numerical answer."""
     return await numerical_view.get_by_id(resource_id, token_payload, guards=None)
-
-
-@router.get("/numerical/public/{resource_id}", status_code=200)
-async def get_public_numerical_by_id(
-    resource_id: UUID,
-) -> NumericalRead:
-    """Returns a public numerical answer without authentication."""
-    return await numerical_view.get_by_id(resource_id, token_payload=None, guards=None)
 
 
 @router.put("/numerical/{resource_id}", status_code=200)
