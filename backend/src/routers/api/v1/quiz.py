@@ -8,6 +8,7 @@ from core.security import (
     Guards,
     get_http_access_token_payload,
     provide_http_token_payload,
+    provide_http_token_payload_optional,
 )
 from core.types import GuardTypes
 
@@ -177,7 +178,7 @@ async def get_questions(
 async def get_question_by_id(
     resource_id: UUID,
     token_payload: Annotated[
-        Optional[dict], Depends(provide_http_token_payload)
+        Optional[dict], Depends(provide_http_token_payload_optional)
     ] = None,
 ) -> QuestionRead:
     """Returns a question."""
@@ -257,7 +258,7 @@ async def get_messages(
 async def get_message_by_id(
     resource_id: UUID,
     token_payload: Annotated[
-        Optional[dict], Depends(provide_http_token_payload)
+        Optional[dict], Depends(provide_http_token_payload_optional)
     ] = None,
 ) -> MessageRead:
     """Returns a message."""
@@ -337,7 +338,7 @@ async def get_numericals(
 async def get_numerical_by_id(
     resource_id: UUID,
     token_payload: Annotated[
-        Optional[dict], Depends(provide_http_token_payload)
+        Optional[dict], Depends(provide_http_token_payload_optional)
     ] = None,
 ) -> NumericalRead:
     """Returns a numerical answer."""

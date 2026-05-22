@@ -8,7 +8,7 @@ from core.security import (
     Guards,
     check_token_against_guards,
     get_http_access_token_payload,
-    provide_http_token_payload,
+    provide_http_token_payload_optional,
 )
 from core.types import GuardTypes
 from crud.presentation import PresentationCRUD
@@ -57,7 +57,7 @@ async def get_presentations(
 async def get_presentation_by_id(
     resource_id: UUID,
     token_payload: Annotated[
-        Optional[dict], Depends(provide_http_token_payload)
+        Optional[dict], Depends(provide_http_token_payload_optional)
     ] = None,
 ) -> PresentationRead:
     """Returns a presentation by resource_id."""
@@ -68,7 +68,7 @@ async def get_presentation_by_id(
 async def get_presentation_by_path(
     path: str,
     token_payload: Annotated[
-        Optional[dict], Depends(provide_http_token_payload)
+        Optional[dict], Depends(provide_http_token_payload_optional)
     ] = None,
 ) -> PresentationRead:
     """Returns a presentation by path."""
