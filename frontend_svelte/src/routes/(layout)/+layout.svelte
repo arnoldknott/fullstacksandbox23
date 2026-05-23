@@ -880,7 +880,7 @@
 >
 	<!-- TBD: put navbar into component -->
 	<nav
-		class="navbar rounded-box shadow-shadow border-outline-variant bg-base-200 start-0 top-0 z-1 flex justify-between border-1 border-b px-3 shadow-md transition-all duration-300 max-sm:h-14 md:items-center"
+		class="navbar rounded-box shadow-shadow border-outline-variant bg-base-250 start-0 top-0 z-1 flex justify-between border-1 border-b px-3 shadow-md transition-all duration-300 max-sm:h-14 md:items-center"
 		bind:this={navBar}
 	>
 		<!-- {@attach updateNavbarBottom} -->
@@ -930,7 +930,7 @@
 			>
 				<span class="icon-[tabler--search] size-5"></span>
 			</button>
-			<div class="input mx-2 max-w-56 rounded-full max-md:hidden">
+			<div class="input bg-base-150 mx-2 max-w-56 rounded-full max-md:hidden">
 				<span class="icon-[tabler--search] text-base-content/80 my-auto me-3 size-5 shrink-0"
 				></span>
 				<label class="sr-only" for="searchInput">Search</label>
@@ -1144,7 +1144,7 @@
 		{locationPageAndHash?.page}{locationPageAndHash?.hash}
 		<br /> -->
 	</aside>
-	<div class="bg-base-100 xs:mx-5 xs:mt-5 h-screen w-screen px-2">
+	<div class="xs:mx-5 xs:mt-5 h-screen w-screen bg-transparent px-2">
 		<div
 			id="scrollspy"
 			class="sm:overlay-minified:ps-19 overlay-open:ps-0 space-y-4 pt-2 transition-all duration-300 sm:mx-2 sm:mt-2 sm:ps-66"
