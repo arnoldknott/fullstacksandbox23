@@ -288,7 +288,7 @@
 							<td
 								><a
 									href={resolve('/(layout)/presentation/(protected)/setup/[id]', {
-										id: presentation.path.substring(1) || presentation.id
+										id: presentation?.path?.substring(1) || presentation.id
 									})}
 									aria-label={`Setup presentation ${presentation.path || presentation.id}`}
 									><button
