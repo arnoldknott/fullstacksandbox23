@@ -849,7 +849,7 @@
 						aria-label="Edit Button"
 						onclick={() => (edit ? (edit = false) : (edit = true))}
 					>
-						<span class="icon-[material-symbols--edit-outline-rounded]"></span>Edit
+						<span class="icon-[material-symbols--edit-outline-rounded] size-5"></span>Edit
 					</button>
 					<div
 						class="dropdown join-item relative inline-flex grow [--auto-close:inside] [--placement:top]"
@@ -863,7 +863,7 @@
 							aria-expanded="false"
 							aria-label="Share with"
 						>
-							<span class="icon-[tabler--share-2]"></span>Share
+							<span class="icon-[tabler--share-2] size-5"></span>Share
 							<span class="icon-[tabler--chevron-up] dropdown-open:rotate-180 size-4"></span>
 						</button>
 						<ul
@@ -907,7 +907,7 @@
 						name="id"
 						formaction="?/delete"
 					>
-						<span class="icon-[tabler--trash]"></span>Delete
+						<span class="icon-[tabler--trash] size-5"></span>Delete
 					</button>
 				</div>
 			{/snippet}
