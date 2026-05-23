@@ -357,7 +357,7 @@
 	let protectedSidebarLinks: SidebarItemContent[] = $state([
 		{
 			name: 'Protected Data',
-			pathname: resolve('/(layout)/(protected)/data'),
+			pathname: resolve('/(layout)/(protected)/protected'),
 			icon: 'icon-[mingcute--lock-fill]',
 			id: 'dashboard',
 			items: [
