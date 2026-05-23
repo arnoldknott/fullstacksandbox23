@@ -7,7 +7,7 @@
 	import { SocketIO } from '$lib/socketio.svelte';
 	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
-	import type { AccessShareOption, Presentation, PresentationExtended } from '$lib/types';
+	import type { AccessShareOption, PresentationExtended } from '$lib/types';
 	import Display from '$components/Display.svelte';
 	import { page } from '$app/state';
 	import FormElement from './FormElement.svelte';
@@ -29,10 +29,12 @@
 		);
 	});
 
-	const newPresentation = $state<Presentation>({
+	const newPresentation = $state<PresentationExtended>({
 		id: 'new_' + Math.random().toString(36).substring(2, 9),
-		source: '',
-		path: ''
+		source: 'intern:',
+		path: '',
+		access_right: Action.OWN,
+		creation_date: new Date(Date.now())
 	});
 
 	const shareOptions: AccessShareOption[] = $state([
@@ -114,6 +116,7 @@
 							class="input"
 							id="slugInput"
 							bind:value={newPresentation.path}
+							onblur={() => socketioPresentations?.submitEntity(newPresentation)}
 						/>
 						<label class="input-filled-label" for="slugInput"
 							>[add the path to your presentation here]</label
@@ -134,10 +137,8 @@
 				{#each shareOptions as shareOption, i (i)}
 					<ShareItem
 						resourceId={newPresentation.id}
-						share={(policy) => {
-							shareOption.action = policy.new_action;
-						}}
 						{shareOption}
+						share={socketioPresentations?.shareEntity.bind(socketioPresentations)}
 						wide
 					/>
 				{/each}
