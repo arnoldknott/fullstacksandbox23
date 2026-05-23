@@ -143,7 +143,20 @@
 </Card>
 
 {#snippet existingPresentationsHeader()}
-	<Heading id="existingPresentations">Existing presentations</Heading>
+	<div class="flex justify-between">
+		<Heading id="existingPresentations">Existing presentations</Heading>
+		<div class="join flex flex-row items-center justify-center rounded-lg">
+			<button aria-label="Preview" class="btn join-item btn-outline btn-secondary py-5">
+				<span class="icon-[material-symbols-light--preview-outline] size-8"></span>
+			</button>
+			<button aria-label="Grid" class="btn join-item btn-outline btn-secondary py-5">
+				<span class="icon-[gridicons--grid] size-8"></span>
+			</button>
+			<button aria-label="List" class="btn join-item btn btn-secondary py-5">
+				<span class="icon-[material-symbols-light--table-outline] size-8"></span>
+			</button>
+		</div>
+	</div>
 {/snippet}
 <Card id="existing-presenations" header={existingPresentationsHeader} extraClasses="mt-6">
 	<div class="w-full overflow-x-auto">
