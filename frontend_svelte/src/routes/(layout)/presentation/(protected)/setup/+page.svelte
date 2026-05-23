@@ -42,6 +42,27 @@
 			identity_type: IdentityType.PUBLIC,
 			action: Action.READ,
 			public: true
+		},
+		{
+			identity_id: 'some-group-id',
+			identity_name: 'Some Group Name',
+			identity_type: IdentityType.GROUP,
+			action: Action.WRITE
+		},
+		{
+			identity_id: 'some-teams-id',
+			identity_name: 'A Microsoft Team',
+			identity_type: IdentityType.MICROSOFT_TEAM
+		},
+		{
+			identity_id: 'Ueber Group 1',
+			identity_name: 'Some complete University',
+			identity_type: IdentityType.UEBER_GROUP
+		},
+		{
+			identity_id: 'Ueber Group 2',
+			identity_name: 'A big School',
+			identity_type: IdentityType.UEBER_GROUP
 		}
 	]);
 </script>
@@ -82,7 +103,7 @@
 		<FormElement title="Slug" description={slugDescription} classes="col-span-2">
 			<div class="flex-cols-2 flex gap-2">
 				<code class="mt-5 shrink">{page.url.origin}/presentation/</code>
-				<div class="input-filled input-accent w-full">
+				<div class="input-filled input-primary w-full">
 					<input
 						type="text"
 						placeholder=""
@@ -102,7 +123,9 @@
 			this platform.
 		</FormElement>
 		<FormElement title="Access" description={accessDescription}>
-			<ul class="bg-base-300 shadow-outline dropdown-open:opacity-100 min-w-[15rem] shadow-xs">
+			<ul
+				class="bg-base-150 shadow-outline max-h-48 max-w-fit overflow-y-auto rounded-lg p-2 shadow-inner"
+			>
 				{#each shareOptions as shareOption, i (i)}
 					<ShareItem
 						resourceId={newPresentation.id}
@@ -129,11 +152,11 @@
 					<th>Slug / Id</th>
 					<th>Source</th>
 					<th>Access</th>
-					<th>Actions</th>
 					<th># <span class="icon-[codicon--question]"></span></th>
 					<th># <span class="icon-[line-md--link]"></span></th>
 					<th># <span class="icon-[tabler--file]"></span></th>
 					<th><span class="icon-[fluent-mdl2--offline-storage]"></span></th>
+					<th>Actions</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -165,12 +188,12 @@
 							<td>{presentation.path}</td>
 							<td>{presentation.source}</td>
 							<td>{presentation.id}</td>
-							<td>[Access identity]</td>
-							<td>[Access action]</td>
+							<td>[Access]</td>
 							<td>[Number]</td>
 							<td>[Number]</td>
 							<td>[Number]</td>
 							<td>[Mb / Gb]</td>
+							<td>[edit/delete]</td>
 						</tr>
 					{/each}
 				{/if}
