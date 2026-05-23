@@ -15,6 +15,7 @@ from routers.socketio.v1.identities import (
 )
 from routers.socketio.v1.interactive_documentation import InteractiveDocumentation
 from routers.socketio.v1.public_namespace import PublicNamespace
+from routers.socketio.v1.presentation_namespace import PresentationNamespace
 from routers.socketio.v1.quiz_namespace import (
     MessageNamespace,
     NumericalNamespace,
@@ -83,6 +84,7 @@ def mount_socketio_app(fastapi_app: FastAPI):
     # TBD: refactor the interactive documentation
     # into more generic features, like polls, quizzes, surveys, etc.
     socketio_server.register_namespace(InteractiveDocumentation(server=socketio_server))
+    socketio_server.register_namespace(PresentationNamespace(server=socketio_server))
     socketio_server.register_namespace(QuestionNamespace(server=socketio_server))
     socketio_server.register_namespace(MessageNamespace(server=socketio_server))
     socketio_server.register_namespace(NumericalNamespace(server=socketio_server))
