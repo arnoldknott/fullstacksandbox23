@@ -65,6 +65,9 @@
 			identity_type: IdentityType.UEBER_GROUP
 		}
 	]);
+
+	// For showing existing presentations:
+	let viewMode = $state<'preview' | 'grid' | 'list'>('list');
 </script>
 
 {#snippet newPresentationHeader()}
@@ -146,21 +149,41 @@
 	<div class="flex justify-between">
 		<Heading id="existingPresentations">Existing presentations</Heading>
 		<div class="join flex flex-row items-center justify-center rounded-lg">
-			<button aria-label="Preview" class="btn join-item btn-outline btn-secondary py-5">
-				<span class="icon-[material-symbols-light--preview-outline] size-8"></span>
+			<button
+				aria-label="Preview"
+				class="btn join-item btn-secondary py-4 {viewMode !== 'preview' ? 'opacity-60' : ''}"
+				onclick={() => (viewMode = 'preview')}
+			>
+				<span class="icon-[material-symbols-light--preview-outline] size-6"></span>
 			</button>
-			<button aria-label="Grid" class="btn join-item btn-outline btn-secondary py-5">
-				<span class="icon-[gridicons--grid] size-8"></span>
+			<button
+				aria-label="Grid"
+				class="btn join-item btn-secondary py-4 {viewMode !== 'grid' ? 'opacity-60' : ''}"
+				onclick={() => (viewMode = 'grid')}
+			>
+				<span class="icon-[gridicons--grid] size-6"></span>
 			</button>
-			<button aria-label="List" class="btn join-item btn btn-secondary py-5">
-				<span class="icon-[material-symbols-light--table-outline] size-8"></span>
+			<button
+				aria-label="List"
+				class="btn join-item btn btn-secondary py-4 {viewMode !== 'list' ? 'opacity-60' : ''}"
+				onclick={() => (viewMode = 'list')}
+			>
+				<span class="icon-[material-symbols-light--table-outline] size-6"></span>
 			</button>
 		</div>
 	</div>
 {/snippet}
 <Card id="existing-presenations" header={existingPresentationsHeader} extraClasses="mt-6">
-	<div class="w-full overflow-x-auto">
-		<table class="table">
+	<div class="w-full overflow-x-auto {viewMode !== 'preview' ? 'hidden' : ''}">
+		<p class="bg-warning text-warning-content rounded-lg p-4">Preview mode is not developed yet</p>
+	</div>
+	<div class="w-full overflow-x-auto {viewMode !== 'grid' ? 'hidden' : ''}">
+		<p class="bg-warning text-warning-content rounded-lg p-4">
+			Grid view mode is not developed yet
+		</p>
+	</div>
+	<div class="w-full overflow-x-auto {viewMode !== 'list' ? 'hidden' : ''}">
+		<table class="table w-full">
 			<thead>
 				<tr>
 					<th>Link</th>
