@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Action, AccessHandler } from '$lib/accessHandler';
 	import type { AccessPolicy, AccessShareOption } from '$lib/types';
+	import { initDropdown } from '$lib/userInterface';
 	// import { enhance } from '$app/forms';
 	// import type { ActionResult } from '@sveltejs/kit';
 
@@ -149,7 +150,10 @@
 		<div class="mr-2">
 			<span class="{AccessHandler.rightsIcon(shareOption.action)} ml-2 size-4"></span>
 		</div>
-		<div class="dropdown relative inline-flex [--offset:0] [--placement:left-start]">
+		<div
+			class="dropdown relative inline-flex [--offset:0] [--placement:left-start]"
+			{@attach initDropdown}
+		>
 			<button
 				id="rights-{shareOption.identity_id}"
 				type="button"
