@@ -99,7 +99,7 @@
 {/snippet}
 
 <Card id={newPresentation.id} header={newPresentationHeader}>
-	<div class="grid-col-2 grid gap-4">
+	<div class="grid grid-cols-1 gap-6 md:grid-cols-3">
 		<FormElement title="Slug" description={slugDescription} classes="col-span-2">
 			<div class="flex-cols-2 flex gap-2">
 				<code class="mt-5 shrink">{page.url.origin}/presentation/</code>
@@ -118,11 +118,7 @@
 			</div>
 		</FormElement>
 
-		<FormElement title="Source" description={sourceDescription}>
-			For now, all presentations are <IdBadge id="intern" />, e.g. hosted with the source code of
-			this platform.
-		</FormElement>
-		<FormElement title="Access" description={accessDescription}>
+		<FormElement title="Access" description={accessDescription} classes="row-span-2">
 			<ul
 				class="bg-base-150 shadow-outline max-h-48 max-w-fit overflow-y-auto rounded-lg p-2 shadow-inner"
 			>
@@ -133,9 +129,15 @@
 							shareOption.action = policy.new_action;
 						}}
 						{shareOption}
+						wide
 					/>
 				{/each}
 			</ul>
+		</FormElement>
+
+		<FormElement title="Source" description={sourceDescription}>
+			For now, all presentations are <IdBadge id="intern" />, e.g. hosted with the source code of
+			this platform.
 		</FormElement>
 	</div>
 </Card>
