@@ -135,12 +135,13 @@
 					aria-label="Edit Button"
 					onclick={() => (edit = !edit)}
 				>
-					<span class="icon-[material-symbols--edit-outline-rounded] {!edit || 'hidden'}"></span>
+					<span class="icon-[material-symbols--edit-outline-rounded] size-5 {!edit || 'hidden'}"
+					></span>
 					<span class="grid place-items-center {edit || 'hidden'}">
 						<span
-							class="icon-[material-symbols--edit-outline-rounded] col-start-1 row-start-1 size-3"
+							class="icon-[material-symbols--edit-outline-rounded] col-start-1 row-start-1 size-4"
 						></span>
-						<span class="icon-[ic--outline-do-not-disturb] col-start-1 row-start-1 size-4"></span>
+						<span class="icon-[ic--outline-do-not-disturb] col-start-1 row-start-1 size-5"></span>
 					</span>
 				</button>
 				{#if demoResource.access_right === Action.OWN}
@@ -157,7 +158,7 @@
 							aria-expanded="false"
 							aria-label="Share with"
 						>
-							<span class="icon-[tabler--share-2]"></span>
+							<span class="icon-[tabler--share-2] size-5"></span>
 							<span class="icon-[tabler--chevron-up] dropdown-open:rotate-180 size-4"></span>
 						</button>
 						<!-- {#if shareOptions}
@@ -200,7 +201,7 @@
 						name="id"
 						onclick={() => !demoResource.id || socketio?.deleteEntity(demoResource.id)}
 					>
-						<span class="icon-[tabler--trash]"></span>
+						<span class="icon-[tabler--trash] size-5"></span>
 					</button>
 				{/if}
 			</div>

@@ -721,7 +721,7 @@
 		>
 		<div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-3">
 			<div
-				class="card border-outline-variant bg-base-250 shadow-outline-variant rounded-xl border-[1px] shadow-lg"
+				class="card border-outline-variant bg-base-200 shadow-outline-variant rounded-xl border-[1px] shadow-md"
 			>
 				<div class="card-header">
 					<a href="#top" class="link link-base-content link-animated">
@@ -739,7 +739,7 @@
 				</div>
 			</div>
 			<div
-				class="card border-outline-variant bg-base-250 shadow-outline-variant rounded-xl border-[1px] shadow-lg"
+				class="card border-outline-variant bg-base-200 shadow-outline-variant rounded-xl border-[1px] shadow-md"
 			>
 				<div class="card-header">
 					<a href="#top" class="link link-base-content link-animated">
@@ -755,7 +755,7 @@
 				</div>
 			</div>
 			<div
-				class="card border-outline-variant bg-base-250 shadow-outline-variant rounded-xl border-[1px] shadow-lg"
+				class="card border-outline-variant bg-base-200 shadow-outline-variant rounded-xl border-[1px] shadow-md"
 			>
 				<div class="card-header">
 					<a href="#top" class="link link-base-content link-animated">
@@ -849,7 +849,7 @@
 						aria-label="Edit Button"
 						onclick={() => (edit ? (edit = false) : (edit = true))}
 					>
-						<span class="icon-[material-symbols--edit-outline-rounded]"></span>Edit
+						<span class="icon-[material-symbols--edit-outline-rounded] size-5"></span>Edit
 					</button>
 					<div
 						class="dropdown join-item relative inline-flex grow [--auto-close:inside] [--placement:top]"
@@ -863,7 +863,7 @@
 							aria-expanded="false"
 							aria-label="Share with"
 						>
-							<span class="icon-[tabler--share-2]"></span>Share
+							<span class="icon-[tabler--share-2] size-5"></span>Share
 							<span class="icon-[tabler--chevron-up] dropdown-open:rotate-180 size-4"></span>
 						</button>
 						<ul
@@ -907,7 +907,7 @@
 						name="id"
 						formaction="?/delete"
 					>
-						<span class="icon-[tabler--trash]"></span>Delete
+						<span class="icon-[tabler--trash] size-5"></span>Delete
 					</button>
 				</div>
 			{/snippet}
@@ -2468,7 +2468,7 @@
 
 		<div
 			id="overlay-example"
-			class="overlay drawer drawer-start overlay-open:translate-x-0 hidden"
+			class="overlay drawer drawer-end bg-base-200 overlay-open:translate-x-0 hidden"
 			role="dialog"
 			tabindex="-1"
 		>
@@ -2488,12 +2488,17 @@
 					Some text as placeholder. In real life you can have the elements you have chosen. Like,
 					text, images, lists, etc.
 				</p>
+				<div
+					class="bg-base-150 shadow-outline max-h-96 min-h-44 overflow-y-auto rounded-lg p-2 shadow-inner"
+				>
+					Some text
+				</div>
 			</div>
 			<div class="drawer-footer">
-				<button type="button" class="btn btn-secondary btn-soft" data-overlay="#overlay-example"
+				<button type="button" class="btn btn-secondary-container" data-overlay="#overlay-example"
 					>Close</button
 				>
-				<button type="button" class="btn btn-primary">Save changes</button>
+				<button type="button" class="btn btn-primary-container">Save changes</button>
 			</div>
 		</div>
 

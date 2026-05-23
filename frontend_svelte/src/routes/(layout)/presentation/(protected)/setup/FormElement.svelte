@@ -6,11 +6,11 @@
 		title,
 		children,
 		description,
-		classes
-	}: { title: string; children: Snippet; description?: Snippet; classes?: string } = $props();
+		extraClasses
+	}: { title: string; children: Snippet; description?: Snippet; extraClasses?: string } = $props();
 </script>
 
-<dl class={classes}>
+<dl class={extraClasses}>
 	<dt>
 		<div class="label text-base-content label-large">
 			{title}

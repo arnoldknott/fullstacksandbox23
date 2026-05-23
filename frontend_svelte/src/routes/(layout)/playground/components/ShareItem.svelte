@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Action, AccessHandler } from '$lib/accessHandler';
 	import type { AccessPolicy, AccessShareOption } from '$lib/types';
+	import { initDropdown } from '$lib/userInterface';
 	// import { enhance } from '$app/forms';
 	// import type { ActionResult } from '@sveltejs/kit';
 
@@ -8,7 +9,8 @@
 		resourceId,
 		shareOption,
 		share,
-		closeShareMenu
+		closeShareMenu,
+		wide
 		// handleRightsChangeResponse
 	}: {
 		resourceId: string;
@@ -16,7 +18,10 @@
 		share?: (accessPolicy: AccessPolicy) => void;
 		// handleRightsChangeResponse?: (result: ActionResult, update: () => void) => void;
 		closeShareMenu?: () => void;
+		wide?: boolean;
 	} = $props();
+
+	let truncate = $derived(wide === true ? 24 : 12);
 
 	// let selectedAction = $state(shareOption.action);
 	// let selectionFocused = $state(false);
@@ -127,17 +132,21 @@
 	{/if}
 {/snippet} -->
 
+<!-- TBD: Create two or three size version: (narrow) - medium - wide -->
+
 <li>
 	<div class="tooltip relative flex items-center [--placement:top]">
 		<div
-			class="dropdown-item text-secondary tooltip-toggle w-full max-w-42 content-center"
+			class="dropdown-item text-secondary tooltip-toggle w-full {wide
+				? 'max-w-96'
+				: 'max-w-48'} content-center"
 			aria-label={shareOption.identity_name}
 		>
 			<span class="{AccessHandler.identityIcon(shareOption.identity_type)} shrink-0"></span>
-			{shareOption.identity_name.slice(0, 12)}{shareOption.identity_name.length > 13
+			{shareOption.identity_name.slice(0, truncate)}{shareOption.identity_name.length > truncate + 1
 				? ' ...'
 				: null}
-			{#if shareOption.identity_name.length > 12}
+			{#if shareOption.identity_name.length > truncate}
 				<span
 					class="tooltip-content tooltip-shown:visible tooltip-shown:opacity-100 bg-base-300 rounded-xl outline"
 					role="tooltip"
@@ -149,7 +158,10 @@
 		<div class="mr-2">
 			<span class="{AccessHandler.rightsIcon(shareOption.action)} ml-2 size-4"></span>
 		</div>
-		<div class="dropdown relative inline-flex [--offset:0] [--placement:left-start]">
+		<div
+			class="dropdown relative inline-flex [--offset:0] [--placement:left-start]"
+			{@attach initDropdown}
+		>
 			<button
 				id="rights-{shareOption.identity_id}"
 				type="button"

@@ -119,6 +119,7 @@ class BaseSocketIOTest:
         socketio_test_client,
         session_ids=None,
         access_to_one_parent=None,
+        expected_error=None,
     ):
         """Test resource creation error via submit event."""
         connection = await self.helper_submit_data(
@@ -131,17 +132,20 @@ class BaseSocketIOTest:
         status_data = connection.responses("status", self.namespace_path)
         assert len(status_data) >= 1
 
+        expected_error = expected_error or (
+            f"403: {self.model.__name__} - Forbidden."  # type: ignore[attr-defined]
+        )
+
         # Find the created status
         created_status = None
         for status in status_data:
-            if (
-                isinstance(status, dict)
-                and status.get("error") == f"403: {self.model.__name__} - Forbidden."  # type: ignore[attr-defined]
-            ):
+            if isinstance(status, dict) and status.get("error") == expected_error:
                 created_status = status
                 break
 
-        assert created_status is not None, f"No 'error' status found in {status_data}"
+        assert (
+            created_status is not None
+        ), f"Expected error '{expected_error}' not found in {status_data}"
 
         await connection.client.disconnect()
 
