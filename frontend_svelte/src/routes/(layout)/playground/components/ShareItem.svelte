@@ -131,7 +131,7 @@
 <li>
 	<div class="tooltip relative flex items-center [--placement:top]">
 		<div
-			class="dropdown-item text-secondary tooltip-toggle w-full max-w-42 content-center"
+			class="dropdown-item text-secondary tooltip-toggle w-full max-w-48 content-center"
 			aria-label={shareOption.identity_name}
 		>
 			<span class="{AccessHandler.identityIcon(shareOption.identity_type)} shrink-0"></span>
