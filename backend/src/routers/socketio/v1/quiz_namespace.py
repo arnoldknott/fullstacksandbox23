@@ -43,7 +43,7 @@ class QuestionNamespace(BaseNamespace):
     def __init__(self, *args, **kwargs):
         super().__init__(
             namespace="/question",
-            event_guards=message_guards,
+            event_guards=question_guards,
             crud=QuestionCRUD,
             create_model=Question.Create,
             read_model=Question.Read,
