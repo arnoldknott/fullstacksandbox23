@@ -29,13 +29,16 @@
 		);
 	});
 
-	const newPresentation = $state<PresentationExtended>({
+	const createNewPresentation = (): PresentationExtended => {
+		return {
 		id: 'new_' + Math.random().toString(36).substring(2, 9),
 		source: 'intern:',
 		path: '',
 		access_right: Action.OWN,
 		creation_date: new Date(Date.now())
-	});
+	}
+	};
+	let newPresentation = $state<PresentationExtended>(createNewPresentation());
 
 	const shareOptions: AccessShareOption[] = $state([
 		{
@@ -116,7 +119,13 @@
 							class="input"
 							id="slugInput"
 							bind:value={newPresentation.path}
-							onblur={() => socketioPresentations?.submitEntity(newPresentation)}
+							onblur={() => {
+								const newPath = newPresentation?.path?.trim() ?? '';
+								newPresentation.path =
+									newPath && !newPath.startsWith('/') ? `/${newPath}` : newPath;
+								socketioPresentations?.submitEntity(newPresentation)
+								newPresentation = createNewPresentation();
+							}}
 						/>
 						<label class="input-filled-label" for="slugInput"
 							>[add the path to your presentation here]</label
@@ -213,7 +222,7 @@
 							<td
 								><a
 									href={resolve('/(layout)/presentation/(protected)/setup/[id]', {
-										id: presentation.path || presentation.id
+										id: presentation.path.substring(1) || presentation.id
 									})}
 									aria-label={`Setup presentation ${presentation.path || presentation.id}`}
 									><button
@@ -225,9 +234,8 @@
 									</button></a
 								></td
 							>
-							<td>{presentation.path}</td>
+							<td>{presentation.path || presentation.id}</td>
 							<td>{presentation.source}</td>
-							<td>{presentation.id}</td>
 							<td>[Access]</td>
 							<td>[Number]</td>
 							<td>[Number]</td>
