@@ -12,6 +12,7 @@
 	import { page } from '$app/state';
 	import FormElement from './FormElement.svelte';
 	import ShareItem from '../../../playground/components/ShareItem.svelte';
+	import { initDropdown } from '$lib/userInterface';
 
 	let { data }: { data: PageData } = $props();
 
@@ -31,12 +32,12 @@
 
 	const createNewPresentation = (): PresentationExtended => {
 		return {
-		id: 'new_' + Math.random().toString(36).substring(2, 9),
-		source: 'intern:',
-		path: '',
-		access_right: Action.OWN,
-		creation_date: new Date(Date.now())
-	}
+			id: 'new_' + Math.random().toString(36).substring(2, 9),
+			source: 'intern:',
+			path: '',
+			access_right: Action.OWN,
+			creation_date: new Date(Date.now())
+		};
 	};
 	let newPresentation = $state<PresentationExtended>(createNewPresentation());
 
@@ -73,6 +74,8 @@
 
 	// For showing existing presentations:
 	let viewMode = $state<'preview' | 'grid' | 'list'>('list');
+
+	let actionButtonShareMenu: HTMLElement;
 </script>
 
 {#snippet newPresentationHeader()}
@@ -123,7 +126,8 @@
 								const newPath = newPresentation?.path?.trim() ?? '';
 								newPresentation.path =
 									newPath && !newPath.startsWith('/') ? `/${newPath}` : newPath;
-								socketioPresentations?.submitEntity(newPresentation)
+								socketioPresentations?.submitEntity(newPresentation);
+								socketioPresentations?.addEntity(newPresentation);
 								newPresentation = createNewPresentation();
 							}}
 						/>
@@ -184,6 +188,68 @@
 		</div>
 	</div>
 {/snippet}
+
+{#snippet actionButtons(resourceId: string)}
+	<div class="join flex flex-row items-center justify-center">
+		<button
+			class="btn btn-secondary-container text-secondary-container-content join-item grow"
+			aria-label="Edit Button"
+			onclick={() => console.log('Edit', resourceId)}
+		>
+			<span class="icon-[material-symbols--edit-outline-rounded] size-5"></span><span
+				class="hidden 2xl:block">Edit</span
+			>
+		</button>
+		<div
+			class="dropdown join-item relative inline-flex grow [--auto-close:inside] [--placement:top]"
+			bind:this={actionButtonShareMenu}
+			{@attach initDropdown}
+		>
+			<button
+				id="action-share"
+				class="dropdown-toggle btn btn-secondary-container text-secondary-container-content w-full rounded-none"
+				aria-haspopup="menu"
+				aria-expanded="false"
+				aria-label="Share with"
+			>
+				<span class="icon-[tabler--share-2] size-5"></span><span class="hidden 2xl:block"
+					>Share</span
+				>
+				<span class="icon-[tabler--chevron-up] dropdown-open:rotate-180 size-4"></span>
+			</button>
+			<ul
+				class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-[15rem] shadow-xs"
+				role="menu"
+				aria-orientation="vertical"
+				aria-labelledby="action-share"
+			>
+				{#each shareOptions as shareOption, i (i)}
+					<ShareItem
+						{resourceId}
+						{shareOption}
+						share={socketioPresentations?.shareEntity.bind(socketioPresentations)}
+						closeShareMenu={() => window.HSDropdown.close(actionButtonShareMenu)}
+					/>
+				{/each}
+				<!-- <li class="dropdown-footer gap-2">
+								<button
+									class="btn dropdown-item btn-text text-secondary content-center justify-start"
+									>... more options</button
+								>
+							</li> -->
+			</ul>
+		</div>
+		<button
+			class="btn btn-error-container bg-error-container/70 hover:bg-error-container/50 focus:bg-error-container/50 text-error-container-content join-item grow border-0"
+			aria-label="Delete Button"
+			name="id"
+			onclick={() => !resourceId || socketioPresentations?.deleteEntity(resourceId)}
+		>
+			<span class="icon-[tabler--trash] size-5"></span><span class="hidden 2xl:block">Delete</span>
+		</button>
+	</div>
+{/snippet}
+
 <Card id="existing-presenations" header={existingPresentationsHeader} extraClasses="mt-6">
 	<div class="w-full overflow-x-auto {viewMode !== 'preview' ? 'hidden' : ''}">
 		<p class="bg-warning text-warning-content rounded-lg p-4">Preview mode is not developed yet</p>
@@ -241,7 +307,7 @@
 							<td>[Number]</td>
 							<td>[Number]</td>
 							<td>[Mb / Gb]</td>
-							<td>[edit/delete]</td>
+							<td>{@render actionButtons(presentation.id)}</td>
 						</tr>
 					{/each}
 				{/if}
