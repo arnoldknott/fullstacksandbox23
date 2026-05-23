@@ -139,10 +139,7 @@ class BaseSocketIOTest:
         # Find the created status
         created_status = None
         for status in status_data:
-            if (
-                isinstance(status, dict)
-                and status.get("error") == expected_error
-            ):
+            if isinstance(status, dict) and status.get("error") == expected_error:
                 created_status = status
                 break
 
