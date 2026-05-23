@@ -58,15 +58,16 @@ class TestQuestion(BaseSocketIOTest):
         )
 
     @pytest.mark.anyio
-    async def test_submit_create_public_with_parent_success(
+    async def test_submit_create_public_with_parent_fails(
         self,
         socketio_test_client,
         access_to_one_parent,
     ):
-        """Test successful question creation."""
-        await super().run_submit_create_success(
+        """Test failing question creation."""
+        await super().run_submit_create_fails(
             socketio_test_client,
             access_to_one_parent=access_to_one_parent,
+            expected_error="No session id.",
         )
 
     @pytest.mark.anyio
@@ -82,20 +83,23 @@ class TestQuestion(BaseSocketIOTest):
     async def test_submit_create_without_parent_success(
         self,
         socketio_test_client,
+        session_ids,
     ):
         """Test successful question creation."""
         await super().run_submit_create_success(
             socketio_test_client,
+            session_ids,
         )
 
     @pytest.mark.anyio
-    async def test_submit_create_public_without_parent_success(
+    async def test_submit_create_public_without_parent_fails(
         self,
         socketio_test_client,
     ):
-        """Test successful question creation."""
-        await super().run_submit_create_success(
+        """Test failing question creation."""
+        await super().run_submit_create_fails(
             socketio_test_client,
+            expected_error="No session id.",
         )
 
     # Submit Update Tests
