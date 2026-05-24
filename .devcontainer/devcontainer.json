@@ -46,6 +46,7 @@
         "ms-python.python",
         "ms-python.vscode-pylance",
         "ms-python.black-formatter",
+        "ms-python.isort",
         "ms-azuretools.vscode-docker",
         "svelte.svelte-vscode",
         "dbaeumer.vscode-eslint",
