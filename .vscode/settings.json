@@ -14,8 +14,23 @@
     "editor.defaultFormatter": "ms-python.black-formatter",
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
-      "source.organizeImports": "always"
+      "source.organizeImports": true
     }
+  },
+  "[javascript]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": true
+    }
+  },
+  "[typescript]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": true
+    }
+  },
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": true
   },
   "editor.hover.enabled": "on",
   "svelte.plugin.css.hover.enable": true,
