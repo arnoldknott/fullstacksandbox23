@@ -32,7 +32,8 @@ export default [
 			'!**/.env.example',
 			'**/pnpm-lock.yaml',
 			'**/package-lock.json',
-			'**/yarn.lock'
+			'**/yarn.lock',
+			'/static/*' // ignore static files for now
 		]
 	},
 	...compat.extends(
