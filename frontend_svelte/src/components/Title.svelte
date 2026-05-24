@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { HTMLAttributes } from 'svelte/elements';
 	import type { Snippet } from 'svelte';
+	import type { HTMLAttributes } from 'svelte/elements';
 	let { children, id, ...rest }: { children: Snippet; id: string } & HTMLAttributes<HTMLElement> =
 		$props();
 	// let props = $props();

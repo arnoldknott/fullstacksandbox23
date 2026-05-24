@@ -1,35 +1,37 @@
 <script lang="ts">
-	import { themeStore } from '$lib/stores';
-	import type { AppTheme } from '$lib/theming';
 	import { Hct, hexFromArgb } from '@material/material-color-utilities';
+	import type { ActionResult } from '@sveltejs/kit';
+	import { type SubmitFunction } from '@sveltejs/kit';
 	import { onDestroy } from 'svelte';
-	import Title from '$components/Title.svelte';
-	import HorizontalRule from '$components/HorizontalRule.svelte';
-	import NavigationCard from '$components/NavigationCard.svelte';
+
+	import { enhance } from '$app/forms';
+	// import type { PageProps } from '../$types';
+	import { page } from '$app/state';
 	// import type { Attachment } from 'svelte/attachments';
 	// import { afterNavigate } from '$app/navigation';
 	import Card from '$components/Card.svelte';
-	import { Variant, type ColorConfig } from '$lib/theming';
-	import { type SubmitFunction } from '@sveltejs/kit';
-	import { enhance } from '$app/forms';
-	import ShareItem from './ShareItem.svelte';
-	// import type { PageProps } from '../$types';
-	import { page } from '$app/state';
-	import type { ActionResult } from '@sveltejs/kit';
+	import HorizontalRule from '$components/HorizontalRule.svelte';
+	import NavigationCard from '$components/NavigationCard.svelte';
+	import Title from '$components/Title.svelte';
+	import { AccessHandler, Action, IdentityType } from '$lib/accessHandler';
+	import { type ArtificialIntelligenceConfig, Model } from '$lib/artificialIntelligence';
+	import { themeStore } from '$lib/stores';
+	import type { AppTheme } from '$lib/theming';
+	import { type ColorConfig, Variant } from '$lib/theming';
+	import type { AccessShareOption } from '$lib/types';
 	import {
+		initCarousel,
 		initDropdown,
 		initOverlay,
-		initCarousel,
 		initTabs,
 		initTooltip
 	} from '$lib/userInterface';
-	import { Action, AccessHandler, IdentityType } from '$lib/accessHandler';
-	import type { AccessShareOption } from '$lib/types';
-	import ThemePicker from './ThemePicker.svelte';
+
 	import ArtificialIntelligencePicker from './ArtificialIntelligencePicker.svelte';
-	import { Model, type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
-	import Panes, { type PaneData } from './Panes.svelte';
 	import HelpTooltip from './HelpTooltip.svelte';
+	import Panes, { type PaneData } from './Panes.svelte';
+	import ShareItem from './ShareItem.svelte';
+	import ThemePicker from './ThemePicker.svelte';
 	// import Panes from './Panes.svelte';
 	// import JsonData from '$components/JsonData.svelte';
 

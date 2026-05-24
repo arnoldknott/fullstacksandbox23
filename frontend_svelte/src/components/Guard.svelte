@@ -1,7 +1,8 @@
 <script lang="ts">
 	// import { goto } from '$app/navigation';
-	import { page } from '$app/state';
 	import type { Snippet } from 'svelte';
+
+	import { page } from '$app/state';
 	// import { onMount } from 'svelte';
 
 	// let { redirect = 'login', children } = $props();

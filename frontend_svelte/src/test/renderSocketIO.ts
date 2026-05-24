@@ -1,6 +1,8 @@
 import { render } from '@testing-library/svelte';
-import type { SocketIO, SocketIODefaultHandlers, SocketioConnection } from '$lib/socketio.svelte';
+
+import type { SocketIO, SocketioConnection, SocketIODefaultHandlers } from '$lib/socketio.svelte';
 import type { AnyEntityExtended, BackendAPIConfiguration } from '$lib/types.d.ts';
+
 import SocketIOWrapper from './helpers/SocketIOWrapper.svelte';
 
 const defaultBackendAPIConfiguration: BackendAPIConfiguration = {

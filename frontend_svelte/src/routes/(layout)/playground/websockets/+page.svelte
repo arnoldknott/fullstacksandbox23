@@ -1,7 +1,9 @@
 <script lang="ts">
-	import type { PageData } from './$types';
 	import { onMount } from 'svelte';
+
 	import Heading from '$components/Heading.svelte';
+
+	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
 	const backend_fqdn = $derived(data.backend_fqdn);

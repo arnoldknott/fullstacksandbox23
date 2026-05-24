@@ -1,16 +1,18 @@
 <script lang="ts">
-	import { page } from '$app/state';
-	import { resolve } from '$app/paths';
-	import { initDropdown, initOverlay } from '$lib/userInterface';
-	import { type Snippet } from 'svelte';
 	import { type SubmitFunction } from '@sveltejs/kit';
-	import { Variant, type ColorConfig } from '$lib/theming';
-	import { Model, type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
-	import ThemePicker from '../../../components/ThemePicker.svelte';
-	import ArtificialIntelligencePicker from '../../../components/ArtificialIntelligencePicker.svelte';
-	import { afterNavigate } from '$app/navigation';
+	import { type Snippet } from 'svelte';
 	import { onMount } from 'svelte';
+
+	import { afterNavigate } from '$app/navigation';
+	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
+	import { type ArtificialIntelligenceConfig, Model } from '$lib/artificialIntelligence';
+	import { type ColorConfig, Variant } from '$lib/theming';
 	import type { SidebarItemContent } from '$lib/types';
+	import { initDropdown, initOverlay } from '$lib/userInterface';
+
+	import ArtificialIntelligencePicker from '../../../components/ArtificialIntelligencePicker.svelte';
+	import ThemePicker from '../../../components/ThemePicker.svelte';
 	import SidebarItem from './SidebarItem.svelte';
 	let { children }: { children: Snippet } = $props();
 

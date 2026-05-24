@@ -1,15 +1,17 @@
 <script lang="ts">
-	import type { PageData } from './$types';
+	import type { Api } from 'reveal.js';
+	import { onDestroy, onMount } from 'svelte';
+	import { flip } from 'svelte/animate';
+
+	import Heading from '$components/Heading.svelte';
+	import RevealJS from '$components/RevealJS.svelte';
+	import { Action } from '$lib/accessHandler';
 	import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
 	import type { MessageExtended, NumericalExtended } from '$lib/types';
-	import RevealJS from '$components/RevealJS.svelte';
-	import type { Api } from 'reveal.js';
+
+	import type { PageData } from './$types';
 	import MotivationTable from './MotivationTable.svelte';
 	import SlideTitle from './SlideTitle.svelte';
-	import { flip } from 'svelte/animate';
-	import { Action } from '$lib/accessHandler';
-	import Heading from '$components/Heading.svelte';
-	import { onDestroy, onMount } from 'svelte';
 
 	interface RevealFragmentEvent extends Event {
 		fragment: HTMLElement;

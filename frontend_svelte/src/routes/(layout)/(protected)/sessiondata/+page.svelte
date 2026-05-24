@@ -1,11 +1,13 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import Heading from '$components/Heading.svelte';
-	import JsonData from '$components/JsonData.svelte';
-	import { page } from '$app/state';
-	import HorizontalRule from '$components/HorizontalRule.svelte';
-	import type { PageData } from './$types';
 	import { onMount } from 'svelte';
+
+	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
+	import Heading from '$components/Heading.svelte';
+	import HorizontalRule from '$components/HorizontalRule.svelte';
+	import JsonData from '$components/JsonData.svelte';
+
+	import type { PageData } from './$types';
 	let { data }: { data: PageData } = $props();
 	/* eslint-disable @typescript-eslint/no-explicit-any */
 	let navigatorData = $state<Record<string, any> | null>(null);

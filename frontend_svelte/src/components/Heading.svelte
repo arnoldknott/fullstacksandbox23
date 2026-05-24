@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { HTMLAttributes } from 'svelte/elements';
 	import type { Snippet } from 'svelte';
+	import type { HTMLAttributes } from 'svelte/elements';
 	let { children, ...rest }: { children: Snippet } & HTMLAttributes<HTMLElement> = $props();
 	// let props = $props();
 	// console.log('=== lib - components - title - children ===');

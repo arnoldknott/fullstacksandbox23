@@ -1,11 +1,12 @@
 <script lang="ts">
 	// import type { AppTheme } from '$lib/theming';
 	// import { getContext } from 'svelte';
-	import { type AppTheme } from '$lib/theming';
-	import { hexFromArgb, Hct } from '@material/material-color-utilities';
+	import { Hct, hexFromArgb } from '@material/material-color-utilities';
+	import { onDestroy } from 'svelte';
+
 	// import { theme } from '../routes/(layout)/layout.svelte'; // TBD: consider moving to $lib/stores?
 	import { themeStore } from '$lib/stores';
-	import { onDestroy } from 'svelte';
+	import { type AppTheme } from '$lib/theming';
 
 	let { background, color }: { background: string; color: string } = $props();
 	const text = background.replace('--md-sys-color-', '').replaceAll('-', ' ');

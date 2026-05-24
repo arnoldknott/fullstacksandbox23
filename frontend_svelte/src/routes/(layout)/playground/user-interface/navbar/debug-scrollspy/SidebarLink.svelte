@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { type Snippet } from 'svelte';
-	import { page } from '$app/state';
-	import { initScrollspy } from '$lib/userInterface';
+
 	import {
 		afterNavigate,
 		beforeNavigate,
@@ -10,6 +9,8 @@
 		// pushState,
 		// replaceState
 	} from '$app/navigation';
+	import { page } from '$app/state';
+	import { initScrollspy } from '$lib/userInterface';
 	// import { SvelteURL } from 'svelte/reactivity';
 
 	let {

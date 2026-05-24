@@ -1,9 +1,11 @@
 <script lang="ts">
-	import { initCollapse, initOverlay, initScrollspy } from '$lib/userInterface';
-	import Title from '$components/Title.svelte';
-	import Heading from '$components/Heading.svelte';
-	import Loreum from './(layout)/playground/user-interface/navbar/Loreum.svelte';
 	import { scrollY } from 'svelte/reactivity/window';
+
+	import Heading from '$components/Heading.svelte';
+	import Title from '$components/Title.svelte';
+	import { initCollapse, initOverlay, initScrollspy } from '$lib/userInterface';
+
+	import Loreum from './(layout)/playground/user-interface/navbar/Loreum.svelte';
 </script>
 
 <div class="h-screen w-screen">

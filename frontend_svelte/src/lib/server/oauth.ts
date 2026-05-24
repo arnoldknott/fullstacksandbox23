@@ -1,21 +1,23 @@
 // import { app_config } from './config';
-import AppConfig from './config';
-import { redisCache } from './cache';
-import type { RedisClientType } from 'redis';
+import type { AccountEntity, AccountInfo } from '@azure/msal-common';
 import {
+	type AuthenticationResult,
 	ConfidentialClientApplication,
-	InteractionRequiredAuthError,
 	CryptoProvider,
-	type AuthenticationResult
+	InteractionRequiredAuthError
 } from '@azure/msal-node';
-import { building } from '$app/environment';
 import {
 	DistributedCachePlugin,
 	type ICacheClient,
 	type IPartitionManager
 } from '@azure/msal-node';
-import type { AccountInfo, AccountEntity } from '@azure/msal-common';
 import { redirect } from '@sveltejs/kit';
+import type { RedisClientType } from 'redis';
+
+import { building } from '$app/environment';
+
+import { redisCache } from './cache';
+import AppConfig from './config';
 
 const appConfig = await AppConfig.getInstance();
 const scopesBackend = [

@@ -1,4 +1,5 @@
 import { error, type RequestHandler } from '@sveltejs/kit';
+
 import { microsoftGraph } from '$lib/server/apis/msgraph';
 
 export const GET: RequestHandler = async ({ locals, url, setHeaders }): Promise<Response> => {

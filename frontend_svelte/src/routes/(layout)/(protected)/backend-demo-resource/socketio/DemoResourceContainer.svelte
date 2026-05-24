@@ -1,12 +1,14 @@
 <script lang="ts">
-	import { initDropdown } from '$lib/userInterface';
-	import type { DemoResourceExtended, Identity, AccessShareOption } from '$lib/types';
 	import { fade } from 'svelte/transition';
+
 	import { Action } from '$lib/accessHandler';
-	import ShareItem from '../../../playground/components/ShareItem.svelte';
 	import { AccessHandler } from '$lib/accessHandler';
-	import IdBadge from '../../IdBadge.svelte';
 	import { SocketIO } from '$lib/socketio.svelte';
+	import type { AccessShareOption, DemoResourceExtended, Identity } from '$lib/types';
+	import { initDropdown } from '$lib/userInterface';
+
+	import ShareItem from '../../../playground/components/ShareItem.svelte';
+	import IdBadge from '../../IdBadge.svelte';
 
 	let {
 		demoResource = $bindable(),

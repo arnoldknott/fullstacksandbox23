@@ -1,8 +1,10 @@
-import type { PageServerLoad } from './$types';
+import type { User as MicrosoftUser } from '@microsoft/microsoft-graph-types';
+
 import { backendAPI } from '$lib/server/apis/backendApi';
 import { MicrosoftAccountLinking } from '$lib/server/apis/integrations';
 import type { Group, UeberGroup, User } from '$lib/types';
-import type { User as MicrosoftUser } from '@microsoft/microsoft-graph-types';
+
+import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ parent, locals, params }) => {
 	const sessionId = locals.sessionData.sessionId;

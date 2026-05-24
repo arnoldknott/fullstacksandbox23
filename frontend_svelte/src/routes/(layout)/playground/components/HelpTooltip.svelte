@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { initTooltip } from '$lib/userInterface';
 	import type { Snippet } from 'svelte';
+
+	import { initTooltip } from '$lib/userInterface';
 
 	let { text }: { text: string | Snippet } = $props();
 

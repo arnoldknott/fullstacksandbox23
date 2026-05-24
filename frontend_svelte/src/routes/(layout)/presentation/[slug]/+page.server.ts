@@ -1,7 +1,7 @@
-import type { PageServerLoad } from './$types';
-
 import { backendAPI } from '$lib/server/apis/backendApi';
 import type { Presentation } from '$lib/types';
+
+import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const sessionId = locals.sessionData.sessionId;

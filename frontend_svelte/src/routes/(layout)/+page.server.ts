@@ -1,9 +1,11 @@
-import type { Actions } from './$types';
-import { backendAPI } from '$lib/server/apis/backendApi';
 import { fail } from '@sveltejs/kit';
+
+import { backendAPI } from '$lib/server/apis/backendApi';
 import { redisCache } from '$lib/server/cache';
-import { Variant } from '$lib/theming';
 import { SessionStatus } from '$lib/session';
+import { Variant } from '$lib/theming';
+
+import type { Actions } from './$types';
 
 export const actions: Actions = {
 	putme: async ({ locals, request }) => {

@@ -1,7 +1,9 @@
-import { createClient, type RedisClientType } from 'redis';
-import { building } from '$app/environment';
-import AppConfig from './config';
 import { error } from '@sveltejs/kit';
+import { createClient, type RedisClientType } from 'redis';
+
+import { building } from '$app/environment';
+
+import AppConfig from './config';
 
 const appConfig = await AppConfig.getInstance();
 

@@ -1,4 +1,5 @@
 import AppConfig from '$lib/server/config';
+
 import type { Actions } from './$types';
 import type { PageServerLoad } from './$types';
 

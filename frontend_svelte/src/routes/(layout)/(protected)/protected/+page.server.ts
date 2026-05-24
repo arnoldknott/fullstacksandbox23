@@ -1,6 +1,7 @@
-import type { PageServerLoad } from './$types';
 import AppConfig from '$lib/server/config';
 import { msalAuthProvider } from '$lib/server/oauth';
+
+import type { PageServerLoad } from './$types';
 
 const appConfig = await AppConfig.getInstance();
 

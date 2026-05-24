@@ -1,20 +1,22 @@
 <script lang="ts">
-	import type { PageData } from './$types';
-	import Heading from '$components/Heading.svelte';
+	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
+
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 	import Card from '$components/Card.svelte';
-	import IdBadge from '../../../(protected)/IdBadge.svelte';
+	import Display from '$components/Display.svelte';
+	import Heading from '$components/Heading.svelte';
 	import { AccessHandler, Action, IdentityType } from '$lib/accessHandler';
 	import { SocketIO, type SocketioStatus } from '$lib/socketio.svelte';
-	import { onMount } from 'svelte';
-	import { resolve } from '$app/paths';
 	import type { AccessShareOption, PresentationExtended } from '$lib/types';
-	import Display from '$components/Display.svelte';
-	import { page } from '$app/state';
-	import FormElement from './FormElement.svelte';
-	import ShareItem from '../../../playground/components/ShareItem.svelte';
 	import { initDropdown } from '$lib/userInterface';
-	import { goto } from '$app/navigation';
+
+	import IdBadge from '../../../(protected)/IdBadge.svelte';
+	import ShareItem from '../../../playground/components/ShareItem.svelte';
+	import type { PageData } from './$types';
+	import FormElement from './FormElement.svelte';
 
 	let { data }: { data: PageData } = $props();
 

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+
 	import IdBadge from '../IdBadge.svelte';
 	let {
 		icon,

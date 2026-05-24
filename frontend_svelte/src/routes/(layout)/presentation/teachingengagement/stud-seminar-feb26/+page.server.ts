@@ -1,6 +1,7 @@
-import type { PageServerLoad } from './$types';
 import { backendAPI } from '$lib/server/apis/backendApi';
 import type { Question } from '$lib/types';
+
+import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ url }) => {
 	// const questionGoodNoExamId = url.searchParams.get('q-good-no-exam');

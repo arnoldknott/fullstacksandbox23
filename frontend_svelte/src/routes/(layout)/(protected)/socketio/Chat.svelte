@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
 	import { onDestroy, onMount } from 'svelte';
-
 	// import { getContext, type Snippet } from 'svelte';
 	import { type Snippet } from 'svelte';
+
+	import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
 
 	let {
 		connection,

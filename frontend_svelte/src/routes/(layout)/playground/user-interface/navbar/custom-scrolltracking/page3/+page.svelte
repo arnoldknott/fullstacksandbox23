@@ -1,9 +1,10 @@
 <script lang="ts">
-	import Title from '$components/Title.svelte';
-	import Heading from '$components/Heading.svelte';
-	import Loreum from '../../Loreum.svelte';
 	import Display from '$components/Display.svelte';
+	import Heading from '$components/Heading.svelte';
 	import Section from '$components/Section.svelte';
+	import Title from '$components/Title.svelte';
+
+	import Loreum from '../../Loreum.svelte';
 </script>
 
 <div class="bg-error-container/70 rounded-xl p-4">

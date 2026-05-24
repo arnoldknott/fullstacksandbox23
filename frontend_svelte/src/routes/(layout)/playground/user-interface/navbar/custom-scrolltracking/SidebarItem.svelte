@@ -1,11 +1,13 @@
 <script lang="ts">
-	import type { SidebarItem as SideBarItemType } from '$lib/types';
-	import SidebarItem from './SidebarItem.svelte';
 	import { getContext } from 'svelte';
-	import type { Writable } from 'svelte/store';
 	import type { Attachment } from 'svelte/attachments';
-	import { initCollapse } from '$lib/userInterface';
+	import type { Writable } from 'svelte/store';
+
 	import { page } from '$app/state';
+	import type { SidebarItem as SideBarItemType } from '$lib/types';
+	import { initCollapse } from '$lib/userInterface';
+
+	import SidebarItem from './SidebarItem.svelte';
 
 	let {
 		content,

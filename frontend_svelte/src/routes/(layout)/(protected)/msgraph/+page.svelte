@@ -1,8 +1,10 @@
 <script lang="ts">
-	import type { PageData } from './$types';
-	import Heading from '$components/Heading.svelte';
-	import { resolve } from '$app/paths';
 	import { onDestroy } from 'svelte';
+
+	import { resolve } from '$app/paths';
+	import Heading from '$components/Heading.svelte';
+
+	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
 	// TBD refactor using sessionData

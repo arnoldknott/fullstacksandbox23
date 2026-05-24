@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { type AppTheme } from '$lib/theming';
-	import { hexFromArgb, Hct, rgbaFromArgb } from '@material/material-color-utilities';
-	import { themeStore } from '$lib/stores';
+	import { Hct, hexFromArgb, rgbaFromArgb } from '@material/material-color-utilities';
 	import { onDestroy, type Snippet } from 'svelte';
+
 	import appCss from '/src/app.css?raw';
+	import { themeStore } from '$lib/stores';
+	import { type AppTheme } from '$lib/theming';
 
 	let {
 		background,

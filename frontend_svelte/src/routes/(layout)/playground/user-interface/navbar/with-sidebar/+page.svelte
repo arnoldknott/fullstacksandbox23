@@ -1,7 +1,8 @@
 <script lang="ts">
 	// Recreates scrolling from 6b33032 and adds sidebar
-	import Loreum from '../../Loreum.svelte';
 	import { initOverlay } from '$lib/userInterface';
+
+	import Loreum from '../../Loreum.svelte';
 </script>
 
 {#snippet sidebarToggleButton(classes: string, overlayModifier: object)}

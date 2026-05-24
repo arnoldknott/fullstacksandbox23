@@ -1,8 +1,10 @@
-import AppConfig from '$lib/server/config';
-import { BaseAPI, type RequestBody } from './base';
-import { msalAuthProvider } from '$lib/server/oauth';
 // import type { MicrosoftTeamBasic } from '$lib/types';
 import type { Team } from '@microsoft/microsoft-graph-types';
+
+import AppConfig from '$lib/server/config';
+import { msalAuthProvider } from '$lib/server/oauth';
+
+import { BaseAPI, type RequestBody } from './base';
 
 const appConfig = await AppConfig.getInstance();
 
