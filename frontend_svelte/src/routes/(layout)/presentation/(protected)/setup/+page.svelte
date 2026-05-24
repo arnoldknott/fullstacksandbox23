@@ -1,10 +1,11 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import Heading from '$components/Heading.svelte';
+	import { fade } from 'svelte/transition';
 	import Card from '$components/Card.svelte';
 	import IdBadge from '../../../(protected)/IdBadge.svelte';
 	import { AccessHandler, Action, IdentityType } from '$lib/accessHandler';
-	import { SocketIO } from '$lib/socketio.svelte';
+	import { SocketIO, type SocketioStatus } from '$lib/socketio.svelte';
 	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
 	import type { AccessShareOption, PresentationExtended } from '$lib/types';
@@ -29,9 +30,24 @@
 				subscribeEntities: () => data.payload.presentations || []
 			}
 		);
+
+		socketioPresentations.client.on('status', (data: SocketioStatus) => {
+			if ('success' in data && data.success === 'created') {
+				const publicShare = shareOptions.filter(
+					(shareOption) => shareOption.identity_type === IdentityType.PUBLIC
+				);
+				if (publicShare[0].action) {
+					socketioPresentations?.shareEntity({
+						resource_id: data.id,
+						action: publicShare[0].action,
+						public: true
+					});
+				}
+			}
+		});
 	});
 
-	let showNewPresentationCard: boolean = $state(false);
+	let showNewPresentationCard: boolean = $state(page.url.searchParams.get('new') === 'true');
 
 	const createNewPresentation = (): PresentationExtended => {
 		return {
@@ -91,7 +107,7 @@
 </script>
 
 {#snippet newPresentationHeader()}
-	<Heading id="newPresentation">Add a presentation</Heading>
+	<Heading id="newPresentation">New presentation</Heading>
 {/snippet}
 
 <Display id="overview-presentations">Presentations</Display>
@@ -131,77 +147,88 @@
 				showNewPresentationCard = false;
 			}}><span class="icon-[tabler--x] size-5"></span>Cancel</button
 		>
-		<button class="btn btn-primary" aria-label="Save new presentation" onclick={submitPresentation}
+		<button
+			class="btn btn-primary"
+			aria-label="Save new presentation"
+			onclick={() => submitPresentation()}
 			><span class="icon-[tabler--send-2] size-5"></span>Save</button
 		>
 	</div>
 {/snippet}
 
+{#snippet warning()}
+	<span class="icon-[fluent-color--warning-24] size-5"></span>
+{/snippet}
+
 {#if showNewPresentationCard}
-	<Card id={newPresentation.id} header={newPresentationHeader} footer={newPresentationFooter}>
-		<div class="flex w-full flex-wrap gap-6">
-			<div class="grow">
-				<FormElement title="Slug" description={slugDescription} extraClasses="w-full">
-					<div class="md:flex-cols-2 wrap flex gap-2">
-						<code class="mt-5 shrink">{page.url.origin}/presentation/</code>
-						<div class="input-filled input-primary w-full">
-							<input
-								type="text"
-								placeholder=""
-								class="input"
-								id="slugInput"
-								bind:value={newPresentation.path}
-							/>
-							<label class="input-filled-label" for="slugInput"
-								>[add the path to your presentation here]</label
-							>
+	<div transition:fade={{ duration: 600 }}>
+		<Card id={newPresentation.id} header={newPresentationHeader} footer={newPresentationFooter}>
+			<div class="flex w-full flex-wrap gap-6">
+				<div class="grow">
+					<FormElement title="Slug" description={slugDescription} extraClasses="w-full">
+						<div class="md:flex-cols-2 wrap flex gap-2">
+							<code class="mt-5 shrink">{page.url.origin}/presentation/</code>
+							<div class="input-filled input-primary w-full">
+								<input
+									type="text"
+									placeholder=""
+									class="input"
+									id="slugInput"
+									bind:value={newPresentation.path}
+								/>
+								<label class="input-filled-label" for="slugInput"
+									>[add the path to your presentation here]</label
+								>
+							</div>
 						</div>
-					</div>
-				</FormElement>
-				<FormElement title="Source" description={sourceDescription} extraClasses="max-w-300">
-					For now, all presentations are <IdBadge id="intern" />, e.g. hosted with the source code
-					of this platform. ON the long run, <IdBadge id="Github" />, <IdBadge id="Gitlab" />, <IdBadge
-						id="OneDrive"
-					/>, <IdBadge id="GoogleDrive" /> and other sources should be supported as well.
-				</FormElement>
-				<FormElement title="Questions" extraClasses="max-w-300">
-					Link interactive questions to your presentation, so they can be answered while going
-					through the presentation. Linking exisiting questions, also links their answers, copying
-					existing questions creates a new question without any answers.
-				</FormElement>
-				<FormElement title="Links" extraClasses="max-w-300">
-					Maybe there's a need to add related links and / or embeddings. The service to the user
-					could be to check the aliveness of the links - if a link returns a 404, the user gets a
-					notification.
-				</FormElement>
-				<FormElement title="Files" extraClasses="max-w-300">
-					Select existing files or drop new files into a container to upload and make available to
-					the presentation. This is the place to store binaries, so they can be accessed via the
-					presentation api and used in the presentation.
+					</FormElement>
+					<FormElement title="Source" description={sourceDescription} extraClasses="max-w-300">
+						{@render warning()} For now, all presentations are <IdBadge id="intern" />, e.g. hosted
+						with the source code of this platform. ON the long run, <IdBadge id="Github" />, <IdBadge
+							id="Gitlab"
+						/>, <IdBadge id="OneDrive" />, <IdBadge id="GoogleDrive" /> and other sources should be supported
+						as well.
+					</FormElement>
+					<FormElement title="Questions" extraClasses="max-w-300">
+						{@render warning()} Link interactive questions to your presentation, so they can be answered
+						while going through the presentation. Linking exisiting questions, also links their answers,
+						copying existing questions creates a new question without any answers.
+					</FormElement>
+					<FormElement title="Links" extraClasses="max-w-300">
+						{@render warning()} Maybe there's a need to add related links and / or embeddings. The service
+						to the user could be to check the aliveness of the links - if a link returns a 404, the user
+						gets a notification.
+					</FormElement>
+					<FormElement title="Files" extraClasses="max-w-300">
+						{@render warning()}Select existing files or drop new files into a container to upload
+						and make available to the presentation. This is the place to store binaries, so they can
+						be accessed via the presentation api and used in the presentation.
+					</FormElement>
+				</div>
+
+				<FormElement title="Access" description={accessDescription} extraClasses="max-w-96">
+					{@render warning()} Only the public access gets currently submitted with the presentation!
+					<ul
+						class="bg-base-150 shadow-outline max-h-48 max-w-fit overflow-y-auto rounded-lg p-2 shadow-inner"
+					>
+						{#each shareOptions as shareOption, i (i)}
+							<ShareItem
+								resourceId={newPresentation.id}
+								{shareOption}
+								share={socketioPresentations?.shareEntity.bind(socketioPresentations)}
+								wide
+							/>
+						{/each}
+					</ul>
 				</FormElement>
 			</div>
-
-			<FormElement title="Access" description={accessDescription}>
-				<ul
-					class="bg-base-150 shadow-outline max-h-48 max-w-fit overflow-y-auto rounded-lg p-2 shadow-inner"
-				>
-					{#each shareOptions as shareOption, i (i)}
-						<ShareItem
-							resourceId={newPresentation.id}
-							{shareOption}
-							share={socketioPresentations?.shareEntity.bind(socketioPresentations)}
-							wide
-						/>
-					{/each}
-				</ul>
-			</FormElement>
-		</div>
-	</Card>
+		</Card>
+	</div>
 {/if}
 
 {#snippet existingPresentationsHeader()}
 	<div class="flex justify-between">
-		<Heading id="existingPresentations" class="grow">Existing presentations</Heading>
+		<Heading id="existingPresentations" class="grow">Overview</Heading>
 		<div class="flex flex-row items-center justify-center">
 			<button
 				class="btn btn-primary mx-4 rounded"
