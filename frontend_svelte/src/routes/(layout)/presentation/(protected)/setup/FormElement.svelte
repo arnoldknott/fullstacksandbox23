@@ -12,14 +12,14 @@
 
 <dl class={extraClasses}>
 	<dt>
-		<div class="label text-base-content label-large">
+		<div class="title text-base-content">
 			{title}
 			{#if description}
 				<HelpTooltip text={description} />
 			{/if}
 		</div>
 	</dt>
-	<dd class="text-base-content mb-5 ml-5">
+	<dd class="text-base-content-variant mb-5 ml-5">
 		{@render children()}
 	</dd>
 </dl>
