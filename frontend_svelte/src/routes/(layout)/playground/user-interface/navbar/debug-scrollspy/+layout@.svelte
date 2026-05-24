@@ -244,13 +244,13 @@
 	let protectedSidebarLinks: SidebarItemContent[] = $state([
 		{
 			name: 'Dashboard',
-			pathname: resolve('/(layout)/(protected)/data'),
+			pathname: resolve('/(layout)/(protected)/protected'),
 			icon: 'icon-[material-symbols--dashboard-outline-rounded]',
 			id: 'dashboard',
 			items: [
 				{
 					name: 'Overview',
-					pathname: resolve('/(layout)/(protected)/data') + '#top',
+					pathname: resolve('/(layout)/(protected)/protected') + '#top',
 					icon: 'icon-[material-symbols--dashboard-outline-rounded]',
 					id: 'overview'
 				},
