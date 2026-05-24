@@ -7,6 +7,7 @@ from crud.presentation import PresentationCRUD
 from models.presentation import Presentation
 from routers.api.v1.tests.base import BaseTest
 from tests.utils import (
+    current_user_data_admin,
     token_admin,
     token_admin_read,
     token_admin_read_write,
@@ -14,7 +15,6 @@ from tests.utils import (
     token_user1_read,
     token_user1_read_write,
     token_user1_write,
-    current_user_data_admin,
 )
 from tests.utils_presentations import (
     many_test_presentations,

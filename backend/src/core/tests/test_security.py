@@ -6,7 +6,6 @@ import pytest
 from fastapi import Depends, FastAPI
 from httpx import AsyncClient
 
-from main import fastapi_app
 from core.security import (
     CurrentAccessTokenHasRole,
     CurrentAccessTokenHasScope,
@@ -14,12 +13,13 @@ from core.security import (
     CurrentAzureUserInDatabase,
     get_azure_jwks,
     get_http_access_token_payload,
+    get_user_account_from_session_cache,
     provide_http_token_payload,
     provide_http_token_payload_optional,
-    get_user_account_from_session_cache,
 )
 from core.types import Action, CurrentUserData
 from crud.access import AccessLoggingCRUD
+from main import fastapi_app
 from models.access import AccessLogRead
 from models.identity import UserRead
 from routers.api.v1.identities import get_user_by_id

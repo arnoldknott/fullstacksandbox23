@@ -1,6 +1,6 @@
 import logging
-from uuid import UUID
 from typing import Annotated, Any, Optional, cast
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 

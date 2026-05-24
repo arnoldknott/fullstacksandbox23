@@ -20,8 +20,8 @@ from models.quiz import (
     NumericalCreate,
     NumericalRead,
     NumericalUpdate,
-    QuestionRead,
     QuestionCreate,
+    QuestionRead,
     QuestionUpdate,
 )
 

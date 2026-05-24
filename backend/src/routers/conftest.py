@@ -1,6 +1,6 @@
 import copy
 from os import path, remove
-from typing import Any, Awaitable, Callable, Optional, List
+from typing import Any, Awaitable, Callable, List, Optional
 from uuid import UUID
 
 import pytest
