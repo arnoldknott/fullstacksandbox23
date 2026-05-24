@@ -131,6 +131,10 @@ services:
     build:
       context: ./backend
       target: worker_dev
+      args:
+        PYTHON_VERSION: ${PYTHON_VERSION}
+        ALPINE_VERSION: ${ALPINE_VERSION}
+        UV_VERSION: ${UV_VERSION}
     depends_on:
       - backend_worker
       - redis
