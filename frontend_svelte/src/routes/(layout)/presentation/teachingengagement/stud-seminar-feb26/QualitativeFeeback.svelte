@@ -1,8 +1,9 @@
 <script lang="ts">
-	import ChatBubble from '$components/ChatBubble.svelte';
 	// import CourseSelector from './CourseSelector.svelte';
 	import { marked } from 'marked';
 	import { onDestroy } from 'svelte';
+
+	import ChatBubble from '$components/ChatBubble.svelte';
 
 	type FeedbackColor =
 		| 'primary'

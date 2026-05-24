@@ -1,10 +1,12 @@
 <script lang="ts">
 	import '../app.css';
-	import { setContext } from 'svelte';
+
 	import type { Snippet } from 'svelte';
-	import { page } from '$app/state';
+	import { setContext } from 'svelte';
 	import { onMount } from 'svelte';
+
 	import { invalidateAll } from '$app/navigation';
+	import { page } from '$app/state';
 
 	// import InitialScrollspy from './InitialScrollspy.svelte';
 	// import type { LayoutData } from './$types';

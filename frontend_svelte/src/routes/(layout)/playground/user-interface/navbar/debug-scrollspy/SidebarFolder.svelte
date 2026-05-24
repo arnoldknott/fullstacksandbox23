@@ -1,8 +1,10 @@
 <script lang="ts">
-	import type { SidebarFolderContent } from '$lib/types';
-	import { page } from '$app/state';
-	import { initCollapse } from '$lib/userInterface';
 	import type { Attachment } from 'svelte/attachments';
+
+	import { page } from '$app/state';
+	import type { SidebarFolderContent } from '$lib/types';
+	import { initCollapse } from '$lib/userInterface';
+
 	import SidebarItem from './SidebarItem.svelte';
 	let {
 		content,

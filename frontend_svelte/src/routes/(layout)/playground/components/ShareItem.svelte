@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Action, AccessHandler } from '$lib/accessHandler';
+	import { AccessHandler, Action } from '$lib/accessHandler';
 	import type { AccessPolicy, AccessShareOption } from '$lib/types';
 	import { initDropdown } from '$lib/userInterface';
 	// import { enhance } from '$app/forms';

@@ -1,26 +1,28 @@
 <script lang="ts">
-	import type { LayoutData } from './$types';
-	import { SessionStatus } from '$lib/session';
-	import { Variant, Theming, type ColorConfig } from '$lib/theming';
-	import { Model, type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
-	import type { Action } from 'svelte/action';
-	import { writable } from 'svelte/store';
+	import { type SubmitFunction } from '@sveltejs/kit';
 	import { onMount, setContext, type Snippet } from 'svelte';
+	import type { Action } from 'svelte/action';
+	import { scrollY } from 'svelte/reactivity/window';
+	import { writable } from 'svelte/store';
+
+	import { afterNavigate, goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import Guard from '$components/Guard.svelte';
-	import { initDropdown, initOverlay } from '$lib/userInterface';
-	import ThemePicker from './playground/components/ThemePicker.svelte';
-	import ArtificialIntelligencePicker from './playground/components/ArtificialIntelligencePicker.svelte';
+	import { type ArtificialIntelligenceConfig, Model } from '$lib/artificialIntelligence';
+	import { SessionStatus } from '$lib/session';
 	import { themeStore } from '$lib/stores';
-	import { type SubmitFunction } from '@sveltejs/kit';
-	import { resolve } from '$app/paths';
-	import WelcomeModal from './WelcomeModal.svelte';
-	import { afterNavigate, goto } from '$app/navigation';
-	import type { SidebarItemContent, Session } from '$lib/types';
-	import SidebarItem from './SidebarItem.svelte';
+	import { type ColorConfig, Theming, Variant } from '$lib/theming';
+	import type { Session, SidebarItemContent } from '$lib/types';
+	import { initDropdown, initOverlay } from '$lib/userInterface';
+
+	import type { LayoutData } from './$types';
 	import LoginOutButton from './LoginOutButton.svelte';
 	import Logo from './Logo.svelte';
-	import { scrollY } from 'svelte/reactivity/window';
+	import ArtificialIntelligencePicker from './playground/components/ArtificialIntelligencePicker.svelte';
+	import ThemePicker from './playground/components/ThemePicker.svelte';
+	import SidebarItem from './SidebarItem.svelte';
+	import WelcomeModal from './WelcomeModal.svelte';
 
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
 

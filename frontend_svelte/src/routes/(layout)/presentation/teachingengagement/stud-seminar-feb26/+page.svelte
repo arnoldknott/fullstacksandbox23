@@ -1,13 +1,14 @@
 <script lang="ts">
-	import type { PageData } from './$types';
-	import RevealJS from '$components/RevealJS.svelte';
-	import FramedSlide from './FramedSlide.svelte';
 	import ChatBubble from '$components/ChatBubble.svelte';
-	import DivergingStackedChart from './DivergingStackedChart.svelte';
-	import SlideTitle from './SlideTitle.svelte';
-	import QualitativeFeeback from './QualitativeFeeback.svelte';
 	import Display from '$components/Display.svelte';
+	import RevealJS from '$components/RevealJS.svelte';
+
+	import type { PageData } from './$types';
+	import DivergingStackedChart from './DivergingStackedChart.svelte';
+	import FramedSlide from './FramedSlide.svelte';
 	import MotivationTable from './MotivationTable.svelte';
+	import QualitativeFeeback from './QualitativeFeeback.svelte';
+	import SlideTitle from './SlideTitle.svelte';
 	// import { marked } from 'marked';
 
 	let { data }: { data: PageData } = $props();

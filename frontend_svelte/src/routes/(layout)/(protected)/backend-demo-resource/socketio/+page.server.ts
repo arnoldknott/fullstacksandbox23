@@ -1,6 +1,8 @@
-import type { PageServerLoad } from './$types';
-import { microsoftGraph } from '$lib/server/apis/msgraph';
 import type { Team as MicrosoftTeam } from '@microsoft/microsoft-graph-types';
+
+import { microsoftGraph } from '$lib/server/apis/msgraph';
+
+import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const sessionId = locals.sessionData.sessionId;

@@ -5,10 +5,11 @@
 	// Tests inject `backendAPIConfiguration` via the Testing Library `context`
 	// render option (see `src/test/renderSocketIO.ts`).
 	import { untrack } from 'svelte';
+
 	import {
 		SocketIO,
-		type SocketIODefaultHandlers,
-		type SocketioConnection
+		type SocketioConnection,
+		type SocketIODefaultHandlers
 	} from '$lib/socketio.svelte';
 	import type { AnyEntityExtended } from '$lib/types.d.ts';
 

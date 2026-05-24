@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Heading from '$components/Heading.svelte';
 	import { initAccordion } from '$lib/userInterface';
+
 	import AccordionItem from '../AccordionItem.svelte';
 	import ColorTiles from './ColorTiles.svelte';
 </script>

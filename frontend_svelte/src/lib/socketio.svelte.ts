@@ -1,13 +1,14 @@
-import { io } from 'socket.io-client';
 import type { Socket } from 'socket.io-client';
+import { io } from 'socket.io-client';
 import { getContext } from 'svelte';
+
+import type { Action } from '$lib/accessHandler';
 import type {
 	AccessPolicy,
 	AnyEntityExtended,
 	BackendAPIConfiguration,
 	Hierarchy
 } from '$lib/types.d.ts';
-import type { Action } from '$lib/accessHandler';
 
 export type SocketioConnection = {
 	namespace?: string;

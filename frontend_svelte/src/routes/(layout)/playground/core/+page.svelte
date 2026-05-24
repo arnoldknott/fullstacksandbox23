@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Heading from '$components/Heading.svelte';
+
 	import type { PageData } from './$types';
 	let { data }: { data: PageData } = $props();
 	let urlClient = $state('undefined');

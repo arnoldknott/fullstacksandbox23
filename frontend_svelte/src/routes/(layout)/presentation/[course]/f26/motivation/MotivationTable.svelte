@@ -1,11 +1,12 @@
 <script lang="ts">
+	import { Hct, hexFromArgb } from '@material/material-color-utilities';
+	import { onDestroy } from 'svelte';
+
+	import { Action } from '$lib/accessHandler';
+	import { SocketIO } from '$lib/socketio.svelte';
 	import { themeStore } from '$lib/stores';
 	import type { AppTheme } from '$lib/theming';
-	import { Hct, hexFromArgb } from '@material/material-color-utilities';
 	import { Theming } from '$lib/theming';
-	import { onDestroy } from 'svelte';
-	import { SocketIO } from '$lib/socketio.svelte';
-	import { Action } from '$lib/accessHandler';
 
 	type ColorSet = {
 		background: string;

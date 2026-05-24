@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { type Snippet } from 'svelte';
+
+	import { beforeNavigate, goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { initScrollspy } from '$lib/userInterface';
-	import { beforeNavigate, goto } from '$app/navigation';
 	let {
 		href,
 		thisPage,

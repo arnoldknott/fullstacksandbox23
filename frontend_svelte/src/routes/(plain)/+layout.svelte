@@ -1,5 +1,6 @@
 <script lang="ts">
 	import '../../app.css';
+
 	// import { SessionStatus } from '$lib/session';
 	// import { onMount, type Snippet } from 'svelte';
 	import type { Snippet } from 'svelte';

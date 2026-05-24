@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import NavigationCard from '$components/NavigationCard.svelte';
 	import Heading from '$components/Heading.svelte';
+	import NavigationCard from '$components/NavigationCard.svelte';
+	import { initAccordion } from '$lib/userInterface';
+
 	import AccordionItem from './AccordionItem.svelte';
 	import ColorTile from './ColorTile.svelte';
-	import { initAccordion } from '$lib/userInterface';
 
 	let debug = $state(page.url.searchParams.get('debug') === 'true' ? true : false);
 

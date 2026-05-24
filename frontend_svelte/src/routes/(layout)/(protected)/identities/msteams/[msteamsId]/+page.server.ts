@@ -1,7 +1,9 @@
-import type { PageServerLoad } from './$types';
-import { microsoftGraph } from '$lib/server/apis/msgraph';
 // import type { MicrosoftTeamBasic } from '$lib/types';
 import type { Team as MicrosoftTeam } from '@microsoft/microsoft-graph-types';
+
+import { microsoftGraph } from '$lib/server/apis/msgraph';
+
+import type { PageServerLoad } from './$types';
 // const getAllMicrosoftTeams = async (sessionId: string, azureGroups: string[]) => {
 
 // }

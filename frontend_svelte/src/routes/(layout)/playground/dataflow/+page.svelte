@@ -1,9 +1,11 @@
 <script lang="ts">
-	import JsonData from '$components/JsonData.svelte';
-	import type { PageProps } from './$types';
-	import { enhance, applyAction } from '$app/forms';
 	import { type SubmitFunction } from '@sveltejs/kit';
+
+	import { applyAction, enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
+	import JsonData from '$components/JsonData.svelte';
+
+	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();
 

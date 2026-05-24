@@ -14,8 +14,8 @@ from routers.socketio.v1.identities import (
     UserNamespace,
 )
 from routers.socketio.v1.interactive_documentation import InteractiveDocumentation
-from routers.socketio.v1.public_namespace import PublicNamespace
 from routers.socketio.v1.presentation_namespace import PresentationNamespace
+from routers.socketio.v1.public_namespace import PublicNamespace
 from routers.socketio.v1.quiz_namespace import (
     MessageNamespace,
     NumericalNamespace,

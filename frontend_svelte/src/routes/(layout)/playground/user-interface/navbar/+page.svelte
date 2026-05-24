@@ -1,6 +1,6 @@
 <script lang="ts">
-	import NavigationCard from '$components/NavigationCard.svelte';
 	import Display from '$components/Display.svelte';
+	import NavigationCard from '$components/NavigationCard.svelte';
 
 	const navbars = [
 		{

@@ -1,22 +1,23 @@
 import {
-	// SchemeMonochrome,
-	SchemeNeutral,
-	SchemeTonalSpot,
-	SchemeVibrant,
-	// SchemeExpressive,
-	SchemeFidelity,
-	SchemeContent,
-	SchemeRainbow,
 	// SchemeFruitSalad,
 	argbFromHex,
-	Hct,
+	type ColorGroup,
 	customColor,
-	type TonalPalette,
 	DynamicColor,
 	type DynamicScheme,
-	type ColorGroup,
-	hexFromArgb
+	Hct,
+	hexFromArgb,
+	SchemeContent,
+	// SchemeExpressive,
+	SchemeFidelity,
+	// SchemeMonochrome,
+	SchemeNeutral,
+	SchemeRainbow,
+	SchemeTonalSpot,
+	SchemeVibrant,
+	type TonalPalette
 } from '@material/material-color-utilities';
+
 import { ContrastCurve } from '../dependencies/material-color-utilities/0.3.0/contrast_curve';
 import { ToneDeltaPair } from '../dependencies/material-color-utilities/0.3.0/tone_delta_pair';
 // import flyonUIThemes from 'flyonui/src/theming/themes';

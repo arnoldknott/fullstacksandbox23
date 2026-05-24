@@ -3,6 +3,7 @@ import os
 from functools import lru_cache
 from time import sleep
 from typing import Any, Optional, cast
+
 from azure.identity import ManagedIdentityCredential
 from azure.keyvault.secrets import SecretClient
 from pydantic import PostgresDsn, ValidationInfo, field_validator

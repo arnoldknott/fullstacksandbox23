@@ -1,7 +1,7 @@
 <script lang="ts">
-	import NavigationCard from '$components/NavigationCard.svelte';
 	import Display from '$components/Display.svelte';
 	import Heading from '$components/Heading.svelte';
+	import NavigationCard from '$components/NavigationCard.svelte';
 	const navigation = [
 		{
 			name: 'Top Navbar',

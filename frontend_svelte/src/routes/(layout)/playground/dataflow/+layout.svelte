@@ -1,5 +1,6 @@
 <script lang="ts">
 	import JsonData from '$components/JsonData.svelte';
+
 	import type { LayoutProps } from './$types';
 
 	let { data, children }: LayoutProps = $props();

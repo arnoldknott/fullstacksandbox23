@@ -1,8 +1,9 @@
 <script lang="ts">
-	import type { PageData } from './$types';
 	import JsonData from '$components/JsonData.svelte';
-	import IdentityAccordion from '../../IdentityAccordion.svelte';
 	import { initAccordion } from '$lib/userInterface';
+
+	import IdentityAccordion from '../../IdentityAccordion.svelte';
+	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
 	let team = $derived(data.thisTeam);

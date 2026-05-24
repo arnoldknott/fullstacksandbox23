@@ -1,9 +1,9 @@
 <!-- Rename the folder of this file "protected" into the real content -->
 
 <script lang="ts">
+	import { page } from '$app/state';
 	import Display from '$components/Display.svelte';
 	import Heading from '$components/Heading.svelte';
-	import { page } from '$app/state';
 	import NavigationCard from '$components/NavigationCard.svelte';
 
 	const resources = [

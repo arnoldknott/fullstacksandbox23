@@ -1,18 +1,18 @@
 <script lang="ts">
-	import { page } from '$app/state';
-	import { goto } from '$app/navigation';
-	import type { PageData } from './$types';
+	import { onDestroy, onMount } from 'svelte';
 
+	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
 	import Heading from '$components/Heading.svelte';
 	import JsonData from '$components/JsonData.svelte';
-	import IdentityAccordion from './IdentityAccordion.svelte';
-	import IdentityListItem from './IdentityListItem.svelte';
 	import { AccessHandler, IdentityType } from '$lib/accessHandler';
-
 	import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
 	import type { UeberGroup, UeberGroupExtended } from '$lib/types';
 	import { initAccordion } from '$lib/userInterface';
-	import { onDestroy, onMount } from 'svelte';
+
+	import type { PageData } from './$types';
+	import IdentityAccordion from './IdentityAccordion.svelte';
+	import IdentityListItem from './IdentityListItem.svelte';
 	let { data }: { data: PageData } = $props();
 
 	let debug = $state(page.url.searchParams.get('debug') === 'true' ? true : false);

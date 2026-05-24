@@ -1,8 +1,10 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { tick } from 'svelte';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { Action } from '$lib/accessHandler';
 import type { SocketioStatus } from '$lib/socketio.svelte';
 import type { DemoResourceExtended } from '$lib/types.d.ts';
+
 import { createDemoResource } from '../test/factories/entities';
 import { renderSocketIO, type RenderSocketIOOptions } from '../test/renderSocketIO';
 

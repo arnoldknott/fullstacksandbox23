@@ -1,12 +1,14 @@
 <script lang="ts">
-	import ColorTileMaterialUi from './ColorTileMaterialUI.svelte';
+	import { Hct, hexFromArgb } from '@material/material-color-utilities';
+	import { onDestroy } from 'svelte';
+
 	import Heading from '$components/Heading.svelte';
 	import HorizontalRule from '$components/HorizontalRule.svelte';
 	import JsonData from '$components/JsonData.svelte';
 	import { themeStore } from '$lib/stores';
 	import type { AppTheme } from '$lib/theming';
-	import { onDestroy } from 'svelte';
-	import { Hct, hexFromArgb } from '@material/material-color-utilities';
+
+	import ColorTileMaterialUi from './ColorTileMaterialUI.svelte';
 
 	let showSections = $state({
 		colors: true,

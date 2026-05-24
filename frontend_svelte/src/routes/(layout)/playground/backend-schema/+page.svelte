@@ -1,6 +1,7 @@
 <script lang="ts">
 	// /** @type {import('./$types').PageData} */
 	import Heading from '$components/Heading.svelte';
+
 	import type { PageData } from './$types';
 	export let data: PageData;
 	const schema = data.body;

@@ -1,6 +1,7 @@
-import type { LayoutServerLoad } from './$types';
 import AppConfig from '$lib/server/config';
 import type { BackendAPIConfiguration } from '$lib/types.d.ts';
+
+import type { LayoutServerLoad } from './$types';
 // import { session } from '$lib/stores';
 // import type { User as MicrosoftProfile } from "@microsoft/microsoft-graph-types";
 

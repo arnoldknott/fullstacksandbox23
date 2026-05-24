@@ -1,9 +1,11 @@
+import { fail } from '@sveltejs/kit';
+
+import { Action } from '$lib/accessHandler';
 import AppConfig from '$lib/server/config';
 import { msalAuthProvider } from '$lib/server/oauth';
 import type { AccessPolicy } from '$lib/types';
+
 import { BaseAPI, type RequestBody } from './base';
-import { Action } from '$lib/accessHandler';
-import { fail } from '@sveltejs/kit';
 
 const appConfig = await AppConfig.getInstance();
 

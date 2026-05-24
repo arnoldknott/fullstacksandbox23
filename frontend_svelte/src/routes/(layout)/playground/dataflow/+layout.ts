@@ -1,4 +1,4 @@
-import type { LayoutServerLoad, LayoutData } from './$types';
+import type { LayoutData, LayoutServerLoad } from './$types';
 
 // Data flow highly inspired by https://joyofcode.xyz/sveltekit-data-flow
 export const load: LayoutServerLoad = async ({ data }: LayoutData) => {

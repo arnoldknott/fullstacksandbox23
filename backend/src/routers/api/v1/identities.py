@@ -11,7 +11,6 @@ from core.security import (
     get_http_access_token_payload,
 )
 from core.types import GuardTypes
-from models.access import IdentityHierarchyRead
 from crud.identity import (
     GroupCRUD,
     SubGroupCRUD,
@@ -19,6 +18,7 @@ from crud.identity import (
     UeberGroupCRUD,
     UserCRUD,
 )
+from models.access import IdentityHierarchyRead
 from models.identity import (
     Group,
     GroupCreate,

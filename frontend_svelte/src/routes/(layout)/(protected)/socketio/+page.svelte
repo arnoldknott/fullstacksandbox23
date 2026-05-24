@@ -3,10 +3,11 @@
 	// import type { PageData } from './$types';
 	// import { SocketIO } from '$lib/socketio';
 	// import { io } from 'socket.io-client';
-	import Heading from '$components/Heading.svelte';
-	import Chat from './Chat.svelte';
-	import type { SocketioConnection } from '$lib/socketio.svelte';
 	import { page } from '$app/state';
+	import Heading from '$components/Heading.svelte';
+	import type { SocketioConnection } from '$lib/socketio.svelte';
+
+	import Chat from './Chat.svelte';
 
 	// const socketio_client_from_lib = new SocketIO();
 

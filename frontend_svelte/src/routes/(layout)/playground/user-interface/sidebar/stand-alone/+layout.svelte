@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { initCollapse, initOverlay } from '$lib/userInterface';
 	import type { Snippet } from 'svelte';
+
+	import { initCollapse, initOverlay } from '$lib/userInterface';
 	let { children }: { children: Snippet } = $props();
 </script>
 

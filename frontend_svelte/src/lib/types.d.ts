@@ -1,11 +1,12 @@
 import type { AccountInfo } from '@azure/msal-node';
 import type {
-	User as MicrosoftProfile,
-	Team as MicrosoftTeam
+	Team as MicrosoftTeam,
+	User as MicrosoftProfile
 } from '@microsoft/microsoft-graph-types';
+
 import type { Action, IdentityType } from '$lib/accessHandler';
-import type { Variant } from '$lib/theming';
 import type { SessionStatus } from '$lib/session';
+import type { Variant } from '$lib/theming';
 
 // App specific:
 export type BackendAPIConfiguration = {
@@ -77,7 +78,7 @@ export type SidebarItem = {
 // Access types:
 export interface AccessPolicy {
 	resource_id: string;
-	identity_id: string; // can be optional for public resources
+	identity_id?: string; // can be optional for public resources
 	action?: Action;
 	new_action?: Action; // for updates
 	public?: boolean;

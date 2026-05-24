@@ -1,6 +1,7 @@
 <script lang="ts">
-	import Loreum from '../../Loreum.svelte';
 	import Display from '$components/Display.svelte';
+
+	import Loreum from '../../Loreum.svelte';
 </script>
 
 <div class="bg-success-container/70 rounded-xl p-4">

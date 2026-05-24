@@ -1,8 +1,9 @@
 <script lang="ts">
-	import NavigationCard from '$components/NavigationCard.svelte';
 	import Display from '$components/Display.svelte';
-	import Loreum from '../Loreum.svelte';
+	import NavigationCard from '$components/NavigationCard.svelte';
 	import Title from '$components/Title.svelte';
+
+	import Loreum from '../Loreum.svelte';
 
 	const sidebars = [
 		{

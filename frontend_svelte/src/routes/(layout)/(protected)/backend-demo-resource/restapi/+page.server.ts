@@ -1,12 +1,14 @@
-import type { Actions, PageServerLoad } from './$types';
+import type { Team as MicrosoftTeam } from '@microsoft/microsoft-graph-types';
+import { fail } from '@sveltejs/kit';
+
+import { Action } from '$lib/accessHandler';
 // import { error } from '@sveltejs/kit';
 import { backendAPI } from '$lib/server/apis/backendApi';
-import { fail } from '@sveltejs/kit';
-import type { AccessPolicy, AccessRight, DemoResource, DemoResourceExtended } from '$lib/types';
-import type { Team as MicrosoftTeam } from '@microsoft/microsoft-graph-types';
 // import { Action } from '$lib/accessHandler';
 import { microsoftGraph } from '$lib/server/apis/msgraph';
-import { Action } from '$lib/accessHandler';
+import type { AccessPolicy, AccessRight, DemoResource, DemoResourceExtended } from '$lib/types';
+
+import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	// console.log('=== routes - demo-resource - page.server - load function executed ===');

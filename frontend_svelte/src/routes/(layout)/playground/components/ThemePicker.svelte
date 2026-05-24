@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { type SubmitFunction } from '@sveltejs/kit';
+
 	import { enhance } from '$app/forms';
-	import { Variant, type ColorConfig } from '$lib/theming';
+	import { type ColorConfig, Variant } from '$lib/theming';
 
 	let {
 		themeForm = $bindable<HTMLFormElement | null>(),

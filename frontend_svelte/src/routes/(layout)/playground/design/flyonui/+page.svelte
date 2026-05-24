@@ -1,15 +1,16 @@
 <script lang="ts">
-	import Heading from '$components/Heading.svelte';
-	import HorizontalRule from '$components/HorizontalRule.svelte';
-	// import { createRawSnippet, type Snippet } from 'svelte';
-
-	import ColorTileFlyonUi from './ColorTileFlyonUI.svelte';
-	import { type AppTheme } from '$lib/theming';
-	import { themeStore } from '$lib/stores';
 	// import { hexFromArgb } from '@material/material-color-utilities';
 	import { onDestroy } from 'svelte';
+
+	import Heading from '$components/Heading.svelte';
+	import HorizontalRule from '$components/HorizontalRule.svelte';
 	import JsonData from '$components/JsonData.svelte';
+	import { themeStore } from '$lib/stores';
+	import { type AppTheme } from '$lib/theming';
 	import { initAccordion } from '$lib/userInterface';
+
+	// import { createRawSnippet, type Snippet } from 'svelte';
+	import ColorTileFlyonUi from './ColorTileFlyonUI.svelte';
 	// import {Theming }from '$lib/theming';
 
 	// const createdComponent: Snippet = createRawSnippet(() => {

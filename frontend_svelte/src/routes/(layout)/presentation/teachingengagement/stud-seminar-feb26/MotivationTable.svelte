@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { themeStore } from '$lib/stores';
-	import type { AppTheme } from '$lib/theming';
 	import { Hct, hexFromArgb } from '@material/material-color-utilities';
 	// import { Theming } from '$lib/theming';
 	import { onDestroy } from 'svelte';
+
+	import { themeStore } from '$lib/stores';
+	import type { AppTheme } from '$lib/theming';
 	// import { SocketIO } from '$lib/socketio.svelte';
 	// import { Action } from '$lib/accessHandler';
 

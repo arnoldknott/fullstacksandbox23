@@ -1,8 +1,10 @@
-import { describe, test, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
 import { createRawSnippet, type Snippet } from 'svelte';
-import Guard from './Guard.svelte';
+import { describe, expect, test, vi } from 'vitest';
+
 import { page } from '$app/state';
+
+import Guard from './Guard.svelte';
 
 // Svelte has no way to fill slots programmatically yet,
 // https://github.com/sveltejs/svelte/pull/4296

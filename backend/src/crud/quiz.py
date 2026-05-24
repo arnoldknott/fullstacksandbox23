@@ -1,17 +1,16 @@
-from models.quiz import (
-    # Quiz, QuizCreate, QuizRead, QuizUpdate,
-    QuestionCreate,
-    QuestionRead,
-    QuestionUpdate,
+from models.quiz import (  # Quiz, QuizCreate, QuizRead, QuizUpdate,
+    Message,
     MessageCreate,
     MessageRead,
     MessageUpdate,
+    Numerical,
     NumericalCreate,
     NumericalRead,
     NumericalUpdate,
-    Message,
-    Numerical,
     Question,
+    QuestionCreate,
+    QuestionRead,
+    QuestionUpdate,
 )
 
 from .base import BaseCRUD

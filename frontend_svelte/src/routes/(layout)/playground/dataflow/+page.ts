@@ -1,4 +1,4 @@
-import type { PageLoad, PageData } from './$types';
+import type { PageData, PageLoad } from './$types';
 
 // Data flow highly inspired by https://joyofcode.xyz/sveltekit-data-flow
 export const load: PageLoad = async ({ data, parent }: PageData) => {

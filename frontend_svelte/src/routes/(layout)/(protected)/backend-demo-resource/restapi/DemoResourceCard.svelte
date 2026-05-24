@@ -1,14 +1,16 @@
 <script lang="ts">
-	import { initDropdown } from '$lib/userInterface';
-	import Card from '$components/Card.svelte';
+	import type { ActionResult } from '@sveltejs/kit';
 	import { type SubmitFunction } from '@sveltejs/kit';
-	import type { DemoResourceExtended, AccessPolicy, Identity } from '$lib/types';
+
 	import { enhance } from '$app/forms';
-	import { Action, AccessHandler } from '$lib/accessHandler';
+	import Card from '$components/Card.svelte';
+	import { AccessHandler, Action } from '$lib/accessHandler';
+	import type { AccessPolicy, DemoResourceExtended, Identity } from '$lib/types';
+	import { initDropdown } from '$lib/userInterface';
+
 	// import type { IHTMLElementFloatingUI, HSDropdown } from 'flyonui/flyonui';
 	// TBD: move to components folder
 	import ShareItem from '../../../playground/components/ShareItem.svelte';
-	import type { ActionResult } from '@sveltejs/kit';
 
 	let {
 		demoResource,

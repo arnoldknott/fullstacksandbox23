@@ -1,8 +1,9 @@
 <script lang="ts">
-	import Heading from '$components/Heading.svelte';
-	import type { PageData } from './$types';
 	// import type { Question } from '$lib/types';
 	import { resolve } from '$app/paths';
+	import Heading from '$components/Heading.svelte';
+
+	import type { PageData } from './$types';
 	let { data }: { data: PageData } = $props();
 
 	// const allQuestions: Question[] = $derived(data.questionsData || []);

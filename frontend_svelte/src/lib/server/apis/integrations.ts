@@ -1,5 +1,6 @@
-import { microsoftGraph } from './msgraph';
 import type { User } from '$lib/types';
+
+import { microsoftGraph } from './msgraph';
 // import type { User as MicrosoftUser } from '@microsoft/microsoft-graph-types';
 // import type { SvelteMap } from 'svelte/reactivity';
 

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Title from '$components/Title.svelte';
+
 	import Loreum from '../Loreum.svelte';
 </script>
 

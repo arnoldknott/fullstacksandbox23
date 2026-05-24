@@ -9,9 +9,28 @@
   "python.analysis.exclude": ["backend/src/migrations/**", "**/.venv/**", "backend/.venv/**"],
   "python.analysis.typeCheckingMode": "basic",
   "python.autoComplete.extraPaths": ["./backend/src"],
+  "isort.args": ["--profile", "black"],
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter",
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": true
+    }
+  },
+  "[javascript]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": true
+    }
+  },
+  "[typescript]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": true
+    }
+  },
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": true
   },
   "editor.hover.enabled": "on",
   "svelte.plugin.css.hover.enable": true,

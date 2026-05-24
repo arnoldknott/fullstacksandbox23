@@ -1,6 +1,7 @@
 <script lang="ts">
-	import type { SidebarItemContent, SidebarFolderContent } from '$lib/types';
 	import { page } from '$app/state';
+	import type { SidebarFolderContent, SidebarItemContent } from '$lib/types';
+
 	import SidebarFolder from './SidebarFolder.svelte';
 	import SidebarLink from './SidebarLink.svelte';
 	let {

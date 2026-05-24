@@ -1,10 +1,12 @@
 <script lang="ts">
-	import { initDropdown, initOverlay, initCollapse, initScrollspy } from '$lib/userInterface';
 	import { type Snippet } from 'svelte';
-	import { Variant, type ColorConfig } from '$lib/theming';
-	import { Model, type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
-	import ThemePicker from '../../../components/ThemePicker.svelte';
+
+	import { type ArtificialIntelligenceConfig, Model } from '$lib/artificialIntelligence';
+	import { type ColorConfig, Variant } from '$lib/theming';
+	import { initCollapse, initDropdown, initOverlay, initScrollspy } from '$lib/userInterface';
+
 	import ArtificialIntelligencePicker from '../../../components/ArtificialIntelligencePicker.svelte';
+	import ThemePicker from '../../../components/ThemePicker.svelte';
 	let { children }: { children: Snippet } = $props();
 
 	const openSidebar = () => {

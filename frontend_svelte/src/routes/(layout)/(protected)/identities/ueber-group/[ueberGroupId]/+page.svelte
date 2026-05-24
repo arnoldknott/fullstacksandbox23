@@ -1,19 +1,21 @@
 <script lang="ts">
-	import { page } from '$app/state';
+	import type { User as MicrosoftUser } from '@microsoft/microsoft-graph-types';
+	import { onDestroy, onMount } from 'svelte';
+	import { SvelteMap } from 'svelte/reactivity';
+	import { crossfade } from 'svelte/transition';
+
 	import { goto } from '$app/navigation';
-	import JsonData from '$components/JsonData.svelte';
-	import type { PageData } from './$types';
+	import { page } from '$app/state';
+	import Card from '$components/Card.svelte';
 	import Heading from '$components/Heading.svelte';
+	import JsonData from '$components/JsonData.svelte';
+	import { IdentityType } from '$lib/accessHandler';
 	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio.svelte';
 	import type { Group, Hierarchy, UeberGroup } from '$lib/types';
-	import type { User as MicrosoftUser } from '@microsoft/microsoft-graph-types';
-	import Card from '$components/Card.svelte';
-	import IdentityListItem from '../../IdentityListItem.svelte';
+
 	import IdBadge from '../../../IdBadge.svelte';
-	import { crossfade } from 'svelte/transition';
-	import { SvelteMap } from 'svelte/reactivity';
-	import { IdentityType } from '$lib/accessHandler';
-	import { onDestroy, onMount } from 'svelte';
+	import IdentityListItem from '../../IdentityListItem.svelte';
+	import type { PageData } from './$types';
 
 	// Page related stuff:
 	let { data }: { data: PageData } = $props();

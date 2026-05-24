@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { IdentityType, AccessHandler } from '$lib/accessHandler';
+	import { AccessHandler, IdentityType } from '$lib/accessHandler';
 	import type { AnyGroupIdentity } from '$lib/types';
+
 	// import type { User as AzureUser } from '@microsoft/microsoft-graph-types';
 	import IdBadge from '../IdBadge.svelte';
 	// import IdentityActionButton from './IdentityActionButton.svelte';

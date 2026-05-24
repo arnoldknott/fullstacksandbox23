@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { initDropdown, initOverlay } from '$lib/userInterface';
-	import Display from '$components/Display.svelte';
 	import type { Snippet } from 'svelte';
+
+	import Display from '$components/Display.svelte';
+	import { initDropdown, initOverlay } from '$lib/userInterface';
 	// import { onMount } from 'svelte';
 	let { children }: { children: Snippet } = $props();
 

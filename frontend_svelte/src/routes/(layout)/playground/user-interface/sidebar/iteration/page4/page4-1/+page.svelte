@@ -1,7 +1,8 @@
 <script lang="ts">
-	import Heading from '$components/Heading.svelte';
-	import Loreum from '../../../Loreum.svelte';
 	import Display from '$components/Display.svelte';
+	import Heading from '$components/Heading.svelte';
+
+	import Loreum from '../../../Loreum.svelte';
 </script>
 
 <div class="bg-primary-container/70 rounded-xl p-4">

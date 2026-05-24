@@ -14,3 +14,6 @@ yarn.lock
 
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# ignore static files for now:
+/static/*

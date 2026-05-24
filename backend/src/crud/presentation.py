@@ -1,8 +1,8 @@
 from models.presentation import (
+    Presentation,
     PresentationCreate,
     PresentationRead,
     PresentationUpdate,
-    Presentation,
 )
 
 from .base import BaseCRUD

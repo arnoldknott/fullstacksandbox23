@@ -1,11 +1,12 @@
 <script lang="ts">
-	import type { PageData } from './$types';
-	import { AccessHandler } from '$lib/accessHandler';
-	import JsonData from '$components/JsonData.svelte';
 	import Heading from '$components/Heading.svelte';
-	import DemoResourceCard from './DemoResourceCard.svelte';
-	import type { DemoResourceExtended, Identity } from '$lib/types';
+	import JsonData from '$components/JsonData.svelte';
+	import { AccessHandler } from '$lib/accessHandler';
 	import { Action } from '$lib/accessHandler';
+	import type { DemoResourceExtended, Identity } from '$lib/types';
+
+	import type { PageData } from './$types';
+	import DemoResourceCard from './DemoResourceCard.svelte';
 	let { data }: { data: PageData } = $props();
 	let demoResources = $state(data.demoResourcesExtended);
 	const microsoftTeams = data.microsoftTeams;

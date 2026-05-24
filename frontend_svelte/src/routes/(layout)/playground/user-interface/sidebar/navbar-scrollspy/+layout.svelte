@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { initDropdown, initOverlay, initCollapse, initScrollspy } from '$lib/userInterface';
 	import type { Snippet } from 'svelte';
+
+	import { initCollapse, initDropdown, initOverlay, initScrollspy } from '$lib/userInterface';
 	let { children }: { children: Snippet } = $props();
 
 	let sidebar: HTMLElement | undefined = $state();

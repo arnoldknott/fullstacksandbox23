@@ -1,18 +1,20 @@
 <script lang="ts">
-	import JsonData from '$components/JsonData.svelte';
-	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio.svelte';
-	import { page } from '$app/state';
-	import type { DemoResourceExtended } from '$lib/types';
-	import { goto } from '$app/navigation';
-	import type { PageData } from './$types';
-	import IdentityAccordion from '../../identities/IdentityAccordion.svelte';
-	import { initAccordion } from '$lib/userInterface';
-	import { AccessHandler, Action } from '$lib/accessHandler';
-	import DemoResourceContainer from './DemoResourceContainer.svelte';
-	import { fade, scale } from 'svelte/transition';
-	import IdBadge from '../../IdBadge.svelte';
 	import { onDestroy, onMount } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
+	import { fade, scale } from 'svelte/transition';
+
+	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
+	import JsonData from '$components/JsonData.svelte';
+	import { AccessHandler, Action } from '$lib/accessHandler';
+	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio.svelte';
+	import type { DemoResourceExtended } from '$lib/types';
+	import { initAccordion } from '$lib/userInterface';
+
+	import IdBadge from '../../IdBadge.svelte';
+	import IdentityAccordion from '../../identities/IdentityAccordion.svelte';
+	import type { PageData } from './$types';
+	import DemoResourceContainer from './DemoResourceContainer.svelte';
 
 	let { data }: { data: PageData } = $props();
 	let debug = $state(page.url.searchParams.get('debug') === 'true' ? true : false);

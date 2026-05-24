@@ -1,7 +1,9 @@
 <script lang="ts">
-	import { initScrollspy } from '$lib/userInterface';
-	import Loreum from './(layout)/Loreum.svelte';
 	import { scrollY } from 'svelte/reactivity/window';
+
+	import { initScrollspy } from '$lib/userInterface';
+
+	import Loreum from './(layout)/Loreum.svelte';
 </script>
 
 <div class="grid min-h-screen grid-cols-5">

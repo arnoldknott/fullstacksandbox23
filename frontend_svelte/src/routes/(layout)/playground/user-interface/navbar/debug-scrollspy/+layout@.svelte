@@ -1,25 +1,27 @@
 <script lang="ts">
-	import type { LayoutData } from './$types';
-	import { SessionStatus } from '$lib/session';
-	import { Variant, Theming, type ColorConfig } from '$lib/theming';
-	import { Model, type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
+	import { type SubmitFunction } from '@sveltejs/kit';
+	import { onMount, type Snippet, tick } from 'svelte';
 	import type { Action } from 'svelte/action';
-	import { onMount, tick, type Snippet } from 'svelte';
+	import { scrollY } from 'svelte/reactivity/window';
+
+	import { afterNavigate, goto, pushState, replaceState } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import Guard from '$components/Guard.svelte';
-	import { initDropdown, initOverlay } from '$lib/userInterface';
-	import ThemePicker from '../../../components/ThemePicker.svelte';
-	import ArtificialIntelligencePicker from '../../../components/ArtificialIntelligencePicker.svelte';
+	import { type ArtificialIntelligenceConfig, Model } from '$lib/artificialIntelligence';
+	import { SessionStatus } from '$lib/session';
 	import { themeStore } from '$lib/stores';
-	import { type SubmitFunction } from '@sveltejs/kit';
-	import { resolve } from '$app/paths';
-	import WelcomeModal from '../../../../WelcomeModal.svelte';
-	import { afterNavigate, replaceState, pushState, goto } from '$app/navigation';
-	import type { SidebarItemContent, Session } from '$lib/types';
-	import SidebarItem from './SidebarItem.svelte';
+	import { type ColorConfig, Theming, Variant } from '$lib/theming';
+	import type { Session, SidebarItemContent } from '$lib/types';
+	import { initDropdown, initOverlay } from '$lib/userInterface';
+
 	import LoginOutButton from '../../../../LoginOutButton.svelte';
 	import Logo from '../../../../Logo.svelte';
-	import { scrollY } from 'svelte/reactivity/window';
+	import WelcomeModal from '../../../../WelcomeModal.svelte';
+	import ArtificialIntelligencePicker from '../../../components/ArtificialIntelligencePicker.svelte';
+	import ThemePicker from '../../../components/ThemePicker.svelte';
+	import type { LayoutData } from './$types';
+	import SidebarItem from './SidebarItem.svelte';
 
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
 
@@ -244,13 +246,13 @@
 	let protectedSidebarLinks: SidebarItemContent[] = $state([
 		{
 			name: 'Dashboard',
-			pathname: resolve('/(layout)/(protected)/data'),
+			pathname: resolve('/(layout)/(protected)/protected'),
 			icon: 'icon-[material-symbols--dashboard-outline-rounded]',
 			id: 'dashboard',
 			items: [
 				{
 					name: 'Overview',
-					pathname: resolve('/(layout)/(protected)/data') + '#top',
+					pathname: resolve('/(layout)/(protected)/protected') + '#top',
 					icon: 'icon-[material-symbols--dashboard-outline-rounded]',
 					id: 'overview'
 				},
