@@ -24,6 +24,8 @@ PYRIGHT_EXIT_CODE=$?
 git add ./backend/
 docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T backend_api sh -c "pytest -vv"
 PYTEST_EXIT_CODE=$?
+docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T frontend_svelte sh -c "bun imports:sort"
+IMPORTS_SORT_EXIT_CODE=$?
 docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T frontend_svelte sh -c "bun format"
 BUN_FORMAT_EXIT_CODE=$?
 docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T frontend_svelte sh -c "bun lint"
@@ -53,6 +55,7 @@ print_result $RUFF_EXIT_CODE "ruff"
 print_result $BLACK_EXIT_CODE "black"
 print_result $PYRIGHT_EXIT_CODE "pyright"
 print_result $PYTEST_EXIT_CODE "pytest"
+print_result $IMPORTS_SORT_EXIT_CODE "bun imports:sort"
 print_result $BUN_FORMAT_EXIT_CODE "bun format"
 print_result $BUN_LINT_EXIT_CODE "bun lint"
 print_result $BUN_UNITTEST_EXIT_CODE "bun unit test"
