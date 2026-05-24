@@ -10,26 +10,28 @@
 # docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env run -T --rm backend_api sh -c "pytest -v"
 
 # Get the build back in, when having less frequent changes and closer to release:
-COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env build
-COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env up -d
+docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env build
+docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env up -d
 # TBD: put back in, when frontend is further developed:
-COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T backend_api sh -c "isort --profile black ."
+docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T backend_api sh -c "isort --profile black ."
 ISORT_EXIT_CODE=$?
-COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T backend_api sh -c "ruff check --fix ."
+docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T backend_api sh -c "ruff check --fix ."
 RUFF_EXIT_CODE=$?
-COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T backend_api sh -c "black ."
+docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T backend_api sh -c "black ."
 BLACK_EXIT_CODE=$?
+docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T backend_api sh -c "pyright ."
+PYRIGHT_EXIT_CODE=$?
 git add ./backend/
-COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T backend_api sh -c "pytest"
+docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T backend_api sh -c "pytest -vv"
 PYTEST_EXIT_CODE=$?
-COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T frontend_svelte sh -c "bun format"
+docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T frontend_svelte sh -c "bun format"
 BUN_FORMAT_EXIT_CODE=$?
-COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T frontend_svelte sh -c "bun lint"
+docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T frontend_svelte sh -c "bun lint"
 BUN_LINT_EXIT_CODE=$?
 git add ./frontend_svelte/
-COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T frontend_svelte sh -c "bun test:unit"
+docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T frontend_svelte sh -c "bun test:unit"
 BUN_UNITTEST_EXIT_CODE=$?
-COMPOSE_PROJECT_NAME=test-fssb23 docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env down
+docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env down
 
 cd infrastructure
 COMPOSE_PROJECT_NAME=test-fssb23 docker compose build
@@ -49,6 +51,7 @@ print_result() {
 print_result $ISORT_EXIT_CODE "isort"
 print_result $RUFF_EXIT_CODE "ruff"
 print_result $BLACK_EXIT_CODE "black"
+print_result $PYRIGHT_EXIT_CODE "pyright"
 print_result $PYTEST_EXIT_CODE "pytest"
 print_result $BUN_FORMAT_EXIT_CODE "bun format"
 print_result $BUN_LINT_EXIT_CODE "bun lint"

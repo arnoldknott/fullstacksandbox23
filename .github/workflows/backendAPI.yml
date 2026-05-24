@@ -150,6 +150,14 @@ jobs:
             -f compose.override.test.yml \
             exec -T backend_api \
             sh -c "ruff check ."
+      - name: Type checking
+        run: |
+          docker compose \
+            --env-file versions.env \
+            -f compose.yml \
+            -f compose.override.test.yml \
+            exec -T backend_api \
+            sh -c "pyright ."
       # - name: Unit testing
       #   run: |
       #     docker compose \
@@ -172,8 +180,9 @@ jobs:
             -f compose.yml \
             -f compose.override.test.yml \
             exec -T backend_api \
-            sh -c "pytest -v"
+            sh -c "pytest -vv"
       - name: Stop containers
+        if: ${{ always() }}
         run: |
           docker compose \
             --env-file versions.env \
