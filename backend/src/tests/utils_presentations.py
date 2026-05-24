@@ -23,6 +23,10 @@ wrong_test_presentations = [
         "source": 12345,  # Invalid type, should be str
         "path": None,
     },
+    # {
+    #     "source": "https://example.com/valid-source",
+    #     "path": 67890,  # Invalid type, should be str or None
+    # },
     {
         "source": "https://example.com/valid-source",
         "path": 67890,  # Invalid type, should be str or None
@@ -65,6 +69,22 @@ many_test_presentations = [
     {
         "source": "https://example.com/rest-api-design",
         "path": "/presentation/rest-api-design",
+    },
+    {
+        "source": "https://example.com/first-no-path",
+        "path": None,
+    },
+    {
+        "source": "https://example.com/second-no-path",
+        "path": None,
+    },
+    {
+        "source": "https://example.com/empty-string",
+        "path": "",
+    },
+    {
+        "source": "https://example.com/second-empty-string",
+        "path": "",
     },
 ]
 

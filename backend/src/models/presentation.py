@@ -1,6 +1,6 @@
 from typing import Annotated, Optional
 
-from pydantic import AfterValidator, HttpUrl
+from pydantic import AfterValidator, BeforeValidator, HttpUrl
 from sqlmodel import Field
 
 # from .quiz import Quiz, QuizRead
@@ -13,6 +13,21 @@ from .base import (
     RelationshipHierarchyType,
     create_model,
 )
+
+
+def convert_empty_path_to_null(path: str | None) -> str | None:
+    # Treat empty/blank as "not set"
+    if path is None:
+        return None
+    if not isinstance(path, str):
+        raise ValueError("path must be a string or null")
+    received = path.strip()
+    if received == "":
+        return None
+    # # optional: normalize slash style
+    # if not received.startswith("/"):
+    #     received = f"/{received}"
+    return received
 
 
 def validate_endpoint_path(path: str | None) -> str | None:
@@ -37,7 +52,11 @@ Presentation = create_model(
         # otherwise it is accessible via the API at /presentations/{id} using the uuid of the presentation
         Attribute(
             name="path",
-            type=Annotated[Optional[str], AfterValidator(validate_endpoint_path)],
+            type=Annotated[
+                Optional[str],
+                BeforeValidator(convert_empty_path_to_null),
+                AfterValidator(validate_endpoint_path),
+            ],
             field_value=Field(
                 unique=True,
                 index=True,
