@@ -847,7 +847,7 @@
 			{#snippet footerAction()}
 				<div class="join flex flex-row items-center justify-center">
 					<button
-						class="btn btn-secondary-container text-secondary-container-content join-item grow"
+						class="btn btn-secondary-container btn-gradient shadow-outline text-secondary-container-content join-item grow shadow-sm"
 						aria-label="Edit Button"
 						onclick={() => (edit ? (edit = false) : (edit = true))}
 					>
@@ -860,7 +860,7 @@
 					>
 						<button
 							id="action-share"
-							class="dropdown-toggle btn btn-secondary-container text-secondary-container-content w-full rounded-none"
+							class="dropdown-toggle btn btn-secondary-container btn-gradient shadow-outline text-secondary-container-content w-full rounded-none shadow-sm"
 							aria-haspopup="menu"
 							aria-expanded="false"
 							aria-label="Share with"
@@ -904,7 +904,7 @@
 						</ul>
 					</div>
 					<button
-						class="btn btn-error-container bg-error-container/70 hover:bg-error-container/50 focus:bg-error-container/50 text-error-container-content join-item grow border-0"
+						class="btn btn-error-container btn-gradient bg-error-container/70 hover:bg-error-container/50 focus:bg-error-container/50 text-error-container-content join-item shadow-outline grow border-0 shadow-sm"
 						aria-label="Delete Button"
 						name="id"
 						formaction="?/delete"
@@ -2201,7 +2201,7 @@
 		<Title id="modals-dev">🚧 Modals 🚧</Title>
 		<button
 			type="button"
-			class="btn btn-accent"
+			class="btn btn-accent btn-gradient shadow-outline"
 			aria-haspopup="dialog"
 			aria-expanded="false"
 			aria-controls="basic-modal"
@@ -2246,10 +2246,14 @@
 						needed.
 					</div>
 					<div class="modal-footer">
-						<button type="button" class="btn btn-secondary btn-soft" data-overlay="#basic-modal"
-							>Close</button
+						<button
+							type="button"
+							class="btn btn-secondary btn-gradient shadow-outline"
+							data-overlay="#basic-modal">Close</button
 						>
-						<button type="button" class="btn btn-primary">Save changes</button>
+						<button type="button" class="btn btn-primary btn-gradient shadow-outline"
+							>Save changes</button
+						>
 					</div>
 				</div>
 			</div>
@@ -2257,7 +2261,7 @@
 
 		<button
 			type="button"
-			class="btn btn-primary"
+			class="btn btn-primary btn-gradient shadow-outline"
 			aria-haspopup="dialog"
 			aria-expanded="false"
 			aria-controls="centered-modal"
@@ -2293,10 +2297,14 @@
 						needed.
 					</div>
 					<div class="modal-footer">
-						<button type="button" class="btn btn-secondary btn-soft" data-overlay="#centered-modal"
-							>Close</button
+						<button
+							type="button"
+							class="btn btn-secondary btn-gradient shadow-outline"
+							data-overlay="#centered-modal">Close</button
 						>
-						<button type="button" class="btn btn-primary">Save changes</button>
+						<button type="button" class="btn btn-primary btn-gradient shadow-outline"
+							>Save changes</button
+						>
 					</div>
 				</div>
 			</div>
@@ -2304,7 +2312,7 @@
 
 		<button
 			type="button"
-			class="btn btn-primary"
+			class="btn btn-primary btn-gradient shadow-outline"
 			aria-haspopup="dialog"
 			aria-expanded="false"
 			aria-controls="share-modal"
@@ -2369,10 +2377,14 @@
 						</div>
 					</div>
 					<div class="modal-footer">
-						<button type="button" class="btn btn-secondary btn-soft" data-overlay="#share-modal"
-							>Close</button
+						<button
+							type="button"
+							class="btn btn-secondary btn-gradient shadow-outline"
+							data-overlay="#share-modal">Close</button
 						>
-						<button type="button" class="btn btn-primary">Save changes</button>
+						<button type="button" class="btn btn-primary btn-gradient shadow-outline"
+							>Save changes</button
+						>
 					</div>
 				</div>
 			</div>
@@ -2380,7 +2392,7 @@
 
 		<button
 			type="button"
-			class="btn btn-warning"
+			class="btn btn-warning btn-gradient shadow-outline"
 			aria-haspopup="dialog"
 			aria-expanded="false"
 			aria-controls="add-element-modal"
@@ -2461,7 +2473,7 @@
 		<Title id="drawer-dev">🚧 Drawer 🚧</Title>
 		<button
 			type="button"
-			class="btn btn-primary"
+			class="btn btn-primary btn-gradient shadow-outline"
 			aria-haspopup="dialog"
 			aria-expanded="false"
 			aria-controls="overlay-example"
@@ -2497,10 +2509,14 @@
 				</div>
 			</div>
 			<div class="drawer-footer">
-				<button type="button" class="btn btn-secondary-container" data-overlay="#overlay-example"
-					>Close</button
+				<button
+					type="button"
+					class="btn btn-secondary-container btn-gradient shadow-outline"
+					data-overlay="#overlay-example">Close</button
 				>
-				<button type="button" class="btn btn-primary-container">Save changes</button>
+				<button type="button" class="btn btn-primary-container btn-gradient shadow-outline"
+					>Save changes</button
+				>
 			</div>
 		</div>
 

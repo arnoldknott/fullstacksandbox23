@@ -7,7 +7,7 @@
 
 	let {
 		resourceId,
-		shareOption,
+		shareOption = $bindable(),
 		share,
 		closeShareMenu,
 		wide
@@ -93,6 +93,7 @@
 						action: desiredActions(selectedAction).action,
 						new_action: desiredActions(selectedAction).new_action
 					});
+					shareOption.action = desiredActions(selectedAction).new_action;
 					if (closeShareMenu) {
 						closeShareMenu();
 					}

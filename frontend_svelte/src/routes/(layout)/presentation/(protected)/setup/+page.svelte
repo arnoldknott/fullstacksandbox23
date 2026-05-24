@@ -142,7 +142,7 @@
 {#snippet newPresentationFooter()}
 	<div class="ml-5 flex flex-row justify-end gap-4">
 		<button
-			class="btn btn-secondary"
+			class="btn btn-secondary btn-gradient shadow-outline rounded-lg shadow"
 			aria-label="Cancel"
 			onclick={() => {
 				newPresentation = createNewPresentation();
@@ -150,7 +150,7 @@
 			}}><span class="icon-[tabler--x] size-5"></span>Cancel</button
 		>
 		<button
-			class="btn btn-primary"
+			class="btn btn-primary btn-gradient shadow-outline rounded-lg shadow"
 			aria-label="Save new presentation"
 			onclick={() => submitPresentation()}
 			><span class="icon-[tabler--send-2] size-5"></span>Save</button
@@ -159,7 +159,7 @@
 {/snippet}
 
 {#snippet warning()}
-	<span class="icon-[fluent-color--warning-24] size-5"></span>
+	<span class="icon-[fluent-color--warning-24] size-4"></span>
 {/snippet}
 
 {#if showNewPresentationCard}
@@ -216,7 +216,7 @@
 						{#each shareOptions as shareOption, i (i)}
 							<ShareItem
 								resourceId={newPresentation.id}
-								{shareOption}
+								bind:shareOption={shareOptions[i]}
 								share={socketioPresentations?.shareEntity.bind(socketioPresentations)}
 								wide
 							/>
@@ -233,31 +233,40 @@
 		<Heading id="existingPresentations" class="grow">Overview</Heading>
 		<div class="flex flex-row items-center justify-center">
 			<button
-				class="btn btn-primary mx-4 rounded"
+				class="btn btn-primary btn-gradient shadow-outline mx-4 rounded-lg shadow"
 				aria-label="Add new presentation"
 				onclick={() => (showNewPresentationCard = true)}
 			>
 				<!-- onclick={() => goto(resolve('/(layout)/presentation/(protected)/setup/new'))} -->
-				<span class="icon-[fa6-solid--plus] size-5"></span>Add
+				<span class="icon-[fa6-solid--plus] size-4"></span>Add
 			</button>
 			<div class="join rounded-lg">
 				<button
 					aria-label="Preview"
-					class="btn join-item btn-secondary py-4 {viewMode !== 'preview' ? 'opacity-60' : ''}"
+					class="btn join-item btn-secondary btn-gradient shadow-outline py-4 shadow {viewMode !==
+					'preview'
+						? 'opacity-60'
+						: ''}"
 					onclick={() => (viewMode = 'preview')}
 				>
 					<span class="icon-[material-symbols-light--preview-outline] size-5"></span>
 				</button>
 				<button
 					aria-label="Grid"
-					class="btn join-item btn-secondary py-4 {viewMode !== 'grid' ? 'opacity-60' : ''}"
+					class="btn join-item btn-secondary btn-gradient shadow-outline py-4 shadow {viewMode !==
+					'grid'
+						? 'opacity-60'
+						: ''}"
 					onclick={() => (viewMode = 'grid')}
 				>
 					<span class="icon-[gridicons--grid] size-5"></span>
 				</button>
 				<button
 					aria-label="List"
-					class="btn join-item btn btn-secondary py-4 {viewMode !== 'list' ? 'opacity-60' : ''}"
+					class="btn join-item btn-secondary btn-gradient shadow-outline py-4 shadow {viewMode !==
+					'list'
+						? 'opacity-60'
+						: ''}"
 					onclick={() => (viewMode = 'list')}
 				>
 					<span class="icon-[material-symbols-light--table-outline] size-5"></span>
@@ -277,12 +286,12 @@
 			class=""
 		> -->
 		<button
-			class="btn btn-secondary-container btn-sm text-secondary-container-content join-item"
+			class="btn btn-secondary-container btn-gradient btn-sm text-secondary-container-content join-item shadow-outline shadow-sm"
 			aria-label="Edit Button"
 			onclick={() =>
 				goto(resolve('/(layout)/presentation/(protected)/setup/[id]', { id: resourceId }))}
 		>
-			<span class="icon-[material-symbols--edit-outline-rounded] size-5"></span>
+			<span class="icon-[material-symbols--edit-outline-rounded] size-4"></span>
 			<!-- <span
 					class="hidden 2xl:block">Edit</span
 				> -->
@@ -295,16 +304,16 @@
 		>
 			<button
 				id="action-share"
-				class="dropdown-toggle btn btn-secondary-container btn-sm text-secondary-container-content w-full rounded-none"
+				class="dropdown-toggle btn btn-secondary-container btn-gradient btn-sm text-secondary-container-content shadow-outline w-full rounded-none shadow-sm"
 				aria-haspopup="menu"
 				aria-expanded="false"
 				aria-label="Share with"
 			>
-				<span class="icon-[tabler--share-2] size-5"></span>
+				<span class="icon-[tabler--share-2] size-4"></span>
 				<!-- <span class="hidden 2xl:block"
 					>Share</span
 				> -->
-				<span class="icon-[tabler--chevron-up] dropdown-open:rotate-180 size-4"></span>
+				<span class="icon-[tabler--chevron-up] dropdown-open:rotate-180 size-3"></span>
 			</button>
 			<ul
 				class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-[15rem] shadow-xs"
@@ -329,12 +338,12 @@
 			</ul>
 		</div>
 		<button
-			class="btn btn-error-container btn-sm bg-error-container/70 hover:bg-error-container/50 focus:bg-error-container/50 text-error-container-content join-item border-0"
+			class="btn btn-error-container btn-gradient btn-sm bg-error-container/70 hover:bg-error-container/50 focus:bg-error-container/50 text-error-container-content join-item shadow-outline border-0 shadow-sm"
 			aria-label="Delete Button"
 			name="id"
 			onclick={() => !resourceId || socketioPresentations?.deleteEntity(resourceId)}
 		>
-			<span class="icon-[tabler--trash] size-5"></span>
+			<span class="icon-[tabler--trash] size-4"></span>
 			<!-- <span class="hidden 2xl:block">Delete</span> -->
 		</button>
 	</div>
