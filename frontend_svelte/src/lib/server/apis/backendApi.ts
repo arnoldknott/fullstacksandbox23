@@ -205,44 +205,6 @@ class BackendAPI extends BaseAPI {
 
 		return allIdentities;
 	}
-	// TBD: add other group types when needed
-
-	// const ueberGroupResponse = await this.get(sessionId, '/uebergroup');
-	// if (ueberGroupResponse.status === 200) {
-	// 	const allUeberGroups: UeberGroup[] = await ueberGroupResponse.json();
-	// 	allIdentities.push(
-	// 		...allUeberGroups.map((ueberGroup: UeberGroup) => ({
-	// 			id: ueberGroup.id,
-	// 			name: ueberGroup.name,
-	// 			type: IdentityType.UEBER_GROUP
-	// 		}))
-	// 	);
-	// 	allIdentities.push(
-	// 		...allUeberGroups.flatMap((ueberGroup: UeberGroup) =>
-	// 			ueberGroup.users
-	// 				? ueberGroup.users.map((user: User) => ({
-	// 						id: user.id,
-	// 						name: "Get name from Identity Service Provider",
-	// 						type: IdentityType.USER
-	// 				  }))
-	// 				: []
-	// 		)
-	// 	);
-
-	// }
-	// 	const groupResponse = await this.get(sessionId, '/group');
-	// 	if (groupResponse.status === 200) {
-	// 		const allGroups: Group[] = await groupResponse.json();
-	// 		allIdentities.push(
-	// 			...allGroups.map((group: Group) => ({
-	// 				id: group.id,
-	// 				name: group.name,
-	// 				type: IdentityType.GROUP
-	// 			}))
-	// 		);
-	// 	}
-	// 	return allIdentities;
-	// }
 }
 
 export const backendAPI = new BackendAPI();
