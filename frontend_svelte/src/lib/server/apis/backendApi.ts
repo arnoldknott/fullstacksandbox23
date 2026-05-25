@@ -1,9 +1,17 @@
 import { fail } from '@sveltejs/kit';
 
-import { Action } from '$lib/accessHandler';
+import { Action, IdentityType } from '$lib/accessHandler';
 import AppConfig from '$lib/server/config';
 import { msalAuthProvider } from '$lib/server/oauth';
-import type { AccessPolicy } from '$lib/types';
+import type {
+	AccessPolicy,
+	Group,
+	Identity,
+	SubGroup,
+	SubSubGroup,
+	UeberGroup,
+	User
+} from '$lib/types';
 
 import { BaseAPI, type RequestBody } from './base';
 
@@ -147,6 +155,94 @@ class BackendAPI extends BaseAPI {
 			// }
 		}
 	}
+
+	async getAllIdentities(sessionId: string): Promise<Identity[]> {
+		const allIdentities: Identity[] = [];
+		// const allLinkedUsers: User[] = [];
+
+		const addAnyGroupType = async (endpoint: string) => {
+			const anyGroupResponse = await this.get(sessionId, endpoint);
+			if (anyGroupResponse.status === 200) {
+				const allAnyGroups: UeberGroup[] = await anyGroupResponse.json();
+				allIdentities.push(
+					...allAnyGroups.map((anyGroup: UeberGroup | Group | SubGroup | SubSubGroup) => {
+						let type: IdentityType;
+						if (endpoint === '/uebergroup') {
+							type = IdentityType.UEBER_GROUP;
+						} else if (endpoint === '/group') {
+							type = IdentityType.GROUP;
+						} else if (endpoint === '/subgroup') {
+							type = IdentityType.SUB_GROUP;
+						} else if (endpoint === '/subsubgroup') {
+							type = IdentityType.SUB_SUB_GROUP;
+						} else {
+							throw new Error('Unknown endpoint: ' + endpoint);
+						}
+						return {
+							id: anyGroup.id,
+							name: anyGroup.name,
+							type: type
+						};
+					})
+				);
+				allIdentities.push(
+					...allAnyGroups.flatMap((anyGroup: UeberGroup | Group | SubGroup | SubSubGroup) =>
+						anyGroup.users
+							? anyGroup.users.map((user: User) => ({
+									id: user.id,
+									name: 'Get name from Identity Service Provider',
+									type: IdentityType.USER
+								}))
+							: []
+					)
+				);
+			}
+		};
+		await addAnyGroupType('/uebergroup');
+		await addAnyGroupType('/group');
+		await addAnyGroupType('/subgroup');
+		await addAnyGroupType('/subsubgroup');
+
+		return allIdentities;
+	}
+	// TBD: add other group types when needed
+
+	// const ueberGroupResponse = await this.get(sessionId, '/uebergroup');
+	// if (ueberGroupResponse.status === 200) {
+	// 	const allUeberGroups: UeberGroup[] = await ueberGroupResponse.json();
+	// 	allIdentities.push(
+	// 		...allUeberGroups.map((ueberGroup: UeberGroup) => ({
+	// 			id: ueberGroup.id,
+	// 			name: ueberGroup.name,
+	// 			type: IdentityType.UEBER_GROUP
+	// 		}))
+	// 	);
+	// 	allIdentities.push(
+	// 		...allUeberGroups.flatMap((ueberGroup: UeberGroup) =>
+	// 			ueberGroup.users
+	// 				? ueberGroup.users.map((user: User) => ({
+	// 						id: user.id,
+	// 						name: "Get name from Identity Service Provider",
+	// 						type: IdentityType.USER
+	// 				  }))
+	// 				: []
+	// 		)
+	// 	);
+
+	// }
+	// 	const groupResponse = await this.get(sessionId, '/group');
+	// 	if (groupResponse.status === 200) {
+	// 		const allGroups: Group[] = await groupResponse.json();
+	// 		allIdentities.push(
+	// 			...allGroups.map((group: Group) => ({
+	// 				id: group.id,
+	// 				name: group.name,
+	// 				type: IdentityType.GROUP
+	// 			}))
+	// 		);
+	// 	}
+	// 	return allIdentities;
+	// }
 }
 
 export const backendAPI = new BackendAPI();
