@@ -8,6 +8,7 @@
 	import Card from '$components/Card.svelte';
 	import Display from '$components/Display.svelte';
 	import Heading from '$components/Heading.svelte';
+	import JsonData from '$components/JsonData.svelte';
 	import { AccessHandler, Action, IdentityType } from '$lib/accessHandler';
 	import { SocketIO, type SocketioStatus } from '$lib/socketio.svelte';
 	import type { AccessShareOption, PresentationExtended } from '$lib/types';
@@ -26,7 +27,10 @@
 			{
 				namespace: '/presentation',
 				cookie_session_id: data?.session?.sessionId || '',
-				query_params: { 'request-access-data': true }
+				query_params: {
+					'request-access-data': true,
+					'identity-ids': data.payload.identities.map((identity) => identity.id).join(',')
+				}
 			},
 			{
 				subscribeEntities: () => data.payload.presentations || []
@@ -162,6 +166,8 @@
 	<span class="icon-[fluent-color--warning-24] size-4"></span>
 {/snippet}
 
+<JsonData data={data.payload.identities} />
+
 {#if showNewPresentationCard}
 	<div transition:fade={{ duration: 600 }}>
 		<Card id={newPresentation.id} header={newPresentationHeader} footer={newPresentationFooter}>
@@ -213,7 +219,7 @@
 					<ul
 						class="bg-base-150 shadow-outline max-h-48 max-w-fit overflow-y-auto rounded-lg p-2 shadow-inner"
 					>
-						{#each shareOptions as shareOption, i (i)}
+						{#each shareOptions, i}
 							<ShareItem
 								resourceId={newPresentation.id}
 								bind:shareOption={shareOptions[i]}
