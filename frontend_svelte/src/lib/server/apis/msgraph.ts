@@ -1,8 +1,10 @@
 // import type { MicrosoftTeamBasic } from '$lib/types';
 import type { Team } from '@microsoft/microsoft-graph-types';
 
+import { IdentityType } from '$lib/accessHandler';
 import AppConfig from '$lib/server/config';
 import { msalAuthProvider } from '$lib/server/oauth';
+import type { Identity } from '$lib/types';
 
 import { BaseAPI, type RequestBody } from './base';
 
@@ -52,7 +54,7 @@ class MicrosoftGraph extends BaseAPI {
 
 	// TBD: implement put and delete methods
 
-	async getAttachedTeams(sessionId: string, azureGroups: string[]) {
+	async getAttachedTeams(sessionId: string, azureGroups: string[]): Promise<Team[]> {
 		// const myTeams: MicrosoftTeamBasic[] = [];
 		const myTeams: Team[] = [];
 		await Promise.all(
@@ -70,6 +72,20 @@ class MicrosoftGraph extends BaseAPI {
 			})
 		);
 		return myTeams;
+	}
+
+	async getAttachedTeamsAsIdentities(
+		sessionId: string,
+		azureGroups: string[]
+	): Promise<Identity[]> {
+		const myTeams: Team[] = await this.getAttachedTeams(sessionId, azureGroups);
+		return myTeams
+			.filter((team): team is Team & { id: string } => Boolean(team.id))
+			.map((team) => ({
+				id: team.id,
+				name: team.displayName || 'Unknown Microsoft Team',
+				type: IdentityType.MICROSOFT_TEAM
+			}));
 	}
 
 	// async getAttachedSecuriyGroups(sessionId: string, azureGroups: string[]) {

@@ -11,7 +11,8 @@
 		"test:unit": "vitest run",
 		"lint": "npx prettier  --plugin=prettier-plugin-svelte --plugin=prettier-plugin-tailwindcss --check . && eslint .",
 		"format": "npx prettier --plugin=prettier-plugin-svelte --plugin=prettier-plugin-tailwindcss --write --log-level warn .",
-		"imports:sort": "eslint . --fix"
+		"imports:sort": "eslint . --fix",
+		"clean": "bun imports:sort && bun format && bun lint && bun test:unit"
 	},
 	"devDependencies": {
 		"@eslint/eslintrc": "^3.3.5",

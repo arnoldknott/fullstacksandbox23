@@ -1,9 +1,17 @@
 import { fail } from '@sveltejs/kit';
 
-import { Action } from '$lib/accessHandler';
+import { Action, IdentityType } from '$lib/accessHandler';
 import AppConfig from '$lib/server/config';
 import { msalAuthProvider } from '$lib/server/oauth';
-import type { AccessPolicy } from '$lib/types';
+import type {
+	AccessPolicy,
+	Group,
+	Identity,
+	SubGroup,
+	SubSubGroup,
+	UeberGroup,
+	User
+} from '$lib/types';
 
 import { BaseAPI, type RequestBody } from './base';
 
@@ -146,6 +154,56 @@ class BackendAPI extends BaseAPI {
 			// 	return fail(400, { error: 'Action and New Action cannot be the same.' });
 			// }
 		}
+	}
+
+	async getAllIdentities(sessionId: string): Promise<Identity[]> {
+		const allIdentities: Identity[] = [];
+		// const allLinkedUsers: User[] = [];
+
+		const addAnyGroupType = async (endpoint: string) => {
+			const anyGroupResponse = await this.get(sessionId, endpoint);
+			if (anyGroupResponse.status === 200) {
+				const allAnyGroups: UeberGroup[] = await anyGroupResponse.json();
+				allIdentities.push(
+					...allAnyGroups.map((anyGroup: UeberGroup | Group | SubGroup | SubSubGroup) => {
+						let type: IdentityType;
+						if (endpoint === '/uebergroup') {
+							type = IdentityType.UEBER_GROUP;
+						} else if (endpoint === '/group') {
+							type = IdentityType.GROUP;
+						} else if (endpoint === '/subgroup') {
+							type = IdentityType.SUB_GROUP;
+						} else if (endpoint === '/subsubgroup') {
+							type = IdentityType.SUB_SUB_GROUP;
+						} else {
+							throw new Error('Unknown endpoint: ' + endpoint);
+						}
+						return {
+							id: anyGroup.id,
+							name: anyGroup.name,
+							type: type
+						};
+					})
+				);
+				allIdentities.push(
+					...allAnyGroups.flatMap((anyGroup: UeberGroup | Group | SubGroup | SubSubGroup) =>
+						anyGroup.users
+							? anyGroup.users.map((user: User) => ({
+									id: user.id,
+									name: 'Get name from Identity Service Provider',
+									type: IdentityType.USER
+								}))
+							: []
+					)
+				);
+			}
+		};
+		await addAnyGroupType('/uebergroup');
+		await addAnyGroupType('/group');
+		await addAnyGroupType('/subgroup');
+		await addAnyGroupType('/subsubgroup');
+
+		return allIdentities;
 	}
 }
 

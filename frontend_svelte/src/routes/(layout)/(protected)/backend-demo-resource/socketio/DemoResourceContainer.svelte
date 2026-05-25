@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
 
-	import { Action } from '$lib/accessHandler';
-	import { AccessHandler } from '$lib/accessHandler';
+	import { AccessHandler, Action } from '$lib/accessHandler';
 	import { SocketIO } from '$lib/socketio.svelte';
 	import type { AccessShareOption, DemoResourceExtended, Identity } from '$lib/types';
 	import { initDropdown } from '$lib/userInterface';
@@ -133,17 +132,17 @@
 		{#if demoResource.access_right === Action.WRITE || demoResource.access_right === Action.OWN}
 			<div class="join flex flex-row items-end justify-center">
 				<button
-					class="btn btn-secondary-container text-secondary-container-content btn-sm join-item shadow-outline grow shadow-inner shadow-sm"
+					class="btn btn-secondary-container btn-gradient text-secondary-container-content btn-sm join-item shadow-outline grow shadow shadow-sm"
 					aria-label="Edit Button"
 					onclick={() => (edit = !edit)}
 				>
-					<span class="icon-[material-symbols--edit-outline-rounded] size-5 {!edit || 'hidden'}"
+					<span class="icon-[material-symbols--edit-outline-rounded] size-4 {!edit || 'hidden'}"
 					></span>
 					<span class="grid place-items-center {edit || 'hidden'}">
 						<span
 							class="icon-[material-symbols--edit-outline-rounded] col-start-1 row-start-1 size-4"
 						></span>
-						<span class="icon-[ic--outline-do-not-disturb] col-start-1 row-start-1 size-5"></span>
+						<span class="icon-[ic--outline-do-not-disturb] col-start-1 row-start-1 size-4"></span>
 					</span>
 				</button>
 				{#if demoResource.access_right === Action.OWN}
@@ -155,13 +154,13 @@
 						<!-- bind:this={actionButtonShareMenuElement} -->
 						<button
 							id="share-{demoResource.id}"
-							class="dropdown-toggle btn btn-secondary-container text-secondary-container-content btn-sm shadow-outline w-full rounded-none shadow-sm"
+							class="dropdown-toggle btn btn-secondary-container btn-gradient text-secondary-container-content btn-sm shadow-outline w-full rounded-none shadow-sm"
 							aria-haspopup="menu"
 							aria-expanded="false"
 							aria-label="Share with"
 						>
-							<span class="icon-[tabler--share-2] size-5"></span>
-							<span class="icon-[tabler--chevron-up] dropdown-open:rotate-180 size-4"></span>
+							<span class="icon-[tabler--share-2] size-4"></span>
+							<span class="icon-[tabler--chevron-up] dropdown-open:rotate-180 size-3"></span>
 						</button>
 						<!-- {#if shareOptions}
 							{#each shareOptions as shareOption (shareOption.identity_id)}
@@ -198,12 +197,12 @@
 						</ul>
 					</div>
 					<button
-						class="btn btn-error-container bg-error-container/70 hover:bg-error-container/50 focus:bg-error-container/50 text-error-container-content btn-sm join-item shadow-outline grow border-0 shadow-sm"
+						class="btn btn-error-container btn-gradient bg-error-container/70 hover:bg-error-container/50 focus:bg-error-container/50 text-error-container-content btn-sm join-item shadow-outline grow border-0 shadow-sm"
 						aria-label="Delete Button"
 						name="id"
 						onclick={() => !demoResource.id || socketio?.deleteEntity(demoResource.id)}
 					>
-						<span class="icon-[tabler--trash] size-5"></span>
+						<span class="icon-[tabler--trash] size-4"></span>
 					</button>
 				{/if}
 			</div>
