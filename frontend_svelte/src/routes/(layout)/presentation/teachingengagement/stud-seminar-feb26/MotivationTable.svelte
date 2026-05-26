@@ -122,7 +122,7 @@
 		<!-- onclick={() => socketio?.submitEntity(0)}
 		onkeydown={(e: KeyboardEvent) => e.key === 'Enter' && socketio?.submitEntity(0)} -->
 		<button
-			class="btn btn-gradient shadow-outline title-large flex h-[90%] flex-col gap-1 rounded-4xl shadow-sm"
+			class="btn shadow-outline title-large border-outline flex h-[90%] flex-col gap-1 rounded-4xl border-2 shadow-md"
 			style="background: linear-gradient(to right, {motivationColors[0]
 				.background}, {motivationColors[1].background}, {motivationColors[2]
 				.background}); color: {motivationColors[1].text};"
@@ -142,7 +142,7 @@
 	<div class="heading fragment flex flex-col">
 		<div>External</div>
 		<button
-			class="btn btn-gradient shadow-outline title-large flex h-[90%] flex-col gap-1 rounded-4xl shadow-md"
+			class="btn shadow-outline title-large border-outline flex h-[90%] flex-col gap-1 rounded-4xl border-2 shadow-md"
 			style="background: linear-gradient(to right, {motivationColors[2]
 				.background}, {motivationColors[3].background}, {motivationColors[4]
 				.background}); color: {motivationColors[3].text};"
@@ -159,7 +159,7 @@
 	<div class="heading fragment flex flex-col">
 		<div>Introjected</div>
 		<button
-			class="btn shadow-outline title-large border-outline flex h-full flex-col gap-1 rounded-4xl border-2 shadow-md"
+			class="btn shadow-outline title-large border-outline flex h-[90%] flex-col gap-1 rounded-4xl border-2 shadow-md"
 			style="background: linear-gradient(to right, {motivationColors[4]
 				.background}, {motivationColors[5].background}, {motivationColors[6]
 				.background}); color: {motivationColors[5].text};"
@@ -176,7 +176,7 @@
 	<div class="heading fragment flex flex-col">
 		<div>Identified</div>
 		<button
-			class="btn shadow-outline title-large border-outline flex h-full flex-col gap-1 rounded-4xl border-2 shadow-md"
+			class="btn shadow-outline title-large border-outline flex h-[90%] flex-col gap-1 rounded-4xl border-2 shadow-md"
 			style="background: linear-gradient(to right, {motivationColors[6]
 				.background}, {motivationColors[7].background}, {motivationColors[8]
 				.background}); color: {motivationColors[7].text};"
@@ -193,7 +193,7 @@
 	<div class="heading fragment flex flex-col">
 		<div>Integrated</div>
 		<button
-			class="btn shadow-outline title-large border-outline flex h-full flex-col gap-1 rounded-4xl border-2 shadow-md"
+			class="btn shadow-outline title-large border-outline flex h-[90%] flex-col gap-1 rounded-4xl border-2 shadow-md"
 			style="background: linear-gradient(to right, {motivationColors[8]
 				.background}, {motivationColors[9].background}, {motivationColors[10]
 				.background}); color: {motivationColors[9].text};"
@@ -210,7 +210,7 @@
 	<div class="heading fragment flex flex-col">
 		<div class="invisible">dummy</div>
 		<button
-			class="btn shadow-outline title-large border-outline flex h-full flex-col gap-1 rounded-4xl border-2 shadow-md"
+			class="btn shadow-outline title-large border-outline flex h-[90%] flex-col gap-1 rounded-4xl border-2 shadow-md"
 			style="background: linear-gradient(to right, {motivationColors[10]
 				.background}, {motivationColors[11].background}, {motivationColors[12]
 				.background}); color: {motivationColors[11].text};"
