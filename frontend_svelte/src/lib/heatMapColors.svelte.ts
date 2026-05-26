@@ -10,7 +10,7 @@ export type HeatMapColor = {
 };
 
 export const createHeatMapColors = (
-	status: number[],
+	values: number[],
 	toneMultiplier: number = 1,
 	format: 'hex' | 'rgb' = 'hex'
 ): HeatMapColor[] => {
@@ -32,7 +32,7 @@ export const createHeatMapColors = (
 		: Hct.from(24, 13, 90);
 	const toneScale = Math.min(1, Math.max(0, toneMultiplier));
 
-	let heatMapColors = status
+	let heatMapColors = values
 		.map((s) => ({
 			background: s * 1.05 + 25,
 			text: s * 1.05 + 25
