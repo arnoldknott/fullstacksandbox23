@@ -1,12 +1,9 @@
 <script lang="ts">
-	import { Hct, hexFromArgb } from '@material/material-color-utilities';
-	import { onDestroy } from 'svelte';
+	// import { Hct, hexFromArgb } from '@material/material-color-utilities';
 
 	import { Action } from '$lib/accessHandler';
+	import { createHeatMapColors } from '$lib/heatMapColors.svelte';
 	import { SocketIO } from '$lib/socketio.svelte';
-	import { themeStore } from '$lib/stores';
-	import type { AppTheme } from '$lib/theming';
-	import { Theming } from '$lib/theming';
 
 	type ColorSet = {
 		background: string;
@@ -35,68 +32,74 @@
 	};
 
 	// Static coloring the motivation buttons:
-	let theme = $state({} as AppTheme);
-	const unsubscribeThemeStore = themeStore.subscribe((value) => {
-		theme = value;
-	});
-
-	onDestroy(() => {
-		unsubscribeThemeStore();
-	});
-
-	let errorHct = $derived.by(() => {
-		if (!theme.currentMode) {
-			return Hct.from(25, 80, 30);
-		} else {
-			return Hct.fromInt(theme[theme.currentMode].colors['error']);
-		}
-	});
-	let onErrorHct = $derived.by(() => {
-		if (!theme.currentMode) {
-			return Hct.from(24, 13, 90);
-		} else {
-			return Hct.fromInt(theme[theme.currentMode].colors['onError']);
-		}
-	});
-
 	// let motivation = $state([0, 25, 50, 75, 100]);
 	let motivation = $state(Array.from({ length: 13 }, (_, i) => (i * 100) / 12));
-	let motivationColorsHue = $derived(
-		motivation.map((m) => ({
-			background: m * 1.05 + 25,
-			text: m * 1.05 + 25
-		}))
-	);
-	let motivationColors = $derived(
-		motivationColorsHue.map((hue) => ({
-			background: hexFromArgb(
-				Hct.from(hue.background, errorHct.chroma, errorHct.tone * 0.9).toInt()
-			),
-			text: hexFromArgb(Hct.from(hue.text, onErrorHct.chroma, onErrorHct.tone * 0.9).toInt())
-		}))
-	);
+	// let theme = $state({} as AppTheme);
+	// const unsubscribeThemeStore = themeStore.subscribe((value) => {
+	// 	theme = value;
+	// });
+
+	// onDestroy(() => {
+	// 	unsubscribeThemeStore();
+	// });
+
+	// let errorHct = $derived.by(() => {
+	// 	if (!theme.currentMode) {
+	// 		return Hct.from(25, 80, 30);
+	// 	} else {
+	// 		return Hct.fromInt(theme[theme.currentMode].colors['error']);
+	// 	}
+	// });
+	// let onErrorHct = $derived.by(() => {
+	// 	if (!theme.currentMode) {
+	// 		return Hct.from(24, 13, 90);
+	// 	} else {
+	// 		return Hct.fromInt(theme[theme.currentMode].colors['onError']);
+	// 	}
+	// });
+
+	// let motivationColorsHue = $derived(
+	// 	motivation.map((m) => ({
+	// 		background: m * 1.05 + 25,
+	// 		text: m * 1.05 + 25
+	// 	}))
+	// );
+	// let motivationColors = $derived(
+	// 	motivationColorsHue.map((hue) => ({
+	// 		background: hexFromArgb(
+	// 			Hct.from(hue.background, errorHct.chroma, errorHct.tone * 0.9).toInt()
+	// 		),
+	// 		text: hexFromArgb(Hct.from(hue.text, onErrorHct.chroma, onErrorHct.tone * 0.9).toInt())
+	// 	}))
+	// );
+	let motivationColors = $derived.by(() => createHeatMapColors(motivation, 0.9));
 
 	// calculate background color from average motivation value:
 	$effect(() => {
-		// calculate Hct from material design:
-		const backgroundHct = Hct.from(
-			averageMotivation * 1.05 + 25,
-			errorHct.chroma,
-			errorHct.tone * 0.9
-		);
-		const textHct = Hct.from(
-			averageMotivation * 1.05 + 25,
-			onErrorHct.chroma,
-			onErrorHct.tone * 0.9
-		);
+		// // calculate Hct from material design:
+		// const backgroundHct = Hct.from(
+		// 	averageMotivation * 1.05 + 25,
+		// 	errorHct.chroma,
+		// 	errorHct.tone * 0.9
+		// );
+		// const textHct = Hct.from(
+		// 	averageMotivation * 1.05 + 25,
+		// 	onErrorHct.chroma,
+		// 	onErrorHct.tone * 0.9
+		// );
 		// console.log('=== motivationAverageColorHue - backgroundHct ===');
 		// console.log(backgroundHct);
 		// console.log('=== motivationAverageColorHue - textHct ===');
 		// console.log(textHct);
-		averageColors = {
-			background: Theming.rgbFromHex(hexFromArgb(backgroundHct.toInt())),
-			text: Theming.rgbFromHex(hexFromArgb(textHct.toInt()))
-		};
+		// averageColors = {
+		// 	background: Theming.rgbFromHex(hexFromArgb(backgroundHct.toInt())),
+		// 	text: Theming.rgbFromHex(hexFromArgb(textHct.toInt()))
+		// };
+		// averageColors = {
+		// 	background: Theming.rgbFromHex(createHeatMapColors([averageMotivation], 0.9)[0].background),
+		// 	text: Theming.rgbFromHex(createHeatMapColors([averageMotivation], 0.9)[0].text)
+		// };
+		averageColors = createHeatMapColors([averageMotivation], 0.9, 'rgb')[0];
 	});
 </script>
 

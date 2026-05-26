@@ -1,8 +1,6 @@
 <script lang="ts">
-	import { Hct, hexFromArgb } from '@material/material-color-utilities';
 	import type { ActionResult } from '@sveltejs/kit';
 	import { type SubmitFunction } from '@sveltejs/kit';
-	import { onDestroy } from 'svelte';
 
 	import { enhance } from '$app/forms';
 	// import type { PageProps } from '../$types';
@@ -15,8 +13,7 @@
 	import Title from '$components/Title.svelte';
 	import { AccessHandler, Action, IdentityType } from '$lib/accessHandler';
 	import { type ArtificialIntelligenceConfig, Model } from '$lib/artificialIntelligence';
-	import { themeStore } from '$lib/stores';
-	import type { AppTheme } from '$lib/theming';
+	import { createHeatMapColors } from '$lib/heatMapColors.svelte';
 	import { type ColorConfig, Variant } from '$lib/theming';
 	import type { AccessShareOption } from '$lib/types';
 	import {
@@ -198,49 +195,8 @@
 	};
 
 	// for status sliders:
-	let theme = $state({} as AppTheme);
-	const unsubscribeThemeStore = themeStore.subscribe((value) => {
-		theme = value;
-	});
-
-	// for HCT:
-	// red: hue = 25,
-	// (yellow: hue = 104,)
-	// green: hue = 130
-	// use chroma and tone from error container - always keeps the color!
-	// text on it:
-	// chorma and tone always from "on error container"
-	let errorHct = $derived.by(() => {
-		if (!theme.currentMode) {
-			return Hct.from(25, 80, 30);
-		} else {
-			return Hct.fromInt(theme[theme.currentMode].colors['error']);
-		}
-	});
-	let onErrorHct = $derived.by(() => {
-		if (!theme.currentMode) {
-			return Hct.from(24, 13, 90);
-		} else {
-			return Hct.fromInt(theme[theme.currentMode].colors['onError']);
-		}
-	});
 	let status = $state([50, 0, 100]);
-	let statusColorsHue = $derived(
-		status.map((s) => ({
-			background: s * 1.05 + 25,
-			text: s * 1.05 + 25
-		}))
-	);
-	let statusColors = $derived(
-		statusColorsHue.map((hue) => ({
-			background: hexFromArgb(Hct.from(hue.background, errorHct.chroma, errorHct.tone).toInt()),
-			text: hexFromArgb(Hct.from(hue.text, onErrorHct.chroma, onErrorHct.tone).toInt())
-		}))
-	);
-
-	onDestroy(() => {
-		unsubscribeThemeStore();
-	});
+	let statusColors = $derived.by(() => createHeatMapColors(status));
 
 	// for edit button:
 	let edit = $state(false);
@@ -1298,7 +1254,7 @@
 			</div>
 			<!-- <div
 					class="flex h-20 w-full items-center justify-center text-2xl"
-					style="background: linear-gradient(to right, {statusColors[1]}, {statusColors[2]});"
+					style="background: linear-gradient(to right, {heatMapColors[1]}, {heatMapColors[2]});"
 				></div> -->
 		</div>
 		<HorizontalRule />
