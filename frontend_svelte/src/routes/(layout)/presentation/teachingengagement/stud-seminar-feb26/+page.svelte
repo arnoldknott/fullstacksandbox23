@@ -694,7 +694,7 @@
 	</section>
 </RevealJS>
 
-<style>
+<!-- <style>
 	:global(.markdown-comment h1),
 	:global(.markdown-comment h2),
 	:global(.markdown-comment h3),
@@ -724,4 +724,4 @@
 	:global(.markdown-comment > :last-child) {
 		margin-bottom: 0;
 	}
-</style>
+</style> -->
