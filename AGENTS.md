@@ -64,6 +64,15 @@ There are 4 environments linked to 3 branches:
 
 Merging order: `feature/<description>` or `fix/<description>` → `dev` → `stage` → `main`.
 
+## Refactor scope confirmation
+
+- For requests to refactor, modularize, or reorganize code, start with scope confirmation:
+  "Do you want structural refactor only, or should I include improvements (behavior/performance/design)?"
+- If improvements are not explicitly requested, perform structural refactor only in the first pass.
+- Keep behavior and computational cost unchanged by default.
+- Present improvement ideas as optional follow-up suggestions, and apply them only after user approval.
+- Default refactor mode is preserve-first: same behavior, same runtime profile, cleaner structure.
+
 ## Default Commands
 
 Use the narrowest command that verifies your change. All formatting, linting, and testing MUST run inside the **test environment**, not in the dev environment or on the host.
