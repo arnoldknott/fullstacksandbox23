@@ -1,12 +1,7 @@
 <script lang="ts">
-	import { Hct, hexFromArgb } from '@material/material-color-utilities';
-	import { onDestroy } from 'svelte';
-
 	import { Action } from '$lib/accessHandler';
+	import { createHeatMapColors } from '$lib/heatMapColors.svelte';
 	import { SocketIO } from '$lib/socketio.svelte';
-	import { themeStore } from '$lib/stores';
-	import type { AppTheme } from '$lib/theming';
-	import { Theming } from '$lib/theming';
 
 	type ColorSet = {
 		background: string;
@@ -35,58 +30,13 @@
 	};
 
 	// Static coloring the motivation buttons:
-	let theme = $state({} as AppTheme);
-	const unsbscribeThemeStore = themeStore.subscribe((value) => {
-		theme = value;
-	});
-
-	onDestroy(() => {
-		unsbscribeThemeStore();
-	});
-
-	let errorHct = $derived.by(() => {
-		if (!theme.currentMode) {
-			return Hct.from(25, 80, 30);
-		} else {
-			return Hct.fromInt(theme[theme.currentMode].colors['error']);
-		}
-	});
-	let onErrorHct = $derived.by(() => {
-		if (!theme.currentMode) {
-			return Hct.from(24, 13, 90);
-		} else {
-			return Hct.fromInt(theme[theme.currentMode].colors['onError']);
-		}
-	});
-
 	// let motivation = $state([0, 25, 50, 75, 100]);
 	let motivation = $state(Array.from({ length: 13 }, (_, i) => (i * 100) / 12));
-	let motivationColorsHue = $derived(
-		motivation.map((s) => ({
-			background: s * 1.05 + 25,
-			text: s * 1.05 + 25
-		}))
-	);
-	let motivationColors = $derived(
-		motivationColorsHue.map((hue) => ({
-			background: hexFromArgb(Hct.from(hue.background, errorHct.chroma, errorHct.tone).toInt()),
-			text: hexFromArgb(Hct.from(hue.text, onErrorHct.chroma, onErrorHct.tone).toInt())
-		}))
-	);
+	let motivationColors = $derived.by(() => createHeatMapColors(motivation, 1, 0.9));
 
 	// calculate background color from average motivation value:
 	$effect(() => {
-		// calculate Hct from material design:
-		const backgroundHct = Hct.from(averageMotivation * 1.05 + 25, errorHct.chroma, errorHct.tone);
-		const textHct = Hct.from(averageMotivation * 1.05 + 25, onErrorHct.chroma, onErrorHct.tone);
-		// console.log('=== motivationAverageColorHue - backgroundHct ===');
-		// console.log(backgroundHct);
-		// console.log('=== motivationAverageColorHue - textHct ===');
-		// console.log(textHct);
-		averageColors = {
-			background: Theming.rgbFromHex(hexFromArgb(backgroundHct.toInt())),
-			text: Theming.rgbFromHex(hexFromArgb(textHct.toInt()))
-		};
+		averageColors = createHeatMapColors([averageMotivation], 1, 0.9, 'rgb')[0];
 	});
 </script>
 
@@ -118,7 +68,7 @@
 		<!-- onclick={() => socketio?.submitEntity(0)}
 		onkeydown={(e: KeyboardEvent) => e.key === 'Enter' && socketio?.submitEntity(0)} -->
 		<button
-			class="btn btn-gradient shadow-outline title-large flex h-full flex-col gap-1 rounded-4xl shadow-sm"
+			class="btn shadow-outline title-large border-outline flex h-full flex-col gap-1 rounded-4xl border-2 shadow-md"
 			style="background: linear-gradient(to right, {motivationColors[0]
 				.background}, {motivationColors[1].background}, {motivationColors[2]
 				.background}); color: {motivationColors[1].text};"
@@ -138,7 +88,7 @@
 	<div class="heading fragment flex flex-col">
 		<div>External</div>
 		<button
-			class="btn btn-gradient shadow-outline title-large flex h-full flex-col gap-1 rounded-4xl shadow-md"
+			class="btn shadow-outline title-large border-outline flex h-full flex-col gap-1 rounded-4xl border-2 shadow-md"
 			style="background: linear-gradient(to right, {motivationColors[2]
 				.background}, {motivationColors[3].background}, {motivationColors[4]
 				.background}); color: {motivationColors[3].text};"
@@ -155,7 +105,7 @@
 	<div class="heading fragment flex flex-col">
 		<div>Introjected</div>
 		<button
-			class="btn btn-gradient shadow-outline title-large flex h-full flex-col gap-1 rounded-4xl shadow-md"
+			class="btn shadow-outline title-large border-outline flex h-full flex-col gap-1 rounded-4xl border-2 shadow-md"
 			style="background: linear-gradient(to right, {motivationColors[4]
 				.background}, {motivationColors[5].background}, {motivationColors[6]
 				.background}); color: {motivationColors[5].text};"
@@ -172,7 +122,7 @@
 	<div class="heading fragment flex flex-col">
 		<div>Identified</div>
 		<button
-			class="btn btn-gradient shadow-outline title-large flex h-full flex-col gap-1 rounded-4xl shadow-md"
+			class="btn shadow-outline title-large border-outline flex h-full flex-col gap-1 rounded-4xl border-2 shadow-md"
 			style="background: linear-gradient(to right, {motivationColors[6]
 				.background}, {motivationColors[7].background}, {motivationColors[8]
 				.background}); color: {motivationColors[7].text};"
@@ -189,7 +139,7 @@
 	<div class="heading fragment flex flex-col">
 		<div>Integrated</div>
 		<button
-			class="btn btn-gradient shadow-outline title-large flex h-full flex-col gap-1 rounded-4xl shadow-md"
+			class="btn shadow-outline title-large border-outline flex h-full flex-col gap-1 rounded-4xl border-2 shadow-md"
 			style="background: linear-gradient(to right, {motivationColors[8]
 				.background}, {motivationColors[9].background}, {motivationColors[10]
 				.background}); color: {motivationColors[9].text};"
@@ -206,7 +156,7 @@
 	<div class="heading fragment flex flex-col">
 		<div class="invisible">dummy</div>
 		<button
-			class="btn btn-gradient shadow-outline title-large flex h-full flex-col gap-1 rounded-4xl shadow-md"
+			class="btn shadow-outline title-large border-outline flex h-full flex-col gap-1 rounded-4xl border-2 shadow-md"
 			style="background: linear-gradient(to right, {motivationColors[10]
 				.background}, {motivationColors[11].background}, {motivationColors[12]
 				.background}); color: {motivationColors[11].text};"

@@ -5,7 +5,7 @@
 		active = true,
 		children
 	}: { title: string; active?: boolean; children: Snippet } = $props();
-	const id = title.toLowerCase().replaceAll(' ', '-');
+	const id = $derived.by(() => title.toLowerCase().replaceAll(' ', '-'));
 </script>
 
 <div

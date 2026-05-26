@@ -51,6 +51,7 @@ Use the same docker compose handling as for validation
 ## Key conventions
 
 - Use Svelte 5 rune syntax in new Svelte files. Existing components/routes consistently use `$props`, `$state`, `$derived`, and `$effect`.
+- Use ES6 module syntax and features in `.ts` and `.svelte` files. The app is built on Bun, so top-level await, ES modules, and Bun's polyfilled APIs are all available.
 - Prefer route-group protection over ad hoc auth checks. If a page must require authentication or admin access, place it under `(protected)` or `(admin)` so `hooks.server.ts` enforces it.
 - On the client, session data is expected at `page.data.session`. On the server, it is expected at `locals.sessionData`. Reuse those surfaces instead of adding a separate session store.
 - When calling the backend or thrid party Application Programable Interfaces from server loads/actions, use `backendAPI` or the relevant counterparts from `lib/server` instead of raw `fetch` so OAuth scopes and auth headers stay aligned with the rest of the app.

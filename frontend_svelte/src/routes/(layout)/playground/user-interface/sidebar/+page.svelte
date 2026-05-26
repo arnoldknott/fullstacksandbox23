@@ -4,60 +4,6 @@
 
 	const sidebars = [
 		{
-			name: 'Standalone',
-			description: 'A stand-alone side bar.',
-			url: 'sidebar/stand-alone'
-		},
-		{
-			name: 'Adding Scrollspy',
-			description: 'Adds scrollspy functionality within page to sidebar.',
-			url: 'sidebar/scrollspy'
-		},
-		{
-			name: 'Integrate with Navbar',
-			description: 'integrates sidebar with default top navbar.',
-			url: 'sidebar/navbar'
-		},
-		{
-			name: 'Combined Navbar and Scrollspy',
-			description: 'combines both default navbar integration and scrollspy.',
-			url: 'sidebar/navbar-scrollspy'
-		},
-		{
-			name: 'Adding collapse to icon sidebar',
-			description: 'Adds collapse to a icon sidebar.',
-			url: 'sidebar/collapse'
-		},
-		{
-			name: 'Merge with existing navbar',
-			description:
-				'Merges sidebar with existing navbar and adds a main menu in sidebar for small screens - the previous dropdown in the navbar.',
-			url: 'sidebar/merge'
-		},
-		{
-			name: 'Page hierarchy',
-			description:
-				'Adds several hierarchical pages that are linked from sidebar with common sidebar layout and scrollspy within multiple pages.',
-			url: 'sidebar/hierarchy'
-		},
-		// {
-		// 	name: 'Segmenting code',
-		// 	description:
-		// 		'Segments the code from navbar and sidebar into snippets and components and parameterizes them for reusability and maintainability.',
-		// 	url: 'sidebar/segmenting'
-		// },
-		{
-			name: 'Hierarchy and scroll',
-			description: 'Combines the hierarchy in the sidebar with scrolling in the main content area.',
-			url: 'sidebar/hierarchy-scroll'
-		},
-		{
-			name: 'Iterating sidebars',
-			description:
-				'Iterates the sidebar links from an array of objects in an iterative loop, reusing components to further improve reusability and maintainability.',
-			url: 'sidebar/iteration'
-		},
-		{
 			name: 'Recursion in sidebar',
 			description:
 				'Creates recursive sidebar items which can either be links or folders containing more sidebar items.',

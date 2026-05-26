@@ -4,7 +4,7 @@
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
-	const apiLink = data.body;
+	const apiLink = $derived(data.payload);
 </script>
 
 <Heading>Admin dashboard</Heading>

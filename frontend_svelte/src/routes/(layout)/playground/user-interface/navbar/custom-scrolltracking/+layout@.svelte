@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { type SubmitFunction } from '@sveltejs/kit';
-	import { onMount, setContext, type Snippet } from 'svelte';
+	import { getContext, onMount, setContext, type Snippet } from 'svelte';
 	import type { Action } from 'svelte/action';
 	import { scrollY } from 'svelte/reactivity/window';
 	import { writable } from 'svelte/store';
@@ -12,7 +12,7 @@
 	import { type ArtificialIntelligenceConfig, Model } from '$lib/artificialIntelligence';
 	import { SessionStatus } from '$lib/session';
 	import { themeStore } from '$lib/stores';
-	import { type ColorConfig, Theming, Variant } from '$lib/theming';
+	import { FSSB23_THEME_KEY, type ThemeRuntimeContext, Theming } from '$lib/theming';
 	import type { Session, SidebarItemContent } from '$lib/types';
 	import { initDropdown, initOverlay } from '$lib/userInterface';
 
@@ -74,31 +74,27 @@
 
 	let artificialIntelligenceForm = $state<HTMLFormElement | null>(null);
 
-	const theming = $state(new Theming());
+	const themeRuntime = getContext<ThemeRuntimeContext>(FSSB23_THEME_KEY);
 
-	// TBD: refactor this to decently use the reactivity of Svelte - potentially use $derived!
-	let themeConfiguration: ColorConfig = $state({
-		sourceColor: data?.session?.currentUser?.user_profile.theme_color || '#941ff4', // <= That's a good color!// '#353c6e' // '#769CDF',
-		variant: data?.session?.currentUser?.user_profile.theme_variant || Variant.TONAL_SPOT, // Variant.FIDELITY,//
-		contrast: data?.session?.currentUser?.user_profile.contrast || 0.0
-	});
+	// Keep this component's session payload in sync with the shared root-level theme runtime.
+	const theming = $state(new Theming());
 
 	$effect(() => {
 		if (data.session?.currentUser?.user_profile) {
-			data.session.currentUser.user_profile.theme_color = themeConfiguration.sourceColor;
-			data.session.currentUser.user_profile.theme_variant = themeConfiguration.variant;
-			data.session.currentUser.user_profile.contrast = themeConfiguration.contrast;
+			data.session.currentUser.user_profile.theme_color =
+				themeRuntime.themeConfiguration.sourceColor;
+			data.session.currentUser.user_profile.theme_variant = themeRuntime.themeConfiguration.variant;
+			data.session.currentUser.user_profile.contrast = themeRuntime.themeConfiguration.contrast;
 		}
 	});
 
 	let systemDark = $state(false);
-	let mode: 'light' | 'dark' = $state('dark');
 
 	const applyTheming: Action = (_node) => {
 		systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-		mode = systemDark ? 'dark' : 'light';
+		themeRuntime.mode = systemDark ? 'dark' : 'light';
 
-		let theme = $derived(theming.applyTheme(themeConfiguration, mode));
+		let theme = $derived(theming.applyTheme(themeRuntime));
 
 		$effect(() => {
 			themeStore.set(theme);
@@ -926,8 +922,8 @@
 						{updateProfileAccount}
 						{saveProfileAccount}
 						bind:themeForm
-						bind:mode
-						bind:themeConfiguration
+						bind:mode={themeRuntime.mode}
+						bind:themeConfiguration={themeRuntime.themeConfiguration}
 					/>
 					<li>
 						<hr class="border-outline -mx-2 my-5" />
@@ -970,8 +966,8 @@
 	<WelcomeModal
 		bind:session
 		bind:artificialIntelligenceConfiguration
-		bind:themeConfiguration
-		bind:mode
+		bind:mode={themeRuntime.mode}
+		bind:themeConfiguration={themeRuntime.themeConfiguration}
 		{updateProfileAccount}
 		{saveProfileAccount}
 	/>

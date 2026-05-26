@@ -8,8 +8,9 @@
 	import type { PageData } from './$types';
 	import DemoResourceCard from './DemoResourceCard.svelte';
 	let { data }: { data: PageData } = $props();
+	// svelte-ignore state_referenced_locally
 	let demoResources = $state(data.demoResourcesExtended);
-	const microsoftTeams = data.microsoftTeams;
+	const microsoftTeams = $derived(data.microsoftTeams);
 
 	let debug = $state(false);
 

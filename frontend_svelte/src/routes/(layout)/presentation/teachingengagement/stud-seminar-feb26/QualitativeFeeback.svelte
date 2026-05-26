@@ -480,12 +480,12 @@
 		margin-bottom: 0.5rem;
 	}
 
-	:global(.markdown-comment h1),
-	:global(.markdown-comment h2),
-	:global(.markdown-comment h3),
-	:global(.markdown-comment h4),
-	:global(.markdown-comment h5),
-	:global(.markdown-comment h6) {
+	:global(.reveal .markdown-comment h1),
+	:global(.reveal .markdown-comment h2),
+	:global(.reveal .markdown-comment h3),
+	:global(.reveal .markdown-comment h4),
+	:global(.reveal .markdown-comment h5),
+	:global(.reveal .markdown-comment h6) {
 		color: currentColor;
 		font-size: inherit;
 		font-weight: 700;

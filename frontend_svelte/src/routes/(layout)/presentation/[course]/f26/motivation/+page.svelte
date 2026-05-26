@@ -79,7 +79,7 @@
 		}
 	});
 
-	let averageMotivationColors = $state({ background: '0 0 0', text: '0  0 0' });
+	let averageMotivationColors = $state({ background: '0 0 0', text: '255 255 255' });
 
 	// $effect(() => {
 	// 	console.log('=== dev2 / F23 - Motivation Answers Average ===');
@@ -307,7 +307,11 @@
 			? `rgb(${averageMotivationColors.background})`
 			: ''}
 	>
-		<div>
+		<div
+			style="color: {addColorToMotivationTable
+				? `rgb(${averageMotivationColors.text})`
+				: 'var(--color-base-content)'}"
+		>
 			<SlideTitle>Motivation</SlideTitle>
 			<MotivationTable
 				questionId={motivationQuestionId}

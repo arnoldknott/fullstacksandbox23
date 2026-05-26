@@ -30,7 +30,7 @@
 	});
 
 	// Data variables for Ueber-Groups and Groups:
-	let ueberGroup = $state(data.thisUeberGroup);
+	let ueberGroup = $derived(data.thisUeberGroup);
 	let editUeberGroup = $state(false);
 
 	// const shortUeberGroupName = () => {
@@ -41,7 +41,7 @@
 	// 	return shortName;
 	// };
 
-	let linkedGroups = $state<Group[]>(data.thisUeberGroup?.groups || []);
+	let linkedGroups = $derived<Group[]>(data.thisUeberGroup?.groups || []);
 	let socketioUeberGroup: SocketIO<UeberGroup> = $state()!;
 	let socketioGroup: SocketIO<Group> = $state()!;
 	let allGroups = $derived(socketioGroup?.entities ?? []);
@@ -206,8 +206,8 @@
 	};
 
 	// User related stuff:
-	let allOtherMicrosoftUsers = $state<MicrosoftUser[]>(data.allOtherMicrosoftUsers || []);
-	let linkedMicrosoftUsers = $state<MicrosoftUser[]>(data.linkedMicrosoftUsers || []);
+	let allOtherMicrosoftUsers = $derived<MicrosoftUser[]>(data.allOtherMicrosoftUsers || []);
+	let linkedMicrosoftUsers = $derived<MicrosoftUser[]>(data.linkedMicrosoftUsers || []);
 	// TBD: rethink this typing - also loosing the local id here and only leaving the azure_user_id as id.
 	// Maybe this could be another Map with user.id (from this app) as key and MicrosoftUser as value?
 	type LocalMicrosoftUser = {
