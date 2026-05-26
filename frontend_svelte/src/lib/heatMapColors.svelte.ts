@@ -11,6 +11,7 @@ export type HeatMapColor = {
 
 export const createHeatMapColors = (
 	values: number[],
+	chromaMultiplier: number = 1,
 	toneMultiplier: number = 1,
 	format: 'hex' | 'rgb' = 'hex'
 ): HeatMapColor[] => {
@@ -30,6 +31,7 @@ export const createHeatMapColors = (
 	const onErrorHct = activeTheme.currentMode
 		? Hct.fromInt(activeTheme[activeTheme.currentMode].colors.onError)
 		: Hct.from(24, 13, 90);
+	const chromaScale = Math.max(0, chromaMultiplier);
 	const toneScale = Math.min(1, Math.max(0, toneMultiplier));
 
 	let heatMapColors = values
@@ -39,9 +41,11 @@ export const createHeatMapColors = (
 		}))
 		.map((hue) => ({
 			background: hexFromArgb(
-				Hct.from(hue.background, errorHct.chroma, errorHct.tone * toneScale).toInt()
+				Hct.from(hue.background, errorHct.chroma * chromaScale, errorHct.tone * toneScale).toInt()
 			),
-			text: hexFromArgb(Hct.from(hue.text, onErrorHct.chroma, onErrorHct.tone * toneScale).toInt())
+			text: hexFromArgb(
+				Hct.from(hue.text, onErrorHct.chroma * chromaScale, onErrorHct.tone * toneScale).toInt()
+			)
 		}));
 
 	if (format === 'rgb') {

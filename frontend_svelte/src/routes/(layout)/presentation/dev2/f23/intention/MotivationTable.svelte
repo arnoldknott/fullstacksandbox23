@@ -34,11 +34,11 @@
 	// Static coloring the motivation buttons:
 	// let motivation = $state([0, 25, 50, 75, 100]);
 	let motivation = $state(Array.from({ length: 13 }, (_, i) => (i * 100) / 12));
-	let motivationColors = $derived.by(() => createHeatMapColors(motivation, 0.9));
+	let motivationColors = $derived.by(() => createHeatMapColors(motivation, 1, 0.9));
 
 	// calculate background color from average motivation value:
 	$effect(() => {
-		averageColors = createHeatMapColors([averageMotivation], 0.9, 'rgb')[0];
+		averageColors = createHeatMapColors([averageMotivation], 1, 0.9, 'rgb')[0];
 	});
 </script>
 
