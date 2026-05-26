@@ -238,13 +238,6 @@
 		}))
 	);
 
-	$effect(() => {
-		console.log('=== motivationColors: 0, 50, 100 ===');
-		console.log($state.snapshot(statusColors[0]));
-		console.log($state.snapshot(statusColors[1]));
-		console.log($state.snapshot(statusColors[2]));
-	});
-
 	onDestroy(() => {
 		unsubscribeThemeStore();
 	});
