@@ -4,10 +4,15 @@
 	import type { Snippet } from 'svelte';
 	import { onMount, setContext } from 'svelte';
 
+	// import type { Action } from 'svelte/action';
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
-	import { themeStore } from '$lib/stores';
-	import { type ColorConfig, Theming, Variant } from '$lib/theming';
+	import {
+		type ColorConfig,
+		FSSB23_THEME_KEY,
+		type ThemeRuntimeContext,
+		Variant
+	} from '$lib/theming';
 
 	import type { LayoutData } from './$types';
 
@@ -67,27 +72,23 @@
 	// but making it available here, so routes,
 	// that break out of the layout, can still
 	// access the themeStore and apply the theming if needed.
-	const theming = $state(new Theming());
 	// svelte-ignore state_referenced_locally
 	const initialThemeConfig = data?.session?.currentUser?.user_profile;
-	// TBD: refactor this to decently use the reactivity of Svelte - potentially use $derived!
-	let themeConfiguration: ColorConfig = $state({
-		sourceColor: initialThemeConfig?.theme_color || '#941ff4', // <= That's a good color!// '#353c6e' // '#769CDF',
-		variant: initialThemeConfig?.theme_variant || Variant.TONAL_SPOT, // Variant.FIDELITY,//
-		contrast: initialThemeConfig?.contrast || 0.0
+	const themeRuntime: ThemeRuntimeContext = $state({
+		themeConfiguration: {
+			sourceColor: initialThemeConfig?.theme_color || '#941ff4', // <= That's a good color!// '#353c6e' // '#769CDF',
+			variant: initialThemeConfig?.theme_variant || Variant.TONAL_SPOT, // Variant.FIDELITY,//
+			contrast: initialThemeConfig?.contrast || 0.0
+		} satisfies ColorConfig,
+		mode: 'dark'
 	});
-	let systemDark = $state(false);
-	let mode: 'light' | 'dark' = $state('dark');
+
+	setContext(FSSB23_THEME_KEY, themeRuntime);
 
 	onMount(() => {
-		systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-		mode = systemDark ? 'dark' : 'light';
-
-		let theme = $derived(theming.applyTheme(themeConfiguration, mode));
-
-		$effect(() => {
-			themeStore.set(theme);
-		});
+		themeRuntime.mode = window.matchMedia('(prefers-color-scheme: dark)').matches
+			? 'dark'
+			: 'light';
 	});
 
 	// let systemDark = $state(false);
@@ -101,17 +102,18 @@
 	// const applyTheming: Action = (_node) => {
 	// 	systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 	// 	mode = systemDark ? 'dark' : 'light';
+	// 	const themeRuntime = {
+	// 	themeConfiguration,
+	// 	mode
+	// };
 
-	// 	let theme = $derived(theming.applyTheme(themeConfiguration, mode));
+	// 	let theme = $derived(theming.applyTheme(themeRuntime));
 
 	// 	$effect(() => {
 	// 		themeStore.set(theme);
 	// 	});
 	// };
 </script>
-
-<!-- Remove from here after debugging scrollspy! Belongs to (layout)-->
-<!-- <svelte:body use:applyTheming /> -->
 
 <!-- <InitialScrollspy /> -->
 <!-- <ReproductionScrollspyDocumentationOnBodyScroll /> -->

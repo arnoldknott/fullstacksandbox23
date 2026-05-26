@@ -97,8 +97,12 @@
 	const applyTheming: Action = (_node) => {
 		systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 		mode = systemDark ? 'dark' : 'light';
+		const themeRuntime = {
+			themeConfiguration,
+			mode
+		};
 
-		let theme = $derived(theming.applyTheme(themeConfiguration, mode));
+		let theme = $derived(theming.applyTheme(themeRuntime));
 
 		$effect(() => {
 			themeStore.set(theme);

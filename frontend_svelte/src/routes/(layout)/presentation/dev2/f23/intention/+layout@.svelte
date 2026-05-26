@@ -2,30 +2,20 @@
 	import '/src/app.css';
 
 	import type { Snippet } from 'svelte';
-	import type { Action } from 'svelte/action';
+	import { getContext } from 'svelte';
 
-	import { type ColorConfig, Theming, Variant } from '$lib/theming';
+	import { FSSB23_THEME_KEY, type ThemeRuntimeContext, Theming } from '$lib/theming';
 
-	import type { LayoutData } from './$types';
+	// let { children }: { children: Snippet } = $props();
+	const themeRuntime = getContext<ThemeRuntimeContext>(FSSB23_THEME_KEY);
+	const theming = new Theming();
 
-	let { data, children }: { data: LayoutData; children: Snippet } = $props();
-
-	const theming = $state(new Theming());
-	let themeConfiguration: ColorConfig = $state({
-		sourceColor: data?.session?.currentUser?.user_profile.theme_color || '#941ff4', // <= That's a good color!// '#353c6e' // '#769CDF',
-		variant: data?.session?.currentUser?.user_profile.theme_variant || Variant.TONAL_SPOT, // Variant.FIDELITY,//
-		contrast: data?.session?.currentUser?.user_profile.contrast || 0.0
+	$effect(() => {
+		theming.applyTheme(themeRuntime);
 	});
-	let systemDark = $state(false);
-	let mode: 'light' | 'dark' = $state('dark');
-	const applyTheming: Action = (_node) => {
-		systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-		mode = systemDark ? 'dark' : 'light';
-		theming.applyTheme(themeConfiguration, mode);
-	};
-</script>
 
-<svelte:body use:applyTheming />
+	let { children }: { children: Snippet } = $props();
+</script>
 
 <div class="h-screen">
 	{@render children?.()}

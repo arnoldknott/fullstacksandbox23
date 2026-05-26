@@ -897,8 +897,9 @@ export class Theming {
 	// Note, where this is called, the document needs to be available
 	// so don't call on server in server side rendering scenarios!
 	public applyTheme(
-		colorConfig: ColorConfig,
-		mode: 'light' | 'dark',
+		// colorConfig: ColorConfig,
+		// mode: 'light' | 'dark',
+		themeRuntime: ThemeRuntimeContext,
 		targetElement: HTMLElement = document.documentElement
 	): AppTheme {
 		// console.log('=== lib - theming - Applying theme - colorConfig ===');
@@ -906,18 +907,19 @@ export class Theming {
 		// console.log('=== lib - theming - Applying theme - colorConfig.sourceColor ===');
 		// console.log(colorConfig.sourceColor);
 		const colorization = new Colorization(
-			colorConfig.sourceColor,
-			colorConfig.variant,
-			colorConfig.contrast
+			themeRuntime.themeConfiguration.sourceColor,
+			themeRuntime.themeConfiguration.variant,
+			themeRuntime.themeConfiguration.contrast
 		);
 		const colorScheme = colorization.createAppColors();
-		const colors = mode === 'dark' ? colorScheme.dark.colors : colorScheme.light.colors;
+		const colors =
+			themeRuntime.mode === 'dark' ? colorScheme.dark.colors : colorScheme.light.colors;
 		this.applyMaterialTokens(colors, targetElement);
 		// this.applyFlyonUITokens(colors, targetElement);
 
 		return {
-			configuration: colorConfig,
-			currentMode: mode,
+			configuration: themeRuntime.themeConfiguration,
+			currentMode: themeRuntime.mode,
 			...colorScheme // TBD: should return colors here - removes the necessity to check for light and dark in other files!
 		};
 	}
@@ -1033,3 +1035,10 @@ export class Theming {
 	// 	}
 	// }
 }
+
+export interface ThemeRuntimeContext {
+	themeConfiguration: ColorConfig;
+	mode: 'light' | 'dark';
+}
+
+export const FSSB23_THEME_KEY = 'fssb23Theme' as const;
