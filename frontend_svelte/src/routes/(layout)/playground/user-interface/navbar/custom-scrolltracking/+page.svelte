@@ -29,10 +29,7 @@
 	];
 </script>
 
-<Display
-	>Debugs scrollspy with the navbar now outside the main document and in the header, that is with
-	the javascript scroll-off behaviour.</Display
->
+<Display>Custom implementation of scrolling.</Display>
 
 <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
 	{#each sidebars as item (item.name)}
