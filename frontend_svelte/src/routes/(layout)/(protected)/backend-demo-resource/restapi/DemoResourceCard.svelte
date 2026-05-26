@@ -16,24 +16,24 @@
 		demoResource,
 		identities
 	}: { demoResource: DemoResourceExtended; identities?: Identity[] } = $props();
-	let id = $state(demoResource.id || 'new_' + Math.random().toString(36).substring(2, 9));
-	let accessRight = $state(demoResource.access_right);
-	let name = $state(demoResource.name || undefined);
-	let description = $state(demoResource.description || undefined);
-	let language = $state(demoResource.language || undefined);
-	let category = $state(demoResource.category);
-	let categoryId = $state(demoResource.category_id || undefined);
-	let tags = $state(demoResource.tags || []);
-	let creationDate = $state<Date | undefined>(demoResource.creation_date);
+	let id = $derived(demoResource.id || 'new_' + Math.random().toString(36).substring(2, 9));
+	let accessRight = $derived(demoResource.access_right);
+	let name = $derived(demoResource.name || undefined);
+	let description = $derived(demoResource.description || undefined);
+	let language = $derived(demoResource.language || undefined);
+	let category = $derived(demoResource.category);
+	let categoryId = $derived(demoResource.category_id || undefined);
+	let tags = $derived(demoResource.tags || []);
+	let creationDate = $derived(demoResource.creation_date);
 	let formattedCreationDate = $derived(creationDate?.toLocaleString('da-DK', { timeZone: 'CET' }));
-	let accessPolicies = $state<AccessPolicy[] | undefined>(demoResource.access_policies);
+	let accessPolicies = $derived<AccessPolicy[] | undefined>(demoResource.access_policies);
 
-	let edit = $state(demoResource.id?.slice(0, 4) === 'new_' ? true : false);
+	let edit = $derived(demoResource.id?.slice(0, 4) === 'new_' ? true : false);
 
 	// TBD. move to accessHandler.ts
 	let shareOptions = $derived(AccessHandler.createShareOptions(identities, accessPolicies));
 
-	let flag = $state(
+	let flag = $derived(
 		language === 'en-US'
 			? 'united-states'
 			: language === 'da-DK'

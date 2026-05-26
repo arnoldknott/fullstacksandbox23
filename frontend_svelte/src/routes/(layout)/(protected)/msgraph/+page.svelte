@@ -8,8 +8,8 @@
 
 	let { data }: { data: PageData } = $props();
 	// TBD refactor using sessionData
-	const account = data.account;
-	const userProfile = data.userProfile;
+	const account = $derived(data.account);
+	const userProfile = $derived(data.userProfile);
 	//  This is the raw data fo the file - try demonstrating with a text file or md-file!
 	let userPictureBlob = $derived(new Blob([data.userPicture], { type: 'image/jpeg' }));
 

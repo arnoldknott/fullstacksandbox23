@@ -27,10 +27,12 @@
 		return match ? match[1] : null;
 	};
 
-	const materialDesignVariable = findMaterialDesignVariable(`--color-${background}`);
-	const materialDesignColorName = materialDesignVariable
-		?.replace('--md-rgb-color-', '')
-		.replace(/-./g, (x) => x.toUpperCase()[1]);
+	const materialDesignVariable = $derived.by(() =>
+		findMaterialDesignVariable(`--color-${background}`)
+	);
+	const materialDesignColorName = $derived.by(() =>
+		materialDesignVariable?.replace('--md-rgb-color-', '').replace(/-./g, (x) => x.toUpperCase()[1])
+	);
 
 	let colorValues = $derived.by(() => {
 		if (!theme.currentMode) {

@@ -6,16 +6,20 @@
 	let { data, children }: LayoutProps = $props();
 
 	console.log('=== playground - dataflow - +layout.svelte ===');
-	const cleanedData = Object.fromEntries(
-		Object.entries(data).filter(
-			([key]) =>
-				key.startsWith('layoutServerTs') ||
-				key.startsWith('layoutTs') ||
-				key.startsWith('pageServerTs') ||
-				key.startsWith('pageTs')
+	const cleanedData = $derived.by(() =>
+		Object.fromEntries(
+			Object.entries(data).filter(
+				([key]) =>
+					key.startsWith('layoutServerTs') ||
+					key.startsWith('layoutTs') ||
+					key.startsWith('pageServerTs') ||
+					key.startsWith('pageTs')
+			)
 		)
 	);
-	console.log(cleanedData); // { layoutServerTs: 1, layout.ts: 2  }
+	$effect(() => {
+		console.log(cleanedData); // { layoutServerTs: 1, layout.ts: 2  }
+	});
 </script>
 
 <div class="grid grid-cols-3 gap-2">

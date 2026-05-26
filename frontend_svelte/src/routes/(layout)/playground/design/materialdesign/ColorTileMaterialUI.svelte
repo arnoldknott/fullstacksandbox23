@@ -9,7 +9,7 @@
 	import { type AppTheme } from '$lib/theming';
 
 	let { background, color }: { background: string; color: string } = $props();
-	const text = background.replace('--md-sys-color-', '').replaceAll('-', ' ');
+	const text = $derived(background.replace('--md-sys-color-', '').replaceAll('-', ' '));
 
 	let theme = $state({} as AppTheme);
 	const unsubscribeThemeStore = themeStore.subscribe((value) => {

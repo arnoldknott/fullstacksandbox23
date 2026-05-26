@@ -13,7 +13,7 @@
 	import { SessionStatus } from '$lib/session';
 	import { themeStore } from '$lib/stores';
 	import { FSSB23_THEME_KEY, type ThemeRuntimeContext, Theming } from '$lib/theming';
-	import type { SidebarItemContent } from '$lib/types';
+	import type { Session, SidebarItemContent } from '$lib/types';
 	import { initDropdown, initOverlay } from '$lib/userInterface';
 
 	import type { LayoutData } from './$types';
@@ -154,7 +154,7 @@
 		};
 	});
 
-	// let session: Session | undefined = $state(data.session);
+	let session: Session | undefined = $state(data.session);
 
 	let welcomeModal: HTMLDivElement | null = $state(null);
 
@@ -1013,7 +1013,7 @@
 	<!-- class="border-error h-screen w-screen overflow-x-scroll overflow-y-auto border border-4" -->
 	<!-- bind:session={data.session} -->
 	<WelcomeModal
-		bind:session={data.session}
+		bind:session
 		bind:artificialIntelligenceConfiguration
 		bind:themeConfiguration={themeRuntime.themeConfiguration}
 		bind:mode={themeRuntime.mode}
