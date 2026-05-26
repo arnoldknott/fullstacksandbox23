@@ -14,24 +14,32 @@
     "editor.defaultFormatter": "ms-python.black-formatter",
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
-      "source.organizeImports": "explicit"
+      "source.organizeImports": true
     }
   },
   "[javascript]": {
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
-      "source.organizeImports": "explicit"
+      "source.fixAll.eslint": true
     }
   },
   "[typescript]": {
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
-      "source.organizeImports": "explicit"
+      "source.fixAll.eslint": true
+    }
+  },
+  "[svelte]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": true
     }
   },
   "editor.codeActionsOnSave": {
-    "source.organizeImports": "explicit"
+    "source.fixAll.eslint": true
   },
+  "eslint.codeActionsOnSave.mode": "all",
+  "eslint.validate": ["javascript", "typescript", "svelte"],
   "editor.hover.enabled": "on",
   "svelte.plugin.css.hover.enable": true,
   "svelte.plugin.html.hover.enable": true,
