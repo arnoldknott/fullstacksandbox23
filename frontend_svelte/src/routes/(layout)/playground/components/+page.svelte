@@ -199,7 +199,7 @@
 
 	// for status sliders:
 	let theme = $state({} as AppTheme);
-	const unsbscribeThemeStore = themeStore.subscribe((value) => {
+	const unsubscribeThemeStore = themeStore.subscribe((value) => {
 		theme = value;
 	});
 
@@ -237,8 +237,16 @@
 			text: hexFromArgb(Hct.from(hue.text, onErrorHct.chroma, onErrorHct.tone).toInt())
 		}))
 	);
+
+	$effect(() => {
+		console.log('=== motivationColors: 0, 50, 100 ===');
+		console.log($state.snapshot(statusColors[0]));
+		console.log($state.snapshot(statusColors[1]));
+		console.log($state.snapshot(statusColors[2]));
+	});
+
 	onDestroy(() => {
-		unsbscribeThemeStore();
+		unsubscribeThemeStore();
 	});
 
 	// for edit button:

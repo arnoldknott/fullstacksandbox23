@@ -1,6 +1,5 @@
 <script lang="ts">
 	import 'reveal.js/dist/reveal.css';
-	import 'reveal.js/dist/theme/black.css';
 
 	import type { Api, Options } from 'reveal.js';
 	import Reveal from 'reveal.js';
@@ -15,7 +14,15 @@
 		reveal = $bindable()
 	}: { children: Snippet; options?: Options; reveal?: Api } = $props();
 
+	let systemDark = $state(false);
+
 	onMount(() => {
+		systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+		if (systemDark) {
+			import('reveal.js/dist/theme/black.css');
+		} else {
+			import('reveal.js/dist/theme/white.css');
+		}
 		reveal = new Reveal({});
 		reveal.initialize({
 			// Default options

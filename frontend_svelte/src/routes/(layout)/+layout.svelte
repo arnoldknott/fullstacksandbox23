@@ -173,6 +173,9 @@
 
 	let artificialIntelligenceForm = $state<HTMLFormElement | null>(null);
 
+	// Note: this is double now - it's also in parent +layout.svelte.
+	// Here it's needed to trigger the form submission from the child component,
+	// but we should refactor this to avoid the double state and potential confusion.
 	const theming = $state(new Theming());
 	// svelte-ignore state_referenced_locally
 	const initialThemeConfig = data?.session?.currentUser?.user_profile;
