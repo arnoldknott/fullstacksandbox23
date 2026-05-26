@@ -14,8 +14,8 @@ export const actions = {
 export const load: PageServerLoad = async () => {
 	// TBD: we need the external url here - not the one inside the network
 	const backendUrl = appConfig.backend_fqdn.startsWith('localhost')
-			? `http://${appConfig.backend_fqdn}`
-			: `https://${appConfig.backend_fqdn}`;
+		? `http://${appConfig.backend_fqdn}`
+		: `https://${appConfig.backend_fqdn}`;
 	//
 	return { payload: `${backendUrl}/docs` };
 	// return { body: `${appConfig.backend_origin}/docs` };
