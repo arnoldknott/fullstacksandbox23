@@ -748,24 +748,42 @@
 			setTimeout(() => {
 				const targetElement = document.getElementById(hash.substring(1));
 				if (targetElement) {
+					// Compute the intended final scrollY so the flag can be
+					// cleared positionally (independent of scroll speed / scrollend).
+					const rectTop = targetElement.getBoundingClientRect().top;
+					intentionalTargetY = Math.max(
+						0,
+						rectTop + (scrollY.current ?? window.scrollY) - (header?.offsetHeight ?? 0)
+					);
 					targetElement.scrollIntoView({ behavior: 'smooth' });
+				} else {
+					intentionalTargetY = scrollY.current ?? window.scrollY;
 				}
 				handleIntentionalNavigation();
 			}, 100);
 		} else {
 			// Scroll to top if no hash
+			intentionalTargetY = 0;
 			window.scrollTo({ top: 0, behavior: 'smooth' });
 			handleIntentionalNavigation();
 		}
 	});
 
 	let navBar: HTMLElement | null = $state(null);
+	// Constant once measured — main's padding-top must NOT change when the
+	// navbar shows/hides, otherwise document height changes and scrollY gets
+	// clamped near the page bottom, which the direction check would then
+	// misread as "scrolling up" and re-show the navbar (visible bouncing).
 	let navBarBottom: number = $state(0);
 
 	// Hide / show  navbar on scroll down / up
 	let header: HTMLElement | null = $state(null);
 	let previousScrollY = $state(scrollY.current ?? 0);
 	let intentionalNavigationInProgress = $state(false);
+	// Target scrollY of the in-progress programmatic smooth scroll. The
+	// intentional-navigation flag is cleared as soon as the viewport reaches
+	// this position (positional, not time-based).
+	let intentionalTargetY = $state(0);
 
 	// Show navbar and mark navigation as intentional:
 	const handleIntentionalNavigation = () => {
@@ -794,28 +812,42 @@
 	};
 
 	const toggleTopNavBar = () => {
+		const currentScrollY = scrollY.current ?? 0;
+
+		// Positionally clear the intentional-navigation guard once the
+		// programmatic smooth scroll has reached (or been passed through) its
+		// target. 1 px tolerance handles sub-pixel rounding.
+		if (intentionalNavigationInProgress && Math.abs(currentScrollY - intentionalTargetY) <= 1) {
+			intentionalNavigationInProgress = false;
+		}
+
 		// Don't hide navbar during intentional navigation (sidebar clicks, browser back/forward)
 		if (!intentionalNavigationInProgress) {
 			// console.log('=== toggleTopNavBar ===');
-			// const currentScrollY = scrollspyParent?.scrollTop ?? 0;
 			// see https://www.w3schools.com/howto/howto_js_navbar_hide_scroll.asp
-			const currentScrollY = scrollY.current ?? 0;
-			// if (navBar) {
 			if (header) {
 				if (currentScrollY > previousScrollY) {
-					// Scrolling down removes navbar
-					// navBar.classList.add('-mt-[var(--header-height)]');
+					// Scrolling down: hide via `top` (NOT transform). Safari/iOS
+					// latches transforms on position:fixed elements until the
+					// scroll ends, so a transform-based hide would not animate
+					// during the scroll. `top` is treated as layout and repaints
+					// during scroll in every browser.
+					// Crucially: do NOT touch the main padding-top (navBarBottom)
+					// here. Document height must stay constant so scrollY isn't
+					// clamped near the page bottom (which would be misread as
+					// "scrolling up" and bounce the navbar back into view).
 					header.classList.remove('mt-2');
 					header.style.top = `-${header.offsetHeight}px`;
-					navBarBottom = 0;
 				} else {
-					// Scrolling up shows navbar
-					// navBar.classList.remove('-mt-[var(--header-height)]');
+					// Scrolling up: slide navbar back in.
 					header.classList.add('mt-2');
 					header.style.top = '0';
-					navBarBottom = header.offsetHeight;
 				}
 			}
+			previousScrollY = currentScrollY;
+		} else {
+			// Keep previousScrollY synced so the first real toggle after the
+			// programmatic scroll uses a sensible direction baseline.
 			previousScrollY = currentScrollY;
 		}
 	};
@@ -824,9 +856,6 @@
 <svelte:window
 	onresize={(event) => windowResizeHandler(event)}
 	onscroll={toggleTopNavBar}
-	onscrollend={() => {
-		intentionalNavigationInProgress = false;
-	}}
 	onpopstate={handleIntentionalNavigation}
 />
 
