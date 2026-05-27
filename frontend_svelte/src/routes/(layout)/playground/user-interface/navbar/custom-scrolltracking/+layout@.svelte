@@ -693,13 +693,13 @@
 			setTimeout(() => {
 				const targetElement = document.getElementById(hash.substring(1));
 				if (targetElement) {
-					// Compute the intended final scrollY so the flag can be
-					// cleared positionally (independent of scroll speed / scrollend).
+					// Compute the actual scrollY that `scrollIntoView` will land
+					// on (target's top aligned with viewport top). Do NOT subtract
+					// the header height — native scrollIntoView ignores the fixed
+					// header, so subtracting would make the positional flag-clear
+					// check miss the landing position and the flag would get stuck.
 					const rectTop = targetElement.getBoundingClientRect().top;
-					intentionalTargetY = Math.max(
-						0,
-						rectTop + (scrollY.current ?? window.scrollY) - (header?.offsetHeight ?? 0)
-					);
+					intentionalTargetY = Math.max(0, rectTop + (scrollY.current ?? window.scrollY));
 					targetElement.scrollIntoView({ behavior: 'smooth' });
 				} else {
 					intentionalTargetY = scrollY.current ?? window.scrollY;
@@ -727,13 +727,18 @@
 	let intentionalNavigationInProgress = $state(false);
 	// Target scrollY of the in-progress programmatic smooth scroll. The
 	// intentional-navigation flag is cleared as soon as the viewport reaches
-	// this position (positional, not time-based).
+	// (or passes) this position (positional, not time-based).
 	let intentionalTargetY = $state(0);
+	// scrollY at the moment the intentional navigation starts — used to know
+	// whether the programmatic scroll is heading up or down so the flag can
+	// be cleared once the target is reached or crossed in that direction.
+	let intentionalStartY = $state(0);
 
 	// Show navbar and mark navigation as intentional:
 	const handleIntentionalNavigation = () => {
 		if (header) {
 			// Show navbar when browser back/forward is used
+			intentionalStartY = scrollY.current ?? 0;
 			intentionalNavigationInProgress = true;
 			header.classList.add('mt-2');
 			header.style.top = '0';
@@ -760,10 +765,21 @@
 		const currentScrollY = scrollY.current ?? 0;
 
 		// Positionally clear the intentional-navigation guard once the
-		// programmatic smooth scroll has reached (or been passed through) its
-		// target. 1 px tolerance handles sub-pixel rounding.
-		if (intentionalNavigationInProgress && Math.abs(currentScrollY - intentionalTargetY) <= 1) {
-			intentionalNavigationInProgress = false;
+		// programmatic smooth scroll has reached or crossed its target in
+		// the direction it was heading. Using "crossed" (not just "within 1
+		// px") is essential: scrollIntoView may land a couple of pixels off
+		// the computed target, and a user who interrupts the smooth scroll
+		// can carry scrollY past the target between scroll events. A simple
+		// abs-distance check would then miss the window and the flag would
+		// stay stuck — visible as "navbar won't hide after in-page hash nav".
+		if (intentionalNavigationInProgress) {
+			const goingDown = intentionalTargetY >= intentionalStartY;
+			const reached = goingDown
+				? currentScrollY >= intentionalTargetY - 1
+				: currentScrollY <= intentionalTargetY + 1;
+			if (reached) {
+				intentionalNavigationInProgress = false;
+			}
 		}
 
 		// Don't hide navbar during intentional navigation (sidebar clicks, browser back/forward)
