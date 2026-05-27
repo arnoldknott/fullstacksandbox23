@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
 	import type { Attachment } from 'svelte/attachments';
-	import { SvelteSet } from 'svelte/reactivity';
 	import type { Writable } from 'svelte/store';
 
 	import { page } from '$app/state';
@@ -26,9 +25,11 @@
 			((content as SideBarItemType).items?.length ?? 0) > 0
 	);
 
-	// Tracks ids of children that are currently active (for folders only).
-	const activeChildIds = new SvelteSet<string>();
-	let hasActiveChild = $derived(activeChildIds.size > 0);
+	// Tracks active state of each child by id (for folders only). Plain `$state`
+	// record so mutations from child-component callbacks reliably re-trigger
+	// `$derived`s and template class bindings in this component.
+	let activeChildMap = $state<Record<string, boolean>>({});
+	let hasActiveChild = $derived(Object.values(activeChildMap).some(Boolean));
 
 	$effect(() => {
 		// Notify parent that this item is active (directly or via an active child).
@@ -74,29 +75,33 @@
 	);
 	const linkOpacity = $derived(isActive ? 'opacity-100' : isVisible ? 'opacity-95' : 'opacity-70');
 
-	const toggleCollapse: Attachment<HTMLElement> = (node: HTMLElement) => {
-		if (pathname === page.url.pathname || hasActiveChild) {
-			const { element } = window.HSCollapse.getInstance(node, true);
-			element.show();
-		}
-	};
-
-	// needed somewhere?
-	// initCollapse(document.getElementById(id + '-collapse')!);
-
-	// Reactively open collapse when a child becomes active.
-	// Note: do NOT re-run `initCollapse` on the collapse <ul> here. That <ul>
-	// contains nested folders' chevron buttons (each with `data-collapse=...`);
-	// re-running `HSCollapse.autoInit` on it re-scans those nested triggers and
-	// leaves deeply-nested collapses in an inconsistent state ("stalled" /
-	// unreachable). The <ul>'s own `{@attach initCollapse}` handles init once.
+	// Auto-expand the chain to an active descendant on sidebar-driven navigation.
+	//
+	// We let FlyonUI fully own the `open`/`hidden` classes on both the chevron
+	// toggle button AND the collapse <ul>; Svelte must NOT toggle those classes
+	// reactively, otherwise FlyonUI's `show()`/`hide()` guards (which check
+	// `el.classList.contains("open")` on the toggle, and `content.classList.
+	// contains("hidden")` on the <ul>) get out of sync and click-to-toggle stops
+	// working (or `show()` bails as a no-op and the chain stays collapsed).
+	//
+	// Strategy: use the static `HSCollapse.show()` (idempotent: only acts when
+	// content still has `hidden`). Trigger on every navigation, gated by
+	// `lastAutoShowPath` so transient scroll-driven `activeSection` changes
+	// don't re-open a manually-closed folder.
+	let lastAutoShowPath: string | null = null;
 	$effect(() => {
-		if (hasActiveChild && collapseControl) {
-			const instance = window.HSCollapse.getInstance(collapseControl, true);
-			if (instance?.element) {
-				instance.element.show();
-			}
+		const path = page.url.pathname;
+		// Read these so the effect re-runs when descendants finish reporting up.
+		const shouldShow = thisPage || hasActiveChild;
+		if (!shouldShow || !collapseControl) return;
+		if (path === lastAutoShowPath) return;
+		if (typeof window === 'undefined' || !window.HSCollapse) return;
+		const instance = window.HSCollapse.getInstance(collapseControl, true);
+		if (instance?.element) {
+			instance.element.show();
 		}
+		// window.HSCollapse.show(collapseControl);
+		lastAutoShowPath = path;
 	});
 
 	const openSidebar = () => {
@@ -107,11 +112,15 @@
 </script>
 
 {#snippet collapseList()}
+	<!--
+		Initial class is `hidden`; FlyonUI's `HSCollapse.show()` removes `hidden`
+		and adds `open`. Svelte must not touch these classes reactively (see effect
+		above). The auto-expand effect calls `show()` on mount when a descendant
+		is active, so the chain expands on direct URL load too.
+	-->
 	<ul
 		id={id + '-collapse'}
-		class="collapse {thisPage
-			? 'open'
-			: 'hidden'} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
+		class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
 		aria-labelledby={id + '-control'}
 		{@attach initCollapse}
 	>
@@ -122,11 +131,7 @@
 					pathname: item.pathname || pathname
 				} as SideBarItemType}
 				onActiveChange={(active) => {
-					if (active) {
-						activeChildIds.add(item.id);
-					} else {
-						activeChildIds.delete(item.id);
-					}
+					activeChildMap[item.id] = active;
 				}}
 			/>
 		{/each}
@@ -165,12 +170,16 @@
 		<span class="overlay-minified:hidden">{name}</span>
 		<!-- Chevron to open the collapse-->
 		{#if isFolder}
+			<!--
+				Do NOT bind the `open` class reactively here. FlyonUI's `HSCollapse`
+				manages it on this toggle in lockstep with the `<ul>` content; any
+				Svelte-controlled `open` here desyncs the two and breaks click-toggle
+				(see `hide()`/`show()` guards in `flyonui/dist/collapse.mjs`).
+			-->
 			<button
 				bind:this={collapseControl}
 				type="button"
-				class="btn btn-circle btn-sm btn-gradient btn-base-300 collapse-toggle {thisPage || isActive
-					? 'open'
-					: ''}"
+				class="btn btn-circle btn-sm btn-gradient btn-base-300 collapse-toggle"
 				id={id + '-control'}
 				data-collapse={'#' + id + '-collapse'}
 				aria-label="Toggle folder collapse"
@@ -178,7 +187,6 @@
 					e.preventDefault();
 					e.stopPropagation();
 				}}
-				{@attach toggleCollapse}
 			>
 				<span
 					class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:hidden size-4 transition-all duration-300"
