@@ -84,14 +84,17 @@
 	// needed somewhere?
 	// initCollapse(document.getElementById(id + '-collapse')!);
 
-	// Reactively open collapse when a child becomes active
+	// Reactively open collapse when a child becomes active.
+	// Note: do NOT re-run `initCollapse` on the collapse <ul> here. That <ul>
+	// contains nested folders' chevron buttons (each with `data-collapse=...`);
+	// re-running `HSCollapse.autoInit` on it re-scans those nested triggers and
+	// leaves deeply-nested collapses in an inconsistent state ("stalled" /
+	// unreachable). The <ul>'s own `{@attach initCollapse}` handles init once.
 	$effect(() => {
 		if (hasActiveChild && collapseControl) {
 			const instance = window.HSCollapse.getInstance(collapseControl, true);
 			if (instance?.element) {
-				// or should the show be on document.getElementById(id + '-collapse')?
 				instance.element.show();
-				initCollapse(document.getElementById(id + '-collapse')!);
 			}
 		}
 	});
