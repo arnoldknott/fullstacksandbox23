@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
 	import type { Attachment } from 'svelte/attachments';
+	import { SvelteSet } from 'svelte/reactivity';
 	import type { Writable } from 'svelte/store';
 
 	import { page } from '$app/state';
@@ -12,11 +13,11 @@
 	let {
 		content,
 		topLevel = false,
-		isActiveChild = $bindable(false)
+		onActiveChange
 	}: {
 		content: SideBarItemType;
 		topLevel?: boolean;
-		isActiveChild?: boolean;
+		onActiveChange?: (active: boolean) => void;
 	} = $props();
 	let { id, name, pathname, hash, icon, items } = $derived({ ...content });
 	let isFolder = $derived(
@@ -25,18 +26,13 @@
 			((content as SideBarItemType).items?.length ?? 0) > 0
 	);
 
-	// this variable tracks if any child item is active:
-	// let hasActiveChild = $state(false);
-
-	// this variable tracks active states of all children (for folders only):
-	let childActiveStates: boolean[] = $state(content.items?.map(() => false) ?? []);
-	let hasActiveChild = $derived(childActiveStates.some((active) => active));
+	// Tracks ids of children that are currently active (for folders only).
+	const activeChildIds = new SvelteSet<string>();
+	let hasActiveChild = $derived(activeChildIds.size > 0);
 
 	$effect(() => {
-		// communicates to parent (via bindable), that this folder is active because one of its children is active:
-		isActiveChild = (hasActiveChild && isFolder) || isActive;
-		// Checks if any of this folders children are active:
-		// hasActiveChild = childActiveStates.some((active) => active);
+		// Notify parent that this item is active (directly or via an active child).
+		onActiveChange?.((hasActiveChild && isFolder) || isActive);
 	});
 
 	const thisPage = $derived(pathname === page.url.pathname);
@@ -116,13 +112,19 @@
 		aria-labelledby={id + '-control'}
 		{@attach initCollapse}
 	>
-		{#each items as item, index (item.id)}
+		{#each items as item (item.id)}
 			<SidebarItem
 				content={{
 					...item,
 					pathname: item.pathname || pathname
 				} as SideBarItemType}
-				bind:isActiveChild={childActiveStates[index]}
+				onActiveChange={(active) => {
+					if (active) {
+						activeChildIds.add(item.id);
+					} else {
+						activeChildIds.delete(item.id);
+					}
+				}}
 			/>
 		{/each}
 	</ul>
