@@ -693,29 +693,52 @@
 			setTimeout(() => {
 				const targetElement = document.getElementById(hash.substring(1));
 				if (targetElement) {
+					// Compute the actual scrollY that `scrollIntoView` will land
+					// on (target's top aligned with viewport top). Do NOT subtract
+					// the header height — native scrollIntoView ignores the fixed
+					// header, so subtracting would make the positional flag-clear
+					// check miss the landing position and the flag would get stuck.
+					const rectTop = targetElement.getBoundingClientRect().top;
+					intentionalTargetY = Math.max(0, rectTop + (scrollY.current ?? window.scrollY));
 					targetElement.scrollIntoView({ behavior: 'smooth' });
+				} else {
+					intentionalTargetY = scrollY.current ?? window.scrollY;
 				}
 				handleIntentionalNavigation();
 			}, 100);
 		} else {
 			// Scroll to top if no hash
+			intentionalTargetY = 0;
 			window.scrollTo({ top: 0, behavior: 'smooth' });
 			handleIntentionalNavigation();
 		}
 	});
 
 	let navBar: HTMLElement | null = $state(null);
+	// Constant once measured — main's padding-top must NOT change when the
+	// navbar shows/hides, otherwise document height changes and scrollY gets
+	// clamped near the page bottom, which the direction check would then
+	// misread as "scrolling up" and re-show the navbar (visible bouncing).
 	let navBarBottom: number = $state(0);
 
 	// Hide / show  navbar on scroll down / up
 	let header: HTMLElement | null = $state(null);
 	let previousScrollY = $state(scrollY.current ?? 0);
 	let intentionalNavigationInProgress = $state(false);
+	// Target scrollY of the in-progress programmatic smooth scroll. The
+	// intentional-navigation flag is cleared as soon as the viewport reaches
+	// (or passes) this position (positional, not time-based).
+	let intentionalTargetY = $state(0);
+	// scrollY at the moment the intentional navigation starts — used to know
+	// whether the programmatic scroll is heading up or down so the flag can
+	// be cleared once the target is reached or crossed in that direction.
+	let intentionalStartY = $state(0);
 
 	// Show navbar and mark navigation as intentional:
 	const handleIntentionalNavigation = () => {
 		if (header) {
 			// Show navbar when browser back/forward is used
+			intentionalStartY = scrollY.current ?? 0;
 			intentionalNavigationInProgress = true;
 			header.classList.add('mt-2');
 			header.style.top = '0';
@@ -739,28 +762,52 @@
 	};
 
 	const toggleTopNavBar = () => {
+		const currentScrollY = scrollY.current ?? 0;
+
+		// Positionally clear the intentional-navigation guard once the
+		// programmatic smooth scroll has reached or crossed its target in
+		// the direction it was heading. Using "crossed" (not just "within 1
+		// px") is essential: scrollIntoView may land a couple of pixels off
+		// the computed target, and a user who interrupts the smooth scroll
+		// can carry scrollY past the target between scroll events. A simple
+		// abs-distance check would then miss the window and the flag would
+		// stay stuck — visible as "navbar won't hide after in-page hash nav".
+		if (intentionalNavigationInProgress) {
+			const goingDown = intentionalTargetY >= intentionalStartY;
+			const reached = goingDown
+				? currentScrollY >= intentionalTargetY - 1
+				: currentScrollY <= intentionalTargetY + 1;
+			if (reached) {
+				intentionalNavigationInProgress = false;
+			}
+		}
+
 		// Don't hide navbar during intentional navigation (sidebar clicks, browser back/forward)
 		if (!intentionalNavigationInProgress) {
 			// console.log('=== toggleTopNavBar ===');
-			// const currentScrollY = scrollspyParent?.scrollTop ?? 0;
 			// see https://www.w3schools.com/howto/howto_js_navbar_hide_scroll.asp
-			const currentScrollY = scrollY.current ?? 0;
-			// if (navBar) {
 			if (header) {
 				if (currentScrollY > previousScrollY) {
-					// Scrolling down removes navbar
-					// navBar.classList.add('-mt-[var(--header-height)]');
+					// Scrolling down: hide via `top` (NOT transform). Safari/iOS
+					// latches transforms on position:fixed elements until the
+					// scroll ends, so a transform-based hide would not animate
+					// during the scroll. `top` is treated as layout and repaints
+					// during scroll in every browser.
+					// Crucially: do NOT touch the main padding-top here. Document
+					// height must stay constant so scrollY isn't clamped near the
+					// page bottom (which would be misread as "scrolling up").
 					header.classList.remove('mt-2');
 					header.style.top = `-${header.offsetHeight}px`;
-					navBarBottom = 0;
 				} else {
-					// Scrolling up shows navbar
-					// navBar.classList.remove('-mt-[var(--header-height)]');
+					// Scrolling up: slide navbar back in.
 					header.classList.add('mt-2');
 					header.style.top = '0';
-					navBarBottom = header.offsetHeight;
 				}
 			}
+			previousScrollY = currentScrollY;
+		} else {
+			// Keep previousScrollY synced so the first real toggle after the
+			// programmatic scroll uses a sensible direction baseline.
 			previousScrollY = currentScrollY;
 		}
 	};
@@ -773,9 +820,6 @@
 <svelte:window
 	onresize={(event) => windowResizeHandler(event)}
 	onscroll={toggleTopNavBar}
-	onscrollend={() => {
-		intentionalNavigationInProgress = false;
-	}}
 	onpopstate={handleIntentionalNavigation}
 />
 

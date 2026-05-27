@@ -12,11 +12,11 @@
 	let {
 		content,
 		topLevel = false,
-		isActiveChild = $bindable(false)
+		onActiveChange
 	}: {
 		content: SideBarItemType;
 		topLevel?: boolean;
-		isActiveChild?: boolean;
+		onActiveChange?: (active: boolean) => void;
 	} = $props();
 	let { id, name, pathname, hash, icon, items } = $derived({ ...content });
 	let isFolder = $derived(
@@ -25,17 +25,15 @@
 			((content as SideBarItemType).items?.length ?? 0) > 0
 	);
 
-	// this variable tracks if any child item is active:
-	let hasActiveChild = $state(false);
-
-	// this variable tracks active states of all children (for folders only):
-	let childActiveStates: boolean[] = $state(content.items?.map(() => false) ?? []);
+	// Tracks active state of each child by id (for folders only). Plain `$state`
+	// record so mutations from child-component callbacks reliably re-trigger
+	// `$derived`s and template class bindings in this component.
+	let activeChildMap = $state<Record<string, boolean>>({});
+	let hasActiveChild = $derived(Object.values(activeChildMap).some(Boolean));
 
 	$effect(() => {
-		// communicates to parent (via bindable), that this folder is active because one of its children is active:
-		isActiveChild = (hasActiveChild && isFolder) || isActive;
-		// Checks if any of this folders children are active:
-		hasActiveChild = childActiveStates.some((active) => active);
+		// Notify parent that this item is active (directly or via an active child).
+		onActiveChange?.((hasActiveChild && isFolder) || isActive);
 	});
 
 	const thisPage = $derived(pathname === page.url.pathname);
@@ -77,26 +75,31 @@
 	);
 	const linkOpacity = $derived(isActive ? 'opacity-100' : isVisible ? 'opacity-95' : 'opacity-70');
 
-	const toggleCollapse: Attachment<HTMLElement> = (node: HTMLElement) => {
-		if (pathname === page.url.pathname || hasActiveChild) {
-			const { element } = window.HSCollapse.getInstance(node, true);
-			element.show();
-		}
-	};
-
-	// needed somewhere?
-	// initCollapse(document.getElementById(id + '-collapse')!);
-
-	// Reactively open collapse when a child becomes active
+	// Auto-expand the chain to an active descendant on sidebar-driven navigation.
+	//
+	// We let FlyonUI fully own the `open`/`hidden` classes on both the chevron
+	// toggle button AND the collapse <ul>; Svelte must NOT toggle those classes
+	// reactively, otherwise FlyonUI's `show()`/`hide()` guards (which check
+	// `el.classList.contains("open")` on the toggle, and `content.classList.
+	// contains("hidden")` on the <ul>) get out of sync and click-to-toggle stops
+	// working (or `show()` bails as a no-op and the chain stays collapsed).
+	//
+	// Trigger on every navigation, gated by `lastAutoShowPath` so transient
+	// scroll-driven `activeSection` changes don't re-open a manually-closed
+	// folder.
+	let lastAutoShowPath: string | null = null;
 	$effect(() => {
-		if (hasActiveChild && collapseControl) {
-			const instance = window.HSCollapse.getInstance(collapseControl, true);
-			if (instance?.element) {
-				// or should the show be on document.getElementById(id + '-collapse')?
-				instance.element.show();
-				initCollapse(document.getElementById(id + '-collapse')!);
-			}
+		const path = page.url.pathname;
+		// Read these so the effect re-runs when descendants finish reporting up.
+		const shouldShow = thisPage || hasActiveChild;
+		if (!shouldShow || !collapseControl) return;
+		if (path === lastAutoShowPath) return;
+		if (typeof window === 'undefined' || !window.HSCollapse) return;
+		const instance = window.HSCollapse.getInstance(collapseControl, true);
+		if (instance?.element) {
+			instance.element.show();
 		}
+		lastAutoShowPath = path;
 	});
 
 	const openSidebar = () => {
@@ -107,21 +110,27 @@
 </script>
 
 {#snippet collapseList()}
+	<!--
+		Initial class is `hidden`; FlyonUI's `HSCollapse.show()` removes `hidden`
+		and adds `open`. Svelte must not touch these classes reactively (see effect
+		above). The auto-expand effect calls `show()` on mount when a descendant
+		is active, so the chain expands on direct URL load too.
+	-->
 	<ul
 		id={id + '-collapse'}
-		class="collapse {thisPage
-			? 'open'
-			: 'hidden'} w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
+		class="collapse hidden w-auto space-y-0.5 overflow-hidden transition-[height] duration-300"
 		aria-labelledby={id + '-control'}
 		{@attach initCollapse}
 	>
-		{#each items as item, index (item.id)}
+		{#each items as item (item.id)}
 			<SidebarItem
 				content={{
 					...item,
 					pathname: item.pathname || pathname
 				} as SideBarItemType}
-				bind:isActiveChild={childActiveStates[index]}
+				onActiveChange={(active) => {
+					activeChildMap[item.id] = active;
+				}}
 			/>
 		{/each}
 	</ul>
@@ -159,12 +168,16 @@
 		<span class="overlay-minified:hidden">{name}</span>
 		<!-- Chevron to open the collapse-->
 		{#if isFolder}
+			<!--
+				Do NOT bind the `open` class reactively here. FlyonUI's `HSCollapse`
+				manages it on this toggle in lockstep with the `<ul>` content; any
+				Svelte-controlled `open` here desyncs the two and breaks click-toggle
+				(see `hide()`/`show()` guards in `flyonui/dist/collapse.mjs`).
+			-->
 			<button
 				bind:this={collapseControl}
 				type="button"
-				class="btn btn-circle btn-sm btn-gradient btn-base-300 collapse-toggle {thisPage || isActive
-					? 'open'
-					: ''}"
+				class="btn btn-circle btn-sm btn-gradient btn-base-300 collapse-toggle"
 				id={id + '-control'}
 				data-collapse={'#' + id + '-collapse'}
 				aria-label="Toggle folder collapse"
@@ -172,7 +185,6 @@
 					e.preventDefault();
 					e.stopPropagation();
 				}}
-				{@attach toggleCollapse}
 			>
 				<span
 					class="icon-[tabler--chevron-down] collapse-open:rotate-180 overlay-minified:hidden size-4 transition-all duration-300"

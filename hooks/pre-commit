@@ -33,6 +33,8 @@ BUN_LINT_EXIT_CODE=$?
 git add ./frontend_svelte/
 docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T frontend_svelte sh -c "bun test:unit"
 BUN_UNITTEST_EXIT_CODE=$?
+docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T frontend_svelte sh -c "bun check"
+BUN_TYPECHECK_EXIT_CODE=$?
 docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env down
 
 cd infrastructure
@@ -59,4 +61,5 @@ print_result $IMPORTS_SORT_EXIT_CODE "bun imports:sort"
 print_result $BUN_FORMAT_EXIT_CODE "bun format"
 print_result $BUN_LINT_EXIT_CODE "bun lint"
 print_result $BUN_UNITTEST_EXIT_CODE "bun unit test"
+print_result $BUN_TYPECHECK_EXIT_CODE "bun type check"
 print_result $TOFU_FMT_EXIT_CODE "tofu fmt"

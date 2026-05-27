@@ -12,7 +12,7 @@
 		"lint": "npx prettier  --plugin=prettier-plugin-svelte --plugin=prettier-plugin-tailwindcss --check . && eslint .",
 		"format": "npx prettier --plugin=prettier-plugin-svelte --plugin=prettier-plugin-tailwindcss --write --log-level warn .",
 		"imports:sort": "eslint . --fix",
-		"clean": "bun imports:sort && bun format && bun lint && bun test:unit"
+		"clean": "bun imports:sort && bun format && bun lint && bun test:unit && bun check"
 	},
 	"devDependencies": {
 		"@eslint/eslintrc": "^3.3.5",
