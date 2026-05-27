@@ -8,7 +8,7 @@
 	import Card from '$components/Card.svelte';
 	import Display from '$components/Display.svelte';
 	import Heading from '$components/Heading.svelte';
-	import JsonData from '$components/JsonData.svelte';
+	// import JsonData from '$components/JsonData.svelte';
 	import { AccessHandler, Action, IdentityType } from '$lib/accessHandler';
 	import { SocketIO, type SocketioStatus } from '$lib/socketio.svelte';
 	import type { AccessShareOption, PresentationExtended } from '$lib/types';
@@ -166,7 +166,7 @@
 	<span class="icon-[fluent-color--warning-24] size-4"></span>
 {/snippet}
 
-<JsonData data={data.payload.identities} />
+<!-- <JsonData data={data.payload.identities} /> -->
 
 {#if showNewPresentationCard}
 	<div transition:fade={{ duration: 600 }}>
