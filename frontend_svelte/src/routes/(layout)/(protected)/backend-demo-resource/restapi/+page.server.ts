@@ -91,17 +91,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const allIdentities = await backendAPI.getAllIdentities(sessionId);
 	payload.identities.push(...allIdentities);
 
-	// let microsoftTeamsExtended = microsoftTeams.map(
-	// 	(team: MicrosoftTeam) => {
-	// 		// const policies: AccessPolicy[] = accessPolicies.filter((policy: AccessPolicy) => policy.identity_id === team.id);
-	// 		return {
-	// 			...team,
-	// 			// access_policies: accessPolicies.filter((policy: AccessPolicy) => policy.identity_id === team.id)
-	// 		};
-	// 	}
-	// );
-
-	// return { demoResourcesExtended, microsoftTeamsExtended };
 	return { payload };
 };
 
