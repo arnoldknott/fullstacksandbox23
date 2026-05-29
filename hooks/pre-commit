@@ -9,6 +9,16 @@
 # docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env run -T --rm backend_api sh -c "ruff format ."
 # docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env run -T --rm backend_api sh -c "pytest -v"
 
+if [ ! -f versions.env ]; then
+    echo "Missing versions.env in repository root."
+    exit 1
+fi
+
+# Export image/tool version variables used by compose.yml and Dockerfiles.
+set -a
+. ./versions.env
+set +a
+
 # Get the build back in, when having less frequent changes and closer to release:
 docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env build
 docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env up -d
