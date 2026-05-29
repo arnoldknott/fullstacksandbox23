@@ -1,22 +1,20 @@
-import type { Team as MicrosoftTeam } from '@microsoft/microsoft-graph-types';
-
+import { backendAPI } from '$lib/server/apis/backendApi';
 import { microsoftGraph } from '$lib/server/apis/msgraph';
+import type { Identity } from '$lib/types';
 
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const sessionId = locals.sessionData.sessionId;
 
-	let myTeams: MicrosoftTeam[] = [];
-	// TBD: session is long-lived - needs to update more frequently
-	if (locals.sessionData.currentUser && locals.sessionData.currentUser.azure_token_groups) {
-		myTeams = await microsoftGraph.getAttachedTeams(
-			sessionId,
-			locals.sessionData.currentUser.azure_token_groups
-		);
-	}
+	const payload = { identities: [] as Identity[] };
+	const myTeamsIdentities = await microsoftGraph.getAttachedTeamsAsIdentities(
+		sessionId,
+		locals.sessionData.currentUser?.azure_token_groups
+	);
+	payload.identities.push(...myTeamsIdentities);
+	const allIdentities = await backendAPI.getAllIdentities(sessionId);
+	payload.identities.push(...allIdentities);
 
-	return {
-		microsoftTeams: myTeams
-	};
+	return { payload };
 };
