@@ -345,11 +345,6 @@ class BaseCRUD(
             # this should be doable in the same database call as the access policy and the access log creation.
             # self._add_identifier_type_link_to_session(database_object.id)
 
-            # TBD: create the statements in the methods, but execute together - less round-trips to database
-            # await self._write_identifier_type_link(database_object.id)
-            # await self._write_policy(database_object.id, own, current_user)
-            # That's what session handling is for - it depends on where to exec() the session.
-
             # Create owner access policy
             # if not is_public_creation:
             access_policy = AccessPolicyCreate(
@@ -445,31 +440,6 @@ class BaseCRUD(
                 status_code=403,
                 detail=f"{self.model.__name__} - Forbidden.",
             )
-
-    # async def create_public(
-    #     self,
-    #     object: BaseSchemaTypeCreate,
-    #     current_user: "CurrentUserData",
-    #     parent_id: Optional[uuid.UUID] = None,
-    #     inherit: Optional[bool] = False,
-    #     action: Action = read,
-    # ) -> BaseModelType:
-    #     """Creates a new object with public access."""
-    #     database_object = await self.create(object, current_user, parent_id, inherit)
-
-    #     public_access_policy = AccessPolicyCreate(
-    #         resource_id=database_object.id,
-    #         action=action,
-    #         public=True,
-    #     )
-    #     async with self.policy_CRUD as policy_CRUD:
-    #         await policy_CRUD.create(
-    #             public_access_policy,
-    #             current_user,
-    #             allow_override=self.allow_standalone,
-    #         )
-
-    #     return database_object
 
     async def add_child_to_parent(
         self,
