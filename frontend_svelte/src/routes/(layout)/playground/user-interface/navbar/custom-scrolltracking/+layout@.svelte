@@ -13,7 +13,7 @@
 	import { SessionStatus } from '$lib/session';
 	import { themeStore } from '$lib/stores';
 	import { FSSB23_THEME_KEY, type ThemeRuntimeContext, Theming } from '$lib/theming';
-	import type { Session, SidebarItemContent } from '$lib/types';
+	import type { SidebarItemContent } from '$lib/types';
 	import { initDropdown, initOverlay } from '$lib/userInterface';
 
 	import LoginOutButton from '../../../../LoginOutButton.svelte';
@@ -54,8 +54,6 @@
 				? false
 				: true
 	);
-
-	let session: Session | undefined = $state(data.session);
 
 	let welcomeModal: HTMLDivElement | null = $state(null);
 
@@ -1008,7 +1006,7 @@
 	<!-- class="border-error h-screen w-screen overflow-x-scroll overflow-y-auto border border-4" -->
 	<!-- bind:session={data.session} -->
 	<WelcomeModal
-		bind:session
+		session={data.session}
 		bind:artificialIntelligenceConfiguration
 		bind:mode={themeRuntime.mode}
 		bind:themeConfiguration={themeRuntime.themeConfiguration}
