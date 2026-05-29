@@ -24,7 +24,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	// }
 	const myTeamsIdentities = await microsoftGraph.getAttachedTeamsAsIdentities(
 		sessionId,
-		locals.sessionData.currentUser.azure_token_groups
+		locals.sessionData.currentUser?.azure_token_groups
 	);
 	payload.identities.push(...myTeamsIdentities);
 	const allIdentities = await backendAPI.getAllIdentities(sessionId);
