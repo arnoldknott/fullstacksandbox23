@@ -389,6 +389,9 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             # TBD fix cartesian product in the query when admin calls this!
             # problem started since the user_account was added to the user!
             # Challenge is in the model, not in the query!
+            # Returns model Me, which includes user_profile and user_account.
+            # Always filters by current_user.user_id, so even Admin only ever gets
+            # their own profile/account through this method.
             user = await self.read_by_id(current_user.user_id, current_user)
 
             # Version 2: check access first and then read directly from the database:
@@ -409,14 +412,14 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             # me = Me.model_validate(user)
             # print("=== user crud - read_me - me ===")
             # print(me)
-            query = select(UserAccount, UserProfile).where(
-                UserAccount.user_id == current_user.user_id,
-                UserProfile.user_id == current_user.user_id,
-            )
-            response = await self.session.exec(query)
-            account, profile = response.one()
-            user.user_account = account
-            user.user_profile = profile
+            # query = select(UserAccount, UserProfile).where(
+            #     UserAccount.user_id == current_user.user_id,
+            #     UserProfile.user_id == current_user.user_id,
+            # )
+            # response = await self.session.exec(query)
+            # account, profile = response.one()
+            # user.user_account = account
+            # user.user_profile = profile
 
             # Add detailed logging before model_validate
             me = Me.model_validate(user)
