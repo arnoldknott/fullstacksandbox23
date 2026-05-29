@@ -136,7 +136,13 @@ async def socketio_test_server(
             )
             app = socketio.ASGIApp(sio, socketio_path="socketio/v1")
 
-            config = uvicorn.Config(app, host="127.0.0.1", port=8669, log_level="info")
+            config = uvicorn.Config(
+                app,
+                host="127.0.0.1",
+                port=8669,
+                log_level="info",
+                ws="websockets-sansio",
+            )
             server = uvicorn.Server(config)
 
             asyncio.create_task(server.serve())
