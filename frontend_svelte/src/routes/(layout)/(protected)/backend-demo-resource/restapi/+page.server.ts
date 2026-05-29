@@ -5,7 +5,13 @@ import { Action } from '$lib/accessHandler';
 import { backendAPI } from '$lib/server/apis/backendApi';
 // import { Action } from '$lib/accessHandler';
 import { microsoftGraph } from '$lib/server/apis/msgraph';
-import type { AccessPolicy, AccessRight, DemoResource, DemoResourceExtended, Identity } from '$lib/types';
+import type {
+	AccessPolicy,
+	AccessRight,
+	DemoResource,
+	DemoResourceExtended,
+	Identity
+} from '$lib/types';
 
 import type { Actions, PageServerLoad } from './$types';
 
@@ -84,7 +90,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 	payload.identities.push(...microsoftTeamsIdentities);
 	const allIdentities = await backendAPI.getAllIdentities(sessionId);
 	payload.identities.push(...allIdentities);
-
 
 	// let microsoftTeamsExtended = microsoftTeams.map(
 	// 	(team: MicrosoftTeam) => {
