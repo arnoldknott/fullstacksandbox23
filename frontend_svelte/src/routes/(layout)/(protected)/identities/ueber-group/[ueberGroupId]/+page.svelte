@@ -579,33 +579,34 @@
 			<JsonData data={allOtherMicrosoftUsers} />
 		{/if}
 	</div>
-
-	<ul class="title bg-warning-container/80 text-warning-container-content mt-4 rounded-2xl">
-		<li>Develop Account linking module. Return a SvelteMap with [userId, foreignAccount]</li>
-		<li>
-			map foreign accounts into strucutre of fssb23 identities for displaying possibilities, for
-			eksample in ShareItems, lists, and so on.
-		</li>
-		<li>Add user to ueber-group.</li>
-		<li>Turn into components to reuse with groups and subgroups.</li>
-	</ul>
-	<ul class="title bg-warning-container/60 text-warning-container-content mt-4 rounded-2xl">
-		<li>
-			Maybe add a read hierarchy endpoint anyways, to get the information if a child inherits from
-			parent? This is not visualized in the current mapped children here.
-		</li>
-	</ul>
 {:else}
 	<Heading>Error</Heading>
 	<p>No Ueber Group found.</p>
 {/if}
 
+<ul class="title bg-warning-container/80 text-warning-container-content mt-4 rounded-2xl">
+	<li class="p-2">
+		Develop Account linking module. Return a SvelteMap with [userId, foreignAccount]
+	</li>
+	<li class="p-2">
+		map foreign accounts into strucutre of fssb23 identities for displaying possibilities, for
+		eksample in ShareItems, lists, and so on.
+	</li>
+	<li class="p-2">Add user to ueber-group.</li>
+	<li class="p-2">Turn into components to reuse with groups and subgroups.</li>
+</ul>
+<ul class="title bg-warning-container/60 text-warning-container-content mt-4 rounded-2xl">
+	<li class="p-2">
+		Maybe add a read hierarchy endpoint anyways, to get the information if a child inherits from
+		parent? This is not visualized in the current mapped children here.
+	</li>
+</ul>
+
 <ul class="title bg-warning-container/40 text-warning-container-content mt-4 rounded-2xl">
-	<li>
+	<li class="p-2">
 		For resource hierarchies (protected resources) also add the order functionality by drag and
 		drop.
 	</li>
-	<li>Update eslint-plugin-svelte, when types are fixed.</li>
 </ul>
 
 {#if debug}
