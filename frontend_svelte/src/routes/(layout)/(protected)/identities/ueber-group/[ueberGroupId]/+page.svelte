@@ -10,8 +10,9 @@
 	import Heading from '$components/Heading.svelte';
 	import JsonData from '$components/JsonData.svelte';
 	import { IdentityType } from '$lib/accessHandler';
-	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio.svelte';
-	import type { Group, Hierarchy, UeberGroup } from '$lib/types';
+	import { RelationHandler, type Relations } from '$lib/relationHandler.svelte';
+	import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
+	import type { Group, UeberGroup } from '$lib/types';
 
 	import IdBadge from '../../../IdBadge.svelte';
 	import IdentityListItem from '../../IdentityListItem.svelte';
@@ -41,10 +42,11 @@
 	// 	return shortName;
 	// };
 
-	let linkedGroups = $derived<Group[]>(data.thisUeberGroup?.groups || []);
 	let socketioUeberGroup: SocketIO<UeberGroup> = $state()!;
 	let socketioGroup: SocketIO<Group> = $state()!;
-	let allGroups = $derived(socketioGroup?.entities ?? []);
+	let groupsRelation: Relations = $state()!;
+	let linkedGroups = $derived<Group[]>((groupsRelation?.linked ?? []) as Group[]);
+	let allUnlinkedGroups = $derived<Group[]>((groupsRelation?.unlinked ?? []) as Group[]);
 	const [sendGroupCrossfade, receiveGroupCrossfade] = crossfade({ duration: 400 });
 	// const [sendIdentityCrossfade, receiveIdentityCrossfade] = crossfade({ duration: 400 });
 	const newGroup = $state<Group>({
@@ -56,7 +58,6 @@
 	let existingGroupInherit = $state(true);
 	let newMultipleGroups = $state(false);
 	let multipleGroupsSuffixes = $state({ start: 1, end: 2 });
-	let newGroupIdsSuffixes = new SvelteMap([[newGroup.id, '']]);
 	let newGroupSuffix = $derived(
 		newMultipleGroups
 			? '_[' + multipleGroupsSuffixes.start + ':' + multipleGroupsSuffixes.end + ']'
@@ -106,55 +107,22 @@
 		});
 
 		socketioGroup = new SocketIO<Group>(groupConnection, {
-			subscribeEntities: () => data.allOtherGroups,
-			defaultHandlers: { transferred: false }
+			subscribeEntities: () => data.allGroups
 		});
 		socketioGroup.client.emit('read');
-		socketioGroup.client.on('transferred', (data: Group) => {
-			if (!linkedGroups.some((group) => group.id === data.id)) {
-				socketioGroup.handleTransferred(data);
+
+		// TBD: refactor this caller:
+		// RelationHandler should take care of all relations ... (see below)
+		const relation = new RelationHandler(() => ueberGroup, {
+			groups: {
+				socketio: socketioGroup,
+				initial: () => data.thisUeberGroup?.groups,
+				defaultInherit: true
 			}
 		});
-		socketioGroup.client.on('deleted', (resource_id: string) => {
-			linkedGroups = linkedGroups.filter((group) => group.id !== resource_id);
-		});
-		socketioGroup.client.on('status', (status: SocketioStatus) => {
-			if (!('success' in status)) return;
-			// Default `status` handler (from SocketIO class) still runs alongside this one:
-			// it patches `socketioGroup.entities` for `created` (id replacement) and re-reads
-			// for `shared`/`unshared`. Here we only add page-specific bookkeeping.
-			if (status.success === 'created') {
-				if (newGroupIdsSuffixes.has(status.submitted_id)) {
-					const suffix = newGroupIdsSuffixes.get(status.submitted_id);
-					const thisGroup: Group = Object.assign({}, newGroup);
-					thisGroup.name = newGroup.name + suffix;
-					// Reassign (not push) so writable-derived consumers see the change:
-					linkedGroups = [...linkedGroups, { ...thisGroup, id: status.id }];
-					newGroupIdsSuffixes.delete(status.submitted_id);
-					if (suffix === '' || newGroupIdsSuffixes.size === 1) {
-						newGroup.name = '';
-						newGroup.description = '';
-						if (suffix === '') {
-							newGroup.id = 'new_' + Math.random().toString(36).substring(2, 9);
-							newGroupIdsSuffixes.set(newGroup.id, '');
-						}
-					}
-				}
-				// TBD: build default handlers for "link" and "unlink":
-			} else if (status.success === 'linked') {
-				const moved = socketioGroup.entities.find((group) => group.id === status.id);
-				if (moved && !linkedGroups.some((group) => group.id === status.id)) {
-					linkedGroups = [...linkedGroups, moved];
-				}
-				socketioGroup.entities = socketioGroup.entities.filter((group) => group.id !== status.id);
-			} else if (status.success === 'unlinked') {
-				const moved = linkedGroups.find((group) => group.id === status.id);
-				if (moved) {
-					socketioGroup.entities.push(moved);
-				}
-				linkedGroups = linkedGroups.filter((group) => group.id !== status.id);
-			}
-		});
+		// ... while this one takes care of everything related to a specific child relation,
+		// including subscribing to the socketio, reading initial data, and providing link/unlink/submit/delete methods.
+		groupsRelation = relation.child('groups');
 	});
 
 	onDestroy(() => {
@@ -164,52 +132,27 @@
 
 	const addNewGroup = () => {
 		if (newMultipleGroups) {
-			for (
-				let suffix = multipleGroupsSuffixes.start;
-				suffix <= multipleGroupsSuffixes.end;
-				suffix++
-			) {
-				const thisGroup = Object.assign({}, newGroup);
-				thisGroup.id = 'new_' + Math.random().toString(36).substring(2, 9);
-				thisGroup.name = thisGroup.name + `_${suffix}`;
-				newGroupIdsSuffixes.set(thisGroup.id, `_${suffix}`);
-				socketioGroup.submitEntity(thisGroup, ueberGroup?.id, newGroupInherit);
+			const suffixes: string[] = [];
+			for (let s = multipleGroupsSuffixes.start; s <= multipleGroupsSuffixes.end; s++) {
+				suffixes.push(`_${s}`);
 			}
+			groupsRelation.submitBulk(newGroup, { suffixes }, newGroupInherit);
 		} else {
-			socketioGroup.submitEntity(newGroup, ueberGroup?.id, newGroupInherit);
+			groupsRelation.submit(newGroup, newGroupInherit);
 		}
+		newGroup.name = '';
+		newGroup.description = '';
 	};
 
-	const linkGroup = (groupId: string) => {
-		if (ueberGroup) {
-			const hierarchy: Hierarchy = {
-				child_id: groupId,
-				parent_id: ueberGroup.id,
-				inherit: existingGroupInherit
-			};
-			socketioGroup.linkEntities(hierarchy);
-		}
-	};
+	const linkGroup = (groupId: string) => groupsRelation.link(groupId, existingGroupInherit);
 
-	const unlinkGroup = (groupId: string) => {
-		if (ueberGroup) {
-			const hierarchy: Hierarchy = {
-				child_id: groupId,
-				parent_id: ueberGroup.id
-			};
-			socketioGroup.unlinkEntities(hierarchy);
-			// Mutate the source; the derived `linkedIdentities` projection will recompute.
-			linkedGroups = linkedGroups.filter((group) => group.id !== groupId);
-		}
-	};
+	const unlinkGroup = (groupId: string) => groupsRelation.unlink(groupId);
 
 	// TBD: doesn't immediately remove group from DOM!
-	const deleteGroup = (groupId: string) => {
-		socketioGroup.deleteEntity(groupId);
-	};
+	const deleteGroup = (groupId: string) => groupsRelation.delete(groupId);
 
 	// User related stuff:
-	let allOtherMicrosoftUsers = $derived<MicrosoftUser[]>(data.allOtherMicrosoftUsers || []);
+	let allOtherMicrosoftUsers = $derived<MicrosoftUser[]>(data.allMicrosoftUsers || []);
 	let linkedMicrosoftUsers = $derived<MicrosoftUser[]>(data.linkedMicrosoftUsers || []);
 	// TBD: rethink this typing - also loosing the local id here and only leaving the azure_user_id as id.
 	// Maybe this could be another Map with user.id (from this app) as key and MicrosoftUser as value?
@@ -499,17 +442,12 @@
 			<div class="flex flex-col gap-2">
 				<p>newGroup</p>
 				<JsonData data={newGroup} />
-				<button class="btn btn-secondary-container" onclick={() => console.log(newGroupIdsSuffixes)}
-					>newGroupIdsSuffixes -> console</button
-				>
-				<!-- <p>newGroupIdsSuffixes</p>
-				<JsonData data={newGroupIdsSuffixes} /> -->
 			</div>
 		{/if}
 		<Card id="existing-groups" header={existingGroupsHeader}>
-			{#if allGroups !== undefined && allGroups.length > 0}
+			{#if allUnlinkedGroups !== undefined && allUnlinkedGroups.length > 0}
 				<dl class="divider-outline divide-y">
-					{#each allGroups as group (group.id)}
+					{#each allUnlinkedGroups as group (group.id)}
 						<!-- TBD: debug crossfade in connection with empty lists -->
 						<div in:receiveGroupCrossfade={{ key: group }} out:sendGroupCrossfade={{ key: group }}>
 							<IdentityListItem identity={group} link={linkGroup} />
@@ -526,7 +464,7 @@
 			{/if}
 		</Card>
 		{#if debug}
-			<JsonData data={allGroups} />
+			<JsonData data={allUnlinkedGroups} />
 		{/if}
 	</div>
 
