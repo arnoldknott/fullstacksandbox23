@@ -213,14 +213,17 @@
 	type LocalMicrosoftUser = {
 		id: string;
 		name?: string | null;
-		description?: string | null;
+		mail?: string | null;
 	};
 	let linkedIdentities = $derived<SvelteMap<Group | LocalMicrosoftUser, IdentityType>>(
 		new SvelteMap()
 	);
 	$effect(() => {
 		linkedGroups.forEach((group) => {
+			console.log('setting linked identity for group: ' + group.name);
 			linkedIdentities.set(group, IdentityType.GROUP);
+			console.log('linkedIdentities after setting group: ');
+			console.log($state.snapshot(linkedIdentities));
 		});
 		linkedMicrosoftUsers.forEach((user) => {
 			if (user.id) {
@@ -228,7 +231,7 @@
 					{
 						id: user.id,
 						name: user.displayName,
-						description: user.mail
+						mail: user.mail
 					},
 					IdentityType.USER
 				);
@@ -243,7 +246,7 @@
 	// 	...linkedUsers.map((user) => ({
 	// 		id: user.id || 'unknown',
 	// 		name: user.displayName,
-	// 		description: user.mail,
+	// 		mail: user.mail,
 	// 		identityType: IdentityType.USER
 	// 	}))
 	// ]);
@@ -362,6 +365,7 @@
 
 	<div class={debug ? 'grid grid-cols-2 justify-around gap-4 pb-4' : 'py-4'}>
 		<Card id="linked-groups" header={linkedGroupsHeader} extraClasses="shadow-outline shadow-md">
+			<JsonData data={[...linkedIdentities]} />
 			{#if linkedIdentities?.size > 0}
 				<dl class="divider-outline divide-y">
 					{#each [...linkedIdentities] as [identity, type] (identity.id)}
