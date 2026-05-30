@@ -74,6 +74,7 @@ class MicrosoftGraph extends BaseAPI {
 		return myTeams;
 	}
 
+	// TBD: move to integrations MicrosoftAccountLinking API?
 	async getAttachedTeamsAsIdentities(
 		sessionId: string,
 		azureGroups: string[] | undefined
