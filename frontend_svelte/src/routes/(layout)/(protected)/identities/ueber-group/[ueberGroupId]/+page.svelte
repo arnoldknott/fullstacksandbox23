@@ -200,7 +200,7 @@
 		}
 	};
 
-	// TBD: doesn't immedelty reomve group from DOM!
+	// TBD: doesn't immediately remove group from DOM!
 	const deleteGroup = (groupId: string) => {
 		socketioGroup.deleteEntity(groupId);
 	};
@@ -238,27 +238,6 @@
 			}
 		});
 	});
-
-	// let linkedIdentities = $derived<
-	// 	((Group & { identityType: IdentityType }) | (MicrosoftUser & { identityType: IdentityType }))[]
-	// >([
-	// 	...linkedGroups.map((group) => ({ ...group, identityType: IdentityType.GROUP })),
-	// 	...linkedUsers.map((user) => ({
-	// 		id: user.id || 'unknown',
-	// 		name: user.displayName,
-	// 		mail: user.mail,
-	// 		identityType: IdentityType.USER
-	// 	}))
-	// ]);
-	// const userConnection: SocketioConnection = {
-	// 	namespace: '/user',
-	// 	cookie_session_id: page.data.session.sessionId
-	// };
-	// // TBD: when porting to group,
-	// // remember to request the data of this user
-	// // via query-parameters on the socket connection
-	// /// as there is no callback on connect
-	// const socketioUser = new SocketIO(userConnection);
 </script>
 
 <div class="flex flex-row gap-2 pb-4">
