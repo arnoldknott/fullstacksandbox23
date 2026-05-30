@@ -88,7 +88,6 @@
 		// 	'request-access-data': true,
 		// }
 	};
-	// and not read-all callback on connect
 	onMount(() => {
 		socketioUeberGroup = new SocketIO<UeberGroup>(ueberGroupConnection, {
 			defaultHandlers: { transferred: false, deleted: false }
@@ -111,11 +110,7 @@
 		});
 		socketioGroup.client.emit('read');
 
-		// TBD: refactor this caller:
-		// RelationHandler should take care of all relations ... (see below)
 		const ueberGroupRelations = new RelationHandler<UeberGroup>(() => ueberGroup);
-		// ... while this one takes care of everything related to a specific child relation,
-		// including subscribing to the socketio, reading initial data, and providing link/unlink/submit/delete methods.
 		groupsRelation = ueberGroupRelations.addChild(
 			'groups',
 			socketioGroup,
@@ -147,7 +142,6 @@
 
 	const unlinkGroup = (groupId: string) => groupsRelation.unlink(groupId);
 
-	// TBD: doesn't immediately remove group from DOM!
 	const deleteGroup = (groupId: string) => groupsRelation.delete(groupId);
 
 	// User related stuff:
