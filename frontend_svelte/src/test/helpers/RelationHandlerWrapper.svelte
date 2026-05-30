@@ -7,7 +7,7 @@
 	// (see `src/test/renderRelationHandler.ts`).
 	import { untrack } from 'svelte';
 
-	import { type ChildRelationView, RelationHandler } from '$lib/relationHandler.svelte';
+	import { RelationHandler, type Relations } from '$lib/relationHandler.svelte';
 	import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
 	import type { AnyEntityExtended } from '$lib/types.d.ts';
 
@@ -17,30 +17,36 @@
 		initial?: () => AnyEntityExtended[] | undefined | null;
 		entities?: AnyEntityExtended[] | undefined | null;
 		defaultInherit?: boolean;
-		getId?: (child: AnyEntityExtended) => string;
-		onInstance: (handle: {
-			socketio: SocketIO<AnyEntityExtended>;
-			view: ChildRelationView<AnyEntityExtended>;
-		}) => void;
+		onInstance: (handle: { socketio: SocketIO<AnyEntityExtended>; view: Relations }) => void;
 	};
 
 	let props: Props = $props();
 
 	untrack(() => {
 		const socketio = new SocketIO<AnyEntityExtended>(props.connection, {
-			subscribeEntities: () => props.entities
-		});
-		const relation = new RelationHandler<AnyEntityExtended, { children: AnyEntityExtended }>(
-			() => props.parent(),
-			{
-				children: {
-					socketio,
-					initial: () => props.initial?.(),
-					getId: props.getId ? (child) => props.getId!(child) : undefined
+			// `linked` is derived from `socketio.entities`. Mirror a real page by
+			// seeding entities with the union of `entities` and `initial`.
+			subscribeEntities: () => {
+				const fromEntities = props.entities ?? [];
+				const fromInitial = props.initial?.() ?? [];
+				const seen = new Set<string>();
+				const merged: AnyEntityExtended[] = [];
+				for (const entity of [...fromEntities, ...fromInitial]) {
+					if (entity && !seen.has(entity.id)) {
+						seen.add(entity.id);
+						merged.push(entity);
+					}
 				}
-			},
-			{ defaultInherit: props.defaultInherit }
-		);
+				return merged;
+			}
+		});
+		const relation = new RelationHandler(() => props.parent(), {
+			children: {
+				socketio,
+				initial: () => props.initial?.(),
+				defaultInherit: props.defaultInherit
+			}
+		});
 		props.onInstance({ socketio, view: relation.child('children') });
 	});
 </script>

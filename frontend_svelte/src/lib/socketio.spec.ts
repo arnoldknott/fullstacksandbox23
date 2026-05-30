@@ -206,24 +206,6 @@ describe('SocketIO', () => {
 		expect(socketIoClient.socket.emit).toHaveBeenCalledWith('share', accessPolicy);
 	});
 
-	it('linkEntities emits "link" with the hierarchy', () => {
-		const rendered = renderDemoSocketIO();
-		const hierarchy = { parent_id: 'parent-1', child_id: 'child-1', inherit: true };
-
-		rendered.instance.linkEntities(hierarchy);
-
-		expect(socketIoClient.socket.emit).toHaveBeenCalledWith('link', hierarchy);
-	});
-
-	it('unlinkEntities emits "unlink" with the hierarchy', () => {
-		const rendered = renderDemoSocketIO();
-		const hierarchy = { parent_id: 'parent-1', child_id: 'child-1' };
-
-		rendered.instance.unlinkEntities(hierarchy);
-
-		expect(socketIoClient.socket.emit).toHaveBeenCalledWith('unlink', hierarchy);
-	});
-
 	it('handleStatus swaps created submitted_id in place and re-reads on shared/unshared', async () => {
 		const rendered = renderDemoSocketIO({
 			entities: [createDemoResource({ id: 'new_42', name: 'draft' })]

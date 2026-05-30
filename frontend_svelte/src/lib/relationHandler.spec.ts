@@ -123,7 +123,7 @@ describe('RelationHandler', () => {
 		});
 		await tick();
 
-		rendered.view.link('child-8', { inherit: false });
+		rendered.view.link('child-8', false);
 
 		expect(socketIoClient.socket.emit).toHaveBeenCalledWith('link', {
 			child_id: 'child-8',
@@ -188,15 +188,16 @@ describe('RelationHandler', () => {
 		});
 	});
 
-	it('submit reuses an existing new_* id without generating a fresh one', async () => {
+	it('submit always generates a fresh new_* id (even when the input already has one)', async () => {
 		const rendered = renderGroupRelation({ parent: () => parentUeberGroup });
 		await tick();
 
 		const draft = createGroup({ id: 'new_abc123', name: 'preset' });
 		const preliminaryId = rendered.view.submit(draft);
 
-		expect(preliminaryId).toBe('new_abc123');
-		expect(rendered.view.pending[0]?.entity.id).toBe('new_abc123');
+		expect(preliminaryId).toMatch(/^new_/);
+		expect(preliminaryId).not.toBe('new_abc123');
+		expect(rendered.view.pending[0]?.id).toBe(preliminaryId);
 	});
 
 	it('submitBulk in suffixes mode clones template and submits each entry', async () => {
@@ -210,7 +211,10 @@ describe('RelationHandler', () => {
 		const ids = rendered.view.submitBulk(template, { suffixes: ['_1', '_2'] });
 
 		expect(ids).toHaveLength(2);
-		expect(rendered.view.pending.map((p) => p.entity.name)).toEqual(['team_1', 'team_2']);
+		expect(rendered.view.pending.map((p) => (p as GroupExtended).name)).toEqual([
+			'team_1',
+			'team_2'
+		]);
 		const submitCalls = socketIoClient.socket.emit.mock.calls.filter(
 			([event]) => event === 'submit'
 		);
@@ -230,7 +234,7 @@ describe('RelationHandler', () => {
 		const ids = rendered.view.submitBulk(createGroup({ id: '', name: 'unused' }), { entries });
 
 		expect(ids).toHaveLength(2);
-		expect(rendered.view.pending.map((p) => p.entity.name)).toEqual(['alpha', 'beta']);
+		expect(rendered.view.pending.map((p) => (p as GroupExtended).name)).toEqual(['alpha', 'beta']);
 	});
 
 	it('reseed replaces linked with the given snapshot', async () => {
@@ -240,7 +244,11 @@ describe('RelationHandler', () => {
 		});
 		await tick();
 
-		rendered.view.reseed([createGroup({ id: 'g-99' })]);
+		// `linked` is derived from `socketio.entities`; mirror a real page by
+		// putting the entity into the SocketIO store before reseeding.
+		const g99 = createGroup({ id: 'g-99' });
+		rendered.socketio.entities = [...rendered.socketio.entities, g99];
+		rendered.view.reseed([g99]);
 		expect(rendered.view.linked.map((g) => g.id)).toEqual(['g-99']);
 
 		rendered.view.reseed(null);
@@ -273,7 +281,7 @@ describe('RelationHandler', () => {
 
 			expect(rendered.view.pending).toEqual([]);
 			expect(rendered.view.linked.map((g) => g.id)).toEqual(['server-1']);
-			expect(rendered.view.linked[0]?.name).toBe('fresh');
+			expect((rendered.view.linked[0] as GroupExtended | undefined)?.name).toBe('fresh');
 		});
 
 		it('status:created without a matching pending entry is ignored', async () => {
@@ -289,7 +297,7 @@ describe('RelationHandler', () => {
 			expect(rendered.view.linked).toEqual([]);
 		});
 
-		it('status:linked (matching parent) moves an entity from socketio.entities to linked', async () => {
+		it('status:linked (matching parent) adds the entity to linked (entities are the source of truth)', async () => {
 			const rendered = renderGroupRelation({
 				parent: () => parentUeberGroup,
 				entities: [createGroup({ id: 'free-1', name: 'free' })]
@@ -304,7 +312,9 @@ describe('RelationHandler', () => {
 			});
 
 			expect(rendered.view.linked.map((g) => g.id)).toEqual(['free-1']);
-			expect(rendered.socketio.entities.map((g) => g.id)).toEqual([]);
+			// Entity stays in socketio.entities; `unlinked` is the derived complement.
+			expect(rendered.socketio.entities.map((g) => g.id)).toEqual(['free-1']);
+			expect(rendered.view.unlinked).toEqual([]);
 		});
 
 		it('status:linked for a different parent is ignored', async () => {
@@ -325,7 +335,7 @@ describe('RelationHandler', () => {
 			expect(rendered.socketio.entities.map((g) => g.id)).toEqual(['free-1']);
 		});
 
-		it('status:unlinked (matching parent) moves an entity from linked back to socketio.entities', async () => {
+		it('status:unlinked (matching parent) drops the entity from linked while keeping it in entities', async () => {
 			const rendered = renderGroupRelation({
 				parent: () => parentUeberGroup,
 				initial: () => [createGroup({ id: 'g-1' })]
@@ -340,6 +350,7 @@ describe('RelationHandler', () => {
 
 			expect(rendered.view.linked).toEqual([]);
 			expect(rendered.socketio.entities.map((g) => g.id)).toEqual(['g-1']);
+			expect(rendered.view.unlinked.map((g) => g.id)).toEqual(['g-1']);
 		});
 
 		it('status:unlinked for a different parent is ignored', async () => {
@@ -369,7 +380,9 @@ describe('RelationHandler', () => {
 
 			socketIoClient.trigger('transferred', createGroup({ id: 'g-1', name: 'after' }));
 
-			expect(rendered.view.linked.find((g) => g.id === 'g-1')?.name).toBe('after');
+			expect(
+				(rendered.view.linked.find((g) => g.id === 'g-1') as GroupExtended | undefined)?.name
+			).toBe('after');
 		});
 
 		it('deleted removes from both linked and pending', async () => {
@@ -385,28 +398,6 @@ describe('RelationHandler', () => {
 
 			expect(rendered.view.linked).toEqual([]);
 			expect(rendered.view.pending).toEqual([]);
-		});
-	});
-
-	describe('getId override', () => {
-		it('uses a custom id extractor for all lookups', async () => {
-			type CustomKeyed = GroupExtended & { external_id: string };
-			const make = (external: string, base: Partial<GroupExtended> = {}) =>
-				({ ...createGroup({ id: '_ignored', ...base }), external_id: external }) as CustomKeyed;
-
-			const rendered = renderRelationHandler<UeberGroupExtended, CustomKeyed>({
-				parent: () => parentUeberGroup,
-				initial: () => [make('ext-1', { name: 'one' })],
-				entities: [make('ext-1'), make('ext-2', { name: 'two' })],
-				getId: (child) => child.external_id
-			});
-			await tick();
-
-			expect(rendered.view.linked.map((g) => g.external_id)).toEqual(['ext-1']);
-			expect(rendered.view.unlinked.map((g) => g.external_id)).toEqual(['ext-2']);
-
-			rendered.view.unlink('ext-1');
-			expect(rendered.view.linked).toEqual([]);
 		});
 	});
 });

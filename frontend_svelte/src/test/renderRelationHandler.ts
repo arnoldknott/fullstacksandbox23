@@ -1,6 +1,6 @@
 import { render } from '@testing-library/svelte';
 
-import type { ChildRelationView } from '$lib/relationHandler.svelte';
+import type { Relations } from '$lib/relationHandler.svelte';
 import type { SocketIO, SocketioConnection } from '$lib/socketio.svelte';
 import type { AnyEntityExtended, BackendAPIConfiguration } from '$lib/types.d.ts';
 
@@ -26,7 +26,6 @@ export type RenderRelationHandlerOptions<
 	initial?: () => TChild[] | undefined | null;
 	entities?: TChild[] | undefined | null;
 	defaultInherit?: boolean;
-	getId?: (child: TChild) => string;
 	backendAPIConfiguration?: BackendAPIConfiguration;
 };
 
@@ -34,7 +33,7 @@ export type RenderRelationHandlerOptions<
  * Mount {@link RelationHandlerWrapper} with the supplied props and a Svelte
  * context containing `backendAPIConfiguration`. Returns the Testing Library
  * `render` result plus accessors for the constructed `SocketIO` and the
- * `ChildRelationView` exposed by the `RelationHandler`.
+ * `Relations` view exposed by the `RelationHandler`.
  */
 export const renderRelationHandler = <
 	TParent extends AnyEntityExtended = AnyEntityExtended,
@@ -43,7 +42,7 @@ export const renderRelationHandler = <
 	options: RenderRelationHandlerOptions<TParent, TChild> = {}
 ) => {
 	let socketio: SocketIO<TChild> | undefined;
-	let view: ChildRelationView<TChild> | undefined;
+	let view: Relations | undefined;
 
 	const rendered = render(RelationHandlerWrapper, {
 		props: {
@@ -52,13 +51,9 @@ export const renderRelationHandler = <
 			initial: options.initial as (() => AnyEntityExtended[] | undefined | null) | undefined,
 			entities: options.entities as AnyEntityExtended[] | undefined | null,
 			defaultInherit: options.defaultInherit,
-			getId: options.getId as ((child: AnyEntityExtended) => string) | undefined,
-			onInstance: (handle: {
-				socketio: SocketIO<AnyEntityExtended>;
-				view: ChildRelationView<AnyEntityExtended>;
-			}) => {
+			onInstance: (handle: { socketio: SocketIO<AnyEntityExtended>; view: Relations }) => {
 				socketio = handle.socketio as unknown as SocketIO<TChild>;
-				view = handle.view as unknown as ChildRelationView<TChild>;
+				view = handle.view;
 			}
 		},
 		context: new Map<string, unknown>([
@@ -72,7 +67,7 @@ export const renderRelationHandler = <
 			if (!socketio) throw new Error('SocketIO instance was not initialized');
 			return socketio;
 		},
-		get view(): ChildRelationView<TChild> {
+		get view(): Relations {
 			if (!view) throw new Error('RelationHandler view was not initialized');
 			return view;
 		}
