@@ -2,13 +2,14 @@ import type { SocketIO, SocketioStatus } from '$lib/socketio.svelte';
 import type { AnyEntityExtended, Hierarchy } from '$lib/types.d.ts';
 
 /**
- * Reactive surface for one child relation, returned by `RelationHandler.child(key)`.
+ * Reactive surface for one child relation, returned by `RelationHandler.addChild(...)`
+ * and retrievable later via `RelationHandler.getChild(key)`.
  *
  * `linked` / `pending` / `unlinked` are derived views that resolve hierarchy
  * `child_id`s against `socketio.entities`. The entity data lives entirely in
  * `SocketIO`; `RelationHandler` only owns the `Hierarchy[]`.
  */
-export interface Relations {
+export interface Relation {
 	readonly hierarchies: Hierarchy[];
 	readonly linked: AnyEntityExtended[];
 	readonly pending: AnyEntityExtended[];
@@ -42,7 +43,7 @@ export interface Relations {
 	move(childId: string, toIndex: number): void;
 }
 
-class ChildSlot implements Relations {
+class ChildSlot implements Relation {
 	#socketio: SocketIO<AnyEntityExtended>;
 	#hierarchies = $state<Hierarchy[]>([]);
 	#parent: () => { id: string } | undefined;
@@ -207,28 +208,36 @@ class ChildSlot implements Relations {
  * `transferred`) stays on the page; RelationHandler only touches hierarchies.
  */
 export class RelationHandler<TParent extends AnyEntityExtended> {
-	#slots: Record<string, ChildSlot>;
+	#parent: () => TParent | undefined;
+	#children: Record<string, ChildSlot>;
 
-	constructor(
-		parent: () => TParent | undefined,
-		children: Record<
-			string,
-			{
-				socketio: SocketIO<AnyEntityExtended>;
-				initial?: () => { id: string }[] | undefined | null;
-				defaultInherit?: boolean;
-			}
-		>
-	) {
-		const slots: Record<string, ChildSlot> = {};
-		for (const key in children) {
-			const { socketio, initial, defaultInherit } = children[key];
-			slots[key] = new ChildSlot(socketio, parent, initial, defaultInherit);
+	constructor(parent: () => TParent | undefined) {
+		this.#parent = parent;
+		this.#children = {};
+	}
+
+	addChild(
+		key: string,
+		socketio: SocketIO<AnyEntityExtended>,
+		initial?: () => { id: string }[] | undefined | null,
+		defaultInherit?: boolean
+	): Relation {
+		if (this.#children[key]) {
+			throw new Error(`Child with key "${key}" already exists.`);
 		}
-		this.#slots = slots;
+		const newSlot = new ChildSlot(socketio, this.#parent, initial, defaultInherit);
+		this.#children[key] = newSlot;
+		return newSlot;
 	}
 
-	child(key: string): Relations {
-		return this.#slots[key];
+	getChild(key: string): Relation {
+		const requestedChild = this.#children[key];
+		if (!requestedChild) {
+			throw new Error(`Child with key "${key}" does not exist.`);
+		}
+		return requestedChild;
 	}
+
+	// TBD: add removeChild(key) method if needed.
+	// That doesn't change the data, just removes the relation handling.
 }

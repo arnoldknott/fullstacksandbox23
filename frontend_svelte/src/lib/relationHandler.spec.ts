@@ -157,6 +157,16 @@ describe('RelationHandler', () => {
 		expect(rendered.view.linked.map((g) => g.id)).toEqual(['g-2']);
 	});
 
+	it('getChild returns the registered relation and addChild throws on duplicate keys', async () => {
+		const rendered = renderGroupRelation({ parent: () => parentUeberGroup });
+		await tick();
+
+		expect(rendered.relationHandler.getChild('children')).toBe(rendered.view);
+		expect(() => rendered.relationHandler.addChild('children', rendered.socketio)).toThrow(
+			'Child with key "children" already exists.'
+		);
+	});
+
 	it('delete delegates to socketio.deleteEntity for server-side ids', async () => {
 		const rendered = renderGroupRelation({
 			parent: () => parentUeberGroup,

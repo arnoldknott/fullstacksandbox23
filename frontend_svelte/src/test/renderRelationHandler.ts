@@ -1,6 +1,6 @@
 import { render } from '@testing-library/svelte';
 
-import type { Relations } from '$lib/relationHandler.svelte';
+import type { Relation, RelationHandler } from '$lib/relationHandler.svelte';
 import type { SocketIO, SocketioConnection } from '$lib/socketio.svelte';
 import type { AnyEntityExtended, BackendAPIConfiguration } from '$lib/types.d.ts';
 
@@ -32,8 +32,8 @@ export type RenderRelationHandlerOptions<
 /**
  * Mount {@link RelationHandlerWrapper} with the supplied props and a Svelte
  * context containing `backendAPIConfiguration`. Returns the Testing Library
- * `render` result plus accessors for the constructed `SocketIO` and the
- * `Relations` view exposed by the `RelationHandler`.
+ * `render` result plus accessors for the constructed `SocketIO`, the
+ * `RelationHandler`, and the registered `Relation` view.
  */
 export const renderRelationHandler = <
 	TParent extends AnyEntityExtended = AnyEntityExtended,
@@ -42,7 +42,8 @@ export const renderRelationHandler = <
 	options: RenderRelationHandlerOptions<TParent, TChild> = {}
 ) => {
 	let socketio: SocketIO<TChild> | undefined;
-	let view: Relations | undefined;
+	let relationHandler: RelationHandler<AnyEntityExtended> | undefined;
+	let view: Relation | undefined;
 
 	const rendered = render(RelationHandlerWrapper, {
 		props: {
@@ -51,8 +52,13 @@ export const renderRelationHandler = <
 			initial: options.initial as (() => AnyEntityExtended[] | undefined | null) | undefined,
 			entities: options.entities as AnyEntityExtended[] | undefined | null,
 			defaultInherit: options.defaultInherit,
-			onInstance: (handle: { socketio: SocketIO<AnyEntityExtended>; view: Relations }) => {
+			onInstance: (handle: {
+				socketio: SocketIO<AnyEntityExtended>;
+				relationHandler: RelationHandler<AnyEntityExtended>;
+				view: Relation;
+			}) => {
 				socketio = handle.socketio as unknown as SocketIO<TChild>;
+				relationHandler = handle.relationHandler;
 				view = handle.view;
 			}
 		},
@@ -67,7 +73,11 @@ export const renderRelationHandler = <
 			if (!socketio) throw new Error('SocketIO instance was not initialized');
 			return socketio;
 		},
-		get view(): Relations {
+		get relationHandler(): RelationHandler<AnyEntityExtended> {
+			if (!relationHandler) throw new Error('RelationHandler instance was not initialized');
+			return relationHandler;
+		},
+		get view(): Relation {
 			if (!view) throw new Error('RelationHandler view was not initialized');
 			return view;
 		}

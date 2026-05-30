@@ -7,7 +7,7 @@
 	// (see `src/test/renderRelationHandler.ts`).
 	import { untrack } from 'svelte';
 
-	import { RelationHandler, type Relations } from '$lib/relationHandler.svelte';
+	import { type Relation, RelationHandler } from '$lib/relationHandler.svelte';
 	import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
 	import type { AnyEntityExtended } from '$lib/types.d.ts';
 
@@ -17,7 +17,11 @@
 		initial?: () => AnyEntityExtended[] | undefined | null;
 		entities?: AnyEntityExtended[] | undefined | null;
 		defaultInherit?: boolean;
-		onInstance: (handle: { socketio: SocketIO<AnyEntityExtended>; view: Relations }) => void;
+		onInstance: (handle: {
+			socketio: SocketIO<AnyEntityExtended>;
+			relationHandler: RelationHandler<AnyEntityExtended>;
+			view: Relation;
+		}) => void;
 	};
 
 	let props: Props = $props();
@@ -40,13 +44,17 @@
 				return merged;
 			}
 		});
-		const relation = new RelationHandler(() => props.parent(), {
-			children: {
-				socketio,
-				initial: () => props.initial?.(),
-				defaultInherit: props.defaultInherit
-			}
+		const relation = new RelationHandler(() => props.parent());
+		const view = relation.addChild(
+			'children',
+			socketio,
+			() => props.initial?.(),
+			props.defaultInherit
+		);
+		props.onInstance({
+			socketio,
+			relationHandler: relation,
+			view
 		});
-		props.onInstance({ socketio, view: relation.child('children') });
 	});
 </script>

@@ -10,7 +10,7 @@
 	import Heading from '$components/Heading.svelte';
 	import JsonData from '$components/JsonData.svelte';
 	import { IdentityType } from '$lib/accessHandler';
-	import { RelationHandler, type Relations } from '$lib/relationHandler.svelte';
+	import { type Relation, RelationHandler } from '$lib/relationHandler.svelte';
 	import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
 	import type { Group, UeberGroup } from '$lib/types';
 
@@ -44,7 +44,7 @@
 
 	let socketioUeberGroup: SocketIO<UeberGroup> = $state()!;
 	let socketioGroup: SocketIO<Group> = $state()!;
-	let groupsRelation: Relations = $state()!;
+	let groupsRelation: Relation = $state()!;
 	let linkedGroups = $derived<Group[]>((groupsRelation?.linked ?? []) as Group[]);
 	let allUnlinkedGroups = $derived<Group[]>((groupsRelation?.unlinked ?? []) as Group[]);
 	const [sendGroupCrossfade, receiveGroupCrossfade] = crossfade({ duration: 400 });
@@ -113,16 +113,15 @@
 
 		// TBD: refactor this caller:
 		// RelationHandler should take care of all relations ... (see below)
-		const relation = new RelationHandler(() => ueberGroup, {
-			groups: {
-				socketio: socketioGroup,
-				initial: () => data.thisUeberGroup?.groups,
-				defaultInherit: true
-			}
-		});
+		const ueberGroupRelations = new RelationHandler<UeberGroup>(() => ueberGroup);
 		// ... while this one takes care of everything related to a specific child relation,
 		// including subscribing to the socketio, reading initial data, and providing link/unlink/submit/delete methods.
-		groupsRelation = relation.child('groups');
+		groupsRelation = ueberGroupRelations.addChild(
+			'groups',
+			socketioGroup,
+			() => data.thisUeberGroup?.groups,
+			true
+		);
 	});
 
 	onDestroy(() => {
