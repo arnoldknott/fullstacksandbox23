@@ -3,12 +3,7 @@ import { io } from 'socket.io-client';
 import { getContext } from 'svelte';
 
 import type { Action } from '$lib/accessHandler';
-import type {
-	AccessPolicy,
-	AnyEntityExtended,
-	BackendAPIConfiguration,
-	Hierarchy
-} from '$lib/types.d.ts';
+import type { AccessPolicy, AnyEntityExtended, BackendAPIConfiguration } from '$lib/types.d.ts';
 
 export type SocketioConnection = {
 	namespace?: string;
@@ -160,14 +155,6 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended> {
 
 	shareEntity(accessPolicy: AccessPolicy): void {
 		this.client.emit('share', accessPolicy);
-	}
-
-	linkEntities(hierarchy: Hierarchy): void {
-		this.client.emit('link', hierarchy);
-	}
-
-	unlinkEntities(hierarchy: Hierarchy): void {
-		this.client.emit('unlink', hierarchy);
 	}
 
 	// --- default receivers (also usable from custom listeners) ---
