@@ -119,36 +119,40 @@
 			linkedGroups = linkedGroups.filter((group) => group.id !== resource_id);
 		});
 		socketioGroup.client.on('status', (status: SocketioStatus) => {
-			if ('success' in status) {
-				// TBD: refactor to use (or extend) default handlers
-				if (status.success === 'created') {
-					if (newGroupIdsSuffixes.has(status.submitted_id)) {
-						const suffix = newGroupIdsSuffixes.get(status.submitted_id);
-						const thisGroup: Group = Object.assign({}, newGroup);
-						thisGroup.name = newGroup.name + suffix;
-						linkedGroups.push({ ...thisGroup, id: status.id });
-						newGroupIdsSuffixes.delete(status.submitted_id);
-						if (suffix === '' || newGroupIdsSuffixes.size === 1) {
-							newGroup.name = '';
-							newGroup.description = '';
-							if (suffix === '') {
-								newGroup.id = 'new_' + Math.random().toString(36).substring(2, 9);
-								newGroupIdsSuffixes.set(newGroup.id, '');
-							}
+			if (!('success' in status)) return;
+			// Default `status` handler (from SocketIO class) still runs alongside this one:
+			// it patches `socketioGroup.entities` for `created` (id replacement) and re-reads
+			// for `shared`/`unshared`. Here we only add page-specific bookkeeping.
+			if (status.success === 'created') {
+				if (newGroupIdsSuffixes.has(status.submitted_id)) {
+					const suffix = newGroupIdsSuffixes.get(status.submitted_id);
+					const thisGroup: Group = Object.assign({}, newGroup);
+					thisGroup.name = newGroup.name + suffix;
+					// Reassign (not push) so writable-derived consumers see the change:
+					linkedGroups = [...linkedGroups, { ...thisGroup, id: status.id }];
+					newGroupIdsSuffixes.delete(status.submitted_id);
+					if (suffix === '' || newGroupIdsSuffixes.size === 1) {
+						newGroup.name = '';
+						newGroup.description = '';
+						if (suffix === '') {
+							newGroup.id = 'new_' + Math.random().toString(36).substring(2, 9);
+							newGroupIdsSuffixes.set(newGroup.id, '');
 						}
 					}
-					// TBD: build default handlers for "link" and "unlink":
-				} else if (status.success === 'linked') {
-					linkedGroups.push(
-						socketioGroup.entities.find((group) => group.id === status.id) as Group
-					);
-					socketioGroup.entities = socketioGroup.entities.filter((group) => group.id !== status.id);
-				} else if (status.success === 'unlinked') {
-					socketioGroup.entities.push(
-						linkedGroups.find((group) => group.id === status.id) as Group
-					);
-					linkedGroups = linkedGroups.filter((group) => group.id !== status.id);
 				}
+				// TBD: build default handlers for "link" and "unlink":
+			} else if (status.success === 'linked') {
+				const moved = socketioGroup.entities.find((group) => group.id === status.id);
+				if (moved && !linkedGroups.some((group) => group.id === status.id)) {
+					linkedGroups = [...linkedGroups, moved];
+				}
+				socketioGroup.entities = socketioGroup.entities.filter((group) => group.id !== status.id);
+			} else if (status.success === 'unlinked') {
+				const moved = linkedGroups.find((group) => group.id === status.id);
+				if (moved) {
+					socketioGroup.entities.push(moved);
+				}
+				linkedGroups = linkedGroups.filter((group) => group.id !== status.id);
 			}
 		});
 	});
@@ -194,9 +198,8 @@
 				parent_id: ueberGroup.id
 			};
 			socketioGroup.unlinkEntities(hierarchy);
-			linkedIdentities.delete(
-				linkedIdentities.keys().find((identity) => identity.id === groupId) as Group
-			);
+			// Mutate the source; the derived `linkedIdentities` projection will recompute.
+			linkedGroups = linkedGroups.filter((group) => group.id !== groupId);
 		}
 	};
 
@@ -215,19 +218,16 @@
 		name?: string | null;
 		mail?: string | null;
 	};
-	let linkedIdentities = $derived<SvelteMap<Group | LocalMicrosoftUser, IdentityType>>(
-		new SvelteMap()
-	);
-	$effect(() => {
-		linkedGroups.forEach((group) => {
-			console.log('setting linked identity for group: ' + group.name);
-			linkedIdentities.set(group, IdentityType.GROUP);
-			console.log('linkedIdentities after setting group: ');
-			console.log($state.snapshot(linkedIdentities));
-		});
-		linkedMicrosoftUsers.forEach((user) => {
+	// Pure derived projection: rebuild from sources on every read.
+	// No $effect mutation, so writable-derived consumers (template, JsonData) stay in sync.
+	let linkedIdentities = $derived.by(() => {
+		const identities = new SvelteMap<Group | LocalMicrosoftUser, IdentityType>();
+		for (const group of linkedGroups) {
+			identities.set(group, IdentityType.GROUP);
+		}
+		for (const user of linkedMicrosoftUsers) {
 			if (user.id) {
-				linkedIdentities.set(
+				identities.set(
 					{
 						id: user.id,
 						name: user.displayName,
@@ -236,7 +236,8 @@
 					IdentityType.USER
 				);
 			}
-		});
+		}
+		return identities;
 	});
 </script>
 
@@ -344,7 +345,6 @@
 
 	<div class={debug ? 'grid grid-cols-2 justify-around gap-4 pb-4' : 'py-4'}>
 		<Card id="linked-groups" header={linkedGroupsHeader} extraClasses="shadow-outline shadow-md">
-			<JsonData data={[...linkedIdentities]} />
 			{#if linkedIdentities?.size > 0}
 				<dl class="divider-outline divide-y">
 					{#each [...linkedIdentities] as [identity, type] (identity.id)}
