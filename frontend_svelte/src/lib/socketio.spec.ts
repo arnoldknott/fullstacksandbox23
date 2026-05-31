@@ -252,6 +252,57 @@ describe('SocketIO', () => {
 		expect(socketIoClient.socket.emit).not.toHaveBeenCalledWith('read', expect.anything());
 	});
 
+	describe('createPending', () => {
+		it('without a template or overrides returns an entity with only a fresh new_* id', () => {
+			const rendered = renderDemoSocketIO();
+			const first = rendered.instance.createPending();
+			const second = rendered.instance.createPending();
+
+			expect(first.id).toMatch(/^new_[a-z0-9]+$/);
+			expect(Object.keys(first)).toEqual(['id']);
+			expect(first.id).not.toBe(second.id);
+			// Does not touch the managed entities array.
+			expect(rendered.instance.entities).toEqual([]);
+		});
+
+		it('merges the configured template with a fresh id on every call', () => {
+			const rendered = renderDemoSocketIO({
+				pendingTemplate: () => ({ name: '', description: '' })
+			});
+
+			const pending = rendered.instance.createPending();
+
+			expect(pending).toMatchObject({ name: '', description: '' });
+			expect(pending.id).toMatch(/^new_[a-z0-9]+$/);
+		});
+
+		it('re-evaluates the template thunk on each call', () => {
+			let counter = 0;
+			const rendered = renderDemoSocketIO({
+				pendingTemplate: () => ({ name: `draft-${++counter}` })
+			});
+
+			expect(rendered.instance.createPending()).toMatchObject({ name: 'draft-1' });
+			expect(rendered.instance.createPending()).toMatchObject({ name: 'draft-2' });
+		});
+
+		it('overrides win over the template, and the generated id always wins over both', () => {
+			const rendered = renderDemoSocketIO({
+				pendingTemplate: () => ({ name: 'from-template', description: 'tpl' })
+			});
+
+			const pending = rendered.instance.createPending({
+				id: 'caller-supplied-id',
+				name: 'from-override'
+			} as Partial<DemoResourceExtended>);
+
+			expect(pending.name).toBe('from-override');
+			expect(pending.description).toBe('tpl');
+			expect(pending.id).not.toBe('caller-supplied-id');
+			expect(pending.id).toMatch(/^new_[a-z0-9]+$/);
+		});
+	});
+
 	describe('listener wiring (server-emitted events)', () => {
 		it('routes inbound `transferred` events into entity state', async () => {
 			const rendered = renderDemoSocketIO({

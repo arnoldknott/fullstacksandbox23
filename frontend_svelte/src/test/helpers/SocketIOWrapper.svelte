@@ -17,6 +17,7 @@
 		connection: SocketioConnection;
 		entities?: AnyEntityExtended[] | undefined | null;
 		defaultHandlers?: SocketIODefaultHandlers;
+		pendingTemplate?: () => Partial<Omit<AnyEntityExtended, 'id'>>;
 		onInstance: (instance: SocketIO<AnyEntityExtended>) => void;
 	};
 
@@ -29,7 +30,8 @@
 	untrack(() => {
 		const instance = new SocketIO<AnyEntityExtended>(props.connection, {
 			subscribeEntities: () => props.entities,
-			defaultHandlers: props.defaultHandlers
+			defaultHandlers: props.defaultHandlers,
+			pendingTemplate: props.pendingTemplate
 		});
 		props.onInstance(instance);
 	});
