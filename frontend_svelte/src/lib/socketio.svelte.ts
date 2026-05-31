@@ -51,6 +51,13 @@ export type SocketIOOptions<T extends AnyEntityExtended> = {
 	subscribeEntities?: () => T[] | undefined | null;
 	/** Enable/disable auto-registered default listeners. All default to `true`. */
 	defaultHandlers?: SocketIODefaultHandlers;
+	/**
+	 * Optional default field values for entities produced by {@link SocketIO.createPending}.
+	 * Evaluated on every `createPending()` call so callers can vary the template over time
+	 * (e.g. seeding a form with the currently-edited parent's defaults). If absent,
+	 * `createPending()` returns just `{ id }`.
+	 */
+	pendingTemplate?: () => Partial<Omit<T, 'id'>>;
 };
 
 /**
@@ -73,6 +80,7 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended> {
 	public client: Socket;
 
 	#entities = $state<T[]>([]);
+	#pendingTemplate?: () => Partial<Omit<T, 'id'>>;
 
 	constructor(connection: SocketioConnection, options: SocketIOOptions<T> = {}) {
 		const backendAPIConfiguration: BackendAPIConfiguration = getContext('backendAPIConfiguration');
@@ -94,6 +102,8 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended> {
 				if (next) this.#entities = next;
 			});
 		}
+
+		this.#pendingTemplate = options.pendingTemplate;
 
 		const enableHandlers = options.defaultHandlers ?? {};
 		if (enableHandlers.transferred !== false) {
@@ -121,6 +131,25 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended> {
 	// --- emitters ---
 	addEntity(newEntity: T): void {
 		this.#entities.unshift(newEntity);
+	}
+
+	/**
+	 * Produce a fresh form-seed entity with a preliminary `new_*` id (which the backend
+	 * swaps for a real UUID on `status:created`, at which point {@link handleStatus}
+	 * rewrites it in place). Merges, in order: the configured `pendingTemplate` (if any),
+	 * then the optional `overrides` argument, then the freshly-generated id.
+	 *
+	 * Does not touch `entities` — callers either wrap the result in `$state(...)` to bind
+	 * to form inputs and submit via {@link submitEntity} when ready, or hand the overrides
+	 * straight through `RelationHandler.submit`, which calls this internally.
+	 */
+	createPending(overrides?: Partial<T>): T {
+		const template = this.#pendingTemplate?.() ?? {};
+		return {
+			...template,
+			...overrides,
+			id: 'new_' + Math.random().toString(36).substring(2, 9)
+		} as T;
 	}
 
 	/**
