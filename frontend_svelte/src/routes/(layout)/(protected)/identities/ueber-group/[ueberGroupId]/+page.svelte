@@ -335,11 +335,11 @@
 				Click on a groups to add to this UeberGroup.
 			</p>
 			<div class="mb-2 flex flex-1 items-center gap-1">
-				<label class="label label-text text-base-content" for="new_group-inherit"
+				<label class="label label-text text-base-content" for="new-group-inherit"
 					>Inherit rights from {ueberGroup?.name || 'this UeberGroup'}:
 				</label>
 				<input
-					id="new_group-inherit"
+					id="new-group-inherit"
 					type="checkbox"
 					class="switch-info switch"
 					bind:checked={existingGroupInherit}
@@ -470,11 +470,11 @@
 				Click on a users to add to this UeberGroup.
 			</p>
 			<div class="mb-2 flex flex-1 items-center gap-1">
-				<label class="label label-text text-base-content" for="new_group-inherit"
+				<label class="label label-text text-base-content" for="new-group-inherit"
 					>Inherit rights from {ueberGroup?.name || 'this UeberGroup'}:
 				</label>
 				<input
-					id="new_group-inherit"
+					id="new-group-inherit"
 					type="checkbox"
 					class="switch-info switch"
 					bind:checked={existingGroupInherit}
