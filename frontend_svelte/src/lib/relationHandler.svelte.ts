@@ -142,21 +142,20 @@ class ChildSlot implements Relation {
 
 	submit(entity: AnyEntityExtended, inherit?: boolean): string {
 		const parentId = this.#parent()?.id;
-		const preliminaryId = 'new_' + Math.random().toString(36).substring(2, 9);
-		const payload = { ...entity, id: preliminaryId };
+		const payload = this.#socketio.createPending(entity);
 		this.#socketio.addEntity(payload);
 		this.#socketio.submitEntity(payload, parentId, inherit ?? this.#defaultInherit);
 		if (parentId) {
 			this.#hierarchies = [
 				...this.#hierarchies,
 				{
-					child_id: preliminaryId,
+					child_id: payload.id,
 					parent_id: parentId,
 					inherit: inherit ?? this.#defaultInherit
 				}
 			];
 		}
-		return preliminaryId;
+		return payload.id;
 	}
 
 	submitBulk(
