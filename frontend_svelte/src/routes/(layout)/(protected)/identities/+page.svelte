@@ -7,7 +7,7 @@
 	import JsonData from '$components/JsonData.svelte';
 	import { AccessHandler, IdentityType } from '$lib/accessHandler';
 	import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
-	import type { UeberGroup, UeberGroupExtended } from '$lib/types';
+	import type { UeberGroupExtended } from '$lib/types';
 	import { initAccordion } from '$lib/userInterface';
 
 	import type { PageData } from './$types';
@@ -49,20 +49,21 @@
 	};
 
 	let socketio: SocketIO<UeberGroupExtended> = $state()!;
+	let newUeberGroup = $state<UeberGroupExtended>({
+		id: '',
+		name: '',
+		description: ''
+	});
 	onMount(() => {
 		socketio = new SocketIO<UeberGroupExtended>(connection, {
-			subscribeEntities: () => data.ueberGroups
+			subscribeEntities: () => data.ueberGroups,
+			pendingTemplate: () => ({ name: '', description: '' })
 		});
+		newUeberGroup = socketio.createPending();
 	});
 	let ueberGroups = $derived(socketio?.entities ?? []);
 	onDestroy(() => {
 		socketio?.client.disconnect();
-	});
-
-	const newUeberGroup = $state<UeberGroup>({
-		id: 'new_' + Math.random().toString(36).substring(2, 9),
-		name: '',
-		description: ''
 	});
 </script>
 
@@ -255,9 +256,8 @@
 							aria-label="Send Icon Button"
 							onclick={() => {
 								socketio.submitEntity(newUeberGroup);
-								newUeberGroup.id = 'new_' + Math.random().toString(36).substring(2, 9);
-								newUeberGroup.name = '';
-								newUeberGroup.description = '';
+								socketio.addEntity(newUeberGroup);
+								newUeberGroup = socketio.createPending();
 							}}
 							data-overlay="#add-ueber-group-modal"
 						>
