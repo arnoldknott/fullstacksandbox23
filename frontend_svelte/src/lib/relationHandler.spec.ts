@@ -141,7 +141,7 @@ describe('RelationHandler', () => {
 		expect(socketIoClient.socket.emit).not.toHaveBeenCalledWith('link', expect.anything());
 	});
 
-	it('unlink emits a hierarchy and eagerly drops the child from linked', async () => {
+	it('unlink emits a hierarchy and waits for status:unlinked before dropping linked', async () => {
 		const rendered = renderGroupRelation({
 			parent: () => parentUeberGroup,
 			initial: () => [createGroup({ id: 'g-1' }), createGroup({ id: 'g-2' })]
@@ -154,7 +154,7 @@ describe('RelationHandler', () => {
 			child_id: 'g-1',
 			parent_id: 'parent-1'
 		});
-		expect(rendered.view.linked.map((g) => g.id)).toEqual(['g-2']);
+		expect(rendered.view.linked.map((g) => g.id)).toEqual(['g-1', 'g-2']);
 	});
 
 	it('getChild returns the registered relation and addChild throws on duplicate keys', async () => {
@@ -179,72 +179,18 @@ describe('RelationHandler', () => {
 		expect(socketIoClient.socket.emit).toHaveBeenCalledWith('delete', 'g-1');
 	});
 
-	it('submit registers the entity as pending, emits submit, and returns the preliminary id', async () => {
-		const rendered = renderGroupRelation({
-			parent: () => parentUeberGroup,
-			defaultInherit: false
-		});
-		await tick();
-
-		const draft = createGroup({ id: '', name: 'fresh' });
-		const preliminaryId = rendered.view.submit(draft);
-
-		expect(preliminaryId).toMatch(/^new_/);
-		expect(rendered.view.pending).toHaveLength(1);
-		expect(rendered.view.pending[0]?.id).toBe(preliminaryId);
-		expect(socketIoClient.socket.emit).toHaveBeenCalledWith('submit', {
-			payload: { ...draft, id: preliminaryId },
-			parent_id: 'parent-1'
-		});
-	});
-
-	it('submit always generates a fresh new_* id (even when the input already has one)', async () => {
+	it('pending mirrors socketio.pendingEntities (creation is owned by SocketIO)', async () => {
 		const rendered = renderGroupRelation({ parent: () => parentUeberGroup });
 		await tick();
 
-		const draft = createGroup({ id: 'new_abc123', name: 'preset' });
-		const preliminaryId = rendered.view.submit(draft);
+		const firstPending = rendered.socketio.createPending(createGroup({ id: '', name: 'alpha' }));
+		const secondPending = rendered.socketio.createPending(createGroup({ id: '', name: 'beta' }));
 
-		expect(preliminaryId).toMatch(/^new_/);
-		expect(preliminaryId).not.toBe('new_abc123');
-		expect(rendered.view.pending[0]?.id).toBe(preliminaryId);
-	});
-
-	it('submitBulk in suffixes mode clones template and submits each entry', async () => {
-		const rendered = renderGroupRelation({
-			parent: () => parentUeberGroup,
-			defaultInherit: true
-		});
-		await tick();
-
-		const template = createGroup({ id: '', name: 'team' });
-		const ids = rendered.view.submitBulk(template, { suffixes: ['_1', '_2'] });
-
-		expect(ids).toHaveLength(2);
-		expect(rendered.view.pending.map((p) => (p as GroupExtended).name)).toEqual([
-			'team_1',
-			'team_2'
+		expect(rendered.view.pending.map((p) => (p as GroupExtended).id)).toEqual([
+			secondPending.id,
+			firstPending.id
 		]);
-		const submitCalls = socketIoClient.socket.emit.mock.calls.filter(
-			([event]) => event === 'submit'
-		);
-		expect(submitCalls).toHaveLength(2);
-		expect(submitCalls[0][1]).toMatchObject({
-			payload: { name: 'team_1' },
-			parent_id: 'parent-1',
-			inherit: true
-		});
-	});
-
-	it('submitBulk in entries mode submits each entry as-is', async () => {
-		const rendered = renderGroupRelation({ parent: () => parentUeberGroup });
-		await tick();
-
-		const entries = [createGroup({ id: '', name: 'alpha' }), createGroup({ id: '', name: 'beta' })];
-		const ids = rendered.view.submitBulk(createGroup({ id: '', name: 'unused' }), { entries });
-
-		expect(ids).toHaveLength(2);
-		expect(rendered.view.pending.map((p) => (p as GroupExtended).name)).toEqual(['alpha', 'beta']);
+		expect(rendered.view.pending.map((p) => (p as GroupExtended).name)).toEqual(['beta', 'alpha']);
 	});
 
 	it('reseed replaces linked with the given snapshot', async () => {
@@ -278,18 +224,28 @@ describe('RelationHandler', () => {
 	});
 
 	describe('inbound status events', () => {
-		it('status:created promotes a pending entry into linked with the server id', async () => {
+		it('status:created clears pending and updates local entity id; status:linked adds hierarchy', async () => {
 			const rendered = renderGroupRelation({ parent: () => parentUeberGroup });
 			await tick();
 
-			const preliminaryId = rendered.view.submit(createGroup({ id: '', name: 'fresh' }));
+			const pending = rendered.socketio.createPending(createGroup({ id: '', name: 'fresh' }));
 			socketIoClient.trigger('status', {
 				success: 'created',
 				id: 'server-1',
-				submitted_id: preliminaryId
+				submitted_id: pending.id
 			});
 
 			expect(rendered.view.pending).toEqual([]);
+			expect(rendered.socketio.entities.map((g) => g.id)).toEqual(['server-1']);
+			expect(rendered.view.linked).toEqual([]);
+
+			socketIoClient.trigger('status', {
+				success: 'linked',
+				id: 'server-1',
+				parent_id: 'parent-1',
+				inherit: true
+			});
+
 			expect(rendered.view.linked.map((g) => g.id)).toEqual(['server-1']);
 			expect((rendered.view.linked[0] as GroupExtended | undefined)?.name).toBe('fresh');
 		});
@@ -395,19 +351,19 @@ describe('RelationHandler', () => {
 			).toBe('after');
 		});
 
-		it('deleted removes from both linked and pending', async () => {
+		it('deleted removes linked hierarchy entries but does not clear pending drafts', async () => {
 			const rendered = renderGroupRelation({
 				parent: () => parentUeberGroup,
 				initial: () => [createGroup({ id: 'g-1' })]
 			});
 			await tick();
-			const preliminaryId = rendered.view.submit(createGroup({ id: '', name: 'pending' }));
+			const pending = rendered.socketio.createPending(createGroup({ id: '', name: 'pending' }));
 
 			socketIoClient.trigger('deleted', 'g-1');
-			socketIoClient.trigger('deleted', preliminaryId);
+			socketIoClient.trigger('deleted', pending.id);
 
 			expect(rendered.view.linked).toEqual([]);
-			expect(rendered.view.pending).toEqual([]);
+			expect(rendered.view.pending.map((entry) => entry.id)).toEqual([pending.id]);
 		});
 	});
 });

@@ -5,9 +5,9 @@ import type { AnyEntityExtended, Hierarchy } from '$lib/types.d.ts';
  * Reactive surface for one child relation, returned by `RelationHandler.addChild(...)`
  * and retrievable later via `RelationHandler.getChild(key)`.
  *
- * `linked` / `pending` / `unlinked` are derived views that resolve hierarchy
- * `child_id`s against `socketio.entities`. The entity data lives entirely in
- * `SocketIO`; `RelationHandler` only owns the `Hierarchy[]`.
+ * `linked` / `unlinked` are derived views that resolve hierarchy `child_id`s
+ * against `socketio.entities`. `pending` mirrors `socketio.pendingEntities`.
+ * Entity state lives in `SocketIO`; `RelationHandler` only owns `Hierarchy[]`.
  */
 export interface Relation {
 	readonly hierarchies: Hierarchy[];
@@ -18,24 +18,6 @@ export interface Relation {
 	link(childId: string, inherit?: boolean): void;
 	unlink(childId: string): void;
 	delete(childId: string): void;
-
-	/**
-	 * Optimistically add the entity to `socketio.entities` with a fresh `new_*`
-	 * id, register the hierarchy, and emit `submit`. Returns the preliminary id;
-	 * SocketIO swaps it for the server id on `status:created`, and the
-	 * hierarchy's `child_id` follows.
-	 */
-	submit(entity: AnyEntityExtended, inherit?: boolean): string;
-
-	/**
-	 * Either clone `template` for each suffix (appending to `name`), or submit
-	 * each fully-formed entry as-is. Returns the preliminary ids in order.
-	 */
-	submitBulk(
-		template: AnyEntityExtended,
-		input: { suffixes: string[] } | { entries: AnyEntityExtended[] },
-		inherit?: boolean
-	): string[];
 
 	/** Replace the hierarchy list from a fresh snapshot (e.g. after route data changes). */
 	reseed(next: { id: string }[] | undefined | null): void;
@@ -74,13 +56,7 @@ class ChildSlot implements Relation {
 			if (!('success' in status)) return;
 			const parentId = this.#parent()?.id;
 
-			if (status.success === 'created') {
-				// SocketIO has already swapped the entity's id in place. Mirror that
-				// onto our hierarchy so `linked` keeps resolving correctly.
-				this.#hierarchies = this.#hierarchies.map((h) =>
-					h.child_id === status.submitted_id ? { ...h, child_id: status.id } : h
-				);
-			} else if (status.success === 'linked') {
+			if (status.success === 'linked') {
 				if (!parentId || status.parent_id !== parentId) return;
 				if (!this.#hierarchies.some((h) => h.child_id === status.id)) {
 					this.#hierarchies = [
@@ -107,7 +83,7 @@ class ChildSlot implements Relation {
 	}
 
 	get pending(): AnyEntityExtended[] {
-		return this.linked.filter((e) => e.id.startsWith('new_'));
+		return this.#socketio.pendingEntities;
 	}
 
 	get unlinked(): AnyEntityExtended[] {
@@ -132,48 +108,10 @@ class ChildSlot implements Relation {
 		const parentId = this.#parent()?.id;
 		if (!parentId) return;
 		this.#socketio.client.emit('unlink', { child_id: childId, parent_id: parentId });
-		// Eager drop; `status:unlinked` will confirm.
-		this.#hierarchies = this.#hierarchies.filter((h) => h.child_id !== childId);
 	}
 
 	delete(childId: string): void {
 		this.#socketio.deleteEntity(childId);
-	}
-
-	submit(entity: AnyEntityExtended, inherit?: boolean): string {
-		const parentId = this.#parent()?.id;
-		const payload = this.#socketio.createPending(entity);
-		this.#socketio.addEntity(payload);
-		this.#socketio.submitEntity(payload, parentId, inherit ?? this.#defaultInherit);
-		if (parentId) {
-			this.#hierarchies = [
-				...this.#hierarchies,
-				{
-					child_id: payload.id,
-					parent_id: parentId,
-					inherit: inherit ?? this.#defaultInherit
-				}
-			];
-		}
-		return payload.id;
-	}
-
-	submitBulk(
-		template: AnyEntityExtended,
-		input: { suffixes: string[] } | { entries: AnyEntityExtended[] },
-		inherit?: boolean
-	): string[] {
-		const effectiveInherit = inherit ?? this.#defaultInherit;
-		if ('suffixes' in input) {
-			return input.suffixes.map((suffix) => {
-				const entity = {
-					...template,
-					name: ((template as AnyEntityExtended & { name?: string }).name ?? '') + suffix
-				} as AnyEntityExtended;
-				return this.submit(entity, effectiveInherit);
-			});
-		}
-		return input.entries.map((entity) => this.submit(entity, effectiveInherit));
 	}
 
 	reseed(next: { id: string }[] | undefined | null): void {

@@ -227,18 +227,31 @@ describe('SocketIO', () => {
 		expect(socketIoClient.socket.emit).not.toHaveBeenCalledWith('submit', expect.anything());
 	});
 
-	it('deleteEntity removes new_* ids locally and emits delete for server-side ids', async () => {
+	it('deleteEntity removes new_* ids from pendingEntities without emitting delete', async () => {
+		const rendered = renderDemoSocketIO();
+		const firstPending = rendered.instance.createPending({ name: 'first' } as never);
+		const secondPending = rendered.instance.createPending({ name: 'second' } as never);
+		await tick();
+
+		rendered.instance.deleteEntity(firstPending.id);
+
+		expect(rendered.instance.pendingEntities.map((entity) => entity.id)).toEqual([
+			secondPending.id
+		]);
+		expect(rendered.instance.entities).toEqual([]);
+		expect(socketIoClient.socket.emit).not.toHaveBeenCalledWith('delete', firstPending.id);
+	});
+
+	it('deleteEntity emits delete for server-side ids', async () => {
 		const rendered = renderDemoSocketIO({
-			entities: [createDemoResource({ id: 'new_draft' }), createDemoResource({ id: 'server-1' })]
+			entities: [createDemoResource({ id: 'server-1' })]
 		});
 		await tick();
 
-		rendered.instance.deleteEntity('new_draft');
-		expect(rendered.instance.entities.map((entity) => entity.id)).toEqual(['server-1']);
-		expect(socketIoClient.socket.emit).not.toHaveBeenCalledWith('delete', 'new_draft');
-
 		rendered.instance.deleteEntity('server-1');
+
 		expect(socketIoClient.socket.emit).toHaveBeenLastCalledWith('delete', 'server-1');
+		expect(rendered.instance.entities.map((entity) => entity.id)).toEqual(['server-1']);
 	});
 
 	it('shareEntity emits "share" with the access policy', () => {
