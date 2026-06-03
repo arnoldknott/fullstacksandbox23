@@ -20,8 +20,8 @@ FROM base AS api_dev
 RUN apk add --no-cache docker-cli git
 RUN uv sync --frozen --extra dev
 # TBD: switch to log-level warning, when app is more mature:
-# CMD ["uvicorn", "main:app", "--reload", "--log-level", "warning" ,"--host", "0.0.0.0", "--port", "80"]
-CMD ["uvicorn", "main:fastapi_app", "--reload", "--no-access-log", "--host", "0.0.0.0", "--port", "80"]
+# CMD ["uvicorn", "main:app", "--reload", "--log-level", "warning", "--ws", "websockets-sansio" ,"--host", "0.0.0.0", "--port", "80"]
+CMD ["uvicorn", "main:fastapi_app", "--reload", "--no-access-log",  "--ws", "websockets-sansio", "--host", "0.0.0.0", "--port", "80"]
 
 FROM base AS api_prod
 LABEL org.opencontainers.image.source https://github.com/arnoldknott/fullstacksandbox23
@@ -33,8 +33,8 @@ RUN uv sync --frozen --no-dev --no-cache
 ARG COMMIT_SHA="noGitBuild"
 ENV COMMIT_SHA=$COMMIT_SHA
 # TBD: switch to log-level warning, when app is more mature:
-# CMD ["uvicorn", "main:app", "--log-level", "warning", "--host", "0.0.0.0", "--port", "80"]
-CMD ["uvicorn", "main:fastapi_app", "--no-access-log", "--host", "0.0.0.0", "--port", "80"]
+# CMD ["uvicorn", "main:app", "--log-level", "warning", "--ws", "websockets-sansio", "--host", "0.0.0.0", "--port", "80"]
+CMD ["uvicorn", "main:fastapi_app", "--no-access-log",  "--ws", "websockets-sansio", "--host", "0.0.0.0", "--port", "80"]
 
 
 FROM base AS worker_dev

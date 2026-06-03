@@ -33,9 +33,16 @@
 				}
 			},
 			{
-				subscribeEntities: () => data.payload.presentations || []
+				subscribeEntities: () => data.payload.presentations || [],
+				pendingTemplate: () => ({
+					source: 'intern:',
+					path: '',
+					access_right: Action.OWN
+					// creation_date: new Date(Date.now()) // TBD: Check if this is necessary?
+				})
 			}
 		);
+		socketioPresentations.createPending();
 
 		socketioPresentations.client.on('status', (data: SocketioStatus) => {
 			if ('success' in data && data.success === 'created') {
@@ -55,23 +62,12 @@
 
 	let showNewPresentationCard: boolean = $state(page.url.searchParams.get('new') === 'true');
 
-	const createNewPresentation = (): PresentationExtended => {
-		return {
-			id: 'new_' + Math.random().toString(36).substring(2, 9),
-			source: 'intern:',
-			path: '',
-			access_right: Action.OWN,
-			creation_date: new Date(Date.now())
-		};
-	};
-	let newPresentation = $state<PresentationExtended>(createNewPresentation());
-
 	const submitPresentation = () => {
-		const newPath = newPresentation?.path?.trim() ?? '';
-		newPresentation.path = newPath && !newPath.startsWith('/') ? `/${newPath}` : newPath;
-		socketioPresentations?.submitEntity(newPresentation);
-		socketioPresentations?.addEntity(newPresentation);
-		newPresentation = createNewPresentation();
+		const newPath = socketioPresentations.pendingEntities[0].path?.trim() ?? '';
+		socketioPresentations.pendingEntities[0].path =
+			newPath && !newPath.startsWith('/') ? `/${newPath}` : newPath;
+		socketioPresentations.submitEntity();
+		socketioPresentations.createPending();
 		showNewPresentationCard = false;
 	};
 
@@ -149,7 +145,7 @@
 			class="btn btn-secondary btn-gradient shadow-outline rounded-lg shadow"
 			aria-label="Cancel"
 			onclick={() => {
-				newPresentation = createNewPresentation();
+				socketioPresentations.createPending();
 				showNewPresentationCard = false;
 			}}><span class="icon-[tabler--x] size-5"></span>Cancel</button
 		>
@@ -168,9 +164,13 @@
 
 <!-- <JsonData data={data.payload.identities} /> -->
 
-{#if showNewPresentationCard}
+{#if showNewPresentationCard && socketioPresentations?.pendingEntities[0]}
 	<div transition:fade={{ duration: 600 }}>
-		<Card id={newPresentation.id} header={newPresentationHeader} footer={newPresentationFooter}>
+		<Card
+			id={socketioPresentations.pendingEntities[0].id}
+			header={newPresentationHeader}
+			footer={newPresentationFooter}
+		>
 			<div class="flex w-full flex-wrap gap-6">
 				<div class="grow">
 					<FormElement title="Slug" description={slugDescription} extraClasses="w-full">
@@ -182,7 +182,7 @@
 									placeholder=""
 									class="input"
 									id="slugInput"
-									bind:value={newPresentation.path}
+									bind:value={socketioPresentations.pendingEntities[0].path}
 								/>
 								<label class="input-filled-label" for="slugInput"
 									>[add the path to your presentation here]</label
@@ -221,7 +221,7 @@
 					>
 						{#each shareOptions, i}
 							<ShareItem
-								resourceId={newPresentation.id}
+								resourceId={socketioPresentations.pendingEntities[0].id}
 								bind:shareOption={shareOptions[i]}
 								share={socketioPresentations?.shareEntity.bind(socketioPresentations)}
 								wide
@@ -231,6 +231,10 @@
 				</FormElement>
 			</div>
 		</Card>
+	</div>
+{:else if !socketioPresentations?.pendingEntities[0]}
+	<div class="label text-error">
+		<span class="icon-[svg-spinners--12-dots-scale-rotate] size-6"></span>connecting ...
 	</div>
 {/if}
 

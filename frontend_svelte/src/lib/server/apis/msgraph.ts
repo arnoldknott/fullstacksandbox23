@@ -74,18 +74,25 @@ class MicrosoftGraph extends BaseAPI {
 		return myTeams;
 	}
 
+	// TBD: move to integrations MicrosoftAccountLinking API?
+	// Integrations shold return app data,
+	// api's should return the data from the 3rd party API - here Microsoft!
 	async getAttachedTeamsAsIdentities(
 		sessionId: string,
-		azureGroups: string[]
+		azureGroups: string[] | undefined
 	): Promise<Identity[]> {
-		const myTeams: Team[] = await this.getAttachedTeams(sessionId, azureGroups);
-		return myTeams
-			.filter((team): team is Team & { id: string } => Boolean(team.id))
-			.map((team) => ({
-				id: team.id,
-				name: team.displayName || 'Unknown Microsoft Team',
-				type: IdentityType.MICROSOFT_TEAM
-			}));
+		if (azureGroups) {
+			const myTeams: Team[] = await this.getAttachedTeams(sessionId, azureGroups);
+			return myTeams
+				.filter((team): team is Team & { id: string } => Boolean(team.id))
+				.map((team) => ({
+					id: team.id,
+					name: team.displayName || 'Unknown Microsoft Team',
+					type: IdentityType.MICROSOFT_TEAM
+				}));
+		} else {
+			return [];
+		}
 	}
 
 	// async getAttachedSecuriyGroups(sessionId: string, azureGroups: string[]) {

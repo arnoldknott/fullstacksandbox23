@@ -39,13 +39,20 @@
 			cookie_session_id: page.data.session.sessionId,
 			query_params: {
 				'request-access-data': true,
-				'identity-ids': data.microsoftTeams.map((team) => team.id).join(','),
+				'identity-ids': data.payload.identities.map((identity) => identity.id).join(','),
 				'join-admin-room': 'true'
 			}
 		};
 		// TBD: populate by REST-API call initially?
 
-		socketio = new SocketIO<DemoResourceExtended>(connection);
+		socketio = new SocketIO<DemoResourceExtended>(connection, {
+			pendingTemplate: () => ({
+				name: '',
+				description: '',
+				access_right: Action.OWN
+				// creation_date: new Date(Date.now()) // TBD: Check if this is necessary?
+			})
+		});
 
 		// Extra `status` listener — runs alongside the default one. Maintains the local
 		// `statusMessages` log and the `editIds` set across the create round-trip.
@@ -66,20 +73,6 @@
 		});
 	});
 
-	const newDemoResource = (): DemoResourceExtended => {
-		return {
-			id: 'new_' + Math.random().toString(36).substring(2, 9),
-			name: '',
-			description: '',
-			access_right: Action.OWN,
-			creation_date: new Date(Date.now())
-		};
-	};
-
-	const addDemoResource = () => {
-		socketio?.addEntity(newDemoResource());
-	};
-
 	const sortResourcesByCreationDate = (a: DemoResourceExtended, b: DemoResourceExtended) => {
 		if (a.creation_date && b.creation_date) {
 			const dateA = new Date(a.creation_date);
@@ -90,15 +83,18 @@
 		}
 	};
 
-	let ownedDemoResources: DemoResourceExtended[] = $derived(
-		(socketio?.entities ?? [])
+	let ownedDemoResources: DemoResourceExtended[] = $derived.by(() => {
+		if (!socketio) return [];
+		const pending = socketio?.pendingEntities;
+		const existing = (socketio?.entities ?? [])
 			.filter((demoResource) => {
 				if (demoResource.access_right === Action.OWN) {
 					return demoResource;
 				}
 			})
-			.sort(sortResourcesByCreationDate)
-	);
+			.sort(sortResourcesByCreationDate);
+		return [...pending, ...existing];
+	});
 
 	let writeDemoResources: DemoResourceExtended[] = $derived(
 		(socketio?.entities ?? [])
@@ -139,7 +135,7 @@
 			<button
 				class="btn-neutral-container btn btn-gradient shadow-outline rounded-full shadow-sm"
 				aria-label="Add Button"
-				onclick={() => addDemoResource()}
+				onclick={() => socketio?.createPending()}
 			>
 				<span class="icon-[fa6-solid--plus]"></span> Add
 			</button>
@@ -237,7 +233,7 @@
 						}
 					}
 				}
-				identities={AccessHandler.reduceMicrosoftTeamsToIdentities(data.microsoftTeams)}
+				identities={data.payload.identities}
 				{demoResource}
 				{socketio}
 			/>
@@ -255,19 +251,19 @@
 	</div>
 	<div>
 		<h3 class="title">
-			<span class="icon-[fluent--people-team-16-filled]"></span>
-			Teams access to demoresources: {data.microsoftTeams.length}
+			Identities access to demoresources: {data.payload.identities.length}
 		</h3>
 		<div
 			class="accordion accordion-bordered bg-base-150 shadow-outline-variant shadow-lg"
 			data-accordion-always-open="true"
 			{@attach initAccordion}
 		>
-			{#each data.microsoftTeams as microsoftTeam (microsoftTeam.id)}
+			{#each data.payload.identities as identity (identity.id)}
 				<div>
 					<IdentityAccordion
-						title={microsoftTeam.displayName || 'Unknown Team'}
-						id={microsoftTeam.id || Math.random().toString(36).substring(2, 9)}
+						icon={AccessHandler.identityIcon(identity.type)}
+						title={identity.name}
+						id={identity.id || Math.random().toString(36).substring(2, 9)}
 						active={false}
 					>
 						<div class="bg-success-container mb-2 rounded-xl p-2">
@@ -292,7 +288,7 @@
 						</div>
 						<div class={debug ? 'block' : 'hidden'}>
 							<p class="title">🚧 Debug Information 🚧</p>
-							<JsonData data={microsoftTeam} />
+							<JsonData data={identity} />
 						</div>
 					</IdentityAccordion>
 				</div>

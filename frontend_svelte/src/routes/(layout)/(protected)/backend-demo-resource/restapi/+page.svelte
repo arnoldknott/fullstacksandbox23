@@ -1,26 +1,17 @@
 <script lang="ts">
 	import Heading from '$components/Heading.svelte';
 	import JsonData from '$components/JsonData.svelte';
-	import { AccessHandler } from '$lib/accessHandler';
 	import { Action } from '$lib/accessHandler';
-	import type { DemoResourceExtended, Identity } from '$lib/types';
+	import type { DemoResourceExtended } from '$lib/types';
 
 	import type { PageData } from './$types';
 	import DemoResourceCard from './DemoResourceCard.svelte';
 	let { data }: { data: PageData } = $props();
 	// svelte-ignore state_referenced_locally
-	let demoResources = $state(data.demoResourcesExtended);
-	const microsoftTeams = $derived(data.microsoftTeams);
+	let demoResources = $state(data.payload.demoResources);
+	const identities = $derived(data.payload.identities);
 
 	let debug = $state(false);
-
-	let identities: Identity[] = $derived.by(() => {
-		const microsoftTeamsIdentities: Identity[] =
-			AccessHandler.reduceMicrosoftTeamsToIdentities(microsoftTeams);
-		// TBD add other identities here, e.g. from a ueber-group, group, sub-group, user list
-		const emptyListAsPlaceholder: Identity[] = [];
-		return [...microsoftTeamsIdentities, ...emptyListAsPlaceholder];
-	});
 
 	// This is the same as in +page.svelte  for socketIO!
 	const addDemoResource = () => {

@@ -12,7 +12,7 @@
 	import ArtificialIntelligencePicker from './playground/components/ArtificialIntelligencePicker.svelte';
 	import ThemePicker from './playground/components/ThemePicker.svelte';
 	let {
-		session = $bindable(),
+		session,
 		artificialIntelligenceConfiguration = $bindable(),
 		themeConfiguration = $bindable(),
 		mode = $bindable(),

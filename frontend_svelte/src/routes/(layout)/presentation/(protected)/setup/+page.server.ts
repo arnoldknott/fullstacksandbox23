@@ -15,13 +15,11 @@ export const load: PageServerLoad = async ({ locals }) => {
 		const presentationsData = await responsePresentations.json();
 		payload.presentations = presentationsData;
 	}
-	if (locals.sessionData.currentUser && locals.sessionData.currentUser.azure_token_groups) {
-		const myTeamsIdentities = await microsoftGraph.getAttachedTeamsAsIdentities(
-			sessionId,
-			locals.sessionData.currentUser.azure_token_groups
-		);
-		payload.identities.push(...myTeamsIdentities);
-	}
+	const myTeamsIdentities = await microsoftGraph.getAttachedTeamsAsIdentities(
+		sessionId,
+		locals.sessionData.currentUser?.azure_token_groups
+	);
+	payload.identities.push(...myTeamsIdentities);
 	const allIdentities = await backendAPI.getAllIdentities(sessionId);
 	payload.identities.push(...allIdentities);
 	return { payload };

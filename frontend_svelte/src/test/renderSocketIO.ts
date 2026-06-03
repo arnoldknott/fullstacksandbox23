@@ -20,6 +20,7 @@ export type RenderSocketIOOptions<T extends AnyEntityExtended = AnyEntityExtende
 	connection?: SocketioConnection;
 	entities?: T[] | undefined | null;
 	defaultHandlers?: SocketIODefaultHandlers;
+	pendingTemplate?: () => Partial<Omit<T, 'id'>>;
 	backendAPIConfiguration?: BackendAPIConfiguration;
 };
 
@@ -38,6 +39,9 @@ export const renderSocketIO = <T extends AnyEntityExtended = AnyEntityExtended>(
 			connection: options.connection ?? defaultConnection,
 			entities: options.entities,
 			defaultHandlers: options.defaultHandlers,
+			pendingTemplate: options.pendingTemplate as
+				| (() => Partial<Omit<AnyEntityExtended, 'id'>>)
+				| undefined,
 			onInstance: (created: SocketIO<AnyEntityExtended>) => {
 				instance = created as unknown as SocketIO<T>;
 			}

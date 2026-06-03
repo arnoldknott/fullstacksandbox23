@@ -1,4 +1,4 @@
-import type { AccessPolicy, AccessShareOption, Identity, MicrosoftTeamExtended } from '$lib/types';
+import type { AccessPolicy, AccessShareOption, Identity } from '$lib/types';
 
 export enum Action {
 	OWN = 'own',
@@ -43,16 +43,6 @@ export class AccessHandler {
 		} else {
 			return undefined;
 		}
-	}
-
-	static reduceMicrosoftTeamsToIdentities(microsoftTeams: MicrosoftTeamExtended[]): Identity[] {
-		return microsoftTeams
-			.filter((team: MicrosoftTeamExtended) => team.id !== undefined)
-			.map((team: MicrosoftTeamExtended) => ({
-				id: team.id as string,
-				name: team.displayName || 'Unknown Team',
-				type: IdentityType.MICROSOFT_TEAM
-			}));
 	}
 
 	static createShareOptions(

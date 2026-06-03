@@ -384,41 +384,12 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         """Returns the current user."""
         try:
 
-            # This is for checking the access rights of the user to itself:
-            # Version 1:
-            # TBD fix cartesian product in the query when admin calls this!
-            # problem started since the user_account was added to the user!
-            # Challenge is in the model, not in the query!
+            # This is for checking the access rights of the user to itself.
+            # Returns model Me, which includes user_profile and user_account.
+            # Always filters by current_user.user_id, so even Admin only ever gets
+            # their own profile/account through this method.
             user = await self.read_by_id(current_user.user_id, current_user)
 
-            # Version 2: check access first and then read directly from the database:
-            # access_request = AccessRequest(
-            #     current_user=current_user,
-            #     resource_id=current_user.user_id,
-            #     action=Action.own,
-            # )
-            # await self.policy_CRUD.allows(access_request)
-            # user_query = (
-            #     select(User).where(User.id == current_user.user_id)
-            #     # .join(UserAccount, UserAccount.user_id == User.id)
-            #     # .options(selectinload(User.user_account))
-            # )
-            # user_response = await self.session.exec(user_query)
-            # user = user_response.unique().one()
-
-            # me = Me.model_validate(user)
-            # print("=== user crud - read_me - me ===")
-            # print(me)
-            query = select(UserAccount, UserProfile).where(
-                UserAccount.user_id == current_user.user_id,
-                UserProfile.user_id == current_user.user_id,
-            )
-            response = await self.session.exec(query)
-            account, profile = response.one()
-            user.user_account = account
-            user.user_profile = profile
-
-            # Add detailed logging before model_validate
             me = Me.model_validate(user)
             me.azure_token_roles = current_user.azure_token_roles
             me.azure_token_groups = current_user.azure_token_groups

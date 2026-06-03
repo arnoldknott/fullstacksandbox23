@@ -376,6 +376,8 @@ class UserRead(UserCreate):
 
 
 # This is the model, a users can see about themselves.
+# Only use of this model is in the /user/me endpoint, which ensures,
+# that only the user can see their own user_account and user_profile, but not other users.
 class Me(UserRead):
     azure_token_roles: Optional[list[str]] = None
     azure_token_groups: Optional[list[uuid.UUID]] = None

@@ -590,7 +590,8 @@ class BaseNamespace(socketio.AsyncNamespace):
             # await self._emit_status(sid, {"error": str(error)})
 
     # "submit" is communication from client to server
-    async def on_submit(self, sid, data):
+    # TBD: remove noqa, when emiting the link status events is gathered in a separate method.
+    async def on_submit(self, sid, data):  # noqa: C901
         """Gets data from client and issues a create or update based on id is present or not."""
         logger.info(f"🧦 Data submitted from client {sid}")
         try:
@@ -684,6 +685,14 @@ class BaseNamespace(socketio.AsyncNamespace):
                                 public,
                                 public_action,
                             )
+                            parent_type = None
+                            if parent_id is not None:
+                                parent_types = await crud._get_types_from_ids(
+                                    [parent_id]
+                                )
+                                parent_type = (
+                                    parent_types[0].type if parent_types else None
+                                )
                             await self.server.enter_room(
                                 sid,
                                 f"resource:{str(database_object.id)}",
@@ -701,7 +710,35 @@ class BaseNamespace(socketio.AsyncNamespace):
                             # so they get notified through a "shared" event.
                             rooms = ["role:Admin"]
                             if parent_id is not None:
+                                # This one is for emiting in child-namespace, room "parend_id",
+                                # so all clients that are in that room get the update about the new child resource
+                                # and can decide what to do with it based on the parent_id information.
+                                # Is it actually necessary to emit this in the child-namespace?
+                                # Probably yes, becasue some children might not be connected to the parent_namespace,
+                                # but still want to list all their parents.
                                 rooms += [f"parent:{parent_id}"]
+                                # emit same status as in "on_link" - duplicate here
+                                # TBD: consider refactoring into a separate method,
+                                # to avoid that dublication.
+                                status = {
+                                    "success": "linked",
+                                    "id": str(database_object.id),
+                                    "parent_id": str(parent_id),
+                                    "inherit": inherit,
+                                }
+                                # Currently one of those emits is tested in
+                                # test_connect_create_read_update_delete_sub_group
+                                # TBD: add another test for the other emit
+                                await self._emit_status(
+                                    sid, status, [f"resource:{str(database_object.id)}"]
+                                )
+                                parent_namespace = registry_namespaces.get(parent_type)
+                                await self._emit_status(
+                                    sid,
+                                    status,
+                                    [f"resource:{str(parent_id)}"],
+                                    namespace=parent_namespace,
+                                )
                             await self.server.emit(
                                 "status",
                                 {
@@ -881,14 +918,12 @@ class BaseNamespace(socketio.AsyncNamespace):
                 )
                 parent_types = await crud._get_types_from_ids([hierarchy_obj.parent_id])
                 parent_type = parent_types[0].type if parent_types else None
-            status = (
-                {
-                    "success": "linked",
-                    "id": str(hierarchy_obj.child_id),
-                    "parent_id": str(hierarchy_obj.parent_id),
-                    "inherit": hierarchy_obj.inherit,
-                },
-            )
+            status = {
+                "success": "linked",
+                "id": str(hierarchy_obj.child_id),
+                "parent_id": str(hierarchy_obj.parent_id),
+                "inherit": hierarchy_obj.inherit,
+            }
             await self._emit_status(
                 sid, status, [f"resource:{str(hierarchy_obj.child_id)}"]
             )

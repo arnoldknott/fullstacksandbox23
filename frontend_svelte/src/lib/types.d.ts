@@ -102,6 +102,7 @@ export interface AccessRight {
 export interface Hierarchy {
 	child_id: string;
 	parent_id: string;
+	order?: number; // for ordered hierarchies, i.e. resource hierarchies
 	inherit?: boolean;
 }
 

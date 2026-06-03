@@ -786,8 +786,8 @@ async def test_user_gets_user_by_azure_user_id(
     assert modelled_response_user.azure_user_id == user_in_database.azure_user_id
     assert modelled_response_user.azure_tenant_id == user_in_database.azure_tenant_id
     assert len(modelled_response_user.azure_groups) == 3  # type: ignore[arg-type]
-    assert not hasattr(modelled_response_user, "user_account")
-    assert not hasattr(modelled_response_user, "user_profile")
+    assert "user_account" not in response_user
+    assert "user_profile" not in response_user
 
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(

@@ -1277,6 +1277,12 @@ async def test_connect_create_read_update_delete_sub_group(
     assert connection_user2.responses("status")[0]["success"] == "created"
     assert "id" in connection_user2.responses("status")[0]
     created_sub_group_id = connection_user2.responses("status")[0]["id"]
+    assert connection_user2.responses("status")[1]["success"] == "linked"
+    assert connection_user2.responses("status")[1]["id"] == created_sub_group_id
+    assert connection_user2.responses("status")[1]["parent_id"] == str(
+        added_test_groups[3].id
+    )
+    assert not connection_user2.responses("status")[1]["inherit"]
     assert len(connection_user2.responses("transferred")) == 0
 
     # Read:
@@ -1319,8 +1325,8 @@ async def test_connect_create_read_update_delete_sub_group(
         "submit", {"payload": updated_sub_group}, namespace="/sub-group"
     )
     await connection_user2.client.sleep(0.3)
-    assert connection_user2.responses("status")[1]["success"] == "updated"
-    assert connection_user2.responses("status")[1]["id"] == shared_sub_group_id
+    assert connection_user2.responses("status")[2]["success"] == "updated"
+    assert connection_user2.responses("status")[2]["id"] == shared_sub_group_id
     assert len(connection_user1.responses("transferred")) == 4
     assert connection_user1.responses("transferred")[3]["id"] == shared_sub_group_id
     assert connection_user1.responses("transferred")[3]["name"] == str(
@@ -1345,8 +1351,8 @@ async def test_connect_create_read_update_delete_sub_group(
         "delete", shared_sub_group_id, namespace="/sub-group"
     )
     await connection_user2.client.sleep(0.3)
-    assert connection_user2.responses("status")[2]["success"] == "deleted"
-    assert connection_user2.responses("status")[2]["id"] == shared_sub_group_id
+    assert connection_user2.responses("status")[3]["success"] == "deleted"
+    assert connection_user2.responses("status")[3]["id"] == shared_sub_group_id
     assert connection_user2.responses("deleted")[0] == shared_sub_group_id
 
     # Read deleted sub group fails:
@@ -1355,9 +1361,9 @@ async def test_connect_create_read_update_delete_sub_group(
     )
     await connection_user2.client.sleep(0.3)
     assert len(connection_user2.responses("transferred")) == 2
-    assert connection_user2.responses("status")[3]["success"] == "deleted"
-    assert connection_user2.responses("status")[3]["id"] == shared_sub_group_id
+    assert connection_user2.responses("status")[4]["success"] == "deleted"
+    assert connection_user2.responses("status")[4]["id"] == shared_sub_group_id
     assert (
-        connection_user2.responses("status")[4]["error"]
+        connection_user2.responses("status")[5]["error"]
         == f"Resource {shared_sub_group_id} not found."
     )

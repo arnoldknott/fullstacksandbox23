@@ -59,12 +59,14 @@
 			query_params: { 'parent-id': commentsQuestionId, 'request-access-data': true }
 		};
 		socketioComment = new SocketIO<MessageExtended>(commentConnection, {
-			subscribeEntities: () => data.questionsData?.comments?.messages
+			subscribeEntities: () => data.questionsData?.comments?.messages,
+			pendingTemplate: () => ({ content: '', language: 'en' })
 		});
+		socketioComment.createPending();
 	});
 
 	// let myIntention: MessageExtended = $state({
-	// 	id: 'new_' + Math.random().toString(36).substring(2, 9),
+	// 	id: '[createPending-generated-id]',
 	// 	content: '',
 	// 	language: 'en'
 	// });
@@ -138,12 +140,6 @@
 			}
 		})
 	);
-
-	let myComment: MessageExtended = $state({
-		id: 'new_' + Math.random().toString(36).substring(2, 9),
-		content: '',
-		language: 'en'
-	});
 
 	onDestroy(() => {
 		// socketioIntention?.client.disconnect();
@@ -228,7 +224,7 @@
 								Action.READ
 							);
 							myIntention = {
-								id: 'new_' + Math.random().toString(36).substring(2, 9),
+								id: '[createPending-generated-id]',
 								content: '',
 								language: 'en'
 							};
@@ -371,26 +367,33 @@
 		<!-- <Heading>Do you have comments or questions?</Heading> -->
 		<div class="mx-10 mt-8">
 			<div class="text-left">
-				<label class="heading-large" for="sharing"> Do you have comments or questions? 🤔 </label>
-				<textarea
-					class="heading placeholder:title-large w-full border border-2 p-2 shadow-inner placeholder:italic"
-					placeholder="These questions and comments are publically available on the internet for everyone, who has a link to this presentation. Sharing is caring 🫶 Press Enter to send."
-					id="sharing"
-					bind:value={myComment.content}
-					onkeydown={(event) => {
-						if (event.key === 'Enter' && !event.shiftKey) {
-							event.preventDefault();
-							socketioComment.entities = [myComment, ...socketioComment.entities];
-							// socketioComment.addEntity(myComment);
-							socketioComment.submitEntity(myComment, commentsQuestionId, true, true, Action.READ);
-							myComment = {
-								id: 'new_' + Math.random().toString(36).substring(2, 9),
-								content: '',
-								language: 'en'
-							};
-						}
-					}}
-				></textarea>
+				{#if socketioComment?.pendingEntities[0]}
+					<label class="heading-large" for="sharing"> Do you have comments or questions? 🤔 </label>
+					<textarea
+						class="heading placeholder:title-large w-full border border-2 p-2 shadow-inner placeholder:italic"
+						placeholder="These questions and comments are publically available on the internet for everyone, who has a link to this presentation. Sharing is caring 🫶 Press Enter to send."
+						id="sharing"
+						bind:value={socketioComment.pendingEntities[0].content}
+						onkeydown={(event) => {
+							if (event.key === 'Enter' && !event.shiftKey) {
+								event.preventDefault();
+								// socketioComment.addEntity(myComment);
+								socketioComment.submitEntity(
+									socketioComment.pendingEntities[0],
+									commentsQuestionId,
+									true,
+									true,
+									Action.READ
+								);
+								socketioComment.createPending();
+							}
+						}}
+					></textarea>
+				{:else}
+					<div class="label text-error">
+						<span class="icon-[svg-spinners--12-dots-scale-rotate] size-6"></span>connecting ...
+					</div>
+				{/if}
 			</div>
 		</div>
 		<div class="heading mt-8">

@@ -10,8 +10,9 @@
 	import Heading from '$components/Heading.svelte';
 	import JsonData from '$components/JsonData.svelte';
 	import { IdentityType } from '$lib/accessHandler';
-	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio.svelte';
-	import type { Group, Hierarchy, UeberGroup } from '$lib/types';
+	import { type Relation, RelationHandler } from '$lib/relationHandler.svelte';
+	import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
+	import type { Group, UeberGroup } from '$lib/types';
 
 	import IdBadge from '../../../IdBadge.svelte';
 	import IdentityListItem from '../../IdentityListItem.svelte';
@@ -41,22 +42,17 @@
 	// 	return shortName;
 	// };
 
-	let linkedGroups = $derived<Group[]>(data.thisUeberGroup?.groups || []);
 	let socketioUeberGroup: SocketIO<UeberGroup> = $state()!;
 	let socketioGroup: SocketIO<Group> = $state()!;
-	let allGroups = $derived(socketioGroup?.entities ?? []);
+	let groupsRelation: Relation = $state()!;
+	let linkedGroups = $derived<Group[]>((groupsRelation?.linked ?? []) as Group[]);
+	let allUnlinkedGroups = $derived<Group[]>((groupsRelation?.unlinked ?? []) as Group[]);
 	const [sendGroupCrossfade, receiveGroupCrossfade] = crossfade({ duration: 400 });
 	// const [sendIdentityCrossfade, receiveIdentityCrossfade] = crossfade({ duration: 400 });
-	const newGroup = $state<Group>({
-		id: 'new_' + Math.random().toString(36).substring(2, 9),
-		name: '',
-		description: ''
-	});
 	let newGroupInherit = $state(true);
 	let existingGroupInherit = $state(true);
 	let newMultipleGroups = $state(false);
 	let multipleGroupsSuffixes = $state({ start: 1, end: 2 });
-	let newGroupIdsSuffixes = new SvelteMap([[newGroup.id, '']]);
 	let newGroupSuffix = $derived(
 		newMultipleGroups
 			? '_[' + multipleGroupsSuffixes.start + ':' + multipleGroupsSuffixes.end + ']'
@@ -87,7 +83,6 @@
 		// 	'request-access-data': true,
 		// }
 	};
-	// and not read-all callback on connect
 	onMount(() => {
 		socketioUeberGroup = new SocketIO<UeberGroup>(ueberGroupConnection, {
 			defaultHandlers: { transferred: false, deleted: false }
@@ -106,51 +101,19 @@
 		});
 
 		socketioGroup = new SocketIO<Group>(groupConnection, {
-			subscribeEntities: () => data.allOtherGroups,
-			defaultHandlers: { transferred: false }
+			subscribeEntities: () => data.allGroups,
+			pendingTemplate: () => ({ name: '', description: '' })
 		});
 		socketioGroup.client.emit('read');
-		socketioGroup.client.on('transferred', (data: Group) => {
-			if (!linkedGroups.some((group) => group.id === data.id)) {
-				socketioGroup.handleTransferred(data);
-			}
-		});
-		socketioGroup.client.on('deleted', (resource_id: string) => {
-			linkedGroups = linkedGroups.filter((group) => group.id !== resource_id);
-		});
-		socketioGroup.client.on('status', (status: SocketioStatus) => {
-			if ('success' in status) {
-				// TBD: refactor to use (or extend) default handlers
-				if (status.success === 'created') {
-					if (newGroupIdsSuffixes.has(status.submitted_id)) {
-						const suffix = newGroupIdsSuffixes.get(status.submitted_id);
-						const thisGroup: Group = Object.assign({}, newGroup);
-						thisGroup.name = newGroup.name + suffix;
-						linkedGroups.push({ ...thisGroup, id: status.id });
-						newGroupIdsSuffixes.delete(status.submitted_id);
-						if (suffix === '' || newGroupIdsSuffixes.size === 1) {
-							newGroup.name = '';
-							newGroup.description = '';
-							if (suffix === '') {
-								newGroup.id = 'new_' + Math.random().toString(36).substring(2, 9);
-								newGroupIdsSuffixes.set(newGroup.id, '');
-							}
-						}
-					}
-					// TBD: build default handlers for "link" and "unlink":
-				} else if (status.success === 'linked') {
-					linkedGroups.push(
-						socketioGroup.entities.find((group) => group.id === status.id) as Group
-					);
-					socketioGroup.entities = socketioGroup.entities.filter((group) => group.id !== status.id);
-				} else if (status.success === 'unlinked') {
-					socketioGroup.entities.push(
-						linkedGroups.find((group) => group.id === status.id) as Group
-					);
-					linkedGroups = linkedGroups.filter((group) => group.id !== status.id);
-				}
-			}
-		});
+		socketioGroup.createPending();
+
+		const ueberGroupRelations = new RelationHandler<UeberGroup>(() => ueberGroup);
+		groupsRelation = ueberGroupRelations.addChild(
+			'groups',
+			socketioGroup,
+			() => data.thisUeberGroup?.groups,
+			true
+		);
 	});
 
 	onDestroy(() => {
@@ -158,104 +121,67 @@
 		socketioGroup?.client.disconnect();
 	});
 
+	// TBD: refactor to use methods of SocketIO!
 	const addNewGroup = () => {
+		const parentId = ueberGroup?.id;
+		const basePendingGroup = socketioGroup?.pendingEntities[0];
+		if (!parentId || !basePendingGroup) return;
+
+		const submitGroup = (overrides: Partial<Group>, inherit: boolean) => {
+			const pendingGroup = socketioGroup.createPending(overrides);
+			socketioGroup.submitEntity(pendingGroup, parentId, inherit);
+		};
+
 		if (newMultipleGroups) {
-			for (
-				let suffix = multipleGroupsSuffixes.start;
-				suffix <= multipleGroupsSuffixes.end;
-				suffix++
-			) {
-				const thisGroup = Object.assign({}, newGroup);
-				thisGroup.id = 'new_' + Math.random().toString(36).substring(2, 9);
-				thisGroup.name = thisGroup.name + `_${suffix}`;
-				newGroupIdsSuffixes.set(thisGroup.id, `_${suffix}`);
-				socketioGroup.submitEntity(thisGroup, ueberGroup?.id, newGroupInherit);
+			for (let s = multipleGroupsSuffixes.start; s <= multipleGroupsSuffixes.end; s++) {
+				submitGroup(
+					{ ...basePendingGroup, name: `${basePendingGroup.name}_${s}` },
+					newGroupInherit
+				);
 			}
+			socketioGroup.createPending();
 		} else {
-			socketioGroup.submitEntity(newGroup, ueberGroup?.id, newGroupInherit);
+			socketioGroup.submitEntity(undefined, parentId, newGroupInherit);
 		}
 	};
 
-	const linkGroup = (groupId: string) => {
-		if (ueberGroup) {
-			const hierarchy: Hierarchy = {
-				child_id: groupId,
-				parent_id: ueberGroup.id,
-				inherit: existingGroupInherit
-			};
-			socketioGroup.linkEntities(hierarchy);
-		}
-	};
+	const linkGroup = (groupId: string) => groupsRelation.link(groupId, existingGroupInherit);
 
-	const unlinkGroup = (groupId: string) => {
-		if (ueberGroup) {
-			const hierarchy: Hierarchy = {
-				child_id: groupId,
-				parent_id: ueberGroup.id
-			};
-			socketioGroup.unlinkEntities(hierarchy);
-			linkedIdentities.delete(
-				linkedIdentities.keys().find((identity) => identity.id === groupId) as Group
-			);
-		}
-	};
+	const unlinkGroup = (groupId: string) => groupsRelation.unlink(groupId);
 
-	// TBD: doesn't immedelty reomve group from DOM!
-	const deleteGroup = (groupId: string) => {
-		socketioGroup.deleteEntity(groupId);
-	};
+	const deleteGroup = (groupId: string) => groupsRelation.delete(groupId);
 
 	// User related stuff:
-	let allOtherMicrosoftUsers = $derived<MicrosoftUser[]>(data.allOtherMicrosoftUsers || []);
+	let allOtherMicrosoftUsers = $derived<MicrosoftUser[]>(data.allMicrosoftUsers || []);
 	let linkedMicrosoftUsers = $derived<MicrosoftUser[]>(data.linkedMicrosoftUsers || []);
 	// TBD: rethink this typing - also loosing the local id here and only leaving the azure_user_id as id.
 	// Maybe this could be another Map with user.id (from this app) as key and MicrosoftUser as value?
 	type LocalMicrosoftUser = {
 		id: string;
 		name?: string | null;
-		description?: string | null;
+		mail?: string | null;
 	};
-	let linkedIdentities = $derived<SvelteMap<Group | LocalMicrosoftUser, IdentityType>>(
-		new SvelteMap()
-	);
-	$effect(() => {
-		linkedGroups.forEach((group) => {
-			linkedIdentities.set(group, IdentityType.GROUP);
-		});
-		linkedMicrosoftUsers.forEach((user) => {
+	// Pure derived projection: rebuild from sources on every read.
+	// No $effect mutation, so writable-derived consumers (template, JsonData) stay in sync.
+	let linkedIdentities = $derived.by(() => {
+		const identities = new SvelteMap<Group | LocalMicrosoftUser, IdentityType>();
+		for (const group of linkedGroups) {
+			identities.set(group, IdentityType.GROUP);
+		}
+		for (const user of linkedMicrosoftUsers) {
 			if (user.id) {
-				linkedIdentities.set(
+				identities.set(
 					{
 						id: user.id,
 						name: user.displayName,
-						description: user.mail
+						mail: user.mail
 					},
 					IdentityType.USER
 				);
 			}
-		});
+		}
+		return identities;
 	});
-
-	// let linkedIdentities = $derived<
-	// 	((Group & { identityType: IdentityType }) | (MicrosoftUser & { identityType: IdentityType }))[]
-	// >([
-	// 	...linkedGroups.map((group) => ({ ...group, identityType: IdentityType.GROUP })),
-	// 	...linkedUsers.map((user) => ({
-	// 		id: user.id || 'unknown',
-	// 		name: user.displayName,
-	// 		description: user.mail,
-	// 		identityType: IdentityType.USER
-	// 	}))
-	// ]);
-	// const userConnection: SocketioConnection = {
-	// 	namespace: '/user',
-	// 	cookie_session_id: page.data.session.sessionId
-	// };
-	// // TBD: when porting to group,
-	// // remember to request the data of this user
-	// // via query-parameters on the socket connection
-	// /// as there is no callback on connect
-	// const socketioUser = new SocketIO(userConnection);
 </script>
 
 <div class="flex flex-row gap-2 pb-4">
@@ -403,7 +329,7 @@
 				placeholder="Name the demo resource"
 				class="input input-sm md:input-md shadow-shadow flex-1 shadow-inner"
 				name="group-name"
-				bind:value={newGroup.name}
+				bind:value={socketioGroup.pendingEntities[0].name}
 			/>
 			<label class="input-filled-label" for="new-group-name">Name</label>
 		</div>
@@ -416,11 +342,11 @@
 				Click on a groups to add to this UeberGroup.
 			</p>
 			<div class="mb-2 flex flex-1 items-center gap-1">
-				<label class="label label-text text-base-content" for="new_group-inherit"
+				<label class="label label-text text-base-content" for="new-group-inherit"
 					>Inherit rights from {ueberGroup?.name || 'this UeberGroup'}:
 				</label>
 				<input
-					id="new_group-inherit"
+					id="new-group-inherit"
 					type="checkbox"
 					class="switch-info switch"
 					bind:checked={existingGroupInherit}
@@ -430,103 +356,110 @@
 	{/snippet}
 
 	<div class="grid grid-cols-1 justify-around gap-4 pb-4 md:grid-cols-2">
-		<Card id={newGroup.id} extraClasses="max-h-90" header={newGroupHeader}>
-			<div class="w-full overflow-x-auto">
-				{#if newMultipleGroups}
-					<div class="flex flex-row items-end">
+		<Card
+			id={socketioGroup?.pendingEntities[0]?.id ?? 'new-group-card'}
+			extraClasses="max-h-90"
+			header={newGroupHeader}
+		>
+			{#if socketioGroup?.pendingEntities[0]}
+				<div class="w-full overflow-x-auto">
+					{#if newMultipleGroups}
+						<div class="flex flex-row items-end">
+							{@render newGroupNameField()}
+							<span class="flex-1 pb-3">{newGroupSuffix}</span>
+						</div>
+					{:else}
 						{@render newGroupNameField()}
-						<span class="flex-1 pb-3">{newGroupSuffix}</span>
+					{/if}
+					<div class="textarea-filled textarea-base-content w-full">
+						<textarea
+							id="new-group-description"
+							class="textarea shadow-shadow shadow-inner"
+							placeholder="Describe the demo resource here."
+							name="groupdescription"
+							bind:value={socketioGroup.pendingEntities[0].description}
+						>
+						</textarea>
+						<label class="textarea-filled-label" for="new-group-description"> Description </label>
 					</div>
-				{:else}
-					{@render newGroupNameField()}
-				{/if}
-				<div class="textarea-filled textarea-base-content w-full">
-					<textarea
-						id="new-group-description"
-						class="textarea shadow-shadow shadow-inner"
-						placeholder="Describe the demo resource here."
-						name="groupdescription"
-						bind:value={newGroup.description}
-					>
-					</textarea>
-					<label class="textarea-filled-label" for="new-group-description"> Description </label>
-				</div>
-				<!-- TBD: make snippet and put into footer -->
-				<div
-					class="label-text mb-2 flex flex-1 items-center gap-1 {newGroupInherit
-						? 'text-base-content'
-						: 'text-base-content/30'}"
-				>
-					<input
-						id="existing_group-inherit"
-						type="checkbox"
-						class="switch-info switch"
-						bind:checked={newGroupInherit}
-					/>
-					<label class="label" for="existing_group-inherit"
-						>Inherit rights from {ueberGroup?.name || 'this UeberGroup'}
-					</label>
-				</div>
-				<div class="flex h-11 flex-row">
+					<!-- TBD: make snippet and put into footer -->
 					<div
-						class="label-text mb-2 flex flex-1 items-center gap-1 {newMultipleGroups
+						class="label-text mb-2 flex flex-1 items-center gap-1 {newGroupInherit
 							? 'text-base-content'
 							: 'text-base-content/30'}"
 					>
 						<input
-							id="multiple-new-groups"
+							id="existing_group-inherit"
 							type="checkbox"
 							class="switch-info switch"
-							bind:checked={newMultipleGroups}
+							bind:checked={newGroupInherit}
 						/>
-						<label class="label" for="multiple-new-groups">Add multiple groups with suffix </label>
-						<input
-							id="multiple-groups-start"
-							type="number"
-							placeholder={multipleGroupsSuffixes.start.toString()}
-							class="input shadow-shadow flex-2 shadow-inner"
-							name="multiple-groups-suffix-start"
-							disabled={!newMultipleGroups}
-							bind:value={multipleGroupsSuffixes.start}
-						/>
-						<span class="label flex-1"> to</span>
-						<input
-							id="multiple-groups-end"
-							type="number"
-							placeholder={multipleGroupsSuffixes.end.toString()}
-							class="input shadow-shadow flex-2 shadow-inner"
-							name="multiple-groups-suffix-end"
-							disabled={!newMultipleGroups}
-							bind:value={multipleGroupsSuffixes.end}
-						/>
-						<span class="flex-grow"></span>
+						<label class="label" for="existing_group-inherit"
+							>Inherit rights from {ueberGroup?.name || 'this UeberGroup'}
+						</label>
 					</div>
-					<button
-						class="btn-success-container btn btn-circle btn-gradient shadow-outline shrink shadow-sm"
-						aria-label="Send Icon Button"
-						onclick={() => addNewGroup()}
-						data-overlay="#add-ueber-group-modal"
-					>
-						<span class="icon-[tabler--send-2]"></span>
-					</button>
+					<div class="flex h-11 flex-row">
+						<div
+							class="label-text mb-2 flex flex-1 items-center gap-1 {newMultipleGroups
+								? 'text-base-content'
+								: 'text-base-content/30'}"
+						>
+							<input
+								id="multiple-new-groups"
+								type="checkbox"
+								class="switch-info switch"
+								bind:checked={newMultipleGroups}
+							/>
+							<label class="label" for="multiple-new-groups"
+								>Add multiple groups with suffix
+							</label>
+							<input
+								id="multiple-groups-start"
+								type="number"
+								placeholder={multipleGroupsSuffixes.start.toString()}
+								class="input shadow-shadow flex-2 shadow-inner"
+								name="multiple-groups-suffix-start"
+								disabled={!newMultipleGroups}
+								bind:value={multipleGroupsSuffixes.start}
+							/>
+							<span class="label flex-1"> to</span>
+							<input
+								id="multiple-groups-end"
+								type="number"
+								placeholder={multipleGroupsSuffixes.end.toString()}
+								class="input shadow-shadow flex-2 shadow-inner"
+								name="multiple-groups-suffix-end"
+								disabled={!newMultipleGroups}
+								bind:value={multipleGroupsSuffixes.end}
+							/>
+							<span class="flex-grow"></span>
+						</div>
+						<button
+							class="btn-success-container btn btn-circle btn-gradient shadow-outline shrink shadow-sm"
+							aria-label="Send Icon Button"
+							onclick={() => addNewGroup()}
+							data-overlay="#add-ueber-group-modal"
+						>
+							<span class="icon-[tabler--send-2]"></span>
+						</button>
+					</div>
 				</div>
-			</div>
+			{:else}
+				<div class="label text-error">
+					<span class="icon-[svg-spinners--12-dots-scale-rotate] size-6"></span>connecting ...
+				</div>
+			{/if}
 		</Card>
 		{#if debug}
 			<div class="flex flex-col gap-2">
-				<p>newGroup</p>
-				<JsonData data={newGroup} />
-				<button class="btn btn-secondary-container" onclick={() => console.log(newGroupIdsSuffixes)}
-					>newGroupIdsSuffixes -> console</button
-				>
-				<!-- <p>newGroupIdsSuffixes</p>
-				<JsonData data={newGroupIdsSuffixes} /> -->
+				<p>pendingGroup</p>
+				<JsonData data={socketioGroup?.pendingEntities[0]} />
 			</div>
 		{/if}
 		<Card id="existing-groups" header={existingGroupsHeader}>
-			{#if allGroups !== undefined && allGroups.length > 0}
+			{#if allUnlinkedGroups !== undefined && allUnlinkedGroups.length > 0}
 				<dl class="divider-outline divide-y">
-					{#each allGroups as group (group.id)}
+					{#each allUnlinkedGroups as group (group.id)}
 						<!-- TBD: debug crossfade in connection with empty lists -->
 						<div in:receiveGroupCrossfade={{ key: group }} out:sendGroupCrossfade={{ key: group }}>
 							<IdentityListItem identity={group} link={linkGroup} />
@@ -543,7 +476,7 @@
 			{/if}
 		</Card>
 		{#if debug}
-			<JsonData data={allGroups} />
+			<JsonData data={allUnlinkedGroups} />
 		{/if}
 	</div>
 
@@ -556,11 +489,11 @@
 				Click on a users to add to this UeberGroup.
 			</p>
 			<div class="mb-2 flex flex-1 items-center gap-1">
-				<label class="label label-text text-base-content" for="new_group-inherit"
+				<label class="label label-text text-base-content" for="new-group-inherit"
 					>Inherit rights from {ueberGroup?.name || 'this UeberGroup'}:
 				</label>
 				<input
-					id="new_group-inherit"
+					id="new-group-inherit"
 					type="checkbox"
 					class="switch-info switch"
 					bind:checked={existingGroupInherit}
@@ -596,33 +529,34 @@
 			<JsonData data={allOtherMicrosoftUsers} />
 		{/if}
 	</div>
-
-	<ul class="title bg-warning-container/80 text-warning-container-content mt-4 rounded-2xl">
-		<li>Develop Account linking module. Return a SvelteMap with [userId, foreignAccount]</li>
-		<li>
-			map foreign accounts into strucutre of fssb23 identities for displaying possibilities, for
-			eksample in ShareItems, lists, and so on.
-		</li>
-		<li>Add user to ueber-group.</li>
-		<li>Turn into components to reuse with groups and subgroups.</li>
-	</ul>
-	<ul class="title bg-warning-container/60 text-warning-container-content mt-4 rounded-2xl">
-		<li>
-			Maybe add a read hierarchy endpoint anyways, to get the information if a child inherits from
-			parent? This is not visualized in the current mapped children here.
-		</li>
-	</ul>
 {:else}
 	<Heading>Error</Heading>
 	<p>No Ueber Group found.</p>
 {/if}
 
+<ul class="title bg-warning-container/80 text-warning-container-content mt-4 rounded-2xl">
+	<li class="p-2">
+		Develop Account linking module. Return a SvelteMap with [userId, foreignAccount]
+	</li>
+	<li class="p-2">
+		map foreign accounts into strucutre of fssb23 identities for displaying possibilities, for
+		eksample in ShareItems, lists, and so on.
+	</li>
+	<li class="p-2">Add user to ueber-group.</li>
+	<li class="p-2">Turn into components to reuse with groups and subgroups.</li>
+</ul>
+<ul class="title bg-warning-container/60 text-warning-container-content mt-4 rounded-2xl">
+	<li class="p-2">
+		Maybe add a read hierarchy endpoint anyways, to get the information if a child inherits from
+		parent? This is not visualized in the current mapped children here.
+	</li>
+</ul>
+
 <ul class="title bg-warning-container/40 text-warning-container-content mt-4 rounded-2xl">
-	<li>
+	<li class="p-2">
 		For resource hierarchies (protected resources) also add the order functionality by drag and
 		drop.
 	</li>
-	<li>Update eslint-plugin-svelte, when types are fixed.</li>
 </ul>
 
 {#if debug}

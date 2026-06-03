@@ -1,4 +1,3 @@
-import type { Team as MicrosoftTeam } from '@microsoft/microsoft-graph-types';
 import { fail } from '@sveltejs/kit';
 
 import { Action } from '$lib/accessHandler';
@@ -6,13 +5,21 @@ import { Action } from '$lib/accessHandler';
 import { backendAPI } from '$lib/server/apis/backendApi';
 // import { Action } from '$lib/accessHandler';
 import { microsoftGraph } from '$lib/server/apis/msgraph';
-import type { AccessPolicy, AccessRight, DemoResource, DemoResourceExtended } from '$lib/types';
+import type {
+	AccessPolicy,
+	AccessRight,
+	DemoResource,
+	DemoResourceExtended,
+	Identity
+} from '$lib/types';
 
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	// console.log('=== routes - demo-resource - page.server - load function executed ===');
 	const sessionId = locals.sessionData.sessionId;
+
+	const payload = { demoResources: [] as DemoResourceExtended[], identities: [] as Identity[] };
 
 	const response = await backendAPI.get(sessionId, '/demoresource/');
 	let demoResourcesExtended = [];
@@ -74,28 +81,17 @@ export const load: PageServerLoad = async ({ locals }) => {
 			return (a.creation_date ?? 0) < (b.creation_date ?? 0) ? 1 : -1;
 		});
 	}
+	payload.demoResources = demoResourcesExtended;
 
-	// Fetch the Microsoft Teams the user is attached to
-	let microsoftTeams: MicrosoftTeam[] = [];
-	if (locals.sessionData.currentUser && locals.sessionData.currentUser.azure_token_groups) {
-		microsoftTeams = await microsoftGraph.getAttachedTeams(
-			sessionId,
-			locals.sessionData.currentUser.azure_token_groups
-		);
-	}
+	const microsoftTeamsIdentities = await microsoftGraph.getAttachedTeamsAsIdentities(
+		sessionId,
+		locals.sessionData.currentUser?.azure_token_groups
+	);
+	payload.identities.push(...microsoftTeamsIdentities);
+	const allIdentities = await backendAPI.getAllIdentities(sessionId);
+	payload.identities.push(...allIdentities);
 
-	// let microsoftTeamsExtended = microsoftTeams.map(
-	// 	(team: MicrosoftTeam) => {
-	// 		// const policies: AccessPolicy[] = accessPolicies.filter((policy: AccessPolicy) => policy.identity_id === team.id);
-	// 		return {
-	// 			...team,
-	// 			// access_policies: accessPolicies.filter((policy: AccessPolicy) => policy.identity_id === team.id)
-	// 		};
-	// 	}
-	// );
-
-	// return { demoResourcesExtended, microsoftTeamsExtended };
-	return { demoResourcesExtended, microsoftTeams };
+	return { payload };
 };
 
 export const actions: Actions = {

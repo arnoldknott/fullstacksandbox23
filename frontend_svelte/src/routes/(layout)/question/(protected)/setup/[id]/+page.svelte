@@ -17,11 +17,6 @@
 	// let messageMetaData = $state('{"course":"dev2","year":2023,"number": NaN}');
 	let messageMetaData = $state('');
 	let metadataError = $state('');
-	let myMessage: MessageExtended = $state({
-		id: 'new_' + Math.random().toString(36).substring(2, 9),
-		content: '',
-		language: 'en'
-	});
 	let questionId = $derived(data.questionsData?.questions.id || '');
 	let messageSocketio: SocketIO<MessageExtended> = $state()!;
 	let numericalSocketio: SocketIO<NumericalExtended> = $state()!;
@@ -56,11 +51,13 @@
 	});
 	onMount(() => {
 		messageSocketio = new SocketIO<MessageExtended>(messageConnection, {
-			subscribeEntities: () => data.questionsData?.questions.messages
+			subscribeEntities: () => data.questionsData?.questions.messages,
+			pendingTemplate: () => ({ content: '', language: 'en' })
 		});
 		numericalSocketio = new SocketIO<NumericalExtended>(numericalConnection, {
 			subscribeEntities: () => data.questionsData?.questions.numericals
 		});
+		messageSocketio.createPending();
 	});
 	onDestroy(() => {
 		messageSocketio?.client.disconnect();
@@ -104,24 +101,19 @@
 			return;
 		}
 
-		const body = myMessage.content.trim();
+		const body = messageSocketio.pendingEntities[0].content.trim();
 		if (!body) {
 			metadataError = 'Message body is empty.';
 			return;
 		}
 
 		const outgoingMessage: MessageExtended = {
-			...myMessage,
-			content: buildMessageContent(parsedMetadata, myMessage.content)
+			...messageSocketio.pendingEntities[0],
+			content: buildMessageContent(parsedMetadata, messageSocketio.pendingEntities[0].content)
 		};
 
-		messageSocketio.entities = [outgoingMessage, ...messageSocketio.entities];
 		messageSocketio.submitEntity(outgoingMessage, questionId, true, true, Action.READ);
-		myMessage = {
-			id: 'new_' + Math.random().toString(36).substring(2, 9),
-			content: '',
-			language: 'en'
-		};
+		messageSocketio.createPending();
 		// messageMetaData = '';
 	};
 </script>
@@ -178,13 +170,19 @@
 			{/if}
 
 			<!-- <div class="flex items-end gap-3 "> -->
-			<textarea
-				class="textarea w-full border border-2 p-2 shadow-inner placeholder:italic"
-				rows="8"
-				placeholder="Add an answer here. Use Enter for a new line."
-				id="sharing"
-				bind:value={myMessage.content}
-			></textarea>
+			{#if messageSocketio?.pendingEntities[0]}
+				<textarea
+					class="textarea w-full border border-2 p-2 shadow-inner placeholder:italic"
+					rows="8"
+					placeholder="Add an answer here. Use Enter for a new line."
+					id="sharing"
+					bind:value={messageSocketio.pendingEntities[0].content}
+				></textarea>
+			{:else}
+				<div class="label text-error">
+					<span class="icon-[svg-spinners--12-dots-scale-rotate] size-6"></span>connecting ...
+				</div>
+			{/if}
 			<!-- </div> -->
 		</div>
 		<button
