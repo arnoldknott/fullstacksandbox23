@@ -49,18 +49,14 @@
 	};
 
 	let socketio: SocketIO<UeberGroupExtended> = $state()!;
-	let newUeberGroup = $state<UeberGroupExtended>({
-		id: '',
-		name: '',
-		description: ''
-	});
 	onMount(() => {
 		socketio = new SocketIO<UeberGroupExtended>(connection, {
 			subscribeEntities: () => data.ueberGroups,
 			pendingTemplate: () => ({ name: '', description: '' })
 		});
-		newUeberGroup = socketio.createPending();
+		socketio.createPending();
 	});
+
 	let ueberGroups = $derived(socketio?.entities ?? []);
 	onDestroy(() => {
 		socketio?.client.disconnect();
@@ -199,6 +195,11 @@
 			aria-controls="add-element-modal"
 			aria-label="Create Ueber Group"
 			data-overlay="#add-ueber-group-modal"
+			onclick={() => {
+				if (!socketio?.pendingEntities[0]) {
+					socketio.createPending();
+				}
+			}}
 		>
 			<span class="icon-[material-symbols--edit-outline-rounded]"></span> Create Ueber Group
 		</button>
@@ -223,42 +224,40 @@
 						</button>
 					</div>
 					<div class="modal-body">
-						<div class="w-full overflow-x-auto">
-							<div class="input-filled input-base-content mb-2 w-fit grow">
-								<input
-									type="text"
-									placeholder="Name Ueber-Group"
-									class="input input-sm md:input-md shadow-shadow shadow-inner"
-									id="name-new-ueber-group"
-									name="name"
-									bind:value={newUeberGroup.name}
-								/>
-								<label class="input-filled-label" for="name-new-ueber-group">Name</label>
+						{#if socketio?.pendingEntities[0]}
+							<div class="w-full overflow-x-auto">
+								<div class="input-filled input-base-content mb-2 w-fit grow">
+									<input
+										type="text"
+										placeholder="Name Ueber-Group"
+										class="input input-sm md:input-md shadow-shadow shadow-inner"
+										id="name-new-ueber-group"
+										name="name"
+										bind:value={socketio.pendingEntities[0].name}
+									/>
+									<label class="input-filled-label" for="name-new-ueber-group">Name</label>
+								</div>
+								<div class="textarea-filled textarea-base-content w-full">
+									<textarea
+										class="textarea shadow-shadow shadow-inner"
+										placeholder="Describe the Ueber-Group here."
+										id="description-new-ueber-group"
+										name="description"
+										bind:value={socketio.pendingEntities[0].description}
+									>
+									</textarea>
+									<label class="textarea-filled-label" for="description-new-ueber-group">
+										Description
+									</label>
+								</div>
 							</div>
-							<div class="textarea-filled textarea-base-content w-full">
-								<textarea
-									class="textarea shadow-shadow shadow-inner"
-									placeholder="Describe the Ueber-Group here."
-									id="description-new-ueber-group"
-									name="description"
-									bind:value={newUeberGroup.description}
-								>
-								</textarea>
-								<label class="textarea-filled-label" for="description-new-ueber-group">
-									Description
-								</label>
-							</div>
-						</div>
+						{/if}
 					</div>
 					<div class="modal-footer">
 						<button
 							class="btn-success-container btn btn-circle btn-gradient shadow-outline shadow-sm"
 							aria-label="Send Icon Button"
-							onclick={() => {
-								socketio.submitEntity(newUeberGroup);
-								socketio.addEntity(newUeberGroup);
-								newUeberGroup = socketio.createPending();
-							}}
+							onclick={() => socketio.submitEntity()}
 							data-overlay="#add-ueber-group-modal"
 						>
 							<span class="icon-[tabler--send-2]"></span>

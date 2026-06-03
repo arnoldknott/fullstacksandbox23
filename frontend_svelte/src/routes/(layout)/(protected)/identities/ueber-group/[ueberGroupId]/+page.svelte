@@ -49,11 +49,6 @@
 	let allUnlinkedGroups = $derived<Group[]>((groupsRelation?.unlinked ?? []) as Group[]);
 	const [sendGroupCrossfade, receiveGroupCrossfade] = crossfade({ duration: 400 });
 	// const [sendIdentityCrossfade, receiveIdentityCrossfade] = crossfade({ duration: 400 });
-	const newGroup = $state<Group>({
-		id: 'new_' + Math.random().toString(36).substring(2, 9),
-		name: '',
-		description: ''
-	});
 	let newGroupInherit = $state(true);
 	let existingGroupInherit = $state(true);
 	let newMultipleGroups = $state(false);
@@ -106,9 +101,11 @@
 		});
 
 		socketioGroup = new SocketIO<Group>(groupConnection, {
-			subscribeEntities: () => data.allGroups
+			subscribeEntities: () => data.allGroups,
+			pendingTemplate: () => ({ name: '', description: '' })
 		});
 		socketioGroup.client.emit('read');
+		socketioGroup.createPending();
 
 		const ueberGroupRelations = new RelationHandler<UeberGroup>(() => ueberGroup);
 		groupsRelation = ueberGroupRelations.addChild(
@@ -124,18 +121,28 @@
 		socketioGroup?.client.disconnect();
 	});
 
+	// TBD: refactor to use methods of SocketIO!
 	const addNewGroup = () => {
+		const parentId = ueberGroup?.id;
+		const basePendingGroup = socketioGroup?.pendingEntities[0];
+		if (!parentId || !basePendingGroup) return;
+
+		const submitGroup = (overrides: Partial<Group>, inherit: boolean) => {
+			const pendingGroup = socketioGroup.createPending(overrides);
+			socketioGroup.submitEntity(pendingGroup, parentId, inherit);
+		};
+
 		if (newMultipleGroups) {
-			const suffixes: string[] = [];
 			for (let s = multipleGroupsSuffixes.start; s <= multipleGroupsSuffixes.end; s++) {
-				suffixes.push(`_${s}`);
+				submitGroup(
+					{ ...basePendingGroup, name: `${basePendingGroup.name}_${s}` },
+					newGroupInherit
+				);
 			}
-			groupsRelation.submitBulk(newGroup, { suffixes }, newGroupInherit);
+			socketioGroup.createPending();
 		} else {
-			groupsRelation.submit(newGroup, newGroupInherit);
+			socketioGroup.submitEntity(undefined, parentId, newGroupInherit);
 		}
-		newGroup.name = '';
-		newGroup.description = '';
 	};
 
 	const linkGroup = (groupId: string) => groupsRelation.link(groupId, existingGroupInherit);
@@ -322,7 +329,7 @@
 				placeholder="Name the demo resource"
 				class="input input-sm md:input-md shadow-shadow flex-1 shadow-inner"
 				name="group-name"
-				bind:value={newGroup.name}
+				bind:value={socketioGroup.pendingEntities[0].name}
 			/>
 			<label class="input-filled-label" for="new-group-name">Name</label>
 		</div>
@@ -349,92 +356,104 @@
 	{/snippet}
 
 	<div class="grid grid-cols-1 justify-around gap-4 pb-4 md:grid-cols-2">
-		<Card id={newGroup.id} extraClasses="max-h-90" header={newGroupHeader}>
-			<div class="w-full overflow-x-auto">
-				{#if newMultipleGroups}
-					<div class="flex flex-row items-end">
+		<Card
+			id={socketioGroup?.pendingEntities[0]?.id ?? 'new-group-card'}
+			extraClasses="max-h-90"
+			header={newGroupHeader}
+		>
+			{#if socketioGroup?.pendingEntities[0]}
+				<div class="w-full overflow-x-auto">
+					{#if newMultipleGroups}
+						<div class="flex flex-row items-end">
+							{@render newGroupNameField()}
+							<span class="flex-1 pb-3">{newGroupSuffix}</span>
+						</div>
+					{:else}
 						{@render newGroupNameField()}
-						<span class="flex-1 pb-3">{newGroupSuffix}</span>
+					{/if}
+					<div class="textarea-filled textarea-base-content w-full">
+						<textarea
+							id="new-group-description"
+							class="textarea shadow-shadow shadow-inner"
+							placeholder="Describe the demo resource here."
+							name="groupdescription"
+							bind:value={socketioGroup.pendingEntities[0].description}
+						>
+						</textarea>
+						<label class="textarea-filled-label" for="new-group-description"> Description </label>
 					</div>
-				{:else}
-					{@render newGroupNameField()}
-				{/if}
-				<div class="textarea-filled textarea-base-content w-full">
-					<textarea
-						id="new-group-description"
-						class="textarea shadow-shadow shadow-inner"
-						placeholder="Describe the demo resource here."
-						name="groupdescription"
-						bind:value={newGroup.description}
-					>
-					</textarea>
-					<label class="textarea-filled-label" for="new-group-description"> Description </label>
-				</div>
-				<!-- TBD: make snippet and put into footer -->
-				<div
-					class="label-text mb-2 flex flex-1 items-center gap-1 {newGroupInherit
-						? 'text-base-content'
-						: 'text-base-content/30'}"
-				>
-					<input
-						id="existing_group-inherit"
-						type="checkbox"
-						class="switch-info switch"
-						bind:checked={newGroupInherit}
-					/>
-					<label class="label" for="existing_group-inherit"
-						>Inherit rights from {ueberGroup?.name || 'this UeberGroup'}
-					</label>
-				</div>
-				<div class="flex h-11 flex-row">
+					<!-- TBD: make snippet and put into footer -->
 					<div
-						class="label-text mb-2 flex flex-1 items-center gap-1 {newMultipleGroups
+						class="label-text mb-2 flex flex-1 items-center gap-1 {newGroupInherit
 							? 'text-base-content'
 							: 'text-base-content/30'}"
 					>
 						<input
-							id="multiple-new-groups"
+							id="existing_group-inherit"
 							type="checkbox"
 							class="switch-info switch"
-							bind:checked={newMultipleGroups}
+							bind:checked={newGroupInherit}
 						/>
-						<label class="label" for="multiple-new-groups">Add multiple groups with suffix </label>
-						<input
-							id="multiple-groups-start"
-							type="number"
-							placeholder={multipleGroupsSuffixes.start.toString()}
-							class="input shadow-shadow flex-2 shadow-inner"
-							name="multiple-groups-suffix-start"
-							disabled={!newMultipleGroups}
-							bind:value={multipleGroupsSuffixes.start}
-						/>
-						<span class="label flex-1"> to</span>
-						<input
-							id="multiple-groups-end"
-							type="number"
-							placeholder={multipleGroupsSuffixes.end.toString()}
-							class="input shadow-shadow flex-2 shadow-inner"
-							name="multiple-groups-suffix-end"
-							disabled={!newMultipleGroups}
-							bind:value={multipleGroupsSuffixes.end}
-						/>
-						<span class="flex-grow"></span>
+						<label class="label" for="existing_group-inherit"
+							>Inherit rights from {ueberGroup?.name || 'this UeberGroup'}
+						</label>
 					</div>
-					<button
-						class="btn-success-container btn btn-circle btn-gradient shadow-outline shrink shadow-sm"
-						aria-label="Send Icon Button"
-						onclick={() => addNewGroup()}
-						data-overlay="#add-ueber-group-modal"
-					>
-						<span class="icon-[tabler--send-2]"></span>
-					</button>
+					<div class="flex h-11 flex-row">
+						<div
+							class="label-text mb-2 flex flex-1 items-center gap-1 {newMultipleGroups
+								? 'text-base-content'
+								: 'text-base-content/30'}"
+						>
+							<input
+								id="multiple-new-groups"
+								type="checkbox"
+								class="switch-info switch"
+								bind:checked={newMultipleGroups}
+							/>
+							<label class="label" for="multiple-new-groups"
+								>Add multiple groups with suffix
+							</label>
+							<input
+								id="multiple-groups-start"
+								type="number"
+								placeholder={multipleGroupsSuffixes.start.toString()}
+								class="input shadow-shadow flex-2 shadow-inner"
+								name="multiple-groups-suffix-start"
+								disabled={!newMultipleGroups}
+								bind:value={multipleGroupsSuffixes.start}
+							/>
+							<span class="label flex-1"> to</span>
+							<input
+								id="multiple-groups-end"
+								type="number"
+								placeholder={multipleGroupsSuffixes.end.toString()}
+								class="input shadow-shadow flex-2 shadow-inner"
+								name="multiple-groups-suffix-end"
+								disabled={!newMultipleGroups}
+								bind:value={multipleGroupsSuffixes.end}
+							/>
+							<span class="flex-grow"></span>
+						</div>
+						<button
+							class="btn-success-container btn btn-circle btn-gradient shadow-outline shrink shadow-sm"
+							aria-label="Send Icon Button"
+							onclick={() => addNewGroup()}
+							data-overlay="#add-ueber-group-modal"
+						>
+							<span class="icon-[tabler--send-2]"></span>
+						</button>
+					</div>
 				</div>
-			</div>
+			{:else}
+				<div class="label text-error">
+					<span class="icon-[svg-spinners--12-dots-scale-rotate] size-6"></span>connecting ...
+				</div>
+			{/if}
 		</Card>
 		{#if debug}
 			<div class="flex flex-col gap-2">
-				<p>newGroup</p>
-				<JsonData data={newGroup} />
+				<p>pendingGroup</p>
+				<JsonData data={socketioGroup?.pendingEntities[0]} />
 			</div>
 		{/if}
 		<Card id="existing-groups" header={existingGroupsHeader}>

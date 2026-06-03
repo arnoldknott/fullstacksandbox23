@@ -50,7 +50,8 @@
 			query_params: { 'parent-id': intentionQuestionId, 'request-access-data': true }
 		};
 		socketioIntention = new SocketIO<MessageExtended>(intentionConnection, {
-			subscribeEntities: () => data.questionsData?.intention?.messages
+			subscribeEntities: () => data.questionsData?.intention?.messages,
+			pendingTemplate: () => ({ content: '', language: 'en' })
 		});
 
 		const connectionMotivation: SocketioConnection = {
@@ -66,14 +67,11 @@
 			query_params: { 'parent-id': commentsQuestionId, 'request-access-data': true }
 		};
 		socketioComment = new SocketIO<MessageExtended>(commentConnection, {
-			subscribeEntities: () => data.questionsData?.comments?.messages
+			subscribeEntities: () => data.questionsData?.comments?.messages,
+			pendingTemplate: () => ({ content: '', language: 'en' })
 		});
-	});
-
-	let myIntention: MessageExtended = $state({
-		id: 'new_' + Math.random().toString(36).substring(2, 9),
-		content: '',
-		language: 'en'
+		socketioIntention.createPending();
+		socketioComment.createPending();
 	});
 
 	let motivationAnswersAverage: number = $derived.by(() => {
@@ -146,12 +144,6 @@
 		})
 	);
 
-	let myComment: MessageExtended = $state({
-		id: 'new_' + Math.random().toString(36).substring(2, 9),
-		content: '',
-		language: 'en'
-	});
-
 	onDestroy(() => {
 		socketioIntention?.client.disconnect();
 		socketioMotivation?.client.disconnect();
@@ -188,7 +180,9 @@
 		<div class="chat-bubble text-left {index % 2 ? 'chat-bubble-accent' : 'chat-bubble-primary'}">
 			{text}
 			<div class="label text-right">
-				{date ? new Date(date).toLocaleString() : 'Thanks for your contribution 🙏'}
+				{date
+					? new Date(date).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })
+					: 'Thanks for your contribution 🙏'}
 			</div>
 		</div>
 	</div>
@@ -204,34 +198,35 @@
 		<SlideTitle>Sharing Round</SlideTitle>
 		<div class="mx-10 mt-8">
 			<div class="text-left">
-				<label class="heading" for="sharing"
-					>What is your intention for your studies, your course, this lecture? 🤔</label
-				>
-				<textarea
-					class="heading placeholder:title-large w-full border border-2 p-2 shadow-inner placeholder:italic"
-					placeholder="The sharing is publically available on the internet for everyone, who has a link to this presentation. Sharing is caring 🫶 Press Enter to send."
-					id="sharing"
-					bind:value={myIntention.content}
-					onkeydown={(event) => {
-						if (event.key === 'Enter' && !event.shiftKey) {
-							event.preventDefault();
-							socketioIntention.entities = [myIntention, ...socketioIntention.entities];
-							// socketioIntention.addEntity(myIntention);
-							socketioIntention.submitEntity(
-								myIntention,
-								intentionQuestionId,
-								true,
-								true,
-								Action.READ
-							);
-							myIntention = {
-								id: 'new_' + Math.random().toString(36).substring(2, 9),
-								content: '',
-								language: 'en'
-							};
-						}
-					}}
-				></textarea>
+				{#if socketioIntention?.pendingEntities[0]}
+					<label class="heading" for="sharing"
+						>What is your intention for your studies, your course, this lecture? 🤔</label
+					>
+					<textarea
+						class="heading placeholder:title-large w-full border border-2 p-2 shadow-inner placeholder:italic"
+						placeholder="The sharing is publically available on the internet for everyone, who has a link to this presentation. Sharing is caring 🫶 Press Enter to send."
+						id="sharing"
+						bind:value={socketioIntention.pendingEntities[0].content}
+						onkeydown={(event) => {
+							if (event.key === 'Enter' && !event.shiftKey) {
+								event.preventDefault();
+								// socketioIntention.addEntity(myIntention);
+								socketioIntention.submitEntity(
+									socketioIntention.pendingEntities[0],
+									intentionQuestionId,
+									true,
+									true,
+									Action.READ
+								);
+								socketioIntention.createPending();
+							}
+						}}
+					></textarea>
+				{:else}
+					<div class="label text-error">
+						<span class="icon-[svg-spinners--12-dots-scale-rotate] size-6"></span>connecting ...
+					</div>
+				{/if}
 			</div>
 		</div>
 		<div class="heading mt-8">
@@ -371,27 +366,32 @@
 		<!-- <Heading>Do you have comments or questions?</Heading> -->
 		<div class="mx-10 mt-8">
 			<div class="text-left">
-				<label class="heading" for="sharing"> Do you have comments or questions? 🤔 </label>
-				<textarea
-					class="heading placeholder:title-large w-full border border-2 p-2 shadow-inner placeholder:italic"
-					placeholder="These questions and comments are publically available on the internet for everyone, who has a link to this presentation. Sharing is caring 🫶 Press Enter to send."
-					id="sharing"
-					bind:value={myComment.content}
-					onkeydown={(event) => {
-						if (event.key === 'Enter' && !event.shiftKey) {
-							event.preventDefault();
-							socketioComment.entities = [myComment, ...socketioComment.entities];
-							// commentsAnswers.unshift(myComment);
-							// socketioComment.addEntity(myComment);
-							socketioComment.submitEntity(myComment, commentsQuestionId, true, true, Action.READ);
-							myComment = {
-								id: 'new_' + Math.random().toString(36).substring(2, 9),
-								content: '',
-								language: 'en'
-							};
-						}
-					}}
-				></textarea>
+				{#if socketioComment?.pendingEntities[0]}
+					<label class="heading" for="sharing"> Do you have comments or questions? 🤔 </label>
+					<textarea
+						class="heading placeholder:title-large w-full border border-2 p-2 shadow-inner placeholder:italic"
+						placeholder="These questions and comments are publically available on the internet for everyone, who has a link to this presentation. Sharing is caring 🫶 Press Enter to send."
+						id="sharing"
+						bind:value={socketioComment.pendingEntities[0].content}
+						onkeydown={(event) => {
+							if (event.key === 'Enter' && !event.shiftKey) {
+								event.preventDefault();
+								socketioComment.submitEntity(
+									socketioComment.pendingEntities[0],
+									commentsQuestionId,
+									true,
+									true,
+									Action.READ
+								);
+								socketioComment.createPending();
+							}
+						}}
+					></textarea>
+				{:else}
+					<div class="label text-error">
+						<span class="icon-[svg-spinners--12-dots-scale-rotate] size-6"></span>connecting ...
+					</div>
+				{/if}
 			</div>
 		</div>
 		<div class="heading mt-8">

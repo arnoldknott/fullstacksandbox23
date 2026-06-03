@@ -45,7 +45,14 @@
 		};
 		// TBD: populate by REST-API call initially?
 
-		socketio = new SocketIO<DemoResourceExtended>(connection);
+		socketio = new SocketIO<DemoResourceExtended>(connection, {
+			pendingTemplate: () => ({
+				name: '',
+				description: '',
+				access_right: Action.OWN
+				// creation_date: new Date(Date.now()) // TBD: Check if this is necessary?
+			})
+		});
 
 		// Extra `status` listener — runs alongside the default one. Maintains the local
 		// `statusMessages` log and the `editIds` set across the create round-trip.
@@ -66,20 +73,6 @@
 		});
 	});
 
-	const newDemoResource = (): DemoResourceExtended => {
-		return {
-			id: 'new_' + Math.random().toString(36).substring(2, 9),
-			name: '',
-			description: '',
-			access_right: Action.OWN,
-			creation_date: new Date(Date.now())
-		};
-	};
-
-	const addDemoResource = () => {
-		socketio?.addEntity(newDemoResource());
-	};
-
 	const sortResourcesByCreationDate = (a: DemoResourceExtended, b: DemoResourceExtended) => {
 		if (a.creation_date && b.creation_date) {
 			const dateA = new Date(a.creation_date);
@@ -90,15 +83,18 @@
 		}
 	};
 
-	let ownedDemoResources: DemoResourceExtended[] = $derived(
-		(socketio?.entities ?? [])
+	let ownedDemoResources: DemoResourceExtended[] = $derived.by(() => {
+		if (!socketio) return [];
+		const pending = socketio?.pendingEntities;
+		const existing = (socketio?.entities ?? [])
 			.filter((demoResource) => {
 				if (demoResource.access_right === Action.OWN) {
 					return demoResource;
 				}
 			})
-			.sort(sortResourcesByCreationDate)
-	);
+			.sort(sortResourcesByCreationDate);
+		return [...pending, ...existing];
+	});
 
 	let writeDemoResources: DemoResourceExtended[] = $derived(
 		(socketio?.entities ?? [])
@@ -139,7 +135,7 @@
 			<button
 				class="btn-neutral-container btn btn-gradient shadow-outline rounded-full shadow-sm"
 				aria-label="Add Button"
-				onclick={() => addDemoResource()}
+				onclick={() => socketio?.createPending()}
 			>
 				<span class="icon-[fa6-solid--plus]"></span> Add
 			</button>
