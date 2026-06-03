@@ -80,6 +80,7 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended> {
 	public client: Socket;
 
 	#entities = $state<T[]>([]);
+	#pendingEntities = $state<T[]>([]);
 	#pendingTemplate?: () => Partial<Omit<T, 'id'>>;
 
 	constructor(connection: SocketioConnection, options: SocketIOOptions<T> = {}) {
@@ -128,11 +129,15 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended> {
 		this.#entities = value;
 	}
 
-	// --- emitters ---
-	addEntity(newEntity: T): void {
-		this.#entities.unshift(newEntity);
+	/** Reactive collection of entities that are being prepared but not yet submitted. */
+	get pendingEntities(): T[] {
+		return this.#pendingEntities;
+	}
+	set pendingEntities(value: T[]) {
+		this.#pendingEntities = value;
 	}
 
+	// --- emitters ---
 	/**
 	 * Produce a fresh form-seed entity with a preliminary `new_*` id (which the backend
 	 * swaps for a real UUID on `status:created`, at which point {@link handleStatus}
@@ -145,38 +150,79 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended> {
 	 */
 	createPending(overrides?: Partial<T>): T {
 		const template = this.#pendingTemplate?.() ?? {};
-		return {
+		const pendingEntity = {
 			...template,
 			...overrides,
 			id: 'new_' + Math.random().toString(36).substring(2, 9)
 		} as T;
+		this.#pendingEntities.unshift(pendingEntity);
+		return pendingEntity;
 	}
 
 	/**
 	 * Submits an entity. The backend decides whether it is a create or an update
-	 * based on whether `entity.id` is a UUID or a preliminary `new_...` id.
+	 * based on whether `entity.id` is a UUID or a preliminary `new_*` id.
+	 *
+	 * When called without `entity`, the first entry in {@link pendingEntities} is submitted and
+	 * a fresh pending entity is created automatically afterwards so form bindings remain valid.
+	 * When `entity` is provided explicitly, the caller is responsible for refilling the pending
+	 * slot if desired.
 	 */
 	submitEntity(
-		entity: T,
+		entity?: T,
 		parent_id?: string,
 		inherit?: boolean,
 		publicAccess?: boolean,
 		publicAction?: Action
 	): void {
+		// TBD: refactor to check why (undfined, ...)
+		// does not work and submits an empty payload,
+		// instead of the first pending entity as intended.
+		// TBD: consider autoSubmit based
+		// on the id == 'new_*' pattern instead of presence of the entity argument?
+		const autoSubmit = entity === undefined;
+		const target = autoSubmit ? this.#pendingEntities[0] : entity;
+		if (!target) return;
 		this.client.emit('submit', {
-			payload: entity,
+			payload: target,
 			...(parent_id ? { parent_id } : {}),
 			...(inherit ? { inherit } : {}),
 			...(publicAccess ? { public: publicAccess } : {}),
 			...(publicAction ? { public_action: publicAction } : {})
 		});
+		// If auto-submitting, immediately create a fresh pending entity
+		// to replace the one just submitted,
+		// so form bindings remain valid.
+		if (autoSubmit) this.createPending();
+	}
+
+	/**
+	 * Submits all current {@link pendingEntities} in order. Shared options apply to every
+	 * submission. The pending list is not automatically refilled afterwards.
+	 */
+	submitBulk(
+		parent_id?: string,
+		inherit?: boolean,
+		publicAccess?: boolean,
+		publicAction?: Action
+	): void {
+		for (const pending of [...this.#pendingEntities]) {
+			// TBD: refactor to use submitEntity
+			this.client.emit('submit', {
+				payload: pending,
+				...(parent_id ? { parent_id } : {}),
+				...(inherit ? { inherit } : {}),
+				...(publicAccess ? { public: publicAccess } : {}),
+				...(publicAction ? { public_action: publicAction } : {})
+			});
+		}
 	}
 
 	deleteEntity(entityId: string): void {
 		if (entityId.slice(0, 4) === 'new_') {
 			// If the resource is new and has no id, we can just remove it from the local array
-			const index = this.#entities.findIndex((entity) => entity.id === entityId);
-			if (index > -1) this.#entities.splice(index, 1);
+			const index = this.#pendingEntities.findIndex((entity) => entity.id === entityId);
+			if (index > -1) this.#pendingEntities.splice(index, 1);
 		} else {
 			this.client.emit('delete', entityId);
 		}
@@ -206,12 +252,17 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended> {
 	handleStatus(status: SocketioStatus): void {
 		if ('success' in status) {
 			if (status.success === 'created') {
-				// Replace the preliminary `new_...` id with the real server-assigned id in place,
-				// so existing references (e.g. bindings, editIds entries managed by the caller)
-				// keep working after create.
-				this.#entities.forEach((entity) => {
-					if (entity.id === status.submitted_id) entity.id = status.id;
-				});
+				// Move the pending draft into entities under its real server-assigned id.
+				// Object identity is preserved (id mutated in place) so any held references
+				// (e.g. editIds, form bindings) keep pointing at the same object.
+				const pendingIndex = this.#pendingEntities.findIndex(
+					(pendingEntity) => pendingEntity.id === status.submitted_id
+				);
+				if (pendingIndex > -1) {
+					const [entity] = this.#pendingEntities.splice(pendingIndex, 1);
+					entity.id = status.id;
+					this.#entities.unshift(entity);
+				}
 			} else if (status.success === 'shared' || status.success === 'unshared') {
 				// Re-read to resolve remaining inherited access. If none, the server emits `deleted`.
 				this.client.emit('read', status.id);
