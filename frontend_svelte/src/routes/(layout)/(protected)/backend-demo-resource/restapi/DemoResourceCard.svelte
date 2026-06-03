@@ -25,7 +25,13 @@
 	let categoryId = $derived(demoResource.category_id || undefined);
 	let tags = $derived(demoResource.tags || []);
 	let creationDate = $derived(demoResource.creation_date);
-	let formattedCreationDate = $derived(creationDate?.toLocaleString('da-DK', { timeZone: 'CET' }));
+	let formattedCreationDate = $derived(
+		creationDate?.toLocaleString('da-DK', {
+			timeZone: 'CET',
+			dateStyle: 'short',
+			timeStyle: 'short'
+		})
+	);
 	let accessPolicies = $derived<AccessPolicy[] | undefined>(demoResource.access_policies);
 
 	let edit = $derived(demoResource.id?.slice(0, 4) === 'new_' ? true : false);
