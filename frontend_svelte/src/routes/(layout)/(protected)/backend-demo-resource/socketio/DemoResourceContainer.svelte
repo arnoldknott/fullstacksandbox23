@@ -38,8 +38,16 @@
 
 	let formatedDate = $derived(
 		demoResource.creation_date
-			? new Date(demoResource.creation_date).toLocaleString('da-DK', { timeZone: 'CET' })
-			: new Date(Date.now()).toLocaleString('da-DK', { timeZone: 'CET' })
+			? new Date(demoResource.creation_date).toLocaleString('da-DK', {
+					timeZone: 'CET',
+					dateStyle: 'short',
+					timeStyle: 'short'
+				})
+			: new Date(Date.now()).toLocaleString('da-DK', {
+					timeZone: 'CET',
+					dateStyle: 'short',
+					timeStyle: 'short'
+				})
 	);
 	if (demoResource.id?.slice(0, 4) === 'new_') edit = true;
 
