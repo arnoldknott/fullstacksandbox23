@@ -287,7 +287,7 @@ class BaseNamespace(socketio.AsyncNamespace):
         namespace: Optional[str] = None,
     ):
         """Emit a status event to the client."""
-        receivers = [sid]
+        receivers = [sid, "role:Admin"]
         if rooms is not None:
             receivers += rooms
         if namespace is None:
