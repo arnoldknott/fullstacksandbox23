@@ -713,7 +713,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                                 # This one is for emiting in child-namespace, room "parend_id",
                                 # so all clients that are in that room get the update about the new child resource
                                 # and can decide what to do with it based on the parent_id information.
-                                # Is it actually necessary to emit this in the child-namespace?
+                                # Is it atcually necessary to emit this in the child-namespace?
                                 # Probably yes, becasue some children might not be connected to the parent_namespace,
                                 # but still want to list all their parents.
                                 rooms += [f"parent:{parent_id}"]
@@ -739,15 +739,24 @@ class BaseNamespace(socketio.AsyncNamespace):
                                     [f"resource:{str(parent_id)}"],
                                     namespace=parent_namespace,
                                 )
-                            await self.server.emit(
-                                "status",
+                            await self._emit_status(
+                                sid,
                                 {
                                     "success": "shared",
                                     "id": str(database_object.id),
                                 },
-                                namespace=self.namespace,
-                                to=rooms,
+                                rooms=rooms,
                             )
+                            # This previous implementation prevented the status to be sent to the clinet, which called [sid].
+                            # await self.server.emit(
+                            #     "status",
+                            #     {
+                            #         "success": "shared",
+                            #         "id": str(database_object.id),
+                            #     },
+                            #     namespace=self.namespace,
+                            #     to=rooms,
+                            # )
                     # if database_object is not None:
                     #     await self.server.emit(
                     #         "transferred",
