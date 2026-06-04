@@ -12,7 +12,6 @@ import type { AnyEntityExtended, Hierarchy } from '$lib/types.d.ts';
 export interface Relation {
 	readonly hierarchies: Hierarchy[];
 	readonly linked: AnyEntityExtended[];
-	readonly pending: AnyEntityExtended[];
 	readonly unlinked: AnyEntityExtended[];
 
 	link(childId: string, inherit?: boolean): void;
@@ -79,10 +78,6 @@ class ChildSlot implements Relation {
 		return this.#hierarchies
 			.map((h) => entities.find((e) => e.id === h.child_id))
 			.filter((e): e is AnyEntityExtended => e !== undefined);
-	}
-
-	get pending(): AnyEntityExtended[] {
-		return this.#socketio.pendingEntities;
 	}
 
 	get unlinked(): AnyEntityExtended[] {

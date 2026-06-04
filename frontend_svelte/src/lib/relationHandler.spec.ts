@@ -167,20 +167,6 @@ describe('RelationHandler', () => {
 		);
 	});
 
-	it('pending mirrors socketio.pendingEntities (creation is owned by SocketIO)', async () => {
-		const rendered = renderGroupRelation({ parent: () => parentUeberGroup });
-		await tick();
-
-		const firstPending = rendered.socketio.createPending(createGroup({ id: '', name: 'alpha' }));
-		const secondPending = rendered.socketio.createPending(createGroup({ id: '', name: 'beta' }));
-
-		expect(rendered.view.pending.map((p) => (p as GroupExtended).id)).toEqual([
-			secondPending.id,
-			firstPending.id
-		]);
-		expect(rendered.view.pending.map((p) => (p as GroupExtended).name)).toEqual(['beta', 'alpha']);
-	});
-
 	it('reseed replaces linked with the given snapshot', async () => {
 		const rendered = renderGroupRelation({
 			parent: () => parentUeberGroup,
@@ -223,7 +209,7 @@ describe('RelationHandler', () => {
 				submitted_id: pending.id
 			});
 
-			expect(rendered.view.pending).toEqual([]);
+			expect(rendered.socketio.pendingEntities).toEqual([]);
 			expect(rendered.socketio.entities.map((g) => g.id)).toEqual(['server-1']);
 			expect(rendered.view.linked).toEqual([]);
 
@@ -351,7 +337,7 @@ describe('RelationHandler', () => {
 			socketIoClient.trigger('deleted', pending.id);
 
 			expect(rendered.view.linked).toEqual([]);
-			expect(rendered.view.pending.map((entry) => entry.id)).toEqual([pending.id]);
+			expect(rendered.socketio.pendingEntities.map((entry) => entry.id)).toEqual([pending.id]);
 		});
 	});
 });
