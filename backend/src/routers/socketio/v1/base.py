@@ -708,15 +708,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                             )
                             # transfer after create is necessary for other clients,
                             # so they get notified through a "shared" event.
-                            rooms = []
                             if parent_id is not None:
-                                # This one is for emiting in child-namespace, room "parend_id",
-                                # so all clients that are in that room get the update about the new child resource
-                                # and can decide what to do with it based on the parent_id information.
-                                # Is it atcually necessary to emit this in the child-namespace?
-                                # Probably yes, becasue some children might not be connected to the parent_namespace,
-                                # but still want to list all their parents.
-                                rooms += [f"parent:{parent_id}"]
                                 # emit same status as in "on_link" - duplicate here
                                 # TBD: consider refactoring into a separate method,
                                 # to avoid that dublication.
@@ -745,7 +737,6 @@ class BaseNamespace(socketio.AsyncNamespace):
                                     "success": "shared",
                                     "id": str(database_object.id),
                                 },
-                                rooms=rooms,
                             )
                             # This previous implementation prevented the status to be sent to the clinet, which called [sid].
                             # await self.server.emit(
