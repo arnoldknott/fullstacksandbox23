@@ -708,7 +708,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                             )
                             # transfer after create is necessary for other clients,
                             # so they get notified through a "shared" event.
-                            rooms = ["role:Admin"]
+                            rooms = []
                             if parent_id is not None:
                                 # This one is for emiting in child-namespace, room "parend_id",
                                 # so all clients that are in that room get the update about the new child resource
