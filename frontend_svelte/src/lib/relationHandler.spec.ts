@@ -167,18 +167,6 @@ describe('RelationHandler', () => {
 		);
 	});
 
-	it('delete delegates to socketio.deleteEntity for server-side ids', async () => {
-		const rendered = renderGroupRelation({
-			parent: () => parentUeberGroup,
-			initial: () => [createGroup({ id: 'g-1' })]
-		});
-		await tick();
-
-		rendered.view.delete('g-1');
-
-		expect(socketIoClient.socket.emit).toHaveBeenCalledWith('delete', 'g-1');
-	});
-
 	it('pending mirrors socketio.pendingEntities (creation is owned by SocketIO)', async () => {
 		const rendered = renderGroupRelation({ parent: () => parentUeberGroup });
 		await tick();

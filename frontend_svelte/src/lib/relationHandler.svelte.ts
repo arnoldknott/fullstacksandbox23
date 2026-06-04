@@ -17,7 +17,6 @@ export interface Relation {
 
 	link(childId: string, inherit?: boolean): void;
 	unlink(childId: string): void;
-	delete(childId: string): void;
 
 	/** Replace the hierarchy list from a fresh snapshot (e.g. after route data changes). */
 	reseed(next: { id: string }[] | undefined | null): void;
@@ -108,10 +107,6 @@ class ChildSlot implements Relation {
 		const parentId = this.#parent()?.id;
 		if (!parentId) return;
 		this.#socketio.client.emit('unlink', { child_id: childId, parent_id: parentId });
-	}
-
-	delete(childId: string): void {
-		this.#socketio.deleteEntity(childId);
 	}
 
 	reseed(next: { id: string }[] | undefined | null): void {

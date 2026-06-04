@@ -149,7 +149,7 @@
 
 	const unlinkGroup = (groupId: string) => groupsRelation.unlink(groupId);
 
-	const deleteGroup = (groupId: string) => groupsRelation.delete(groupId);
+	const deleteGroup = (groupId: string) => socketioGroup.deleteEntity(groupId);
 
 	// User related stuff:
 	let allOtherMicrosoftUsers = $derived<MicrosoftUser[]>(data.allMicrosoftUsers || []);
