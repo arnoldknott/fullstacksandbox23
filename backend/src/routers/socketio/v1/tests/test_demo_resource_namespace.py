@@ -339,9 +339,14 @@ async def test_user_submits_resource_without_id_for_creation_admin_as_admin_user
     assert UUID(status_data[0]["id"])  # Check if the ID is a valid UUID
     assert status_data[0]["success"] == "created"
 
-    assert len(connection_admin.responses("status")) == 1
-    assert connection_admin.responses("status")[0]["success"] == "shared"
-    assert connection_admin.responses("status")[0]["id"] == status_data[0]["id"]
+    assert len(connection_admin.responses("status")) == 2
+    assert connection_admin.responses("status")[0]["success"] == "created"
+    assert connection_admin.responses("status")[0]["submitted_id"] is None
+    assert UUID(connection_admin.responses("status")[0]["id"]) == UUID(
+        status_data[0]["id"]
+    )
+    assert connection_admin.responses("status")[1]["success"] == "shared"
+    assert connection_admin.responses("status")[1]["id"] == status_data[0]["id"]
 
 
 @pytest.mark.anyio
