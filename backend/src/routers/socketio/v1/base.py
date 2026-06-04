@@ -685,14 +685,6 @@ class BaseNamespace(socketio.AsyncNamespace):
                                 public,
                                 public_action,
                             )
-                            parent_type = None
-                            if parent_id is not None:
-                                parent_types = await crud._get_types_from_ids(
-                                    [parent_id]
-                                )
-                                parent_type = (
-                                    parent_types[0].type if parent_types else None
-                                )
                             await self.server.enter_room(
                                 sid,
                                 f"resource:{str(database_object.id)}",
@@ -709,6 +701,12 @@ class BaseNamespace(socketio.AsyncNamespace):
                             # transfer after create is necessary for other clients,
                             # so they get notified through a "shared" event.
                             if parent_id is not None:
+                                parent_types = await crud._get_types_from_ids(
+                                    [parent_id]
+                                )
+                                parent_type = (
+                                    parent_types[0].type if parent_types else None
+                                )
                                 # emit same status as in "on_link" - duplicate here
                                 # TBD: consider refactoring into a separate method,
                                 # to avoid that dublication.
