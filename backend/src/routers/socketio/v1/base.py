@@ -591,7 +591,7 @@ class BaseNamespace(socketio.AsyncNamespace):
 
     # "submit" is communication from client to server
     # TBD: remove noqa, when emiting the link status events is gathered in a separate method.
-    async def on_submit(self, sid, data):  # noqa: C901
+    async def on_submit(self, sid, data):
         """Gets data from client and issues a create or update based on id is present or not."""
         logger.info(f"🧦 Data submitted from client {sid}")
         try:
