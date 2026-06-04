@@ -103,7 +103,7 @@ export interface Hierarchy {
 	child_id: string;
 	parent_id: string;
 	order?: number; // for ordered hierarchies, i.e. resource hierarchies
-	inherit?: boolean;
+	inherit?: boolean; // TBD: Is this one known at all, when receiving the data in frontend?
 }
 
 // Generic for resources - and partially relevant for identities:
