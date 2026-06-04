@@ -62,8 +62,10 @@
 				// The default handler swaps the preliminary `new_...` id for the real server id
 				// in the entities array. Mirror that swap inside `editIds` so editing stays active
 				// on the newly created resource.
-				editIds.delete(data.submitted_id);
-				editIds.add(data.id);
+				if (editIds.has(data.submitted_id)) {
+					editIds.delete(data.submitted_id);
+					editIds.add(data.id);
+				}
 			}
 		});
 
