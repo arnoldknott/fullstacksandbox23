@@ -7,7 +7,6 @@ import { backendAPI } from '$lib/server/apis/backendApi';
 import { microsoftGraph } from '$lib/server/apis/msgraph';
 import type {
 	AccessPolicy,
-	AccessRight,
 	DemoResource,
 	DemoResourceExtended,
 	Identity
@@ -47,12 +46,12 @@ export const load: PageServerLoad = async ({ locals }) => {
 			'/access/right/resources',
 			JSON.stringify(demoResourceIds)
 		);
-		const accessRights: AccessRight[] = await accessRightsResponse.json();
+		const accessRights: (Action | null)[] = await accessRightsResponse.json();
 
 		// Get other users access policies for all demo resources, where user has 'own' rights:
-		const ownedDemoResourceIds = accessRights
-			.filter((right: AccessRight) => right.action === Action.OWN)
-			.map((right: AccessRight) => right.resource_id);
+		const ownedDemoResourceIds = demoResourceIds.filter(
+			(_: string, index: number) => accessRights[index] === Action.OWN
+		);
 
 		const accessPoliciesResponse = await backendAPI.post(
 			sessionId,
@@ -62,15 +61,13 @@ export const load: PageServerLoad = async ({ locals }) => {
 		const accessPolicies: AccessPolicy[] = await accessPoliciesResponse.json();
 
 		demoResourcesExtended = demoResources.map((resource: DemoResourceExtended, index: number) => {
-			// const accessRight = accessRights.find((right: AccessRight) => right.resource_id === resource.id);
 			// const policies: AccessPolicy[] = accessPolicies.filter((policy: AccessPolicy) => policy.resource_id === resource.id);
 			return Object.assign(
 				{},
 				{
 					...resource,
 					creation_date: new Date(creationDates[index]),
-					access_right: accessRights.find((right: AccessRight) => right.resource_id === resource.id)
-						?.action,
+					access_right: accessRights[index],
 					access_policies: accessPolicies.filter(
 						(policy: AccessPolicy) => policy.resource_id === resource.id
 					)
