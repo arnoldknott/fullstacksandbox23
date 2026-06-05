@@ -317,6 +317,7 @@ class AccessPolicyCRUD:
 
         return False
 
+    # TBD: refactor to only return Action?
     async def check_access(
         self,
         resource_id: UUID,
@@ -327,35 +328,35 @@ class AccessPolicyCRUD:
             if await self.allows(
                 AccessRequest(
                     resource_id=resource_id,
-                    action=own,
+                    action=Action.own,
                     current_user=current_user,
                 )
             ):
                 return AccessPermission(
                     resource_id=resource_id,
-                    action=own,
+                    action=Action.own,
                 )
             elif await self.allows(
                 AccessRequest(
                     resource_id=resource_id,
-                    action=write,
+                    action=Action.write,
                     current_user=current_user,
                 )
             ):
                 return AccessPermission(
                     resource_id=resource_id,
-                    action=write,
+                    action=Action.write,
                 )
             elif await self.allows(
                 AccessRequest(
                     resource_id=resource_id,
-                    action=read,
+                    action=Action.read,
                     current_user=current_user,
                 )
             ):
                 return AccessPermission(
                     resource_id=resource_id,
-                    action=read,
+                    action=Action.read,
                 )
             else:
                 return AccessPermission(
@@ -408,7 +409,7 @@ class AccessPolicyCRUD:
                 response = await self.read(
                     current_user=current_user,
                     resource_id=policy.resource_id,
-                    action=own,
+                    action=Action.own,
                 )
                 if not response:
                     raise HTTPException(
