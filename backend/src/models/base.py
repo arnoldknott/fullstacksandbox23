@@ -148,6 +148,18 @@ class UpdatedAtMixin(BaseModel):
     last_modified_date: Optional[datetime] = None
 
 
+class HierarchyMixin(BaseModel):
+    """Mixin for hierarchy data"""
+
+    # TBD: reconsider: only return inherit flag, or also return the whole hierarchy data?
+    # The latter can be useful for the frontend to display the resource hierarchy,
+    # but also adds complexity and might have performance implications.
+    # If so, only matches on parent_id or matches on child_id or both?
+
+    inherit: Optional[bool] = None
+    order: Optional[int] = None
+
+
 class ModelTypes(str, Enum):
     """Enum for excluding models in different schemas"""
 
@@ -352,6 +364,7 @@ def create_model(
         AccessPolicyMixin,
         CreatedAtMixin,
         UpdatedAtMixin,
+        HierarchyMixin,
     ),
 ) -> Type[GeneratedSQLModel]:
     """

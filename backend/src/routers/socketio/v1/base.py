@@ -58,7 +58,7 @@ class QueryStrings(TypedDict, total=False):
     request_access_data: bool
     identity_ids: Optional[List[str]]
     resource_ids: Optional[List[str]]
-    parent_id: Optional[UUID]
+    parent_id: Optional[str]
     join_admin_room: bool
 
 
@@ -171,11 +171,11 @@ class BaseNamespace(
     @overload
     async def _get_session_query_string(
         self, sid: str, key: Literal["parent_id"]
-    ) -> Optional[UUID]: ...
+    ) -> Optional[str]: ...
 
     async def _get_session_query_string(
         self, sid: str, key: str
-    ) -> Optional[bool | List[str] | UUID]:
+    ) -> Optional[bool | List[str] | str]:
         """Get one typed query-string value from the socketio session."""
         session_query_strings = await self._get_session_query_strings(sid)
         return session_query_strings.get(key)
@@ -322,9 +322,29 @@ class BaseNamespace(
                 )
             parent_id = await self._get_session_query_string(sid, "parent_id")
             if parent_id is not None:
-                # TBD: add hierarchies if parent_id is session_data query_strings
-                pass
+                if self.crud is None:
+                    pass
+                else:
+                    async with self.crud() as crud:
+                        async with crud.hierarchy_CRUD() as hierarchy_crud:
+                            hierarchy = await hierarchy_crud.read(
+                                current_user=current_user,
+                                parent_id=UUID(parent_id),
+                                child_id=resource.id,
+                            )
+                            resource.inherit = (
+                                hierarchy[0].inherit if hierarchy else None
+                            )
+                            resource.order = (
+                                hierarchy[0].order
+                                if hierarchy and hierarchy[0].order
+                                else None
+                            )
         except Exception:
+            print(
+                f"=== _attach_access_data - No access data found for resource {resource.id} or failed to fetch it ===",
+                flush=True,
+            )
             logger.info(f"🧦 No access data found for {resource.id}.")
         return resource
 
@@ -399,7 +419,7 @@ class BaseNamespace(
             "request_access_data": request_access_data,
             "identity_ids": identity_ids,
             "resource_ids": resource_ids,
-            "parent_id": parent_id,
+            "parent_id": str(parent_id),
             "join_admin_room": join_admin_room,
         }
         # TBD: consider switching the if and for

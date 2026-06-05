@@ -300,7 +300,7 @@ class TestMessage(BaseSocketIOTest):
         assert transfer_data[0]["access_right"] == "read"
 
     @pytest.mark.anyio
-    async def test_submit_create_public_without_parent_and_write_returns_read_access_right(
+    async def test_submit_create_public_without_parent_and_write_returns_write_access_right(
         self,
         socketio_test_client,
     ):
@@ -342,7 +342,7 @@ class TestMessage(BaseSocketIOTest):
         assert transfer_data[0]["access_right"] == "write"
 
     @pytest.mark.anyio
-    async def test_submit_create_public_without_parent_and_connect_returns_read_access_right(
+    async def test_submit_create_public_without_parent_and_read_returns_connect_access_right(
         self,
         socketio_test_client,
     ):
@@ -382,6 +382,127 @@ class TestMessage(BaseSocketIOTest):
         assert len(transfer_data) == 1
         assert transfer_data[0]["id"] == created_id
         assert transfer_data[0]["access_right"] == "connect"
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "session_ids",
+        [
+            [session_id_admin_read_write_socketio],
+            [session_id_user1_read_write_socketio],
+        ],
+        indirect=True,
+    )
+    async def test_submit_with_parent_and_read_returns_default_inherit_flag_false(
+        self,
+        socketio_test_client,
+        access_to_one_parent,
+    ):
+        """Test that a submitted hierarchy includes the default inherit flag set to False on read with request-access-data."""
+
+        connection = await socketio_test_client(client_config=self.client_config())
+
+        parent_id = await access_to_one_parent(
+            self._parent_model, connection.token_payload()
+        )
+
+        await connection.connect(
+            query_parameters={
+                "request-access-data": "true",
+                "parent-id": str(parent_id),
+            }
+        )
+        await connection.client.sleep(0.2)
+
+        await connection.client.emit(
+            "submit",
+            {
+                "payload": {**self._test_data_single},
+                "parent_id": str(parent_id),
+            },
+            namespace=self.namespace_path,
+        )
+        await connection.client.sleep(0.5)
+
+        status_data = connection.responses("status", self.namespace_path)
+        created_status = next(
+            status for status in status_data if status.get("success") == "created"
+        )
+        created_id = created_status["id"]
+
+        await connection.client.emit(
+            "read",
+            created_id,
+            namespace=self.namespace_path,
+        )
+        await connection.client.sleep(0.5)
+
+        transfer_data = connection.responses("transferred", self.namespace_path)
+
+        assert len(transfer_data) == 1
+        assert transfer_data[0]["id"] == created_id
+        assert not transfer_data[0]["inherit"], "Expected default inherit flag to be False"
+        assert transfer_data[0]["order"] == 1
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "session_ids",
+        [
+            [session_id_admin_read_write_socketio],
+            [session_id_user1_read_write_socketio],
+        ],
+        indirect=True,
+    )
+    async def test_submit_with_parent_and_read_returns_inherit_flag_true(
+        self,
+        socketio_test_client,
+        access_to_one_parent,
+    ):
+        """Test that a submitted hierarchy includes the inherit flag set to True on read with request-access-data."""
+
+        connection = await socketio_test_client(client_config=self.client_config())
+
+        parent_id = await access_to_one_parent(
+            self._parent_model, connection.token_payload()
+        )
+
+        await connection.connect(
+            query_parameters={
+                "request-access-data": "true",
+                "parent-id": str(parent_id),
+            }
+        )
+        await connection.client.sleep(0.2)
+
+        await connection.client.emit(
+            "submit",
+            {
+                "payload": {**self._test_data_single},
+                "parent_id": str(parent_id),
+                "inherit": True,
+            },
+            namespace=self.namespace_path,
+        )
+        await connection.client.sleep(0.5)
+
+        status_data = connection.responses("status", self.namespace_path)
+        created_status = next(
+            status for status in status_data if status.get("success") == "created"
+        )
+        created_id = created_status["id"]
+
+        await connection.client.emit(
+            "read",
+            created_id,
+            namespace=self.namespace_path,
+        )
+        await connection.client.sleep(0.5)
+
+        transfer_data = connection.responses("transferred", self.namespace_path)
+
+        assert len(transfer_data) == 1
+        assert transfer_data[0]["id"] == created_id
+        assert transfer_data[0]["inherit"], "Expected inherit flag to be True"
+        assert transfer_data[0]["order"] == 1
 
     # Submit Update Tests
     @pytest.mark.anyio
