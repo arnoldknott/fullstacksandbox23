@@ -187,7 +187,7 @@ async def delete_access_policy(
 # endregion AccessPolicies
 
 
-# region AccessPermissions
+# region AccessRights
 
 
 @router.get("/right/resource/{resource_id}", status_code=200)
@@ -224,7 +224,7 @@ async def get_my_access_for_resources(
     return access_permissions
 
 
-# endregion AccessPermissions
+# endregion AccessRights
 
 # region AccessLogs
 
