@@ -5,12 +5,7 @@ import { Action } from '$lib/accessHandler';
 import { backendAPI } from '$lib/server/apis/backendApi';
 // import { Action } from '$lib/accessHandler';
 import { microsoftGraph } from '$lib/server/apis/msgraph';
-import type {
-	AccessPolicy,
-	DemoResource,
-	DemoResourceExtended,
-	Identity
-} from '$lib/types';
+import type { AccessPolicy, DemoResource, DemoResourceExtended, Identity } from '$lib/types';
 
 import type { Actions, PageServerLoad } from './$types';
 
