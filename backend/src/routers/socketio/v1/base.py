@@ -264,16 +264,6 @@ class BaseNamespace(
                     continue
 
                 if request_access_data:
-                    # assert self.read_extended_model is not None
-                    # item = self.read_extended_model.model_validate(item)
-                    # access_data = await self._get_access_data(
-                    #     sid, current_user, item  # type: ignore[attr-defined]
-                    # )
-                    # item.access_right = access_data["access_right"]  # type: ignore[attr-defined]
-                    # item.access_policies = access_data["access_policies"]  # type: ignore[attr-defined]
-                    # item.creation_date = access_data["creation_date"]  # type: ignore[attr-defined]
-                    # item.last_modified_date = access_data["last_modified_date"]  # type: ignore[attr-defined]
-                    # item = BaseSQLModel.model_validate(item)
                     item = await self._attach_access_data(sid, item, current_user)
                 if item.id not in self.server.rooms(sid, self.namespace or "/"):
                     await self.server.enter_room(
@@ -290,7 +280,6 @@ class BaseNamespace(
             print(error)
             await self._emit_status(sid, {"error": str(error)})
 
-    # async def _get_access_data(self, sid: str, current_user: Optional[CurrentUserData], resource_id: UUID):
     async def _attach_access_data(
         self,
         sid: str,
@@ -337,23 +326,7 @@ class BaseNamespace(
                 pass
         except Exception:
             logger.info(f"🧦 No access data found for {resource.id}.")
-            # creation_date = None
-            # last_modified_date = None
-        # TBD: add typing AccessData for access_data
-        # access_data = {
-        #     "access_right": access_right,
-        #     "access_policies": access_policies if access_policies else None,
-        #     "creation_date": creation_date if creation_date else None,
-        #     "last_modified_date": last_modified_date if last_modified_date else None,
-        # }
-        # return access_data
         return resource
-        # {
-        # "access_right": access_right,
-        # "access_policies": access_policies,
-        # "creation_date": creation_date,
-        #     "last_modified_date": last_modified_date,
-        # }
 
     async def _emit_status(
         self,
@@ -508,41 +481,6 @@ class BaseNamespace(
                     # f"🧦 Client authenticated to public namespace {self.namespace}."
                     f"🧦 Client {sid} accessing namespace {self.namespace} publically."
                 )
-
-        # if guards is not None:
-        #     try:
-        #         # TBD: catch and handle an expired token gracefully and return something to the client on a different message channel,
-        #         # so it can initiate the authentication process and come back with a new session id
-        #         token_payload = await self._get_token_payload_if_authenticated(
-        #             auth["session-id"]
-        #         )
-        #         current_user = await check_token_against_guards(token_payload, guards)
-        #         session_data: SocketIoSessionData = {
-        #             "user_name": token_payload["name"],
-        #             # "current_user": current_user,
-        #             "session_id": auth["session-id"],
-        #             "query_strings": session_query_strings,
-        #         }
-        #         await self.server.save_session(
-        #             sid, session_data, namespace=self.namespace
-        #         )
-        #         if "Admin" in current_user.azure_token_roles:
-        #             await self.server.enter_room(
-        #                 sid,
-        #                 "role:Admin",
-        #                 namespace=self.namespace,
-        #             )
-        #         logger.info(
-        #             f"🧦 Client authenticated to access protected namespace {self.namespace}."
-        #         )
-        #     except Exception:
-        #         logger.error(f"🧦 Client with session id {sid} failed to authenticate.")
-        #         raise ConnectionRefusedError("Authorization failed.")
-        # else:
-        #     current_user = None
-        #     logger.info(
-        #         f"🧦 Client authenticated to public namespace {self.namespace}."
-        #     )
         if self.callback_on_connect is not None:
             await self.callback_on_connect(
                 sid,
@@ -575,54 +513,6 @@ class BaseNamespace(
                             database_object
                         )
                     if request_access_data:
-                        # guards = self._get_event_guards("connect")
-                        # assert self.read_extended_model is not None
-                        # database_object = self.read_extended_model.model_validate(
-                        #     database_object
-                        # )
-                        # if guards is None and current_user is None:
-                        #     # TBD: make _get_access_data compatible with public access as well.
-                        #     access_right = None
-                        #     creation_date = None
-                        #     last_modified_date = None
-                        #     try:
-                        #         access_right = await crud.policy_crud.check_access(resource_id=resource_id)
-                        #         async with AccessLoggingCRUD() as logging_crud:
-                        #             creation_date = (
-                        #                 await logging_crud.read_resource_created_at(
-                        #                     resource_id=resource_id
-                        #                 )
-                        #             )
-                        #             last_modified_date = await logging_crud.read_resource_last_modified_at(
-                        #                 resource_id=resource_id
-                        #             )
-                        #     except Exception:
-                        #         logger.info(
-                        #             "Failed to get creation and modification dates with public access."
-                        #         )
-                        #         print(
-                        #             "=== routers - socketio - v1 - on_read - public access - failed to get dates ==="
-                        #         )
-                        #     database_object.access_right = access_right
-                        #     database_object.creation_date = creation_date
-                        #     database_object.last_modified_date = last_modified_date
-                        # else:
-                        # access_data = await self._get_access_data(
-                        #     sid, current_user, database_object  # type: ignore[attr-defined]
-                        # )
-                        # # database_object = self.read_extended_model.model_validate(
-                        # #     database_object
-                        # # )
-                        # database_object.access_right = access_data["access_right"]
-                        # if current_user is not None:
-                        #     database_object.access_policies = access_data[
-                        #         "access_policies"
-                        #     ]
-                        # database_object.creation_date = access_data["creation_date"]
-                        # database_object.last_modified_date = access_data[
-                        #     "last_modified_date"
-                        # ]
-                        # database_object = BaseSQLModel.model_validate(database_object)
                         database_object = await self._attach_access_data(
                             sid, database_object, current_user
                         )
@@ -638,11 +528,6 @@ class BaseNamespace(
                         namespace=self.namespace,
                         to=sid,
                     )
-                    # await self.server.enter_room(
-                    #     sid,
-                    #     f"resource:{str(database_object.id)}",
-                    #     namespace=self.namespace,
-                    # )
         except Exception as error:
             logger.error(f"🧦 Failed to read data from client {sid}.")
             print(error)
@@ -662,7 +547,6 @@ class BaseNamespace(
             # await self._emit_status(sid, {"error": str(error)})
 
     # "submit" is communication from client to server
-    # TBD: remove noqa, when emiting the link status events is gathered in a separate method.
     async def on_submit(self, sid, data):
         """Gets data from client and issues a create or update based on id is present or not."""
         logger.info(f"🧦 Data submitted from client {sid}")
