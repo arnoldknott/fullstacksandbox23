@@ -3,6 +3,7 @@ from typing import (
     Any,
     Dict,
     List,
+    Generic,
     Literal,
     Optional,
     Type,
@@ -17,7 +18,7 @@ from uuid import UUID
 import socketio
 from sqlmodel import SQLModel
 
-from models.base import BaseSQLModel
+from models.base import BaseSQLModel, BaseReadSQLModel
 
 from core.config import config
 from core.security import (
@@ -48,7 +49,9 @@ from routers.socketio.v1 import register_namespace, registry_namespaces
 logger = logging.getLogger(__name__)
 
 
-BaseSchemaTypeRead = TypeVar("BaseSchemaTypeRead", bound=BaseSQLModel)
+BaseSchemaTypeCreate = TypeVar("BaseSchemaTypeCreate", bound=BaseSQLModel)
+BaseSchemaTypeRead = TypeVar("BaseSchemaTypeRead", bound=BaseReadSQLModel)
+BaseSchemaTypeUpdate = TypeVar("BaseSchemaTypeUpdate", bound=BaseSQLModel)
 
 
 class QueryStrings(TypedDict, total=False):
@@ -69,7 +72,7 @@ class SocketIoSessionData(TypedDict, total=False):
     query_strings: Optional[QueryStrings]
 
 
-class BaseNamespace(socketio.AsyncNamespace):
+class BaseNamespace(socketio.AsyncNamespace, Generic[BaseSchemaTypeCreate, BaseSchemaTypeRead, BaseSchemaTypeUpdate]):
     """Base class for socket.io namespaces."""
 
     def __init__(
@@ -79,10 +82,10 @@ class BaseNamespace(socketio.AsyncNamespace):
         room: Optional[str] = None,
         event_guards: List[EventGuard] = [],
         crud=None,
-        create_model: Optional[Type[SQLModel]] = None,
-        read_model: Optional[Type[SQLModel]] = None,
-        read_extended_model: Optional[Type[SQLModel]] = None,
-        update_model: Optional[Type[SQLModel]] = None,
+        create_model: Optional[Type[BaseSchemaTypeCreate]] = None,
+        read_model: Optional[Type[BaseSchemaTypeRead]] = None,
+        read_extended_model: Optional[Type[BaseSchemaTypeRead]] = None,
+        update_model: Optional[Type[BaseSchemaTypeUpdate]] = None,
         callback_on_connect=None,
         callback_on_disconnect=None,
     ):
@@ -258,18 +261,20 @@ class BaseNamespace(socketio.AsyncNamespace):
                     continue
 
                 if request_access_data:
-                    access_data = await self._get_access_data(
-                        sid, current_user, item.id  # type: ignore[attr-defined]
-                    )
-                    assert self.read_extended_model is not None
-                    item = self.read_extended_model.model_validate(item)
-                    item.access_right = access_data["access_right"]  # type: ignore[attr-defined]
-                    item.access_policies = access_data["access_policies"]  # type: ignore[attr-defined]
-                    item.creation_date = access_data["creation_date"]  # type: ignore[attr-defined]
-                    item.last_modified_date = access_data["last_modified_date"]  # type: ignore[attr-defined]
-                if item.id not in self.server.rooms(sid, self.namespace or "/"):  # type: ignore[attr-defined]
+                    # assert self.read_extended_model is not None
+                    # item = self.read_extended_model.model_validate(item)
+                    # access_data = await self._get_access_data(
+                    #     sid, current_user, item  # type: ignore[attr-defined]
+                    # )
+                    # item.access_right = access_data["access_right"]  # type: ignore[attr-defined]
+                    # item.access_policies = access_data["access_policies"]  # type: ignore[attr-defined]
+                    # item.creation_date = access_data["creation_date"]  # type: ignore[attr-defined]
+                    # item.last_modified_date = access_data["last_modified_date"]  # type: ignore[attr-defined]
+                    # item = BaseSQLModel.model_validate(item)
+                    item = await self._attach_access_data(sid, item, current_user)
+                if item.id not in self.server.rooms(sid, self.namespace or "/"): 
                     await self.server.enter_room(
-                        sid, f"resource:{str(item.id)}", namespace=self.namespace  # type: ignore[attr-defined]
+                        sid, f"resource:{str(item.id)}", namespace=self.namespace
                     )
                 await self.server.emit(
                     "transferred",
@@ -282,43 +287,53 @@ class BaseNamespace(socketio.AsyncNamespace):
             print(error)
             await self._emit_status(sid, {"error": str(error)})
 
-    async def _get_access_data(self, sid: str, current_user: Optional[CurrentUserData], resource_id: UUID):
+    # async def _get_access_data(self, sid: str, current_user: Optional[CurrentUserData], resource_id: UUID):
+    async def _attach_access_data(self, sid: str, resource: BaseSchemaTypeRead, current_user: Optional[CurrentUserData]) -> BaseSchemaTypeRead:
         """Get access data from the socketio session."""
-        logger.info(f"🧦 Get access data for resource {resource_id} for client {sid}.")
+        logger.info(f"🧦 Get access data for resource {resource.id} for client {sid}.")
         # Consider splitting the accesss policy and access log CRUDs into separate methods
-        async with AccessPolicyCRUD() as policy_crud:
-            access_right = await policy_crud.check_access(
-                resource_id=resource_id, current_user=current_user
-            )
-            try:
-                access_policies = await policy_crud.read_access_policies_by_resource_id(
-                    current_user=current_user, resource_id=resource_id
+        try:
+            assert self.read_extended_model is not None
+            resource = self.read_extended_model.model_validate(resource)
+            async with AccessPolicyCRUD() as policy_crud:
+                access_right = await policy_crud.check_access(
+                    resource_id=resource.id, current_user=current_user
                 )
-            except Exception:
-                access_policies = []
-        async with AccessLoggingCRUD() as logging_crud:
-            try:
-                creation_date = await logging_crud.read_resource_created_at(
-                    resource_id=resource_id, current_user=current_user
-                )
-                last_modified_date = await logging_crud.read_resource_last_modified_at(
-                    resource_id=resource_id, current_user=current_user
-                )
-            except Exception:
-                logger.info(f"🧦 No access data found for {resource_id}.")
-                creation_date = None
-                last_modified_date = None
-        parent_id = await self._get_session_query_string(sid, "parent_id")
-        if parent_id is not None:
-            pass
+                resource.access_right = access_right
+                try:
+                    access_policies = await policy_crud.read_access_policies_by_resource_id(
+                        current_user=current_user, resource_id=resource.id
+                    )
+                    if current_user is not None:
+                        resource.access_policies = access_policies if access_policies else None
+                except Exception:
+                    access_policies = []
+            async with AccessLoggingCRUD() as logging_crud:
+                    creation_date = await logging_crud.read_resource_created_at(
+                        resource_id=resource.id, current_user=current_user
+                    )
+                    resource.creation_date = creation_date if creation_date else None
+                    last_modified_date = await logging_crud.read_resource_last_modified_at(
+                        resource_id=resource.id, current_user=current_user
+                    )
+                    resource.last_modified_date = last_modified_date if last_modified_date else None
+            parent_id = await self._get_session_query_string(sid, "parent_id")
+            if parent_id is not None:
+                # TBD: add hierarchies if parent_id is session_data query_strings
+                pass
+        except Exception:
+            logger.info(f"🧦 No access data found for {resource.id}.")
+            # creation_date = None
+            # last_modified_date = None
         # TBD: add typing AccessData for access_data
-        access_data = {
-            "access_right": access_right,
-            "access_policies": access_policies if access_policies else None,
-            "creation_date": creation_date if creation_date else None,
-            "last_modified_date": last_modified_date if last_modified_date else None,
-        }
-        return access_data
+        # access_data = {
+        #     "access_right": access_right,
+        #     "access_policies": access_policies if access_policies else None,
+        #     "creation_date": creation_date if creation_date else None,
+        #     "last_modified_date": last_modified_date if last_modified_date else None,
+        # }
+        # return access_data
+        return resource
         # {
         # "access_right": access_right,
         # "access_policies": access_policies,
@@ -546,11 +561,11 @@ class BaseNamespace(socketio.AsyncNamespace):
                             database_object
                         )
                     if request_access_data:
-                        guards = self._get_event_guards("connect")
-                        assert self.read_extended_model is not None
-                        database_object = self.read_extended_model.model_validate(
-                            database_object
-                        )
+                        # guards = self._get_event_guards("connect")
+                        # assert self.read_extended_model is not None
+                        # database_object = self.read_extended_model.model_validate(
+                        #     database_object
+                        # )
                         # if guards is None and current_user is None:
                         #     # TBD: make _get_access_data compatible with public access as well.
                         #     access_right = None
@@ -578,21 +593,23 @@ class BaseNamespace(socketio.AsyncNamespace):
                         #     database_object.creation_date = creation_date
                         #     database_object.last_modified_date = last_modified_date
                         # else:
-                        access_data = await self._get_access_data(
-                            sid, current_user, database_object.id  # type: ignore[attr-defined]
-                        )
-                        # database_object = self.read_extended_model.model_validate(
-                        #     database_object
+                        # access_data = await self._get_access_data(
+                        #     sid, current_user, database_object  # type: ignore[attr-defined]
                         # )
-                        database_object.access_right = access_data["access_right"]
-                        if current_user is not None:
-                            database_object.access_policies = access_data[
-                                "access_policies"
-                            ]
-                        database_object.creation_date = access_data["creation_date"]
-                        database_object.last_modified_date = access_data[
-                            "last_modified_date"
-                        ]
+                        # # database_object = self.read_extended_model.model_validate(
+                        # #     database_object
+                        # # )
+                        # database_object.access_right = access_data["access_right"]
+                        # if current_user is not None:
+                        #     database_object.access_policies = access_data[
+                        #         "access_policies"
+                        #     ]
+                        # database_object.creation_date = access_data["creation_date"]
+                        # database_object.last_modified_date = access_data[
+                        #     "last_modified_date"
+                        # ]
+                        # database_object = BaseSQLModel.model_validate(database_object)
+                        database_object = await self._attach_access_data(sid, database_object, current_user)
                     if database_object.id not in self.server.rooms(sid, self.namespace or "/"):  # type: ignore[attr-defined]
                         await self.server.enter_room(
                             sid,

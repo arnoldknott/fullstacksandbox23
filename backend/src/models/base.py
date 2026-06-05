@@ -55,7 +55,7 @@ Features:
 """
 
 import sys
-import uuid
+from uuid import uuid4, UUID
 from datetime import datetime
 from enum import Enum
 from typing import (
@@ -97,8 +97,15 @@ class BaseSQLModel(SQLModel):
     type.
     """
 
-    id: Optional[uuid.UUID] = None
+    id: Optional[UUID] = None
 
+class BaseReadSQLModel(SQLModel):
+    """Common base for all application table models used for reading data,
+     
+    For read models, the id is always present, so we can declare it as non-optional.
+    """
+
+    id: UUID
 
 class GeneratedSQLModel(BaseSQLModel):
     """Marker base for table models produced by `create_model(...)`.
@@ -109,10 +116,10 @@ class GeneratedSQLModel(BaseSQLModel):
     resolve `MyModel.Create` etc. without per-call casts or ignores.
     """
 
-    Create: ClassVar[Type[SQLModel]]
-    Read: ClassVar[Type[SQLModel]]
-    Update: ClassVar[Type[SQLModel]]
-    Extended: ClassVar[Type[SQLModel]]
+    Create: ClassVar[Type[BaseSQLModel]]
+    Read: ClassVar[Type[BaseReadSQLModel]]
+    Update: ClassVar[Type[BaseSQLModel]]
+    Extended: ClassVar[Type[BaseReadSQLModel]]
 
 
 class AccessRightsMixin(BaseModel):
@@ -296,7 +303,7 @@ def _build_annotations_and_fields(  # noqa: C901
 
     # Add id field for Read and Extended schemas
     if schema_type in {SchemaType.READ, SchemaType.EXTENDED}:
-        annotations["id"] = uuid.UUID
+        annotations["id"] = UUID
 
     # Process relationships for Read and Extended schemas
     if schema_type in {SchemaType.READ, SchemaType.EXTENDED}:
@@ -408,7 +415,7 @@ def create_model(
     # read_fields = {}
 
     # # Add id to Read
-    # read_annotations["id"] = uuid.UUID
+    # read_annotations["id"] = UUID
 
     # # Add relationships to Read (with forward refs)
     # for rel in relationships:
@@ -420,7 +427,7 @@ def create_model(
     #     read_fields[rel_name] = None
 
     # read_fields["__annotations__"] = read_annotations
-    Read = type(f"{name}Read", (Create,), read_fields)
+    Read = type(f"{name}Read", (BaseReadSQLModel,Create), read_fields)
 
     # ===== Build Update Schema (all fields optional) =====
     update_annotations, update_fields = _build_annotations_and_fields(
@@ -440,7 +447,7 @@ def create_model(
     #     update_fields[attr.name] = None
 
     # update_fields["__annotations__"] = update_annotations
-    Update = type(f"{name}Update", (SQLModel,), update_fields)
+    Update = type(f"{name}Update", (BaseSQLModel,Create), update_fields)
 
     # ===== Build Extended Schema =====
     _extended_annotations, extended_fields = _build_annotations_and_fields(
@@ -467,9 +474,9 @@ def create_model(
         table_fields = {**create_fields}
 
         # Add hardcoded id field
-        table_annotations["id"] = Optional[uuid.UUID]
+        table_annotations["id"] = Optional[UUID]
         table_fields["id"] = Field(
-            default_factory=uuid.uuid4,
+            default_factory=uuid4,
             foreign_key="identifiertypelink.id",
             primary_key=True,
         )
