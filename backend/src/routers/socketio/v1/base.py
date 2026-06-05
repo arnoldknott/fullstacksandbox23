@@ -368,10 +368,6 @@ class BaseNamespace(socketio.AsyncNamespace):
                 logger.info(
                     f"🧦 Client with session id {sid} entered room {identity_id}."
                 )
-        if parent_id:
-            await self.server.enter_room(
-                sid, f"parent:{parent_id}", namespace=self.namespace
-            )
         # TBD: consider only relying on information from the backend
         # instead of retrieving identities from client side!
         # But allow the frontend client to request identity spaces!
@@ -956,16 +952,12 @@ class BaseNamespace(socketio.AsyncNamespace):
                 parent_types = await crud._get_types_from_ids([hierarchy_obj.parent_id])
                 parent_type = parent_types[0].type if parent_types else None
             status = {
-                    "success": "unlinked",
-                    "id": str(hierarchy_obj.child_id),
-                    "parent_id": str(hierarchy_obj.parent_id),
-                }
+                "success": "unlinked",
+                "id": str(hierarchy_obj.child_id),
+                "parent_id": str(hierarchy_obj.parent_id),
+            }
             await self._emit_status(
-                sid,
-                status,
-                [
-                    f"resource:{str(hierarchy_obj.child_id)}",
-                ],
+                sid, status, [f"resource:{str(hierarchy_obj.child_id)}"]
             )
             parent_namespace = registry_namespaces.get(parent_type)
             # TBD: emit in both namespaces with only one emit,
