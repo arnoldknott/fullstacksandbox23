@@ -341,10 +341,6 @@ class BaseNamespace(
                                 else None
                             )
         except Exception:
-            print(
-                f"=== _attach_access_data - No access data found for resource {resource.id} or failed to fetch it ===",
-                flush=True,
-            )
             logger.info(f"🧦 No access data found for {resource.id}.")
         return resource
 
@@ -401,10 +397,11 @@ class BaseNamespace(
             else []
         )
         parent_id = (
-            UUID(parse_qs(query_strings).get("parent-id", [""])[0])
+            parse_qs(query_strings).get("parent-id", [""])[0]
             if "parent-id" in query_strings
             else None
         )
+        UUID(parent_id) if parent_id else None
         join_admin_room = (
             parse_qs(query_strings).get("join-admin-room", [""])[0]
             if "join-admin-room" in query_strings
@@ -419,11 +416,12 @@ class BaseNamespace(
             "request_access_data": request_access_data,
             "identity_ids": identity_ids,
             "resource_ids": resource_ids,
-            "parent_id": str(parent_id),
+            "parent_id": parent_id,
             "join_admin_room": join_admin_room,
         }
         # TBD: consider switching the if and for
         for identity_id in identity_ids:
+            UUID(identity_id)  # type checking for valid UUID, will raise if invalid
             if identity_id:
                 # Assign the identity id to the room for hierarchical resource system
                 # TBD: Is access control necessary here?
@@ -442,6 +440,8 @@ class BaseNamespace(
                 logger.info(
                     f"🧦 Client with session id {sid} entered room {identity_id}."
                 )
+        for resource_id in resource_ids:
+            UUID(resource_id)  # type checking for valid UUID, will raise if invalid
         # TBD: consider only relying on information from the backend
         # instead of retrieving identities from client side!
         # But allow the frontend client to request identity spaces!
