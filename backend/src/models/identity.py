@@ -407,7 +407,12 @@ class UserUpdate(UserCreate):
 
 
 class UserExtended(  # type: ignore[misc]
-    UserRead, AccessRightsMixin, AccessPolicyMixin, CreatedAtMixin, UpdatedAtMixin, HierarchyMixin
+    UserRead,
+    AccessRightsMixin,
+    AccessPolicyMixin,
+    CreatedAtMixin,
+    UpdatedAtMixin,
+    HierarchyMixin,
 ):
     pass
 

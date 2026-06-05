@@ -440,7 +440,9 @@ class TestMessage(BaseSocketIOTest):
 
         assert len(transfer_data) == 1
         assert transfer_data[0]["id"] == created_id
-        assert not transfer_data[0]["inherit"], "Expected default inherit flag to be False"
+        assert not transfer_data[0][
+            "inherit"
+        ], "Expected default inherit flag to be False"
         assert transfer_data[0]["order"] == 1
 
     @pytest.mark.anyio
