@@ -118,9 +118,9 @@ class GeneratedSQLModel(BaseSQLModel):
     resolve `MyModel.Create` etc. without per-call casts or ignores.
     """
 
-    Create: ClassVar[Type[BaseSQLModel]]
+    Create: ClassVar[Type[SQLModel]]
     Read: ClassVar[Type[BaseReadSQLModel]]
-    Update: ClassVar[Type[BaseSQLModel]]
+    Update: ClassVar[Type[SQLModel]]
     Extended: ClassVar[Type[BaseReadSQLModel]]
 
 

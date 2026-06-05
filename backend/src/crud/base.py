@@ -40,7 +40,7 @@ from models.access import (
     ResourceHierarchy,
     ResourceHierarchyRead,
 )
-from models.base import BaseReadSQLModel, BaseSQLModel
+from models.base import BaseSQLModel
 
 if TYPE_CHECKING:
     pass
@@ -53,9 +53,9 @@ write = Action.write
 own = Action.own
 
 BaseModelType = TypeVar("BaseModelType", bound=BaseSQLModel)
-BaseSchemaTypeCreate = TypeVar("BaseSchemaTypeCreate", bound=BaseSQLModel)
-BaseSchemaTypeRead = TypeVar("BaseSchemaTypeRead", bound=BaseReadSQLModel)
-BaseSchemaTypeUpdate = TypeVar("BaseSchemaTypeUpdate", bound=BaseSQLModel)
+BaseSchemaTypeCreate = TypeVar("BaseSchemaTypeCreate", bound=SQLModel)
+BaseSchemaTypeRead = TypeVar("BaseSchemaTypeRead", bound=SQLModel)
+BaseSchemaTypeUpdate = TypeVar("BaseSchemaTypeUpdate", bound=SQLModel)
 
 
 class BaseCRUD(

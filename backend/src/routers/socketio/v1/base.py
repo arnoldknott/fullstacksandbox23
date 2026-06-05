@@ -16,8 +16,9 @@ from urllib.parse import parse_qs
 from uuid import UUID
 
 import socketio
+from sqlmodel import SQLModel
 
-from models.base import BaseSQLModel, BaseReadSQLModel
+from models.base import BaseReadSQLModel
 
 from core.config import config
 from core.security import (
@@ -48,9 +49,9 @@ from routers.socketio.v1 import register_namespace, registry_namespaces
 logger = logging.getLogger(__name__)
 
 
-BaseSchemaTypeCreate = TypeVar("BaseSchemaTypeCreate", bound=BaseSQLModel)
+BaseSchemaTypeCreate = TypeVar("BaseSchemaTypeCreate", bound=SQLModel)
 BaseSchemaTypeRead = TypeVar("BaseSchemaTypeRead", bound=BaseReadSQLModel)
-BaseSchemaTypeUpdate = TypeVar("BaseSchemaTypeUpdate", bound=BaseSQLModel)
+BaseSchemaTypeUpdate = TypeVar("BaseSchemaTypeUpdate", bound=SQLModel)
 
 
 class QueryStrings(TypedDict, total=False):
