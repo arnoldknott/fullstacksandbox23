@@ -3,7 +3,12 @@ import { io } from 'socket.io-client';
 import { getContext } from 'svelte';
 
 import type { Action } from '$lib/accessHandler';
-import type { AccessPolicy, AnyEntityExtended, BackendAPIConfiguration } from '$lib/types.d.ts';
+import type {
+	AccessPolicy,
+	AnyEntityExtended,
+	BackendAPIConfiguration,
+	Hierarchy
+} from '$lib/types.d.ts';
 
 export type SocketioConnection = {
 	namespace?: string;
@@ -13,7 +18,7 @@ export type SocketioConnection = {
 	// request-access-data?: boolean
 	// identity-ids?: string // getting added to rooms
 	// resource-ids?: string // getting added to room
-	// parent-resource-id?: string // potentially getting added to room
+	// parent-id?: string // potentially getting added to room
 };
 
 export type SocketioStatus =
@@ -32,6 +37,8 @@ export type SocketioStatus =
  * Extra listeners added via `socketio.client.on(...)` always run alongside enabled defaults.
  */
 export type SocketIODefaultHandlers = {
+	// TBD: consider changing from boolean into a callback that receives the data,
+	// so handlers run either default or the callback function.
 	transferred?: boolean;
 	deleted?: boolean;
 	status?: boolean;
@@ -58,6 +65,13 @@ export type SocketIOOptions<T extends AnyEntityExtended> = {
 	 * `createPending()` returns just `{ id }`.
 	 */
 	pendingTemplate?: () => Partial<Omit<T, 'id'>>;
+	// /**
+	//  * Optional default parent id for link() calls without explicit parentId argument.
+	//  * If absent, the caller must provide a parentId.
+	//  */
+	// defaultParentId?: string; // for link() calls without explicit parentId argument
+	/** Optional default inherit value for link() calls without explicit inherit argument. */
+	defaultInherit?: boolean; // for link() calls without explicit inherit argument
 };
 
 /**
@@ -82,6 +96,18 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended> {
 	#entities = $state<T[]>([]);
 	#pendingEntities = $state<T[]>([]);
 	#pendingTemplate?: () => Partial<Omit<T, 'id'>>;
+	#defaultParentId?: string;
+	#defaultInherit = false;
+
+	// TBD: consider handling the AccessPolicies outside the Entities as well,
+	// which would remove the need for EntityExtended.
+	// Then the generic T could be just the base Entity type without the extended properties.
+	// readonly hierarchies: Hierarchy[];
+
+	// "linked" and "unlinked" should not be necessary: linked and unlinked can be derived from the entities and hierarchies,
+	// so no need to keep them in separate reactive arrays that need to be reconciled on every change.
+	// readonly linked: AnyEntityExtended[];
+	// readonly unlinked: AnyEntityExtended[];
 
 	constructor(connection: SocketioConnection, options: SocketIOOptions<T> = {}) {
 		const backendAPIConfiguration: BackendAPIConfiguration = getContext('backendAPIConfiguration');
@@ -105,6 +131,8 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended> {
 		}
 
 		this.#pendingTemplate = options.pendingTemplate;
+		this.#defaultParentId = connection.query_params?.['parent-id'] as string | undefined;
+		this.#defaultInherit = options.defaultInherit ?? false;
 
 		const enableHandlers = options.defaultHandlers ?? {};
 		if (enableHandlers.transferred !== false) {
@@ -228,6 +256,31 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended> {
 		}
 	}
 
+	link(childId: string, parentId?: string, inherit?: boolean): void {
+		if (!parentId) {
+			parentId = this.#defaultParentId;
+		}
+		if (parentId) {
+			const hierarchy: Hierarchy = {
+				child_id: childId,
+				parent_id: parentId,
+				inherit: inherit ?? this.#defaultInherit
+			};
+			this.client.emit('link', hierarchy);
+		}
+		// Reconciliation happens in the `status:linked` handler.
+	}
+
+	unlink(childId: string, parentId?: string): void {
+		if (!parentId) {
+			parentId = this.#defaultParentId;
+		}
+		if (parentId) {
+			this.client.emit('unlink', { child_id: childId, parent_id: parentId });
+		}
+		// Reconciliation happens in the `status:unlinked` handler.
+	}
+
 	shareEntity(accessPolicy: AccessPolicy): void {
 		this.client.emit('share', accessPolicy);
 	}
@@ -266,6 +319,17 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended> {
 			} else if (status.success === 'shared' || status.success === 'unshared') {
 				// Re-read to resolve remaining inherited access. If none, the server emits `deleted`.
 				this.client.emit('read', status.id);
+			} else if (status.success === 'linked') {
+				// if (!parentId || status.parent_id !== parentId) return;
+				// if (!this.#hierarchies.some((h) => h.child_id === status.id)) {
+				// 	this.#hierarchies = [
+				// 		...this.#hierarchies,
+				// 		{ child_id: status.id, parent_id: parentId, inherit: status.inherit }
+				// 	];
+				// }
+			} else if (status.success === 'unlinked') {
+				// if (!parentId || status.parent_id !== parentId) return;
+				// this.#hierarchies = this.#hierarchies.filter((h) => h.child_id !== status.id);
 			}
 		}
 	}

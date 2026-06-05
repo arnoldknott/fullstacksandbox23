@@ -104,7 +104,13 @@ export interface Hierarchy {
 // Generic for resources - and partially relevant for identities:
 // Create a generic type that extends a base type with additional properties
 type ExtendEntity<T> = T &
-	Partial<WithCreationDate & WithLastModifiedDate & WithAccessRights & WithAccessPolicies>;
+	Partial<
+		WithCreationDate &
+			WithLastModifiedDate &
+			WithAccessRights &
+			WithAccessPolicies &
+			WithHierarchies
+	>;
 
 // Define the additional properties as separate interfaces
 interface WithCreationDate {
@@ -128,8 +134,14 @@ interface WithAccessPolicies {
 	access_policies: AccessPolicy[];
 }
 
-interface WithAccessShareOptions {
-	access_share_options: AccessShareOption[];
+// interface WithAccessShareOptions {
+// 	access_share_options: AccessShareOption[];
+// }
+
+interface WithHierarchies {
+	// hierarchies: Hierarchy[];
+	inherit: boolean;
+	order?: number;
 }
 
 // specific resources:

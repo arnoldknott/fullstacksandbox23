@@ -14,6 +14,7 @@ export interface Relation {
 	readonly linked: AnyEntityExtended[];
 	readonly unlinked: AnyEntityExtended[];
 
+	// TBD: remove first:
 	link(childId: string, inherit?: boolean): void;
 	unlink(childId: string): void;
 
@@ -86,6 +87,7 @@ class ChildSlot implements Relation {
 		);
 	}
 
+	// TBD: remove:
 	link(childId: string, inherit?: boolean): void {
 		const parentId = this.#parent()?.id;
 		if (!parentId) return;
@@ -98,6 +100,7 @@ class ChildSlot implements Relation {
 		// Reconciliation happens in the `status:linked` handler.
 	}
 
+	// TBD: remove:
 	unlink(childId: string): void {
 		const parentId = this.#parent()?.id;
 		if (!parentId) return;
