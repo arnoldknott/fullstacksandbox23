@@ -116,13 +116,6 @@ class AccessRequest(BaseModel):
     action: Optional[Action]
 
 
-class AccessPermission(BaseModel):
-    """Model for the access permission"""
-
-    resource_id: uuid.UUID
-    action: Action | None
-
-
 # No update model for access policies: once created, they should not be updated, only deleted to keep loggings consistent.
 
 # Maybe the logs should just be derived from the AccessRequests and add the status code?
