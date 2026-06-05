@@ -342,6 +342,14 @@ class AccessPolicyCRUD:
             elif await self.allows(
                 AccessRequest(
                     resource_id=resource_id,
+                    action=Action.connect,
+                    current_user=current_user,
+                )
+            ):
+                return Action.connect
+            elif await self.allows(
+                AccessRequest(
+                    resource_id=resource_id,
                     action=Action.read,
                     current_user=current_user,
                 )

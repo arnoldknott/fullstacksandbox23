@@ -55,7 +55,7 @@ class QueryStrings(TypedDict, total=False):
     request_access_data: bool
     identity_ids: Optional[List[str]]
     resource_ids: Optional[List[str]]
-    parent_id: Optional[str]
+    parent_id: Optional[UUID]
     join_admin_room: bool
 
 
@@ -165,11 +165,11 @@ class BaseNamespace(socketio.AsyncNamespace):
     @overload
     async def _get_session_query_string(
         self, sid: str, key: Literal["parent_id"]
-    ) -> Optional[str]: ...
+    ) -> Optional[UUID]: ...
 
     async def _get_session_query_string(
         self, sid: str, key: str
-    ) -> Optional[bool | List[str] | str]:
+    ) -> Optional[bool | List[str] | UUID]:
         """Get one typed query-string value from the socketio session."""
         session_query_strings = await self._get_session_query_strings(sid)
         return session_query_strings.get(key)
@@ -241,31 +241,37 @@ class BaseNamespace(socketio.AsyncNamespace):
                 data = await crud.read(current_user)
 
                 allowed_child_ids = None
-                if parent_id:
-                    try:
-                        parent_uuid = (
-                            parent_id
-                            if isinstance(parent_id, UUID)
-                            else UUID(str(parent_id))
+                if parent_id is not None:
+                    async with crud.hierarchy_CRUD() as hierarchy_crud:
+                        hierarchies = await hierarchy_crud.read(
+                            current_user=current_user, parent_id=parent_id
                         )
-                        # if crud.model.__name__ in ResourceType.list():
-                        async with crud.hierarchy_CRUD() as hierarchy_crud:
-                            hierarchies = await hierarchy_crud.read(
-                                current_user=current_user, parent_id=parent_uuid
-                            )
-                            allowed_child_ids = {h.child_id for h in hierarchies}
-                        # elif crud.model.__name__ in IdentityType.list():
-                        #     async with IdentityHierarchyCRUD() as hierarchy_crud:
-                        #         hierarchies = await hierarchy_crud.read(
-                        #             current_user=current_user,
-                        #             parent_id=parent_uuid
-                        #         )
-                        #         allowed_child_ids = {h.child_id for h in hierarchies}
-                    except ValueError:
-                        logger.error(f"Invalid parent_id UUID format: {parent_id}")
-                        allowed_child_ids = (
-                            set()
-                        )  # Empty set = filter out everything, silently fails.
+                        allowed_child_ids = {h.child_id for h in hierarchies}
+                    # try:
+                    #     # parent_uuid = (
+                    #     #     parent_id
+                    #     #     if isinstance(parent_id, UUID)
+                    #     #     else UUID(str(parent_id))
+                    #     # )
+                    #     # if crud.model.__name__ in ResourceType.list():
+                    #     async with crud.hierarchy_CRUD() as hierarchy_crud:
+                    #         hierarchies = await hierarchy_crud.read(
+                    #             # current_user=current_user, parent_id=parent_uuid
+                    #             current_user=current_user, parent_id=parent_id
+                    #         )
+                    #         allowed_child_ids = {h.child_id for h in hierarchies}
+                    #     # elif crud.model.__name__ in IdentityType.list():
+                    #     #     async with IdentityHierarchyCRUD() as hierarchy_crud:
+                    #     #         hierarchies = await hierarchy_crud.read(
+                    #     #             current_user=current_user,
+                    #     #             parent_id=parent_uuid
+                    #     #         )
+                    #     #         allowed_child_ids = {h.child_id for h in hierarchies}
+                    # except ValueError:
+                    #     logger.error(f"Invalid parent_id UUID format: {parent_id}")
+                    #     allowed_child_ids = (
+                    #         set()
+                    #     )  # Empty set = filter out everything, silently fails.
 
                 if self.read_model is not None:
                     for idx, item in enumerate(data):
@@ -306,7 +312,7 @@ class BaseNamespace(socketio.AsyncNamespace):
         logger.info(f"🧦 Get access data for resource {resource_id} for client {sid}.")
         # Consider splitting the accesss policy and access log CRUDs into separate methods
         async with AccessPolicyCRUD() as policy_crud:
-            access_permission = await policy_crud.check_access(
+            access_right = await policy_crud.check_access(
                 resource_id=resource_id, current_user=current_user
             )
             try:
@@ -327,16 +333,19 @@ class BaseNamespace(socketio.AsyncNamespace):
                 logger.info(f"🧦 No access data found for {resource_id}.")
                 creation_date = None
                 last_modified_date = None
+        parent_id = await self._get_session_query_string(sid, "parent_id")
+        if parent_id is not None:
+            pass
         # TBD: add typing AccessData for access_data
         access_data = {
-            "access_right": access_permission.action,
+            "access_right": access_right,
             "access_policies": access_policies if access_policies else None,
             "creation_date": creation_date if creation_date else None,
             "last_modified_date": last_modified_date if last_modified_date else None,
         }
         return access_data
         # {
-        # "access_right": access_permission.action,
+        # "access_right": access_right,
         # "access_policies": access_policies,
         # "creation_date": creation_date,
         #     "last_modified_date": last_modified_date,
@@ -397,9 +406,9 @@ class BaseNamespace(socketio.AsyncNamespace):
             else []
         )
         parent_id = (
-            parse_qs(query_strings).get("parent-id", [""])[0]
+            UUID(parse_qs(query_strings).get("parent-id", [""])[0])
             if "parent-id" in query_strings
-            else ""
+            else None
         )
         join_admin_room = (
             parse_qs(query_strings).get("join-admin-room", [""])[0]
@@ -570,9 +579,11 @@ class BaseNamespace(socketio.AsyncNamespace):
                             database_object
                         )
                         if guards is None and current_user is None:
+                            access_right = None
                             creation_date = None
                             last_modified_date = None
                             try:
+                                access_right = await crud.policy_crud.check_access(resource_id=resource_id)
                                 async with AccessLoggingCRUD() as logging_crud:
                                     creation_date = (
                                         await logging_crud.read_resource_created_at(
@@ -589,7 +600,10 @@ class BaseNamespace(socketio.AsyncNamespace):
                                 print(
                                     "=== routers - socketio - v1 - on_read - public access - failed to get dates ==="
                                 )
-                            database_object.access_right = Action.read
+                            database_object.access_right = access_right
+                            # TBD: what if there's a public own, write or link access policy?
+                            # Then it should be reflected in the access_right in the same way as for authenticated users,
+                            # instead of just showing read access.
                             database_object.creation_date = creation_date
                             database_object.last_modified_date = last_modified_date
                         else:

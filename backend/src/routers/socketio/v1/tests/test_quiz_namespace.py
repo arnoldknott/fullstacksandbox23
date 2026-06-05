@@ -257,6 +257,134 @@ class TestMessage(BaseSocketIOTest):
             socketio_test_client,
         )
 
+    # Read tests:
+    @pytest.mark.anyio
+    async def test_submit_create_public_without_parent_and_read_returns_read_access_right(
+        self,
+        socketio_test_client,
+    ):
+        """Test that an anonymous read of one public message includes read access."""
+
+        connection = await socketio_test_client(client_config=self.client_config())
+
+        await connection.connect(query_parameters={"request-access-data": "true"})
+        await connection.client.sleep(0.2)
+
+        await connection.client.emit(
+            "submit",
+            {
+                "payload": {**self._test_data_single},
+                "public": True,
+            },
+            namespace=self.namespace_path,
+        )
+        await connection.client.sleep(0.5)
+
+        status_data = connection.responses("status", self.namespace_path)
+        created_status = next(
+            status for status in status_data if status.get("success") == "created"
+        )
+        created_id = created_status["id"]
+
+        await connection.client.emit(
+            "read",
+            created_id,
+            namespace=self.namespace_path,
+        )
+        await connection.client.sleep(0.5)
+
+        transfer_data = connection.responses("transferred", self.namespace_path)
+
+        assert len(transfer_data) ==  1
+        assert transfer_data[0]["id"] == created_id
+        assert transfer_data[0]["access_right"] == "read"
+
+    @pytest.mark.anyio
+    async def test_submit_create_public_without_parent_and_write_returns_read_access_right(
+        self,
+        socketio_test_client,
+    ):
+        """Test that an anonymous read of one public message includes write access."""
+
+        connection = await socketio_test_client(client_config=self.client_config())
+
+        await connection.connect(query_parameters={"request-access-data": "true"})
+        await connection.client.sleep(0.2)
+
+        await connection.client.emit(
+            "submit",
+            {
+                "payload": {**self._test_data_single},
+                "public": True,
+                "public_action": "write",
+            },
+            namespace=self.namespace_path,
+        )
+        await connection.client.sleep(0.5)
+
+        status_data = connection.responses("status", self.namespace_path)
+        created_status = next(
+            status for status in status_data if status.get("success") == "created"
+        )
+        created_id = created_status["id"]
+
+        await connection.client.emit(
+            "read",
+            created_id,
+            namespace=self.namespace_path,
+        )
+        await connection.client.sleep(0.5)
+
+        transfer_data = connection.responses("transferred", self.namespace_path)
+
+        assert len(transfer_data) ==  1
+        assert transfer_data[0]["id"] == created_id
+        assert transfer_data[0]["access_right"] == "write"
+
+
+    @pytest.mark.anyio
+    async def test_submit_create_public_without_parent_and_connect_returns_read_access_right(
+        self,
+        socketio_test_client,
+    ):
+        """Test that an anonymous read of one public message includes connect access."""
+
+        connection = await socketio_test_client(client_config=self.client_config())
+
+        await connection.connect(query_parameters={"request-access-data": "true"})
+        await connection.client.sleep(0.2)
+
+        await connection.client.emit(
+            "submit",
+            {
+                "payload": {**self._test_data_single},
+                "public": True,
+                "public_action": "connect",
+            },
+            namespace=self.namespace_path,
+        )
+        await connection.client.sleep(0.5)
+
+        status_data = connection.responses("status", self.namespace_path)
+        created_status = next(
+            status for status in status_data if status.get("success") == "created"
+        )
+        created_id = created_status["id"]
+
+        await connection.client.emit(
+            "read",
+            created_id,
+            namespace=self.namespace_path,
+        )
+        await connection.client.sleep(0.5)
+
+        transfer_data = connection.responses("transferred", self.namespace_path)
+
+        assert len(transfer_data) ==  1
+        assert transfer_data[0]["id"] == created_id
+        assert transfer_data[0]["access_right"] == "connect"
+
+
     # Submit Update Tests
     @pytest.mark.anyio
     @pytest.mark.parametrize(
