@@ -99,13 +99,15 @@ class BaseSQLModel(SQLModel):
 
     id: Optional[UUID] = None
 
+
 class BaseReadSQLModel(SQLModel):
     """Common base for all application table models used for reading data,
-     
+
     For read models, the id is always present, so we can declare it as non-optional.
     """
 
     id: UUID
+
 
 class GeneratedSQLModel(BaseSQLModel):
     """Marker base for table models produced by `create_model(...)`.
@@ -427,7 +429,7 @@ def create_model(
     #     read_fields[rel_name] = None
 
     # read_fields["__annotations__"] = read_annotations
-    Read = type(f"{name}Read", (BaseReadSQLModel,Create), read_fields)
+    Read = type(f"{name}Read", (BaseReadSQLModel, Create), read_fields)
 
     # ===== Build Update Schema (all fields optional) =====
     update_annotations, update_fields = _build_annotations_and_fields(
@@ -447,7 +449,7 @@ def create_model(
     #     update_fields[attr.name] = None
 
     # update_fields["__annotations__"] = update_annotations
-    Update = type(f"{name}Update", (BaseSQLModel,Create), update_fields)
+    Update = type(f"{name}Update", (BaseSQLModel, Create), update_fields)
 
     # ===== Build Extended Schema =====
     _extended_annotations, extended_fields = _build_annotations_and_fields(

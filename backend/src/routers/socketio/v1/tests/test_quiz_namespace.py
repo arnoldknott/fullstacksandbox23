@@ -295,7 +295,7 @@ class TestMessage(BaseSocketIOTest):
 
         transfer_data = connection.responses("transferred", self.namespace_path)
 
-        assert len(transfer_data) ==  1
+        assert len(transfer_data) == 1
         assert transfer_data[0]["id"] == created_id
         assert transfer_data[0]["access_right"] == "read"
 
@@ -337,10 +337,9 @@ class TestMessage(BaseSocketIOTest):
 
         transfer_data = connection.responses("transferred", self.namespace_path)
 
-        assert len(transfer_data) ==  1
+        assert len(transfer_data) == 1
         assert transfer_data[0]["id"] == created_id
         assert transfer_data[0]["access_right"] == "write"
-
 
     @pytest.mark.anyio
     async def test_submit_create_public_without_parent_and_connect_returns_read_access_right(
@@ -380,10 +379,9 @@ class TestMessage(BaseSocketIOTest):
 
         transfer_data = connection.responses("transferred", self.namespace_path)
 
-        assert len(transfer_data) ==  1
+        assert len(transfer_data) == 1
         assert transfer_data[0]["id"] == created_id
         assert transfer_data[0]["access_right"] == "connect"
-
 
     # Submit Update Tests
     @pytest.mark.anyio

@@ -16,7 +16,6 @@ from urllib.parse import parse_qs
 from uuid import UUID
 
 import socketio
-from sqlmodel import SQLModel
 
 from models.base import BaseSQLModel, BaseReadSQLModel
 
@@ -72,7 +71,10 @@ class SocketIoSessionData(TypedDict, total=False):
     query_strings: Optional[QueryStrings]
 
 
-class BaseNamespace(socketio.AsyncNamespace, Generic[BaseSchemaTypeCreate, BaseSchemaTypeRead, BaseSchemaTypeUpdate]):
+class BaseNamespace(
+    socketio.AsyncNamespace,
+    Generic[BaseSchemaTypeCreate, BaseSchemaTypeRead, BaseSchemaTypeUpdate],
+):
     """Base class for socket.io namespaces."""
 
     def __init__(
@@ -272,7 +274,7 @@ class BaseNamespace(socketio.AsyncNamespace, Generic[BaseSchemaTypeCreate, BaseS
                     # item.last_modified_date = access_data["last_modified_date"]  # type: ignore[attr-defined]
                     # item = BaseSQLModel.model_validate(item)
                     item = await self._attach_access_data(sid, item, current_user)
-                if item.id not in self.server.rooms(sid, self.namespace or "/"): 
+                if item.id not in self.server.rooms(sid, self.namespace or "/"):
                     await self.server.enter_room(
                         sid, f"resource:{str(item.id)}", namespace=self.namespace
                     )
@@ -288,7 +290,12 @@ class BaseNamespace(socketio.AsyncNamespace, Generic[BaseSchemaTypeCreate, BaseS
             await self._emit_status(sid, {"error": str(error)})
 
     # async def _get_access_data(self, sid: str, current_user: Optional[CurrentUserData], resource_id: UUID):
-    async def _attach_access_data(self, sid: str, resource: BaseSchemaTypeRead, current_user: Optional[CurrentUserData]) -> BaseSchemaTypeRead:
+    async def _attach_access_data(
+        self,
+        sid: str,
+        resource: BaseSchemaTypeRead,
+        current_user: Optional[CurrentUserData],
+    ) -> BaseSchemaTypeRead:
         """Get access data from the socketio session."""
         logger.info(f"🧦 Get access data for resource {resource.id} for client {sid}.")
         # Consider splitting the accesss policy and access log CRUDs into separate methods
@@ -301,22 +308,28 @@ class BaseNamespace(socketio.AsyncNamespace, Generic[BaseSchemaTypeCreate, BaseS
                 )
                 resource.access_right = access_right
                 try:
-                    access_policies = await policy_crud.read_access_policies_by_resource_id(
-                        current_user=current_user, resource_id=resource.id
+                    access_policies = (
+                        await policy_crud.read_access_policies_by_resource_id(
+                            current_user=current_user, resource_id=resource.id
+                        )
                     )
                     if current_user is not None:
-                        resource.access_policies = access_policies if access_policies else None
+                        resource.access_policies = (
+                            access_policies if access_policies else None
+                        )
                 except Exception:
                     access_policies = []
             async with AccessLoggingCRUD() as logging_crud:
-                    creation_date = await logging_crud.read_resource_created_at(
-                        resource_id=resource.id, current_user=current_user
-                    )
-                    resource.creation_date = creation_date if creation_date else None
-                    last_modified_date = await logging_crud.read_resource_last_modified_at(
-                        resource_id=resource.id, current_user=current_user
-                    )
-                    resource.last_modified_date = last_modified_date if last_modified_date else None
+                creation_date = await logging_crud.read_resource_created_at(
+                    resource_id=resource.id, current_user=current_user
+                )
+                resource.creation_date = creation_date if creation_date else None
+                last_modified_date = await logging_crud.read_resource_last_modified_at(
+                    resource_id=resource.id, current_user=current_user
+                )
+                resource.last_modified_date = (
+                    last_modified_date if last_modified_date else None
+                )
             parent_id = await self._get_session_query_string(sid, "parent_id")
             if parent_id is not None:
                 # TBD: add hierarchies if parent_id is session_data query_strings
@@ -609,7 +622,9 @@ class BaseNamespace(socketio.AsyncNamespace, Generic[BaseSchemaTypeCreate, BaseS
                         #     "last_modified_date"
                         # ]
                         # database_object = BaseSQLModel.model_validate(database_object)
-                        database_object = await self._attach_access_data(sid, database_object, current_user)
+                        database_object = await self._attach_access_data(
+                            sid, database_object, current_user
+                        )
                     if database_object.id not in self.server.rooms(sid, self.namespace or "/"):  # type: ignore[attr-defined]
                         await self.server.enter_room(
                             sid,
