@@ -94,11 +94,6 @@ export interface AccessShareOption {
 	public?: boolean;
 }
 
-export interface AccessRight {
-	resource_id: string;
-	action: Action;
-}
-
 export interface Hierarchy {
 	child_id: string;
 	parent_id: string;
