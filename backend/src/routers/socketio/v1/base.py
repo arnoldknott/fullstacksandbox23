@@ -1,5 +1,16 @@
 import logging
-from typing import Any, Dict, List, Literal, Optional, Type, TypedDict, TypeVar, cast, overload
+from typing import (
+    Any,
+    Dict,
+    List,
+    Literal,
+    Optional,
+    Type,
+    TypedDict,
+    TypeVar,
+    cast,
+    overload,
+)
 from urllib.parse import parse_qs
 from uuid import UUID
 
@@ -38,6 +49,7 @@ logger = logging.getLogger(__name__)
 
 
 BaseSchemaTypeRead = TypeVar("BaseSchemaTypeRead", bound=BaseSQLModel)
+
 
 class QueryStrings(TypedDict, total=False):
     request_access_data: bool
@@ -133,32 +145,27 @@ class BaseNamespace(socketio.AsyncNamespace):
     @overload
     async def _get_session_query_string(
         self, sid: str, key: Literal["request_access_data"]
-    ) -> bool:
-        ...
+    ) -> bool: ...
 
     @overload
     async def _get_session_query_string(
         self, sid: str, key: Literal["join_admin_room"]
-    ) -> bool:
-        ...
+    ) -> bool: ...
 
     @overload
     async def _get_session_query_string(
         self, sid: str, key: Literal["identity_ids"]
-    ) -> Optional[List[str]]:
-        ...
+    ) -> Optional[List[str]]: ...
 
     @overload
     async def _get_session_query_string(
         self, sid: str, key: Literal["resource_ids"]
-    ) -> Optional[List[str]]:
-        ...
+    ) -> Optional[List[str]]: ...
 
     @overload
     async def _get_session_query_string(
         self, sid: str, key: Literal["parent_id"]
-    ) -> Optional[str]:
-        ...
+    ) -> Optional[str]: ...
 
     async def _get_session_query_string(
         self, sid: str, key: str
@@ -266,7 +273,7 @@ class BaseNamespace(socketio.AsyncNamespace):
 
             for item in data:
                 # Skip if parent_id filter is active and item is not a child
-                if parent_id and item.id not in (allowed_child_ids or set()):  
+                if parent_id and item.id not in (allowed_child_ids or set()):
                     continue
 
                 if request_access_data:
@@ -452,7 +459,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                 "user_name": (token_payload or {}).get("name", ""),
                 # "current_user": current_user,
                 "session_id": auth_session_id,
-                "query_strings": session_query_strings
+                "query_strings": session_query_strings,
             }
             await self.server.save_session(sid, session_data, namespace=self.namespace)
             # if "Admin" in current_user.azure_token_roles:
@@ -545,7 +552,9 @@ class BaseNamespace(socketio.AsyncNamespace):
             if self.crud is None:
                 return
             async with self.crud() as crud:
-                request_access_data = await self._get_session_query_string(sid, "request_access_data")
+                request_access_data = await self._get_session_query_string(
+                    sid, "request_access_data"
+                )
                 if resource_id is None:
                     await self._get_all(sid, current_user, request_access_data)
                 else:
