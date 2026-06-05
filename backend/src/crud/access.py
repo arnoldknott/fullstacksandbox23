@@ -22,7 +22,6 @@ from models.access import (
     AccessLog,
     AccessLogCreate,
     AccessLogRead,
-    AccessPermission,
     AccessPolicy,
     AccessPolicyCreate,
     AccessPolicyDelete,
@@ -317,12 +316,11 @@ class AccessPolicyCRUD:
 
         return False
 
-    # TBD: refactor to only return Action?
     async def check_access(
         self,
         resource_id: UUID,
         current_user: Optional[CurrentUserData] = None,
-    ) -> AccessPermission:
+    ) -> Action | None:
         """Checks the access level of the user to the resource."""
         try:
             if await self.allows(
@@ -332,10 +330,7 @@ class AccessPolicyCRUD:
                     current_user=current_user,
                 )
             ):
-                return AccessPermission(
-                    resource_id=resource_id,
-                    action=Action.own,
-                )
+                return Action.own
             elif await self.allows(
                 AccessRequest(
                     resource_id=resource_id,
@@ -343,10 +338,7 @@ class AccessPolicyCRUD:
                     current_user=current_user,
                 )
             ):
-                return AccessPermission(
-                    resource_id=resource_id,
-                    action=Action.write,
-                )
+                return Action.write
             elif await self.allows(
                 AccessRequest(
                     resource_id=resource_id,
@@ -354,15 +346,9 @@ class AccessPolicyCRUD:
                     current_user=current_user,
                 )
             ):
-                return AccessPermission(
-                    resource_id=resource_id,
-                    action=Action.read,
-                )
+                return Action.read
             else:
-                return AccessPermission(
-                    resource_id=resource_id,
-                    action=None,
-                )
+                return None
 
         except Exception as e:
             logger.error(f"Error in checking access to policy: {e}")

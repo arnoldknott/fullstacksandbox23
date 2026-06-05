@@ -15,7 +15,6 @@ from core.types import Action, IdentityType, ResourceType
 from crud.access import AccessLoggingCRUD, AccessPolicyCRUD
 from models.access import (
     AccessLogRead,
-    AccessPermission,
     AccessPolicy,
     AccessPolicyCreate,
     AccessPolicyDelete,
@@ -195,7 +194,7 @@ async def get_my_access_for_resource(
     resource_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
-) -> AccessPermission:
+) -> Action | None:
     """Returns the access level to a resource for the current user."""
     logger.info("GET access level for resource_id")
     current_user = await check_token_against_guards(token_payload, guards)
@@ -210,7 +209,7 @@ async def get_my_access_for_resources(
     resource_ids: list[UUID],
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
-) -> list[AccessPermission]:
+) -> list[Action | None]:
     """Returns the access level to a resource for the current user."""
     logger.info("GET access level for resource_id")
     current_user = await check_token_against_guards(token_payload, guards)
