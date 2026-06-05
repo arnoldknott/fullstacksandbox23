@@ -247,31 +247,6 @@ class BaseNamespace(socketio.AsyncNamespace):
                             current_user=current_user, parent_id=parent_id
                         )
                         allowed_child_ids = {h.child_id for h in hierarchies}
-                    # try:
-                    #     # parent_uuid = (
-                    #     #     parent_id
-                    #     #     if isinstance(parent_id, UUID)
-                    #     #     else UUID(str(parent_id))
-                    #     # )
-                    #     # if crud.model.__name__ in ResourceType.list():
-                    #     async with crud.hierarchy_CRUD() as hierarchy_crud:
-                    #         hierarchies = await hierarchy_crud.read(
-                    #             # current_user=current_user, parent_id=parent_uuid
-                    #             current_user=current_user, parent_id=parent_id
-                    #         )
-                    #         allowed_child_ids = {h.child_id for h in hierarchies}
-                    #     # elif crud.model.__name__ in IdentityType.list():
-                    #     #     async with IdentityHierarchyCRUD() as hierarchy_crud:
-                    #     #         hierarchies = await hierarchy_crud.read(
-                    #     #             current_user=current_user,
-                    #     #             parent_id=parent_uuid
-                    #     #         )
-                    #     #         allowed_child_ids = {h.child_id for h in hierarchies}
-                    # except ValueError:
-                    #     logger.error(f"Invalid parent_id UUID format: {parent_id}")
-                    #     allowed_child_ids = (
-                    #         set()
-                    #     )  # Empty set = filter out everything, silently fails.
 
                 if self.read_model is not None:
                     for idx, item in enumerate(data):
@@ -307,7 +282,7 @@ class BaseNamespace(socketio.AsyncNamespace):
             print(error)
             await self._emit_status(sid, {"error": str(error)})
 
-    async def _get_access_data(self, sid: str, current_user, resource_id: UUID):
+    async def _get_access_data(self, sid: str, current_user: Optional[CurrentUserData], resource_id: UUID):
         """Get access data from the socketio session."""
         logger.info(f"🧦 Get access data for resource {resource_id} for client {sid}.")
         # Consider splitting the accesss policy and access log CRUDs into separate methods
@@ -381,8 +356,6 @@ class BaseNamespace(socketio.AsyncNamespace):
         logger.info(f"🧦 Client connected with session id: {sid}.")
         # Parse 'request-access-data' from query string using urllib.parse.parse_qs
         query_strings = environ.get("QUERY_STRING", "")
-        # print("=== routers - socketio - v1 - on_connect - parse_qs(query_strings) ===")
-        # print(parse_qs(query_strings), flush=True)
         request_access_data = (
             parse_qs(query_strings).get("request-access-data", [""])[0]
             if "request-access-data" in query_strings
@@ -578,49 +551,48 @@ class BaseNamespace(socketio.AsyncNamespace):
                         database_object = self.read_extended_model.model_validate(
                             database_object
                         )
-                        if guards is None and current_user is None:
-                            access_right = None
-                            creation_date = None
-                            last_modified_date = None
-                            try:
-                                access_right = await crud.policy_crud.check_access(resource_id=resource_id)
-                                async with AccessLoggingCRUD() as logging_crud:
-                                    creation_date = (
-                                        await logging_crud.read_resource_created_at(
-                                            resource_id=resource_id
-                                        )
-                                    )
-                                    last_modified_date = await logging_crud.read_resource_last_modified_at(
-                                        resource_id=resource_id
-                                    )
-                            except Exception:
-                                logger.info(
-                                    "Failed to get creation and modification dates with public access."
-                                )
-                                print(
-                                    "=== routers - socketio - v1 - on_read - public access - failed to get dates ==="
-                                )
-                            database_object.access_right = access_right
-                            # TBD: what if there's a public own, write or link access policy?
-                            # Then it should be reflected in the access_right in the same way as for authenticated users,
-                            # instead of just showing read access.
-                            database_object.creation_date = creation_date
-                            database_object.last_modified_date = last_modified_date
-                        else:
-                            access_data = await self._get_access_data(
-                                sid, current_user, database_object.id  # type: ignore[attr-defined]
-                            )
-                            # database_object = self.read_extended_model.model_validate(
-                            #     database_object
-                            # )
-                            database_object.access_right = access_data["access_right"]
+                        # if guards is None and current_user is None:
+                        #     # TBD: make _get_access_data compatible with public access as well.
+                        #     access_right = None
+                        #     creation_date = None
+                        #     last_modified_date = None
+                        #     try:
+                        #         access_right = await crud.policy_crud.check_access(resource_id=resource_id)
+                        #         async with AccessLoggingCRUD() as logging_crud:
+                        #             creation_date = (
+                        #                 await logging_crud.read_resource_created_at(
+                        #                     resource_id=resource_id
+                        #                 )
+                        #             )
+                        #             last_modified_date = await logging_crud.read_resource_last_modified_at(
+                        #                 resource_id=resource_id
+                        #             )
+                        #     except Exception:
+                        #         logger.info(
+                        #             "Failed to get creation and modification dates with public access."
+                        #         )
+                        #         print(
+                        #             "=== routers - socketio - v1 - on_read - public access - failed to get dates ==="
+                        #         )
+                        #     database_object.access_right = access_right
+                        #     database_object.creation_date = creation_date
+                        #     database_object.last_modified_date = last_modified_date
+                        # else:
+                        access_data = await self._get_access_data(
+                            sid, current_user, database_object.id  # type: ignore[attr-defined]
+                        )
+                        # database_object = self.read_extended_model.model_validate(
+                        #     database_object
+                        # )
+                        database_object.access_right = access_data["access_right"]
+                        if current_user is not None:
                             database_object.access_policies = access_data[
                                 "access_policies"
                             ]
-                            database_object.creation_date = access_data["creation_date"]
-                            database_object.last_modified_date = access_data[
-                                "last_modified_date"
-                            ]
+                        database_object.creation_date = access_data["creation_date"]
+                        database_object.last_modified_date = access_data[
+                            "last_modified_date"
+                        ]
                     if database_object.id not in self.server.rooms(sid, self.namespace or "/"):  # type: ignore[attr-defined]
                         await self.server.enter_room(
                             sid,

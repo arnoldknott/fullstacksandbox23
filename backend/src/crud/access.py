@@ -490,7 +490,7 @@ class AccessPolicyCRUD:
 
     async def read_access_policies_by_resource_id(
         self,
-        current_user: CurrentUserData,
+        current_user: Optional[CurrentUserData],
         resource_id: UUID,
     ) -> List[AccessPolicyRead]:
         """Returns all access policies by resource id."""
@@ -503,7 +503,7 @@ class AccessPolicyCRUD:
 
     async def read_access_policies_by_resource_type(
         self,
-        current_user: CurrentUserData,
+        current_user: Optional[CurrentUserData],
         resource_type: ResourceType,
     ) -> List[AccessPolicyRead]:
         """Returns all access policies by resource type."""
@@ -516,7 +516,7 @@ class AccessPolicyCRUD:
 
     async def read_access_policies_for_identity(
         self,
-        current_user: CurrentUserData,
+        current_user: Optional[CurrentUserData],
         identity_id: UUID,
     ) -> List[AccessPolicyRead]:
         """Returns a User with linked Groups from the database."""
@@ -529,7 +529,7 @@ class AccessPolicyCRUD:
 
     async def read_access_policies_by_identity_type(
         self,
-        current_user: CurrentUserData,
+        current_user: Optional[CurrentUserData],
         identity_type: IdentityType,
     ) -> List[AccessPolicyRead]:
         """Returns all access policies by resource type."""
