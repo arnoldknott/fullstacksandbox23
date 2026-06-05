@@ -214,13 +214,13 @@ async def get_my_access_for_resources(
     logger.info("GET access level for resource_id")
     current_user = await check_token_against_guards(token_payload, guards)
     async with access_policy_view.crud() as crud:
-        access_permissions = []
+        access_rights = []
         for resource_id in resource_ids:
-            permission = await crud.check_access(
+            right = await crud.check_access(
                 resource_id=resource_id, current_user=current_user
             )
-            access_permissions.append(permission)
-    return access_permissions
+            access_rights.append(right)
+    return access_rights
 
 
 # endregion AccessRights
