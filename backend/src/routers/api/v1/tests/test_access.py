@@ -10,7 +10,6 @@ from crud.access import AccessPolicyCRUD
 from models.access import (
     AccessLogCreate,
     AccessLogRead,
-    AccessPermission,
     AccessPolicy,
     AccessPolicyRead,
 )
@@ -2363,10 +2362,9 @@ async def test_user_get_access_permission_for_resource_with_owner_permission(
 
     response = await async_client.get(f"/api/v1/access/right/resource/{resource_id1}")
     assert response.status_code == 200
-    permission = AccessPermission(**response.json())
+    permission = response.json()
 
-    assert permission.resource_id == uuid.UUID(resource_id1)
-    assert permission.action == Action.own
+    assert permission == Action.own
 
 
 @pytest.mark.anyio
@@ -2402,10 +2400,9 @@ async def test_user_tries_to_add_write_policy_where_an_owner_policy_exists_alrea
 
     response = await async_client.get(f"/api/v1/access/right/resource/{resource_id1}")
     assert response.status_code == 200
-    permission = AccessPermission(**response.json())
+    permission = response.json()
 
-    assert permission.resource_id == uuid.UUID(resource_id1)
-    assert permission.action == Action.write
+    assert permission == Action.write
 
     try:
         own_test_access_policy_for_current_user = {
@@ -2474,10 +2471,9 @@ async def test_user_get_access_permission_for_resource_with_write_permission(
 
     response = await async_client.get(f"/api/v1/access/right/resource/{resource_id1}")
     assert response.status_code == 200
-    permission = AccessPermission(**response.json())
+    permission = response.json()
 
-    assert permission.resource_id == uuid.UUID(resource_id1)
-    assert permission.action == Action.write
+    assert permission == Action.write
 
 
 @pytest.mark.anyio
@@ -2530,10 +2526,9 @@ async def test_user_get_access_permission_for_resource_with_read_permission(
 
     response = await async_client.get(f"/api/v1/access/right/resource/{resource_id1}")
     assert response.status_code == 200
-    permission = AccessPermission(**response.json())
+    permission = response.json()
 
-    assert permission.resource_id == uuid.UUID(resource_id1)
-    assert permission.action == Action.read
+    assert permission == Action.read
 
 
 @pytest.mark.anyio
@@ -2587,10 +2582,9 @@ async def test_user_get_access_permission_for_resource_without_permission(
     # TBD: why would this fail with resource_id1 in connection to add_many_test_access_policies?
     response = await async_client.get(f"/api/v1/access/right/resource/{resource_id1}")
     assert response.status_code == 200
-    permission = AccessPermission(**response.json())
+    permission = response.json()
 
-    assert permission.resource_id == uuid.UUID(resource_id1)
-    assert permission.action is None
+    assert permission is None
 
 
 @pytest.mark.anyio
@@ -2655,22 +2649,14 @@ async def test_user_get_access_permission_for_resources(
     )
     assert response.status_code == 200
     result = response.json()
-    permissions = []
-    for res in result:
-        permissions.append(AccessPermission(**res))
 
-    assert len(permissions) == 5
+    assert len(result) == 5
 
-    assert permissions[0].resource_id == uuid.UUID(resource_id1)
-    assert permissions[0].action == Action.write
-    assert permissions[1].resource_id == uuid.UUID(resource_id2)
-    assert permissions[1].action == Action.own
-    assert permissions[2].resource_id == uuid.UUID(resource_id4)
-    assert permissions[2].action == Action.write
-    assert permissions[3].resource_id == uuid.UUID(resource_id7)
-    assert permissions[3].action == Action.own
-    assert permissions[4].resource_id == uuid.UUID(resource_id9)
-    assert permissions[4].action is None
+    assert result[0] == Action.write
+    assert result[1] == Action.own
+    assert result[2] == Action.write
+    assert result[3] == Action.own
+    assert result[4] is None
 
 
 # region: ## AccessLog tests
