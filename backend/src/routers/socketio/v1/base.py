@@ -1,10 +1,12 @@
 import logging
-from typing import Any, Dict, List, Optional, Type, TypedDict, TypeVar
+from typing import Any, Dict, List, Literal, Optional, Type, TypedDict, TypeVar, cast, overload
 from urllib.parse import parse_qs
 from uuid import UUID
 
 import socketio
 from sqlmodel import SQLModel
+
+from models.base import BaseSQLModel
 
 from core.config import config
 from core.security import (
@@ -35,7 +37,14 @@ from routers.socketio.v1 import register_namespace, registry_namespaces
 logger = logging.getLogger(__name__)
 
 
-BaseSchemaTypeRead = TypeVar("BaseSchemaTypeRead", bound=SQLModel)
+BaseSchemaTypeRead = TypeVar("BaseSchemaTypeRead", bound=BaseSQLModel)
+
+class QueryStrings(TypedDict, total=False):
+    request_access_data: bool
+    identity_ids: Optional[List[str]]
+    resource_ids: Optional[List[str]]
+    parent_id: Optional[str]
+    join_admin_room: bool
 
 
 class SocketIoSessionData(TypedDict, total=False):
@@ -45,7 +54,7 @@ class SocketIoSessionData(TypedDict, total=False):
     # current_user: CurrentUserData
     # session_id below is the Redis session-id, not the socket.io session-id (sid)
     session_id: Optional[str]
-    query_strings: Optional[str]
+    query_strings: Optional[QueryStrings]
 
 
 class BaseNamespace(socketio.AsyncNamespace):
@@ -103,25 +112,73 @@ class BaseNamespace(socketio.AsyncNamespace):
             return guard
         return None
 
-    async def _get_session_data(self, sid) -> Optional[SocketIoSessionData]:
+    async def _get_session_data(self, sid: str) -> SocketIoSessionData:
         """Get socketio session data from the socketio server."""
         logger.info(f"🧦 Get session data for client with session id {sid}.")
         try:
-            return await self.server.get_session(sid, namespace=self.namespace)
+            session_data = await self.server.get_session(sid, namespace=self.namespace)
+            return cast(SocketIoSessionData, session_data or {})
         except Exception as err:
             logger.error(
                 f"Failed to get session data for client with session id {sid}."
             )
             logger.error(err)
+            return {}
+
+    async def _get_session_query_strings(self, sid: str) -> QueryStrings:
+        """Get query strings from the socketio session."""
+        session_data = await self._get_session_data(sid)
+        return cast(QueryStrings, session_data.get("query_strings") or {})
+
+    @overload
+    async def _get_session_query_string(
+        self, sid: str, key: Literal["request_access_data"]
+    ) -> bool:
+        ...
+
+    @overload
+    async def _get_session_query_string(
+        self, sid: str, key: Literal["join_admin_room"]
+    ) -> bool:
+        ...
+
+    @overload
+    async def _get_session_query_string(
+        self, sid: str, key: Literal["identity_ids"]
+    ) -> Optional[List[str]]:
+        ...
+
+    @overload
+    async def _get_session_query_string(
+        self, sid: str, key: Literal["resource_ids"]
+    ) -> Optional[List[str]]:
+        ...
+
+    @overload
+    async def _get_session_query_string(
+        self, sid: str, key: Literal["parent_id"]
+    ) -> Optional[str]:
+        ...
+
+    async def _get_session_query_string(
+        self, sid: str, key: str
+    ) -> Optional[bool | List[str] | str]:
+        """Get one typed query-string value from the socketio session."""
+        session_query_strings = await self._get_session_query_strings(sid)
+        return session_query_strings.get(key)
+
+    async def _get_session_id(self, sid: str) -> Optional[str]:
+        """Get the Redis session id from socketio session data."""
+        session_data = await self._get_session_data(sid)
+        return session_data.get("session_id")
 
     async def _get_current_user_and_check_guard(
-        self, sid, guard_name: str
+        self, sid: str, guard_name: str
     ) -> Optional[CurrentUserData]:
         """Check the auth token against the event guards."""
 
         current_user = None
 
-        session = await self._get_session_data(sid)
         guards = self._get_event_guards(guard_name)
         ### This solution works for none-protected events, but a user is logged in anyways:
         # try:
@@ -140,7 +197,7 @@ class BaseNamespace(socketio.AsyncNamespace):
         # return current_user
 
         try:
-            session_id = session.get("session_id") if session is not None else None
+            session_id = await self._get_session_id(sid)
             if session_id is None:
                 raise ConnectionRefusedError("No session id.")
             token_payload = await self._get_token_payload_if_authenticated(session_id)
@@ -163,7 +220,7 @@ class BaseNamespace(socketio.AsyncNamespace):
 
     async def _get_all(  # noqa: C901
         self,
-        sid,
+        sid: str,
         current_user: Optional[CurrentUserData] = None,
         request_access_data: bool = False,
         parent_id: Optional[UUID] = None,
@@ -209,7 +266,7 @@ class BaseNamespace(socketio.AsyncNamespace):
 
             for item in data:
                 # Skip if parent_id filter is active and item is not a child
-                if parent_id and item.id not in (allowed_child_ids or set()):  # type: ignore[attr-defined]
+                if parent_id and item.id not in (allowed_child_ids or set()):  
                     continue
 
                 if request_access_data:
@@ -237,10 +294,9 @@ class BaseNamespace(socketio.AsyncNamespace):
             print(error)
             await self._emit_status(sid, {"error": str(error)})
 
-    async def _get_access_data(self, sid, current_user, resource_id: UUID):
+    async def _get_access_data(self, sid: str, current_user, resource_id: UUID):
         """Get access data from the socketio session."""
         logger.info(f"🧦 Get access data for resource {resource_id} for client {sid}.")
-        # session = await self._get_session_data(sid)
         # Consider splitting the accesss policy and access log CRUDs into separate methods
         async with AccessPolicyCRUD() as policy_crud:
             access_permission = await policy_crud.check_access(
@@ -301,7 +357,7 @@ class BaseNamespace(socketio.AsyncNamespace):
 
     async def on_connect(
         self,
-        sid,
+        sid: str,
         environ,
         auth=None,
     ):
@@ -348,6 +404,13 @@ class BaseNamespace(socketio.AsyncNamespace):
             if join_admin_room == "true" or join_admin_room == "True" or join_admin_room
             else False
         )
+        session_query_strings: QueryStrings = {
+            "request_access_data": request_access_data,
+            "identity_ids": identity_ids,
+            "resource_ids": resource_ids,
+            "parent_id": parent_id,
+            "join_admin_room": join_admin_room,
+        }
         # TBD: consider switching the if and for
         for identity_id in identity_ids:
             if identity_id:
@@ -389,7 +452,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                 "user_name": (token_payload or {}).get("name", ""),
                 # "current_user": current_user,
                 "session_id": auth_session_id,
-                "query_strings": query_strings,
+                "query_strings": session_query_strings
             }
             await self.server.save_session(sid, session_data, namespace=self.namespace)
             # if "Admin" in current_user.azure_token_roles:
@@ -418,7 +481,7 @@ class BaseNamespace(socketio.AsyncNamespace):
                 current_user = None
                 session_data: SocketIoSessionData = {
                     "user_name": "Anonymous",
-                    "query_strings": query_strings,
+                    "query_strings": session_query_strings,
                 }
                 await self.server.save_session(
                     sid, session_data, namespace=self.namespace
@@ -440,7 +503,7 @@ class BaseNamespace(socketio.AsyncNamespace):
         #             "user_name": token_payload["name"],
         #             # "current_user": current_user,
         #             "session_id": auth["session-id"],
-        #             "query_strings": query_strings,
+        #             "query_strings": session_query_strings,
         #         }
         #         await self.server.save_session(
         #             sid, session_data, namespace=self.namespace
@@ -482,22 +545,7 @@ class BaseNamespace(socketio.AsyncNamespace):
             if self.crud is None:
                 return
             async with self.crud() as crud:
-                session = await self._get_session_data(sid)
-                session_query_strings = (
-                    session.get("query_strings") if session is not None else ""
-                ) or ""
-                request_access_data = (
-                    parse_qs(session_query_strings).get("request-access-data", [""])[0]
-                    if "request-access-data" in session_query_strings
-                    else None
-                )
-                request_access_data = (
-                    True
-                    if request_access_data == "true"
-                    or request_access_data == "True"
-                    or request_access_data
-                    else False
-                )
+                request_access_data = await self._get_session_query_string(sid, "request_access_data")
                 if resource_id is None:
                     await self._get_all(sid, current_user, request_access_data)
                 else:
