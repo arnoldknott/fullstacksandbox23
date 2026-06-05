@@ -955,13 +955,11 @@ class BaseNamespace(socketio.AsyncNamespace):
                 )
                 parent_types = await crud._get_types_from_ids([hierarchy_obj.parent_id])
                 parent_type = parent_types[0].type if parent_types else None
-            status = (
-                {
+            status = {
                     "success": "unlinked",
                     "id": str(hierarchy_obj.child_id),
                     "parent_id": str(hierarchy_obj.parent_id),
-                },
-            )
+                }
             await self._emit_status(
                 sid,
                 status,
