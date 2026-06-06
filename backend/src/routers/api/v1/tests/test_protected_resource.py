@@ -2198,6 +2198,54 @@ async def test_user_gets_only_protected_resource_and_none_of_the_existing_childr
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_provide_http_token_payload",
+    [token_admin_read_write, token_user1_read_write],
+    indirect=True,
+)
+async def test_update_protected_child_relationship_to_parent(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
+    current_test_user,
+    add_many_test_protected_resources,
+    add_many_test_protected_children,
+    add_one_test_access_policy,
+    add_one_parent_child_resource_relationship,
+):
+    """Tests if missing permission for parent resource is handled correctly."""
+    _ = app_override_provide_http_token_payload
+
+    mocked_protected_resources = await add_many_test_protected_resources(
+        mocked_provide_http_token_payload
+    )
+    mocked_protected_children = await add_many_test_protected_children(
+        mocked_provide_http_token_payload
+    )
+
+    current_test_user = current_test_user
+
+    first_child = await add_one_parent_child_resource_relationship(
+        child_id=mocked_protected_children[0].id,
+        parent_id=mocked_protected_resources[0].id,
+        type=ResourceType.protected_child,
+    )
+    assert first_child.parent_id == mocked_protected_resources[0].id
+    assert first_child.child_id == mocked_protected_children[0].id
+    assert first_child.inherit is False
+
+    # updating the relationship to inherit:
+    response = await async_client.put(
+        f"/api/v1/protected/child/{str(mocked_protected_children[0].id)}/relationship/{str(mocked_protected_resources[0].id)}?inherit=True",
+    )
+    assert response.status_code == 200
+    updated_hierarchy = ResourceHierarchyRead(**response.json())
+    assert updated_hierarchy.parent_id == mocked_protected_resources[0].id
+    assert updated_hierarchy.child_id == mocked_protected_children[0].id
+    assert updated_hierarchy.inherit is True
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
     [token_user1_read_write],
     indirect=True,
 )
