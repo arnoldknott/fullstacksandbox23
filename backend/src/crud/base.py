@@ -454,7 +454,7 @@ class BaseCRUD(
         # `child_type` parameter of the concrete hierarchy CRUD (Resource vs
         # Identity). Pyright cannot correlate the two unions, so we view the
         # instance through the base class which accepts the full union.
-        hierarchy = await cast(BaseHierarchyCRUD[Any, Any, Any], hierarchy_CRUD).create(
+        hierarchy = await cast(BaseHierarchyCRUD[Any, Any, Any, Any], hierarchy_CRUD).create(
             current_user=current_user,
             parent_id=parent_id,
             child_type=self.entity_type,

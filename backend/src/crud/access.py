@@ -33,8 +33,10 @@ from models.access import (
     IdentifierTypeLink,
     IdentityHierarchy,
     IdentityHierarchyRead,
+    IdentityHierarchyUpdate,
     ResourceHierarchy,
     ResourceHierarchyRead,
+    ResourceHierarchyUpdate,
 )
 
 logger = logging.getLogger(__name__)
@@ -883,6 +885,7 @@ class AccessLoggingCRUD:
 BaseHierarchyModel = TypeVar("BaseHierarchyModel", bound=SQLModel)
 BaseHierarchyModelCreate = TypeVar("BaseHierarchyModelCreate", bound=SQLModel)
 BaseHierarchyModelRead = TypeVar("BaseHierarchyModelRead", bound=SQLModel)
+BaseHierarchyModelUpdate = TypeVar("BaseHierarchyModelUpdate", bound=SQLModel)
 
 
 class BaseHierarchyCRUD(
@@ -890,6 +893,7 @@ class BaseHierarchyCRUD(
         BaseHierarchyModel,
         BaseHierarchyModelCreate,
         BaseHierarchyModelRead,
+        BaseHierarchyModelUpdate,
     ]
 ):
     """Base CRUD for hierarchies."""
@@ -1039,6 +1043,79 @@ class BaseHierarchyCRUD(
             logger.error(f"Error in reading hierarchy: {err}")
             raise HTTPException(status_code=404, detail="Hierarchy not found.")
 
+    async def update(
+        self,
+        current_user: CurrentUserData,
+        parent_id: UUID,
+        child_id: UUID,
+        inherit: Optional[bool] = None,
+    ) -> BaseHierarchyModelRead:
+        """Updates a parent-child relationship."""
+        try:
+            session = self._session()
+            model = cast(Any, self.model)
+            model_alias = cast(Any, aliased(self.model))
+            
+            # Check write access to child
+            child_subquery = select(model_alias.child_id).join(
+                IdentifierTypeLink,
+                IdentifierTypeLink.id == model_alias.child_id,
+            )
+            child_subquery = child_subquery.where(
+                and_(
+                    model_alias.parent_id == parent_id,
+                    model_alias.child_id == child_id,
+                )
+            )
+            child_subquery = self.policy_crud.filters_allowed(
+                child_subquery, Action.write, IdentifierTypeLink, current_user
+            )
+            
+            # Check write access to parent
+            parent_subquery = select(model_alias.parent_id).join(
+                IdentifierTypeLink,
+                IdentifierTypeLink.id == model_alias.parent_id,
+            )
+            parent_subquery = parent_subquery.where(
+                and_(
+                    model_alias.parent_id == parent_id,
+                    model_alias.child_id == child_id,
+                )
+            )
+            parent_subquery = self.policy_crud.filters_allowed(
+                parent_subquery, Action.write, IdentifierTypeLink, current_user
+            )
+            
+            statement = select(model)
+            statement = statement.where(
+                and_(
+                    model.child_id == child_id,
+                    model.parent_id == parent_id,
+                    model.child_id.in_(child_subquery),
+                    model.parent_id.in_(parent_subquery),
+                )
+            )
+            response = await session.exec(statement)
+            relation = response.one_or_none()
+            if not relation:
+                raise HTTPException(status_code=404, detail="Hierarchy not found.")
+            if inherit is not None:
+                relation.inherit = inherit
+                session.add(relation)
+                await session.commit()
+                # TBD: consider gathering all the commits in one transaction:
+                # if self._owns_session:
+                #     await self.session.commit()
+                # else:
+                #     await self.session.flush()
+                await session.refresh(relation)
+            return cast(BaseHierarchyModelRead, relation)
+        except Exception as err:
+            session = self._session()
+            await session.rollback()
+            logger.error(f"Error in updating hierarchy: {err}")
+            raise HTTPException(status_code=404, detail="Hierarchy not found.")
+
     # TBD: potentially make parent_id optional:
     # in case a child gets deleted and all parent-child relations to all parents need to be deleted
     async def delete(
@@ -1101,7 +1178,7 @@ class BaseHierarchyCRUD(
 
 
 class ResourceHierarchyCRUD(
-    BaseHierarchyCRUD[BaseHierarchyCreate, ResourceHierarchy, ResourceHierarchyRead]
+    BaseHierarchyCRUD[BaseHierarchyCreate, ResourceHierarchy, ResourceHierarchyRead, ResourceHierarchyUpdate]
 ):
     """CRUD for resource hierarchies."""
 
@@ -1233,7 +1310,7 @@ class ResourceHierarchyCRUD(
 
 
 class IdentityHierarchyCRUD(
-    BaseHierarchyCRUD[BaseHierarchyCreate, IdentityHierarchy, IdentityHierarchyRead]
+    BaseHierarchyCRUD[BaseHierarchyCreate, IdentityHierarchy, IdentityHierarchyRead, IdentityHierarchyUpdate]
 ):
     """CRUD for resource hierarchies."""
 
