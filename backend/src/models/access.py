@@ -235,6 +235,7 @@ class ResourceHierarchyRead(BaseHierarchyCreate):
 
     pass
 
+
 class ResourceHierarchyUpdate(BaseHierarchyCreate):
     """Update model for resource hierarchy"""
 
@@ -262,6 +263,7 @@ class IdentityHierarchyRead(BaseHierarchyCreate):
     """Read model for identity hierarchy"""
 
     pass
+
 
 class IdentityHierarchyUpdate(BaseHierarchyCreate):
     """Update model for identity hierarchy"""

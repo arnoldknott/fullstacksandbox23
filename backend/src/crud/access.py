@@ -1055,7 +1055,7 @@ class BaseHierarchyCRUD(
             session = self._session()
             model = cast(Any, self.model)
             model_alias = cast(Any, aliased(self.model))
-            
+
             # Check write access to child
             child_subquery = select(model_alias.child_id).join(
                 IdentifierTypeLink,
@@ -1070,7 +1070,7 @@ class BaseHierarchyCRUD(
             child_subquery = self.policy_crud.filters_allowed(
                 child_subquery, Action.write, IdentifierTypeLink, current_user
             )
-            
+
             # Check write access to parent
             parent_subquery = select(model_alias.parent_id).join(
                 IdentifierTypeLink,
@@ -1085,7 +1085,7 @@ class BaseHierarchyCRUD(
             parent_subquery = self.policy_crud.filters_allowed(
                 parent_subquery, Action.write, IdentifierTypeLink, current_user
             )
-            
+
             statement = select(model)
             statement = statement.where(
                 and_(
@@ -1178,7 +1178,12 @@ class BaseHierarchyCRUD(
 
 
 class ResourceHierarchyCRUD(
-    BaseHierarchyCRUD[BaseHierarchyCreate, ResourceHierarchy, ResourceHierarchyRead, ResourceHierarchyUpdate]
+    BaseHierarchyCRUD[
+        BaseHierarchyCreate,
+        ResourceHierarchy,
+        ResourceHierarchyRead,
+        ResourceHierarchyUpdate,
+    ]
 ):
     """CRUD for resource hierarchies."""
 
@@ -1310,7 +1315,12 @@ class ResourceHierarchyCRUD(
 
 
 class IdentityHierarchyCRUD(
-    BaseHierarchyCRUD[BaseHierarchyCreate, IdentityHierarchy, IdentityHierarchyRead, IdentityHierarchyUpdate]
+    BaseHierarchyCRUD[
+        BaseHierarchyCreate,
+        IdentityHierarchy,
+        IdentityHierarchyRead,
+        IdentityHierarchyUpdate,
+    ]
 ):
     """CRUD for resource hierarchies."""
 
