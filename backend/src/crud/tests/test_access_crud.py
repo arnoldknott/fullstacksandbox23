@@ -1914,6 +1914,58 @@ async def test_admin_updates_resource_hierarchy_to_remove_inheritance(
 
 
 @pytest.mark.anyio
+async def test_admin_updates_resource_hierarchy_with_nonexisting_relationship_fails(
+    register_current_user,
+):
+    """Test updating a non-existing resource hierarchy."""
+    current_admin_user = await register_current_user(current_user_data_admin)
+    child_id = uuid.uuid4()
+    parent_id = uuid.uuid4()
+
+    async with ResourceHierarchyCRUD() as hierarchy_crud:
+        try:
+            await hierarchy_crud.update(
+                current_user=current_admin_user,
+                parent_id=parent_id,
+                child_id=child_id,
+                inherit=True,
+            )
+        except HTTPException as err:
+            assert err.status_code == 404
+            assert err.detail == "Hierarchy not found."
+        else:
+            pytest.fail("No HTTPexception raised!")
+
+
+@pytest.mark.anyio
+async def test_admin_updates_order_in_resource_hierarchy_is_ignored(
+    add_one_parent_child_resource_relationship,
+    register_current_user,
+):
+    """Test updating the order in a resource hierarchy is ignored."""
+    current_admin_user = await register_current_user(current_user_data_admin)
+    child_id = uuid.uuid4()
+    relationship = await add_one_parent_child_resource_relationship(child_id)
+
+    async with ResourceHierarchyCRUD() as hierarchy_crud:
+        try:
+            await hierarchy_crud.update(
+                current_user=current_admin_user,
+                parent_id=relationship.parent_id,
+                child_id=relationship.child_id,
+                inherit=True,
+                order=2,  # type: ignore[unexpected-keyword-arg]
+            )
+        except TypeError as err:
+            assert (
+                "BaseHierarchyCRUD.update() got an unexpected keyword argument 'order'"
+                in str(err)
+            )
+        else:
+            pytest.fail("No Type Error raised!")
+
+
+@pytest.mark.anyio
 async def test_user_updates_resource_hierarchy_to_add_inheritance(
     add_one_test_access_policy,
     add_one_parent_child_resource_relationship,
