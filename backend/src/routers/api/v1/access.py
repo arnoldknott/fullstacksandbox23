@@ -416,6 +416,8 @@ async def get_access_count_for_resource(
 # read all children of parent?
 # read all parents of child??
 # remove child from parent
+# reorder children of parent
+# update relationship between parent and child (e.g. change inherit flag)
 
 # endregion ResourceHierarchy
 
@@ -428,6 +430,7 @@ async def get_access_count_for_resource(
 # read all children of parent?
 # read all parents of child??
 # remove child from parent
+# update relationship between parent and child (e.g. change inherit flag)
 
 # endregion IdentityHierarchy
 

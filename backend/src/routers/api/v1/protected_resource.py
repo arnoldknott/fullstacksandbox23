@@ -198,6 +198,20 @@ async def put_protected_child(
     )
 
 
+@router.put("/child/{child_id}/relationship/{parent_id}", status_code=200)
+async def put_update_child_parent_relationship(
+    child_id: UUID,
+    parent_id: UUID,
+    inherit: Annotated[bool, Query()] = False,
+    token_payload=Depends(get_http_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> ResourceHierarchyRead:
+    """Updates the parent of a child."""
+    return await protected_child_view.put_child_parent_relationship(
+        child_id, parent_id, inherit, token_payload, guards
+    )
+
+
 @router.delete("/child/{resource_id}", status_code=200)
 async def delete_protected_child(
     resource_id: UUID,

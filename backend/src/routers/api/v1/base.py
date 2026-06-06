@@ -216,6 +216,24 @@ class BaseView:
             )
         return updated_file_metadata
 
+    async def put_child_parent_relationship(
+        self,
+        child_id,
+        parent_id,
+        inherit,
+        token_payload,
+        guards,
+    ):
+        logger.info(
+            "PUT updates a child parent relationship through update_child_parent_relationship CRUD"
+        )
+        current_user = await check_token_against_guards(token_payload, guards)
+        async with self.crud() as crud:
+            updated_hierarchy = await crud.update_child_parent_relationship(
+                current_user, child_id, parent_id, inherit
+            )
+        return updated_hierarchy
+
     async def delete(
         self,
         id,

@@ -831,6 +831,26 @@ class BaseCRUD(
                 detail=f"{self.model.__name__} - Forbidden.",
             )
 
+    async def update_child_parent_relationship(
+        self,
+        current_user: "CurrentUserData",
+        child_id: uuid.UUID,
+        parent_id: uuid.UUID,
+        inherit: Optional[bool] = False,
+    ) -> ResourceHierarchyRead | IdentityHierarchyRead:
+        """Updates the parent of a member of this class."""
+        hierarchy_CRUD = self.hierarchy_CRUD(session=self.session)
+        hierarchy = await cast(
+            BaseHierarchyCRUD[Any, Any, Any, Any], hierarchy_CRUD
+        ).update(
+            current_user=current_user,
+            child_id=child_id,
+            parent_id=parent_id,
+            inherit=inherit,
+        )
+
+        return hierarchy
+
     async def delete(  # noqa: C901
         self,
         current_user: "CurrentUserData",
