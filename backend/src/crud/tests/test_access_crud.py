@@ -1,8 +1,10 @@
 import uuid
 from pprint import pprint
+from fastapi import HTTPException
 
 import pytest
 
+from conftest import register_current_user
 from core.types import Action, CurrentUserData, IdentityType, ResourceType
 from crud.access import (
     AccessLoggingCRUD,
@@ -1863,6 +1865,215 @@ async def test_user_reads_resource_hierarchy_all_parents_of_a_child_without_acce
         )
         assert result == []
 
+
+@pytest.mark.anyio
+async def test_admin_updates_resource_hierarchy_to_add_inheritance(
+    add_one_parent_child_resource_relationship,
+    register_current_user,
+):
+    """Test updating a resource hierarchy to add inheritance."""
+    current_admin_user = await register_current_user(current_user_data_admin)
+    child_id = uuid.uuid4()
+    relationship = await add_one_parent_child_resource_relationship(child_id)
+
+    async with ResourceHierarchyCRUD() as hierarchy_crud:
+        updated_hierarchy = await hierarchy_crud.update(
+            current_user=current_admin_user,
+            parent_id=relationship.parent_id,
+            child_id=relationship.child_id,
+            inherit=True,
+        )
+
+    assert updated_hierarchy.parent_id == relationship.parent_id
+    assert updated_hierarchy.child_id == relationship.child_id
+    assert updated_hierarchy.inherit is True
+
+@pytest.mark.anyio
+async def test_admin_updates_resource_hierarchy_to_remove_inheritance(
+    add_one_parent_child_resource_relationship,
+    register_current_user,
+):
+    """Test updating a resource hierarchy to remove inheritance."""
+    current_admin_user = await register_current_user(current_user_data_admin)
+    child_id = uuid.uuid4()
+    relationship = await add_one_parent_child_resource_relationship(child_id, inherit=True)
+
+    async with ResourceHierarchyCRUD() as hierarchy_crud:
+        updated_hierarchy = await hierarchy_crud.update(
+            current_user=current_admin_user,
+            parent_id=relationship.parent_id,
+            child_id=relationship.child_id,
+            inherit=False,
+        )
+
+    assert updated_hierarchy.parent_id == relationship.parent_id
+    assert updated_hierarchy.child_id == relationship.child_id
+    assert updated_hierarchy.inherit is False
+
+@pytest.mark.anyio
+async def test_user_updates_resource_hierarchy_to_add_inheritance(
+    add_one_test_access_policy,
+    add_one_parent_child_resource_relationship,
+    register_current_user,
+):
+    """Test updating a resource hierarchy to successfully add inheritance."""
+    current_user = await register_current_user(current_user_data_user1)
+    child_id = uuid.uuid4()
+    await add_one_test_access_policy(        {
+            "identity_id": current_user.user_id,
+            "resource_id": str(child_id),
+            "action": Action.write,
+        },)
+    await add_one_test_access_policy(        {
+            "identity_id": current_user.user_id,
+            "resource_id": str(many_resource_ids[0]),
+            "action": Action.write,
+        },)
+    relationship = await add_one_parent_child_resource_relationship(child_id)
+
+    async with ResourceHierarchyCRUD() as hierarchy_crud:
+        updated_hierarchy = await hierarchy_crud.update(
+            current_user=current_user,
+            parent_id=relationship.parent_id,
+            child_id=relationship.child_id,
+            inherit=True,
+        )
+
+    assert updated_hierarchy.parent_id == relationship.parent_id
+    assert updated_hierarchy.child_id == relationship.child_id
+    assert updated_hierarchy.inherit is True
+
+@pytest.mark.anyio
+async def test_user_updates_resource_hierarchy_to_remove_inheritance(
+    add_one_test_access_policy,
+    add_one_parent_child_resource_relationship,
+    register_current_user,
+):
+    """Test updating a resource hierarchy to successfully remove inheritance."""
+    current_user = await register_current_user(current_user_data_user1)
+    child_id = uuid.uuid4()
+    await add_one_test_access_policy(        {
+            "identity_id": current_user.user_id,
+            "resource_id": str(child_id),
+            "action": Action.write,
+        },)
+    await add_one_test_access_policy(        {
+            "identity_id": current_user.user_id,
+            "resource_id": str(many_resource_ids[0]),
+            "action": Action.write,
+        },)
+    relationship = await add_one_parent_child_resource_relationship(child_id, inherit=True)
+
+    async with ResourceHierarchyCRUD() as hierarchy_crud:
+        updated_hierarchy = await hierarchy_crud.update(
+            current_user=current_user,
+            parent_id=relationship.parent_id,
+            child_id=relationship.child_id,
+            inherit=False,
+        )
+
+    assert updated_hierarchy.parent_id == relationship.parent_id
+    assert updated_hierarchy.child_id == relationship.child_id
+    assert updated_hierarchy.inherit is False
+
+
+@pytest.mark.anyio
+async def test_user_updates_resource_hierarchy_without_access_to_child_fails(
+    add_one_parent_child_resource_relationship,
+    register_current_user,
+):
+    """Test updating a resource hierarchy without access to child."""
+    current_user = await register_current_user(current_user_data_user1)
+    child_id = uuid.uuid4()
+    relationship = await add_one_parent_child_resource_relationship(child_id)
+
+    async with ResourceHierarchyCRUD() as hierarchy_crud:
+        try:
+            await hierarchy_crud.update(
+                current_user=current_user,
+                parent_id=relationship.parent_id,
+                child_id=relationship.child_id,
+                inherit=True,
+            )
+        except HTTPException as err:
+            assert err.status_code == 404
+            assert err.detail == "Hierarchy not found."
+        else:
+            pytest.fail("No HTTPexception raised!")
+
+
+@pytest.mark.anyio
+async def test_user_updates_resource_hierarchy_without_access_to_parent_fails(
+    add_one_parent_child_resource_relationship,
+    register_current_user,):
+    """Test updating a resource hierarchy without access to parent."""
+    current_user = await register_current_user(current_user_data_user1)
+    child_id = uuid.uuid4()
+    relationship = await add_one_parent_child_resource_relationship(child_id)
+
+    async with ResourceHierarchyCRUD() as hierarchy_crud:
+        try:
+            await hierarchy_crud.update(
+                current_user=current_user,
+                parent_id=relationship.parent_id,
+                child_id=relationship.child_id,
+                inherit=True,
+            )
+        except HTTPException as err:
+            assert err.status_code == 404
+            assert err.detail == "Hierarchy not found."
+        else:
+            pytest.fail("No HTTPexception raised!")
+
+@pytest.mark.anyio
+async def test_user_updates_resource_hierarchy_with_read_only_access_to_child_fails(
+    add_one_parent_child_resource_relationship,
+    register_current_user,
+):
+    """Test updating a resource hierarchy without access to child."""
+    current_user = await register_current_user(current_user_data_user1)
+    child_id = uuid.uuid4()
+    relationship = await add_one_parent_child_resource_relationship(child_id)
+
+    async with ResourceHierarchyCRUD() as hierarchy_crud:
+        try:
+            await hierarchy_crud.update(
+                current_user=current_user,
+                parent_id=relationship.parent_id,
+                child_id=relationship.child_id,
+                inherit=True,
+            )
+        except HTTPException as err:
+            assert err.status_code == 404
+            assert err.detail == "Hierarchy not found."
+        else:
+            pytest.fail("No HTTPexception raised!")
+
+
+@pytest.mark.anyio
+async def test_user_updates_resource_hierarchy_with_read_only_access_to_parent_fails(
+    add_one_parent_child_resource_relationship,
+    register_current_user,):
+    """Test updating a resource hierarchy without access to parent."""
+    current_user = await register_current_user(current_user_data_user1)
+    child_id = uuid.uuid4()
+    relationship = await add_one_parent_child_resource_relationship(child_id)
+
+    async with ResourceHierarchyCRUD() as hierarchy_crud:
+        try:
+            result =await hierarchy_crud.update(
+                current_user=current_user,
+                parent_id=relationship.parent_id,
+                child_id=relationship.child_id,
+                inherit=True,
+            )
+            print("=== result ===")
+            pprint(result)
+        except HTTPException as err:
+            assert err.status_code == 404
+            assert err.detail == "Hierarchy not found."
+        else:
+            pytest.fail("No HTTPexception raised!")
 
 @pytest.mark.anyio
 async def test_admin_deletes_resource_hierarchy_child(
