@@ -335,11 +335,14 @@ class BaseNamespace(
                             resource.inherit = (
                                 hierarchy[0].inherit if hierarchy else None
                             )
-                            resource.order = (
-                                hierarchy[0].order
-                                if hierarchy and hierarchy[0].order
-                                else None
-                            )
+                            # Onlt resources have an order, not identities:
+                            # TBD: write test for this:
+                            if crud.model.__name__ in ResourceType.list():
+                                resource.order = (
+                                    hierarchy[0].order
+                                    if hierarchy and hierarchy[0].order
+                                    else None
+                                )
         except Exception:
             logger.info(f"🧦 No access data found for {resource.id}.")
         return resource
