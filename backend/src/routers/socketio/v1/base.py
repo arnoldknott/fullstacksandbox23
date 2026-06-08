@@ -37,6 +37,7 @@ from crud import register_crud
 from crud.access import (
     AccessLoggingCRUD,
     AccessPolicyCRUD,
+    get_types_from_ids,
 )
 from models.access import (
     AccessPolicyCreate,
@@ -248,11 +249,11 @@ class BaseNamespace(
 
                 allowed_child_ids = None
                 if parent_id is not None:
-                    async with crud.hierarchy_CRUD() as hierarchy_crud:
-                        hierarchies = await hierarchy_crud.read(
-                            current_user=current_user, parent_id=parent_id
-                        )
-                        allowed_child_ids = {h.child_id for h in hierarchies}
+                    hierarchy_crud = crud.hierarchy_CRUD(session=crud.session)
+                    hierarchies = await hierarchy_crud.read(
+                        current_user=current_user, parent_id=parent_id
+                    )
+                    allowed_child_ids = {h.child_id for h in hierarchies}
 
                 if self.read_model is not None:
                     for idx, item in enumerate(data):
@@ -326,23 +327,20 @@ class BaseNamespace(
                     pass
                 else:
                     async with self.crud() as crud:
-                        async with crud.hierarchy_CRUD() as hierarchy_crud:
-                            hierarchy = await hierarchy_crud.read(
-                                current_user=current_user,
-                                parent_id=UUID(parent_id),
-                                child_id=resource.id,
+                        hierarchy_crud = crud.hierarchy_CRUD(session=crud.session)
+                        hierarchy = await hierarchy_crud.read(
+                            current_user=current_user,
+                            parent_id=UUID(parent_id),
+                            child_id=resource.id,
+                        )
+                        resource.inherit = hierarchy[0].inherit if hierarchy else None
+                        # Only resources have an order, not identities:
+                        if crud.model.__name__ in ResourceType.list():
+                            resource.order = (
+                                hierarchy[0].order
+                                if hierarchy and hierarchy[0].order
+                                else None
                             )
-                            resource.inherit = (
-                                hierarchy[0].inherit if hierarchy else None
-                            )
-                            # Onlt resources have an order, not identities:
-                            # TBD: write test for this:
-                            if crud.model.__name__ in ResourceType.list():
-                                resource.order = (
-                                    hierarchy[0].order
-                                    if hierarchy and hierarchy[0].order
-                                    else None
-                                )
         except Exception:
             logger.info(f"🧦 No access data found for {resource.id}.")
         return resource
@@ -680,12 +678,10 @@ class BaseNamespace(
                             # transfer after create is necessary for other clients,
                             # so they get notified through a "shared" event.
                             if parent_id is not None:
-                                parent_types = await crud._get_types_from_ids(
-                                    [parent_id]
+                                parent_types = await get_types_from_ids(
+                                    crud.session, [parent_id]
                                 )
-                                parent_type = (
-                                    parent_types[0].type if parent_types else None
-                                )
+                                parent_type = parent_types[0] if parent_types else None
                                 # emit same status as in "on_link" - duplicate here
                                 # TBD: consider refactoring into a separate method,
                                 # to avoid that dublication.
@@ -887,14 +883,17 @@ class BaseNamespace(
                 sid, "submit:create"
             )
             async with self.crud() as crud:
-                await crud.add_child_to_parent(
-                    hierarchy_obj.child_id,
-                    hierarchy_obj.parent_id,
-                    current_user,
-                    hierarchy_obj.inherit,
+                hierarchy_CRUD = crud.hierarchy_CRUD(session=crud.session)
+                await hierarchy_CRUD.create(
+                    current_user=current_user,
+                    parent_id=hierarchy_obj.parent_id,
+                    child_id=hierarchy_obj.child_id,
+                    inherit=hierarchy_obj.inherit,
                 )
-                parent_types = await crud._get_types_from_ids([hierarchy_obj.parent_id])
-                parent_type = parent_types[0].type if parent_types else None
+                parent_types = await get_types_from_ids(
+                    crud.session, [hierarchy_obj.parent_id]
+                )
+                parent_type = parent_types[0] if parent_types else None
             status = {
                 "success": "linked",
                 "id": str(hierarchy_obj.child_id),
@@ -916,6 +915,9 @@ class BaseNamespace(
             print(error)
             await self._emit_status(sid, {"error": str(error)})
 
+    # TBD: implement and write tests for this:
+    # async def on_changelink(self, sid, hierarchy: Dict[str, Any]):
+
     # TBD: write tests for this:
     async def on_unlink(self, sid, hierarchy: Dict[str, Any]):
         """Unlink event for socket.io namespaces."""
@@ -929,11 +931,20 @@ class BaseNamespace(
                 sid, "submit:update"
             )
             async with self.crud() as crud:
-                await crud.remove_child_from_parent(
-                    hierarchy_obj.child_id, hierarchy_obj.parent_id, current_user
+                # await crud.remove_child_from_parent(
+                #     hierarchy_obj.child_id, hierarchy_obj.parent_id, current_user
+                # )
+                hierarchy_CRUD = crud.hierarchy_CRUD(session=crud.session)
+                await hierarchy_CRUD.delete(
+                    current_user, hierarchy_obj.parent_id, hierarchy_obj.child_id
                 )
-                parent_types = await crud._get_types_from_ids([hierarchy_obj.parent_id])
-                parent_type = parent_types[0].type if parent_types else None
+                # parent_types = await crud._get_types_from_ids([hierarchy_obj.parent_id])
+                # hierarchy_CRUD = crud.hierarchy_CRUD(session=crud.session)
+                # parent_types = await hierarchy_CRUD._get_types_from_ids([hierarchy_obj.parent_id])
+                parent_types = await get_types_from_ids(
+                    crud.session, [hierarchy_obj.parent_id]
+                )
+                parent_type = parent_types[0] if parent_types else None
             status = {
                 "success": "unlinked",
                 "id": str(hierarchy_obj.child_id),

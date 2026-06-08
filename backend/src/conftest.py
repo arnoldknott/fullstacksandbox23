@@ -48,14 +48,16 @@ from models.access import (
     AccessPolicyRead,
     IdentifierTypeLink,
 )
+from models.base import BaseSQLModel
 from models.identity import Group, SubGroup, User, UserRead
-from models.protected_resource import ProtectedResource
+from models.protected_resource import ProtectedChild, ProtectedResource
 from tests.utils import (
     current_user_data_admin,
     identity_id_group2,
     many_azure_user_accounts,
     many_current_users_data,
     many_entity_type_links,
+    parent_resource_id,
     many_resource_ids,
     many_test_access_logs,
     many_test_azure_users,
@@ -66,7 +68,6 @@ from tests.utils import (
     many_test_sub_groups,
     many_test_sub_sub_groups,
     many_test_ueber_groups,
-    resource_id3,
     token_admin,
 )
 
@@ -244,7 +245,7 @@ async def setup_redis_session_data():
 
 
 async def register_entity_to_identity_type_link_table(
-    entity_id: UUID, model: type[Any] = ProtectedResource
+    entity_id: UUID, model: type[BaseSQLModel] = ProtectedResource
 ):
     """Registers an identity to the identifier link table."""
     async with BaseCRUD(model) as crud:
@@ -272,7 +273,10 @@ async def register_entity_to_identity_type_link_table(
 # mocks the current user and registers in identity link table
 @pytest.fixture(scope="function")
 async def register_current_user():
-    """Returns a mock current user and registers in identity link table."""
+    """Returns a mock current user and registers in identity link table.
+
+    If no `current_user_data` is provided, it registers a default admin user.
+    """
 
     async def _register_current_user(
         current_user_data: Optional[dict[str, Any]] = None,
@@ -300,21 +304,13 @@ async def register_many_current_users():
     yield current_users
 
 
-async def register_one_resource_helper(
-    resource_id: UUID, model: type[Any] = ProtectedResource
-):
-    """Registers a resource id and its type in the database."""
-    await register_entity_to_identity_type_link_table(resource_id, model)
-    return resource_id
-
-
 # TBD: turn input into dict? But what about the model?
 @pytest.fixture(scope="function")
 async def register_one_resource():
     """Registers a resource id and its type in the database."""
 
-    async def _register_one_resource(resource_id: UUID, model: type[Any]):
-        await register_one_resource_helper(resource_id, model)
+    async def _register_one_resource(resource_id: UUID, model: type[BaseSQLModel]):
+        await register_entity_to_identity_type_link_table(resource_id, model)
 
     yield _register_one_resource
 
@@ -331,17 +327,39 @@ async def register_many_resources():
     yield many_resource_ids
 
 
+@pytest.fixture(scope="function")
+async def register_one_protected_child():
+    """Registers many protected resources with id and its type in the database."""
+
+    child_id = uuid4()
+    await register_entity_to_identity_type_link_table(child_id, ProtectedChild)
+
+    yield child_id
+
+
 # TBD: turn input into dict?
 @pytest.fixture(scope="function")
 async def register_one_identity():
     """Registers a resource id and its type in the database."""
 
-    async def _register_one_identity(identity_id: UUID, model: type[Any] = Group):
+    async def _register_one_identity(
+        identity_id: UUID, model: type[BaseSQLModel] = Group
+    ):
         """Registers a resource id and its type in the database."""
         await register_entity_to_identity_type_link_table(identity_id, model)
         return identity_id
 
     yield _register_one_identity
+
+
+@pytest.fixture(scope="function")
+async def register_one_sub_group():
+    """Registers many protected resources with id and its type in the database."""
+
+    child_id = uuid4()
+    await register_entity_to_identity_type_link_table(child_id, SubGroup)
+
+    yield child_id
 
 
 # @pytest.fixture(scope="function")
@@ -396,7 +414,7 @@ async def access_to_one_parent(
 
     async def _access_to_one_parent(
         # model: Union["ResourceType", "IdentityType"], current_user: CurrentUserData
-        model: type[Any],
+        model: type[BaseSQLModel],
         token_payload: Optional[dict[str, Any]] = None,
     ):
         """Registers a parent and adds a write policy for a the current user token to the database."""
@@ -406,7 +424,7 @@ async def access_to_one_parent(
 
         parent_id = uuid4()
 
-        await register_one_resource_helper(parent_id, model)
+        await register_entity_to_identity_type_link_table(parent_id, model)
         if public:
             access_policy = {
                 "resource_id": str(parent_id),
@@ -429,14 +447,16 @@ async def access_to_one_parent(
 
 
 async def add_test_access_policy(
-    policy: dict[str, Any], current_user: Optional[CurrentUserData] = None
+    policy: dict[str, Any],
+    current_user: Optional[CurrentUserData] = None,
+    model: type[BaseSQLModel] = ProtectedResource,
 ):
     """Adds a test policy to the database."""
     async with AccessPolicyCRUD() as crud:
         if current_user is None:
             current_user = CurrentUserData(**current_user_data_admin)
         await register_entity_to_identity_type_link_table(
-            UUID(policy["resource_id"]), ProtectedResource
+            UUID(policy["resource_id"]), model
         )
         created_policy = await crud.create(AccessPolicyCreate(**policy), current_user)
         return created_policy
@@ -448,10 +468,12 @@ async def add_one_test_access_policy():
 
     # TBD: refactor policy from type dict to AccessPolicyCreate
     async def _add_one_test_access_policy(
-        policy: dict[str, Any], current_user: Optional[CurrentUserData] = None
+        policy: dict[str, Any],
+        current_user: Optional[CurrentUserData] = None,
+        model: type[BaseSQLModel] = ProtectedResource,
     ):
         """Adds test policies to the database."""
-        return await add_test_access_policy(policy, current_user)
+        return await add_test_access_policy(policy, current_user, model)
         # async with AccessPolicyCRUD() as crud:
         #     if current_user is None:
         #         current_user = CurrentUserData(**current_user_data_admin)
@@ -527,13 +549,12 @@ async def add_parent_child_resource_relationship(
 ):
     """Adds a parent-child relationship to the resource hierarchy table."""
     await register_entity_to_identity_type_link_table(
-        child_id
+        child_id, ResourceType.get_model(child_type)
     )  # TBD: pass the model here - or refactor register_entity_to_identity_type_link_table() to use type
     async with ResourceHierarchyCRUD() as crud:
         created_relationship = await crud.create(
             current_user=CurrentUserData(**current_user_data_admin),
             parent_id=parent_id,
-            child_type=child_type,
             child_id=child_id,
             inherit=inherit,
         )
@@ -564,15 +585,22 @@ async def add_one_parent_child_resource_relationship(
 
 @pytest.fixture(scope="function")
 async def add_many_parent_child_resource_relationships(
-    register_many_resources: list[UUID],
+    # register_many_resources: list[UUID],
 ):
     """Adds many parent-child relationships to the resource hierarchy table."""
 
-    parent_id = resource_id3
+    await register_entity_to_identity_type_link_table(
+        UUID(parent_resource_id), ProtectedResource
+    )
+    for resource_id in many_resource_ids:
+        await register_entity_to_identity_type_link_table(
+            UUID(resource_id), ProtectedChild
+        )
+
     relationships = []
     for child in many_test_child_resource_entities:
         relationship = await add_parent_child_resource_relationship(
-            UUID(parent_id), UUID(child["id"]), ResourceType(child["type"])
+            UUID(parent_resource_id), UUID(child["id"]), ResourceType(child["type"])
         )
         relationships.append(relationship)
     yield relationships
@@ -593,7 +621,6 @@ async def add_parent_child_identity_relationship(
         created_relationship = await crud.create(
             current_user=CurrentUserData(**current_user_data_admin),
             parent_id=parent_id,
-            child_type=child_type,
             child_id=child_id,
             inherit=inherit,
         )

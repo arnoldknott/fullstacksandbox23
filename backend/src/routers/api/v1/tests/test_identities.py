@@ -28,13 +28,10 @@ from models.identity import (
     UserRead,
 )
 from models.protected_resource import ProtectedResourceRead
+from routers.api.v1.access import post_relationship
 from routers.api.v1.identities import (
     delete_group,
     get_user_by_id,
-    post_existing_groups_to_uebergroup,
-    post_existing_subgroup_to_group,
-    post_existing_user_to_group,
-    post_existing_users_to_subgroup,
     post_invite_azure_user,
 )
 from tests.utils import (
@@ -614,7 +611,7 @@ async def test_user_gets_own_user_through_me_endpoint_with_ueber_groups(
     await add_one_test_access_policy(policy)
 
     response_add_user_to_ueber_group = await async_client.post(
-        f"/api/v1/user/{current_user.user_id}/group/{str(mocked_ueber_groups[1].id)}"
+        f"/api/v1/access/hierarchy/{str(mocked_ueber_groups[1].id)}/child/{str(current_user.user_id)}"
     )
     assert response_add_user_to_ueber_group.status_code == 201
 
@@ -2857,1069 +2854,6 @@ async def test_all_sub_sub_group_endpoints(
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "mocked_provide_http_token_payload",
-    [token_admin_read_write],
-    indirect=True,
-)
-async def test_add_user_to_ueber_group_and_remove_again(
-    async_client: AsyncClient,
-    app_override_provide_http_token_payload: FastAPI,
-    add_one_azure_test_user: List[User],
-    add_many_test_ueber_groups,
-):
-    """Tests adding user to an ueber-group and remove again."""
-    _ = app_override_provide_http_token_payload
-
-    existing_user = await add_one_azure_test_user(0)  # type: ignore[call-arg]
-
-    mocked_ueber_groups = await add_many_test_ueber_groups()
-
-    response = await async_client.post(
-        f"/api/v1/user/{existing_user.id}/group/{str(mocked_ueber_groups[1].id)}"
-    )
-
-    assert response.status_code == 201
-    created_ueber_group_membership = response.json()
-    assert created_ueber_group_membership["parent_id"] == str(mocked_ueber_groups[1].id)
-    assert created_ueber_group_membership["child_id"] == str(existing_user.id)
-    assert created_ueber_group_membership["inherit"] is True
-
-    ueber_group_response = await async_client.get(
-        f"/api/v1/uebergroup/{str(mocked_ueber_groups[1].id)}"
-    )
-
-    assert ueber_group_response.status_code == 200
-    ueber_group = UeberGroupRead(**ueber_group_response.json())
-    assert len(ueber_group.users) == 1  # type: ignore[attr-defined]
-    assert any(user.id == existing_user.id for user in ueber_group.users)  # type: ignore[attr-defined]
-
-    # remove user from ueber group
-    remove_response = await async_client.delete(
-        f"/api/v1/user/{str(existing_user.id)}/group/{str(mocked_ueber_groups[1].id)}"
-    )
-    assert remove_response.status_code == 200
-
-    ueber_group_after_delete_response = await async_client.get(
-        f"/api/v1/uebergroup/{str(mocked_ueber_groups[1].id)}"
-    )
-
-    assert ueber_group_after_delete_response.status_code == 200
-    ueber_group_after_delete = UeberGroupRead(
-        **ueber_group_after_delete_response.json()
-    )
-    assert len(ueber_group_after_delete.users) == 0  # type: ignore[attr-defined]
-    assert all(user.id != existing_user.id for user in ueber_group_after_delete.users)  # type: ignore[attr-defined]
-
-
-@pytest.mark.anyio
-@pytest.mark.parametrize(
-    "mocked_provide_http_token_payload",
-    [token_admin_read_write],
-    indirect=True,
-)
-async def test_bulk_add_users_to_ueber_group_and_bulk_remove(
-    async_client: AsyncClient,
-    app_override_provide_http_token_payload: FastAPI,
-    add_many_azure_test_users: List[User],
-    add_many_test_ueber_groups,
-):
-    """Tests bulk adding users to an ueber-group and remove some fo them again."""
-    _ = app_override_provide_http_token_payload
-
-    existing_users = await add_many_azure_test_users()  # type: ignore[call-arg]
-
-    mocked_ueber_groups = await add_many_test_ueber_groups()
-
-    response = await async_client.post(
-        f"/api/v1/uebergroup/{str(mocked_ueber_groups[1].id)}/users",
-        json=[str(user.id) for user in existing_users],
-    )
-
-    assert response.status_code == 201
-    created_memberships = response.json()
-    assert len(created_memberships) == len(existing_users)
-    for user, created_membership in zip(existing_users, created_memberships):
-        assert created_membership["parent_id"] == str(mocked_ueber_groups[1].id)
-        assert created_membership["child_id"] == str(user.id)
-        assert created_membership["inherit"] is True
-
-    ueber_group_response = await async_client.get(
-        f"/api/v1/uebergroup/{str(mocked_ueber_groups[1].id)}"
-    )
-
-    assert ueber_group_response.status_code == 200
-    ueber_group = UeberGroupRead(**ueber_group_response.json())
-    assert len(ueber_group.users) == 5  # type: ignore[attr-defined]
-    assert all(
-        user.id in [existing_user.id for existing_user in existing_users]
-        for user in ueber_group.users  # type: ignore[attr-defined]
-    )
-
-    # bulk remove users from ueber group
-    remove_response = await async_client.request(
-        "delete",
-        f"/api/v1/uebergroup/{str(mocked_ueber_groups[1].id)}/users",
-        json=[str(user.id) for user in existing_users[0:2]],
-    )
-    assert remove_response.status_code == 200
-
-    ueber_group_after_delete_response = await async_client.get(
-        f"/api/v1/uebergroup/{str(mocked_ueber_groups[1].id)}"
-    )
-
-    assert ueber_group_after_delete_response.status_code == 200
-    ueber_group_after_delete = UeberGroupRead(
-        **ueber_group_after_delete_response.json()
-    )
-    assert len(ueber_group_after_delete.users) == 3  # type: ignore[attr-defined]
-    assert any(
-        user.id not in [existing_user.id for existing_user in existing_users[0:2]]
-        for user in ueber_group.users  # type: ignore[attr-defined]
-    )
-    expected_ids = [existing_user.id for existing_user in existing_users[2:]]
-    ueber_group_user_ids = [user.id for user in ueber_group.users]  # type: ignore[attr-defined]
-    assert all(user_id in ueber_group_user_ids for user_id in expected_ids)
-
-
-@pytest.mark.anyio
-@pytest.mark.parametrize(
-    "mocked_provide_http_token_payload",
-    [token_admin_read_write],
-    indirect=True,
-)
-async def test_bulk_add_groups_to_ueber_group_and_bulk_remove(
-    async_client: AsyncClient,
-    app_override_provide_http_token_payload: FastAPI,
-    add_many_test_ueber_groups,
-    add_many_test_groups,
-):
-    """Tests bulk adding groups to an ueber-group and remove some of them again."""
-    _ = app_override_provide_http_token_payload
-
-    mocked_groups = await add_many_test_groups()
-
-    mocked_ueber_groups = await add_many_test_ueber_groups()
-
-    response = await async_client.post(
-        f"/api/v1/uebergroup/{str(mocked_ueber_groups[1].id)}/groups",
-        json=[str(group.id) for group in mocked_groups],
-    )
-
-    assert response.status_code == 201
-    created_memberships = response.json()
-    assert len(created_memberships) == len(mocked_groups)
-    for group, created_membership in zip(mocked_groups, created_memberships):
-        assert created_membership["parent_id"] == str(mocked_ueber_groups[1].id)
-        assert created_membership["child_id"] == str(group.id)
-        assert created_membership["inherit"] is True
-
-    ueber_group_response = await async_client.get(
-        f"/api/v1/uebergroup/{str(mocked_ueber_groups[1].id)}"
-    )
-
-    assert ueber_group_response.status_code == 200
-    ueber_group = UeberGroupRead(**ueber_group_response.json())
-    assert len(ueber_group.groups) == 4  # type: ignore[attr-defined]
-    assert all(
-        group.id in [mocked_group.id for mocked_group in mocked_groups]
-        for group in ueber_group.groups  # type: ignore[attr-defined]
-    )
-
-    # bulk remove groups from ueber group
-    remove_response = await async_client.request(
-        "delete",
-        f"/api/v1/uebergroup/{str(mocked_ueber_groups[1].id)}/groups",
-        json=[str(group.id) for group in mocked_groups[0:2]],
-    )
-    assert remove_response.status_code == 200
-
-    ueber_group_after_delete_response = await async_client.get(
-        f"/api/v1/uebergroup/{str(mocked_ueber_groups[1].id)}"
-    )
-
-    assert ueber_group_after_delete_response.status_code == 200
-    ueber_group_after_delete = UeberGroupRead(
-        **ueber_group_after_delete_response.json()
-    )
-    assert len(ueber_group_after_delete.groups) == 2  # type: ignore[attr-defined]
-    assert any(
-        group.id not in [mocked_group.id for mocked_group in mocked_groups[0:2]]
-        for group in ueber_group.groups  # type: ignore[attr-defined]
-    )
-    expected_ids = [mocked_group.id for mocked_group in mocked_groups[2:]]
-    ueber_group_group_ids = [group.id for group in ueber_group.groups]  # type: ignore[attr-defined]
-    assert all(group_id in ueber_group_group_ids for group_id in expected_ids)
-
-
-@pytest.mark.anyio
-@pytest.mark.parametrize(
-    "mocked_provide_http_token_payload",
-    [token_admin_read_write],
-    indirect=True,
-)
-async def test_add_user_to_group_and_remove_again(
-    async_client: AsyncClient,
-    app_override_provide_http_token_payload: FastAPI,
-    add_one_azure_test_user: List[User],
-    add_many_test_groups: List[Group],  # type: ignore[valid-type]
-):
-    """Tests adding user to a group and remove again."""
-    _ = app_override_provide_http_token_payload
-
-    existing_user = await add_one_azure_test_user(0)  # type: ignore[call-arg]
-
-    mocked_groups = await add_many_test_groups()  # type: ignore[call-arg]
-
-    response = await async_client.post(
-        f"/api/v1/user/{existing_user.id}/group/{str(mocked_groups[3].id)}"
-    )
-
-    assert response.status_code == 201
-    created_group_membership = response.json()
-    assert created_group_membership["parent_id"] == str(mocked_groups[3].id)
-    assert created_group_membership["child_id"] == str(existing_user.id)
-    assert created_group_membership["inherit"] is True
-
-    group_response = await async_client.get(f"/api/v1/group/{str(mocked_groups[3].id)}")
-
-    assert group_response.status_code == 200
-    group = GroupRead(**group_response.json())
-    assert len(group.users) == 1  # type: ignore[attr-defined]
-    assert any(user.id == existing_user.id for user in group.users)  # type: ignore[attr-defined]
-
-    # remove user from group
-    remove_response = await async_client.delete(
-        f"/api/v1/user/{str(existing_user.id)}/group/{str(mocked_groups[3].id)}"
-    )
-    assert remove_response.status_code == 200
-
-    group_after_delete_response = await async_client.get(
-        f"/api/v1/group/{str(mocked_groups[3].id)}"
-    )
-
-    assert group_after_delete_response.status_code == 200
-    group_after_delete = GroupRead(**group_after_delete_response.json())
-    assert len(group_after_delete.users) == 0  # type: ignore[attr-defined]
-    assert all(user.id != existing_user.id for user in group_after_delete.users)  # type: ignore[attr-defined]
-
-
-@pytest.mark.anyio
-@pytest.mark.parametrize(
-    "mocked_provide_http_token_payload",
-    [token_admin_read_write],
-    indirect=True,
-)
-async def test_bulk_add_users_to_group_and_bulk_remove(
-    async_client: AsyncClient,
-    app_override_provide_http_token_payload: FastAPI,
-    add_many_azure_test_users: List[User],
-    add_many_test_groups,
-):
-    """Tests bulk adding users to a group and bulk remove some of them again."""
-    _ = app_override_provide_http_token_payload
-
-    existing_users = await add_many_azure_test_users()  # type: ignore[call-arg]
-
-    mocked_groups = await add_many_test_groups()
-
-    response = await async_client.post(
-        f"/api/v1/group/{str(mocked_groups[1].id)}/users",
-        json=[str(user.id) for user in existing_users],
-    )
-
-    assert response.status_code == 201
-    created_memberships = response.json()
-    assert len(created_memberships) == len(existing_users)
-    for user, created_membership in zip(existing_users, created_memberships):
-        assert created_membership["parent_id"] == str(mocked_groups[1].id)
-        assert created_membership["child_id"] == str(user.id)
-        assert created_membership["inherit"] is True
-
-    group_response = await async_client.get(f"/api/v1/group/{str(mocked_groups[1].id)}")
-
-    assert group_response.status_code == 200
-    group = GroupRead(**group_response.json())
-    assert len(group.users) == 5  # type: ignore[attr-defined]
-    assert all(
-        user.id in [existing_user.id for existing_user in existing_users]
-        for user in group.users  # type: ignore[attr-defined]
-    )
-
-    # bulk remove users from group
-    remove_response = await async_client.request(
-        "delete",
-        f"/api/v1/group/{str(mocked_groups[1].id)}/users",
-        json=[str(user.id) for user in existing_users[0:2]],
-    )
-    assert remove_response.status_code == 200
-
-    group_after_delete_response = await async_client.get(
-        f"/api/v1/group/{str(mocked_groups[1].id)}"
-    )
-
-    assert group_after_delete_response.status_code == 200
-    group_after_delete = GroupRead(**group_after_delete_response.json())
-    assert len(group_after_delete.users) == 3  # type: ignore[attr-defined]
-    assert any(
-        user.id not in [existing_user.id for existing_user in existing_users[0:2]]
-        for user in group.users  # type: ignore[attr-defined]
-    )
-    expected_ids = [existing_user.id for existing_user in existing_users[2:]]
-    group_user_ids = [user.id for user in group.users]  # type: ignore[attr-defined]
-    assert all(user_id in group_user_ids for user_id in expected_ids)
-
-
-@pytest.mark.anyio
-@pytest.mark.parametrize(
-    "mocked_provide_http_token_payload",
-    [token_admin_read_write],
-    indirect=True,
-)
-async def test_bulk_add_sub_groups_to_group_and_bulk_remove(
-    async_client: AsyncClient,
-    app_override_provide_http_token_payload: FastAPI,
-    add_many_test_groups,
-    add_many_test_sub_groups,
-):
-    """Tests bulk adding sub-groups to a group and bulk remove some of them again."""
-    _ = app_override_provide_http_token_payload
-
-    mocked_sub_groups = await add_many_test_sub_groups()
-
-    mocked_groups = await add_many_test_groups()
-
-    response = await async_client.post(
-        f"/api/v1/group/{str(mocked_groups[2].id)}/subgroups",
-        json=[str(sub_group.id) for sub_group in mocked_sub_groups],
-    )
-
-    assert response.status_code == 201
-    created_memberships = response.json()
-    assert len(created_memberships) == len(mocked_sub_groups)
-    for sub_group, created_membership in zip(mocked_sub_groups, created_memberships):
-        assert created_membership["parent_id"] == str(mocked_groups[2].id)
-        assert created_membership["child_id"] == str(sub_group.id)
-        assert created_membership["inherit"] is True
-
-    group_response = await async_client.get(f"/api/v1/group/{str(mocked_groups[2].id)}")
-
-    assert group_response.status_code == 200
-    group = GroupRead(**group_response.json())
-    assert len(group.sub_groups) == 5  # type: ignore[attr-defined]
-    assert all(
-        sub_group.id in [mocked_sub_group.id for mocked_sub_group in mocked_sub_groups]
-        for sub_group in group.sub_groups  # type: ignore[attr-defined]
-    )
-
-    # bulk remove sub-groups from group
-    remove_response = await async_client.request(
-        "delete",
-        f"/api/v1/group/{str(mocked_groups[2].id)}/subgroups",
-        json=[str(sub_group.id) for sub_group in mocked_sub_groups[0:2]],
-    )
-    assert remove_response.status_code == 200
-
-    group_after_delete_response = await async_client.get(
-        f"/api/v1/group/{str(mocked_groups[2].id)}"
-    )
-
-    assert group_after_delete_response.status_code == 200
-    group_after_delete = GroupRead(**group_after_delete_response.json())
-    assert len(group_after_delete.sub_groups) == 3  # type: ignore[attr-defined]
-    assert any(
-        sub_group.id
-        not in [mocked_sub_group.id for mocked_sub_group in mocked_sub_groups[0:2]]
-        for sub_group in group.sub_groups  # type: ignore[attr-defined]
-    )
-    expected_ids = [mocked_sub_group.id for mocked_sub_group in mocked_sub_groups[2:]]
-    group_sub_group_ids = [sub_group.id for sub_group in group.sub_groups]  # type: ignore[attr-defined]
-    assert all(sub_group_id in group_sub_group_ids for sub_group_id in expected_ids)
-
-
-@pytest.mark.anyio
-@pytest.mark.parametrize(
-    "mocked_provide_http_token_payload",
-    [token_admin_read_write],
-    indirect=True,
-)
-async def test_add_user_to_sub_group_and_remove_again(
-    async_client: AsyncClient,
-    app_override_provide_http_token_payload: FastAPI,
-    add_one_azure_test_user: List[User],
-    add_many_test_sub_groups,
-):
-    """Tests adding users to a sub-group."""
-    _ = app_override_provide_http_token_payload
-
-    existing_user = await add_one_azure_test_user(0)  # type: ignore[call-arg]
-
-    mocked_sub_groups = await add_many_test_sub_groups()
-
-    response = await async_client.post(
-        f"/api/v1/user/{existing_user.id}/group/{str(mocked_sub_groups[2].id)}"
-    )
-
-    assert response.status_code == 201
-    created_sub_group_membership = response.json()
-    assert created_sub_group_membership["parent_id"] == str(mocked_sub_groups[2].id)
-    assert created_sub_group_membership["child_id"] == str(existing_user.id)
-    assert created_sub_group_membership["inherit"] is True
-
-    sub_group_response = await async_client.get(
-        f"/api/v1/subgroup/{str(mocked_sub_groups[2].id)}"
-    )
-
-    assert sub_group_response.status_code == 200
-    sub_group = SubGroupRead(**sub_group_response.json())
-    assert len(sub_group.users) == 1  # type: ignore[attr-defined]
-    assert any(user.id == existing_user.id for user in sub_group.users)  # type: ignore[attr-defined]
-
-    # remove user from sub group
-    remove_response = await async_client.delete(
-        f"/api/v1/user/{str(existing_user.id)}/group/{str(mocked_sub_groups[2].id)}"
-    )
-    assert remove_response.status_code == 200
-
-    sub_group_after_delete_response = await async_client.get(
-        f"/api/v1/subgroup/{str(mocked_sub_groups[2].id)}"
-    )
-
-    assert sub_group_after_delete_response.status_code == 200
-    sub_group_after_delete = SubGroupRead(**sub_group_after_delete_response.json())
-    assert len(sub_group_after_delete.users) == 0  # type: ignore[attr-defined]
-    assert all(user.id != existing_user.id for user in sub_group_after_delete.users)  # type: ignore[attr-defined]
-
-
-@pytest.mark.anyio
-@pytest.mark.parametrize(
-    "mocked_provide_http_token_payload",
-    [token_admin_read_write],
-    indirect=True,
-)
-async def test_bulk_add_users_to_sub_group_and_bulk_remove(
-    async_client: AsyncClient,
-    app_override_provide_http_token_payload: FastAPI,
-    add_many_azure_test_users: List[User],
-    add_many_test_sub_groups,
-):
-    """Tests bulk adding users to a sub-group and remove some of them again."""
-    _ = app_override_provide_http_token_payload
-
-    existing_users = await add_many_azure_test_users()  # type: ignore[call-arg]
-
-    mocked_sub_groups = await add_many_test_sub_groups()
-
-    response = await async_client.post(
-        f"/api/v1/subgroup/{str(mocked_sub_groups[1].id)}/users",
-        json=[str(user.id) for user in existing_users],
-    )
-
-    assert response.status_code == 201
-    created_memberships = response.json()
-    assert len(created_memberships) == len(existing_users)
-    for user, created_membership in zip(existing_users, created_memberships):
-        assert created_membership["parent_id"] == str(mocked_sub_groups[1].id)
-        assert created_membership["child_id"] == str(user.id)
-        assert created_membership["inherit"] is True
-
-    sub_group_response = await async_client.get(
-        f"/api/v1/subgroup/{str(mocked_sub_groups[1].id)}"
-    )
-
-    assert sub_group_response.status_code == 200
-    sub_group = UeberGroupRead(**sub_group_response.json())
-    assert len(sub_group.users) == 5  # type: ignore[attr-defined]
-    assert all(
-        user.id in [existing_user.id for existing_user in existing_users]
-        for user in sub_group.users  # type: ignore[attr-defined]
-    )
-
-    # bulk remove users from sub group
-    remove_response = await async_client.request(
-        "delete",
-        f"/api/v1/subgroup/{str(mocked_sub_groups[1].id)}/users",
-        json=[str(user.id) for user in existing_users[0:2]],
-    )
-    assert remove_response.status_code == 200
-
-    sub_group_after_delete_response = await async_client.get(
-        f"/api/v1/subgroup/{str(mocked_sub_groups[1].id)}"
-    )
-
-    assert sub_group_after_delete_response.status_code == 200
-    sub_group_after_delete = SubGroupRead(**sub_group_after_delete_response.json())
-    assert len(sub_group_after_delete.users) == 3  # type: ignore[attr-defined]
-    assert any(
-        user.id not in [existing_user.id for existing_user in existing_users[0:2]]
-        for user in sub_group.users  # type: ignore[attr-defined]
-    )
-    expected_ids = [existing_user.id for existing_user in existing_users[2:]]
-    sub_group_user_ids = [user.id for user in sub_group.users]  # type: ignore[attr-defined]
-    assert all(user_id in sub_group_user_ids for user_id in expected_ids)
-
-
-@pytest.mark.anyio
-@pytest.mark.parametrize(
-    "mocked_provide_http_token_payload",
-    [token_admin_read_write],
-    indirect=True,
-)
-async def test_bulk_add_sub_sub_groups_to_sub_group_and_bulk_remove(
-    async_client: AsyncClient,
-    app_override_provide_http_token_payload: FastAPI,
-    add_many_test_sub_groups,
-    add_many_test_sub_sub_groups,
-):
-    """Tests bulk adding sub-sub-groups to a sub-group and bulk remove some of them again."""
-    _ = app_override_provide_http_token_payload
-
-    mocked_sub_sub_groups = await add_many_test_sub_sub_groups()
-
-    mocked_sub_groups = await add_many_test_sub_groups()
-
-    response = await async_client.post(
-        f"/api/v1/subgroup/{str(mocked_sub_groups[3].id)}/subsubgroups",
-        json=[str(sub_sub_group.id) for sub_sub_group in mocked_sub_sub_groups],
-    )
-
-    assert response.status_code == 201
-    created_memberships = response.json()
-    assert len(created_memberships) == len(mocked_sub_sub_groups)
-    for sub_sub_group, created_membership in zip(
-        mocked_sub_sub_groups, created_memberships
-    ):
-        assert created_membership["parent_id"] == str(mocked_sub_groups[3].id)
-        assert created_membership["child_id"] == str(sub_sub_group.id)
-        assert created_membership["inherit"] is True
-
-    sub_group_response = await async_client.get(
-        f"/api/v1/subgroup/{str(mocked_sub_groups[3].id)}"
-    )
-
-    assert sub_group_response.status_code == 200
-    sub_group = SubGroupRead(**sub_group_response.json())
-    assert len(sub_group.sub_sub_groups) == 6  # type: ignore[attr-defined]
-    assert all(
-        sub_sub_group.id
-        in [mocked_sub_sub_group.id for mocked_sub_sub_group in mocked_sub_sub_groups]
-        for sub_sub_group in sub_group.sub_sub_groups  # type: ignore[attr-defined]
-    )
-
-    # bulk remove sub-sub-groups from sub-group
-    remove_response = await async_client.request(
-        "delete",
-        f"/api/v1/subgroup/{str(mocked_sub_groups[3].id)}/subsubgroups",
-        json=[str(sub_sub_group.id) for sub_sub_group in mocked_sub_sub_groups[0:2]],
-    )
-    assert remove_response.status_code == 200
-
-    sub_group_after_delete_response = await async_client.get(
-        f"/api/v1/subgroup/{str(mocked_sub_groups[3].id)}"
-    )
-
-    assert sub_group_after_delete_response.status_code == 200
-    sub_group_after_delete = SubGroupRead(**sub_group_after_delete_response.json())
-    assert len(sub_group_after_delete.sub_sub_groups) == 4  # type: ignore[attr-defined]
-    assert any(
-        sub_sub_group.id
-        not in [
-            mocked_sub_sub_group.id
-            for mocked_sub_sub_group in mocked_sub_sub_groups[0:2]
-        ]
-        for sub_sub_group in sub_group.sub_sub_groups  # type: ignore[attr-defined]
-    )
-    expected_ids = [
-        mocked_sub_sub_group.id for mocked_sub_sub_group in mocked_sub_sub_groups[2:]
-    ]
-    sub_group_sub_sub_group_ids = [
-        sub_sub_group.id for sub_sub_group in sub_group_after_delete.sub_sub_groups  # type: ignore[attr-defined]
-    ]
-    assert all(
-        sub_sub_group_id in sub_group_sub_sub_group_ids
-        for sub_sub_group_id in expected_ids
-    )
-
-
-@pytest.mark.anyio
-@pytest.mark.parametrize(
-    "mocked_provide_http_token_payload",
-    [token_admin_read_write],
-    indirect=True,
-)
-async def test_add_user_to_sub_sub_group_and_remove_again(
-    async_client: AsyncClient,
-    app_override_provide_http_token_payload: FastAPI,
-    add_one_azure_test_user: List[User],
-    add_many_test_sub_sub_groups,
-):
-    """Tests adding user to a sub-sub-group and remove again."""
-    _ = app_override_provide_http_token_payload
-
-    existing_user = await add_one_azure_test_user(0)  # type: ignore[call-arg]
-
-    mocked_sub_sub_groups = await add_many_test_sub_sub_groups()
-
-    response = await async_client.post(
-        f"/api/v1/user/{existing_user.id}/group/{str(mocked_sub_sub_groups[0].id)}"
-    )
-
-    assert response.status_code == 201
-    created_sub_sub_group_membership = response.json()
-    assert created_sub_sub_group_membership["parent_id"] == str(
-        mocked_sub_sub_groups[0].id
-    )
-    assert created_sub_sub_group_membership["child_id"] == str(existing_user.id)
-    assert created_sub_sub_group_membership["inherit"] is True
-
-    sub_sub_group_response = await async_client.get(
-        f"/api/v1/subsubgroup/{str(mocked_sub_sub_groups[0].id)}"
-    )
-
-    assert sub_sub_group_response.status_code == 200
-    sub_sub_group = SubSubGroupRead(**sub_sub_group_response.json())
-    assert len(sub_sub_group.users) == 1  # type: ignore[attr-defined]
-    assert any(user.id == existing_user.id for user in sub_sub_group.users)  # type: ignore[attr-defined]
-
-    # remove user from sub-sub-group
-    remove_response = await async_client.delete(
-        f"/api/v1/user/{str(existing_user.id)}/group/{str(mocked_sub_sub_groups[0].id)}"
-    )
-    assert remove_response.status_code == 200
-
-    sub_sub_group_after_delete_response = await async_client.get(
-        f"/api/v1/subsubgroup/{str(mocked_sub_sub_groups[0].id)}"
-    )
-
-    assert sub_sub_group_after_delete_response.status_code == 200
-    sub_sub_group_after_delete = SubSubGroupRead(
-        **sub_sub_group_after_delete_response.json()
-    )
-    assert len(sub_sub_group_after_delete.users) == 0  # type: ignore[attr-defined]
-    assert all(user.id != existing_user.id for user in sub_sub_group_after_delete.users)  # type: ignore[attr-defined]
-
-
-@pytest.mark.anyio
-@pytest.mark.parametrize(
-    "mocked_provide_http_token_payload",
-    [token_admin_read_write],
-    indirect=True,
-)
-async def test_bulk_add_users_to_sub_sub_group_and_bulk_remove(
-    async_client: AsyncClient,
-    app_override_provide_http_token_payload: FastAPI,
-    add_many_azure_test_users: List[User],
-    add_many_test_sub_sub_groups,
-):
-    """Tests bulk adding users to a sub-sub-group"""
-    _ = app_override_provide_http_token_payload
-
-    existing_users = await add_many_azure_test_users()  # type: ignore[call-arg]
-
-    mocked_sub_sub_groups = await add_many_test_sub_sub_groups()
-
-    response = await async_client.post(
-        f"/api/v1/subsubgroup/{str(mocked_sub_sub_groups[1].id)}/users",
-        json=[str(user.id) for user in existing_users],
-    )
-
-    assert response.status_code == 201
-    created_memberships = response.json()
-    assert len(created_memberships) == len(existing_users)
-    for user, created_membership in zip(existing_users, created_memberships):
-        assert created_membership["parent_id"] == str(mocked_sub_sub_groups[1].id)
-        assert created_membership["child_id"] == str(user.id)
-        assert created_membership["inherit"] is True
-
-    sub_sub_group_response = await async_client.get(
-        f"/api/v1/subsubgroup/{str(mocked_sub_sub_groups[1].id)}"
-    )
-
-    assert sub_sub_group_response.status_code == 200
-    sub_sub_group = SubSubGroupRead(**sub_sub_group_response.json())
-    assert len(sub_sub_group.users) == 5  # type: ignore[attr-defined]
-    assert all(
-        user.id in [existing_user.id for existing_user in existing_users]
-        for user in sub_sub_group.users  # type: ignore[attr-defined]
-    )
-
-    # bulk remove users from sub-sub group
-    remove_response = await async_client.request(
-        "delete",
-        f"/api/v1/subsubgroup/{str(mocked_sub_sub_groups[1].id)}/users",
-        json=[str(user.id) for user in existing_users[0:2]],
-    )
-    assert remove_response.status_code == 200
-
-    sub_sub_group_after_delete_response = await async_client.get(
-        f"/api/v1/subsubgroup/{str(mocked_sub_sub_groups[1].id)}"
-    )
-
-    assert sub_sub_group_after_delete_response.status_code == 200
-    sub_sub_group_after_delete = SubSubGroupRead(
-        **sub_sub_group_after_delete_response.json()
-    )
-    assert len(sub_sub_group_after_delete.users) == 3  # type: ignore[attr-defined]
-    assert any(
-        user.id not in [existing_user.id for existing_user in existing_users[0:2]]
-        for user in sub_sub_group.users  # type: ignore[attr-defined]
-    )
-    expected_ids = [existing_user.id for existing_user in existing_users[2:]]
-    sub_sub_group_user_ids = [user.id for user in sub_sub_group.users]  # type: ignore[attr-defined]
-    assert all(user_id in sub_sub_group_user_ids for user_id in expected_ids)
-
-
-@pytest.mark.anyio
-@pytest.mark.parametrize(
-    "mocked_provide_http_token_payload",
-    [token_admin_read_write],
-    indirect=True,
-)
-async def test_add_user_to_groups_without_inheritance(
-    async_client: AsyncClient,
-    app_override_provide_http_token_payload: FastAPI,
-    add_one_azure_test_user: List[User],
-    add_many_test_groups,
-):
-    """Tests adding users to an ueber-group, group, sub-group, and sub-sub-group."""
-    _ = app_override_provide_http_token_payload
-
-    existing_user = await add_one_azure_test_user(0)  # type: ignore[call-arg]
-
-    mocked_groups = await add_many_test_groups()
-
-    response = await async_client.post(
-        f"/api/v1/user/{existing_user.id}/group/{str(mocked_groups[1].id)}?inherit=false"
-    )
-
-    assert response.status_code == 201
-    created_hierarchy = response.json()
-    assert created_hierarchy["parent_id"] == str(mocked_groups[1].id)
-    assert created_hierarchy["child_id"] == str(existing_user.id)
-    assert created_hierarchy["inherit"] is False
-
-
-@pytest.mark.anyio
-@pytest.mark.parametrize(
-    "mocked_provide_http_token_payload",
-    [token_admin_read_write],
-    indirect=True,
-)
-async def test_add_group_to_ueber_group(
-    async_client: AsyncClient,
-    app_override_provide_http_token_payload: FastAPI,
-    add_many_test_ueber_groups,
-    add_many_test_groups,
-):
-    """Tests adding groups to an ueber-group."""
-    _ = app_override_provide_http_token_payload
-
-    mocked_ueber_groups = await add_many_test_ueber_groups()
-    mocked_groups = await add_many_test_groups()
-
-    hierarchy_response = await async_client.post(
-        f"/api/v1/group/{str(mocked_groups[1].id)}/uebergroup/{str(mocked_ueber_groups[2].id)}"
-    )
-
-    assert hierarchy_response.status_code == 201
-    created_hierarchy = hierarchy_response.json()
-    assert created_hierarchy["parent_id"] == str(mocked_ueber_groups[2].id)
-    assert created_hierarchy["child_id"] == str(mocked_groups[1].id)
-
-    # add another group to the ueber-group:
-    await async_client.post(
-        f"/api/v1/group/{str(mocked_groups[3].id)}/uebergroup/{str(mocked_ueber_groups[2].id)}"
-    )
-
-    ueber_group_response = await async_client.get(
-        f"/api/v1/uebergroup/{str(mocked_ueber_groups[2].id)}"
-    )
-
-    assert ueber_group_response.status_code == 200
-    ueber_group = UeberGroupRead(**ueber_group_response.json())
-    assert len(ueber_group.groups) == 2  # type: ignore[attr-defined]
-    assert any(group.id == mocked_groups[1].id for group in ueber_group.groups)  # type: ignore[attr-defined]
-    assert any(group.id == mocked_groups[3].id for group in ueber_group.groups)  # type: ignore[attr-defined]
-
-    # remove a group from the ueber-group:
-    remove_response = await async_client.delete(
-        f"/api/v1/group/{str(mocked_groups[1].id)}/uebergroup/{str(mocked_ueber_groups[2].id)}"
-    )
-    assert remove_response.status_code == 200
-
-    ueber_group_after_delete_response = await async_client.get(
-        f"/api/v1/uebergroup/{str(mocked_ueber_groups[2].id)}"
-    )
-
-    assert ueber_group_after_delete_response.status_code == 200
-    ueber_group_after_delete = UeberGroupRead(
-        **ueber_group_after_delete_response.json()
-    )
-    assert len(ueber_group_after_delete.groups) == 1  # type: ignore[attr-defined]
-    assert all(
-        group.id != mocked_groups[1].id for group in ueber_group_after_delete.groups  # type: ignore[attr-defined]
-    )
-    assert any(
-        group.id == mocked_groups[3].id for group in ueber_group_after_delete.groups  # type: ignore[attr-defined]
-    )
-
-
-@pytest.mark.anyio
-@pytest.mark.parametrize(
-    "mocked_provide_http_token_payload",
-    [token_admin_read_write],
-    indirect=True,
-)
-async def test_add_sub_group_to_group(
-    async_client: AsyncClient,
-    app_override_provide_http_token_payload: FastAPI,
-    add_many_test_groups,
-    add_many_test_sub_groups,
-):
-    """Tests adding groups to an ueber-group."""
-    _ = app_override_provide_http_token_payload
-
-    mocked_groups = await add_many_test_groups()
-    mocked_sub_groups = await add_many_test_sub_groups()
-
-    response = await async_client.post(
-        f"/api/v1/subgroup/{str(mocked_sub_groups[3].id)}/group/{str(mocked_groups[0].id)}"
-    )
-
-    assert response.status_code == 201
-    created_hierarchy = response.json()
-    assert created_hierarchy["parent_id"] == str(mocked_groups[0].id)
-    assert created_hierarchy["child_id"] == str(mocked_sub_groups[3].id)
-
-    group_response = await async_client.get(f"/api/v1/group/{str(mocked_groups[0].id)}")
-
-    assert group_response.status_code == 200
-    group = GroupRead(**group_response.json())
-    assert any(
-        sub_group.id == mocked_sub_groups[3].id for sub_group in group.sub_groups  # type: ignore[attr-defined]
-    )
-
-    # add another sub_group to the group:
-    await async_client.post(
-        f"/api/v1/subgroup/{str(mocked_sub_groups[0].id)}/group/{str(mocked_groups[0].id)}"
-    )
-
-    group_response = await async_client.get(f"/api/v1/group/{str(mocked_groups[0].id)}")
-
-    assert group_response.status_code == 200
-    group = GroupRead(**group_response.json())
-    assert len(group.sub_groups) == 2  # type: ignore[attr-defined]
-    assert any(
-        sub_group.id == mocked_sub_groups[3].id for sub_group in group.sub_groups  # type: ignore[attr-defined]
-    )
-    assert any(
-        sub_group.id == mocked_sub_groups[0].id for sub_group in group.sub_groups  # type: ignore[attr-defined]
-    )
-
-    # remove a sub_group from the group:
-    remove_response = await async_client.delete(
-        f"/api/v1/subgroup/{str(mocked_sub_groups[0].id)}/group/{str(mocked_groups[0].id)}"
-    )
-    assert remove_response.status_code == 200
-
-    group_after_delete_response = await async_client.get(
-        f"/api/v1/group/{str(mocked_groups[0].id)}"
-    )
-
-    assert group_after_delete_response.status_code == 200
-    group_after_delete = GroupRead(**group_after_delete_response.json())
-    assert len(group_after_delete.sub_groups) == 1  # type: ignore[attr-defined]
-    assert all(
-        sub_group.id != mocked_sub_groups[0].id
-        for sub_group in group_after_delete.sub_groups  # type: ignore[attr-defined]
-    )
-    assert any(
-        sub_group.id == mocked_sub_groups[3].id
-        for sub_group in group_after_delete.sub_groups  # type: ignore[attr-defined]
-    )
-
-
-@pytest.mark.anyio
-@pytest.mark.parametrize(
-    "mocked_provide_http_token_payload",
-    [token_admin_read_write],
-    indirect=True,
-)
-async def test_add_sub_sub_group_to_sub_group(
-    async_client: AsyncClient,
-    app_override_provide_http_token_payload: FastAPI,
-    add_many_test_sub_groups,
-    add_many_test_sub_sub_groups,
-):
-    """Tests adding groups to an ueber-group."""
-    _ = app_override_provide_http_token_payload
-
-    mocked_sub_groups = await add_many_test_sub_groups()
-    mocked_sub_sub_groups = await add_many_test_sub_sub_groups()
-
-    response = await async_client.post(
-        f"/api/v1/subsubgroup/{str(mocked_sub_sub_groups[4].id)}/subgroup/{str(mocked_sub_groups[4].id)}"
-    )
-
-    assert response.status_code == 201
-    created_hierarchy = response.json()
-    assert created_hierarchy["parent_id"] == str(mocked_sub_groups[4].id)
-    assert created_hierarchy["child_id"] == str(mocked_sub_sub_groups[4].id)
-
-    sub_group_response = await async_client.get(
-        f"/api/v1/subgroup/{str(mocked_sub_groups[4].id)}"
-    )
-
-    assert sub_group_response.status_code == 200
-    sub_group = SubGroupRead(**sub_group_response.json())
-    assert any(
-        sub_sub_group.id == mocked_sub_sub_groups[4].id
-        for sub_sub_group in sub_group.sub_sub_groups  # type: ignore[attr-defined]
-    )
-
-    # add another sub_sub_group to the sub_group:
-    await async_client.post(
-        f"/api/v1/subsubgroup/{str(mocked_sub_sub_groups[3].id)}/subgroup/{str(mocked_sub_groups[4].id)}"
-    )
-
-    sub_group_response = await async_client.get(
-        f"/api/v1/subgroup/{str(mocked_sub_groups[4].id)}"
-    )
-
-    assert sub_group_response.status_code == 200
-    sub_group = SubGroupRead(**sub_group_response.json())
-    assert len(sub_group.sub_sub_groups) == 2  # type: ignore[attr-defined]
-    assert any(
-        sub_sub_group.id == mocked_sub_sub_groups[3].id
-        for sub_sub_group in sub_group.sub_sub_groups  # type: ignore[attr-defined]
-    )
-    assert any(
-        sub_sub_group.id == mocked_sub_sub_groups[4].id
-        for sub_sub_group in sub_group.sub_sub_groups  # type: ignore[attr-defined]
-    )
-
-    # remove a sub_sub_group from the sub_group:
-    remove_response = await async_client.delete(
-        f"/api/v1/subsubgroup/{str(mocked_sub_sub_groups[4].id)}/subgroup/{str(mocked_sub_groups[4].id)}"
-    )
-    assert remove_response.status_code == 200
-
-    sub_group_after_delete_response = await async_client.get(
-        f"/api/v1/subgroup/{str(mocked_sub_groups[4].id)}"
-    )
-
-    assert sub_group_after_delete_response.status_code == 200
-    sub_group_after_delete = SubGroupRead(**sub_group_after_delete_response.json())
-    assert len(sub_group_after_delete.sub_sub_groups) == 1  # type: ignore[attr-defined]
-    assert all(
-        sub_sub_group.id != mocked_sub_sub_groups[4].id
-        for sub_sub_group in sub_group_after_delete.sub_sub_groups  # type: ignore[attr-defined]
-    )
-    assert any(
-        sub_sub_group.id == mocked_sub_sub_groups[3].id
-        for sub_sub_group in sub_group_after_delete.sub_sub_groups  # type: ignore[attr-defined]
-    )
-
-
-@pytest.mark.anyio
-@pytest.mark.parametrize(
-    "mocked_provide_http_token_payload",
-    [token_admin_read_write],
-    indirect=True,
-)
-async def test_add_prohibited_groups_to_ueber_group(
-    async_client: AsyncClient,
-    app_override_provide_http_token_payload: FastAPI,
-    add_many_test_ueber_groups,
-    add_many_test_sub_groups,
-    add_many_test_sub_sub_groups,
-):
-    """Tests adding groups to an ueber-group."""
-    _ = app_override_provide_http_token_payload
-
-    mocked_ueber_groups = await add_many_test_ueber_groups()
-    mocked_sub_groups = await add_many_test_sub_groups()
-    mocked_sub_sub_groups = await add_many_test_sub_sub_groups()
-
-    response = await async_client.post(
-        f"/api/v1/subsubgroup/{str(mocked_sub_sub_groups[3].id)}/uebergroup/{str(mocked_ueber_groups[1].id)}"
-    )
-
-    assert response.status_code == 404
-    assert response.json() == {"detail": "Not Found"}
-
-    response = await async_client.post(
-        f"/api/v1/subsubgroup/{str(mocked_sub_sub_groups[3].id)}/subgroup/{str(mocked_ueber_groups[1].id)}"
-    )
-
-    assert response.status_code == 403
-    assert response.json() == {"detail": "Forbidden."}
-
-    response = await async_client.post(
-        f"/api/v1/subgroup/{str(mocked_sub_groups[3].id)}/uebergroup/{str(mocked_ueber_groups[1].id)}"
-    )
-
-    assert response.status_code == 404
-    assert response.json() == {"detail": "Not Found"}
-
-    response = await async_client.post(
-        f"/api/v1/subgroup/{str(mocked_sub_sub_groups[3].id)}/group/{str(mocked_ueber_groups[1].id)}"
-    )
-
-    assert response.status_code == 403
-    assert response.json() == {"detail": "Forbidden."}
-
-
-@pytest.mark.anyio
-@pytest.mark.parametrize(
-    "mocked_provide_http_token_payload",
-    [token_admin_read_write],
-    indirect=True,
-)
-async def test_add_prohibited_groups_to_group(
-    async_client: AsyncClient,
-    app_override_provide_http_token_payload: FastAPI,
-    add_many_test_ueber_groups,
-    add_many_test_groups,
-    add_many_test_sub_sub_groups,
-):
-    """Tests adding groups to an ueber-group."""
-    _ = app_override_provide_http_token_payload
-
-    mocked_ueber_groups = await add_many_test_ueber_groups()
-    mocked_groups = await add_many_test_groups()
-    mocked_sub_sub_groups = await add_many_test_sub_sub_groups()
-
-    response = await async_client.post(
-        f"/api/v1/subsubgroup/{str(mocked_sub_sub_groups[3].id)}/group/{str(mocked_groups[2].id)}"
-    )
-
-    assert response.status_code == 404
-    assert response.json() == {"detail": "Not Found"}
-
-    response = await async_client.post(
-        f"/api/v1/subsubgroup/{str(mocked_sub_sub_groups[3].id)}/subgroup/{str(mocked_groups[2].id)}"
-    )
-
-    assert response.status_code == 403
-    assert response.json() == {"detail": "Forbidden."}
-
-    response = await async_client.post(
-        f"/api/v1/subgroup/{str(mocked_sub_sub_groups[3].id)}/uebergroup/{str(mocked_ueber_groups[1].id)}"
-    )
-
-    assert response.status_code == 404
-    assert response.json() == {"detail": "Not Found"}
-
-    response = await async_client.post(
-        f"/api/v1/subgroup/{str(mocked_sub_sub_groups[3].id)}/group/{str(mocked_ueber_groups[1].id)}"
-    )
-
-    assert response.status_code == 403
-    assert response.json() == {"detail": "Forbidden."}
-
-
-@pytest.mark.anyio
-@pytest.mark.parametrize(
-    "mocked_provide_http_token_payload",
     [token_admin_read_write, token_user1_read_write],
     indirect=True,
 )
@@ -3940,16 +2874,26 @@ async def test_user_access_through_inheritance_from_direct_group_membership(
 
     mocked_groups = await add_many_test_groups()
 
-    created_hierarchy = await post_existing_user_to_group(
-        current_user.user_id,
-        mocked_groups[1].id,
+    # created_hierarchy = await post_existing_user_to_group(
+    #     current_user.user_id,
+    #     mocked_groups[1].id,
+    #     inherit=True,
+    #     token_payload=token_admin_read_write,
+    #     guards=mock_guards(scopes=["api.write"], roles=["Admin"]),
+    # )
+    # assert created_hierarchy.parent_id == mocked_groups[1].id
+    # assert created_hierarchy.child_id == current_user.user_id
+    # assert created_hierarchy.inherit is True
+    created_hierarchies = await post_relationship(
+        parent_id=mocked_groups[1].id,
+        child_id=current_user.user_id,
         inherit=True,
         token_payload=token_admin_read_write,
         guards=mock_guards(scopes=["api.write"], roles=["Admin"]),
     )
-    assert created_hierarchy.parent_id == mocked_groups[1].id
-    assert created_hierarchy.child_id == current_user.user_id
-    assert created_hierarchy.inherit is True
+    assert created_hierarchies.parent_id == mocked_groups[1].id
+    assert created_hierarchies.child_id == current_user.user_id
+    assert created_hierarchies.inherit is True
 
     mocked_protected_resources = await add_many_test_protected_resources()
 
@@ -4005,16 +2949,16 @@ async def test_user_access_prohibited_through_inheritance_missing_group_membersh
 
     mocked_groups = await add_many_test_groups()
 
-    created_hierarchy = await post_existing_user_to_group(
-        current_user.user_id,
-        mocked_groups[1].id,
+    created_hierarchies = await post_relationship(
+        parent_id=mocked_groups[1].id,
+        child_id=current_user.user_id,
         inherit=True,
         token_payload=token_admin_read_write,
         guards=mock_guards(scopes=["api.write"], roles=["Admin"]),
     )
-    assert created_hierarchy.parent_id == mocked_groups[1].id
-    assert created_hierarchy.child_id == current_user.user_id
-    assert created_hierarchy.inherit is True
+    assert created_hierarchies.parent_id == mocked_groups[1].id
+    assert created_hierarchies.child_id == current_user.user_id
+    assert created_hierarchies.inherit is True
 
     mocked_protected_resources = await add_many_test_protected_resources()
 
@@ -4052,43 +2996,38 @@ async def test_user_access_through_inheritance_from_indirect_group_membership(
     mocked_groups = await add_many_test_groups()
     mocked_sub_groups = await add_many_test_sub_groups()
 
-    # Adding user to sub-group:
-    created_user_sub_group_membership = await post_existing_users_to_subgroup(
-        mocked_sub_groups[2].id,
-        [current_user.user_id],
+    created_user_sub_group_membership = await post_relationship(
+        parent_id=mocked_sub_groups[2].id,
+        child_id=current_user.user_id,
         inherit=True,
         token_payload=token_admin_read_write,
         guards=mock_guards(scopes=["api.write"], roles=["Admin"]),
     )
-    assert created_user_sub_group_membership[0].parent_id == mocked_sub_groups[2].id
-    assert created_user_sub_group_membership[0].child_id == current_user.user_id
-    assert created_user_sub_group_membership[0].inherit is True
+    assert created_user_sub_group_membership.parent_id == mocked_sub_groups[2].id
+    assert created_user_sub_group_membership.child_id == current_user.user_id
+    assert created_user_sub_group_membership.inherit is True
 
-    # Adding sub-group to group:
-    created_sub_group_group_membership = await post_existing_subgroup_to_group(
-        mocked_sub_groups[2].id,
-        mocked_groups[1].id,
+    created_sub_group_group_memberships = await post_relationship(
+        parent_id=mocked_groups[1].id,
+        child_id=mocked_sub_groups[2].id,
         inherit=True,
         token_payload=token_admin_read_write,
         guards=mock_guards(scopes=["api.write"], roles=["Admin"]),
     )
-    assert created_sub_group_group_membership.parent_id == mocked_groups[1].id
-    assert created_sub_group_group_membership.child_id == mocked_sub_groups[2].id
-    assert created_sub_group_group_membership.inherit is True
+    assert created_sub_group_group_memberships.parent_id == mocked_groups[1].id
+    assert created_sub_group_group_memberships.child_id == mocked_sub_groups[2].id
+    assert created_sub_group_group_memberships.inherit is True
 
-    # Adding group to ueber-group:
-    created_group_ueber_group_membership = await post_existing_groups_to_uebergroup(
-        mocked_ueber_groups[0].id,
-        [mocked_groups[1].id],
+    created_group_ueber_group_membership = await post_relationship(
+        parent_id=mocked_ueber_groups[0].id,
+        child_id=mocked_groups[1].id,
         inherit=True,
         token_payload=token_admin_read_write,
         guards=mock_guards(scopes=["api.write"], roles=["Admin"]),
     )
-    assert (
-        created_group_ueber_group_membership[0].parent_id == mocked_ueber_groups[0].id
-    )
-    assert created_group_ueber_group_membership[0].child_id == mocked_groups[1].id
-    assert created_group_ueber_group_membership[0].inherit is True
+    assert created_group_ueber_group_membership.parent_id == mocked_ueber_groups[0].id
+    assert created_group_ueber_group_membership.child_id == mocked_groups[1].id
+    assert created_group_ueber_group_membership.inherit is True
 
     mocked_protected_resources = await add_many_test_protected_resources()
 
@@ -4148,43 +3087,38 @@ async def test_user_access_prohibited_from_indirect_group_membership_missing_inh
     mocked_groups = await add_many_test_groups()
     mocked_sub_groups = await add_many_test_sub_groups()
 
-    # Adding user to sub-group:
-    created_user_sub_group_membership = await post_existing_user_to_group(
-        current_user.user_id,
-        mocked_sub_groups[2].id,
+    created_user_sub_group_memberships = await post_relationship(
+        parent_id=mocked_sub_groups[2].id,
+        child_id=current_user.user_id,
         inherit=True,
         token_payload=token_admin_read_write,
         guards=mock_guards(scopes=["api.write"], roles=["Admin"]),
     )
-    assert created_user_sub_group_membership.parent_id == mocked_sub_groups[2].id
-    assert created_user_sub_group_membership.child_id == current_user.user_id
-    assert created_user_sub_group_membership.inherit is True
+    assert created_user_sub_group_memberships.parent_id == mocked_sub_groups[2].id
+    assert created_user_sub_group_memberships.child_id == current_user.user_id
+    assert created_user_sub_group_memberships.inherit is True
 
-    # Adding sub-group to group:
-    created_sub_group_group_membership = await post_existing_subgroup_to_group(
-        mocked_sub_groups[2].id,
-        mocked_groups[1].id,
+    created_sub_group_group_memberships = await post_relationship(
+        parent_id=mocked_groups[1].id,
+        child_id=mocked_sub_groups[2].id,
         inherit=False,
         token_payload=token_admin_read_write,
         guards=mock_guards(scopes=["api.write"], roles=["Admin"]),
     )
-    assert created_sub_group_group_membership.parent_id == mocked_groups[1].id
-    assert created_sub_group_group_membership.child_id == mocked_sub_groups[2].id
-    assert created_sub_group_group_membership.inherit is False
+    assert created_sub_group_group_memberships.parent_id == mocked_groups[1].id
+    assert created_sub_group_group_memberships.child_id == mocked_sub_groups[2].id
+    assert created_sub_group_group_memberships.inherit is False
 
-    # Adding group to ueber-group:
-    created_group_ueber_group_membership = await post_existing_groups_to_uebergroup(
-        mocked_ueber_groups[0].id,
-        [mocked_groups[1].id],
+    created_group_ueber_group_membership = await post_relationship(
+        parent_id=mocked_ueber_groups[0].id,
+        child_id=mocked_groups[1].id,
         inherit=True,
         token_payload=token_admin_read_write,
         guards=mock_guards(scopes=["api.write"], roles=["Admin"]),
     )
-    assert (
-        created_group_ueber_group_membership[0].parent_id == mocked_ueber_groups[0].id
-    )
-    assert created_group_ueber_group_membership[0].child_id == mocked_groups[1].id
-    assert created_group_ueber_group_membership[0].inherit is True
+    assert created_group_ueber_group_membership.parent_id == mocked_ueber_groups[0].id
+    assert created_group_ueber_group_membership.child_id == mocked_groups[1].id
+    assert created_group_ueber_group_membership.inherit is True
 
     mocked_protected_resources = await add_many_test_protected_resources()
 
@@ -4226,9 +3160,9 @@ async def test_user_access_prohibited_after_deleting_group_with_direct_group_mem
 
     mocked_groups = await add_many_test_groups()
 
-    created_hierarchy = await post_existing_user_to_group(
-        str(current_user.user_id),  # type: ignore[arg-type]
-        str(mocked_groups[1].id),  # type: ignore[arg-type]
+    created_hierarchy = await post_relationship(
+        parent_id=str(mocked_groups[1].id),  # type: ignore[arg-type]
+        child_id=str(current_user.user_id),  # type: ignore[arg-type]
         inherit=True,
         token_payload=token_admin_read_write,
         guards=mock_guards(scopes=["api.write"], roles=["Admin"]),

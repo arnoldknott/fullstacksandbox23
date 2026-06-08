@@ -306,7 +306,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                 )
                 # TBD: fix this: what rights should a user have to a newly created group_group?
                 await self.policy_crud.create(access_policy, current_user_data)
-                await self.add_child_to_parent(
+                await hierarchy_CRUD.create(
                     parent_id=azure_group_id,
                     child_id=current_user_data.user_id,
                     current_user=current_user_data,

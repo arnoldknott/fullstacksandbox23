@@ -1,9 +1,9 @@
 import logging
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, AsyncGenerator, List, cast
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, HTTPException
 
 from core.security import (
     Guards,
@@ -11,8 +11,15 @@ from core.security import (
     check_token_against_guards,
     get_http_access_token_payload,
 )
+from core.databases import get_async_session
 from core.types import Action, IdentityType, ResourceType
-from crud.access import AccessLoggingCRUD, AccessPolicyCRUD
+from crud.access import (
+    get_types_from_ids,
+    AccessLoggingCRUD,
+    AccessPolicyCRUD,
+    ResourceHierarchyCRUD,
+    IdentityHierarchyCRUD,
+)
 from models.access import (
     AccessLogRead,
     AccessPolicy,
@@ -20,6 +27,10 @@ from models.access import (
     AccessPolicyDelete,
     AccessPolicyRead,
     AccessPolicyUpdate,
+    BaseHierarchyCreate,
+    BaseHierarchyDelete,
+    ResourceHierarchyRead,
+    IdentityHierarchyRead,
 )
 
 from .base import BaseView
@@ -184,6 +195,27 @@ async def delete_access_policy(
 
 
 # endregion AccessPolicies
+
+# region Entity Type
+
+
+@router.get("/type/{entity_id}", status_code=200)
+async def get_access_policies_by_entity_type(
+    entity_id: UUID,
+    token_payload=Depends(get_http_access_token_payload),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
+) -> ResourceType | IdentityType | None:
+    """Returns all access policies for requested entity_type."""
+    logger.info("GET access_policies for entity_type")
+
+    current_user = await check_token_against_guards(token_payload, guards)
+    entity_type = None
+    async with access_policy_view.crud() as crud:
+        entity_type = await crud.read_entity_type_by_id(current_user, entity_id)
+    return entity_type
+
+
+# endregion Entity Type
 
 
 # region AccessRights
@@ -407,7 +439,232 @@ async def get_access_count_for_resource(
 
 # endregion AccessLogs
 
-# region ResourceHierarchy
+# region Hierarchies
+
+# O add child to parent
+# read all children of parent?
+# read all parents of child??
+# O update relationship between parent and child (e.g. change inherit flag)
+# O reorder children of parent
+# O remove child from parent
+
+
+async def choose_hierarchy_CRUD(
+    entity_ids: List[UUID],
+) -> AsyncGenerator[ResourceHierarchyCRUD | IdentityHierarchyCRUD, None]:
+    """Chooses the appropriate hierarchy CRUD based on the entity (either resource or identity) ID."""
+    session = await get_async_session()
+    try:
+        entity_types = await get_types_from_ids(session, entity_ids)
+        hierarchy_type = None
+        for entity_type in entity_types:
+            if hierarchy_type is None:
+                if entity_type in ResourceType.list():
+                    hierarchy_type = ResourceType
+                elif entity_type in IdentityType.list():
+                    hierarchy_type = IdentityType
+            else:
+                if (
+                    entity_type in ResourceType.list()
+                    and hierarchy_type != ResourceType
+                ):
+                    raise ValueError("Mixed entity types are not allowed.")
+                elif (
+                    entity_type in IdentityType.list()
+                    and hierarchy_type != IdentityType
+                ):
+                    raise ValueError("Mixed entity types are not allowed.")
+
+        if not hierarchy_type:
+            raise ValueError("Entity type not found for the given ID.")
+        if hierarchy_type == ResourceType:
+            async with ResourceHierarchyCRUD(session=session) as crud:
+                yield crud
+            return
+
+        if hierarchy_type == IdentityType:
+            async with IdentityHierarchyCRUD(session=session) as crud:
+                yield crud
+    finally:
+        await session.close()
+
+
+@router.post("/hierarchy/{parent_id}/child/{child_id}", status_code=201)
+async def post_relationship(
+    parent_id: UUID,
+    child_id: UUID,
+    inherit: Annotated[bool, Query()] = False,
+    token_payload=Depends(get_http_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+    # ) -> List[ResourceHierarchyRead] | List[IdentityHierarchyRead]:
+) -> ResourceHierarchyRead | IdentityHierarchyRead:
+    """Creates a new relationship between a child and a parent resource."""
+    logger.info("POST view to add child to parent calls add_child_to_parent CRUD")
+    BaseHierarchyCreate.model_validate(
+        {
+            "parent_id": parent_id,
+            "child_id": child_id,
+            "inherit": inherit,
+        }
+    )
+    current_user = await check_token_against_guards(token_payload, guards)
+    # if isinstance(child_ids, UUID):
+    #     child_ids = [child_ids]
+
+    # created_hierarchies = []
+    # for child_id in child_ids:
+    #     async for hierarchy_CRUD in choose_hierarchy_CRUD([parent_id, child_id]):
+    #         created_hierarchy = await hierarchy_CRUD.create(
+    #             current_user, parent_id, child_id, inherit
+    #         )
+    #         created_hierarchies.append(created_hierarchy)
+    # return created_hierarchies
+    created_hierarchy = None
+    async for hierarchy_CRUD in choose_hierarchy_CRUD([parent_id, child_id]):
+        created_hierarchy = await hierarchy_CRUD.create(
+            current_user, parent_id, child_id, inherit
+        )
+    if created_hierarchy is None:
+        raise HTTPException(status_code=400, detail="Hierarchy could not be created.")
+    return created_hierarchy
+
+
+@router.post("/hierarchies", status_code=201)
+async def post_relationships(
+    hierarchies: List[BaseHierarchyCreate],
+    token_payload=Depends(get_http_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> List[ResourceHierarchyRead] | List[IdentityHierarchyRead]:
+    """Creates a new relationship between a child and a parent resource."""
+    logger.info("POST view to add child to parent calls add_child_to_parent CRUD")
+    current_user = await check_token_against_guards(token_payload, guards)
+
+    created_hierarchies = []
+    for hierarchy in hierarchies:
+        async for hierarchy_CRUD in choose_hierarchy_CRUD(
+            [hierarchy.parent_id, hierarchy.child_id]
+        ):
+            created_hierarchy = await hierarchy_CRUD.create(
+                current_user, hierarchy.parent_id, hierarchy.child_id, hierarchy.inherit
+            )
+            created_hierarchies.append(created_hierarchy)
+    return created_hierarchies
+
+
+@router.get("/hierarchies", status_code=200)
+async def get_relationships(
+    parent_id: Annotated[UUID | None, Query()] = None,
+    child_id: Annotated[UUID | None, Query()] = None,
+    token_payload=Depends(get_http_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> List[ResourceHierarchyRead] | List[IdentityHierarchyRead]:
+    logger.info("GET retrieves parent-child relationships.")
+    if not parent_id and not child_id:
+        raise HTTPException(
+            status_code=400,
+            detail="At least one of parent_id or child_id must be provided.",
+        )
+    current_user = await check_token_against_guards(token_payload, guards)
+    read_hierarchies = []
+    ids = [parent_id] if parent_id else []
+    ids.append(child_id) if child_id else None
+    async for hierarchy_CRUD in choose_hierarchy_CRUD(ids):
+        read_hierarchies = await hierarchy_CRUD.read(current_user, parent_id, child_id)
+    return read_hierarchies
+
+
+@router.post(
+    "/hierarchy/{parent_id}/move/{child_id}/{position}",
+    status_code=201,
+)
+async def post_reorder_children(
+    parent_id: UUID,
+    child_id: UUID,
+    position: str,
+    other_child_id: Annotated[UUID | None, Query()] = None,
+    token_payload=Depends(get_http_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+):
+    """Within a parent resource moves one child before another child."""
+    logger.info("POST reorder children view calls reorder_children CRUD")
+    current_user = await check_token_against_guards(token_payload, guards)
+    if position not in ["start", "end"]:
+        if not other_child_id:
+            raise HTTPException(status_code=400, detail="Bad request.")
+        elif position not in ["before", "after"]:
+            raise HTTPException(status_code=400, detail="Bad request.")
+    async for hierarchy_CRUD in choose_hierarchy_CRUD([parent_id, child_id]):
+        if isinstance(hierarchy_CRUD, ResourceHierarchyCRUD):
+            await hierarchy_CRUD.reorder_children(
+                current_user,
+                parent_id,
+                child_id,
+                position,
+                other_child_id,
+            )
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail="Reordering is not supported for this hierarchy.",
+            )
+
+
+@router.put("/hierarchy/{parent_id}/child/{child_id}", status_code=200)
+async def put_relationship(
+    parent_id: UUID,
+    child_id: UUID,
+    inherit: bool,
+    token_payload=Depends(get_http_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> ResourceHierarchyRead | IdentityHierarchyRead:
+    logger.info("PUT updates a parent-child relationship.")
+    current_user = await check_token_against_guards(token_payload, guards)
+    updated_hierarchy = cast(ResourceHierarchyRead | IdentityHierarchyRead, None)
+    async for hierarchy_CRUD in choose_hierarchy_CRUD([parent_id, child_id]):
+        updated_hierarchy = await hierarchy_CRUD.update(
+            current_user, parent_id, child_id, inherit
+        )
+    return updated_hierarchy
+
+
+@router.delete("/hierarchy/{parent_id}/child/{child_id}", status_code=200)
+async def delete_relationship(
+    parent_id: UUID,
+    child_id: UUID,
+    token_payload=Depends(get_http_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> int:
+    """Deletes the relationship between a child and a parent resource."""
+    logger.info("DELETE removes a child from a parent.")
+    current_user = await check_token_against_guards(token_payload, guards)
+    deleted_number = 0
+    async for hierarchy_CRUD in choose_hierarchy_CRUD([parent_id, child_id]):
+        deleted_number = await hierarchy_CRUD.delete(current_user, parent_id, child_id)
+    return deleted_number
+
+
+@router.delete("/hierarchies", status_code=200)
+async def delete_relationships(
+    hierarchies: List[BaseHierarchyDelete],
+    token_payload=Depends(get_http_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+) -> int:
+    """Removes several hierarchies."""
+    logger.info("DELETE removes several hierarchies")
+    current_user = await check_token_against_guards(token_payload, guards)
+    deleted_hierarchies = 0
+    for hierarchy in hierarchies:
+        ids = [hierarchy.parent_id] if hierarchy.parent_id else []
+        ids.append(hierarchy.child_id) if hierarchy.child_id else None
+        async for hierarchy_CRUD in choose_hierarchy_CRUD(ids):
+            this_deleted_number = await hierarchy_CRUD.delete(
+                current_user, hierarchy.parent_id, hierarchy.child_id
+            )
+            deleted_hierarchies += this_deleted_number
+    return deleted_hierarchies
+
+
+# endregion Hierarchies
 
 ### Reconsider: maybe worthwhile implementing - leave the hierarchy inside the individual resources
 # region ResourceHierarchy

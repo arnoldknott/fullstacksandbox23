@@ -92,7 +92,8 @@ async def add_tag_to_demo_resource(
     current_user = await check_token_against_guards(token_payload, guards)
     async with TagCRUD() as crud:
         for tag_id in tag_ids:
-            await crud.add_child_to_parent(
+            hierarchy_CRUD = crud.hierarchy_CRUD(session=crud.session)
+            await hierarchy_CRUD.create(
                 parent_id=resource_id,
                 child_id=tag_id,
                 current_user=current_user,

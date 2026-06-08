@@ -692,6 +692,8 @@ many_azure_user_accounts = [
     azure_user_account_3,
 ]
 
+parent_resource_id = str(uuid4())
+
 resource_id1 = str(uuid4())
 resource_id2 = str(uuid4())
 resource_id3 = str(uuid4())

@@ -23,9 +23,9 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from core.databases import get_async_session
 from crud import registry_CRUDs
 from crud.access import (
+    get_types_from_ids,
     AccessLoggingCRUD,
     AccessPolicyCRUD,
-    BaseHierarchyCRUD,
     IdentityHierarchyCRUD,
     ResourceHierarchyCRUD,
 )
@@ -36,9 +36,7 @@ from models.access import (
     AccessRequest,
     IdentifierTypeLink,
     IdentityHierarchy,
-    IdentityHierarchyRead,
     ResourceHierarchy,
-    ResourceHierarchyRead,
 )
 from models.base import BaseSQLModel
 
@@ -199,33 +197,6 @@ class BaseCRUD(
         await self.session.exec(statement)
         await self.session.commit()
 
-    async def _get_types_from_ids(
-        self, ids: List[uuid.UUID]
-    ) -> List[IdentifierTypeLink]:
-        """Gets the resource types for a list of object IDs."""
-        statement = select(IdentifierTypeLink).where(
-            col(IdentifierTypeLink.id).in_(ids)
-        )
-        response = await self.session.exec(statement)
-        return list(response.all())
-
-    async def check_identifier_type_link(
-        self,
-        object_id: uuid.UUID,
-    ):
-        """Checks if a resource type link of an object_id refers to a type self_model."""
-        statement = select(IdentifierTypeLink).where(
-            IdentifierTypeLink.id == object_id,
-            IdentifierTypeLink.type == self.entity_type,
-        )
-        response = await self.session.exec(statement)
-        result = response.unique().one()
-        if not result:
-            raise HTTPException(
-                status_code=404, detail=f"{self.model.__name__} not found."
-            )
-        return True
-
     def _provide_data_directory(
         self,
     ):
@@ -357,10 +328,12 @@ class BaseCRUD(
                 access_policy, current_user, allow_override=True
             )
             if parent_id:
-                await self.add_child_to_parent(
+                hierarchy_CRUD = self.hierarchy_CRUD(session=self.session)
+
+                await hierarchy_CRUD.create(
+                    current_user=current_user,
                     parent_id=parent_id,
                     child_id=database_object.id,
-                    current_user=current_user,
                     inherit=inherit,
                 )
 
@@ -440,57 +413,6 @@ class BaseCRUD(
                 status_code=403,
                 detail=f"{self.model.__name__} - Forbidden.",
             )
-
-    async def add_child_to_parent(
-        self,
-        child_id: uuid.UUID,
-        parent_id: uuid.UUID,
-        current_user: "CurrentUserData",
-        inherit: Optional[bool] = False,
-    ) -> ResourceHierarchyRead | IdentityHierarchyRead:
-        """Adds a member of this class to a parent (of another entity type)."""
-        hierarchy_CRUD = self.hierarchy_CRUD(session=self.session)
-        # The runtime invariant guarantees `self.entity_type` matches the
-        # `child_type` parameter of the concrete hierarchy CRUD (Resource vs
-        # Identity). Pyright cannot correlate the two unions, so we view the
-        # instance through the base class which accepts the full union.
-        hierarchy = await cast(
-            BaseHierarchyCRUD[Any, Any, Any, Any], hierarchy_CRUD
-        ).create(
-            current_user=current_user,
-            parent_id=parent_id,
-            child_type=self.entity_type,
-            child_id=child_id,
-            inherit=inherit,
-        )
-
-        return hierarchy
-
-    async def reorder_children(
-        self,
-        parent_id: uuid.UUID,
-        child_id: uuid.UUID,
-        position: str,
-        other_child_id: Optional[uuid.UUID],
-        current_user: "CurrentUserData",
-    ) -> None:
-        """Reorders the children of a parent."""
-        # Only resource hierarchies support reordering (they have an `order` column).
-        if not issubclass(self.hierarchy_CRUD, ResourceHierarchyCRUD):
-            raise HTTPException(
-                status_code=400,
-                detail=f"{self.model.__name__} does not support reordering.",
-            )
-        hierarchy_CRUD = self.hierarchy_CRUD(session=self.session)
-        hierarchy = await hierarchy_CRUD.reorder_children(
-            current_user=current_user,
-            parent_id=parent_id,
-            child_id=child_id,
-            position=position,
-            other_child_id=other_child_id,
-        )
-
-        return hierarchy
 
     # TBD: implement a create_if_not_exists method
     # or UPSERT (update or insert)
@@ -831,26 +753,6 @@ class BaseCRUD(
                 detail=f"{self.model.__name__} - Forbidden.",
             )
 
-    async def update_child_parent_relationship(
-        self,
-        current_user: "CurrentUserData",
-        child_id: uuid.UUID,
-        parent_id: uuid.UUID,
-        inherit: Optional[bool] = False,
-    ) -> ResourceHierarchyRead | IdentityHierarchyRead:
-        """Updates the parent of a member of this class."""
-        hierarchy_CRUD = self.hierarchy_CRUD(session=self.session)
-        hierarchy = await cast(
-            BaseHierarchyCRUD[Any, Any, Any, Any], hierarchy_CRUD
-        ).update(
-            current_user=current_user,
-            child_id=child_id,
-            parent_id=parent_id,
-            inherit=inherit,
-        )
-
-        return hierarchy
-
     async def delete(  # noqa: C901
         self,
         current_user: "CurrentUserData",
@@ -890,10 +792,10 @@ class BaseCRUD(
             )
 
             children_ids = [child.child_id for child in children_relationships]
-            children_typelinks = await self._get_types_from_ids(children_ids)
-            for child in children_typelinks:
+            children_typelinks = await get_types_from_ids(self.session, children_ids)
+            for child_id, idx in zip(children_ids, range(len(children_ids))):
                 # TBD: refactor to auto recreation, of CRUD instane, when session changes.
-                crud = registry_CRUDs.get(child.type)
+                crud = registry_CRUDs.get(children_typelinks[idx])
                 if crud:
                     crud.session = self.session
                     if crud.policy_crud:
@@ -902,14 +804,14 @@ class BaseCRUD(
                         crud.logging_crud.session = self.session
                     if not crud.allow_standalone:
                         all_parents = await hierarchy_CRUD.read(
-                            current_user=current_user, child_id=child.id
+                            current_user=current_user, child_id=child_id
                         )
                         if len(all_parents) == 1:
                             # async with crud as child_crud:
                             # child_crud = crud()
                             crud.session = self.session
                             await crud.delete(
-                                current_user=current_user, object_id=child.id
+                                current_user=current_user, object_id=child_id
                             )
 
             # Delete all hierarchy entries for the object
@@ -989,31 +891,6 @@ class BaseCRUD(
             logger.error(f"Error in BaseCRUD.delete: {e}")
             raise HTTPException(
                 status_code=404, detail=f"{self.model.__name__} not deleted."
-            )
-
-    async def remove_child_from_parent(
-        self,
-        child_id: uuid.UUID,
-        parent_id: uuid.UUID,
-        current_user: "CurrentUserData",
-    ) -> None:
-        """Deletes a member of this class from a parent (of another entity type)."""
-        # check if child id refers to a type equal to self.model in identifiertypelink table:
-        # if not, raise 404
-        # if yes, delete the hierarchy entry
-        if await self.check_identifier_type_link(child_id):
-            hierarchy_CRUD = self.hierarchy_CRUD(session=self.session)
-            deleted_rows = await hierarchy_CRUD.delete(
-                current_user=current_user,
-                parent_id=parent_id,
-                child_id=child_id,
-            )
-            if deleted_rows == 0:
-                raise HTTPException(status_code=404, detail="Hierarchy not found.")
-            return None
-        else:
-            raise HTTPException(
-                status_code=404, detail=f"{self.model.__name__} not found."
             )
 
     async def delete_file(

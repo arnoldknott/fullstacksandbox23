@@ -8,7 +8,7 @@ from fastapi import HTTPException
 from sqlalchemy.orm import aliased
 
 # from sqlalchemy import union_all
-from sqlmodel import SQLModel, and_, delete, func, or_, select
+from sqlmodel import SQLModel, and_, col, delete, func, or_, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from core.databases import get_async_session
@@ -45,6 +45,17 @@ read = Action.read
 connect = Action.connect
 write = Action.write
 own = Action.own
+
+
+async def get_types_from_ids(
+    session, ids: List[UUID]
+) -> List[ResourceType | IdentityType]:
+    """Gets the resource types for a list of object IDs."""
+    statement = select(IdentifierTypeLink.type).where(
+        col(IdentifierTypeLink.id).in_(ids)
+    )
+    response = await session.exec(statement)
+    return list(response.all())
 
 
 class AccessPolicyCRUD:
@@ -534,13 +545,34 @@ class AccessPolicyCRUD:
         current_user: Optional[CurrentUserData],
         identity_type: IdentityType,
     ) -> List[AccessPolicyRead]:
-        """Returns all access policies by resource type."""
+        """Returns all access policies by identity type."""
         try:
             access_policies = await self.read(current_user, identity_type=identity_type)
             return access_policies
         except Exception as err:
             logging.error(err)
             raise HTTPException(status_code=404, detail="Access policies not found.")
+
+    async def read_entity_type_by_id(
+        self,
+        current_user: Optional[CurrentUserData],
+        id: UUID,
+    ) -> Optional[ResourceType | IdentityType]:
+        """Returns the type of an entity (resource or identity) by its id."""
+        try:
+            session = self._session()
+            statement = select(IdentifierTypeLink.type).where(
+                IdentifierTypeLink.id == id
+            )
+            statement = self.filters_allowed(
+                statement, read, model=IdentifierTypeLink, current_user=current_user
+            )
+            response = await session.exec(statement)
+            result = response.unique().one()
+            return result
+        except Exception as err:
+            logging.error(err)
+            raise HTTPException(status_code=404, detail="Entity not found.")
 
     # strictly not fulfilling REST principles for PUT operations, as the id of the access policy changes.
     # TBD: refactor this to keep the id of the access policy.
@@ -935,7 +967,7 @@ class BaseHierarchyCRUD(
         self,
         current_user: CurrentUserData,
         parent_id: UUID,
-        child_type: ResourceType | IdentityType,
+        # child_type: ResourceType | IdentityType,
         child_id: UUID,
         inherit: Optional[bool] = False,
     ) -> BaseHierarchyModelRead:
@@ -949,18 +981,22 @@ class BaseHierarchyCRUD(
             )
             if not await self.policy_crud.allows(child_access_request):
                 raise HTTPException(status_code=403, detail="Forbidden.")
+
+            # get parent type and check access to parent resource:
             statement = select(IdentifierTypeLink.type)
             # only selects, the IdentifierTypeLinks, that the user has at least connect access to.
             statement = self.policy_crud.filters_allowed(
                 statement, Action.connect, IdentifierTypeLink, current_user
             )
             statement = statement.where(IdentifierTypeLink.id == parent_id)
-
             result = await session.exec(statement)
-
             parent_type = result.one()
 
+            # Get child type and check if it is allowed for the parent type:
+            child_type = (await get_types_from_ids(session, [child_id]))[0]
             allowed_children = self.hierarchy.get_allowed_children_types(parent_type)
+
+            # Create hierarchy relation
             if child_type in allowed_children:
                 relation = self.model(
                     parent_id=parent_id,
@@ -1170,6 +1206,13 @@ class BaseHierarchyCRUD(
             await session.commit()
 
             return response.rowcount
+            # TBD: consider if 0 rows deleted should raise a 404 or
+            # return 0 and let the client decide if that is an error or not.
+            # deleted_rows = response.rowcount
+            # if deleted_rows == 0:
+            #     raise HTTPException(status_code=404, detail="Hierarchy not found.")
+            # return deleted_rows
+
         except Exception as e:
             session = self._session()
             await session.rollback()
@@ -1194,13 +1237,16 @@ class ResourceHierarchyCRUD(
         self,
         current_user: CurrentUserData,
         parent_id: UUID,
-        child_type: ResourceType,
+        # child_type: ResourceType,
         child_id: UUID,
         inherit: Optional[bool] = False,
     ) -> ResourceHierarchyRead:
         """Creates a new resource hierarchy."""
         hierarchy = await super().create(
-            current_user, parent_id, child_type, child_id, inherit
+            current_user,
+            parent_id,
+            child_id,
+            inherit,
         )
         hierarchy_row = cast(ResourceHierarchy, hierarchy)
         session = self._session()
@@ -1237,6 +1283,22 @@ class ResourceHierarchyCRUD(
         other_child_id: Optional[UUID] = None,
     ) -> None:
         """Reorders the children of a parent resource."""
+        child_type = (await get_types_from_ids(self.session, [child_id]))[0]
+        print("=== ResourceHierarchyCRUD.reorder_children - child_type ===")
+        print(child_type)
+        print("=== ResourceHierarchyCRUD.reorder_children - ResourceType ===")
+        print(ResourceType.list())
+        if child_type not in ResourceType.list():
+            raise HTTPException(
+                status_code=400,
+                detail=f"{child_type} does not support reordering.",
+            )
+        parent_type = (await get_types_from_ids(self.session, [parent_id]))[0]
+        if parent_type not in ResourceType.list():
+            raise HTTPException(
+                status_code=400,
+                detail=f"{parent_type} does not support reordering.",
+            )
         try:
             session = self._session()
             model = cast(Any, self.model)
@@ -1287,6 +1349,11 @@ class ResourceHierarchyCRUD(
                         new_position = cast(int, child.order) - 1
                     elif position == "after":
                         new_position = cast(int, child.order)
+                else:
+                    if position == "start":
+                        new_position = 0
+                    elif position == "end":
+                        new_position = len(children)
 
             old_position = cast(int, old_position)
             new_position = cast(int, new_position)

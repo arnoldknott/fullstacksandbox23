@@ -184,6 +184,20 @@ class BaseHierarchyCreate(SQLModel):
         return self
 
 
+class BaseHierarchyDelete(SQLModel):
+    """Delete model for entity hierarchy"""
+
+    parent_id: Optional[uuid.UUID] = None
+    child_id: Optional[uuid.UUID] = None
+
+    @model_validator(mode="after")
+    def at_least_parent_or_child_id_required(self):
+        """Validates that at least parent_id or child_id is provided"""
+        if self.parent_id is None and self.child_id is None:
+            raise ValueError("At least parent_id or child_id must be provided.")
+        return self
+
+
 class ResourceHierarchy(BaseHierarchyCreate, BaseHierarchy, table=True):
     """Table for resource hierarchy and its types"""
 
