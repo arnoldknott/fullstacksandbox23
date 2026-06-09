@@ -13,7 +13,7 @@ export type BackendAPIConfiguration = {
 	backendFqdn: string;
 	restApiPath: string;
 	websocketPath: string;
-	socketIOPath: string | null;
+	socketIOPath: string;
 };
 
 // TBD: rename into ServerSession:
