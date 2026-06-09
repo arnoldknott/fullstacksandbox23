@@ -16,6 +16,7 @@ const defaultConnection: SocketioConnection = {
 	namespace: '/socketio-test'
 };
 
+// TBD: how is this differerent form the one defined in socketio.svelte.ts?
 export type RenderSocketIOOptions<T extends AnyEntityExtended = AnyEntityExtended> = {
 	connection?: SocketioConnection;
 	entities?: T[] | undefined | null;
