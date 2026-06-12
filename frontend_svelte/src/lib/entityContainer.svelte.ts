@@ -1,3 +1,5 @@
+import { SvelteMap } from 'svelte/reactivity';
+
 import { Action } from './accessHandler';
 import type { AccessPolicy, AnyEntityExtended, AnyIdentityExtended, Hierarchies } from './types';
 
@@ -75,7 +77,7 @@ export interface EntityContainerInterface<T extends AnyEntityExtended = AnyEntit
     createAccessPolicyResourceSelection(name: string, policyFilterFn: (policy: AccessPolicy) => boolean, fromOtherSelection?: string): T[];
     createAccessPolicyIdentitySelection(name: string, policyFilterFn: (policy: AccessPolicy) => boolean, fromOtherSelection?: string): AnyIdentityExtended[];
     // Modifying selections:
-	sortSelection(name: string, attribute: keyof T, ascending?: boolean): void;
+	createSortedSelection(name: string, attribute: keyof T, ascending?: boolean, fromOtherSelection?: string): void;
 }
 
 /**
@@ -96,7 +98,7 @@ export class EntityContainer<
     // Metadata:
 	#accessPolicies = $state<Record<string, AccessPolicy[]>>({}); // UUID: AccessPolicy[]
 	#accessRights = $state<Record<string, Action>>({}); // UUID: Action
-	#hierarchies = $state<Record<string, Hierarchies>>({}); // flat array of all hierarchies
+	#hierarchies = $state<Record<string, Hierarchies>>({}); // array of all parent and child hierarchies
     // Collection of generic selections to manage subsests of data potentially based on specific metadata criteria:
 	#selections = $state<Record<string, string[]>>({}); // selectionName: entityIds[]
 	parentId?: string | null;
@@ -310,8 +312,14 @@ export class EntityContainer<
 	 */
 	getSelectedEntities(name?: string): T[] {
         if (name) {
-            const selectedIds = this.selections[name];
-            return this.entities.filter((entity) => selectedIds.includes(entity.id));
+            // const selectedIds = this.selections[name];
+            // ((entity) => selectedIds.includes(entity.id));
+            // return this.selections[name].map((id) => this.entities.filter((entity) => entity.id === id)[0])
+            const selectedIds = this.selections[name] ?? [];
+            const entitiesById = new SvelteMap(this.entities.map((entity) => [entity.id, entity]));
+            return selectedIds
+                .map((id) => entitiesById.get(id))
+                .filter((entity): entity is T => entity !== undefined);
         } else {
             return this.entities;
         }
@@ -325,8 +333,13 @@ export class EntityContainer<
      */
     getSelectedIdentities(name?: string): AnyIdentityExtended[] {
 		if (name) {
-			const selectedIds = this.selections[name];
-			return this.identities.filter((identity) => selectedIds.includes(identity.id));
+			// const selectedIds = this.selections[name];
+			// return this.identities.filter((identity) => selectedIds.includes(identity.id));
+            const selectedIds = this.selections[name] ?? [];
+            const identitiesById = new SvelteMap(this.identities.map((identity) => [identity.id, identity]));
+            return selectedIds
+                .map((id) => identitiesById.get(id))
+                .filter((identity): identity is AnyIdentityExtended => identity !== undefined);
 		} else {
 			return this.identities;
 		}
@@ -343,6 +356,7 @@ export class EntityContainer<
      * It should set the selection with the filtered entity or identity ids.
      * @returns the selected entities or identities based on the filter function,
      * that updates reactively when entities or hierarchies change
+     * 
      */
     private createReactiveSelection(
         name: string,
@@ -367,7 +381,7 @@ export class EntityContainer<
 	 * @returns a derived array of the selected entities,
      * that updates reactively when entities or hierarchies change
 	 *
-	 * see also {@link createAllLinkedSelection}
+	 * Uses {@link createReactiveSelection} for reactive updates when data or metadata changes.
 	 */
 	createFilteredEntitySelection(
 		name: string,
@@ -395,6 +409,8 @@ export class EntityContainer<
 	 * and entities are loaded and the effect runs.
 	 * @param inverse if set to true, it will select all entities that are NOT linked to the specified parent entity.
 	 * @returns a derived array of the selected entities, that updates reactively when entities or hierarchies change
+     * 
+     * Uses {@link createReactiveSelection} for reactive updates when data or metadata changes.
 	 */
 	createAllLinkedSelection(
 		name: string,
@@ -419,8 +435,8 @@ export class EntityContainer<
 			// 		.map((hierarchy) => hierarchy.child_id) || [];
 			this.#selections[name] = this.getSelectedEntities(fromOtherSelection)
 					.filter((entity) => {
-                        if (!inverse) return this.hierarchies[entity.id].parents?.some(parent => parent.parent_id === parentId);// check if the parent_id matches the specified parentId
-                        else return this.hierarchies[entity.id].parents?.every(parent => parent.parent_id !== parentId)// check if the parent_id does not match the specified parentId
+                        if (!inverse) return this.hierarchies[entity.id]?.parents?.some(parent => parent.parent_id === parentId);// check if the parent_id matches the specified parentId
+                        else return this.hierarchies[entity.id]?.parents?.every(parent => parent.parent_id !== parentId)// check if the parent_id does not match the specified parentId
 					})
 					.map((entity) => entity.id);
 		});
@@ -428,6 +444,17 @@ export class EntityContainer<
         return selectionEntities;
 	}
 
+    /**
+     * Creates a selection of all entities that the user has a specific access right to,
+     * for example all entities that the user has 'own' access to, etc.
+     * 
+     * @param name of the selection to create
+     * @param action the specific access right to filter entities by
+     * @param fromOtherSelection optional name of another selection to filter from
+     * @returns a derived array of the selected entities, that updates reactively when entities or access rights change
+     * 
+     * Uses {@link createReactiveSelection} for reactive updates when data or metadata changes.
+     */
 	createUserHasSpecificAccessRightSelection(
 		name: string,
 		action: Action,
@@ -481,15 +508,17 @@ export class EntityContainer<
 
     }
 
-	sortSelection(name: string, attribute: keyof T, ascending = true) {
+	createSortedSelection(name: string, attribute: keyof T, ascending = true, fromOtherSelection?: string) {
         // this.addSelection(name)
         // $effect(() => {
-           this.selections[name] = this.getSelectedEntities(name).toSorted((a, b) => {
+        return this.createReactiveSelection(name, () => {
+           this.selections[name] = this.getSelectedEntities(fromOtherSelection)
+           .toSorted((a, b) => {
                 if (a[attribute] < b[attribute]) return ascending ? -1 : 1;
                 if (a[attribute] > b[attribute]) return ascending ? 1 : -1;
                 return 0;
             }).map((entity) => entity.id);
-        // });
+        });
 		// const sortedSelectionEntities =  $derived.by(() => this.getSelectedEntities(name));
         // return sortedSelectionEntities;
 	}
