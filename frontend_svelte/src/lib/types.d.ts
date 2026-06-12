@@ -111,10 +111,10 @@ export type Hierarchies = {
 type ExtendEntity<T> = T &
 	Partial<
 		WithCreationDate &
-			WithLastModifiedDate &
-			WithAccessRights &
-			WithAccessPolicies &
-			WithHierarchies
+		WithLastModifiedDate &
+		WithAccessRights &
+		WithAccessPolicies &
+		WithHierarchies
 	>;
 
 // Define the additional properties as separate interfaces
