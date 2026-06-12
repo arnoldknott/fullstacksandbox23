@@ -9,23 +9,23 @@ import type { AccessPolicy, AnyEntityExtended, AnyIdentityExtended, Hierarchies 
  * then re-runs whenever any reactive value it reads changes — typically `data.*` from
  * SvelteKit's PageData after navigation, `invalidate`, or form actions.
  */
-type EntityData<T> = {
-	seedEntities?: () => T[];
-	seedPendingEntities?: () => T[];
-	seedIdentities?: () => AnyIdentityExtended[];
-	seedAccessPolicies?: () => Record<string, AccessPolicy[]>;
-	seedAccessRights?: () => Record<string, Action>;
-	seedHierarchies?: () => Record<string, Hierarchies>;
-	seedSelections?: () => Record<string, string[]>;
-	parentId?: string; // should it be here?
-};
+// type EntityData<T> = {
+// 	seedEntities?: () => T[];
+// 	seedPendingEntities?: () => T[];
+// 	seedIdentities?: () => AnyIdentityExtended[];
+// 	seedAccessPolicies?: () => Record<string, AccessPolicy[]>;
+// 	seedAccessRights?: () => Record<string, Action>;
+// 	seedHierarchies?: () => Record<string, Hierarchies>;
+// 	seedSelections?: () => Record<string, string[]>;
+// 	parentId?: string; // should it be here?
+// };
 
 /**
  * For managing new entities before submitting them,
  * they are alive in the frontend only and EntityContainer holds space for them.
  */
 type PendingConfiguration<T extends AnyEntityExtended = AnyEntityExtended> = {
-	// parentId?: string; // should it be here?
+	parentId?: string; // should it be here?
 	inherit?: boolean;
 	public?: boolean;
 	publicAction?: Action;
@@ -33,8 +33,10 @@ type PendingConfiguration<T extends AnyEntityExtended = AnyEntityExtended> = {
 };
 
 export type EntityContainerConfiguration<T extends AnyEntityExtended = AnyEntityExtended> = Partial<
-	EntityData<T> & PendingConfiguration<T>
+	PendingConfiguration<T>
 >;
+// 	EntityData<T> & PendingConfiguration<T>
+// >;
 
 export interface EntityContainerInterface<T extends AnyEntityExtended = AnyEntityExtended> {
 	entities: T[];
@@ -133,19 +135,19 @@ export class EntityContainer<
 	constructor(configuration: EntityContainerConfiguration<T> = {}) {
 		// TBD: do we need a function to seed the data (and first time use it here)
 		// for re-seeding or is it enough to do this through the setter?
-		$effect(() => {
-			this.#entities = configuration.seedEntities ? configuration.seedEntities() : [];
-			this.#pendingEntities = configuration.seedPendingEntities
-				? configuration.seedPendingEntities()
-				: [];
-			this.#identities = configuration.seedIdentities ? configuration.seedIdentities() : [];
-			this.#accessPolicies = configuration.seedAccessPolicies
-				? configuration.seedAccessPolicies()
-				: {};
-			this.#accessRights = configuration.seedAccessRights ? configuration.seedAccessRights() : {};
-			this.#hierarchies = configuration.seedHierarchies ? configuration.seedHierarchies() : {};
-		});
-		this.#selections = configuration.seedSelections ? configuration.seedSelections() : {};
+		// $effect(() => {
+		// 	this.#entities = configuration.seedEntities ? configuration.seedEntities() : [];
+		// 	this.#pendingEntities = configuration.seedPendingEntities
+		// 		? configuration.seedPendingEntities()
+		// 		: [];
+		// 	this.#identities = configuration.seedIdentities ? configuration.seedIdentities() : [];
+		// 	this.#accessPolicies = configuration.seedAccessPolicies
+		// 		? configuration.seedAccessPolicies()
+		// 		: {};
+		// 	this.#accessRights = configuration.seedAccessRights ? configuration.seedAccessRights() : {};
+		// 	this.#hierarchies = configuration.seedHierarchies ? configuration.seedHierarchies() : {};
+		// });
+		// this.#selections = configuration.seedSelections ? configuration.seedSelections() : {};
 		this.parentId = configuration.parentId ?? undefined;
 		this.pendingTemplate = configuration.template ?? undefined; // TBD: change into setting all values, but the id value to null/undifned/empty, whatver is adequate - note the mandartory keys!
 		this.pendingSubmitOptions = {
