@@ -2,7 +2,8 @@
 	import { fade } from 'svelte/transition';
 
 	import { AccessHandler, Action } from '$lib/accessHandler';
-	import { SocketIO } from '$lib/socketio.svelte';
+	// import { SocketIO } from '$lib/socketio.svelte';
+	import { SocketIO } from '$lib/socketioNew.svelte';
 	import type { AccessShareOption, DemoResourceExtended, Identity } from '$lib/types';
 	import { initDropdown } from '$lib/userInterface';
 
@@ -24,7 +25,7 @@
 		// deleteResource?: (id: string) => void;
 		// submitResource?: (resource: DemoResourceExtended) => void;
 		// shareResource?: (accessPolicy: AccessPolicy) => void;
-		socketio?: SocketIO;
+		socketio?: SocketIO<DemoResourceExtended>;
 	} = $props();
 
 	// let editableDemoResource: DemoResourceExtended = $derived({ ...demoResource });
