@@ -934,12 +934,14 @@ class BaseHierarchyCRUD(
         self,
         hierarchy: Type[BaseHierarchy],
         base_model: Type[BaseHierarchyModel],
+        read_model: Type[BaseHierarchyModelRead],
         session: Optional[AsyncSession] = None,
     ):
         self.session = session
         self._owns_session = False if session else True
         self.hierarchy = hierarchy
         self.model = base_model
+        self.read_model = read_model
         self.policy_crud = (
             AccessPolicyCRUD(session=session) if session else AccessPolicyCRUD()
         )
@@ -1074,7 +1076,9 @@ class BaseHierarchyCRUD(
             if not results:
                 return []
 
-            return results
+            relations = [self.read_model.model_validate(result) for result in results]
+
+            return relations
         except Exception as err:
             logger.error(f"Error in reading hierarchy: {err}")
             raise HTTPException(status_code=404, detail="Hierarchy not found.")
@@ -1145,7 +1149,8 @@ class BaseHierarchyCRUD(
                 # else:
                 #     await self.session.flush()
                 await session.refresh(relation)
-            return cast(BaseHierarchyModelRead, relation)
+            relation = self.read_model.model_validate(relation)
+            return relation
         except Exception as err:
             session = self._session()
             await session.rollback()
@@ -1222,8 +1227,8 @@ class BaseHierarchyCRUD(
 
 class ResourceHierarchyCRUD(
     BaseHierarchyCRUD[
-        BaseHierarchyCreate,
         ResourceHierarchy,
+        BaseHierarchyCreate,
         ResourceHierarchyRead,
         ResourceHierarchyUpdate,
     ]
@@ -1231,7 +1236,9 @@ class ResourceHierarchyCRUD(
     """CRUD for resource hierarchies."""
 
     def __init__(self, session: Optional[AsyncSession] = None):
-        super().__init__(ResourceHierarchy, ResourceHierarchy, session=session)
+        super().__init__(
+            ResourceHierarchy, ResourceHierarchy, ResourceHierarchyRead, session=session
+        )
 
     async def create(  # type: ignore[override]
         self,
@@ -1383,8 +1390,8 @@ class ResourceHierarchyCRUD(
 
 class IdentityHierarchyCRUD(
     BaseHierarchyCRUD[
-        BaseHierarchyCreate,
         IdentityHierarchy,
+        BaseHierarchyCreate,
         IdentityHierarchyRead,
         IdentityHierarchyUpdate,
     ]
@@ -1392,4 +1399,6 @@ class IdentityHierarchyCRUD(
     """CRUD for resource hierarchies."""
 
     def __init__(self, session: Optional[AsyncSession] = None):
-        super().__init__(IdentityHierarchy, IdentityHierarchy, session=session)
+        super().__init__(
+            IdentityHierarchy, IdentityHierarchy, IdentityHierarchyRead, session=session
+        )
