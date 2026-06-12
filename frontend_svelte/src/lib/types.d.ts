@@ -101,6 +101,11 @@ export interface Hierarchy {
 	inherit?: boolean; // TBD: Is this one known at all, when receiving the data in frontend?
 }
 
+export type Hierarchies = {
+	parents?: Hierarchy[];
+	children?: Hierarchy[];
+};
+
 // Generic for resources - and partially relevant for identities:
 // Create a generic type that extends a base type with additional properties
 type ExtendEntity<T> = T &
@@ -139,9 +144,15 @@ interface WithAccessPolicies {
 // }
 
 interface WithHierarchies {
+	// TBD: consider adding all relevant hierarchies here,
+	// where resource is either child or parent?
 	// hierarchies: Hierarchy[];
-	inherit: boolean;
-	order?: number;
+	hierarchies: {
+		parents: Hierarchy[];
+		children: Hierarchy[];
+	}
+	// inherit: boolean;
+	// order?: number;
 }
 
 // specific resources:
@@ -294,4 +305,5 @@ export type AnyEntityExtended =
 	| SubGroupExtended
 	| SubSubGroupExtended;
 
-export type AnyGroupIdentity = UeberGroup | Group | SubGroup | SubSubGroup;
+export type AnyIdentity = UeberGroup | Group | SubGroup | SubSubGroup;
+export type AnyIdentityExtended = UeberGroupExtended | GroupExtended | SubGroupExtended | SubSubGroupExtended;
