@@ -12,6 +12,7 @@ from models.access import (
     AccessLogRead,
     AccessPolicy,
     AccessPolicyRead,
+    IdentityHierarchyRead,
     ResourceHierarchyRead,
 )
 from models.demo_resource import DemoResource
@@ -5275,11 +5276,17 @@ async def test_admin_adds_both_resource_and_identity_hierarchies(
 
     assert response.status_code == 201
     created_hierarchies = response.json()
-    for created_hierarchy, hierarchy in zip(created_hierarchies, hierarchies):
+    for created_hierarchy, hierarchy, idx in zip(
+        created_hierarchies, hierarchies, range(len(created_hierarchies))
+    ):
         # IdentityHierarchy does not have a field order,
         # otherwise the same as ResourceHierarchy,
         # so we can use the same model for both here:
-        created_hierarchy = ResourceHierarchyRead(**created_hierarchy)
+        if idx < 2:
+            created_hierarchy = ResourceHierarchyRead(**created_hierarchy)
+            assert isinstance(created_hierarchy.order, int)
+        else:
+            created_hierarchy = IdentityHierarchyRead(**created_hierarchy)
         assert created_hierarchy.parent_id == uuid.UUID(hierarchy["parent_id"])
         assert created_hierarchy.child_id == uuid.UUID(hierarchy["child_id"])
         assert created_hierarchy.inherit == hierarchy["inherit"]

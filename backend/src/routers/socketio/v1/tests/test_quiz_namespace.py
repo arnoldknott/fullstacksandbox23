@@ -1,5 +1,8 @@
 """Tests for Quiz SocketIO namespaces (Message, Question, Numerical)."""
 
+from uuid import UUID
+from pprint import pprint
+
 import pytest
 
 from crud.quiz import MessageCRUD, NumericalCRUD, QuestionCRUD
@@ -181,6 +184,90 @@ class TestQuestion(BaseSocketIOTest):
             access_to_one_parent,
         )
 
+    # TBD: move those general functionality tests to protected_resource tests
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "session_ids",
+        [
+            [session_id_admin_read_write_socketio],
+        ],
+        indirect=True,
+    )
+    async def test_read_and_get_children(
+        self,
+        socketio_test_client,
+        session_ids,
+        access_to_one_parent,
+        add_one_test_resource,
+    ):
+        """Test that read returns children of a question."""
+
+        connection = await socketio_test_client(
+            client_config=self.client_config(),
+            session_id=session_ids[0],
+        )
+        await connection.connect(
+            query_parameters={
+                "request-access-data": True,
+            }
+        )
+        await connection.client.sleep(0.2)
+        current_user = await connection.current_user()
+
+        # Create one question
+        question = await add_one_test_resource(
+            QuestionCRUD,
+            one_test_question,
+            current_user,
+        )
+
+        # Create one message under the question
+        messages = []
+        for message_data in many_test_messages:
+            message = await add_one_test_resource(
+                MessageCRUD,
+                message_data,
+                current_user,
+                parent_id=question.id,
+            )
+            messages.append(message)
+
+        # Read the question
+        await connection.client.emit(
+            "read",
+            str(question.id),
+            namespace=self.namespace_path,
+        )
+        await connection.client.sleep(0.5)
+
+        # Check transferred events
+        transfer_data = connection.responses("transferred", self.namespace_path)
+
+        assert len(transfer_data) == 1
+        assert transfer_data[0]["id"] == str(question.id)
+        assert (
+            "children" in transfer_data[0]
+        ), "Expected inherit flag in transferred data"
+        children = transfer_data[0]["children"]
+        print("=== test_read_and_get_children - transfer_data ===")
+        pprint(transfer_data)
+        assert len(children) == 3, "Expected one child in transferred data"
+        for children_data, message, idx in zip(
+            children, messages, range(len(messages))
+        ):
+            assert (
+                UUID(children_data["child_id"]) == message.id
+            ), "Expected parent_id to match"
+            assert (
+                "inherit" in children_data
+            ), "Expected inherit flag in transferred data"
+            assert not children_data[
+                "inherit"
+            ], "Expected default inherit flag to be False"
+            assert (
+                children_data["order"] == idx + 1
+            ), "Expected default order to match index of creation"
+
 
 class TestMessage(BaseSocketIOTest):
     """Test suite for Message SocketIO namespace."""
@@ -257,6 +344,8 @@ class TestMessage(BaseSocketIOTest):
             socketio_test_client,
         )
 
+    # TBD: move those general functionality tests to protected_resource tests
+    # once implemented for all resource types, and just keep quiz-specific tests here.
     # Read tests:
     @pytest.mark.anyio
     async def test_submit_create_public_without_parent_and_read_returns_read_access_right(
@@ -440,10 +529,17 @@ class TestMessage(BaseSocketIOTest):
 
         assert len(transfer_data) == 1
         assert transfer_data[0]["id"] == created_id
-        assert not transfer_data[0][
-            "inherit"
-        ], "Expected default inherit flag to be False"
-        assert transfer_data[0]["order"] == 1
+        assert (
+            "parents" in transfer_data[0]
+        ), "Expected inherit flag in transferred data"
+        assert (
+            "children" in transfer_data[0]
+        ), "Expected inherit flag in transferred data"
+        parent = transfer_data[0]["parents"][0]
+        assert UUID(parent["parent_id"]) == parent_id, "Expected parent_id to match"
+        assert "inherit" in parent, "Expected inherit flag in transferred data"
+        assert not parent["inherit"], "Expected default inherit flag to be False"
+        assert parent["order"] == 1, "Expected default order to be 1"
 
     @pytest.mark.anyio
     @pytest.mark.parametrize(
@@ -503,8 +599,17 @@ class TestMessage(BaseSocketIOTest):
 
         assert len(transfer_data) == 1
         assert transfer_data[0]["id"] == created_id
-        assert transfer_data[0]["inherit"], "Expected inherit flag to be True"
-        assert transfer_data[0]["order"] == 1
+        assert (
+            "parents" in transfer_data[0]
+        ), "Expected inherit flag in transferred data"
+        assert (
+            "children" in transfer_data[0]
+        ), "Expected inherit flag in transferred data"
+        parent = transfer_data[0]["parents"][0]
+        assert UUID(parent["parent_id"]) == parent_id, "Expected parent_id to match"
+        assert "inherit" in parent, "Expected inherit flag in transferred data"
+        assert parent["inherit"], "Expected default inherit flag to be False"
+        assert parent["order"] == 1, "Expected default order to be 1"
 
     # Submit Update Tests
     @pytest.mark.anyio
