@@ -54,12 +54,17 @@ export interface EntityContainerInterface<T extends AnyEntityExtended = AnyEntit
 		public?: boolean;
 		publicAction?: Action;
 	};
+    // Pending handling:
 	createPending(overrides?: Partial<T>): T;
+    // Selection handling:
 	addSelection(name: string, entityIds: string[]): string[];
-	getSelectedEntities(name?: string): T[];
+    removeSelection(name: string): void;
 	addToSelection(name: string, entityIds: string[]): string[];
 	removeFromSelection(name: string, entityIds: string[]): string[];
-	createFilteredSelection(name: string, filterFn: (entity: T) => boolean): T[];
+	getSelectedEntities(name?: string): T[];
+    getSelectedIdentities(name?: string): AnyIdentityExtended[];
+    // Helper functions to creater specific selections:
+	createFilteredEntitySelection(name: string, filterFn: (entity: T) => boolean): T[];
 	createAllLinkedSelection(
 		name: string,
 		parentId: string,
@@ -69,6 +74,7 @@ export interface EntityContainerInterface<T extends AnyEntityExtended = AnyEntit
     createUserHasSpecificAccessRightSelection(name: string, action: Action, fromOtherSelection?: string): T[];
     createAccessPolicyResourceSelection(name: string, policyFilterFn: (policy: AccessPolicy) => boolean, fromOtherSelection?: string): T[];
     createAccessPolicyIdentitySelection(name: string, policyFilterFn: (policy: AccessPolicy) => boolean, fromOtherSelection?: string): AnyIdentityExtended[];
+    // Modifying selections:
 	sortSelection(name: string, attribute: keyof T, ascending?: boolean): void;
 }
 
@@ -83,12 +89,15 @@ export interface EntityContainerInterface<T extends AnyEntityExtended = AnyEntit
 export class EntityContainer<
 	T extends AnyEntityExtended = AnyEntityExtended
 > implements EntityContainerInterface<T> {
+    // Data:
 	#entities = $state<T[]>([]); // AnyEntityExtended[];
 	#pendingEntities = $state<T[]>([]); // AnyEntityExtended[];
 	#identities = $state<AnyIdentityExtended[]>([]); // AnyIdentityExtended[];
+    // Metadata:
 	#accessPolicies = $state<Record<string, AccessPolicy[]>>({}); // UUID: AccessPolicy[]
 	#accessRights = $state<Record<string, Action>>({}); // UUID: Action
 	#hierarchies = $state<Record<string, Hierarchies>>({}); // flat array of all hierarchies
+    // Collection of generic selections to manage subsests of data potentially based on specific metadata criteria:
 	#selections = $state<Record<string, string[]>>({}); // selectionName: entityIds[]
 	parentId?: string | null;
 	// defaultInherit: boolean = false;
@@ -204,7 +213,7 @@ export class EntityContainer<
 		return pendingEntity;
 	}
 
-	// TBD: consider moving the Selection in its own class and here?
+    /** SELECTION MANAGEMENT **/
 
 	/**
 	 * Selections are named subsets of the main entity-id array, stored as arrays of ids.
@@ -242,31 +251,17 @@ export class EntityContainer<
 	//     return this.#selections[name];
 	// }
 
-	/**
-	 * Gets all entities that match this specific selection with its assigned selection function
-	 *
-	 * Call with $derived.by(() => entityContainer.getSelectedEntities('mySelection'))
-	 * in caller to reactively get the selected entities for this selection.
-	 * @param name specifies which selection to retrieve
-	 * @returns the entities that correlate to the specified selection
-	 */
-	getSelectedEntities(name?: string): T[] {
-        if (name) {
-            const selectedIds = this.selections[name];
-            return this.entities.filter((entity) => selectedIds.includes(entity.id));
-        } else {
-            return this.entities;
+    /**
+     * Removes the selection with the specified name from the entity container.
+     * 
+     * @param name of selection to remove.
+     */
+    removeSelection(name: string) {
+        if (!this.#selections[name]) {
+            throw new Error(`Selection with name "${name}" does not exist.`);
         }
-	}
-
-    getSelectedIdentities(name?: string): AnyIdentityExtended[] {
-		if (name) {
-			const selectedIds = this.selections[name];
-			return this.identities.filter((identity) => selectedIds.includes(identity.id));
-		} else {
-			return this.identities;
-		}
-	}
+        delete this.#selections[name];
+    }
 
     /**
      * Add the specified entity ids to the selection with the specified name.
@@ -302,6 +297,53 @@ export class EntityContainer<
 		return this.#selections[name];
 	}
 
+
+    /** LINKED SELECTIONS TO DATA: Entities and Identities */
+
+    /**
+	 * Gets all entities that match this specific selection with its assigned selection function
+	 *
+	 * Call with $derived.by(() => entityContainer.getSelectedEntities('mySelection'))
+	 * in caller to reactively get the selected entities for this selection.
+	 * @param name specifies which selection to retrieve
+	 * @returns the entities that correlate to the specified selection
+	 */
+	getSelectedEntities(name?: string): T[] {
+        if (name) {
+            const selectedIds = this.selections[name];
+            return this.entities.filter((entity) => selectedIds.includes(entity.id));
+        } else {
+            return this.entities;
+        }
+	}
+
+    /**
+     * Gets all identities that match this specific selection with its assigned selection function
+     * 
+     * @param name specifies which selection to retrieve
+     * @returns the identities that correlate to the specified selection
+     */
+    getSelectedIdentities(name?: string): AnyIdentityExtended[] {
+		if (name) {
+			const selectedIds = this.selections[name];
+			return this.identities.filter((identity) => selectedIds.includes(identity.id));
+		} else {
+			return this.identities;
+		}
+	}
+
+    /**
+     * Generic internal method to create a reactive selection based on a filter function.
+     * The effectFunction should set the selection with the filtered entity ids.
+     * 
+     * @param name of selection to create
+     * @param effectFunction the logic to create the selection, 
+     * which typically filters the entities based on specific criteria and
+     * sets the selection with the resulting entity ids.
+     * It should set the selection with the filtered entity or identity ids.
+     * @returns the selected entities or identities based on the filter function,
+     * that updates reactively when entities or hierarchies change
+     */
     private createReactiveSelection(
         name: string,
         effectFunction: () => void
@@ -327,7 +369,7 @@ export class EntityContainer<
 	 *
 	 * see also {@link createAllLinkedSelection}
 	 */
-	createFilteredSelection(
+	createFilteredEntitySelection(
 		name: string,
 		filterFn: (entity: T) => boolean,
 		fromOtherSelection: string | undefined = undefined
