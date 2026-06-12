@@ -1,13 +1,14 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
-	import { SvelteSet } from 'svelte/reactivity';
+	// import { SvelteSet } from 'svelte/reactivity';
 	import { fade, scale } from 'svelte/transition';
 
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import JsonData from '$components/JsonData.svelte';
 	import { AccessHandler, Action } from '$lib/accessHandler';
-	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio.svelte';
+	// import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio.svelte';
+	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketioNew.svelte';
 	import type { DemoResourceExtended } from '$lib/types';
 	import { initAccordion } from '$lib/userInterface';
 
@@ -31,48 +32,87 @@
 	// let socketio: SocketIO<DemoResourceExtended> = $state(
 	// 	undefined as unknown as SocketIO<DemoResourceExtended>
 	// );
-	let editIds = new SvelteSet<string>();
+	// let editIds = new SvelteSet<string>();
 	let statusMessages = $state<SocketioStatus[]>([]);
+	// onMount(() => {
+	// 	const connection: SocketioConnection = {
+	// 		namespace: '/demo-resource',
+	// 		cookie_session_id: page.data.session.sessionId,
+	// 		query_params: {
+	// 			'request-access-data': true,
+	// 			'identity-ids': data.payload.identities.map((identity) => identity.id).join(','),
+	// 			'join-admin-room': 'true'
+	// 		}
+	// 	};
+	// 	// TBD: populate by REST-API call initially?
+
+	// 	socketio = new SocketIO<DemoResourceExtended>(connection, {
+	// 		pendingTemplate: () => ({
+	// 			name: '',
+	// 			description: '',
+	// 			access_right: Action.OWN
+	// 			// creation_date: new Date(Date.now()) // TBD: Check if this is necessary?
+	// 		})
+	// 	});
+
 	onMount(() => {
 		const connection: SocketioConnection = {
 			namespace: '/demo-resource',
-			cookie_session_id: page.data.session.sessionId,
-			query_params: {
+			sessionId: page.data.session.sessionId,
+			queryParams: {
 				'request-access-data': true,
 				'identity-ids': data.payload.identities.map((identity) => identity.id).join(','),
-				'join-admin-room': 'true'
+				'join-admin-room': true
 			}
 		};
-		// TBD: populate by REST-API call initially?
 
 		socketio = new SocketIO<DemoResourceExtended>(connection, {
-			pendingTemplate: () => ({
+			template: {
 				name: '',
 				description: '',
 				access_right: Action.OWN
-				// creation_date: new Date(Date.now()) // TBD: Check if this is necessary?
-			})
+			}
 		});
+		socketio.addSelection('editing');
+		socketio.createUserHasSpecificAccessRightSelection('owner', Action.OWN);
+		socketio.createUserHasSpecificAccessRightSelection('write', Action.WRITE);
+		socketio.createUserHasSpecificAccessRightSelection('read', Action.READ);
 
 		// Extra `status` listener — runs alongside the default one. Maintains the local
 		// `statusMessages` log and the `editIds` set across the create round-trip.
 		socketio.client.on('status', (data: SocketioStatus) => {
 			statusMessages.unshift(data);
-			if ('success' in data && data.success === 'created') {
-				// The default handler swaps the preliminary `new_...` id for the real server id
-				// in the entities array. Mirror that swap inside `editIds` so editing stays active
-				// on the newly created resource.
-				if (editIds.has(data.submitted_id)) {
-					editIds.delete(data.submitted_id);
-					editIds.add(data.id);
-				}
-			}
+			// if ('success' in data && data.success === 'created') {
+			// 	// The default handler swaps the preliminary `new_...` id for the real server id
+			// 	// in the entities array. Mirror that swap inside `editIds` so editing stays active
+			// 	// on the newly created resource.
+			// 	if (editIds.has(data.submitted_id)) {
+			// 		editIds.delete(data.submitted_id);
+			// 		editIds.add(data.id);
+			// 	}
+			// }
 		});
 
 		// Extra `deleted` listener — drop the id from `editIds` once the server confirms deletion.
-		socketio.client.on('deleted', (resource_id: string) => {
-			editIds.delete(resource_id);
-		});
+		// socketio.client.on('deleted', (resource_id: string) => {
+		// 	editIds.delete(resource_id);
+		// });
+	});
+
+	$effect(() => {
+		console.log('=== length of demo resources in socketio ===', socketio.entities.length);
+		console.log(
+			'=== length of owned demo resources in socketio ===',
+			socketio.getSelectedEntities('owner').length
+		);
+		console.log(
+			'=== length of write demo resources in socketio ===',
+			socketio.getSelectedEntities('write').length
+		);
+		console.log(
+			'=== length of read demo resources in socketio ===',
+			socketio.getSelectedEntities('read').length
+		);
 	});
 
 	const sortResourcesByCreationDate = (a: DemoResourceExtended, b: DemoResourceExtended) => {
@@ -160,7 +200,10 @@
 		<div class="title-small italic">Currently editable</div>
 		<div class="divider divider-outline"></div>
 		<ul class="h-15 list-inside overflow-y-scroll">
-			{#each editIds as id (id)}
+			<!-- {#each editIds as id (id)}
+				<li class="label" transition:fade>{id}</li>
+			{/each} -->
+			{#each socketio?.selections['editing'] as id (id)}
 				<li class="label" transition:fade>{id}</li>
 			{/each}
 		</ul>
@@ -217,22 +260,12 @@
 		{#each ownedDemoResources as demoResource, idx (demoResource.id)}
 			<DemoResourceContainer
 				bind:edit={
-					() => {
-						if (demoResource.id) {
-							return editIds.has(demoResource.id);
-						} else {
-							return false;
-						}
-					},
+					() => socketio.selections['editing'].some((id) => id === demoResource.id),
 					(value) => {
-						if (demoResource.id) {
-							if (value) {
-								editIds.add(demoResource.id);
-							} else {
-								editIds.delete(demoResource.id || '');
-							}
-							// editIds = new Set(editIds); // trigger reactivity
-						}
+						// if (demoResource.id) {
+						if (value) socketio.addToSelection('editing', [demoResource.id]);
+						else socketio.removeFromSelection('editing', [demoResource.id]);
+						// }
 					}
 				}
 				identities={data.payload.identities}
