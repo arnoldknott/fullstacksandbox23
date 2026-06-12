@@ -54,6 +54,9 @@
 	// 			// creation_date: new Date(Date.now()) // TBD: Check if this is necessary?
 	// 		})
 	// 	});
+	let ownedDemoResources: DemoResourceExtended[] = $derived([]);
+	let writeDemoResources: DemoResourceExtended[] = $derived([]);
+	let readDemoResources: DemoResourceExtended[] = $derived([]);
 
 	onMount(() => {
 		const connection: SocketioConnection = {
@@ -77,6 +80,9 @@
 		socketio.createUserHasSpecificAccessRightSelection('owner', Action.OWN);
 		socketio.createUserHasSpecificAccessRightSelection('write', Action.WRITE);
 		socketio.createUserHasSpecificAccessRightSelection('read', Action.READ);
+		// socketio.sortSelection('owner', 'creation_date', false);
+		// socketio.sortSelection('write', 'creation_date', false);
+		// socketio.sortSelection('read', 'creation_date', false);
 
 		// Extra `status` listener — runs alongside the default one. Maintains the local
 		// `statusMessages` log and the `editIds` set across the create round-trip.
@@ -100,19 +106,28 @@
 	});
 
 	$effect(() => {
-		console.log('=== length of demo resources in socketio ===', socketio.entities.length);
-		console.log(
-			'=== length of owned demo resources in socketio ===',
-			socketio.getSelectedEntities('owner').length
-		);
-		console.log(
-			'=== length of write demo resources in socketio ===',
-			socketio.getSelectedEntities('write').length
-		);
-		console.log(
-			'=== length of read demo resources in socketio ===',
-			socketio.getSelectedEntities('read').length
-		);
+		ownedDemoResources = [
+			...socketio.pendingEntities,
+			...socketio.getSelectedEntities('owner').sort(sortResourcesByCreationDate)
+		];
+		writeDemoResources = socketio.getSelectedEntities('write').sort(sortResourcesByCreationDate);
+		readDemoResources = socketio.getSelectedEntities('read').sort(sortResourcesByCreationDate);
+		// ownedDemoResources = socketio.getSelectedEntities('owner');
+		// writeDemoResources = socketio.getSelectedEntities('write');
+		// readDemoResources = socketio.getSelectedEntities('read');
+		// console.log('=== length of demo resources in socketio ===', socketio.entities.length);
+		// console.log(
+		// 	'=== length of owned demo resources in socketio ===',
+		// 	socketio.getSelectedEntities('owner').length
+		// );
+		// console.log(
+		// 	'=== length of write demo resources in socketio ===',
+		// 	socketio.getSelectedEntities('write').length
+		// );
+		// console.log(
+		// 	'=== length of read demo resources in socketio ===',
+		// 	socketio.getSelectedEntities('read').length
+		// );
 	});
 
 	const sortResourcesByCreationDate = (a: DemoResourceExtended, b: DemoResourceExtended) => {
@@ -125,38 +140,38 @@
 		}
 	};
 
-	let ownedDemoResources: DemoResourceExtended[] = $derived.by(() => {
-		if (!socketio) return [];
-		const pending = socketio?.pendingEntities;
-		const existing = (socketio?.entities ?? [])
-			.filter((demoResource) => {
-				if (demoResource.access_right === Action.OWN) {
-					return demoResource;
-				}
-			})
-			.sort(sortResourcesByCreationDate);
-		return [...pending, ...existing];
-	});
+	// let ownedDemoResources: DemoResourceExtended[] = $derived.by(() => {
+	// 	if (!socketio) return [];
+	// 	const pending = socketio?.pendingEntities;
+	// 	const existing = (socketio?.entities ?? [])
+	// 		.filter((demoResource) => {
+	// 			if (demoResource.access_right === Action.OWN) {
+	// 				return demoResource;
+	// 			}
+	// 		})
+	// 		.sort(sortResourcesByCreationDate);
+	// 	return [...pending, ...existing];
+	// });
 
-	let writeDemoResources: DemoResourceExtended[] = $derived(
-		(socketio?.entities ?? [])
-			.filter((demoResource) => {
-				if (demoResource.access_right === Action.WRITE) {
-					return demoResource;
-				}
-			})
-			.sort(sortResourcesByCreationDate)
-	);
+	// let writeDemoResources: DemoResourceExtended[] = $derived(
+	// 	(socketio?.entities ?? [])
+	// 		.filter((demoResource) => {
+	// 			if (demoResource.access_right === Action.WRITE) {
+	// 				return demoResource;
+	// 			}
+	// 		})
+	// 		.sort(sortResourcesByCreationDate)
+	// );
 
-	let readDemoResources: DemoResourceExtended[] = $derived(
-		(socketio?.entities ?? [])
-			.filter((demoResource) => {
-				if (demoResource.access_right === Action.READ) {
-					return demoResource;
-				}
-			})
-			.sort(sortResourcesByCreationDate)
-	);
+	// let readDemoResources: DemoResourceExtended[] = $derived(
+	// 	(socketio?.entities ?? [])
+	// 		.filter((demoResource) => {
+	// 			if (demoResource.access_right === Action.READ) {
+	// 				return demoResource;
+	// 			}
+	// 		})
+	// 		.sort(sortResourcesByCreationDate)
+	// );
 
 	onDestroy(() => socketio?.client.disconnect());
 </script>
