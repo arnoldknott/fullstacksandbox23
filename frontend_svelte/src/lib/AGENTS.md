@@ -1,6 +1,7 @@
 # EntityContainer guidance
 
 Applies to files in this folder, especially:
+
 - entityContainer.svelte.ts
 - entityContainer.svelte.test.ts
 
@@ -9,6 +10,7 @@ Also follow the parent guidance in ../../AGENTS.md.
 ## Intent
 
 EntityContainer is a reactive state container for:
+
 - entities and pendingEntities
 - identities
 - metadata: accessPolicies, accessRights, hierarchies
@@ -50,6 +52,7 @@ Selections must stay id-only and must not store full objects.
 ## Test expectations
 
 When changing selection logic, update or add tests in entityContainer.svelte.test.ts for:
+
 - happy path behavior
 - error conditions for missing or duplicate selections
 - reactive helper behavior for each specialized selection creator

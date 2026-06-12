@@ -1,4 +1,4 @@
-import { SvelteMap } from 'svelte/reactivity';
+import { SvelteSet } from 'svelte/reactivity';
 
 import { Action } from './accessHandler';
 import type { AccessPolicy, AnyEntityExtended, AnyIdentityExtended, Hierarchies } from './types';
@@ -39,8 +39,8 @@ export type EntityContainerConfiguration<T extends AnyEntityExtended = AnyEntity
 export interface EntityContainerInterface<T extends AnyEntityExtended = AnyEntityExtended> {
 	entities: T[];
 	pendingEntities: T[];
-    identities: AnyIdentityExtended[];
-    // TBD: when payload separated from metadta, these should track the metadata:
+	identities: AnyIdentityExtended[];
+	// TBD: when payload separated from metadta, these should track the metadata:
 	accessPolicies: Record<string, AccessPolicy[]>;
 	accessRights: Record<string, Action>;
 	hierarchies: Record<string, Hierarchies>;
@@ -56,50 +56,67 @@ export interface EntityContainerInterface<T extends AnyEntityExtended = AnyEntit
 		public?: boolean;
 		publicAction?: Action;
 	};
-    // Pending handling:
+	// Pending handling:
 	createPending(overrides?: Partial<T>): T;
-    // Selection handling:
+	// Selection handling:
 	addSelection(name: string, entityIds: string[]): string[];
-    removeSelection(name: string): void;
+	removeSelection(name: string): void;
 	addToSelection(name: string, entityIds: string[]): string[];
 	removeFromSelection(name: string, entityIds: string[]): string[];
 	getSelectedEntities(name?: string): T[];
-    getSelectedIdentities(name?: string): AnyIdentityExtended[];
-    // Helper functions to creater specific selections:
+	getSelectedIdentities(name?: string): AnyIdentityExtended[];
+	// Helper functions to creater specific selections:
 	createFilteredEntitySelection(name: string, filterFn: (entity: T) => boolean): T[];
 	createAllLinkedSelection(
 		name: string,
 		parentId: string,
 		inverse?: boolean,
-        fromOtherSelection?: string
+		fromOtherSelection?: string
 	): T[];
-    createUserHasSpecificAccessRightSelection(name: string, action: Action, fromOtherSelection?: string): T[];
-    createAccessPolicyResourceSelection(name: string, policyFilterFn: (policy: AccessPolicy) => boolean, fromOtherSelection?: string): T[];
-    createAccessPolicyIdentitySelection(name: string, policyFilterFn: (policy: AccessPolicy) => boolean, fromOtherSelection?: string): AnyIdentityExtended[];
-    // Modifying selections:
-	createSortedSelection(name: string, attribute: keyof T, ascending?: boolean, fromOtherSelection?: string): void;
+	createUserHasSpecificAccessRightSelection(
+		name: string,
+		action: Action,
+		fromOtherSelection?: string
+	): T[];
+	createAccessPolicyResourceSelection(
+		name: string,
+		policyFilterFn: (policy: AccessPolicy) => boolean,
+		fromOtherSelection?: string
+	): T[];
+	createAccessPolicyIdentitySelection(
+		name: string,
+		policyFilterFn: (policy: AccessPolicy) => boolean,
+		fromOtherSelection?: string
+	): AnyIdentityExtended[];
+	// Modifying selections:
+	createSortedSelection(
+		name: string,
+		attribute: keyof T,
+		ascending?: boolean,
+		fromOtherSelection?: string
+	): T[];
 }
 
 /**
- * Class that manages the entity data and related state, 
+ * Class that manages the entity data and related state,
  * that is pending entities, identities, access policies and rights, hierarchies, selections.
  * Provides methods to create pending entities, manage selections, and sort entities.
  * The EntityContainer is designed to be flexible and can be configured with initial data and
  * templates for pending entities.
- * Entities can both be resources and identites, whereas the sepearate identities are related to the 
+ * Entities can both be resources and identites, whereas the sepearate identities are related to the
  */
 export class EntityContainer<
 	T extends AnyEntityExtended = AnyEntityExtended
 > implements EntityContainerInterface<T> {
-    // Data:
+	// Data:
 	#entities = $state<T[]>([]); // AnyEntityExtended[];
 	#pendingEntities = $state<T[]>([]); // AnyEntityExtended[];
 	#identities = $state<AnyIdentityExtended[]>([]); // AnyIdentityExtended[];
-    // Metadata:
+	// Metadata:
 	#accessPolicies = $state<Record<string, AccessPolicy[]>>({}); // UUID: AccessPolicy[]
 	#accessRights = $state<Record<string, Action>>({}); // UUID: Action
 	#hierarchies = $state<Record<string, Hierarchies>>({}); // array of all parent and child hierarchies
-    // Collection of generic selections to manage subsests of data potentially based on specific metadata criteria:
+	// Collection of generic selections to manage subsests of data potentially based on specific metadata criteria:
 	#selections = $state<Record<string, string[]>>({}); // selectionName: entityIds[]
 	parentId?: string | null;
 	// defaultInherit: boolean = false;
@@ -121,14 +138,14 @@ export class EntityContainer<
 			this.#pendingEntities = configuration.seedPendingEntities
 				? configuration.seedPendingEntities()
 				: [];
-            this.#identities = configuration.seedIdentities ? configuration.seedIdentities() : [];
+			this.#identities = configuration.seedIdentities ? configuration.seedIdentities() : [];
 			this.#accessPolicies = configuration.seedAccessPolicies
 				? configuration.seedAccessPolicies()
 				: {};
 			this.#accessRights = configuration.seedAccessRights ? configuration.seedAccessRights() : {};
 			this.#hierarchies = configuration.seedHierarchies ? configuration.seedHierarchies() : {};
 		});
-        this.#selections = configuration.seedSelections ? configuration.seedSelections() : {};
+		this.#selections = configuration.seedSelections ? configuration.seedSelections() : {};
 		this.parentId = configuration.parentId ?? undefined;
 		this.pendingTemplate = configuration.template ?? undefined; // TBD: change into setting all values, but the id value to null/undifned/empty, whatver is adequate - note the mandartory keys!
 		this.pendingSubmitOptions = {
@@ -215,7 +232,7 @@ export class EntityContainer<
 		return pendingEntity;
 	}
 
-    /** SELECTION MANAGEMENT **/
+	/** SELECTION MANAGEMENT **/
 
 	/**
 	 * Selections are named subsets of the main entity-id array, stored as arrays of ids.
@@ -231,13 +248,13 @@ export class EntityContainer<
 	 * - select by hierarchy: all entities that are linked to a specific parent entity or have a specific child entity, etc.
 	 */
 
-    /**
-     * Add a selection to the entity container and optinally add initial entity ids to the selection.
-     * 
-     * @param name of selection
-     * @param entityIds to add to the selection 
-     * @returns the id's in the newly created selection
-     */
+	/**
+	 * Add a selection to the entity container and optinally add initial entity ids to the selection.
+	 *
+	 * @param name of selection
+	 * @param entityIds to add to the selection
+	 * @returns the id's in the newly created selection
+	 */
 	addSelection(name: string, entityIds: string[] = []) {
 		if (this.#selections[name]) {
 			throw new Error(`Selection with name "${name}" already exists.`);
@@ -253,29 +270,29 @@ export class EntityContainer<
 	//     return this.#selections[name];
 	// }
 
-    /**
-     * Removes the selection with the specified name from the entity container.
-     * 
-     * @param name of selection to remove.
-     */
-    removeSelection(name: string) {
-        if (!this.#selections[name]) {
-            throw new Error(`Selection with name "${name}" does not exist.`);
-        }
-        delete this.#selections[name];
-    }
+	/**
+	 * Removes the selection with the specified name from the entity container.
+	 *
+	 * @param name of selection to remove.
+	 */
+	removeSelection(name: string) {
+		if (!this.#selections[name]) {
+			throw new Error(`Selection with name "${name}" does not exist.`);
+		}
+		delete this.#selections[name];
+	}
 
-    /**
-     * Add the specified entity ids to the selection with the specified name.
-     * Mutates the selection in place by adding the new entity ids to the existing ones.
-     * Can also be used to preseed the selection with initial entity ids
-     *  when creating the selection with {@link addSelection} and
-     * then adding more entity ids later with this function.
-     * 
-     * @param name of selection to which the entity ids should be added
-     * @param entityIds array of entity ids to add to the selection
-     * @returns the updated array of entity ids in the selection
-     */
+	/**
+	 * Add the specified entity ids to the selection with the specified name.
+	 * Mutates the selection in place by adding the new entity ids to the existing ones.
+	 * Can also be used to preseed the selection with initial entity ids
+	 *  when creating the selection with {@link addSelection} and
+	 * then adding more entity ids later with this function.
+	 *
+	 * @param name of selection to which the entity ids should be added
+	 * @param entityIds array of entity ids to add to the selection
+	 * @returns the updated array of entity ids in the selection
+	 */
 	addToSelection(name: string, entityIds: string[]) {
 		if (!this.#selections[name]) {
 			throw new Error(`Selection with name "${name}" does not exist.`);
@@ -284,13 +301,13 @@ export class EntityContainer<
 		return this.#selections[name];
 	}
 
-    /**
-     * Removes the specified entity ids from the selection with the specified name.
-     * 
-     * @param name of selection from which the entity ids should be removed
-     * @param entityIds array of entity ids to remove from the selection
-     * @returns the updated array of entity ids in the selection
-     */
+	/**
+	 * Removes the specified entity ids from the selection with the specified name.
+	 *
+	 * @param name of selection from which the entity ids should be removed
+	 * @param entityIds array of entity ids to remove from the selection
+	 * @returns the updated array of entity ids in the selection
+	 */
 	removeFromSelection(name: string, entityIds: string[]) {
 		if (!this.#selections[name]) {
 			throw new Error(`Selection with name "${name}" does not exist.`);
@@ -299,10 +316,9 @@ export class EntityContainer<
 		return this.#selections[name];
 	}
 
+	/** LINKED SELECTIONS TO DATA: Entities and Identities */
 
-    /** LINKED SELECTIONS TO DATA: Entities and Identities */
-
-    /**
+	/**
 	 * Gets all entities that match this specific selection with its assigned selection function
 	 *
 	 * Call with $derived.by(() => entityContainer.getSelectedEntities('mySelection'))
@@ -311,62 +327,75 @@ export class EntityContainer<
 	 * @returns the entities that correlate to the specified selection
 	 */
 	getSelectedEntities(name?: string): T[] {
-        if (name) {
-            // const selectedIds = this.selections[name];
-            // ((entity) => selectedIds.includes(entity.id));
-            // return this.selections[name].map((id) => this.entities.filter((entity) => entity.id === id)[0])
-            const selectedIds = this.selections[name] ?? [];
-            const entitiesById = new SvelteMap(this.entities.map((entity) => [entity.id, entity]));
-            return selectedIds
-                .map((id) => entitiesById.get(id))
-                .filter((entity): entity is T => entity !== undefined);
-        } else {
-            return this.entities;
-        }
+		if (name) {
+			const selectedIds = this.selections[name] ?? [];
+			// ((entity) => selectedIds.includes(entity.id));
+			// return this.selections[name].map((id) => this.entities.filter((entity) => entity.id === id)[0])
+			// const selectedIds = this.selections[name] ?? [];
+			// const entitiesById = new SvelteMap(this.entities.map((entity) => [entity.id, entity]));
+			// return selectedIds
+			// 	.map((id) => entitiesById.get(id))
+			// 	.filter((entity): entity is T => entity !== undefined);
+			const entitiesById = Object.fromEntries(
+				this.entities.map((entity) => [entity.id, entity] as const)
+			) as Record<string, T>;
+
+			return selectedIds
+				.map((id) => entitiesById[id])
+				.filter((entity): entity is T => entity !== undefined);
+		} else {
+			return this.entities;
+		}
 	}
 
-    /**
-     * Gets all identities that match this specific selection with its assigned selection function
-     * 
-     * @param name specifies which selection to retrieve
-     * @returns the identities that correlate to the specified selection
-     */
-    getSelectedIdentities(name?: string): AnyIdentityExtended[] {
+	/**
+	 * Gets all identities that match this specific selection with its assigned selection function
+	 *
+	 * @param name specifies which selection to retrieve
+	 * @returns the identities that correlate to the specified selection
+	 */
+	getSelectedIdentities(name?: string): AnyIdentityExtended[] {
 		if (name) {
-			// const selectedIds = this.selections[name];
+			const selectedIds = this.selections[name] ?? [];
 			// return this.identities.filter((identity) => selectedIds.includes(identity.id));
-            const selectedIds = this.selections[name] ?? [];
-            const identitiesById = new SvelteMap(this.identities.map((identity) => [identity.id, identity]));
-            return selectedIds
-                .map((id) => identitiesById.get(id))
-                .filter((identity): identity is AnyIdentityExtended => identity !== undefined);
+			// const selectedIds = this.selections[name] ?? [];
+			// const identitiesById = new SvelteMap(
+			// 	this.identities.map((identity) => [identity.id, identity])
+			// );
+			// return selectedIds
+			// 	.map((id) => identitiesById.get(id))
+			// 	.filter((identity): identity is AnyIdentityExtended => identity !== undefined);
+			const identitiesById = Object.fromEntries(
+				this.identities.map((identity) => [identity.id, identity] as const)
+			) as Record<string, AnyIdentityExtended>;
+
+			return selectedIds
+				.map((id) => identitiesById[id])
+				.filter((identity): identity is AnyIdentityExtended => identity !== undefined);
 		} else {
 			return this.identities;
 		}
 	}
 
-    /**
-     * Generic internal method to create a reactive selection based on a filter function.
-     * The effectFunction should set the selection with the filtered entity ids.
-     * 
-     * @param name of selection to create
-     * @param effectFunction the logic to create the selection, 
-     * which typically filters the entities based on specific criteria and
-     * sets the selection with the resulting entity ids.
-     * It should set the selection with the filtered entity or identity ids.
-     * @returns the selected entities or identities based on the filter function,
-     * that updates reactively when entities or hierarchies change
-     * 
-     */
-    private createReactiveSelection(
-        name: string,
-        effectFunction: () => void
-    ) {
-        this.addSelection(name);
-        $effect(() => effectFunction());
-        const getSelectedData = $derived.by(() =>  this.getSelectedEntities(name) );
-        return getSelectedData;
-    }
+	/**
+	 * Generic internal method to create a reactive selection based on a filter function.
+	 * The effectFunction should set the selection with the filtered entity ids.
+	 *
+	 * @param name of selection to create
+	 * @param effectFunction the logic to create the selection,
+	 * which typically filters the entities based on specific criteria and
+	 * sets the selection with the resulting entity ids.
+	 * It should set the selection with the filtered entity or identity ids.
+	 * @returns the selected entities or identities based on the filter function,
+	 * that updates reactively when entities or hierarchies change
+	 *
+	 */
+	private createReactiveSelection(name: string, effectFunction: () => void) {
+		this.addSelection(name);
+		$effect(() => effectFunction());
+		const getSelectedData = $derived.by(() => this.getSelectedEntities(name));
+		return getSelectedData;
+	}
 
 	// for example all entities that match a specific condition
 	// TBD: extend with choosing different data containers, such as
@@ -377,9 +406,9 @@ export class EntityContainer<
 	 * @param name of the selection to create
 	 * @param filterFn function to filter the entities
 	 * @param fromOtherSelection if provided, it will filter the entities
-     * from the specified selection instead of all entities.
+	 * from the specified selection instead of all entities.
 	 * @returns a derived array of the selected entities,
-     * that updates reactively when entities or hierarchies change
+	 * that updates reactively when entities or hierarchies change
 	 *
 	 * Uses {@link createReactiveSelection} for reactive updates when data or metadata changes.
 	 */
@@ -388,11 +417,11 @@ export class EntityContainer<
 		filterFn: (entity: T) => boolean,
 		fromOtherSelection: string | undefined = undefined
 	) {
-        return this.createReactiveSelection(name, () => {
+		return this.createReactiveSelection(name, () => {
 			this.#selections[name] = this.getSelectedEntities(fromOtherSelection)
 				.filter(filterFn)
-                .map((entity) => entity.id);
-        });
+				.map((entity) => entity.id);
+		});
 	}
 
 	/**
@@ -409,14 +438,20 @@ export class EntityContainer<
 	 * and entities are loaded and the effect runs.
 	 * @param inverse if set to true, it will select all entities that are NOT linked to the specified parent entity.
 	 * @returns a derived array of the selected entities, that updates reactively when entities or hierarchies change
-     * 
-     * Uses {@link createReactiveSelection} for reactive updates when data or metadata changes.
+	 *
+	 * Uses {@link createReactiveSelection} for reactive updates when data or metadata changes.
 	 */
 	createAllLinkedSelection(
 		name: string,
-		parentId: string = this.parentId ? this.parentId : (() => { throw new Error("Parent ID must be provided either as an argument or as the EntityContainer's parentId property.") })(),
+		parentId: string = this.parentId
+			? this.parentId
+			: (() => {
+					throw new Error(
+						"Parent ID must be provided either as an argument or as the EntityContainer's parentId property."
+					);
+				})(),
 		inverse: boolean = false,
-        fromOtherSelection?: string
+		fromOtherSelection?: string
 	) {
 		this.addSelection(name);
 		$effect(() => {
@@ -434,27 +469,34 @@ export class EntityContainer<
 			// 		})
 			// 		.map((hierarchy) => hierarchy.child_id) || [];
 			this.#selections[name] = this.getSelectedEntities(fromOtherSelection)
-					.filter((entity) => {
-                        if (!inverse) return this.hierarchies[entity.id]?.parents?.some(parent => parent.parent_id === parentId);// check if the parent_id matches the specified parentId
-                        else return this.hierarchies[entity.id]?.parents?.every(parent => parent.parent_id !== parentId)// check if the parent_id does not match the specified parentId
-					})
-					.map((entity) => entity.id);
+				.filter((entity) => {
+					if (!inverse)
+						return this.hierarchies[entity.id]?.parents?.some(
+							(parent) => parent.parent_id === parentId
+						);
+					// check if the parent_id matches the specified parentId
+					else
+						return this.hierarchies[entity.id]?.parents?.every(
+							(parent) => parent.parent_id !== parentId
+						); // check if the parent_id does not match the specified parentId
+				})
+				.map((entity) => entity.id);
 		});
-		const selectionEntities =  $derived.by(() => this.getSelectedEntities(name));
-        return selectionEntities;
+		const selectionEntities = $derived.by(() => this.getSelectedEntities(name));
+		return selectionEntities;
 	}
 
-    /**
-     * Creates a selection of all entities that the user has a specific access right to,
-     * for example all entities that the user has 'own' access to, etc.
-     * 
-     * @param name of the selection to create
-     * @param action the specific access right to filter entities by
-     * @param fromOtherSelection optional name of another selection to filter from
-     * @returns a derived array of the selected entities, that updates reactively when entities or access rights change
-     * 
-     * Uses {@link createReactiveSelection} for reactive updates when data or metadata changes.
-     */
+	/**
+	 * Creates a selection of all entities that the user has a specific access right to,
+	 * for example all entities that the user has 'own' access to, etc.
+	 *
+	 * @param name of the selection to create
+	 * @param action the specific access right to filter entities by
+	 * @param fromOtherSelection optional name of another selection to filter from
+	 * @returns a derived array of the selected entities, that updates reactively when entities or access rights change
+	 *
+	 * Uses {@link createReactiveSelection} for reactive updates when data or metadata changes.
+	 */
 	createUserHasSpecificAccessRightSelection(
 		name: string,
 		action: Action,
@@ -464,12 +506,12 @@ export class EntityContainer<
 			this.#selections[name] = this.getSelectedEntities(fromOtherSelection)
 				.filter((entity) => this.accessRights[entity.id] === action)
 				// .filter((entity) => {
-                //     // console.log("=== Filtering entities for access right selection ===")
-                //     // console.log("Entity:", entity)
-                //     return entity.access_right === action})
+				//     // console.log("=== Filtering entities for access right selection ===")
+				//     // console.log("Entity:", entity)
+				//     return entity.access_right === action})
 				.map((entity) => {
-                    return entity.id
-                });
+					return entity.id;
+				});
 		});
 	}
 
@@ -480,46 +522,62 @@ export class EntityContainer<
 	// - that return the identity_id's instead of the entity ids,
 	// since it might be more useful for some use cases,
 	// such as sharing with teams, etc. (see the commented out code in the function for an example of how to do this)
-	createAccessPolicyResourceSelection(name: string, policyFilterFn: (policy: AccessPolicy) => boolean, fromOtherSelection: string | undefined = undefined) {
-	    return this.createReactiveSelection(name, () => {
-	        this.#selections[name] = this.getSelectedEntities(fromOtherSelection)
-	        .filter((entity) => {
-	            const policies = this.accessPolicies[entity.id] || [];
-	            return policies.some(policyFilterFn);
-	        })
-	        .map((entity) =>  entity.id)
-	    });
-
+	createAccessPolicyResourceSelection(
+		name: string,
+		policyFilterFn: (policy: AccessPolicy) => boolean,
+		fromOtherSelection: string | undefined = undefined
+	) {
+		return this.createReactiveSelection(name, () => {
+			this.#selections[name] = this.getSelectedEntities(fromOtherSelection)
+				.filter((entity) => {
+					const policies = this.accessPolicies[entity.id] || [];
+					return policies.some(policyFilterFn);
+				})
+				.map((entity) => entity.id);
+		});
 	}
 
-    createAccessPolicyIdentitySelection(name: string, policyFilterFn: (policy: AccessPolicy) => boolean, fromOtherSelection?: string) {
-        this.addSelection(name);
-        $effect(() => {
-            this.#selections[name] = this.getSelectedIdentities(fromOtherSelection)
-            .filter((identity) => {
-                // find all policies that match the filter function for this identity
-                const policies = Object.values(this.accessPolicies).flat().filter(policyFilterFn).filter(policy => policy.identity_id === identity.id);
-                return policies.length > 0;
-            })
-            .map((identity) => identity.id);
-        });
-        const selectionIdentities =  $derived.by(() => this.getSelectedIdentities(name));
-        return selectionIdentities;
+	createAccessPolicyIdentitySelection(
+		name: string,
+		policyFilterFn: (policy: AccessPolicy) => boolean,
+		fromOtherSelection?: string
+	) {
+		this.addSelection(name);
+		$effect(() => {
+			const matchingIdentityIds = new SvelteSet(
+				Object.values(this.accessPolicies)
+					.flat()
+					.filter(policyFilterFn)
+					.map((policy) => policy.identity_id)
+					.filter((id): id is string => Boolean(id))
+			);
 
-    }
+			this.#selections[name] = this.getSelectedIdentities(fromOtherSelection)
+				.filter((identity) => matchingIdentityIds.has(identity.id))
+				.map((identity) => identity.id);
+		});
+		const selectionIdentities = $derived.by(() => this.getSelectedIdentities(name));
+		return selectionIdentities;
+	}
 
-	createSortedSelection(name: string, attribute: keyof T, ascending = true, fromOtherSelection?: string) {
-        // this.addSelection(name)
-        // $effect(() => {
-        return this.createReactiveSelection(name, () => {
-           this.selections[name] = this.getSelectedEntities(fromOtherSelection)
-           .toSorted((a, b) => {
-                if (a[attribute] < b[attribute]) return ascending ? -1 : 1;
-                if (a[attribute] > b[attribute]) return ascending ? 1 : -1;
-                return 0;
-            }).map((entity) => entity.id);
-        });
+	createSortedSelection(
+		name: string,
+		attribute: keyof T,
+		ascending = true,
+		fromOtherSelection?: string
+	) {
+		// this.addSelection(name)
+		// $effect(() => {
+		return this.createReactiveSelection(name, () => {
+			this.selections[name] = this.getSelectedEntities(fromOtherSelection)
+				.toSorted((a, b) => {
+					if (a[attribute] < b[attribute]) return ascending ? -1 : 1;
+					if (a[attribute] > b[attribute]) return ascending ? 1 : -1;
+					return 0;
+				})
+				.map((entity) => entity.id);
+		});
 		// const sortedSelectionEntities =  $derived.by(() => this.getSelectedEntities(name));
-        // return sortedSelectionEntities;
+		// return sortedSelectionEntities;
 	}
 }

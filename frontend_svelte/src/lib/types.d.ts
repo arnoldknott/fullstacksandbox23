@@ -111,10 +111,10 @@ export type Hierarchies = {
 type ExtendEntity<T> = T &
 	Partial<
 		WithCreationDate &
-		WithLastModifiedDate &
-		WithAccessRights &
-		WithAccessPolicies &
-		WithHierarchies
+			WithLastModifiedDate &
+			WithAccessRights &
+			WithAccessPolicies &
+			WithHierarchies
 	>;
 
 // Define the additional properties as separate interfaces
@@ -150,7 +150,7 @@ interface WithHierarchies {
 	hierarchies: {
 		parents: Hierarchy[];
 		children: Hierarchy[];
-	}
+	};
 	// inherit: boolean;
 	// order?: number;
 }
@@ -306,4 +306,8 @@ export type AnyEntityExtended =
 	| SubSubGroupExtended;
 
 export type AnyIdentity = UeberGroup | Group | SubGroup | SubSubGroup;
-export type AnyIdentityExtended = UeberGroupExtended | GroupExtended | SubGroupExtended | SubSubGroupExtended;
+export type AnyIdentityExtended =
+	| UeberGroupExtended
+	| GroupExtended
+	| SubGroupExtended
+	| SubSubGroupExtended;

@@ -457,15 +457,21 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 		if (existingIndex > -1) {
 			// Update existing entity in place
 			this.entities[existingIndex] = { ...this.entities[existingIndex], ...data };
-			this.accessPolicies[this.entities[existingIndex].id] = data.access_policies ? data.access_policies : this.accessPolicies[this.entities[existingIndex].id];
-			this.accessRights[this.entities[existingIndex].id] = data.access_right ? data.access_right : this.accessRights[this.entities[existingIndex].id];
-			this.hierarchies[this.entities[existingIndex].id] = data.hierarchies ? data.hierarchies : this.hierarchies[this.entities[existingIndex].id];
+			this.accessPolicies[this.entities[existingIndex].id] = data.access_policies
+				? data.access_policies
+				: this.accessPolicies[this.entities[existingIndex].id];
+			this.accessRights[this.entities[existingIndex].id] = data.access_right
+				? data.access_right
+				: this.accessRights[this.entities[existingIndex].id];
+			this.hierarchies[this.entities[existingIndex].id] = data.hierarchies
+				? data.hierarchies
+				: this.hierarchies[this.entities[existingIndex].id];
 		} else {
 			// Add new entity at the beginning (most recent first);
 			this.entities.unshift(data);
-            this.accessPolicies[data.id] = data.access_policies ?? [];
-            this.accessRights[data.id] = data.access_right ?? Action.READ;
-            this.hierarchies[data.id] = data.hierarchies ?? { children: [], parents: []};
+			this.accessPolicies[data.id] = data.access_policies ?? [];
+			this.accessRights[data.id] = data.access_right ?? Action.READ;
+			this.hierarchies[data.id] = data.hierarchies ?? { children: [], parents: [] };
 		}
 	}
 
