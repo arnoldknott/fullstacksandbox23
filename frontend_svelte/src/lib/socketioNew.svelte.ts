@@ -457,9 +457,15 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 		if (existingIndex > -1) {
 			// Update existing entity in place
 			this.entities[existingIndex] = { ...this.entities[existingIndex], ...data };
+			this.accessPolicies[this.entities[existingIndex].id] = data.access_policies ? data.access_policies : this.accessPolicies[this.entities[existingIndex].id];
+			this.accessRights[this.entities[existingIndex].id] = data.access_right ? data.access_right : this.accessRights[this.entities[existingIndex].id];
+			this.hierarchies[this.entities[existingIndex].id] = data.hierarchies ? data.hierarchies : this.hierarchies[this.entities[existingIndex].id];
 		} else {
 			// Add new entity at the beginning (most recent first);
 			this.entities.unshift(data);
+            this.accessPolicies[data.id] = data.access_policies ?? [];
+            this.accessRights[data.id] = data.access_right ?? Action.READ;
+            this.hierarchies[data.id] = data.hierarchies ?? { children: [], parents: []};
 		}
 	}
 
@@ -476,9 +482,12 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 			);
 		}
 		// remove from hierarchies:
-		this.hierarchies = this.hierarchies.filter(
-			(h) => h.child_id !== resource_id && h.parent_id !== resource_id
-		);
+		// this.hierarchies = this.hierarchies.filter(
+		// 	(h) => h.child_id !== resource_id && h.parent_id !== resource_id
+		// );
+		delete this.accessPolicies[resource_id];
+		delete this.accessRights[resource_id];
+		delete this.hierarchies[resource_id];
 		// TBD: consider also removing from accessPolicies and accessRights, depending on the backend implementation and emitted data on delete.
 	}
 

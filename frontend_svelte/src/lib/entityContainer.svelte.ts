@@ -1,5 +1,5 @@
 import { Action } from './accessHandler';
-import type { AccessPolicy, AnyEntityExtended, Hierarchy } from './types';
+import type { AccessPolicy, AnyEntityExtended, AnyIdentityExtended, Hierarchies } from './types';
 
 /**
  * Functions that provide the Data for class EntityContainer to manage. Evaluated inside a
@@ -10,9 +10,10 @@ import type { AccessPolicy, AnyEntityExtended, Hierarchy } from './types';
 type EntityData<T> = {
 	seedEntities?: () => T[];
 	seedPendingEntities?: () => T[];
+	seedIdentities?: () => AnyIdentityExtended[];
 	seedAccessPolicies?: () => Record<string, AccessPolicy[]>;
 	seedAccessRights?: () => Record<string, Action>;
-	seedHierarchies?: () => Hierarchy[];
+	seedHierarchies?: () => Record<string, Hierarchies>;
 	seedSelections?: () => Record<string, string[]>;
 	parentId?: string; // should it be here?
 };
@@ -36,9 +37,11 @@ export type EntityContainerConfiguration<T extends AnyEntityExtended = AnyEntity
 export interface EntityContainerInterface<T extends AnyEntityExtended = AnyEntityExtended> {
 	entities: T[];
 	pendingEntities: T[];
+    identities: AnyIdentityExtended[];
+    // TBD: when payload separated from metadta, these should track the metadata:
 	accessPolicies: Record<string, AccessPolicy[]>;
 	accessRights: Record<string, Action>;
-	hierarchies: Hierarchy[];
+	hierarchies: Record<string, Hierarchies>;
 	selections: Record<string, string[]>;
 	parentId?: string | null;
 	// defaultInherit: boolean;
@@ -63,17 +66,29 @@ export interface EntityContainerInterface<T extends AnyEntityExtended = AnyEntit
 		initialIds?: string[],
 		inverse?: boolean
 	): T[];
-	sortSelectionBy(name: string, attribute: keyof T, ascending?: boolean): void;
+    createUserHasSpecificAccessRightSelection(name: string, action: Action, initialIds?: string[]): T[];
+    createAccessPolicyResourceSelection(name: string, policyFilterFn: (policy: AccessPolicy) => boolean, initialIds?: string[]): T[];
+    createAccessPolicyIdentitySelection(name: string, policyFilterFn: (policy: AccessPolicy) => boolean, initialIds?: string[]): AnyIdentityExtended[];
+	createSortedSelection(name: string, attribute: keyof T, ascending?: boolean): void;
 }
 
+/**
+ * Class that manages the entity data and related state, 
+ * that is pending entities, identities, access policies and rights, hierarchies, selections.
+ * Provides methods to create pending entities, manage selections, and sort entities.
+ * The EntityContainer is designed to be flexible and can be configured with initial data and
+ * templates for pending entities.
+ * Entities can both be resources and identites, whereas the sepearate identities are related to the 
+ */
 export class EntityContainer<
 	T extends AnyEntityExtended = AnyEntityExtended
 > implements EntityContainerInterface<T> {
 	#entities = $state<T[]>([]); // AnyEntityExtended[];
 	#pendingEntities = $state<T[]>([]); // AnyEntityExtended[];
+	#identities = $state<AnyIdentityExtended[]>([]); // AnyIdentityExtended[];
 	#accessPolicies = $state<Record<string, AccessPolicy[]>>({}); // UUID: AccessPolicy[]
 	#accessRights = $state<Record<string, Action>>({}); // UUID: Action
-	#hierarchies = $state<Hierarchy[]>([]); // flat array of all hierarchies
+	#hierarchies = $state<Record<string, Hierarchies>>({}); // flat array of all hierarchies
 	#selections = $state<Record<string, string[]>>({}); // selectionName: entityIds[]
 	parentId?: string | null;
 	// defaultInherit: boolean = false;
@@ -95,13 +110,14 @@ export class EntityContainer<
 			this.#pendingEntities = configuration.seedPendingEntities
 				? configuration.seedPendingEntities()
 				: [];
+            this.#identities = configuration.seedIdentities ? configuration.seedIdentities() : [];
 			this.#accessPolicies = configuration.seedAccessPolicies
 				? configuration.seedAccessPolicies()
 				: {};
 			this.#accessRights = configuration.seedAccessRights ? configuration.seedAccessRights() : {};
-			this.#hierarchies = configuration.seedHierarchies ? configuration.seedHierarchies() : [];
-			this.#selections = configuration.seedSelections ? configuration.seedSelections() : {};
+			this.#hierarchies = configuration.seedHierarchies ? configuration.seedHierarchies() : {};
 		});
+        this.#selections = configuration.seedSelections ? configuration.seedSelections() : {};
 		this.parentId = configuration.parentId ?? undefined;
 		this.pendingTemplate = configuration.template ?? undefined; // TBD: change into setting all values, but the id value to null/undifned/empty, whatver is adequate - note the mandartory keys!
 		this.pendingSubmitOptions = {
@@ -134,6 +150,13 @@ export class EntityContainer<
 		this.#pendingEntities = value;
 	}
 
+	get identities(): AnyIdentityExtended[] {
+		return this.#identities;
+	}
+	set identities(value: AnyIdentityExtended[]) {
+		this.#identities = value;
+	}
+
 	get accessPolicies(): Record<string, AccessPolicy[]> {
 		return this.#accessPolicies;
 	}
@@ -148,10 +171,10 @@ export class EntityContainer<
 		this.#accessRights = value;
 	}
 
-	get hierarchies(): Hierarchy[] {
+	get hierarchies(): Record<string, Hierarchies> {
 		return this.#hierarchies;
 	}
-	set hierarchies(value: Hierarchy[]) {
+	set hierarchies(value: Record<string, Hierarchies>) {
 		this.#hierarchies = value;
 	}
 
@@ -196,7 +219,15 @@ export class EntityContainer<
 	 * - select by access rights: all entities that the user has 'own', 'write', 'connect' 'read' access to, etc.
 	 * - select by hierarchy: all entities that are linked to a specific parent entity or have a specific child entity, etc.
 	 */
-	addSelection(name: string, entityIds: string[]) {
+
+    /**
+     * Add a selection to the entity container and optinally add initial entity ids to the selection.
+     * 
+     * @param name of selection
+     * @param entityIds to add to the selection 
+     * @returns the id's in the newly created selection
+     */
+	addSelection(name: string, entityIds: string[] = []) {
 		if (this.#selections[name]) {
 			throw new Error(`Selection with name "${name}" already exists.`);
 		}
@@ -219,11 +250,18 @@ export class EntityContainer<
 	 * @param name specifies which selection to retrieve
 	 * @returns the entities that correlate to the specified selection
 	 */
-	getSelectedEntities(name: string) {
-		// return $derived.by(() => {
+	getSelectedEntities(name?: string): T[] {
+        if (name) {
+            const selectedIds = this.selections[name];
+            return this.entities.filter((entity) => selectedIds.includes(entity.id));
+        } else {
+            return this.entities;
+        }
+	}
+
+    getSelectedIdentities(name: string): AnyIdentityExtended[] {
 		const selectedIds = this.selections[name];
-		return this.entities.filter((entity) => selectedIds.includes(entity.id));
-		// });
+        return this.identities.filter((identity) => selectedIds.includes(identity.id));
 	}
 
 	addToSelection(name: string, entityIds: string[]) {
@@ -241,6 +279,19 @@ export class EntityContainer<
 		this.#selections[name] = this.#selections[name].filter((id) => !entityIds.includes(id));
 		return this.#selections[name];
 	}
+
+    private createReactiveSelection(
+        name: string,
+        selectionLogicFn: () => string[]
+
+    ) {
+        this.addSelection(name);
+        $effect(() => {
+            this.#selections[name] = selectionLogicFn();
+        });
+        const selectionEntities = $derived.by(() => this.getSelectedEntities(name));
+        return selectionEntities;
+    }
 
 	// for example all entities that match a specific condition
 	// TBD: extend with choosing different data containers, such as
@@ -264,8 +315,8 @@ export class EntityContainer<
 		$effect(() => {
 			this.#selections[name] = this.entities.filter(filterFn).map((entity) => entity.id);
 		});
-		// return this.#selections[name];// TBD: is this even necessary?
-		return $derived.by(() => this.getSelectedEntities(name));
+		const selectionEntities = $derived.by(() => this.getSelectedEntities(name));
+        return selectionEntities;
 	}
 
 	/**
@@ -285,41 +336,57 @@ export class EntityContainer<
 	 */
 	createAllLinkedSelection(
 		name: string,
-		parentId?: string,
+		parentId: string = this.parentId ? this.parentId : (() => { throw new Error("Parent ID must be provided either as an argument or as the EntityContainer's parentId property.") })(),
 		initialIds: string[] = [],
 		inverse: boolean = false
 	) {
 		this.addSelection(name, initialIds);
 		$effect(() => {
-			const parentIdToUse = parentId ?? this.parentId;
-			if (!parentIdToUse) {
-				throw new Error(
-					"Parent ID must be provided either as an argument or as the EntityContainer's parentId property."
-				);
-			}
-			this.#selections[name] =
-				this.#hierarchies
-					.filter((hierarchy) => {
-						if (!inverse) return hierarchy.parent_id === parentIdToUse;
-						else return hierarchy.parent_id !== parentIdToUse;
+			// const parentIdToUse = parentId ?? this.parentId;
+			// if (!parentIdToUse) {
+			// 	throw new Error(
+			// 		"Parent ID must be provided either as an argument or as the EntityContainer's parentId property."
+			// 	);
+			// }
+			// this.#selections[name] =
+			// 	this.#hierarchies
+			// 		.filter((hierarchy) => {
+			// 			if (!inverse) return hierarchy.parent_id === parentIdToUse;
+			// 			else return hierarchy.parent_id !== parentIdToUse;
+			// 		})
+			// 		.map((hierarchy) => hierarchy.child_id) || [];
+			this.#selections[name] = this.#entities
+					.filter((entity) => {
+                        if (!inverse) return this.hierarchies[entity.id].parents?.some(parent => parent.parent_id === parentId);// check if the parent_id matches the specified parentId
+                        else return this.hierarchies[entity.id].parents?.every(parent => parent.parent_id !== parentId)// check if the parent_id does not match the specified parentId
 					})
-					.map((hierarchy) => hierarchy.child_id) || [];
+					.map((entity) => entity.id);
 		});
-		return $derived.by(() => this.getSelectedEntities(name));
+		const selectionEntities =  $derived.by(() => this.getSelectedEntities(name));
+        return selectionEntities;
 	}
 
 	createUserHasSpecificAccessRightSelection(
 		name: string,
 		action: Action,
-		initialIds: string[] = []
+		initialIds: string[] = [],
 	) {
 		this.addSelection(name, initialIds);
 		$effect(() => {
 			this.#selections[name] = this.entities
 				.filter((entity) => this.accessRights[entity.id] === action)
-				.map((entity) => entity.id);
+				// .filter((entity) => {
+                //     // console.log("=== Filtering entities for access right selection ===")
+                //     // console.log("Entity:", entity)
+                //     return entity.access_right === action})
+				.map((entity) => {
+                    console.log(`=== Filtering entities for access right selection: ${action} ===`)
+                    console.log("Entity:", entity)
+                    return entity.id
+                });
 		});
-		return $derived.by(() => this.getSelectedEntities(name));
+		const selectionEntities =  $derived.by(() => this.getSelectedEntities(name));
+        return selectionEntities;
 	}
 
 	// TBD: write test for selecting
@@ -329,30 +396,46 @@ export class EntityContainer<
 	// - that return the identity_id's instead of the entity ids,
 	// since it might be more useful for some use cases,
 	// such as sharing with teams, etc. (see the commented out code in the function for an example of how to do this)
-	// createAccessPolicyBasedSelection(name: string, policyFilterFn: (policy: AccessPolicy) => boolean, initialIds: string[] = [], identityReturn?: boolean = false) {
-	//     this.addSelection(name, initialIds);
-	//     $effect(() => {
-	//         this.#selections[name] = this.entities
-	//         .filter((entity) => {
-	//             const policies = this.accessPolicies[entity.id] || [];
-	//             return policies.some(policyFilterFn);
-	//         })
-	//         .map(
-	//             (entity) => {
-	//                 if(!identityReturn) return entity.id;
-	//                 else return entity.access_policies?.map((policy) => policy.identity_id) || []; // TBD: is this the right way to handle this? should we return an empty array if there is no identity_id or should we filter out these entities? should we throw an error if there is no identity_id, since it might be a sign of misconfigured access policies?
-	//             }
-	//         );
-	//     });
-	//     return $derived.by(() => this.getSelectedEntities(name));
-	// }
+	createAccessPolicyResourceSelection(name: string, policyFilterFn: (policy: AccessPolicy) => boolean, initialIds: string[] = []) {
+	    this.addSelection(name, initialIds);
+	    $effect(() => {
+	        this.#selections[name] = this.entities
+	        .filter((entity) => {
+	            const policies = this.accessPolicies[entity.id] || [];
+	            return policies.some(policyFilterFn);
+	        })
+	        .map((entity) =>  entity.id)
+	    });
+	    const selectionEntities =  $derived.by(() => this.getSelectedEntities(name));
+        return selectionEntities;
+	}
 
-	sortSelectionBy(name: string, attribute: keyof T, ascending = true) {
-		this.entities.sort((a, b) => {
-			if (a[attribute] < b[attribute]) return ascending ? -1 : 1;
-			if (a[attribute] > b[attribute]) return ascending ? 1 : -1;
-			return 0;
-		});
-		this.#selections[name] = this.getSelectedEntities(name).map((entity) => entity.id);
+    createAccessPolicyIdentitySelection(name: string, policyFilterFn: (policy: AccessPolicy) => boolean, initialIds: string[] = []) {
+        this.addSelection(name, initialIds);
+        $effect(() => {
+            this.#selections[name] = this.identities
+            .filter((identity) => {
+                // find all policies that match the filter function for this identity
+                const policies = Object.values(this.accessPolicies).flat().filter(policyFilterFn).filter(policy => policy.identity_id === identity.id);
+                return policies.length > 0;
+            })
+            .map((identity) => identity.id);
+        });
+        const selectionIdentities =  $derived.by(() => this.getSelectedIdentities(name));
+        return selectionIdentities;
+
+    }
+
+	createSortedSelection(name: string, attribute: keyof T, ascending = true) {
+        this.addSelection(name)
+        $effect(() => {
+            this.entities.sort((a, b) => {
+                if (a[attribute] < b[attribute]) return ascending ? -1 : 1;
+                if (a[attribute] > b[attribute]) return ascending ? 1 : -1;
+                return 0;
+            });
+        });
+		const sortedSelectionEntities =  $derived.by(() => this.getSelectedEntities(name));
+        return sortedSelectionEntities;
 	}
 }
