@@ -247,7 +247,7 @@ class ResourceHierarchy(BaseHierarchyCreate, BaseHierarchy, table=True):
 class ResourceHierarchyRead(BaseHierarchyCreate):
     """Read model for resource hierarchy"""
 
-    pass
+    order: int
 
 
 class ResourceHierarchyUpdate(BaseHierarchyCreate):

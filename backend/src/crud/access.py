@@ -1272,7 +1272,7 @@ class ResourceHierarchyCRUD(
         #     await self.session.flush()
         await session.refresh(hierarchy_row)
 
-        return cast(ResourceHierarchyRead, hierarchy_row)
+        return ResourceHierarchyRead.model_validate(hierarchy_row)
 
     async def reorder_children(  # noqa: C901
         self,

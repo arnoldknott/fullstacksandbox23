@@ -78,7 +78,7 @@ from sqlmodel import SQLModel
 from sqlmodel.main import SQLModelMetaclass
 
 from core.types import Action, IdentityType, ResourceType
-from models.access import AccessPolicyRead
+from models.access import AccessPolicyRead, IdentityHierarchyRead, ResourceHierarchyRead
 
 # Model mixins - combine with the SQLModel-based models in src/models/*.py
 # to extend the models with meta data,
@@ -156,8 +156,10 @@ class HierarchyMixin(BaseModel):
     # but also adds complexity and might have performance implications.
     # If so, only matches on parent_id or matches on child_id or both?
 
-    inherit: Optional[bool] = None
-    order: Optional[int] = None
+    # inherit: Optional[bool] = None
+    # order: Optional[int] = None
+    children: Optional[List[ResourceHierarchyRead | IdentityHierarchyRead]] = []
+    parents: Optional[List[ResourceHierarchyRead | IdentityHierarchyRead]] = []
 
 
 class ModelTypes(str, Enum):

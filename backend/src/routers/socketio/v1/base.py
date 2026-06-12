@@ -322,25 +322,18 @@ class BaseNamespace(
                     last_modified_date if last_modified_date else None
                 )
             parent_id = await self._get_session_query_string(sid, "parent_id")
-            if parent_id is not None:
-                if self.crud is None:
-                    pass
-                else:
-                    async with self.crud() as crud:
-                        hierarchy_crud = crud.hierarchy_CRUD(session=crud.session)
-                        hierarchy = await hierarchy_crud.read(
-                            current_user=current_user,
-                            parent_id=UUID(parent_id),
-                            child_id=resource.id,
+            if self.crud is not None:
+                async with self.crud() as crud:
+                    hierarchy_crud = crud.hierarchy_CRUD(session=crud.session)
+                    resource_as_parent = await hierarchy_crud.read(
+                        current_user=current_user, parent_id=resource.id
+                    )
+                    resource.children = resource_as_parent
+                    if parent_id is not None:
+                        resource_as_child = await hierarchy_crud.read(
+                            current_user=current_user, child_id=resource.id
                         )
-                        resource.inherit = hierarchy[0].inherit if hierarchy else None
-                        # Only resources have an order, not identities:
-                        if crud.model.__name__ in ResourceType.list():
-                            resource.order = (
-                                hierarchy[0].order
-                                if hierarchy and hierarchy[0].order
-                                else None
-                            )
+                        resource.parents = resource_as_child
         except Exception:
             logger.info(f"🧦 No access data found for {resource.id}.")
         return resource

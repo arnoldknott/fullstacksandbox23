@@ -534,7 +534,7 @@ async def post_relationships(
     hierarchies: List[BaseHierarchyCreate],
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> List[ResourceHierarchyRead] | List[IdentityHierarchyRead]:
+) -> List[ResourceHierarchyRead | IdentityHierarchyRead]:
     """Creates a new relationship between a child and a parent resource."""
     logger.info("POST view to add child to parent calls add_child_to_parent CRUD")
     current_user = await check_token_against_guards(token_payload, guards)
