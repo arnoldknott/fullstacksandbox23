@@ -54,9 +54,16 @@
 	// 			// creation_date: new Date(Date.now()) // TBD: Check if this is necessary?
 	// 		})
 	// 	});
-	let ownedDemoResources: DemoResourceExtended[] = $derived([]);
-	let writeDemoResources: DemoResourceExtended[] = $derived([]);
-	let readDemoResources: DemoResourceExtended[] = $derived([]);
+	let ownedDemoResources: DemoResourceExtended[] = $derived([
+		...(socketio?.pendingEntities || []),
+		...(socketio?.getSelectedEntities('owner') || [])
+	]);
+	let writeDemoResources: DemoResourceExtended[] = $derived(
+		socketio?.getSelectedEntities('write') || []
+	);
+	let readDemoResources: DemoResourceExtended[] = $derived(
+		socketio?.getSelectedEntities('read') || []
+	);
 
 	onMount(() => {
 		const connection: SocketioConnection = {
@@ -109,31 +116,31 @@
 		// });
 	});
 
-	$effect(() => {
-		// ownedDemoResources = [
-		// 	...socketio.pendingEntities,
-		// 	...socketio.getSelectedEntities('owner').sort(sortResourcesByCreationDate)
-		// ];
-		// writeDemoResources = socketio.getSelectedEntities('write').sort(sortResourcesByCreationDate);
-		// readDemoResources = socketio.getSelectedEntities('read').sort(sortResourcesByCreationDate);
-		// ownedDemoResources = socketio.getSelectedEntities('owner');
-		ownedDemoResources = [...socketio.pendingEntities, ...socketio.getSelectedEntities('owner')];
-		writeDemoResources = socketio.getSelectedEntities('write');
-		readDemoResources = socketio.getSelectedEntities('read');
-		// console.log('=== length of demo resources in socketio ===', socketio.entities.length);
-		// console.log(
-		// 	'=== length of owned demo resources in socketio ===',
-		// 	socketio.getSelectedEntities('owner').length
-		// );
-		// console.log(
-		// 	'=== length of write demo resources in socketio ===',
-		// 	socketio.getSelectedEntities('write').length
-		// );
-		// console.log(
-		// 	'=== length of read demo resources in socketio ===',
-		// 	socketio.getSelectedEntities('read').length
-		// );
-	});
+	// $effect(() => {
+	// 	// ownedDemoResources = [
+	// 	// 	...socketio.pendingEntities,
+	// 	// 	...socketio.getSelectedEntities('owner').sort(sortResourcesByCreationDate)
+	// 	// ];
+	// 	// writeDemoResources = socketio.getSelectedEntities('write').sort(sortResourcesByCreationDate);
+	// 	// readDemoResources = socketio.getSelectedEntities('read').sort(sortResourcesByCreationDate);
+	// 	// ownedDemoResources = socketio.getSelectedEntities('owner');
+	// 	ownedDemoResources = [...socketio.pendingEntities, ...socketio.getSelectedEntities('owner')];
+	// 	writeDemoResources = socketio.getSelectedEntities('write');
+	// 	readDemoResources = socketio.getSelectedEntities('read');
+	// 	// console.log('=== length of demo resources in socketio ===', socketio.entities.length);
+	// 	// console.log(
+	// 	// 	'=== length of owned demo resources in socketio ===',
+	// 	// 	socketio.getSelectedEntities('owner').length
+	// 	// );
+	// 	// console.log(
+	// 	// 	'=== length of write demo resources in socketio ===',
+	// 	// 	socketio.getSelectedEntities('write').length
+	// 	// );
+	// 	// console.log(
+	// 	// 	'=== length of read demo resources in socketio ===',
+	// 	// 	socketio.getSelectedEntities('read').length
+	// 	// );
+	// });
 
 	// const sortResourcesByCreationDate = (a: DemoResourceExtended, b: DemoResourceExtended) => {
 	// 	if (a.creation_date && b.creation_date) {
