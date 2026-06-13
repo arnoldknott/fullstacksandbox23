@@ -32,7 +32,7 @@ export type SocketioConnection = {
 	namespace?: string;
 	sessionId?: string;
 	parentId?: string;
-	queryParams?: QueryParameters;
+	queryParams?: Omit<QueryParameters, 'parent-id'>; // parent-id is handled in the connection!
 	overrides?: Partial<ManagerOptions & SocketOptions>;
 };
 
@@ -105,14 +105,14 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 		connection: SocketioConnection,
 		configuration: Partial<EntityContainerConfiguration<T> & SocketioHandlers<T>> = {}
 	) {
-		super(configuration);
+		super({parentId: connection.parentId, ...configuration});
 		const backendAPIConfiguration: BackendAPIConfiguration = getContext('backendAPIConfiguration');
 		const backendFqdn = backendAPIConfiguration.backendFqdn;
 		const socketioServerUrl = backendFqdn.startsWith('localhost')
 			? `http://${backendFqdn}`
 			: `https://${backendFqdn}`;
 
-		const queryParams = connection.queryParams ?? {};
+		const queryParams: QueryParameters = connection.queryParams ?? {};
 		if (connection.parentId) {
 			queryParams['parent-id'] = connection.parentId;
 		}
