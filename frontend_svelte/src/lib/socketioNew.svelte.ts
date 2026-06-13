@@ -103,7 +103,7 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 
 	constructor(
 		connection: SocketioConnection,
-		configuration: Partial<EntityContainerConfiguration<T> & SocketioHandlers<T>> = {}
+		configuration: Partial<Omit<EntityContainerConfiguration<T>, 'parentId'> & SocketioHandlers<T>> = {}
 	) {
 		super({parentId: connection.parentId, ...configuration});
 		const backendAPIConfiguration: BackendAPIConfiguration = getContext('backendAPIConfiguration');
