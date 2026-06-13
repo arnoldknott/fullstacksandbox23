@@ -1,7 +1,7 @@
 import { SvelteSet } from 'svelte/reactivity';
 
 import { Action } from './accessHandler';
-import type { AccessPolicy, AnyEntityExtended, AnyIdentityExtended, Hierarchies } from './types';
+import type { AccessPolicy, AnyEntityExtended, AnyIdentityExtended, Hierarchy } from './types';
 
 /**
  * Functions that provide the Data for class EntityContainer to manage. Evaluated inside a
@@ -15,7 +15,7 @@ import type { AccessPolicy, AnyEntityExtended, AnyIdentityExtended, Hierarchies 
 // 	seedIdentities?: () => AnyIdentityExtended[];
 // 	seedAccessPolicies?: () => Record<string, AccessPolicy[]>;
 // 	seedAccessRights?: () => Record<string, Action>;
-// 	seedHierarchies?: () => Record<string, Hierarchies>;
+// 	seedChildren?: () => Record<string, Hierarchy[]>;
 // 	seedSelections?: () => Record<string, string[]>;
 // 	parentId?: string; // should it be here?
 // };
@@ -45,7 +45,8 @@ export interface EntityContainerInterface<T extends AnyEntityExtended = AnyEntit
 	// TBD: when payload separated from metadta, these should track the metadata:
 	accessPolicies: Record<string, AccessPolicy[]>;
 	accessRights: Record<string, Action>;
-	hierarchies: Record<string, Hierarchies>;
+	children: Record<string, Hierarchy[]>;
+	parents: Record<string, Hierarchy[]>;
 	selections: Record<string, string[]>;
 	parentId?: string | null;
 	// defaultInherit: boolean;
@@ -71,8 +72,8 @@ export interface EntityContainerInterface<T extends AnyEntityExtended = AnyEntit
 	createFilteredEntitySelection(name: string, filterFn: (entity: T) => boolean): T[];
 	createLinkedSelection(
 		name: string,
+		inverse: boolean,
 		parentId: string,
-		inverse?: boolean,
 		fromOtherSelection?: string
 	): T[];
 	createUserHasSpecificAccessRightSelection(
@@ -117,7 +118,8 @@ export class EntityContainer<
 	// Metadata:
 	#accessPolicies = $state<Record<string, AccessPolicy[]>>({}); // UUID: AccessPolicy[]
 	#accessRights = $state<Record<string, Action>>({}); // UUID: Action
-	#hierarchies = $state<Record<string, Hierarchies>>({}); // array of all parent and child hierarchies
+	#children = $state<Record<string, Hierarchy[]>>({}); // array of all parent and child hierarchies
+	#parents = $state<Record<string, Hierarchy[]>>({}); // array of all parent and child hierarchies
 	// Collection of generic selections to manage subsests of data potentially based on specific metadata criteria:
 	#selections = $state<Record<string, string[]>>({}); // selectionName: entityIds[]
 	parentId?: string | null;
@@ -151,7 +153,7 @@ export class EntityContainer<
 		this.parentId = configuration.parentId ?? undefined;
 		this.pendingTemplate = configuration.template ?? undefined; // TBD: change into setting all values, but the id value to null/undifned/empty, whatver is adequate - note the mandartory keys!
 		this.pendingSubmitOptions = {
-			parentId: configuration.parentId ?? undefined,// TBD: decide if this is double information?
+			parentId: configuration.parentId ?? undefined, // TBD: decide if this is double information?
 			inherit: configuration.inherit ?? false,
 			public: configuration.public ?? false,
 			publicAction: configuration.publicAction ?? undefined
@@ -201,11 +203,25 @@ export class EntityContainer<
 		this.#accessRights = value;
 	}
 
-	get hierarchies(): Record<string, Hierarchies> {
-		return this.#hierarchies;
+	// get hierarchies(): Record<string, Hierarchies> {
+	// 	return this.#hierarchies;
+	// }
+	// set hierarchies(value: Record<string, Hierarchies>) {
+	// 	this.#hierarchies = value;
+	// }
+
+	get children(): Record<string, Hierarchy[]> {
+		return this.#children;
 	}
-	set hierarchies(value: Record<string, Hierarchies>) {
-		this.#hierarchies = value;
+	set children(value: Record<string, Hierarchy[]>) {
+		this.#children = value;
+	}
+
+	get parents(): Record<string, Hierarchy[]> {
+		return this.#parents;
+	}
+	set parents(value: Record<string, Hierarchy[]>) {
+		this.#parents = value;
 	}
 
 	get selections(): Record<string, string[]> {
@@ -445,14 +461,14 @@ export class EntityContainer<
 	 */
 	createLinkedSelection(
 		name: string,
+		inverse: boolean = false,
 		parentId: string = this.parentId
-        ? this.parentId
-        : (() => {
-            throw new Error(
-                "Parent ID must be provided either as an argument or as the EntityContainer's parentId property."
-            );
-        })(),
-        inverse: boolean = false,
+			? this.parentId
+			: (() => {
+					throw new Error(
+						"Parent ID must be provided either as an argument or as the EntityContainer's parentId property."
+					);
+				})(),
 		fromOtherSelection?: string
 	) {
 		this.addSelection(name);
@@ -470,18 +486,17 @@ export class EntityContainer<
 			// 			else return hierarchy.parent_id !== parentIdToUse;
 			// 		})
 			// 		.map((hierarchy) => hierarchy.child_id) || [];
+			// TBD: add option to find linked child(ren) instead of linked parent?
 			this.#selections[name] = this.getSelectedEntities(fromOtherSelection)
 				.filter((entity) => {
 					if (!inverse)
-						return this.hierarchies[entity.id]?.parents?.some(
-							(parent) => parent.parent_id === parentId
-						);
-					// check if the parent_id matches the specified parentId
+						// check if the parent_id matches the specified parentId
+						return this.parents[entity.id]?.some((parent) => parent.parent_id === parentId);
 					else
-						return this.hierarchies[entity.id]?.parents?.every(
-							(parent) => parent.parent_id !== parentId
-						); // check if the parent_id does not match the specified parentId
+						// check if the parent_id does not match the specified parentId
+						return this.parents[entity.id]?.every((parent) => parent.parent_id !== parentId);
 				})
+
 				.map((entity) => entity.id);
 		});
 		const selectionEntities = $derived.by(() => this.getSelectedEntities(name));

@@ -29,7 +29,8 @@ describe('EntityContainer', () => {
 		expect(entityContainer.identities).toEqual([]);
 		expect(entityContainer.accessPolicies).toEqual({});
 		expect(entityContainer.accessRights).toEqual({});
-		expect(entityContainer.hierarchies).toEqual({});
+		expect(entityContainer.children).toEqual({});
+		expect(entityContainer.parents).toEqual({});
 		expect(entityContainer.selections).toEqual({});
 	});
 
@@ -84,15 +85,15 @@ describe('EntityContainer', () => {
 		entityContainer.accessRights = {};
 		expect(entityContainer.accessRights).toEqual({});
 		const hierarchy = { child_id: v4(), parent_id: v4() };
-		entityContainer.hierarchies = { '1': { children: [hierarchy] } };
-		expect(entityContainer.hierarchies).toEqual({ '1': { children: [hierarchy] } });
-		entityContainer.hierarchies = {};
-		expect(entityContainer.hierarchies).toEqual({});
+		entityContainer.children = { '1': [hierarchy] };
+		expect(entityContainer.children).toEqual({ '1': [hierarchy] });
+		entityContainer.children = {};
+		expect(entityContainer.children).toEqual({});
 		const otherHierarchy = { child_id: v4(), parent_id: v4(), inherit: true, order: 1 };
-		entityContainer.hierarchies = { '1': { parents: [otherHierarchy] } };
-		expect(entityContainer.hierarchies).toEqual({ '1': { parents: [otherHierarchy] } });
-		entityContainer.hierarchies = {};
-		expect(entityContainer.hierarchies).toEqual({});
+		entityContainer.parents = { '1': [otherHierarchy] };
+		expect(entityContainer.parents).toEqual({ '1': [otherHierarchy] });
+		entityContainer.parents = {};
+		expect(entityContainer.parents).toEqual({});
 		// Selections:
 		const selection = [v4()];
 		entityContainer.selections = { testSelection: selection };
@@ -156,19 +157,21 @@ describe('EntityContainer', () => {
 	// 	const entity3 = { id: v4(), name: 'Entity 3' };
 	// 	const entity4 = { id: v4(), name: 'Entity 4' };
 	// 	entityContainer.entities = [entity1, entity2, entity3, entity4];
-	// 	const hierarchy12 = { child_id: entity2.id, parent_id: entity1.id };
-	// 	const hierarchy13 = { child_id: entity3.id, parent_id: entity1.id };
-	// 	const hierarchy24 = { child_id: entity4.id, parent_id: entity2.id };
-	// 	entityContainer.hierarchies = {
-	// 		[entity1.id]: { parents: [hierarchy12, hierarchy13] },
-	// 		[entity2.id]: { children: [hierarchy12], parents: [hierarchy24] },
-	// 		[entity3.id]: { children: [hierarchy13] },
-	// 		[entity4.id]: { children: [hierarchy24] }
+	// 	const parentId1 = v4();
+	// 	const parentId2 = v4();
+	// 	const hierarchy12 = { child_id: entity1.id, parent_id: parentId1 };
+	// 	const hierarchy13 = { child_id: entity2.id, parent_id: parentId1, inherit: true };
+	// 	const hierarchy24 = { child_id: entity4.id, parent_id: parentId2 };
+	// 	entityContainer.parents = {
+	// 		[entity1.id]: [hierarchy12, hierarchy13],
+	// 		[entity2.id]: [hierarchy24],
+	// 		[entity3.id]: [hierarchy13],
+	// 		[entity4.id]: [hierarchy24]
 	// 	};
 	// 	$effect.root(() => {
-	// 		entityContainer.createLinkedSelection('linkedToEntity1', entity1.id);
-	// 		entityContainer.createLinkedSelection('linkedToEntity2', entity2.id);
-	// 		entityContainer.createLinkedSelection('linkedToEntity1Inverted', entity1.id, true);
+	// 		entityContainer.createLinkedSelection('linkedToEntity1', false, entity1.id);
+	// 		entityContainer.createLinkedSelection('linkedToEntity2', false, entity2.id);
+	// 		entityContainer.createLinkedSelection('linkedToEntity1Inverted', true, entity1.id);
 	// 	});
 	// 	flushSync(() => {});
 	// 	expect(entityContainer.getSelectedEntities('linkedToEntity1')).toEqual([entity2, entity3]);
@@ -338,7 +341,7 @@ describe('EntityContainer', () => {
 	test('should throw error when creating all linked selection without parentId', () => {
 		$effect.root(() => {
 			expect(() =>
-				entityContainer.createLinkedSelection('test', undefined as unknown as string)
+				entityContainer.createLinkedSelection('test', false, undefined as unknown as string)
 			).toThrowError(
 				"Parent ID must be provided either as an argument or as the EntityContainer's parentId property."
 			);

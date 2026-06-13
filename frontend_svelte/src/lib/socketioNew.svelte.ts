@@ -103,9 +103,11 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 
 	constructor(
 		connection: SocketioConnection,
-		configuration: Partial<Omit<EntityContainerConfiguration<T>, 'parentId'> & SocketioHandlers<T>> = {}
+		configuration: Partial<
+			Omit<EntityContainerConfiguration<T>, 'parentId'> & SocketioHandlers<T>
+		> = {}
 	) {
-		super({parentId: connection.parentId, ...configuration});
+		super({ parentId: connection.parentId, ...configuration });
 		const backendAPIConfiguration: BackendAPIConfiguration = getContext('backendAPIConfiguration');
 		const backendFqdn = backendAPIConfiguration.backendFqdn;
 		const socketioServerUrl = backendFqdn.startsWith('localhost')
@@ -397,7 +399,7 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 	 * The `inherit` flag indicates whether the child should inherit access policies from the parent.
 	 * Reconciliation of the new hierarchy happens in the `status:linked` handler, which updates the local state based on server confirmation.
 	 */
-	link(childId: string, parentId?: string, inherit?: boolean): void {
+	link(childId: string, parentId: string = this.parentId ?? '', inherit?: boolean): void {
 		if (parentId) {
 			const hierarchy: Hierarchy = {
 				child_id: childId,
@@ -416,9 +418,14 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 	 * Reconciliation of the removed hierarchy happens in the `status:unlinked`
 	 * handler, which updates the local state based on server confirmation.
 	 */
-	unlink(childId: string, parentId?: string): void {
+	unlink(childId: string, parentId: string = this.parentId ?? ''): void {
+		console.log('=== unlinking: ', { childId, parentId }, ' ===');
 		if (parentId) {
-			this.client.emit('unlink', { child_id: childId, parent_id: parentId || this.parentId || '' });
+			this.client.emit('unlink', { child_id: childId, parent_id: parentId });
+		} else {
+			throw new Error(
+				"Parent ID must be provided either as an argument or as the EntityContainer's parentId property."
+			);
 		}
 		// Reconciliation happens in the `status:unlinked` handler.
 	}
@@ -463,15 +470,19 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 			this.accessRights[this.entities[existingIndex].id] = data.access_right
 				? data.access_right
 				: this.accessRights[this.entities[existingIndex].id];
-			this.hierarchies[this.entities[existingIndex].id] = data.hierarchies
-				? data.hierarchies
-				: this.hierarchies[this.entities[existingIndex].id];
+			this.children[this.entities[existingIndex].id] = data.children
+				? data.children
+				: this.children[this.entities[existingIndex].id];
+			this.parents[this.entities[existingIndex].id] = data.parents
+				? data.parents
+				: this.parents[this.entities[existingIndex].id];
 		} else {
 			// Add new entity at the beginning (most recent first);
 			this.entities.unshift(data);
 			this.accessPolicies[data.id] = data.access_policies ?? [];
 			this.accessRights[data.id] = data.access_right ?? Action.READ;
-			this.hierarchies[data.id] = data.hierarchies ?? { children: [], parents: [] };
+			this.children[data.id] = data.children ?? [];
+			this.parents[data.id] = data.parents ?? [];
 		}
 	}
 
@@ -493,7 +504,8 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 		// );
 		delete this.accessPolicies[resource_id];
 		delete this.accessRights[resource_id];
-		delete this.hierarchies[resource_id];
+		delete this.children[resource_id];
+		delete this.parents[resource_id];
 		// TBD: consider also removing from accessPolicies and accessRights, depending on the backend implementation and emitted data on delete.
 	}
 
