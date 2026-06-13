@@ -69,7 +69,7 @@ export interface EntityContainerInterface<T extends AnyEntityExtended = AnyEntit
 	getSelectedIdentities(name?: string): AnyIdentityExtended[];
 	// Helper functions to creater specific selections:
 	createFilteredEntitySelection(name: string, filterFn: (entity: T) => boolean): T[];
-	createAllLinkedSelection(
+	createLinkedSelection(
 		name: string,
 		parentId: string,
 		inverse?: boolean,
@@ -151,7 +151,7 @@ export class EntityContainer<
 		this.parentId = configuration.parentId ?? undefined;
 		this.pendingTemplate = configuration.template ?? undefined; // TBD: change into setting all values, but the id value to null/undifned/empty, whatver is adequate - note the mandartory keys!
 		this.pendingSubmitOptions = {
-			parentId: configuration.parentId ?? undefined,
+			parentId: configuration.parentId ?? undefined,// TBD: decide if this is double information?
 			inherit: configuration.inherit ?? false,
 			public: configuration.public ?? false,
 			publicAction: configuration.publicAction ?? undefined
@@ -443,16 +443,16 @@ export class EntityContainer<
 	 *
 	 * Uses {@link createReactiveSelection} for reactive updates when data or metadata changes.
 	 */
-	createAllLinkedSelection(
+	createLinkedSelection(
 		name: string,
 		parentId: string = this.parentId
-			? this.parentId
-			: (() => {
-					throw new Error(
-						"Parent ID must be provided either as an argument or as the EntityContainer's parentId property."
-					);
-				})(),
-		inverse: boolean = false,
+        ? this.parentId
+        : (() => {
+            throw new Error(
+                "Parent ID must be provided either as an argument or as the EntityContainer's parentId property."
+            );
+        })(),
+        inverse: boolean = false,
 		fromOtherSelection?: string
 	) {
 		this.addSelection(name);

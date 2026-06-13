@@ -166,9 +166,9 @@ describe('EntityContainer', () => {
 	// 		[entity4.id]: { children: [hierarchy24] }
 	// 	};
 	// 	$effect.root(() => {
-	// 		entityContainer.createAllLinkedSelection('linkedToEntity1', entity1.id);
-	// 		entityContainer.createAllLinkedSelection('linkedToEntity2', entity2.id);
-	// 		entityContainer.createAllLinkedSelection('linkedToEntity1Inverted', entity1.id, true);
+	// 		entityContainer.createLinkedSelection('linkedToEntity1', entity1.id);
+	// 		entityContainer.createLinkedSelection('linkedToEntity2', entity2.id);
+	// 		entityContainer.createLinkedSelection('linkedToEntity1Inverted', entity1.id, true);
 	// 	});
 	// 	flushSync(() => {});
 	// 	expect(entityContainer.getSelectedEntities('linkedToEntity1')).toEqual([entity2, entity3]);
@@ -338,7 +338,7 @@ describe('EntityContainer', () => {
 	test('should throw error when creating all linked selection without parentId', () => {
 		$effect.root(() => {
 			expect(() =>
-				entityContainer.createAllLinkedSelection('test', undefined as unknown as string)
+				entityContainer.createLinkedSelection('test', undefined as unknown as string)
 			).toThrowError(
 				"Parent ID must be provided either as an argument or as the EntityContainer's parentId property."
 			);
