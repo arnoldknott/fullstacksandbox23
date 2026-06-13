@@ -9,9 +9,11 @@
 	import Card from '$components/Card.svelte';
 	import Heading from '$components/Heading.svelte';
 	import JsonData from '$components/JsonData.svelte';
+	import Title from '$components/Title.svelte';
 	import { IdentityType } from '$lib/accessHandler';
-	import { type Relation, RelationHandler } from '$lib/relationHandler.svelte';
-	import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
+	// import { type Relation, RelationHandler } from '$lib/relationHandler.svelte';
+	// import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
+	import { SocketIO, type SocketioConnection } from '$lib/socketioNew.svelte';
 	import type { Group, UeberGroup } from '$lib/types';
 
 	import IdBadge from '../../../IdBadge.svelte';
@@ -44,9 +46,13 @@
 
 	let socketioUeberGroup: SocketIO<UeberGroup> = $state()!;
 	let socketioGroup: SocketIO<Group> = $state()!;
-	let groupsRelation: Relation = $state()!;
-	let linkedGroups = $derived<Group[]>((groupsRelation?.linked ?? []) as Group[]);
-	let allUnlinkedGroups = $derived<Group[]>((groupsRelation?.unlinked ?? []) as Group[]);
+	// let groupsRelation: Relation = $state()!;
+	let linkedGroups = $derived<Group[]>(
+		socketioGroup?.getSelectedEntities('linkedToUeberGroup') || []
+	);
+	let unlinkedGroups = $derived<Group[]>(
+		socketioGroup?.getSelectedEntities('notLinkedToUeberGroup') || []
+	);
 	const [sendGroupCrossfade, receiveGroupCrossfade] = crossfade({ duration: 400 });
 	// const [sendIdentityCrossfade, receiveIdentityCrossfade] = crossfade({ duration: 400 });
 	let newGroupInherit = $state(true);
@@ -67,7 +73,7 @@
 	// SocketIO for Ueber-Groups and Groups:
 	const ueberGroupConnection: SocketioConnection = {
 		namespace: '/ueber-group',
-		cookie_session_id: page.data.session.sessionId
+		sessionId: page.data.session.sessionId
 	};
 
 	// TBD: when porting to group,
@@ -78,14 +84,16 @@
 	// Group related stuff:
 	const groupConnection: SocketioConnection = {
 		namespace: '/group',
-		cookie_session_id: page.data.session.sessionId
-		// query_params: {
-		// 	'request-access-data': true,
-		// }
+		sessionId: page.data.session.sessionId,
+		parentId: page.params.ueberGroupId,
+		queryParams: {
+			'request-access-data': true
+		}
 	};
 	onMount(() => {
 		socketioUeberGroup = new SocketIO<UeberGroup>(ueberGroupConnection, {
-			defaultHandlers: { transferred: false, deleted: false }
+			transferred: false,
+			deleted: false
 		});
 
 		socketioUeberGroup.client.on('deleted', (resource_id: string) => {
@@ -101,19 +109,25 @@
 		});
 
 		socketioGroup = new SocketIO<Group>(groupConnection, {
-			subscribeEntities: () => data.allGroups,
-			pendingTemplate: () => ({ name: '', description: '' })
+			template: { name: '', description: '' }
 		});
 		socketioGroup.client.emit('read');
 		socketioGroup.createPending();
 
-		const ueberGroupRelations = new RelationHandler<UeberGroup>(() => ueberGroup);
-		groupsRelation = ueberGroupRelations.addChild(
-			'groups',
-			socketioGroup,
-			() => data.thisUeberGroup?.groups,
-			true
-		);
+		linkedGroups = socketioGroup.createLinkedSelection('linkedToUeberGroup');
+		unlinkedGroups = socketioGroup.createLinkedSelection('notLinkedToUeberGroup', true);
+
+		// const ueberGroupRelations = new RelationHandler<UeberGroup>(() => ueberGroup);
+		// groupsRelation = ueberGroupRelations.addChild(
+		// 	'groups',
+		// 	socketioGroup,
+		// 	() => data.thisUeberGroup?.groups,
+		// 	true
+		// );
+	});
+	$effect(() => {
+		// Seed from Rest-API data on initial load, then keep in sync via SocketIO.
+		socketioGroup.entities = data.allGroups;
 	});
 
 	onDestroy(() => {
@@ -145,9 +159,9 @@
 		}
 	};
 
-	const linkGroup = (groupId: string) => groupsRelation.link(groupId, existingGroupInherit);
+	// const linkGroup = (groupId: string) => groupsRelation.link(groupId, existingGroupInherit);
 
-	const unlinkGroup = (groupId: string) => groupsRelation.unlink(groupId);
+	// const unlinkGroup = (groupId: string) => groupsRelation.unlink(groupId);
 
 	const deleteGroup = (groupId: string) => socketioGroup.deleteEntity(groupId);
 
@@ -295,7 +309,12 @@
 							in:receiveGroupCrossfade={{ key: identity }}
 							out:sendGroupCrossfade={{ key: identity }}
 						>
-							<IdentityListItem {identity} {type} unlink={unlinkGroup} remove={deleteGroup} />
+							<IdentityListItem
+								{identity}
+								{type}
+								unlink={() => socketioGroup.unlink(identity.id)}
+								remove={deleteGroup}
+							/>
 						</div>
 					{/each}
 				</dl>
@@ -314,6 +333,23 @@
 	</div>
 
 	<Heading id="add-group">Add group</Heading>
+
+	{#if debug}
+		<div class="grid grid-cols-2">
+			<!-- <Title id="socketio-group-entities">SocketIO Group Entities</Title>
+			<Title id="socketio-group-pending-entities">SocketIO Group Pending Entities</Title>
+			<Title id="socketio-group-access-policies">SocketIO Group Access Policies</Title>
+			<Title id="socketio-group-access-rights">SocketIO Group Access Rights</Title> -->
+			<Title id="socketio-group-children">SocketIO Group Children</Title>
+			<Title id="socketio-group-parents">SocketIO Group Parents</Title>
+			<!-- <JsonData data={socketioGroup?.entities} />
+			<JsonData data={socketioGroup?.pendingEntities} />
+			<JsonData data={socketioGroup?.accessPolicies} />
+			<JsonData data={socketioGroup?.accessRights} /> -->
+			<JsonData data={socketioGroup?.children} />
+			<JsonData data={socketioGroup?.parents} />
+		</div>
+	{/if}
 
 	{#snippet newGroupHeader()}
 		<h5 class="title-small md:title lg:title-large text-base-content card-title">
@@ -457,12 +493,15 @@
 			</div>
 		{/if}
 		<Card id="existing-groups" header={existingGroupsHeader}>
-			{#if allUnlinkedGroups !== undefined && allUnlinkedGroups.length > 0}
+			{#if unlinkedGroups !== undefined && unlinkedGroups.length > 0}
 				<dl class="divider-outline divide-y">
-					{#each allUnlinkedGroups as group (group.id)}
+					{#each unlinkedGroups as group (group.id)}
 						<!-- TBD: debug crossfade in connection with empty lists -->
 						<div in:receiveGroupCrossfade={{ key: group }} out:sendGroupCrossfade={{ key: group }}>
-							<IdentityListItem identity={group} link={linkGroup} />
+							<IdentityListItem
+								identity={group}
+								link={() => socketioGroup.link(group.id, ueberGroup?.id, existingGroupInherit)}
+							/>
 						</div>
 					{/each}
 				</dl>
@@ -476,7 +515,7 @@
 			{/if}
 		</Card>
 		{#if debug}
-			<JsonData data={allUnlinkedGroups} />
+			<JsonData data={unlinkedGroups} />
 		{/if}
 	</div>
 
