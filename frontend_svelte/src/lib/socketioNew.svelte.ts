@@ -105,7 +105,7 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 		connection: SocketioConnection,
 		configuration: Partial<EntityContainerConfiguration<T> & SocketioHandlers<T>> = {}
 	) {
-		super(configuration); // TBD: do we need to pass the configuration to the parent class? or is it enough to set the values in this constructor and let the parent class read them reactively through the getters?
+		super(configuration);
 		const backendAPIConfiguration: BackendAPIConfiguration = getContext('backendAPIConfiguration');
 		const backendFqdn = backendAPIConfiguration.backendFqdn;
 		const socketioServerUrl = backendFqdn.startsWith('localhost')
