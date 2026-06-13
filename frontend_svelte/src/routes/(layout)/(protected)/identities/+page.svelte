@@ -6,7 +6,7 @@
 	import Heading from '$components/Heading.svelte';
 	import JsonData from '$components/JsonData.svelte';
 	import { AccessHandler, IdentityType } from '$lib/accessHandler';
-	import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
+	import { SocketIO, type SocketioConnection } from '$lib/socketioNew.svelte';
 	import type { UeberGroupExtended } from '$lib/types';
 	import { initAccordion } from '$lib/userInterface';
 
@@ -42,19 +42,19 @@
 
 	const connection: SocketioConnection = {
 		namespace: '/ueber-group',
-		cookie_session_id: page.data.session.sessionId
-		// query_params: {
-		// 	'request-access-data': true,
-		// }
+		sessionId: page.data.session.sessionId
 	};
 
 	let socketio: SocketIO<UeberGroupExtended> = $state()!;
 	onMount(() => {
 		socketio = new SocketIO<UeberGroupExtended>(connection, {
-			subscribeEntities: () => data.ueberGroups,
-			pendingTemplate: () => ({ name: '', description: '' })
+			template: { name: '', description: '' }
 		});
 		socketio.createPending();
+	});
+	$effect(() => {
+		// Preseeding the data from RestAPI:
+		socketio.entities = data.ueberGroups;
 	});
 
 	let ueberGroups = $derived(socketio?.entities ?? []);
