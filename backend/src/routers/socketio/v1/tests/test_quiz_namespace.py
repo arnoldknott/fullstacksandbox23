@@ -265,6 +265,74 @@ class TestQuestion(BaseSocketIOTest):
                 children_data["order"] == idx + 1
             ), "Expected default order to match index of creation"
 
+    # TBD: move those general functionality tests to protected_resource tests
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "session_ids",
+        [
+            [session_id_admin_read_write_socketio],
+        ],
+        indirect=True,
+    )
+    async def test_link_a_message_to_question(
+        self,
+        socketio_test_client,
+        session_ids,
+        access_to_one_parent,
+        add_one_test_resource,
+    ):
+        """Test that read returns children of a question."""
+
+        connection = await socketio_test_client(
+            client_config=self.client_config(),
+            session_id=session_ids[0],
+        )
+        await connection.connect(
+            query_parameters={
+                "request-access-data": True,
+            }
+        )
+        await connection.client.sleep(0.2)
+        current_user = await connection.current_user()
+
+        # Create one question
+        question = await add_one_test_resource(
+            QuestionCRUD,
+            one_test_question,
+            current_user,
+        )
+
+        # Create one message
+        message = one_test_message.copy()
+        created_message = await add_one_test_resource(
+            MessageCRUD,
+            message,
+            current_user,
+        )
+
+        # Read the question
+        await connection.client.emit(
+            "link",
+            {"parent_id": str(question.id), "child_id": str(created_message.id)},
+            namespace=self.namespace_path,
+        )
+        await connection.client.sleep(0.5)
+
+        # Check transferred events
+        status_data = connection.responses("status", self.namespace_path)
+
+        # It's emitted twice: once in the self.namespace and in the parent namespace,
+        # both with the same data, so we can just check one of them and the length.
+        assert len(status_data) == 2
+        assert status_data[0]["id"] == str(created_message.id)
+        assert status_data[0]["parent_id"] == str(question.id)
+        assert status_data[0]["inherit"] is False
+        assert status_data[0]["order"] == 1
+        assert status_data[1]["id"] == str(created_message.id)
+        assert status_data[1]["parent_id"] == str(question.id)
+        assert status_data[1]["inherit"] is False
+        assert status_data[1]["order"] == 1
+
 
 class TestMessage(BaseSocketIOTest):
     """Test suite for Message SocketIO namespace."""
