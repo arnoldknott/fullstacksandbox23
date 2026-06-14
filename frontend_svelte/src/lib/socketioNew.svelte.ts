@@ -534,6 +534,7 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 				}
 			} else if (status.success === 'shared' || status.success === 'unshared') {
 				// Re-read to resolve remaining inherited access. If none, the server emits `deleted`.
+                // TBD: or consider sending the updated access at share from backend?
 				this.client.emit('read', status.id);
 			} else if (status.success === 'linked') {
 				// if (!parentId || status.parent_id !== parentId) return;
@@ -543,9 +544,15 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 				// 		{ child_id: status.id, parent_id: parentId, inherit: status.inherit }
 				// 	];
 				// }
+                // Re-read to resolve updated hierarchy
+                // TBD: or consider sending the updated hierarchy at link from backend?
+                this.client.emit('read', status.id);
 			} else if (status.success === 'unlinked') {
 				// if (!parentId || status.parent_id !== parentId) return;
 				// this.hierarchies = this.hierarchies.filter((h) => h.child_id !== status.id);
+                // Re-read to resolve updated hierarchy
+                // TBD: or consider sending the updated hierarchy at unlink from backend?
+                this.client.emit('read', status.id);
 			}
 		}
 	}
