@@ -44,6 +44,8 @@ from models.access import (
     AccessPolicyDelete,
     AccessPolicyUpdate,
     BaseHierarchyCreate,
+    IdentityHierarchyRead,
+    ResourceHierarchyRead,
 )
 from routers.socketio.v1 import register_namespace, registry_namespaces
 
@@ -890,7 +892,7 @@ class BaseNamespace(
             )
             async with self.crud() as crud:
                 hierarchy_CRUD = crud.hierarchy_CRUD(session=crud.session)
-                await hierarchy_CRUD.create(
+                hierarchy_obj = await hierarchy_CRUD.create(
                     current_user=current_user,
                     parent_id=hierarchy_obj.parent_id,
                     child_id=hierarchy_obj.child_id,
@@ -906,6 +908,11 @@ class BaseNamespace(
                 "parent_id": str(hierarchy_obj.parent_id),
                 "inherit": hierarchy_obj.inherit,
             }
+            if crud.model.__name__ in ResourceType.list():
+                hierarchy_obj = ResourceHierarchyRead.model_validate(hierarchy_obj)
+                status["order"] = hierarchy_obj.order
+            elif crud.model.__name__ in IdentityType.list():
+                hierarchy_obj = IdentityHierarchyRead.model_validate(hierarchy_obj)
             await self._emit_status(
                 sid, status, [f"resource:{str(hierarchy_obj.child_id)}"]
             )
