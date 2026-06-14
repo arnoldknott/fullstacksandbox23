@@ -1,7 +1,6 @@
 """Tests for Quiz SocketIO namespaces (Message, Question, Numerical)."""
 
 from uuid import UUID
-from pprint import pprint
 
 import pytest
 
@@ -246,11 +245,9 @@ class TestQuestion(BaseSocketIOTest):
         assert len(transfer_data) == 1
         assert transfer_data[0]["id"] == str(question.id)
         assert (
-            "children" in transfer_data[0]
+            "hierarchies" in transfer_data[0]
         ), "Expected inherit flag in transferred data"
-        children = transfer_data[0]["children"]
-        print("=== test_read_and_get_children - transfer_data ===")
-        pprint(transfer_data)
+        children = transfer_data[0]["hierarchies"]
         assert len(children) == 3, "Expected one child in transferred data"
         for children_data, message, idx in zip(
             children, messages, range(len(messages))
@@ -530,12 +527,12 @@ class TestMessage(BaseSocketIOTest):
         assert len(transfer_data) == 1
         assert transfer_data[0]["id"] == created_id
         assert (
-            "parents" in transfer_data[0]
+            "hierarchies" in transfer_data[0]
         ), "Expected inherit flag in transferred data"
         assert (
-            "children" in transfer_data[0]
+            "hierarchies" in transfer_data[0]
         ), "Expected inherit flag in transferred data"
-        parent = transfer_data[0]["parents"][0]
+        parent = transfer_data[0]["hierarchies"][0]
         assert UUID(parent["parent_id"]) == parent_id, "Expected parent_id to match"
         assert "inherit" in parent, "Expected inherit flag in transferred data"
         assert not parent["inherit"], "Expected default inherit flag to be False"
@@ -600,12 +597,12 @@ class TestMessage(BaseSocketIOTest):
         assert len(transfer_data) == 1
         assert transfer_data[0]["id"] == created_id
         assert (
-            "parents" in transfer_data[0]
+            "hierarchies" in transfer_data[0]
         ), "Expected inherit flag in transferred data"
         assert (
-            "children" in transfer_data[0]
+            "hierarchies" in transfer_data[0]
         ), "Expected inherit flag in transferred data"
-        parent = transfer_data[0]["parents"][0]
+        parent = transfer_data[0]["hierarchies"][0]
         assert UUID(parent["parent_id"]) == parent_id, "Expected parent_id to match"
         assert "inherit" in parent, "Expected inherit flag in transferred data"
         assert parent["inherit"], "Expected default inherit flag to be False"

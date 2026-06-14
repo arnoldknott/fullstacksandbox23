@@ -45,8 +45,7 @@ export interface EntityContainerInterface<T extends AnyEntityExtended = AnyEntit
 	// TBD: when payload separated from metadta, these should track the metadata:
 	accessPolicies: Record<string, AccessPolicy[]>;
 	accessRights: Record<string, Action>;
-	children: Record<string, Hierarchy[]>;
-	parents: Record<string, Hierarchy[]>;
+	hierarchies: Record<string, Hierarchy[]>;
 	selections: Record<string, string[]>;
 	parentId?: string | null;
 	// defaultInherit: boolean;
@@ -118,8 +117,7 @@ export class EntityContainer<
 	// Metadata:
 	#accessPolicies = $state<Record<string, AccessPolicy[]>>({}); // UUID: AccessPolicy[]
 	#accessRights = $state<Record<string, Action>>({}); // UUID: Action
-	#children = $state<Record<string, Hierarchy[]>>({}); // array of all parent and child hierarchies
-	#parents = $state<Record<string, Hierarchy[]>>({}); // array of all parent and child hierarchies
+	#hierarchies = $state<Record<string, Hierarchy[]>>({}); // array of all parent and child hierarchies
 	// Collection of generic selections to manage subsests of data potentially based on specific metadata criteria:
 	#selections = $state<Record<string, string[]>>({}); // selectionName: entityIds[]
 	parentId?: string | null;
@@ -203,25 +201,11 @@ export class EntityContainer<
 		this.#accessRights = value;
 	}
 
-	// get hierarchies(): Record<string, Hierarchies> {
-	// 	return this.#hierarchies;
-	// }
-	// set hierarchies(value: Record<string, Hierarchies>) {
-	// 	this.#hierarchies = value;
-	// }
-
-	get children(): Record<string, Hierarchy[]> {
-		return this.#children;
+	get hierarchies(): Record<string, Hierarchy[]> {
+		return this.#hierarchies;
 	}
-	set children(value: Record<string, Hierarchy[]>) {
-		this.#children = value;
-	}
-
-	get parents(): Record<string, Hierarchy[]> {
-		return this.#parents;
-	}
-	set parents(value: Record<string, Hierarchy[]>) {
-		this.#parents = value;
+	set hierarchies(value: Record<string, Hierarchy[]>) {
+		this.#hierarchies = value;
 	}
 
 	get selections(): Record<string, string[]> {
@@ -471,36 +455,41 @@ export class EntityContainer<
 				})(),
 		fromOtherSelection?: string
 	) {
-		this.addSelection(name);
-		$effect(() => {
-			// const parentIdToUse = parentId ?? this.parentId;
-			// if (!parentIdToUse) {
-			// 	throw new Error(
-			// 		"Parent ID must be provided either as an argument or as the EntityContainer's parentId property."
-			// 	);
-			// }
-			// this.#selections[name] =
-			// 	this.#hierarchies
-			// 		.filter((hierarchy) => {
-			// 			if (!inverse) return hierarchy.parent_id === parentIdToUse;
-			// 			else return hierarchy.parent_id !== parentIdToUse;
-			// 		})
-			// 		.map((hierarchy) => hierarchy.child_id) || [];
-			// TBD: add option to find linked child(ren) instead of linked parent?
+		// this.addSelection(name);
+		// $effect(() => {
+		// const parentIdToUse = parentId ?? this.parentId;
+		// if (!parentIdToUse) {
+		// 	throw new Error(
+		// 		"Parent ID must be provided either as an argument or as the EntityContainer's parentId property."
+		// 	);
+		// }
+		// this.#selections[name] =
+		// 	this.#hierarchies
+		// 		.filter((hierarchy) => {
+		// 			if (!inverse) return hierarchy.parent_id === parentIdToUse;
+		// 			else return hierarchy.parent_id !== parentIdToUse;
+		// 		})
+		// 		.map((hierarchy) => hierarchy.child_id) || [];
+		// TBD: add option to find linked child(ren) instead of linked parent?
+		return this.createReactiveSelection(name, () => {
 			this.#selections[name] = this.getSelectedEntities(fromOtherSelection)
 				.filter((entity) => {
 					if (!inverse)
 						// check if the parent_id matches the specified parentId
-						return this.parents[entity.id]?.some((parent) => parent.parent_id === parentId);
+						return this.hierarchies[entity.id]?.some(
+							(hierarchy) => hierarchy.parent_id === parentId
+						);
 					else
 						// check if the parent_id does not match the specified parentId
-						return this.parents[entity.id]?.every((parent) => parent.parent_id !== parentId);
+						return this.hierarchies[entity.id]?.every(
+							(hierarchy) => hierarchy.parent_id !== parentId
+						);
 				})
 
 				.map((entity) => entity.id);
 		});
-		const selectionEntities = $derived.by(() => this.getSelectedEntities(name));
-		return selectionEntities;
+		// const selectionEntities = $derived.by(() => this.getSelectedEntities(name));
+		// return selectionEntities;
 	}
 
 	/**

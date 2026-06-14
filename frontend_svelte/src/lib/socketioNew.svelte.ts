@@ -42,7 +42,7 @@ export type SocketioStatus =
 	| { success: 'deleted'; id: string }
 	| { success: 'shared'; id: string }
 	| { success: 'unshared'; id: string }
-	| { success: 'linked'; id: string; parent_id: string; inherit: boolean }
+	| { success: 'linked'; id: string; parent_id: string; inherit: boolean; order?: number }
 	| { success: 'unlinked'; id: string; parent_id: string }
 	| { error: string };
 
@@ -419,7 +419,6 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 	 * handler, which updates the local state based on server confirmation.
 	 */
 	unlink(childId: string, parentId: string = this.parentId ?? ''): void {
-		console.log('=== unlinking: ', { childId, parentId }, ' ===');
 		if (parentId) {
 			this.client.emit('unlink', { child_id: childId, parent_id: parentId });
 		} else {
@@ -470,19 +469,15 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 			this.accessRights[this.entities[existingIndex].id] = data.access_right
 				? data.access_right
 				: this.accessRights[this.entities[existingIndex].id];
-			this.children[this.entities[existingIndex].id] = data.children
-				? data.children
-				: this.children[this.entities[existingIndex].id];
-			this.parents[this.entities[existingIndex].id] = data.parents
-				? data.parents
-				: this.parents[this.entities[existingIndex].id];
+			this.hierarchies[this.entities[existingIndex].id] = data.hierarchies
+				? data.hierarchies
+				: this.hierarchies[this.entities[existingIndex].id];
 		} else {
 			// Add new entity at the beginning (most recent first);
 			this.entities.unshift(data);
 			this.accessPolicies[data.id] = data.access_policies ?? [];
 			this.accessRights[data.id] = data.access_right ?? Action.READ;
-			this.children[data.id] = data.children ?? [];
-			this.parents[data.id] = data.parents ?? [];
+			this.hierarchies[data.id] = data.hierarchies ?? [];
 		}
 	}
 
@@ -504,8 +499,7 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 		// );
 		delete this.accessPolicies[resource_id];
 		delete this.accessRights[resource_id];
-		delete this.children[resource_id];
-		delete this.parents[resource_id];
+		delete this.hierarchies[resource_id];
 		// TBD: consider also removing from accessPolicies and accessRights, depending on the backend implementation and emitted data on delete.
 	}
 
@@ -534,25 +528,38 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 				}
 			} else if (status.success === 'shared' || status.success === 'unshared') {
 				// Re-read to resolve remaining inherited access. If none, the server emits `deleted`.
-                // TBD: or consider sending the updated access at share from backend?
+				// TBD: or consider sending the updated access at share from backend?
 				this.client.emit('read', status.id);
 			} else if (status.success === 'linked') {
-				// if (!parentId || status.parent_id !== parentId) return;
-				// if (!this.hierarchies.some((h) => h.child_id === status.id)) {
-				// 	this.hierarchies = [
-				// 		...this.hierarchies,
-				// 		{ child_id: status.id, parent_id: parentId, inherit: status.inherit }
-				// 	];
-				// }
-                // Re-read to resolve updated hierarchy
-                // TBD: or consider sending the updated hierarchy at link from backend?
-                this.client.emit('read', status.id);
+				if (status.parent_id === this.parentId) {
+					if (this.hierarchies[status.id]?.some((h) => h.child_id === status.id)) {
+						this.hierarchies[status.id] = [
+							...this.hierarchies[status.id],
+							{ child_id: status.id, parent_id: this.parentId, inherit: status.inherit }
+						];
+					} else {
+						this.hierarchies[status.id] = [
+							{
+								child_id: status.id,
+								parent_id: this.parentId,
+								inherit: status.inherit,
+								order: status.order
+							}
+						];
+					}
+				}
+				// Re-read to resolve updated hierarchy
+				// TBD: or consider sending the updated hierarchy at link from backend?
+				// this.client.emit('read', status.id);
 			} else if (status.success === 'unlinked') {
-				// if (!parentId || status.parent_id !== parentId) return;
-				// this.hierarchies = this.hierarchies.filter((h) => h.child_id !== status.id);
-                // Re-read to resolve updated hierarchy
-                // TBD: or consider sending the updated hierarchy at unlink from backend?
-                this.client.emit('read', status.id);
+				if (status.parent_id === this.parentId) {
+					this.hierarchies[status.id] = this.hierarchies[status.id]?.filter(
+						(h) => h.child_id !== status.id
+					);
+				}
+				// Re-read to resolve updated hierarchy
+				// TBD: or consider sending the updated hierarchy at unlink from backend?
+				// this.client.emit('read', status.id);
 			}
 		}
 	}

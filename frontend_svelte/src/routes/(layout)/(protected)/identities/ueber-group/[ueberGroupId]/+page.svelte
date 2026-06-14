@@ -114,8 +114,8 @@
 		socketioGroup.client.emit('read');
 		socketioGroup.createPending();
 
-		linkedGroups = socketioGroup.createLinkedSelection('linkedToUeberGroup');
-		unlinkedGroups = socketioGroup.createLinkedSelection('notLinkedToUeberGroup', true);
+		socketioGroup.createLinkedSelection('linkedToUeberGroup');
+		socketioGroup.createLinkedSelection('notLinkedToUeberGroup', true);
 
 		// const ueberGroupRelations = new RelationHandler<UeberGroup>(() => ueberGroup);
 		// groupsRelation = ueberGroupRelations.addChild(
@@ -340,14 +340,12 @@
 			<Title id="socketio-group-pending-entities">SocketIO Group Pending Entities</Title>
 			<Title id="socketio-group-access-policies">SocketIO Group Access Policies</Title>
 			<Title id="socketio-group-access-rights">SocketIO Group Access Rights</Title> -->
-			<Title id="socketio-group-children">SocketIO Group Children</Title>
-			<Title id="socketio-group-parents">SocketIO Group Parents</Title>
+			<Title id="socketio-group-children">SocketIO Group Hierarchies</Title>
 			<!-- <JsonData data={socketioGroup?.entities} />
 			<JsonData data={socketioGroup?.pendingEntities} />
 			<JsonData data={socketioGroup?.accessPolicies} />
 			<JsonData data={socketioGroup?.accessRights} /> -->
-			<JsonData data={socketioGroup?.children} />
-			<JsonData data={socketioGroup?.parents} />
+			<JsonData data={socketioGroup?.hierarchies} />
 		</div>
 	{/if}
 

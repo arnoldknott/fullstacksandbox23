@@ -146,10 +146,10 @@ interface WithAccessPolicies {
 interface WithHierarchies {
 	// TBD: consider adding all relevant hierarchies here,
 	// where resource is either child or parent?
-	// hierarchies: Hierarchy[];
+	hierarchies: Hierarchy[];
 	// hierarchies: {
-	parents: Hierarchy[];
-	children: Hierarchy[];
+	// parents: Hierarchy[];
+	// children: Hierarchy[];
 	// };
 	// inherit: boolean;
 	// order?: number;

@@ -18,7 +18,7 @@ from uuid import UUID
 import socketio
 from sqlmodel import SQLModel
 
-from models.base import BaseReadSQLModel
+from models.base import BaseReadSQLModel, BaseExtendedSQLModel
 
 from core.config import config
 from core.security import (
@@ -53,6 +53,7 @@ logger = logging.getLogger(__name__)
 BaseSchemaTypeCreate = TypeVar("BaseSchemaTypeCreate", bound=SQLModel)
 BaseSchemaTypeRead = TypeVar("BaseSchemaTypeRead", bound=BaseReadSQLModel)
 BaseSchemaTypeUpdate = TypeVar("BaseSchemaTypeUpdate", bound=SQLModel)
+BaseSchemaTypeExtended = TypeVar("BaseSchemaTypeExtended", bound=BaseExtendedSQLModel)
 
 
 class QueryStrings(TypedDict, total=False):
@@ -75,7 +76,12 @@ class SocketIoSessionData(TypedDict, total=False):
 
 class BaseNamespace(
     socketio.AsyncNamespace,
-    Generic[BaseSchemaTypeCreate, BaseSchemaTypeRead, BaseSchemaTypeUpdate],
+    Generic[
+        BaseSchemaTypeCreate,
+        BaseSchemaTypeRead,
+        BaseSchemaTypeUpdate,
+        BaseSchemaTypeExtended,
+    ],
 ):
     """Base class for socket.io namespaces."""
 
@@ -88,7 +94,7 @@ class BaseNamespace(
         crud=None,
         create_model: Optional[Type[BaseSchemaTypeCreate]] = None,
         read_model: Optional[Type[BaseSchemaTypeRead]] = None,
-        read_extended_model: Optional[Type[BaseSchemaTypeRead]] = None,
+        read_extended_model: Optional[Type[BaseSchemaTypeExtended]] = None,
         update_model: Optional[Type[BaseSchemaTypeUpdate]] = None,
         callback_on_connect=None,
         callback_on_disconnect=None,
@@ -284,9 +290,9 @@ class BaseNamespace(
     async def _attach_access_data(
         self,
         sid: str,
-        resource: BaseSchemaTypeRead,
+        resource: BaseSchemaTypeExtended,
         current_user: Optional[CurrentUserData],
-    ) -> BaseSchemaTypeRead:
+    ) -> BaseSchemaTypeExtended:
         """Get access data from the socketio session."""
         logger.info(f"🧦 Get access data for resource {resource.id} for client {sid}.")
         # Consider splitting the accesss policy and access log CRUDs into separate methods
@@ -328,12 +334,16 @@ class BaseNamespace(
                     resource_as_parent = await hierarchy_crud.read(
                         current_user=current_user, parent_id=resource.id
                     )
-                    resource.children = resource_as_parent
+                    resource.hierarchies = resource_as_parent
                     if parent_id is not None:
                         resource_as_child = await hierarchy_crud.read(
                             current_user=current_user, child_id=resource.id
                         )
-                        resource.parents = resource_as_child
+                        resource.hierarchies = (
+                            [*resource.hierarchies, *resource_as_child]
+                            if resource.hierarchies
+                            else resource_as_child
+                        )
         except Exception:
             logger.info(f"🧦 No access data found for {resource.id}.")
         return resource
@@ -526,7 +536,10 @@ class BaseNamespace(
                         database_object = self.read_model.model_validate(
                             database_object
                         )
-                    if request_access_data:
+                    if request_access_data and self.read_extended_model is not None:
+                        database_object = self.read_extended_model.model_validate(
+                            database_object
+                        )
                         database_object = await self._attach_access_data(
                             sid, database_object, current_user
                         )

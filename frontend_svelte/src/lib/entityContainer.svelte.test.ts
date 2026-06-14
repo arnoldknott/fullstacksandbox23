@@ -29,8 +29,7 @@ describe('EntityContainer', () => {
 		expect(entityContainer.identities).toEqual([]);
 		expect(entityContainer.accessPolicies).toEqual({});
 		expect(entityContainer.accessRights).toEqual({});
-		expect(entityContainer.children).toEqual({});
-		expect(entityContainer.parents).toEqual({});
+		expect(entityContainer.hierarchies).toEqual({});
 		expect(entityContainer.selections).toEqual({});
 	});
 
@@ -85,15 +84,15 @@ describe('EntityContainer', () => {
 		entityContainer.accessRights = {};
 		expect(entityContainer.accessRights).toEqual({});
 		const hierarchy = { child_id: v4(), parent_id: v4() };
-		entityContainer.children = { '1': [hierarchy] };
-		expect(entityContainer.children).toEqual({ '1': [hierarchy] });
-		entityContainer.children = {};
-		expect(entityContainer.children).toEqual({});
+		entityContainer.hierarchies = { '1': [hierarchy] };
+		expect(entityContainer.hierarchies).toEqual({ '1': [hierarchy] });
+		entityContainer.hierarchies = {};
+		expect(entityContainer.hierarchies).toEqual({});
 		const otherHierarchy = { child_id: v4(), parent_id: v4(), inherit: true, order: 1 };
-		entityContainer.parents = { '1': [otherHierarchy] };
-		expect(entityContainer.parents).toEqual({ '1': [otherHierarchy] });
-		entityContainer.parents = {};
-		expect(entityContainer.parents).toEqual({});
+		entityContainer.hierarchies = { '1': [otherHierarchy] };
+		expect(entityContainer.hierarchies).toEqual({ '1': [otherHierarchy] });
+		entityContainer.hierarchies = {};
+		expect(entityContainer.hierarchies).toEqual({});
 		// Selections:
 		const selection = [v4()];
 		entityContainer.selections = { testSelection: selection };
