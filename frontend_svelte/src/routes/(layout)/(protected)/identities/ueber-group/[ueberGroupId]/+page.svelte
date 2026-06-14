@@ -582,14 +582,8 @@
 	<li class="p-2">Add user to ueber-group.</li>
 	<li class="p-2">Turn into components to reuse with groups and subgroups.</li>
 </ul>
-<ul class="title bg-warning-container/60 text-warning-container-content mt-4 rounded-2xl">
-	<li class="p-2">
-		Maybe add a read hierarchy endpoint anyways, to get the information if a child inherits from
-		parent? This is not visualized in the current mapped children here.
-	</li>
-</ul>
 
-<ul class="title bg-warning-container/40 text-warning-container-content mt-4 rounded-2xl">
+<ul class="title bg-warning-container/60 text-warning-container-content mt-4 rounded-2xl">
 	<li class="p-2">
 		For resource hierarchies (protected resources) also add the order functionality by drag and
 		drop.
