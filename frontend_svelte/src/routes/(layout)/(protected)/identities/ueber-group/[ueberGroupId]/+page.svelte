@@ -177,6 +177,10 @@
 	};
 	// Pure derived projection: rebuild from sources on every read.
 	// No $effect mutation, so writable-derived consumers (template, JsonData) stay in sync.
+	// TBD: get the identity handling into entityContainer and use the identities there.
+	// TBD: move the mapping of MicrosoftUsers to Identities into "integrations.ts",
+	// that are closely related to apis and make these transforamtions happen server-side!
+	// => no unnecessary data from other sources (like Microdoft Graph) reaches client side.
 	let linkedIdentities = $derived.by(() => {
 		const identities = new SvelteMap<Group | LocalMicrosoftUser, IdentityType>();
 		for (const group of linkedGroups) {
