@@ -1,6 +1,6 @@
 import { flushSync } from 'svelte';
 import { v4 } from 'uuid';
-import { beforeEach, describe, expect, test } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 
 import { Action } from './accessHandler';
 import { EntityContainer } from './entityContainer.svelte';
@@ -15,13 +15,17 @@ type AnyEntityExtended = {
 describe('EntityContainer', () => {
 	let entityContainer: EntityContainer<AnyEntityExtended>;
 
+    let cleanup: () => void;
 	beforeEach(() => {
-		$effect.root(() => {
+		cleanup = $effect.root(() => {
 			$effect(() => {
 				entityContainer = new EntityContainer<AnyEntityExtended>();
 			});
 		});
 	});
+    afterEach(() => {
+        cleanup();
+    });
 
 	test('should initialize with empty states', () => {
 		expect(entityContainer.entities).toEqual([]);
@@ -131,7 +135,7 @@ describe('EntityContainer', () => {
 		const entity3 = { id: v4(), name: 'Something else 3' };
 		const entity4 = { id: v4(), name: 'Entity 4' };
 		entityContainer.entities = [entity1, entity2, entity3, entity4];
-		$effect.root(() => {
+		const cleanup = $effect.root(() => {
 			entityContainer.createFilteredEntitySelection(
 				'filteredSelection',
 				(e) => e.name.slice(0, 6) === 'Entity'
@@ -143,11 +147,12 @@ describe('EntityContainer', () => {
 		});
 		flushSync();
 		expect(entityContainer.getSelectedEntities('filteredSelection')).toEqual([
-			entity1,
+            entity1,
 			entity2,
 			entity4
 		]);
 		expect(entityContainer.getSelectedEntities('invertedFilteredSelection')).toEqual([entity3]);
+        cleanup();
 	});
 
 	// test('should create all linked selection', () => {
@@ -167,7 +172,7 @@ describe('EntityContainer', () => {
 	// 		[entity3.id]: [hierarchy13],
 	// 		[entity4.id]: [hierarchy24]
 	// 	};
-	// 	$effect.root(() => {
+	// 	const cleanup = $effect.root(() => {
 	// 		entityContainer.createLinkedSelection('linkedToEntity1', false, entity1.id);
 	// 		entityContainer.createLinkedSelection('linkedToEntity2', false, entity2.id);
 	// 		entityContainer.createLinkedSelection('linkedToEntity1Inverted', true, entity1.id);
@@ -176,6 +181,7 @@ describe('EntityContainer', () => {
 	// 	expect(entityContainer.getSelectedEntities('linkedToEntity1')).toEqual([entity2, entity3]);
 	// 	expect(entityContainer.getSelectedEntities('linkedToEntity2')).toEqual([entity1, entity4]);
 	// 	expect(entityContainer.getSelectedEntities('linkedToEntity1Inverted')).toEqual([entity4]);
+	// 	cleanup();
 	// });
 
 	test('should create user has specific access right selection', () => {
@@ -194,7 +200,7 @@ describe('EntityContainer', () => {
 			...accessRight3,
 			...accessRight4
 		};
-		$effect.root(() => {
+		const cleanup = $effect.root(() => {
 			entityContainer.createUserHasSpecificAccessRightSelection('ownSelection', Action.OWN);
 			entityContainer.createUserHasSpecificAccessRightSelection('writeSelection', Action.WRITE);
 			entityContainer.createUserHasSpecificAccessRightSelection('connectSelection', Action.CONNECT);
@@ -205,6 +211,7 @@ describe('EntityContainer', () => {
 		expect(entityContainer.getSelectedEntities('writeSelection')).toEqual([entity2]);
 		expect(entityContainer.getSelectedEntities('connectSelection')).toEqual([entity3]);
 		expect(entityContainer.getSelectedEntities('readSelection')).toEqual([entity4]);
+        cleanup();
 	});
 
 	// test('should create access policy resource selection', () => {
@@ -227,7 +234,7 @@ describe('EntityContainer', () => {
 	// 		[accessPolicyKey3]: [accessPolicy3],
 	// 		[accessPolicyKey4]: [accessPolicy4]
 	// 	};
-	// 	$effect.root(() => {
+	// 	const cleanup = $effect.root(() => {
 	// 		entityContainer.createAccessPolicyResourceSelection(
 	// 			'readResources',
 	// 			(policy) => policy.action === Action.READ
@@ -240,6 +247,7 @@ describe('EntityContainer', () => {
 	//     flushSync();
 	// 	expect(entityContainer.getSelectedEntities('readResources')).toEqual([entity1, entity4]);
 	// 	expect(entityContainer.getSelectedEntities('writeResources')).toEqual([entity2]);
+    // cleanup();
 	// });
 
 	// test('should create access policy identity selection', () => {
@@ -287,7 +295,7 @@ describe('EntityContainer', () => {
 	// 		[accessPolicyKey3]: [accessPolicy3],
 	// 		[accessPolicyKey4]: [accessPolicy4]
 	// 	};
-	// 	$effect.root(() => {
+	// 	const cleanup = $effect.root(() => {
 	// 		entityContainer.createAccessPolicyIdentitySelection(
 	// 			'identity1Resources',
 	// 			(policy) => policy.identity_id === identity1.id
@@ -310,6 +318,7 @@ describe('EntityContainer', () => {
 	// 	expect(entityContainer.getSelectedEntities('identity2Resources')).toEqual([entity2]);
 	// 	expect(entityContainer.getSelectedEntities('identity3Resources')).toEqual([entity3]);
 	// 	expect(entityContainer.getSelectedEntities('identity4Resources')).toEqual([entity4]);
+    // cleanup();
 	// });
 
 	test('should create sorted selection', () => {
@@ -318,7 +327,7 @@ describe('EntityContainer', () => {
 		const entity3 = { id: v4(), name: 'Entity 3', creation_date: '2024-02-01' };
 		const entity4 = { id: v4(), name: 'Entity 4' };
 		entityContainer.entities = [entity1, entity2, entity3, entity4];
-		$effect.root(() => {
+		const cleanup = $effect.root(() => {
 			entityContainer.createSortedSelection('sortedByCreationDate', 'creation_date');
 			entityContainer.createSortedSelection('sortedByCreationDateDesc', 'creation_date', false);
 		});
@@ -330,20 +339,22 @@ describe('EntityContainer', () => {
 			entity4
 		]);
 		expect(entityContainer.getSelectedEntities('sortedByCreationDateDesc')).toEqual([
-			entity2,
+            entity2,
 			entity3,
 			entity1,
 			entity4
 		]);
+        cleanup();
 	});
 
 	test('should throw error when creating all linked selection without parentId', () => {
-		$effect.root(() => {
+		const cleanup = $effect.root(() => {
 			expect(() =>
 				entityContainer.createLinkedSelection('test', false, undefined as unknown as string)
 			).toThrowError(
 				"Parent ID must be provided either as an argument or as the EntityContainer's parentId property."
 			);
 		});
+		cleanup();
 	});
 });
