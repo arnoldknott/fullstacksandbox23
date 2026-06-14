@@ -3,7 +3,8 @@
 	// import { getContext, type Snippet } from 'svelte';
 	import { type Snippet } from 'svelte';
 
-	import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
+	// import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
+	import { SocketIO, type SocketioConnection } from '$lib/socketioNew.svelte';
 
 	let {
 		connection,

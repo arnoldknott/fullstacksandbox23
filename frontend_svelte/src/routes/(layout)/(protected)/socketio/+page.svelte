@@ -5,7 +5,8 @@
 	// import { io } from 'socket.io-client';
 	import { page } from '$app/state';
 	import Heading from '$components/Heading.svelte';
-	import type { SocketioConnection } from '$lib/socketio.svelte';
+	// import type { SocketioConnection } from '$lib/socketio.svelte';
+	import type { SocketioConnection } from '$lib/socketioNew.svelte';
 
 	import Chat from './Chat.svelte';
 
@@ -13,11 +14,11 @@
 
 	const public_message_connection: SocketioConnection = {
 		namespace: '/public-namespace',
-		cookie_session_id: page.data.session.sessionId
+		sessionId: page.data.session.sessionId
 	};
 	const demo_message_connection: SocketioConnection = {
 		namespace: '/demo-namespace',
-		cookie_session_id: page.data.session.sessionId
+		sessionId: page.data.session.sessionId
 	};
 
 	// let { data }: { data: PageData } = $props();
