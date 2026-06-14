@@ -121,34 +121,34 @@ class GeneratedSQLModel(BaseSQLModel):
     Create: ClassVar[Type[SQLModel]]
     Read: ClassVar[Type[BaseReadSQLModel]]
     Update: ClassVar[Type[SQLModel]]
-    Extended: ClassVar[Type[BaseReadSQLModel]]
+    Extended: ClassVar[Type[BaseExtendedSQLModel]]
 
 
-class AccessRightsMixin(BaseModel):
+class AccessRightsMixin(SQLModel):
     """Mixin for access rights on a resource"""
 
     access_right: Optional[Action] = None
 
 
-class AccessPolicyMixin(BaseModel):
+class AccessPolicyMixin(SQLModel):
     """Mixin for access policies on a resource"""
 
     access_policies: Optional[List[AccessPolicyRead]] = None
 
 
-class CreatedAtMixin(BaseModel):
+class CreatedAtMixin(SQLModel):
     """Mixin for created at timestamp"""
 
     creation_date: Optional[datetime] = None
 
 
-class UpdatedAtMixin(BaseModel):
+class UpdatedAtMixin(SQLModel):
     """Mixin for updated at timestamp"""
 
     last_modified_date: Optional[datetime] = None
 
 
-class HierarchyMixin(BaseModel):
+class HierarchyMixin(SQLModel):
     """Mixin for hierarchy data"""
 
     # TBD: reconsider: only return inherit flag, or also return the whole hierarchy data?
@@ -158,8 +158,25 @@ class HierarchyMixin(BaseModel):
 
     # inherit: Optional[bool] = None
     # order: Optional[int] = None
-    children: Optional[List[ResourceHierarchyRead | IdentityHierarchyRead]] = []
-    parents: Optional[List[ResourceHierarchyRead | IdentityHierarchyRead]] = []
+    # children: Optional[List[ResourceHierarchyRead | IdentityHierarchyRead]] = []
+    # parents: Optional[List[ResourceHierarchyRead | IdentityHierarchyRead]] = []
+    hierarchies: Optional[List[ResourceHierarchyRead | IdentityHierarchyRead]] = []
+
+
+class BaseExtendedSQLModel(
+    BaseReadSQLModel,
+    AccessRightsMixin,
+    AccessPolicyMixin,
+    CreatedAtMixin,
+    UpdatedAtMixin,
+    HierarchyMixin,
+):
+    """Common base for all application table models used for reading extended data,
+
+    For extended models, the mixins are added to the read model.
+    """
+
+    pass
 
 
 class ModelTypes(str, Enum):
