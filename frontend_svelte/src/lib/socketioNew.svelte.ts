@@ -127,6 +127,8 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 			...connection.overrides
 		});
 
+        if(this.pendingTemplate) this.createPending();
+
 		// // TBD: do we need a function to seed the data (and first time use it here)
 		// // for re-seeding or is it enough to do this through the setter?
 		// $effect(() => {

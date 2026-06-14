@@ -112,7 +112,7 @@
 			template: { name: '', description: '' }
 		});
 		socketioGroup.client.emit('read');
-		socketioGroup.createPending();
+		// socketioGroup.createPending();
 
 		socketioGroup.createLinkedSelection('linkedToUeberGroup');
 		socketioGroup.createLinkedSelection('notLinkedToUeberGroup', true);
