@@ -127,7 +127,7 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 			...connection.overrides
 		});
 
-        if(this.pendingTemplate) this.createPending();
+		if (this.pendingTemplate) this.createPending();
 
 		// // TBD: do we need a function to seed the data (and first time use it here)
 		// // for re-seeding or is it enough to do this through the setter?
@@ -540,6 +540,7 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 							{ child_id: status.id, parent_id: this.parentId, inherit: status.inherit }
 						];
 					} else {
+						this.client.emit('read', status.id);
 						this.hierarchies[status.id] = [
 							{
 								child_id: status.id,
