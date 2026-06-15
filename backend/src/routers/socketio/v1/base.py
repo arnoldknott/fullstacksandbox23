@@ -455,6 +455,12 @@ class BaseNamespace(
         # print(identity_ids, flush=True)
         guards = self._get_event_guards("connect")
         ### THis solution works for none-protected events, but a user is logged in anyways:
+        current_user = None
+        session_data: SocketIoSessionData = {
+            "user_name": "Anonymous",
+            "query_strings": session_query_strings,
+        }
+        auth_rejected = False
         try:
             # TBD: catch and handle an expired token gracefully and return something to the client on a different message channel,
             # so it can initiate the authentication process and come back with a new session id
@@ -465,29 +471,8 @@ class BaseNamespace(
                 auth_session_id
             )
             current_user = await check_token_against_guards(token_payload, guards)
-            # TBD: add a test for this!
-            if parent_id:
-                if self.crud is not None:
-                    async with AccessPolicyCRUD() as crud:
-                        access_request = AccessRequest(
-                            resource_id=UUID(parent_id),
-                            current_user=current_user,
-                            action=Action.read,
-                        )
-                        parent_access_granted = await crud.allows(access_request)
-                        if parent_access_granted:
-                            session_query_strings["parent_id"] = parent_id
-                            await self.server.enter_room(
-                                sid, f"parent:{parent_id}", namespace=self.namespace
-                            )
-
-            session_data: SocketIoSessionData = {
-                "user_name": (token_payload or {}).get("name", ""),
-                # "current_user": current_user,
-                "session_id": auth_session_id,
-                "query_strings": session_query_strings,
-            }
-            await self.server.save_session(sid, session_data, namespace=self.namespace)
+            session_data["user_name"] = (token_payload or {}).get("name", "")
+            session_data["session_id"] = auth_session_id
             # if "Admin" in current_user.azure_token_roles:
             if (
                 current_user is not None
@@ -502,26 +487,35 @@ class BaseNamespace(
             logger.info(
                 f"🧦 Client authenticated to access protected namespace {self.namespace}."
             )
-        except Exception as error:
+        except Exception:
             if guards is not None:
-                print(
-                    "=== routers - socketio - v1 - on_connect - authentication error ==="
-                )
-                print(error, flush=True)
+                auth_rejected = True
                 logger.error(f"🧦 Client with session id {sid} failed to authenticate.")
                 raise ConnectionRefusedError("Authorization failed.")
             else:
-                current_user = None
-                session_data: SocketIoSessionData = {
-                    "user_name": "Anonymous",
-                    "query_strings": session_query_strings,
-                }
-                await self.server.save_session(
-                    sid, session_data, namespace=self.namespace
-                )
                 logger.info(
                     # f"🧦 Client authenticated to public namespace {self.namespace}."
                     f"🧦 Client {sid} accessing namespace {self.namespace} publically."
+                )
+        finally:
+            # TBD: write tests for anonymous user access to parent resources
+            if not auth_rejected:
+                if parent_id:
+                    if self.crud is not None:
+                        async with AccessPolicyCRUD() as crud:
+                            access_request = AccessRequest(
+                                resource_id=UUID(parent_id),
+                                current_user=current_user,
+                                action=Action.read,
+                            )
+                            parent_access_granted = await crud.allows(access_request)
+                            if parent_access_granted:
+                                session_query_strings["parent_id"] = parent_id
+                                await self.server.enter_room(
+                                    sid, f"parent:{parent_id}", namespace=self.namespace
+                                )
+                await self.server.save_session(
+                    sid, session_data, namespace=self.namespace
                 )
         if self.callback_on_connect is not None:
             await self.callback_on_connect(
@@ -592,7 +586,7 @@ class BaseNamespace(
             # await self._emit_status(sid, {"error": str(error)})
 
     # "submit" is communication from client to server
-    async def on_submit(self, sid, data):
+    async def on_submit(self, sid, data):  # noqa: C901
         """Gets data from client and issues a create or update based on id is present or not."""
         logger.info(f"🧦 Data submitted from client {sid}")
         try:
@@ -718,17 +712,31 @@ class BaseNamespace(
                                 if crud.model.__name__ in ResourceType.list():
                                     if self.crud is not None:
                                         async with self.crud() as crud:
-                                            hierarchy_crud = crud.hierarchy_CRUD(session=crud.session)
-                                            hierarchy = (await hierarchy_crud.read(
-                                                current_user=current_user, parent_id=parent_id, child_id=database_object.id,
-                                                ))[0]
-                                            hierarchy = ResourceHierarchyRead.model_validate(hierarchy)
+                                            hierarchy_crud = crud.hierarchy_CRUD(
+                                                session=crud.session
+                                            )
+                                            hierarchy = (
+                                                await hierarchy_crud.read(
+                                                    current_user=current_user,
+                                                    parent_id=parent_id,
+                                                    child_id=database_object.id,
+                                                )
+                                            )[0]
+                                            hierarchy = (
+                                                ResourceHierarchyRead.model_validate(
+                                                    hierarchy
+                                                )
+                                            )
                                             status["order"] = hierarchy.order
-                                rooms_for_linked_status = [f"resource:{str(database_object.id)}"]
+                                rooms_for_linked_status = [
+                                    f"resource:{str(database_object.id)}"
+                                ]
                                 if inherit:
                                     # only useres with at least read accesss to parent are in the room parent:{parent_id}
                                     # and receive the linked status, if inherit is true
-                                    rooms_for_linked_status.append(f"parent:{parent_id}")
+                                    rooms_for_linked_status.append(
+                                        f"parent:{parent_id}"
+                                    )
                                 await self._emit_status(
                                     sid,
                                     status,
