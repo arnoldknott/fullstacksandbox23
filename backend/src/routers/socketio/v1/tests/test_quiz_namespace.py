@@ -4,11 +4,13 @@ from uuid import UUID
 
 import pytest
 
+from models.access import Action
 from crud.quiz import MessageCRUD, NumericalCRUD, QuestionCRUD
 from models.quiz import Message, Numerical, Question
 from tests.utils import (
     session_id_admin_read_write_socketio,
     session_id_user1_read_write_socketio,
+    session_id_user2_read_write_socketio
 )
 from tests.utils_quiz import (
     many_test_messages,
@@ -825,6 +827,358 @@ class TestMessage(BaseSocketIOTest):
 
         await connection.client.disconnect()
 
+    # TBD: move those general functionality tests to protected_resource tests
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "session_ids",
+        [
+            [session_id_user1_read_write_socketio, session_id_user2_read_write_socketio],
+        ],
+        indirect=True,
+    )
+    async def test_emit_message_to_question_and_other_user_in_message_namespace_and_common_parent_id_room_gets_status_linked(
+        self,
+        socketio_test_client,
+        session_ids,
+        add_one_test_resource,
+        add_one_test_access_policy,
+    ):
+        """Test that read returns children of a question."""
+
+        connection1 = await socketio_test_client(
+            client_config=self.client_config(),
+            session_id=session_ids[0],
+        )
+        connection2 = await socketio_test_client(
+            client_config=self.client_config(),
+            session_id=session_ids[1],
+        )
+        current_user1 = await connection1.current_user()
+        current_user2 = await connection2.current_user()
+
+        # Create one question
+        question = await add_one_test_resource(
+            QuestionCRUD,
+            one_test_question,
+            current_user1,
+        )
+
+
+        # User 1 shares the question with user 2 with read access.
+        await add_one_test_access_policy(
+            {
+                "resource_id":str(question.id),
+                "identity_id":current_user2.user_id,
+                "action":Action.read,
+            },
+            current_user1,
+            Question,
+        )
+
+        await connection1.connect(
+            query_parameters={
+                "request-access-data": True,
+                "parent-id": str(question.id)
+            }
+        )
+        await connection2.connect(
+            query_parameters={
+                "request-access-data": True,
+                "parent-id": str(question.id)
+            }
+        )
+        await connection1.client.sleep(0.2)
+
+        # Create one message
+        message = one_test_message.copy()
+        await connection1.client.emit("submit", {"payload": {**message}, "parent_id": str(question.id), "inherit": True}, namespace=self.namespace_path)
+        await connection1.client.sleep(0.5)
+
+        # Check transferred events
+        status_data1 = connection1.responses("status", self.namespace_path)
+        status_data2 = connection2.responses("status", self.namespace_path)
+
+
+        # It's emitted twice: once in the self.namespace and in the parent namespace,
+        # both with the same data, so we can just check one of them and the length.
+        assert len(status_data1) == 3
+        assert status_data1[0]["success"] == "created"
+        created_message_id =  status_data1[0]["id"]
+        assert UUID(created_message_id)
+        assert status_data1[1]["success"] == "linked"
+        assert status_data1[1]["id"] == str(created_message_id)
+        assert status_data1[1]["parent_id"] == str(question.id)
+        assert status_data1[1]["inherit"]
+        assert status_data1[1]["order"] == 1
+        assert status_data1[2]["success"] == "shared"
+        assert status_data1[2]["id"] == str(created_message_id)
+
+        assert len(status_data2) == 1
+        assert status_data2[0]["success"] == "linked"
+        assert status_data2[0]["parent_id"] == str(question.id)
+        assert status_data2[0]["inherit"]
+        assert status_data2[0]["order"] == 1
+
+
+    # TBD: move those general functionality tests to protected_resource tests
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "session_ids",
+        [
+            [session_id_user1_read_write_socketio, session_id_user2_read_write_socketio],
+        ],
+        indirect=True,
+    )
+    async def test_emit_message_without_inherit_to_question_and_other_user_in_message_namespace_and_common_parent_id_room_does_not_get_status_linked(
+        self,
+        socketio_test_client,
+        session_ids,
+        add_one_test_resource,
+        add_one_test_access_policy,
+    ):
+        """Test that read returns children of a question."""
+
+        connection1 = await socketio_test_client(
+            client_config=self.client_config(),
+            session_id=session_ids[0],
+        )
+        connection2 = await socketio_test_client(
+            client_config=self.client_config(),
+            session_id=session_ids[1],
+        )
+        current_user1 = await connection1.current_user()
+        current_user2 = await connection2.current_user()
+
+        # Create one question
+        question = await add_one_test_resource(
+            QuestionCRUD,
+            one_test_question,
+            current_user1,
+        )
+
+
+        # User 1 shares the question with user 2 with read access.
+        await add_one_test_access_policy(
+            {
+                "resource_id":str(question.id),
+                "identity_id":current_user2.user_id,
+                "action":Action.read,
+            },
+            current_user1,
+            Question,
+        )
+
+        await connection1.connect(
+            query_parameters={
+                "request-access-data": True,
+                "parent-id": str(question.id)
+            }
+        )
+        await connection2.connect(
+            query_parameters={
+                "request-access-data": True,
+                "parent-id": str(question.id)
+            }
+        )
+        await connection1.client.sleep(0.2)
+
+        # Create one message
+        message = one_test_message.copy()
+        await connection1.client.emit("submit", {"payload": {**message}, "parent_id": str(question.id), "inherit": False}, namespace=self.namespace_path)
+        await connection1.client.sleep(0.5)
+
+        # Check transferred events
+        status_data1 = connection1.responses("status", self.namespace_path)
+        status_data2 = connection2.responses("status", self.namespace_path)
+
+
+        # It's emitted twice: once in the self.namespace and in the parent namespace,
+        # both with the same data, so we can just check one of them and the length.
+        assert len(status_data1) == 3
+        assert status_data1[0]["success"] == "created"
+        created_message_id =  status_data1[0]["id"]
+        assert UUID(created_message_id)
+        assert status_data1[1]["success"] == "linked"
+        assert status_data1[1]["id"] == str(created_message_id)
+        assert status_data1[1]["parent_id"] == str(question.id)
+        assert not status_data1[1]["inherit"]
+        assert status_data1[1]["order"] == 1
+        assert status_data1[2]["success"] == "shared"
+        assert status_data1[2]["id"] == str(created_message_id)
+
+        assert len(status_data2) == 0
+
+
+    # TBD: move those general functionality tests to protected_resource tests
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "session_ids",
+        [
+            [session_id_user1_read_write_socketio, session_id_user2_read_write_socketio],
+        ],
+        indirect=True,
+    )
+    async def test_emit_message_to_question_and_other_user_without_access_to_question_in_message_namespace_and_common_parent_id_room_does_not_get_status_linked(
+        self,
+        socketio_test_client,
+        session_ids,
+        add_one_test_resource,
+        add_one_test_access_policy,
+    ):
+        """Test that read returns children of a question."""
+
+        connection1 = await socketio_test_client(
+            client_config=self.client_config(),
+            session_id=session_ids[0],
+        )
+        connection2 = await socketio_test_client(
+            client_config=self.client_config(),
+            session_id=session_ids[1],
+        )
+        current_user1 = await connection1.current_user()
+        current_user2 = await connection2.current_user()
+
+        # Create one question
+        question = await add_one_test_resource(
+            QuestionCRUD,
+            one_test_question,
+            current_user1,
+        )
+
+        await connection1.connect(
+            query_parameters={
+                "request-access-data": True,
+                "parent-id": str(question.id)
+            }
+        )
+        await connection2.connect(
+            query_parameters={
+                "request-access-data": True,
+                "parent-id": str(question.id)
+            }
+        )
+        await connection1.client.sleep(0.2)
+
+        # Create one message
+        message = one_test_message.copy()
+        await connection1.client.emit("submit", {"payload": {**message}, "parent_id": str(question.id), "inherit": True}, namespace=self.namespace_path)
+        await connection1.client.sleep(0.5)
+
+        # Check transferred events
+        status_data1 = connection1.responses("status", self.namespace_path)
+        status_data2 = connection2.responses("status", self.namespace_path)
+
+
+        # It's emitted twice: once in the self.namespace and in the parent namespace,
+        # both with the same data, so we can just check one of them and the length.
+        assert len(status_data1) == 3
+        assert status_data1[0]["success"] == "created"
+        created_message_id =  status_data1[0]["id"]
+        assert UUID(created_message_id)
+        assert status_data1[1]["success"] == "linked"
+        assert status_data1[1]["id"] == str(created_message_id)
+        assert status_data1[1]["parent_id"] == str(question.id)
+        assert status_data1[1]["inherit"]
+        assert status_data1[1]["order"] == 1
+        assert status_data1[2]["success"] == "shared"
+        assert status_data1[2]["id"] == str(created_message_id)
+
+        assert len(status_data2) == 0
+
+
+    # TBD: move those general functionality tests to protected_resource tests
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "session_ids",
+        [
+            [session_id_user1_read_write_socketio, session_id_user2_read_write_socketio],
+        ],
+        indirect=True,
+    )
+    async def test_emit_message_to_question_and_other_user_in_question_namespace_subscribed_to_parent_id_there_gets_status_linked(
+        self,
+        socketio_test_client,
+        session_ids,
+        add_one_test_resource,
+        add_one_test_access_policy,
+    ):
+        """Test that read returns children of a question."""
+
+        connection1 = await socketio_test_client(
+            client_config=self.client_config(),
+            session_id=session_ids[0],
+        )
+        client_config2 = self.client_config()
+        client_config2[0]["namespace"] = "/question"
+        connection2 = await socketio_test_client(
+            client_config=client_config2,
+            session_id=session_ids[1],
+        )
+        current_user1 = await connection1.current_user()
+        current_user2 = await connection2.current_user()
+
+        # Create one question
+        question = await add_one_test_resource(
+            QuestionCRUD,
+            one_test_question,
+            current_user1,
+        )
+
+
+        # User 1 shares the question with user 2 with read access.
+        await add_one_test_access_policy(
+            {
+                "resource_id":str(question.id),
+                "identity_id":current_user2.user_id,
+                "action":Action.read,
+            },
+            current_user1,
+            Question,
+        )
+
+        await connection1.connect(
+            query_parameters={
+                "request-access-data": True,
+                "parent-id": str(question.id)
+            }
+        )
+        await connection2.connect(
+            query_parameters={
+                "request-access-data": True,
+                "resource-ids": str(question.id)
+            }
+        )
+        await connection1.client.sleep(0.2)
+
+        # Create one message
+        message = one_test_message.copy()
+        await connection1.client.emit("submit", {"payload": {**message}, "parent_id": str(question.id), "inherit": True}, namespace=self.namespace_path)
+        await connection1.client.sleep(0.5)
+
+        # Check transferred events
+        status_data1 = connection1.responses("status", self.namespace_path)
+        status_data2 = connection2.responses("status", "/question")
+
+
+        # It's emitted twice: once in the self.namespace and in the parent namespace,
+        # both with the same data, so we can just check one of them and the length.
+        assert len(status_data1) == 3
+        assert status_data1[0]["success"] == "created"
+        created_message_id =  status_data1[0]["id"]
+        assert UUID(created_message_id)
+        assert status_data1[1]["success"] == "linked"
+        assert status_data1[1]["id"] == str(created_message_id)
+        assert status_data1[1]["parent_id"] == str(question.id)
+        assert status_data1[1]["inherit"]
+        assert status_data1[1]["order"] == 1
+        assert status_data1[2]["success"] == "shared"
+        assert status_data1[2]["id"] == str(created_message_id)
+
+        assert len(status_data2) == 1
+        assert status_data2[0]["success"] == "linked"
+        assert status_data2[0]["parent_id"] == str(question.id)
+        assert status_data2[0]["inherit"]
+        assert status_data2[0]["order"] == 1
 
 class TestNumerical(BaseSocketIOTest):
     """Test suite for Numerical SocketIO namespace."""
