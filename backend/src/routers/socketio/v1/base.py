@@ -43,6 +43,7 @@ from models.access import (
     AccessPolicyCreate,
     AccessPolicyDelete,
     AccessPolicyUpdate,
+    AccessRequest,
     BaseHierarchyCreate,
     IdentityHierarchyRead,
     ResourceHierarchyRead,
@@ -370,7 +371,7 @@ class BaseNamespace(
             to=receivers,  # TBD: consider adding admin room here
         )
 
-    async def on_connect(
+    async def on_connect(  # noqa: C901
         self,
         sid: str,
         environ,
@@ -422,7 +423,6 @@ class BaseNamespace(
             "request_access_data": request_access_data,
             "identity_ids": identity_ids,
             "resource_ids": resource_ids,
-            "parent_id": parent_id,
             "join_admin_room": join_admin_room,
         }
         # TBD: consider switching the if and for
@@ -465,6 +465,22 @@ class BaseNamespace(
                 auth_session_id
             )
             current_user = await check_token_against_guards(token_payload, guards)
+            # TBD: add a test for this!
+            if parent_id:
+                if self.crud is not None:
+                    async with AccessPolicyCRUD() as crud:
+                        access_request = AccessRequest(
+                            resource_id=UUID(parent_id),
+                            current_user=current_user,
+                            action=Action.read,
+                        )
+                        parent_access_granted = await crud.allows(access_request)
+                        if parent_access_granted:
+                            session_query_strings["parent_id"] = parent_id
+                            await self.server.enter_room(
+                                sid, f"parent:{parent_id}", namespace=self.namespace
+                            )
+
             session_data: SocketIoSessionData = {
                 "user_name": (token_payload or {}).get("name", ""),
                 # "current_user": current_user,
@@ -699,12 +715,26 @@ class BaseNamespace(
                                     "parent_id": str(parent_id),
                                     "inherit": inherit,
                                 }
-                                # Currently one of those emits is tested in
-                                # test_connect_create_read_update_delete_sub_group
-                                # TBD: add another test for the other emit
+                                if crud.model.__name__ in ResourceType.list():
+                                    if self.crud is not None:
+                                        async with self.crud() as crud:
+                                            hierarchy_crud = crud.hierarchy_CRUD(session=crud.session)
+                                            hierarchy = (await hierarchy_crud.read(
+                                                current_user=current_user, parent_id=parent_id, child_id=database_object.id,
+                                                ))[0]
+                                            hierarchy = ResourceHierarchyRead.model_validate(hierarchy)
+                                            status["order"] = hierarchy.order
+                                rooms_for_linked_status = [f"resource:{str(database_object.id)}"]
+                                if inherit:
+                                    # only useres with at least read accesss to parent are in the room parent:{parent_id}
+                                    # and receive the linked status, if inherit is true
+                                    rooms_for_linked_status.append(f"parent:{parent_id}")
                                 await self._emit_status(
-                                    sid, status, [f"resource:{str(database_object.id)}"]
+                                    sid,
+                                    status,
+                                    rooms_for_linked_status,
                                 )
+                                # Within the parent namespace access control takes care of how can receive the status.
                                 parent_namespace = registry_namespaces.get(parent_type)
                                 await self._emit_status(
                                     sid,
