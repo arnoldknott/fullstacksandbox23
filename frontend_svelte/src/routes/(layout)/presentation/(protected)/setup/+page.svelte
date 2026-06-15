@@ -10,7 +10,8 @@
 	import Heading from '$components/Heading.svelte';
 	// import JsonData from '$components/JsonData.svelte';
 	import { AccessHandler, Action, IdentityType } from '$lib/accessHandler';
-	import { SocketIO, type SocketioStatus } from '$lib/socketio.svelte';
+	// import { SocketIO, type SocketioStatus } from '$lib/socketio.svelte';
+	import { SocketIO, type SocketioStatus } from '$lib/socketioNew.svelte';
 	import type { AccessShareOption, PresentationExtended } from '$lib/types';
 	import { initDropdown } from '$lib/userInterface';
 
@@ -26,23 +27,21 @@
 		socketioPresentations = new SocketIO(
 			{
 				namespace: '/presentation',
-				cookie_session_id: data?.session?.sessionId || '',
-				query_params: {
+				sessionId: data?.session?.sessionId || '',
+				queryParams: {
 					'request-access-data': true,
 					'identity-ids': data.payload.identities.map((identity) => identity.id).join(',')
 				}
 			},
 			{
-				subscribeEntities: () => data.payload.presentations || [],
-				pendingTemplate: () => ({
+				template: {
 					source: 'intern:',
 					path: '',
 					access_right: Action.OWN
 					// creation_date: new Date(Date.now()) // TBD: Check if this is necessary?
-				})
+				}
 			}
 		);
-		socketioPresentations.createPending();
 
 		socketioPresentations.client.on('status', (data: SocketioStatus) => {
 			if ('success' in data && data.success === 'created') {
@@ -60,6 +59,10 @@
 		});
 	});
 
+	$effect(() => {
+		socketioPresentations.entities = data.payload.presentations || [];
+	});
+
 	let showNewPresentationCard: boolean = $state(page.url.searchParams.get('new') === 'true');
 
 	const submitPresentation = () => {
@@ -67,13 +70,12 @@
 		socketioPresentations.pendingEntities[0].path =
 			newPath && !newPath.startsWith('/') ? `/${newPath}` : newPath;
 		socketioPresentations.submitEntity();
-		socketioPresentations.createPending();
 		showNewPresentationCard = false;
 	};
 
 	const shareOptions: AccessShareOption[] = $state([
 		{
-			identity_id: 'public',
+			identity_id: undefined,
 			identity_name: 'Public',
 			identity_type: IdentityType.PUBLIC,
 			action: Action.READ,
@@ -145,7 +147,6 @@
 			class="btn btn-secondary btn-gradient shadow-outline rounded-lg shadow"
 			aria-label="Cancel"
 			onclick={() => {
-				socketioPresentations.createPending();
 				showNewPresentationCard = false;
 			}}><span class="icon-[tabler--x] size-5"></span>Cancel</button
 		>

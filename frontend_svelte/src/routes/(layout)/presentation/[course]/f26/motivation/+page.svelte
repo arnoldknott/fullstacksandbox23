@@ -7,7 +7,8 @@
 	import Heading from '$components/Heading.svelte';
 	import RevealJS from '$components/RevealJS.svelte';
 	import { Action } from '$lib/accessHandler';
-	import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
+	// import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
+	import { SocketIO, type SocketioConnection } from '$lib/socketioNew.svelte';
 	import type { MessageExtended, NumericalExtended } from '$lib/types';
 
 	import type { PageData } from './$types';
@@ -48,21 +49,25 @@
 	onMount(() => {
 		const connectionMotivation: SocketioConnection = {
 			namespace: '/numerical',
-			query_params: { 'parent-id': motivationQuestionId }
+			parentId: motivationQuestionId
 		};
-		socketioMotivation = new SocketIO<NumericalExtended>(connectionMotivation, {
-			subscribeEntities: () => data.questionsData?.motivation?.numericals
-		});
+		socketioMotivation = new SocketIO<NumericalExtended>(connectionMotivation);
 
 		const commentConnection: SocketioConnection = {
 			namespace: '/message',
-			query_params: { 'parent-id': commentsQuestionId, 'request-access-data': true }
+			parentId: commentsQuestionId,
+			queryParams: { 'request-access-data': true }
 		};
 		socketioComment = new SocketIO<MessageExtended>(commentConnection, {
-			subscribeEntities: () => data.questionsData?.comments?.messages,
-			pendingTemplate: () => ({ content: '', language: 'en' })
+			template: { content: '', language: 'en' }
 		});
-		socketioComment.createPending();
+		// socketioComment.createPending();
+	});
+
+	$effect(() => {
+		// Preseed data:
+		socketioMotivation.entities = data.questionsData?.motivation?.numericals ?? [];
+		socketioComment.entities = data.questionsData?.comments?.messages ?? [];
 	});
 
 	// let myIntention: MessageExtended = $state({

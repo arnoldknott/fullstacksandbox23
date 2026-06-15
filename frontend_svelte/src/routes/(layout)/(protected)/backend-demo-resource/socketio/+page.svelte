@@ -54,10 +54,9 @@
 	// 			// creation_date: new Date(Date.now()) // TBD: Check if this is necessary?
 	// 		})
 	// 	});
-	let ownedDemoResources: DemoResourceExtended[] = $derived([
-		...(socketio?.pendingEntities || []),
-		...(socketio?.getSelectedEntities('owner') || [])
-	]);
+	let ownedDemoResources: DemoResourceExtended[] = $derived(
+		socketio?.getSelectedEntities('owner') || []
+	);
 	let writeDemoResources: DemoResourceExtended[] = $derived(
 		socketio?.getSelectedEntities('write') || []
 	);
@@ -204,7 +203,11 @@
 			<button
 				class="btn-neutral-container btn btn-gradient shadow-outline rounded-full shadow-sm"
 				aria-label="Add Button"
-				onclick={() => socketio?.createPending()}
+				onclick={() => {
+					if (!ownedDemoResources.includes(socketio.pendingEntities[0])) {
+						ownedDemoResources = [...socketio.pendingEntities, ...ownedDemoResources];
+					}
+				}}
 			>
 				<span class="icon-[fa6-solid--plus]"></span> Add
 			</button>

@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { Action } from '$lib/accessHandler';
 	import { createHeatMapColors } from '$lib/heatMapColors.svelte';
-	import { SocketIO } from '$lib/socketio.svelte';
+	// import { SocketIO } from '$lib/socketio.svelte';
+	import { SocketIO } from '$lib/socketioNew.svelte';
 
 	type ColorSet = {
 		background: string;

@@ -6,7 +6,8 @@
 	import Heading from '$components/Heading.svelte';
 	import RevealJS from '$components/RevealJS.svelte';
 	import { Action } from '$lib/accessHandler';
-	import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
+	// import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
+	import { SocketIO, type SocketioConnection } from '$lib/socketioNew.svelte';
 	import type { MessageExtended, NumericalExtended } from '$lib/types';
 
 	import type { PageData } from './$types';
@@ -27,51 +28,58 @@
 	let socketioIntention: SocketIO<MessageExtended> = $state()!;
 	let socketioMotivation: SocketIO<NumericalExtended> = $state()!;
 	let socketioComment: SocketIO<MessageExtended> = $state()!;
-	let intentionAnswers = $derived(socketioIntention?.entities ?? []);
+	// let intentionAnswers = $derived(socketioIntention?.entities ?? []);
 	let motivationAnswers = $derived(socketioMotivation?.entities ?? []);
 	let commentsAnswers = $derived(socketioComment?.entities ?? []);
 	let intentionQuestionId = $derived(data.questionsData?.intention?.id || '');
 	let motivationQuestionId = $derived(data.questionsData?.motivation?.id || '');
 	let commentsQuestionId = $derived(data.questionsData?.comments?.id || '');
 
-	let intentionAnswersSorted: MessageExtended[] = $derived(
-		intentionAnswers.toSorted((a, b) => {
-			if (!a.creation_date || !b.creation_date) {
-				return 1;
-			} else {
-				return !a.creation_date < !b.creation_date ? -1 : 1;
-			}
-		})
+	// let intentionAnswersSorted: MessageExtended[] = $derived(
+	// 	intentionAnswers.toSorted((a, b) => {
+	// 		if (!a.creation_date || !b.creation_date) {
+	// 			return 1;
+	// 		} else {
+	// 			return !a.creation_date < !b.creation_date ? -1 : 1;
+	// 		}
+	// 	})
+	// );
+	let intentionAnswersSorted = $derived(
+		socketioIntention?.getSelectedEntities('sortedIntentionAnswers') ?? []
 	);
 
 	onMount(() => {
 		const intentionConnection: SocketioConnection = {
 			namespace: '/message',
-			query_params: { 'parent-id': intentionQuestionId, 'request-access-data': true }
+			parentId: intentionQuestionId,
+			queryParams: { 'request-access-data': true }
 		};
 		socketioIntention = new SocketIO<MessageExtended>(intentionConnection, {
-			subscribeEntities: () => data.questionsData?.intention?.messages,
-			pendingTemplate: () => ({ content: '', language: 'en' })
+			template: { content: '', language: 'en' }
 		});
+		socketioIntention.createSortedSelection('sortedIntentionAnswers', 'creation_date');
 
 		const connectionMotivation: SocketioConnection = {
 			namespace: '/numerical',
-			query_params: { 'parent-id': motivationQuestionId }
+			parentId: motivationQuestionId
 		};
-		socketioMotivation = new SocketIO<NumericalExtended>(connectionMotivation, {
-			subscribeEntities: () => data.questionsData?.motivation?.numericals
-		});
+		socketioMotivation = new SocketIO<NumericalExtended>(connectionMotivation, {});
 
 		const commentConnection: SocketioConnection = {
 			namespace: '/message',
-			query_params: { 'parent-id': commentsQuestionId, 'request-access-data': true }
+			parentId: commentsQuestionId,
+			queryParams: { 'request-access-data': true }
 		};
 		socketioComment = new SocketIO<MessageExtended>(commentConnection, {
-			subscribeEntities: () => data.questionsData?.comments?.messages,
-			pendingTemplate: () => ({ content: '', language: 'en' })
+			template: { content: '', language: 'en' }
 		});
-		socketioIntention.createPending();
-		socketioComment.createPending();
+	});
+
+	$effect(() => {
+		// Preseed data:
+		socketioIntention.entities = data.questionsData?.intention?.messages ?? [];
+		socketioMotivation.entities = data.questionsData?.motivation?.numericals ?? [];
+		socketioComment.entities = data.questionsData?.comments?.messages ?? [];
 	});
 
 	let motivationAnswersAverage: number = $derived.by(() => {

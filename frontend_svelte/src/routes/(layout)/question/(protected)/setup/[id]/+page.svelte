@@ -7,7 +7,8 @@
 	import JsonData from '$components/JsonData.svelte';
 	import Title from '$components/Title.svelte';
 	import { Action } from '$lib/accessHandler';
-	import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
+	// import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
+	import { SocketIO, type SocketioConnection } from '$lib/socketioNew.svelte';
 	import type { MessageExtended, NumericalExtended } from '$lib/types';
 
 	import type { PageData } from './$types';
@@ -20,45 +21,59 @@
 	let questionId = $derived(data.questionsData?.questions.id || '');
 	let messageSocketio: SocketIO<MessageExtended> = $state()!;
 	let numericalSocketio: SocketIO<NumericalExtended> = $state()!;
-	let messageAnswers = $derived(messageSocketio?.entities ?? []);
-	let numericalAnswers = $derived(numericalSocketio?.entities ?? []);
+	// let messageAnswers = $derived(messageSocketio?.entities ?? []);
+	// let numericalAnswers = $derived(numericalSocketio?.entities ?? []);
+
+	// let messageAnswersSorted: MessageExtended[] = $derived(
+	// 	messageAnswers.toSorted((a, b) => {
+	// 		if (!a.creation_date) return 1;
+	// 		if (!b.creation_date) return 1;
+	// 		return a.creation_date < b.creation_date ? 1 : -1;
+	// 	})
+	// );
+	// let numericalAnswersSorted: NumericalExtended[] = $derived(
+	// 	numericalAnswers.toSorted((a, b) => {
+	// 		if (!a.creation_date) return 1;
+	// 		if (!b.creation_date) return 1;
+	// 		return a.creation_date < b.creation_date ? 1 : -1;
+	// 	})
+	// );
 
 	let messageAnswersSorted: MessageExtended[] = $derived(
-		messageAnswers.toSorted((a, b) => {
-			if (!a.creation_date) return 1;
-			if (!b.creation_date) return 1;
-			return a.creation_date < b.creation_date ? 1 : -1;
-		})
+		messageSocketio?.getSelectedEntities('sortedMessageAnswers') ?? []
 	);
-
 	let numericalAnswersSorted: NumericalExtended[] = $derived(
-		numericalAnswers.toSorted((a, b) => {
-			if (!a.creation_date) return 1;
-			if (!b.creation_date) return 1;
-			return a.creation_date < b.creation_date ? 1 : -1;
-		})
+		numericalSocketio?.getSelectedEntities('sortedNumericalAnswers') ?? []
 	);
 
 	const messageConnection: SocketioConnection = $derived({
 		namespace: '/message',
-		cookie_session_id: data?.session?.sessionId || '',
-		query_params: { 'parent-id': questionId, 'request-access-data': true }
+		sessionId: data?.session?.sessionId || '',
+		parentId: questionId,
+		queryParams: { 'request-access-data': true }
 	});
+
 	const numericalConnection: SocketioConnection = $derived({
 		namespace: '/numerical',
-		cookie_session_id: data?.session?.sessionId || '',
-		query_params: { 'parent-id': questionId, 'request-access-data': true }
+		sessionId: data?.session?.sessionId || '',
+		parentId: questionId,
+		queryParams: { 'request-access-data': true }
 	});
 	onMount(() => {
 		messageSocketio = new SocketIO<MessageExtended>(messageConnection, {
-			subscribeEntities: () => data.questionsData?.questions.messages,
-			pendingTemplate: () => ({ content: '', language: 'en' })
+			template: { content: '', language: 'en' }
 		});
-		numericalSocketio = new SocketIO<NumericalExtended>(numericalConnection, {
-			subscribeEntities: () => data.questionsData?.questions.numericals
-		});
-		messageSocketio.createPending();
+		messageSocketio.createSortedSelection('sortedMessageAnswers', 'creation_date');
+		numericalSocketio = new SocketIO<NumericalExtended>(numericalConnection);
+		numericalSocketio.createSortedSelection('sortedNumericalAnswers', 'creation_date');
+		// messageSocketio.createPending();
 	});
+
+	$effect(() => {
+		messageSocketio.entities = data.questionsData?.questions.messages || [];
+		numericalSocketio.entities = data.questionsData?.questions.numericals || [];
+	});
+
 	onDestroy(() => {
 		messageSocketio?.client.disconnect();
 		numericalSocketio?.client.disconnect();

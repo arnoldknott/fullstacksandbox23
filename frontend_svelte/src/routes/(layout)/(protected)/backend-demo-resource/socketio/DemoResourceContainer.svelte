@@ -74,7 +74,7 @@
 					id="name_{demoResource.id}"
 					class="input input-sm md:input-md"
 					name="name"
-					onblur={() => socketio?.submitEntity(demoResource)}
+					onblur={() => socketio?.submitEntity()}
 					bind:value={demoResource.name}
 				/>
 				<label class="input-filled-label" for="name_{demoResource.id}">Name</label>
@@ -108,7 +108,7 @@
 						class="textarea h-fit"
 						placeholder="Describe the demo resource here."
 						id="description_{demoResource.id}"
-						onblur={() => socketio?.submitEntity(demoResource)}
+						onblur={() => socketio?.submitEntity()}
 						name="description"
 						bind:value={demoResource.description}
 					>
