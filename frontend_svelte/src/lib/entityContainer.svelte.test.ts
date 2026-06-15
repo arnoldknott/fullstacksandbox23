@@ -15,7 +15,7 @@ type AnyEntityExtended = {
 describe('EntityContainer', () => {
 	let entityContainer: EntityContainer<AnyEntityExtended>;
 
-    let cleanup: () => void;
+	let cleanup: () => void;
 	beforeEach(() => {
 		cleanup = $effect.root(() => {
 			$effect(() => {
@@ -23,9 +23,9 @@ describe('EntityContainer', () => {
 			});
 		});
 	});
-    afterEach(() => {
-        cleanup();
-    });
+	afterEach(() => {
+		cleanup();
+	});
 
 	test('should initialize with empty states', () => {
 		expect(entityContainer.entities).toEqual([]);
@@ -147,12 +147,12 @@ describe('EntityContainer', () => {
 		});
 		flushSync();
 		expect(entityContainer.getSelectedEntities('filteredSelection')).toEqual([
-            entity1,
+			entity1,
 			entity2,
 			entity4
 		]);
 		expect(entityContainer.getSelectedEntities('invertedFilteredSelection')).toEqual([entity3]);
-        cleanup();
+		cleanup();
 	});
 
 	// test('should create all linked selection', () => {
@@ -211,7 +211,7 @@ describe('EntityContainer', () => {
 		expect(entityContainer.getSelectedEntities('writeSelection')).toEqual([entity2]);
 		expect(entityContainer.getSelectedEntities('connectSelection')).toEqual([entity3]);
 		expect(entityContainer.getSelectedEntities('readSelection')).toEqual([entity4]);
-        cleanup();
+		cleanup();
 	});
 
 	// test('should create access policy resource selection', () => {
@@ -247,7 +247,7 @@ describe('EntityContainer', () => {
 	//     flushSync();
 	// 	expect(entityContainer.getSelectedEntities('readResources')).toEqual([entity1, entity4]);
 	// 	expect(entityContainer.getSelectedEntities('writeResources')).toEqual([entity2]);
-    // cleanup();
+	// cleanup();
 	// });
 
 	// test('should create access policy identity selection', () => {
@@ -318,7 +318,7 @@ describe('EntityContainer', () => {
 	// 	expect(entityContainer.getSelectedEntities('identity2Resources')).toEqual([entity2]);
 	// 	expect(entityContainer.getSelectedEntities('identity3Resources')).toEqual([entity3]);
 	// 	expect(entityContainer.getSelectedEntities('identity4Resources')).toEqual([entity4]);
-    // cleanup();
+	// cleanup();
 	// });
 
 	test('should create sorted selection', () => {
@@ -339,12 +339,12 @@ describe('EntityContainer', () => {
 			entity4
 		]);
 		expect(entityContainer.getSelectedEntities('sortedByCreationDateDesc')).toEqual([
-            entity2,
+			entity2,
 			entity3,
 			entity1,
 			entity4
 		]);
-        cleanup();
+		cleanup();
 	});
 
 	test('should throw error when creating all linked selection without parentId', () => {
