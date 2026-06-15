@@ -87,7 +87,7 @@ export interface AccessPolicy {
 
 // identifies with whom and how a resource can be shared with:
 export interface AccessShareOption {
-	identity_id: string;
+	identity_id?: string;
 	identity_name: string;
 	identity_type: IdentityType;
 	action?: Action; // for existing AccessPolicy for this identity: it's an Action, otherwise undefined
