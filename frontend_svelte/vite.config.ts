@@ -22,11 +22,11 @@ export default defineConfig({
 		environment: 'jsdom',
 		setupFiles: ['./vitest-setup.js'],
 		include: ['src/**/*.{test,spec}.{js,ts}'],
-		    alias: {
-        // Override svelteTesting()'s `browser` condition for `ws` only.
-        // The Svelte browser runtime stays intact; only the Node server's
-        // WebSocket engine is forced to the real implementation.
-        ws: require.resolve('ws')
-    }
+		alias: {
+			// Override svelteTesting()'s `browser` condition for `ws` only.
+			// The Svelte browser runtime stays intact; only the Node server's
+			// WebSocket engine is forced to the real implementation.
+			ws: require.resolve('ws')
+		}
 	}
 });

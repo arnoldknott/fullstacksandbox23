@@ -68,7 +68,7 @@ export interface EntityContainerInterface<T extends AnyEntityExtended = AnyEntit
 	getSelectedEntities(name?: string): T[];
 	getSelectedIdentities(name?: string): AnyIdentityExtended[];
 	// Helper functions to creater specific selections:
-	createFilteredEntitySelection(name: string, filterFn: (entity: T) => boolean): () =>T[];
+	createFilteredEntitySelection(name: string, filterFn: (entity: T) => boolean): () => T[];
 	createLinkedSelection(
 		name: string,
 		inverse: boolean,
