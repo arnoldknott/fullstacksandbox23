@@ -68,35 +68,35 @@ export interface EntityContainerInterface<T extends AnyEntityExtended = AnyEntit
 	getSelectedEntities(name?: string): T[];
 	getSelectedIdentities(name?: string): AnyIdentityExtended[];
 	// Helper functions to creater specific selections:
-	createFilteredEntitySelection(name: string, filterFn: (entity: T) => boolean): T[];
+	createFilteredEntitySelection(name: string, filterFn: (entity: T) => boolean): () =>T[];
 	createLinkedSelection(
 		name: string,
 		inverse: boolean,
 		parentId: string,
 		fromOtherSelection?: string
-	): T[];
+	): () => T[];
 	createUserHasSpecificAccessRightSelection(
 		name: string,
 		action: Action,
 		fromOtherSelection?: string
-	): T[];
+	): () => T[];
 	createAccessPolicyResourceSelection(
 		name: string,
 		policyFilterFn: (policy: AccessPolicy) => boolean,
 		fromOtherSelection?: string
-	): T[];
+	): () => T[];
 	createAccessPolicyIdentitySelection(
 		name: string,
 		policyFilterFn: (policy: AccessPolicy) => boolean,
 		fromOtherSelection?: string
-	): AnyIdentityExtended[];
+	): () => AnyIdentityExtended[];
 	// Modifying selections:
 	createSortedSelection(
 		name: string,
 		attribute: keyof T,
 		ascending?: boolean,
 		fromOtherSelection?: string
-	): T[];
+	): () => T[];
 }
 
 /**
@@ -395,8 +395,14 @@ export class EntityContainer<
 	private createReactiveSelection(name: string, effectFunction: () => void) {
 		this.addSelection(name);
 		$effect(() => effectFunction());
-		const getSelectedData = $derived.by(() => this.getSelectedEntities(name));
-		return getSelectedData;
+		// svelte-ignore state_referenced_locally
+		// const getSelectedData = $derived.by(() => this.getSelectedEntities(name));
+		// This is ensured to be called once only here as the addSelection is a singleton -
+		// but afterwards the result is reactive and updates
+		// whenever the dependencies of the effect function change.
+		// svelte-ignore state_referenced_locally
+		// return getSelectedData;
+		return () => this.getSelectedEntities(name);
 	}
 
 	// for example all entities that match a specific condition
@@ -562,8 +568,9 @@ export class EntityContainer<
 				.filter((identity) => matchingIdentityIds.has(identity.id))
 				.map((identity) => identity.id);
 		});
-		const selectionIdentities = $derived.by(() => this.getSelectedIdentities(name));
-		return selectionIdentities;
+		// const selectionIdentities = $derived.by(() => this.getSelectedIdentities(name));
+		// return selectionIdentities;
+		return () => this.getSelectedIdentities(name);
 	}
 
 	createSortedSelection(
