@@ -211,7 +211,8 @@ import { Server, type Socket as ServerSocket } from 'socket.io';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 import { WebSocketServer } from 'ws';
 
-import { SocketIO, type SocketioConnection } from './socketioNew.svelte';
+import { SocketIO, type SocketioConnection, type SocketioStatus } from './socketioNew.svelte';
+import type { DemoResource } from './types';
 
 // Mutable holder so the mocked context can expose the dynamic port chosen at listen().
 let backendConfig = vi.hoisted(() => ({
@@ -265,7 +266,7 @@ beforeAll(async () => {
 afterAll(() => {
 	socketioServer.close();
 	httpServer.close();
-	console.log('✅ Test server closed');
+	// console.log('✅ Test server closed');
 });
 
 // describe('SocketIO', () => {
@@ -321,61 +322,176 @@ afterAll(() => {
 // });
 // });
 
-describe('SocketIO', () => {
+describe('SocketIO for DemoResources', () => {
 	const connection: SocketioConnection = {
 		namespace: '/demo-resource',
 		sessionId: 'session-123'
 	};
-	let socketio: SocketIO;
+	let serverSocket: ServerSocket;
+	let socketioClient: SocketIO<DemoResource>;
+	let serverMessages: Array<{ event: string; data: unknown[] }> = [];
 	let waitForServerConnection: Promise<ServerSocket>;
+	let onAnyHandler: ((event: string, ...args: unknown[]) => void) | undefined;
 	let cleanup: () => void;
 
 	beforeEach(async () => {
+		serverMessages = [];
 
 		waitForServerConnection = new Promise<ServerSocket>((resolve) => {
 			socketioServer.of('/demo-resource').once('connection', (socket: ServerSocket) => {
+				onAnyHandler = (event: string, ...data: unknown[]) => {
+					serverMessages.push({ event, data });
+				};
+				socket.onAny(onAnyHandler);
 				resolve(socket);
 			});
 		});
 
 		cleanup = $effect.root(() => {
-			socketio = new SocketIO(connection);
+			socketioClient = new SocketIO(connection);
 		});
 
-		await waitForServerConnection;
+		serverSocket = await waitForServerConnection;
 	});
 
 	afterEach(() => {
-		socketio.client.disconnect();
+		if (onAnyHandler) {
+			serverSocket.offAny(onAnyHandler);
+		}
+		socketioClient.client.disconnect();
+		serverMessages = [];
 		cleanup();
 	});
 
+	// region: Tests for constructor:
+	// - instantiation
+	// - default handler behavior
+
 	test('establishes a connection to the test server', async () => {
-		const socket = await waitForServerConnection;
-		expect(socket.connected).toBe(true);
+		expect(serverSocket.connected).toBe(true);
+	});
+
+	test('uses default handlers when no overrides are provided', async () => {
+		const emitSpy = vi.spyOn(socketioClient.client, 'emit');
+
+		// Seed one entity so deleted/status behavior is observable
+		socketioClient.entities = [{ id: 'seed', name: 'seed' } as never];
+
+		// 1) transferred default handler should add/update entities
+		serverSocket.emit('transferred', { id: 'srv-1', name: 'from server' });
+		await vi.waitFor(() => {
+			expect(socketioClient.entities.map((e) => e.id)).toContain('srv-1');
+		});
+
+		// 2) deleted default handler should remove entity by id
+		serverSocket.emit('deleted', 'srv-1');
+		await vi.waitFor(() => {
+			expect(socketioClient.entities.map((e) => e.id)).not.toContain('srv-1');
+		});
+
+		// 3) status default handler should trigger read on shared/unshared
+		serverSocket.emit('status', { success: 'shared', id: 'seed' });
+		await vi.waitFor(() => {
+			expect(emitSpy).toHaveBeenCalledWith('read', 'seed');
+		});
+	});
+
+	test('disables  default handlers when specified in options', async () => {
+		cleanup();
+		socketioClient = new SocketIO(connection, {
+			transferred: false,
+			deleted: false,
+			status: false
+		});
+
+		const emitSpy = vi.spyOn(socketioClient.client, 'emit');
+		// Seed one entity so deleted/status behavior is observable
+		socketioClient.entities = [{ id: 'seed', name: 'seed' } as never];
+
+		// transferred handler should be overridden to do nothing
+		serverSocket.emit('transferred', { id: 'srv-1', name: 'from server' });
+		await vi.waitFor(() => {
+			expect(socketioClient.entities.map((e) => e.id)).not.toContain('srv-1');
+		});
+
+		// deleted handler should be overridden to do nothing
+		serverSocket.emit('deleted', 'seed');
+		await vi.waitFor(() => {
+			expect(socketioClient.entities.map((e) => e.id)).toContain('seed');
+		});
+
+		// status handler should be overridden to do nothing
+		serverSocket.emit('status', { success: 'shared', id: 'seed' });
+		await vi.waitFor(() => {
+			expect(emitSpy).not.toHaveBeenCalledWith('read', 'seed');
+		});
+	});
+
+	test('overrides default handlers with custom implementations', async () => {
+		cleanup();
+		socketioClient.client.disconnect();
+
+		const newConnection = new Promise<ServerSocket>((resolve) => {
+			socketioServer.of('/demo-resource').once('connection', (socket: ServerSocket) => {
+				resolve(socket);
+			});
+		});
+		socketioClient = new SocketIO(connection, {
+			transferred: (data) => {
+				console.log('custom transferred', data);
+			},
+			deleted: (id) => {
+				console.log('custom deleted', id);
+			},
+			status: (status) => {
+				console.log('custom status', status);
+			}
+		});
+		serverSocket = await newConnection;
+
+		const logSpy = vi.spyOn(console, 'log');
+
+		serverSocket.emit('transferred', { id: 'srv-1', name: 'from server' });
+		await vi.waitFor(() => {
+			expect(logSpy).toHaveBeenCalledWith('custom transferred', {
+				id: 'srv-1',
+				name: 'from server'
+			});
+		});
+
+		serverSocket.emit('deleted', 'srv-1');
+		await vi.waitFor(() => {
+			expect(logSpy).toHaveBeenCalledWith('custom deleted', 'srv-1');
+		});
+
+		const status = { success: 'shared', id: 'srv-1' } as SocketioStatus;
+		serverSocket.emit('status', status);
+		await vi.waitFor(() => {
+			expect(logSpy).toHaveBeenCalledWith('custom status', status);
+		});
 	});
 
 	test('server receives submit emissions', async () => {
-		const socket = await waitForServerConnection;
+		socketioClient.submitEntity({ id: 'abc', name: 'x' } as never);
 
-		const received = new Promise((resolve) => {
-			socket.once('submit', resolve);
+		await vi.waitFor(() => {
+			expect(serverMessages.length).toBeGreaterThan(0);
 		});
 
-		socketio.submitEntity({ id: 'abc', name: 'x' } as never);
-
-		await expect(received).resolves.toMatchObject({
-			payload: { id: 'abc', name: 'x' }
+		expect(serverMessages).toContainEqual({
+			event: 'submit',
+			data: [expect.objectContaining({ payload: { id: 'abc', name: 'x' } })]
 		});
 	});
 
 	test('stores entities sent by the server', async () => {
-		const socket = await waitForServerConnection;
-
-		socket.emit('transferred', { id: 'srv-1', name: 'from server' });
+		serverSocket.emit('transferred', { id: 'srv-1', name: 'from server' });
 
 		await vi.waitFor(() => {
-			expect(socketio.entities.map((e) => e.id)).toContain('srv-1');
+			expect(socketioClient.entities.map((e) => e.id)).toContain('srv-1');
+			expect(socketioClient.entities.map((e) => e.name)).toContain('from server');
 		});
 	});
+
+	// endregion: Tests for constructor
 });
