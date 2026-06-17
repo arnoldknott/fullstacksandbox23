@@ -208,19 +208,17 @@ import { createServer, type Server as HttpServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
 
 import { Server, type Socket as ServerSocket } from 'socket.io';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 import { WebSocketServer } from 'ws';
 
 import { SocketIO, type SocketioConnection } from './socketioNew.svelte';
 
 // Mutable holder so the mocked context can expose the dynamic port chosen at listen().
-const backendConfig = vi.hoisted(() => ({
-	value: {
-		backendFqdn: 'localhost',
-		restApiPath: '/api/v1',
-		websocketPath: '/ws/v1',
-		socketIOPath: '/socketio/v1'
-	}
+let backendConfig = vi.hoisted(() => ({
+	backendFqdn: 'localhost',
+	restApiPath: '/api/v1',
+	websocketPath: '/ws/v1',
+	socketIOPath: '/socketio/v1'
 }));
 
 vi.mock('svelte', async (importOriginal) => {
@@ -228,20 +226,18 @@ vi.mock('svelte', async (importOriginal) => {
 	return {
 		...actual,
 		getContext: vi.fn((key: unknown) =>
-			key === 'backendAPIConfiguration' ? backendConfig.value : actual.getContext(key as never)
+			key === 'backendAPIConfiguration' ? backendConfig : actual.getContext(key as never)
 		)
 	};
 });
 
 let httpServer: HttpServer;
 let socketioServer: Server;
-// let serverSocket: ServerSocket;
 
 beforeAll(async () => {
 	httpServer = createServer();
 	socketioServer = new Server(httpServer, {
 		path: '/socketio/v1', // must match backendAPIConfiguration.socketIOPath
-		// transports: ['polling'],     // ← avoids the `ws` Server (browser-build) error
 		wsEngine: WebSocketServer,
 		cors: { origin: '*' }
 	});
@@ -249,22 +245,27 @@ beforeAll(async () => {
 	// The client connects to the `/demo-resource` namespace, so register it,
 	// otherwise socket.io rejects the connection as an "invalid namespace".
 	socketioServer.of('/demo-resource').on('connection', () => {
-		// serverSocket = socket;
-		console.log('✅ Client connected'); // your "life sign"
+		// console.log('✅ Client connected'); // your "life sign"
 	});
 
 	await new Promise<void>((resolve) => {
 		httpServer.listen(() => {
 			const { port } = httpServer.address() as AddressInfo;
-			backendConfig.value = { ...backendConfig.value, backendFqdn: `localhost:${port}` };
+			backendConfig = { ...backendConfig, backendFqdn: `localhost:${port}` };
 			resolve();
 		});
 	});
+	// return () => {
+	// 	socketioServer.close();
+	// 	httpServer.close();
+	// 	console.log('✅ Test server closed');
+	// }
 });
 
 afterAll(() => {
 	socketioServer.close();
 	httpServer.close();
+	console.log('✅ Test server closed');
 });
 
 // describe('SocketIO', () => {
@@ -325,17 +326,14 @@ describe('SocketIO', () => {
 		namespace: '/demo-resource',
 		sessionId: 'session-123'
 	};
-	//   const serverSocket: ServerSocket | undefined;
 	let socketio: SocketIO;
 	let waitForServerConnection: Promise<ServerSocket>;
 	let cleanup: () => void;
 
 	beforeEach(async () => {
-		// let serverSocket: ServerSocket | undefined = undefined;
 
 		waitForServerConnection = new Promise<ServerSocket>((resolve) => {
 			socketioServer.of('/demo-resource').once('connection', (socket: ServerSocket) => {
-				// serverSocket = socket;
 				resolve(socket);
 			});
 		});
@@ -352,12 +350,12 @@ describe('SocketIO', () => {
 		cleanup();
 	});
 
-	it('establishes a connection to the test server', async () => {
+	test('establishes a connection to the test server', async () => {
 		const socket = await waitForServerConnection;
 		expect(socket.connected).toBe(true);
 	});
 
-	it('server receives submit emissions', async () => {
+	test('server receives submit emissions', async () => {
 		const socket = await waitForServerConnection;
 
 		const received = new Promise((resolve) => {
@@ -371,7 +369,7 @@ describe('SocketIO', () => {
 		});
 	});
 
-	it('stores entities sent by the server', async () => {
+	test('stores entities sent by the server', async () => {
 		const socket = await waitForServerConnection;
 
 		socket.emit('transferred', { id: 'srv-1', name: 'from server' });
