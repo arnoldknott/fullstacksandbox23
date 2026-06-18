@@ -6,7 +6,7 @@
 	import Heading from '$components/Heading.svelte';
 	import JsonData from '$components/JsonData.svelte';
 	import { AccessHandler, IdentityType } from '$lib/accessHandler';
-	import { SocketIO, type SocketioConnection } from '$lib/socketioNew.svelte';
+	import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
 	import type { UeberGroupExtended } from '$lib/types';
 	import { initAccordion, initOverlay } from '$lib/userInterface';
 

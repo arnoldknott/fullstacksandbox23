@@ -3,8 +3,7 @@
 
 	import { Action } from '$lib/accessHandler';
 	import { createHeatMapColors } from '$lib/heatMapColors.svelte';
-	// import { SocketIO } from '$lib/socketio.svelte';
-	import { SocketIO } from '$lib/socketioNew.svelte';
+	import { SocketIO } from '$lib/socketio.svelte';
 
 	type ColorSet = {
 		background: string;

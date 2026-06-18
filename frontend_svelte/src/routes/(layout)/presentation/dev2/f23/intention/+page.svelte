@@ -6,8 +6,7 @@
 	import Heading from '$components/Heading.svelte';
 	import RevealJS from '$components/RevealJS.svelte';
 	import { Action } from '$lib/accessHandler';
-	// import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
-	import { SocketIO, type SocketioConnection } from '$lib/socketioNew.svelte';
+	import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
 	import type { MessageExtended, NumericalExtended } from '$lib/types';
 
 	import type { PageData } from './$types';

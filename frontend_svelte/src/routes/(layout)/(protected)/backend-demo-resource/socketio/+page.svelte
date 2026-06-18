@@ -7,8 +7,7 @@
 	import { page } from '$app/state';
 	import JsonData from '$components/JsonData.svelte';
 	import { AccessHandler, Action } from '$lib/accessHandler';
-	// import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio.svelte';
-	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketioNew.svelte';
+	import { SocketIO, type SocketioConnection, type SocketioStatus } from '$lib/socketio.svelte';
 	import type { DemoResourceExtended } from '$lib/types';
 	import { initAccordion } from '$lib/userInterface';
 

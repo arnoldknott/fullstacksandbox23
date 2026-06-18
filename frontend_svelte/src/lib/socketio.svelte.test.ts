@@ -10,7 +10,7 @@ import {
 	type SocketioConfiguration,
 	type SocketioConnection,
 	type SocketioStatus
-} from './socketioNew.svelte';
+} from './socketio.svelte';
 import type { AccessPolicy, AnyEntityExtended, DemoResource } from './types';
 
 // #region: Setup Test Socketio Server

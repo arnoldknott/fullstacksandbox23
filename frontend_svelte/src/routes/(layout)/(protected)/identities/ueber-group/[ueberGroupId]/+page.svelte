@@ -11,9 +11,7 @@
 	import JsonData from '$components/JsonData.svelte';
 	import Title from '$components/Title.svelte';
 	import { IdentityType } from '$lib/accessHandler';
-	// import { type Relation, RelationHandler } from '$lib/relationHandler.svelte';
-	// import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
-	import { SocketIO, type SocketioConnection } from '$lib/socketioNew.svelte';
+	import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
 	import type { Group, UeberGroup } from '$lib/types';
 
 	import IdBadge from '../../../IdBadge.svelte';

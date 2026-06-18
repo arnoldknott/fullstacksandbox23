@@ -10,8 +10,7 @@
 	import Heading from '$components/Heading.svelte';
 	// import JsonData from '$components/JsonData.svelte';
 	import { AccessHandler, Action, IdentityType } from '$lib/accessHandler';
-	// import { SocketIO, type SocketioStatus } from '$lib/socketio.svelte';
-	import { SocketIO, type SocketioStatus } from '$lib/socketioNew.svelte';
+	import { SocketIO, type SocketioStatus } from '$lib/socketio.svelte';
 	import type { AccessShareOption, PresentationExtended } from '$lib/types';
 	import { initDropdown } from '$lib/userInterface';
 

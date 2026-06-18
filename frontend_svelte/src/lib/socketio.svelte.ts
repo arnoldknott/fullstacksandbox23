@@ -1,24 +1,39 @@
-import type { Socket } from 'socket.io-client';
-import { io } from 'socket.io-client';
+import { io, type ManagerOptions, type Socket, type SocketOptions } from 'socket.io-client';
 import { getContext } from 'svelte';
 
-import type { Action } from '$lib/accessHandler';
+import { Action } from './accessHandler';
+import {
+	EntityContainer,
+	type EntityContainerConfiguration,
+	type EntityContainerInterface
+} from './entityContainer.svelte';
 import type {
 	AccessPolicy,
 	AnyEntityExtended,
 	BackendAPIConfiguration,
 	Hierarchy
-} from '$lib/types.d.ts';
+} from './types.d.ts';
 
+/**
+ * Match backend configuration of what is read on connect
+ */
+type QueryParameters = {
+	'request-access-data'?: boolean;
+	'identity-ids'?: string;
+	'resource-ids'?: string;
+	'parent-id'?: string;
+	'join-admin-room'?: boolean;
+};
+
+/**
+ * Adhere to Partial<ManagerOptions & SocketOptions> from socket.io-client.
+ */
 export type SocketioConnection = {
 	namespace?: string;
-	cookie_session_id?: string;
-	query_params?: Record<string, string | number | boolean>;
-	// TBD: type the query_params to specific strings? They can be:
-	// request-access-data?: boolean
-	// identity-ids?: string // getting added to rooms
-	// resource-ids?: string // getting added to room
-	// parent-id?: string // potentially getting added to room
+	sessionId?: string;
+	parentId?: string;
+	queryParams?: Omit<QueryParameters, 'parent-id'>; // parent-id is handled in the connection!
+	overrides?: Partial<ManagerOptions & SocketOptions>;
 };
 
 export type SocketioStatus =
@@ -27,164 +42,80 @@ export type SocketioStatus =
 	| { success: 'deleted'; id: string }
 	| { success: 'shared'; id: string }
 	| { success: 'unshared'; id: string }
-	| { success: 'linked'; id: string; parent_id: string; inherit: boolean }
+	| { success: 'linked'; id: string; parent_id: string; inherit: boolean; order?: number }
 	| { success: 'unlinked'; id: string; parent_id: string }
 	| { error: string };
 
 /**
- * Toggle the auto-registered default listeners. Each defaults to `true`.
- * Set to `false` to disable a default handler (e.g. when you want to fully override it).
- * Extra listeners added via `socketio.client.on(...)` always run alongside enabled defaults.
+ * Either disable via boolean or override via callback
  */
-export type SocketIODefaultHandlers = {
-	// TBD: consider changing from boolean into a callback that receives the data,
-	// so handlers run either default or the callback function.
-	transferred?: boolean;
-	deleted?: boolean;
-	status?: boolean;
+type SocketioHandlers<T> = {
+	transferred?: boolean | ((data: T) => void);
+	deleted?: boolean | ((resourceId: string) => void);
+	status?: boolean | ((status: SocketioStatus) => void);
 };
 
-export type SocketIOOptions<T extends AnyEntityExtended> = {
-	/**
-	 * Thunk that yields the array of entities for SocketIO to manage. Evaluated inside a
-	 * `$effect`, so it runs once on construction (seeding the internal entities array) and
-	 * then re-runs whenever any reactive value it reads changes — typically `data.*` from
-	 * SvelteKit's PageData after navigation, `invalidate`, or form actions.
-	 *
-	 * Reactivity is opt-in: if the thunk reads only non-reactive data (e.g. a captured local
-	 * constant array), it simply seeds once and never re-runs. If the thunk returns
-	 * `null`/`undefined`, the current entities are preserved.
-	 */
-	subscribeEntities?: () => T[] | undefined | null;
-	/** Enable/disable auto-registered default listeners. All default to `true`. */
-	defaultHandlers?: SocketIODefaultHandlers;
-	/**
-	 * Optional default field values for entities produced by {@link SocketIO.createPending}.
-	 * Evaluated on every `createPending()` call so callers can vary the template over time
-	 * (e.g. seeding a form with the currently-edited parent's defaults). If absent,
-	 * `createPending()` returns just `{ id }`.
-	 */
-	pendingTemplate?: () => Partial<Omit<T, 'id'>>;
-	// /**
-	//  * Optional default parent id for link() calls without explicit parentId argument.
-	//  * If absent, the caller must provide a parentId.
-	//  */
-	// defaultParentId?: string; // for link() calls without explicit parentId argument
-	/** Optional default inherit value for link() calls without explicit inherit argument. */
-	defaultInherit?: boolean; // for link() calls without explicit inherit argument
-};
+export type SocketioConfiguration<T extends AnyEntityExtended = AnyEntityExtended> = Partial<
+	Omit<EntityContainerConfiguration<T>, 'parentId'> & SocketioHandlers<T>
+>;
 
-/**
- * Svelte 5 reactive wrapper around a Socket.IO client.
- *
- * Owns a deeply reactive `entities` array (via `$state`) and — by default — wires up
- * `transferred`, `deleted`, and `status` listeners to keep that array in sync with the server.
- *
- * Usage notes:
- * - Must be instantiated during component initialization, inside `onMount`, or inside another
- *   effect. Instantiating from an arbitrary async callback (setTimeout, fetch `.then`, etc.)
- *   will break the `$effect` registration.
- * - Callers can attach additional listeners via `instance.client.on(event, cb)` — Socket.IO
- *   supports multiple listeners per event and they will run alongside the defaults.
- * - To fully override a default handler, disable it via `options.defaultHandlers.{event}: false`
- *   and register your own listener. The matching `handle*` methods remain public so custom
- *   listeners can still delegate to them if desired.
- */
-export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended> {
+export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
+	extends EntityContainer<T>
+	implements EntityContainerInterface<T>
+{
 	public client: Socket;
 
-	#entities = $state<T[]>([]);
-	#pendingEntities = $state<T[]>([]);
-	#pendingTemplate?: () => Partial<Omit<T, 'id'>>;
-	#defaultParentId?: string;
-	#defaultInherit = false;
-
-	// TBD: consider handling the AccessPolicies outside the Entities as well,
-	// which would remove the need for EntityExtended.
-	// Then the generic T could be just the base Entity type without the extended properties.
-	// readonly hierarchies: Hierarchy[];
-
-	// "linked" and "unlinked" should not be necessary: linked and unlinked can be derived from the entities and hierarchies,
-	// so no need to keep them in separate reactive arrays that need to be reconciled on every change.
-	// readonly linked: AnyEntityExtended[];
-	// readonly unlinked: AnyEntityExtended[];
-
-	constructor(connection: SocketioConnection, options: SocketIOOptions<T> = {}) {
+	constructor(connection: SocketioConnection, configuration: SocketioConfiguration<T> = {}) {
+		super({ parentId: connection.parentId, ...configuration });
 		const backendAPIConfiguration: BackendAPIConfiguration = getContext('backendAPIConfiguration');
 		const backendFqdn = backendAPIConfiguration.backendFqdn;
 		const socketioServerUrl = backendFqdn.startsWith('localhost')
 			? `http://${backendFqdn}`
 			: `https://${backendFqdn}`;
 
+		const queryParams: QueryParameters = connection.queryParams ?? {};
+		if (connection.parentId) {
+			queryParams['parent-id'] = connection.parentId;
+		}
+
 		this.client = io(socketioServerUrl + connection.namespace, {
-			path: backendAPIConfiguration.socketIOPath || `/socketio/v1`,
-			auth: { 'session-id': connection.cookie_session_id },
-			query: connection.query_params || {},
-			forceNew: true
+			path: backendAPIConfiguration.socketIOPath,
+			auth: { 'session-id': connection.sessionId },
+			query: queryParams,
+			forceNew: true,
+			...connection.overrides
 		});
 
-		if (options.subscribeEntities) {
-			$effect(() => {
-				const next = options.subscribeEntities!();
-				if (next) this.#entities = next;
+		if (this.pendingTemplate) this.createPending();
+
+		// if handlers are not disabled, add the provided handler or the default one:
+		if (configuration.transferred !== false) {
+			this.client.on('transferred', (data: T) => {
+				if (typeof configuration.transferred === 'function') {
+					configuration.transferred(data);
+				} else {
+					this.handleTransferred(data);
+				}
 			});
 		}
-
-		this.#pendingTemplate = options.pendingTemplate;
-		this.#defaultParentId = connection.query_params?.['parent-id'] as string | undefined;
-		this.#defaultInherit = options.defaultInherit ?? false;
-
-		const enableHandlers = options.defaultHandlers ?? {};
-		if (enableHandlers.transferred !== false) {
-			this.client.on('transferred', (data: T) => this.handleTransferred(data));
+		if (configuration.deleted !== false) {
+			this.client.on('deleted', (id: string) => {
+				if (typeof configuration.deleted === 'function') {
+					configuration.deleted(id);
+				} else {
+					this.handleDeleted(id);
+				}
+			});
 		}
-		if (enableHandlers.deleted !== false) {
-			this.client.on('deleted', (id: string) => this.handleDeleted(id));
+		if (configuration.status !== false) {
+			this.client.on('status', (status: SocketioStatus) => {
+				if (typeof configuration.status === 'function') {
+					configuration.status(status);
+				} else {
+					this.handleStatus(status);
+				}
+			});
 		}
-		if (enableHandlers.status !== false) {
-			this.client.on('status', (data: SocketioStatus) => this.handleStatus(data));
-		}
-
-		this.client.connect();
-	}
-
-	// --- reactive surface ---
-	/** Deeply reactive array of entities. Read in templates, mutate in place, or reassign. */
-	get entities(): T[] {
-		return this.#entities;
-	}
-	set entities(value: T[]) {
-		this.#entities = value;
-	}
-
-	/** Reactive collection of entities that are being prepared but not yet submitted. */
-	get pendingEntities(): T[] {
-		return this.#pendingEntities;
-	}
-	set pendingEntities(value: T[]) {
-		this.#pendingEntities = value;
-	}
-
-	// --- emitters ---
-	/**
-	 * Produce a fresh form-seed entity with a preliminary `new_*` id (which the backend
-	 * swaps for a real UUID on `status:created`, at which point {@link handleStatus}
-	 * rewrites it in place). Merges, in order: the configured `pendingTemplate` (if any),
-	 * then the optional `overrides` argument, then the freshly-generated id.
-	 *
-	 * Does not touch `entities` — callers either wrap the result in `$state(...)` to bind
-	 * to form inputs and submit via {@link submitEntity} when ready, or hand the overrides
-	 * straight through `RelationHandler.submit`, which calls this internally.
-	 */
-	createPending(overrides?: Partial<T>): T {
-		const template = this.#pendingTemplate?.() ?? {};
-		const pendingEntity = {
-			...template,
-			...overrides,
-			id: 'new_' + Math.random().toString(36).substring(2, 9)
-		} as T;
-		this.#pendingEntities.unshift(pendingEntity);
-		return pendingEntity;
 	}
 
 	/**
@@ -192,9 +123,7 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended> {
 	 * based on whether `entity.id` is a UUID or a preliminary `new_*` id.
 	 *
 	 * When called without `entity`, the first entry in {@link pendingEntities} is submitted and
-	 * a fresh pending entity is created automatically afterwards so form bindings remain valid.
-	 * When `entity` is provided explicitly, the caller is responsible for refilling the pending
-	 * slot if desired.
+	 * a fresh pending entity is created automatically afterwards
 	 */
 	submitEntity(
 		entity?: T,
@@ -203,13 +132,8 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended> {
 		publicAccess?: boolean,
 		publicAction?: Action
 	): void {
-		// TBD: refactor to check why (undfined, ...)
-		// does not work and submits an empty payload,
-		// instead of the first pending entity as intended.
-		// TBD: consider autoSubmit based
-		// on the id == 'new_*' pattern instead of presence of the entity argument?
 		const autoSubmit = entity === undefined;
-		const target = autoSubmit ? this.#pendingEntities[0] : entity;
+		const target = autoSubmit ? this.pendingEntities[0] : entity;
 		if (!target) return;
 		this.client.emit('submit', {
 			payload: target,
@@ -234,7 +158,7 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended> {
 		publicAccess?: boolean,
 		publicAction?: Action
 	): void {
-		for (const pending of [...this.#pendingEntities]) {
+		for (const pending of [...this.pendingEntities]) {
 			// TBD: refactor to use submitEntity
 			this.client.emit('submit', {
 				payload: pending,
@@ -246,60 +170,124 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended> {
 		}
 	}
 
+	/**
+	 * Deletes an entity by id. If the id is a preliminary `new_*` id,
+	 * it is removed from the local `pendingEntities` array.
+	 * Otherwise, a delete event is emitted to the backend,
+	 * which then emits `deleted` to all clients (including this one)
+	 * to trigger removal from the main `entities` array.
+	 */
 	deleteEntity(entityId: string): void {
 		if (entityId.slice(0, 4) === 'new_') {
 			// If the resource is new and has no id, we can just remove it from the local array
-			const index = this.#pendingEntities.findIndex((entity) => entity.id === entityId);
-			if (index > -1) this.#pendingEntities.splice(index, 1);
+			const index = this.pendingEntities.findIndex((entity) => entity.id === entityId);
+			if (index > -1) this.pendingEntities.splice(index, 1);
 		} else {
 			this.client.emit('delete', entityId);
 		}
 	}
 
-	link(childId: string, parentId?: string, inherit?: boolean): void {
-		if (!parentId) {
-			parentId = this.#defaultParentId;
-		}
+	/**
+	 * Creates a hierarchy link between a child and a parent entity.
+	 * If no parentId is provided, it defaults to the current `parentId` of this SocketIO instance (if any).
+	 * The `inherit` flag indicates whether the child should inherit access policies from the parent.
+	 * Reconciliation of the new hierarchy happens in the `status:linked` handler, which updates the local state based on server confirmation.
+	 */
+	link(childId: string, parentId: string = this.parentId ?? '', inherit?: boolean): void {
 		if (parentId) {
 			const hierarchy: Hierarchy = {
 				child_id: childId,
-				parent_id: parentId,
-				inherit: inherit ?? this.#defaultInherit
+				parent_id: parentId || this.parentId || '', // in creating a link, this should never be empty, but we need to satisfy the type
+				inherit: inherit ?? this.pendingSubmitOptions?.inherit
 			};
 			this.client.emit('link', hierarchy);
 		}
 		// Reconciliation happens in the `status:linked` handler.
 	}
 
-	unlink(childId: string, parentId?: string): void {
-		if (!parentId) {
-			parentId = this.#defaultParentId;
-		}
+	/**
+	 * Removes a hierarchy link between a child and a parent entity.
+	 * If no parentId is provided, it defaults to the current `parentId`
+	 * of this SocketIO instance (if any) or removes the child from all parents.
+	 * Reconciliation of the removed hierarchy happens in the `status:unlinked`
+	 * handler, which updates the local state based on server confirmation.
+	 */
+	unlink(childId: string, parentId: string = this.parentId ?? ''): void {
 		if (parentId) {
 			this.client.emit('unlink', { child_id: childId, parent_id: parentId });
+		} else {
+			throw new Error(
+				"Parent ID must be provided either as an argument or as the EntityContainer's parentId property."
+			);
 		}
 		// Reconciliation happens in the `status:unlinked` handler.
 	}
+	/**
+	 * TBD: implement changeLink() - also missing in backend!
+	 */
+	changeLink(_childId: string, _parentId?: string, _inherit?: boolean): void {}
 
+	/**
+	 * TBD: Re-order children - also missing in backend!
+	 */
+	move(
+		_childId: string,
+		_postion: 'before' | 'after' | 'start' | 'end',
+		_parentId?: string,
+		_otherChildId?: string
+	): void {}
+
+	/**
+	 * Shares, updates access rights or removes sharing of an entity based on the provided access policy.
+	 * The backend emits `status:shared` or `status:unshared` to all clients (including this one)
+	 * to trigger re-reading of the entity and update of the local state based on server confirmation.
+	 */
 	shareEntity(accessPolicy: AccessPolicy): void {
 		this.client.emit('share', accessPolicy);
 	}
 
-	// --- default receivers (also usable from custom listeners) ---
+	/**
+	 * Default Handlers for Receiving Events from the Server via Socket.IO
+	 *
+	 * Default receivers for socket events, can be used as-is or dissabled or overridden
+	 * by providing a custom handler in the constructor config.
+	 */
 	handleTransferred(data: T): void {
-		const existingIndex = this.#entities.findIndex((entity) => entity.id === data.id);
+		const existingIndex = this.entities.findIndex((entity) => entity.id === data.id);
 		if (existingIndex > -1) {
 			// Update existing entity in place
-			this.#entities[existingIndex] = { ...this.#entities[existingIndex], ...data };
+			this.entities[existingIndex] = { ...this.entities[existingIndex], ...data };
+			this.accessPolicies[this.entities[existingIndex].id] = data.access_policies
+				? data.access_policies
+				: this.accessPolicies[this.entities[existingIndex].id];
+			this.accessRights[this.entities[existingIndex].id] = data.access_right
+				? data.access_right
+				: this.accessRights[this.entities[existingIndex].id];
+			this.hierarchies[this.entities[existingIndex].id] = data.hierarchies
+				? data.hierarchies
+				: this.hierarchies[this.entities[existingIndex].id];
 		} else {
 			// Add new entity at the beginning (most recent first);
-			this.#entities.unshift(data);
+			this.entities.unshift(data);
+			this.accessPolicies[data.id] = data.access_policies ?? [];
+			this.accessRights[data.id] = data.access_right ?? Action.READ;
+			this.hierarchies[data.id] = data.hierarchies ?? [];
 		}
 	}
 
 	handleDeleted(resource_id: string): void {
-		const index = this.#entities.findIndex((entity) => entity.id === resource_id);
-		if (index > -1) this.#entities.splice(index, 1);
+		const index = this.entities.findIndex((entity) => entity.id === resource_id);
+		if (index > -1) this.entities.splice(index, 1);
+		// remove from selections:
+		for (const selectionName in this.selections) {
+			this.selections[selectionName] = this.selections[selectionName].filter(
+				(id) => id !== resource_id
+			);
+		}
+		delete this.accessPolicies[resource_id];
+		delete this.accessRights[resource_id];
+		delete this.hierarchies[resource_id];
+		// TBD: consider also removing from accessPolicies and accessRights, depending on the backend implementation and emitted data on delete.
 	}
 
 	handleStatus(status: SocketioStatus): void {
@@ -308,29 +296,63 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended> {
 				// Move the pending draft into entities under its real server-assigned id.
 				// Object identity is preserved (id mutated in place) so any held references
 				// (e.g. editIds, form bindings) keep pointing at the same object.
-				const pendingIndex = this.#pendingEntities.findIndex(
+				const pendingIndex = this.pendingEntities.findIndex(
 					(pendingEntity) => pendingEntity.id === status.submitted_id
 				);
 				if (pendingIndex > -1) {
-					const [entity] = this.#pendingEntities.splice(pendingIndex, 1);
+					const [entity] = this.pendingEntities.splice(pendingIndex, 1);
 					entity.id = status.id;
-					this.#entities.unshift(entity);
+					this.entities.unshift(entity);
+				}
+				// replace submitted_id with id in all selections, as it is now replaced by the real id
+				for (const selectionName in this.selections) {
+					this.selections[selectionName] = this.selections[selectionName].map((id) =>
+						id === status.submitted_id ? status.id : id
+					);
 				}
 			} else if (status.success === 'shared' || status.success === 'unshared') {
 				// Re-read to resolve remaining inherited access. If none, the server emits `deleted`.
+				// TBD: or consider sending the updated access at share from backend?
 				this.client.emit('read', status.id);
 			} else if (status.success === 'linked') {
-				// if (!parentId || status.parent_id !== parentId) return;
-				// if (!this.#hierarchies.some((h) => h.child_id === status.id)) {
-				// 	this.#hierarchies = [
-				// 		...this.#hierarchies,
-				// 		{ child_id: status.id, parent_id: parentId, inherit: status.inherit }
-				// 	];
-				// }
+				if (status.parent_id === this.parentId) {
+					const existingHierarchyIndex = this.hierarchies[status.id]?.findIndex(
+						(hierarchy) =>
+							hierarchy.child_id === status.id && hierarchy.parent_id === status.parent_id
+					);
+					if (existingHierarchyIndex > -1) {
+						// Update existing hierarchy in place
+						this.hierarchies[status.id][existingHierarchyIndex] = {
+							child_id: status.id,
+							parent_id: status.parent_id,
+							inherit: status.inherit,
+							order: status.order
+						};
+					} else {
+						// Re-read the linked entity
+						this.client.emit('read', status.id);
+						// And add the new hierarchy link to the local state.
+						// TBD: should this one be removed and leave it to the read reconciliation?
+						this.hierarchies[status.id] = [
+							{
+								child_id: status.id,
+								parent_id: this.parentId,
+								inherit: status.inherit,
+								order: status.order
+							}
+						];
+					}
+				}
 			} else if (status.success === 'unlinked') {
-				// if (!parentId || status.parent_id !== parentId) return;
-				// this.#hierarchies = this.#hierarchies.filter((h) => h.child_id !== status.id);
+				if (status.parent_id === this.parentId) {
+					this.hierarchies[status.id] = this.hierarchies[status.id]?.filter(
+						(h) => h.child_id !== status.id
+					);
+				}
 			}
 		}
+		// TBD: consider handling status.error,
+		// depending on the backend implementation and emitted data on error.
+		// Maybe just console.logging for now?
 	}
 }

@@ -7,8 +7,7 @@
 	import JsonData from '$components/JsonData.svelte';
 	import Title from '$components/Title.svelte';
 	import { Action } from '$lib/accessHandler';
-	// import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
-	import { SocketIO, type SocketioConnection } from '$lib/socketioNew.svelte';
+	import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
 	import type { MessageExtended, NumericalExtended } from '$lib/types';
 
 	import type { PageData } from './$types';
