@@ -11,7 +11,9 @@ import {
 	type SocketioConnection,
 	type SocketioStatus
 } from './socketioNew.svelte';
-import type { AnyEntityExtended, DemoResource } from './types';
+import type { AccessPolicy, AnyEntityExtended, DemoResource } from './types';
+
+// #region: Setup Test Socketio Server
 
 // Provide data for the mocked backendConfiguration. Port is filled in after the test server starts.
 let backendConfig = vi.hoisted(() => ({
@@ -82,6 +84,10 @@ afterAll(() => {
 	// console.log('✅ Test server closed');
 });
 
+// #endregion: Setup Test Socketio Client
+
+// #region: Setup Test Socketio Client
+
 class SocketioClientHandler<T extends AnyEntityExtended = AnyEntityExtended> {
 	connection: SocketioConnection;
 
@@ -122,14 +128,18 @@ class SocketioClientHandler<T extends AnyEntityExtended = AnyEntityExtended> {
 	}
 }
 
+// #endregion: Setup Test Socketio Client
+
 describe('SocketIO for DemoResources', () => {
 	let socketioClientHandler: SocketioClientHandler;
 	let testSocketio: SocketIO<DemoResource>;
+	const parentId = 'parent-from-describe';
 
 	beforeEach(async () => {
 		socketioClientHandler = await SocketioClientHandler.create<DemoResource>({
 			namespace: '/demo-resource',
-			sessionId: 'session-123'
+			sessionId: 'session-123',
+			parentId: parentId
 		});
 		testSocketio = socketioClientHandler.socketioClient as SocketIO<DemoResource>;
 		return () => {
@@ -138,7 +148,8 @@ describe('SocketIO for DemoResources', () => {
 		};
 	});
 
-	// region: Tests for constructor:
+	// #region: Tests for constructor
+
 	// - instantiation
 	// - default handler behavior
 
@@ -279,9 +290,9 @@ describe('SocketIO for DemoResources', () => {
 		});
 	});
 
-	// endregion: Tests for constructor
+	// #endregion: Tests for constructor
 
-	// region: Tests for Submit Event Emitters:
+	// #region: Tests for Event Emitters:
 
 	test('submitEntity emits "submit" event with correct payload', async () => {
 		testSocketio.submitEntity({ id: 'abc', name: 'x' } as never);
@@ -357,5 +368,271 @@ describe('SocketIO for DemoResources', () => {
 		});
 	});
 
-	// endregion: Tests for Submit Event Emitters
+	test('deleteEntity emits "delete" event with correct payload', async () => {
+		testSocketio.deleteEntity('abc');
+
+		await vi.waitFor(() => {
+			expect(serverMessages.length).toBe(1);
+		});
+
+		expect(serverMessages).toContainEqual({
+			event: 'delete',
+			data: ['abc']
+		});
+	});
+
+	test('link emits "link" event with correct payload', async () => {
+		testSocketio.link('child-1', 'parent-1', true);
+
+		await vi.waitFor(() => {
+			expect(serverMessages.length).toBe(1);
+		});
+
+		expect(serverMessages).toContainEqual({
+			event: 'link',
+			data: [
+				expect.objectContaining({
+					child_id: 'child-1',
+					parent_id: 'parent-1',
+					inherit: true
+				})
+			]
+		});
+	});
+
+	test('unlink emits "unlink" event with correct payload', async () => {
+		testSocketio.unlink('child-1', 'parent-1');
+
+		await vi.waitFor(() => {
+			expect(serverMessages.length).toBe(1);
+		});
+
+		expect(serverMessages).toContainEqual({
+			event: 'unlink',
+			data: [
+				expect.objectContaining({
+					child_id: 'child-1',
+					parent_id: 'parent-1'
+				})
+			]
+		});
+	});
+
+	test.todo('changeLink emits "change_link" event with correct payload', async () => {
+		testSocketio.changeLink('child-1', 'parent-2', false);
+
+		// await vi.waitFor(() => {
+		// 	expect(serverMessages.length).toBe(1);
+		// });
+
+		// expect(serverMessages).toContainEqual({
+		// 	event: 'change_link',
+		// 	data: [
+		// 		expect.objectContaining({
+		// 			childId: 'child-1',
+		// 			parentId: 'parent-2',
+		// 			inherit: false
+		// 		})
+		// 	]
+		// });
+	});
+
+	test.todo('move emits "move" event with correct payload', async () => {
+		testSocketio.move('child-1', 'before', 'parent-1', 'other-child');
+
+		// await vi.waitFor(() => {
+		// 	expect(serverMessages.length).toBe(1);
+		// });
+
+		// expect(serverMessages).toContainEqual({
+		// 	event: 'move',
+		// 	data: [
+		// 		expect.objectContaining({
+		// 			childId: 'child-1',
+		// 			position: 'before',
+		// 			parentId: 'parent-1',
+		// 			otherChildId: 'other-child'
+		// 		})
+		// 	]
+		// });
+	});
+
+	test('shareEntity emits "share" event with correct payload', async () => {
+		const accessPolicy = { resource_id: 'resource-1', identity_id: 'identity-1' } as AccessPolicy;
+		testSocketio.shareEntity(accessPolicy);
+
+		await vi.waitFor(() => {
+			expect(serverMessages.length).toBe(1);
+		});
+
+		expect(serverMessages).toContainEqual({
+			event: 'share',
+			data: [
+				expect.objectContaining({
+					resource_id: 'resource-1',
+					identity_id: 'identity-1'
+				})
+			]
+		});
+	});
+	// #endregion: Tests for Event Emitters
+
+	// #region Tests for Event Handlers:
+
+	test('handleTransferred adds entity in state', async () => {
+		const transferredEntity = { id: 'srv-1', name: 'from server' } as DemoResource;
+		testSocketio.handleTransferred(transferredEntity);
+
+		await vi.waitFor(() => {
+			expect(testSocketio.entities.map((e) => e.id)).toContain('srv-1');
+			expect(testSocketio.entities.map((e) => e.name)).toContain('from server');
+		});
+	});
+
+	test('handleTransferred updates existing entity in state', async () => {
+		const initialEntity = { id: 'srv-1', name: 'initial' } as DemoResource;
+		testSocketio.entities = [initialEntity];
+
+		const updatedEntity = { id: 'srv-1', name: 'updated from server' } as DemoResource;
+		testSocketio.handleTransferred(updatedEntity);
+		await vi.waitFor(() => {
+			expect(testSocketio.entities.length).toBe(1);
+			expect(testSocketio.entities[0].id).toBe('srv-1');
+			expect(testSocketio.entities[0].name).toBe('updated from server');
+		});
+	});
+
+	test('handleDeleted removes entity from state', async () => {
+		const entityToDelete = { id: 'srv-1', name: 'to be deleted' } as DemoResource;
+		testSocketio.entities = [entityToDelete];
+
+		testSocketio.handleDeleted('srv-1');
+		await vi.waitFor(() => {
+			expect(testSocketio.entities.map((e) => e.id)).not.toContain('srv-1');
+		});
+	});
+
+	test('handleStatus for "success:created" replaces submitted_id with id and removes pending entity', async () => {
+		testSocketio.pendingEntities = [{ id: 'pending-1', name: 'pending' } as DemoResource];
+
+		serverSocket.emit('status', { success: 'created', id: 'srv-1', submitted_id: 'pending-1' });
+
+		await vi.waitFor(() => {
+			expect(testSocketio.entities.length).toBe(1);
+			expect(testSocketio.entities).toEqual([{ id: 'srv-1', name: 'pending' }]);
+			expect(testSocketio.entities.map((e) => e.id)).not.toContain('submitted-1');
+			expect(testSocketio.pendingEntities.map((e) => e.id)).not.toContain('pending-1');
+		});
+	});
+
+	test('handleStatus for "success:shared" triggers read for the updated entity', async () => {
+		serverSocket.emit('status', { success: 'shared', id: 'srv-1' });
+
+		await vi.waitFor(() => {
+			expect(serverMessages[0]).toEqual({ event: 'read', data: ['srv-1'] });
+		});
+	});
+
+	test('handleStatus for "success:unshared" triggers read for the updated entity', async () => {
+		serverSocket.emit('status', { success: 'unshared', id: 'srv-1' });
+
+		await vi.waitFor(() => {
+			expect(serverMessages[0]).toEqual({ event: 'read', data: ['srv-1'] });
+		});
+	});
+
+	test('handleStatus for "success:linked" and existing hierarchy updates the hierarchy and does not trigger read for the child entity', async () => {
+		testSocketio.hierarchies = {
+			'child-1': [
+				{ child_id: 'child-1', parent_id: 'parent-from-describe', inherit: false, order: 0 }
+			]
+		};
+		serverSocket.emit('status', {
+			success: 'linked',
+			id: 'child-1',
+			parent_id: 'parent-from-describe',
+			inherit: true,
+			order: 0
+		});
+
+		const emitSpy = vi.spyOn(testSocketio.client, 'emit');
+
+		await vi.waitFor(() => {
+			expect(Object.keys(testSocketio.hierarchies).length).toBe(1);
+			expect(testSocketio.hierarchies['child-1'].length).toBe(1);
+			expect(testSocketio.hierarchies['child-1']).toEqual([
+				{ child_id: 'child-1', parent_id: 'parent-from-describe', inherit: true, order: 0 }
+			]);
+			expect(emitSpy).not.toHaveBeenCalledWith('read', 'child-1');
+		});
+	});
+
+	test('handleStatus for "success:linked" and no existing hierarchy adds the hierarchy and triggers read for the child entity', async () => {
+		serverSocket.emit('status', {
+			success: 'linked',
+			id: 'child-1',
+			parent_id: 'parent-from-describe',
+			inherit: true
+		});
+
+		await vi.waitFor(() => {
+			expect(testSocketio.hierarchies['child-1']).toEqual([
+				{ child_id: 'child-1', parent_id: 'parent-from-describe', inherit: true, order: undefined }
+			]);
+			expect(serverMessages.length).toBe(1);
+			expect(serverMessages[0]).toEqual({ event: 'read', data: ['child-1'] });
+		});
+	});
+
+	test('handleStatus for "success:linked" from another parent, than the classes parent-id does not get added to hierarchies', async () => {
+		serverSocket.emit('status', {
+			success: 'linked',
+			id: 'child-1',
+			parent_id: 'other-parent',
+			inherit: true,
+			order: 0
+		});
+
+		const emitSpy = vi.spyOn(testSocketio.client, 'emit');
+
+		await vi.waitFor(() => {
+			expect(Object.keys(testSocketio.hierarchies).length).toBe(0);
+			expect(emitSpy).not.toHaveBeenCalledWith('read', 'child-1');
+		});
+	});
+
+	test('handleStatus for "success:unlinked" removes the hierarchy and triggers read for the child entity', async () => {
+		testSocketio.hierarchies = {
+			'child-1': [{ child_id: 'child-1', parent_id: 'parent-from-describe', inherit: true }]
+		};
+
+		serverSocket.emit('status', {
+			success: 'unlinked',
+			id: 'child-1',
+			parent_id: 'parent-from-describe'
+		});
+
+		const emitSpy = vi.spyOn(testSocketio.client, 'emit');
+
+		await vi.waitFor(() => {
+			expect(testSocketio.hierarchies['child-1']).toEqual([]);
+			expect(serverMessages.length).toBe(0);
+			expect(emitSpy).not.toHaveBeenCalledWith('read', 'child-1');
+		});
+	});
+
+	test.todo('handleStatus for "error" logs the error message', async () => {
+		const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+		serverSocket.emit('status', { error: 'Something went wrong' });
+
+		await vi.waitFor(() => {
+			expect(consoleErrorSpy).toHaveBeenCalledWith(
+				'🧦🔥 SocketIO error status received:',
+				'Something went wrong'
+			);
+		});
+
+		consoleErrorSpy.mockRestore();
+	});
 });
