@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { AccessHandler, IdentityType } from '$lib/accessHandler';
-	import type { AnyGroupIdentity } from '$lib/types';
+	import type { AnyIdentity } from '$lib/types';
 
 	// import type { User as AzureUser } from '@microsoft/microsoft-graph-types';
 	import IdBadge from '../IdBadge.svelte';
@@ -17,7 +17,7 @@
 		unlink,
 		remove
 	}: {
-		identity: AnyGroupIdentity | LocalAzureUser;
+		identity: AnyIdentity | LocalAzureUser;
 		type?: IdentityType;
 		link?: (id: string) => void;
 		unlink?: (id: string) => void;

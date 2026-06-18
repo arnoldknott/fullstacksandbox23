@@ -91,7 +91,8 @@
 						resource_id: resourceId,
 						identity_id: shareOption.identity_id,
 						action: desiredActions(selectedAction).action,
-						new_action: desiredActions(selectedAction).new_action
+						new_action: desiredActions(selectedAction).new_action,
+						public: shareOption.public
 					});
 					shareOption.action = desiredActions(selectedAction).new_action;
 					if (closeShareMenu) {

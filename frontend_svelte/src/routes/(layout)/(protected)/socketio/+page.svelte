@@ -13,11 +13,11 @@
 
 	const public_message_connection: SocketioConnection = {
 		namespace: '/public-namespace',
-		cookie_session_id: page.data.session.sessionId
+		sessionId: page.data.session.sessionId
 	};
 	const demo_message_connection: SocketioConnection = {
 		namespace: '/demo-namespace',
-		cookie_session_id: page.data.session.sessionId
+		sessionId: page.data.session.sessionId
 	};
 
 	// let { data }: { data: PageData } = $props();

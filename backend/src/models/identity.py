@@ -16,6 +16,7 @@ from .base import (
     Attribute,
     BaseSQLModel,
     CreatedAtMixin,
+    HierarchyMixin,
 )
 from .base import Relationship as AppRelationship
 from .base import (
@@ -406,7 +407,12 @@ class UserUpdate(UserCreate):
 
 
 class UserExtended(  # type: ignore[misc]
-    UserRead, AccessRightsMixin, AccessPolicyMixin, CreatedAtMixin, UpdatedAtMixin
+    UserRead,
+    AccessRightsMixin,
+    AccessPolicyMixin,
+    CreatedAtMixin,
+    UpdatedAtMixin,
+    HierarchyMixin,
 ):
     pass
 

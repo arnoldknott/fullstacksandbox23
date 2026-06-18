@@ -27,51 +27,59 @@
 	let socketioIntention: SocketIO<MessageExtended> = $state()!;
 	let socketioMotivation: SocketIO<NumericalExtended> = $state()!;
 	let socketioComment: SocketIO<MessageExtended> = $state()!;
-	let intentionAnswers = $derived(socketioIntention?.entities ?? []);
+	// let intentionAnswers = $derived(socketioIntention?.entities ?? []);
 	let motivationAnswers = $derived(socketioMotivation?.entities ?? []);
-	let commentsAnswers = $derived(socketioComment?.entities ?? []);
+	// let commentsAnswers = $derived(socketioComment?.entities ?? []);
 	let intentionQuestionId = $derived(data.questionsData?.intention?.id || '');
 	let motivationQuestionId = $derived(data.questionsData?.motivation?.id || '');
 	let commentsQuestionId = $derived(data.questionsData?.comments?.id || '');
 
-	let intentionAnswersSorted: MessageExtended[] = $derived(
-		intentionAnswers.toSorted((a, b) => {
-			if (!a.creation_date || !b.creation_date) {
-				return 1;
-			} else {
-				return !a.creation_date < !b.creation_date ? -1 : 1;
-			}
-		})
+	// let intentionAnswersSorted: MessageExtended[] = $derived(
+	// 	intentionAnswers.toSorted((a, b) => {
+	// 		if (!a.creation_date || !b.creation_date) {
+	// 			return 1;
+	// 		} else {
+	// 			return !a.creation_date < !b.creation_date ? -1 : 1;
+	// 		}
+	// 	})
+	// );
+	let intentionAnswersSorted = $derived(
+		socketioIntention?.getSelectedEntities('sortedIntentionAnswers') ?? []
 	);
 
 	onMount(() => {
 		const intentionConnection: SocketioConnection = {
 			namespace: '/message',
-			query_params: { 'parent-id': intentionQuestionId, 'request-access-data': true }
+			parentId: intentionQuestionId,
+			queryParams: { 'request-access-data': true }
 		};
 		socketioIntention = new SocketIO<MessageExtended>(intentionConnection, {
-			subscribeEntities: () => data.questionsData?.intention?.messages,
-			pendingTemplate: () => ({ content: '', language: 'en' })
+			template: { content: '', language: 'en' }
 		});
+		socketioIntention.createSortedSelection('sortedIntentionAnswers', 'creation_date', false);
 
 		const connectionMotivation: SocketioConnection = {
 			namespace: '/numerical',
-			query_params: { 'parent-id': motivationQuestionId }
+			parentId: motivationQuestionId
 		};
-		socketioMotivation = new SocketIO<NumericalExtended>(connectionMotivation, {
-			subscribeEntities: () => data.questionsData?.motivation?.numericals
-		});
+		socketioMotivation = new SocketIO<NumericalExtended>(connectionMotivation, {});
 
 		const commentConnection: SocketioConnection = {
 			namespace: '/message',
-			query_params: { 'parent-id': commentsQuestionId, 'request-access-data': true }
+			parentId: commentsQuestionId,
+			queryParams: { 'request-access-data': true }
 		};
 		socketioComment = new SocketIO<MessageExtended>(commentConnection, {
-			subscribeEntities: () => data.questionsData?.comments?.messages,
-			pendingTemplate: () => ({ content: '', language: 'en' })
+			template: { content: '', language: 'en' }
 		});
-		socketioIntention.createPending();
-		socketioComment.createPending();
+		socketioComment.createSortedSelection('sortedCommentsAnswers', 'creation_date', false);
+	});
+
+	$effect(() => {
+		// Preseed data:
+		socketioIntention.entities = data.questionsData?.intention?.messages ?? [];
+		socketioMotivation.entities = data.questionsData?.motivation?.numericals ?? [];
+		socketioComment.entities = data.questionsData?.comments?.messages ?? [];
 	});
 
 	let motivationAnswersAverage: number = $derived.by(() => {
@@ -134,14 +142,17 @@
 		}
 	});
 
-	let commentsAnswersSorted: MessageExtended[] = $derived(
-		commentsAnswers.toSorted((a, b) => {
-			if (!a.creation_date || !b.creation_date) {
-				return 1;
-			} else {
-				return !a.creation_date < !b.creation_date ? -1 : 1;
-			}
-		})
+	// let commentsAnswersSorted: MessageExtended[] = $derived(
+	// 	commentsAnswers.toSorted((a, b) => {
+	// 		if (!a.creation_date || !b.creation_date) {
+	// 			return 1;
+	// 		} else {
+	// 			return !a.creation_date < !b.creation_date ? -1 : 1;
+	// 		}
+	// 	})
+	// );
+	let commentsAnswersSorted = $derived(
+		socketioComment?.getSelectedEntities('sortedCommentsAnswers') ?? []
 	);
 
 	onDestroy(() => {
@@ -231,7 +242,7 @@
 		</div>
 		<div class="heading mt-8">
 			<div class="mx-5 grid max-h-[400px] grid-cols-3 gap-6 overflow-y-auto">
-				{#each intentionAnswersSorted as answer, index (index)}
+				{#each intentionAnswersSorted as answer, index (answer.id)}
 					<div animate:flip>
 						{@render messageAnswer(answer.content, answer.creation_date, index)}
 					</div>
@@ -396,7 +407,7 @@
 		</div>
 		<div class="heading mt-8">
 			<div class="mx-5 grid max-h-[400px] grid-cols-3 gap-6 overflow-y-auto">
-				{#each commentsAnswersSorted as answer, index (index)}
+				{#each commentsAnswersSorted as answer, index (answer.id)}
 					<div animate:flip>
 						{@render messageAnswer(answer.content, answer.creation_date, index)}
 					</div>

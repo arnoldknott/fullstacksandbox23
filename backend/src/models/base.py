@@ -55,7 +55,7 @@ Features:
 """
 
 import sys
-import uuid
+from uuid import uuid4, UUID
 from datetime import datetime
 from enum import Enum
 from typing import (
@@ -78,7 +78,7 @@ from sqlmodel import SQLModel
 from sqlmodel.main import SQLModelMetaclass
 
 from core.types import Action, IdentityType, ResourceType
-from models.access import AccessPolicyRead
+from models.access import AccessPolicyRead, IdentityHierarchyRead, ResourceHierarchyRead
 
 # Model mixins - combine with the SQLModel-based models in src/models/*.py
 # to extend the models with meta data,
@@ -97,7 +97,16 @@ class BaseSQLModel(SQLModel):
     type.
     """
 
-    id: Optional[uuid.UUID] = None
+    id: Optional[UUID] = None
+
+
+class BaseReadSQLModel(SQLModel):
+    """Common base for all application table models used for reading data,
+
+    For read models, the id is always present, so we can declare it as non-optional.
+    """
+
+    id: UUID
 
 
 class GeneratedSQLModel(BaseSQLModel):
@@ -110,33 +119,64 @@ class GeneratedSQLModel(BaseSQLModel):
     """
 
     Create: ClassVar[Type[SQLModel]]
-    Read: ClassVar[Type[SQLModel]]
+    Read: ClassVar[Type[BaseReadSQLModel]]
     Update: ClassVar[Type[SQLModel]]
-    Extended: ClassVar[Type[SQLModel]]
+    Extended: ClassVar[Type[BaseExtendedSQLModel]]
 
 
-class AccessRightsMixin(BaseModel):
+class AccessRightsMixin(SQLModel):
     """Mixin for access rights on a resource"""
 
     access_right: Optional[Action] = None
 
 
-class AccessPolicyMixin(BaseModel):
+class AccessPolicyMixin(SQLModel):
     """Mixin for access policies on a resource"""
 
     access_policies: Optional[List[AccessPolicyRead]] = None
 
 
-class CreatedAtMixin(BaseModel):
+class CreatedAtMixin(SQLModel):
     """Mixin for created at timestamp"""
 
     creation_date: Optional[datetime] = None
 
 
-class UpdatedAtMixin(BaseModel):
+class UpdatedAtMixin(SQLModel):
     """Mixin for updated at timestamp"""
 
     last_modified_date: Optional[datetime] = None
+
+
+class HierarchyMixin(SQLModel):
+    """Mixin for hierarchy data"""
+
+    # TBD: reconsider: only return inherit flag, or also return the whole hierarchy data?
+    # The latter can be useful for the frontend to display the resource hierarchy,
+    # but also adds complexity and might have performance implications.
+    # If so, only matches on parent_id or matches on child_id or both?
+
+    # inherit: Optional[bool] = None
+    # order: Optional[int] = None
+    # children: Optional[List[ResourceHierarchyRead | IdentityHierarchyRead]] = []
+    # parents: Optional[List[ResourceHierarchyRead | IdentityHierarchyRead]] = []
+    hierarchies: Optional[List[ResourceHierarchyRead | IdentityHierarchyRead]] = []
+
+
+class BaseExtendedSQLModel(
+    BaseReadSQLModel,
+    AccessRightsMixin,
+    AccessPolicyMixin,
+    CreatedAtMixin,
+    UpdatedAtMixin,
+    HierarchyMixin,
+):
+    """Common base for all application table models used for reading extended data,
+
+    For extended models, the mixins are added to the read model.
+    """
+
+    pass
 
 
 class ModelTypes(str, Enum):
@@ -296,7 +336,7 @@ def _build_annotations_and_fields(  # noqa: C901
 
     # Add id field for Read and Extended schemas
     if schema_type in {SchemaType.READ, SchemaType.EXTENDED}:
-        annotations["id"] = uuid.UUID
+        annotations["id"] = UUID
 
     # Process relationships for Read and Extended schemas
     if schema_type in {SchemaType.READ, SchemaType.EXTENDED}:
@@ -343,6 +383,7 @@ def create_model(
         AccessPolicyMixin,
         CreatedAtMixin,
         UpdatedAtMixin,
+        HierarchyMixin,
     ),
 ) -> Type[GeneratedSQLModel]:
     """
@@ -408,7 +449,7 @@ def create_model(
     # read_fields = {}
 
     # # Add id to Read
-    # read_annotations["id"] = uuid.UUID
+    # read_annotations["id"] = UUID
 
     # # Add relationships to Read (with forward refs)
     # for rel in relationships:
@@ -420,7 +461,7 @@ def create_model(
     #     read_fields[rel_name] = None
 
     # read_fields["__annotations__"] = read_annotations
-    Read = type(f"{name}Read", (Create,), read_fields)
+    Read = type(f"{name}Read", (BaseReadSQLModel, Create), read_fields)
 
     # ===== Build Update Schema (all fields optional) =====
     update_annotations, update_fields = _build_annotations_and_fields(
@@ -440,7 +481,7 @@ def create_model(
     #     update_fields[attr.name] = None
 
     # update_fields["__annotations__"] = update_annotations
-    Update = type(f"{name}Update", (SQLModel,), update_fields)
+    Update = type(f"{name}Update", (BaseSQLModel, Create), update_fields)
 
     # ===== Build Extended Schema =====
     _extended_annotations, extended_fields = _build_annotations_and_fields(
@@ -467,9 +508,9 @@ def create_model(
         table_fields = {**create_fields}
 
         # Add hardcoded id field
-        table_annotations["id"] = Optional[uuid.UUID]
+        table_annotations["id"] = Optional[UUID]
         table_fields["id"] = Field(
-            default_factory=uuid.uuid4,
+            default_factory=uuid4,
             foreign_key="identifiertypelink.id",
             primary_key=True,
         )

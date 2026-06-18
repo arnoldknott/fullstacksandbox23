@@ -10,6 +10,7 @@ from .base import (
     AccessRightsMixin,
     BaseSQLModel,
     CreatedAtMixin,
+    HierarchyMixin,
     UpdatedAtMixin,
 )
 from .category import Category, CategoryRead
@@ -71,6 +72,7 @@ class DemoResourceExtended(  # type: ignore[misc]
     AccessPolicyMixin,
     CreatedAtMixin,
     UpdatedAtMixin,
+    HierarchyMixin,
 ):
     pass
 

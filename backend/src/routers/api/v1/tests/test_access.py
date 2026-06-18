@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timedelta
-
+from typing import List
 import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
@@ -10,13 +10,18 @@ from crud.access import AccessPolicyCRUD
 from models.access import (
     AccessLogCreate,
     AccessLogRead,
-    AccessPermission,
     AccessPolicy,
     AccessPolicyRead,
+    IdentityHierarchyRead,
+    ResourceHierarchyRead,
 )
 from models.demo_resource import DemoResource
-from models.identity import AzureGroup, User
-from models.protected_resource import ProtectedResource
+from models.identity import AzureGroup, GroupRead, SubGroupRead, UeberGroupRead, User
+from models.protected_resource import (
+    ProtectedResource,
+    ProtectedChild,
+    ProtectedResourceRead,
+)
 from tests.utils import (
     azure_group_id1,
     azure_group_id2,
@@ -44,9 +49,10 @@ from tests.utils import (
     token_user2_read,
     token_user2_read_write,
     token_user2_write,
+    many_test_azure_users,
 )
 
-# region ## AccessPolicy tests:
+# region AccessPolicy tests:
 
 # Note: There are also plenty of tests for the access CRUD!!
 
@@ -2292,7 +2298,60 @@ async def test_user_deletes_access_policy(
 
 # endregion: ## DELETE tests
 
-# endregion: ## AccessPolicy tests
+# endregion: AccessPolicy tests
+
+
+# region Entity Type tests:
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_admin_read],
+    indirect=True,
+)
+async def test_admin_get_entity_types(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    register_many_resources,
+):
+    """Tests GET entity types."""
+
+    _ = app_override_provide_http_token_payload
+
+    protected_resources = register_many_resources
+
+    response = await async_client.get(f"/api/v1/access/type/{protected_resources[0]}")
+    payload = response.json()
+
+    assert response.status_code == 200
+
+    assert payload == ResourceType.protected_resource
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read],
+    indirect=True,
+)
+async def test_user_get_entity_types(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    register_many_resources,
+):
+    """Tests GET entity types."""
+
+    _ = app_override_provide_http_token_payload
+
+    protected_resources = register_many_resources
+
+    response = await async_client.get(f"/api/v1/access/type/{protected_resources[0]}")
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Entity not found."
+
+
+# endregion: Entity Type tests
 
 
 # region AccessPermission tests
@@ -2363,10 +2422,9 @@ async def test_user_get_access_permission_for_resource_with_owner_permission(
 
     response = await async_client.get(f"/api/v1/access/right/resource/{resource_id1}")
     assert response.status_code == 200
-    permission = AccessPermission(**response.json())
+    permission = response.json()
 
-    assert permission.resource_id == uuid.UUID(resource_id1)
-    assert permission.action == Action.own
+    assert permission == Action.own
 
 
 @pytest.mark.anyio
@@ -2402,10 +2460,9 @@ async def test_user_tries_to_add_write_policy_where_an_owner_policy_exists_alrea
 
     response = await async_client.get(f"/api/v1/access/right/resource/{resource_id1}")
     assert response.status_code == 200
-    permission = AccessPermission(**response.json())
+    permission = response.json()
 
-    assert permission.resource_id == uuid.UUID(resource_id1)
-    assert permission.action == Action.write
+    assert permission == Action.write
 
     try:
         own_test_access_policy_for_current_user = {
@@ -2474,10 +2531,9 @@ async def test_user_get_access_permission_for_resource_with_write_permission(
 
     response = await async_client.get(f"/api/v1/access/right/resource/{resource_id1}")
     assert response.status_code == 200
-    permission = AccessPermission(**response.json())
+    permission = response.json()
 
-    assert permission.resource_id == uuid.UUID(resource_id1)
-    assert permission.action == Action.write
+    assert permission == Action.write
 
 
 @pytest.mark.anyio
@@ -2530,10 +2586,9 @@ async def test_user_get_access_permission_for_resource_with_read_permission(
 
     response = await async_client.get(f"/api/v1/access/right/resource/{resource_id1}")
     assert response.status_code == 200
-    permission = AccessPermission(**response.json())
+    permission = response.json()
 
-    assert permission.resource_id == uuid.UUID(resource_id1)
-    assert permission.action == Action.read
+    assert permission == Action.read
 
 
 @pytest.mark.anyio
@@ -2587,10 +2642,9 @@ async def test_user_get_access_permission_for_resource_without_permission(
     # TBD: why would this fail with resource_id1 in connection to add_many_test_access_policies?
     response = await async_client.get(f"/api/v1/access/right/resource/{resource_id1}")
     assert response.status_code == 200
-    permission = AccessPermission(**response.json())
+    permission = response.json()
 
-    assert permission.resource_id == uuid.UUID(resource_id1)
-    assert permission.action is None
+    assert permission is None
 
 
 @pytest.mark.anyio
@@ -2655,25 +2709,19 @@ async def test_user_get_access_permission_for_resources(
     )
     assert response.status_code == 200
     result = response.json()
-    permissions = []
-    for res in result:
-        permissions.append(AccessPermission(**res))
 
-    assert len(permissions) == 5
+    assert len(result) == 5
 
-    assert permissions[0].resource_id == uuid.UUID(resource_id1)
-    assert permissions[0].action == Action.write
-    assert permissions[1].resource_id == uuid.UUID(resource_id2)
-    assert permissions[1].action == Action.own
-    assert permissions[2].resource_id == uuid.UUID(resource_id4)
-    assert permissions[2].action == Action.write
-    assert permissions[3].resource_id == uuid.UUID(resource_id7)
-    assert permissions[3].action == Action.own
-    assert permissions[4].resource_id == uuid.UUID(resource_id9)
-    assert permissions[4].action is None
+    assert result[0] == Action.write
+    assert result[1] == Action.own
+    assert result[2] == Action.write
+    assert result[3] == Action.own
+    assert result[4] is None
 
 
-# region: ## AccessLog tests
+# endregion AccessPermission tests
+
+# region: AccessLog tests
 
 # Note the write log tests are in test_access_crud, as access logs only get written from inside the app.
 
@@ -4386,4 +4434,1921 @@ async def test_get_access_count_for_resource_without_access_fails(
 
 # endregion: ## GET tests
 
-# endregion: ## AccessLog tests
+# endregion: AccessLog tests
+
+
+# region: Hierarchy tests
+
+# region ## POST, GET and DELETE tests
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_user_adds_resource_hierarchy_and_gets_it(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
+    add_many_test_protected_resources,
+    register_one_protected_child,
+    current_user_from_azure_token,
+    add_one_test_access_policy,
+):
+    """Tests if user can create a hierarchy."""
+    _ = app_override_provide_http_token_payload
+
+    mocked_protected_resources = await add_many_test_protected_resources(
+        mocked_provide_http_token_payload
+    )
+
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+
+    new_child_id = register_one_protected_child
+    await add_one_test_access_policy(
+        {
+            "identity_id": current_user.user_id,
+            "resource_id": str(new_child_id),
+            "action": Action.own,
+        }
+    )
+
+    response = await async_client.post(
+        f"/api/v1/access/hierarchy/{mocked_protected_resources[0].id}/child/{new_child_id}",
+        params={"inherit": True},
+    )
+
+    assert response.status_code == 201
+    created_hierarchy = ResourceHierarchyRead(**response.json())
+    assert created_hierarchy.parent_id == mocked_protected_resources[0].id
+    assert created_hierarchy.child_id == new_child_id
+    assert created_hierarchy.inherit is True
+
+    read_response = await async_client.get(
+        "/api/v1/access/hierarchies",
+        params={
+            "parent_id": mocked_protected_resources[0].id,
+            "child_id": new_child_id,
+        },
+    )
+
+    assert read_response.status_code == 200
+    assert len(read_response.json()) == 1
+    read_hierarchy = ResourceHierarchyRead(**read_response.json()[0])
+    assert read_hierarchy.parent_id == mocked_protected_resources[0].id
+    assert read_hierarchy.child_id == new_child_id
+    assert read_hierarchy.inherit is True
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_admin_read_write],
+    indirect=True,
+)
+async def test_add_identity_hierarchy_and_remove_again(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_one_azure_test_user: List[User],
+    add_many_test_ueber_groups,
+):
+    """Tests adding user to an ueber-group."""
+    _ = app_override_provide_http_token_payload
+
+    existing_user = await add_one_azure_test_user(0)  # type: ignore[call-arg]
+
+    mocked_ueber_groups = await add_many_test_ueber_groups()
+
+    response = await async_client.post(
+        f"/api/v1/access/hierarchy/{str(mocked_ueber_groups[1].id)}/child/{existing_user.id}",
+        params={"inherit": True},
+    )
+
+    assert response.status_code == 201
+    created_ueber_group_membership = response.json()
+    assert created_ueber_group_membership["parent_id"] == str(mocked_ueber_groups[1].id)
+    assert created_ueber_group_membership["child_id"] == str(existing_user.id)
+    assert created_ueber_group_membership["inherit"] is True
+
+    ueber_group_response = await async_client.get(
+        f"/api/v1/uebergroup/{str(mocked_ueber_groups[1].id)}"
+    )
+
+    assert ueber_group_response.status_code == 200
+    ueber_group = UeberGroupRead(**ueber_group_response.json())
+    assert len(ueber_group.users) == 1  # type: ignore[attr-defined]
+    assert any(user.id == existing_user.id for user in ueber_group.users)  # type: ignore[attr-defined]
+
+    # remove user from ueber group
+    remove_response = await async_client.delete(
+        f"/api/v1/access/hierarchy/{str(mocked_ueber_groups[1].id)}/child/{existing_user.id}",
+    )
+    assert remove_response.status_code == 200
+
+    ueber_group_after_delete_response = await async_client.get(
+        f"/api/v1/uebergroup/{str(mocked_ueber_groups[1].id)}"
+    )
+
+    assert ueber_group_after_delete_response.status_code == 200
+    ueber_group_after_delete = UeberGroupRead(
+        **ueber_group_after_delete_response.json()
+    )
+    assert len(ueber_group_after_delete.users) == 0  # type: ignore[attr-defined]
+    assert all(user.id != existing_user.id for user in ueber_group_after_delete.users)  # type: ignore[attr-defined]
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_admin_read_write],
+    indirect=True,
+)
+async def test_add_user_to_groups_without_inheritance(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_one_azure_test_user: List[User],
+    add_many_test_groups,
+):
+    """Tests adding users to an ueber-group, group, sub-group, and sub-sub-group."""
+    _ = app_override_provide_http_token_payload
+
+    existing_user = await add_one_azure_test_user(0)  # type: ignore[call-arg]
+
+    mocked_groups = await add_many_test_groups()
+
+    response = await async_client.post(
+        f"/api/v1/access/hierarchy/{str(mocked_groups[1].id)}/child/{existing_user.id}?inherit=false"
+    )
+
+    assert response.status_code == 201
+    created_hierarchy = response.json()
+    assert created_hierarchy["parent_id"] == str(mocked_groups[1].id)
+    assert created_hierarchy["child_id"] == str(existing_user.id)
+    assert created_hierarchy["inherit"] is False
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_admin_read_write],
+    indirect=True,
+)
+async def test_add_group_to_ueber_group(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_many_test_ueber_groups,
+    add_many_test_groups,
+):
+    """Tests adding groups to an ueber-group."""
+    _ = app_override_provide_http_token_payload
+
+    mocked_ueber_groups = await add_many_test_ueber_groups()
+    mocked_groups = await add_many_test_groups()
+
+    hierarchy_response = await async_client.post(
+        f"/api/v1/access/hierarchy/{str(mocked_ueber_groups[2].id)}/child/{str(mocked_groups[1].id)}"
+    )
+
+    assert hierarchy_response.status_code == 201
+    created_hierarchy = hierarchy_response.json()
+    assert created_hierarchy["parent_id"] == str(mocked_ueber_groups[2].id)
+    assert created_hierarchy["child_id"] == str(mocked_groups[1].id)
+
+    # add another group to the ueber-group:
+    await async_client.post(
+        f"/api/v1/access/hierarchy/{str(mocked_ueber_groups[2].id)}/child/{str(mocked_groups[3].id)}"
+    )
+
+    ueber_group_response = await async_client.get(
+        f"/api/v1/uebergroup/{str(mocked_ueber_groups[2].id)}"
+    )
+
+    assert ueber_group_response.status_code == 200
+    ueber_group = UeberGroupRead(**ueber_group_response.json())
+    assert len(ueber_group.groups) == 2  # type: ignore[attr-defined]
+    assert any(group.id == mocked_groups[1].id for group in ueber_group.groups)  # type: ignore[attr-defined]
+    assert any(group.id == mocked_groups[3].id for group in ueber_group.groups)  # type: ignore[attr-defined]
+
+    # remove a group from the ueber-group:
+    remove_response = await async_client.delete(
+        f"/api/v1/access/hierarchy/{str(mocked_ueber_groups[2].id)}/child/{str(mocked_groups[1].id)}"
+    )
+    assert remove_response.status_code == 200
+
+    ueber_group_after_delete_response = await async_client.get(
+        f"/api/v1/uebergroup/{str(mocked_ueber_groups[2].id)}"
+    )
+
+    assert ueber_group_after_delete_response.status_code == 200
+    ueber_group_after_delete = UeberGroupRead(
+        **ueber_group_after_delete_response.json()
+    )
+    assert len(ueber_group_after_delete.groups) == 1  # type: ignore[attr-defined]
+    assert all(
+        group.id != mocked_groups[1].id for group in ueber_group_after_delete.groups  # type: ignore[attr-defined]
+    )
+    assert any(
+        group.id == mocked_groups[3].id for group in ueber_group_after_delete.groups  # type: ignore[attr-defined]
+    )
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_admin_read_write],
+    indirect=True,
+)
+async def test_add_sub_group_to_group(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_many_test_groups,
+    add_many_test_sub_groups,
+):
+    """Tests adding groups to an ueber-group."""
+    _ = app_override_provide_http_token_payload
+
+    mocked_groups = await add_many_test_groups()
+    mocked_sub_groups = await add_many_test_sub_groups()
+
+    response = await async_client.post(
+        f"/api/v1/access/hierarchy/{str(mocked_groups[0].id)}/child/{str(mocked_sub_groups[3].id)}"
+    )
+
+    assert response.status_code == 201
+    created_hierarchy = response.json()
+    assert created_hierarchy["parent_id"] == str(mocked_groups[0].id)
+    assert created_hierarchy["child_id"] == str(mocked_sub_groups[3].id)
+
+    group_response = await async_client.get(f"/api/v1/group/{str(mocked_groups[0].id)}")
+
+    assert group_response.status_code == 200
+    group = GroupRead(**group_response.json())
+    assert any(
+        sub_group.id == mocked_sub_groups[3].id for sub_group in group.sub_groups  # type: ignore[attr-defined]
+    )
+
+    # add another sub_group to the group:
+    await async_client.post(
+        f"/api/v1/access/hierarchy/{str(mocked_groups[0].id)}/child/{str(mocked_sub_groups[0].id)}"
+    )
+
+    group_response = await async_client.get(f"/api/v1/group/{str(mocked_groups[0].id)}")
+
+    assert group_response.status_code == 200
+    group = GroupRead(**group_response.json())
+    assert len(group.sub_groups) == 2  # type: ignore[attr-defined]
+    assert any(
+        sub_group.id == mocked_sub_groups[3].id for sub_group in group.sub_groups  # type: ignore[attr-defined]
+    )
+    assert any(
+        sub_group.id == mocked_sub_groups[0].id for sub_group in group.sub_groups  # type: ignore[attr-defined]
+    )
+
+    # remove a sub_group from the group:
+    remove_response = await async_client.delete(
+        f"/api/v1/access/hierarchy/{str(mocked_groups[0].id)}/child/{str(mocked_sub_groups[0].id)}"
+    )
+    assert remove_response.status_code == 200
+
+    group_after_delete_response = await async_client.get(
+        f"/api/v1/group/{str(mocked_groups[0].id)}"
+    )
+
+    assert group_after_delete_response.status_code == 200
+    group_after_delete = GroupRead(**group_after_delete_response.json())
+    assert len(group_after_delete.sub_groups) == 1  # type: ignore[attr-defined]
+    assert all(
+        sub_group.id != mocked_sub_groups[0].id
+        for sub_group in group_after_delete.sub_groups  # type: ignore[attr-defined]
+    )
+    assert any(
+        sub_group.id == mocked_sub_groups[3].id
+        for sub_group in group_after_delete.sub_groups  # type: ignore[attr-defined]
+    )
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_admin_read_write],
+    indirect=True,
+)
+async def test_add_sub_sub_group_to_sub_group(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_many_test_sub_groups,
+    add_many_test_sub_sub_groups,
+):
+    """Tests adding groups to an ueber-group."""
+    _ = app_override_provide_http_token_payload
+
+    mocked_sub_groups = await add_many_test_sub_groups()
+    mocked_sub_sub_groups = await add_many_test_sub_sub_groups()
+
+    response = await async_client.post(
+        f"/api/v1/access/hierarchy/{str(mocked_sub_groups[4].id)}/child/{str(mocked_sub_sub_groups[4].id)}"
+    )
+
+    assert response.status_code == 201
+    created_hierarchy = response.json()
+    assert created_hierarchy["parent_id"] == str(mocked_sub_groups[4].id)
+    assert created_hierarchy["child_id"] == str(mocked_sub_sub_groups[4].id)
+
+    sub_group_response = await async_client.get(
+        f"/api/v1/subgroup/{str(mocked_sub_groups[4].id)}"
+    )
+
+    assert sub_group_response.status_code == 200
+    sub_group = SubGroupRead(**sub_group_response.json())
+    assert any(
+        sub_sub_group.id == mocked_sub_sub_groups[4].id
+        for sub_sub_group in sub_group.sub_sub_groups  # type: ignore[attr-defined]
+    )
+
+    # add another sub_sub_group to the sub_group:
+    await async_client.post(
+        f"/api/v1/access/hierarchy/{str(mocked_sub_groups[4].id)}/child/{str(mocked_sub_sub_groups[3].id)}"
+    )
+
+    sub_group_response = await async_client.get(
+        f"/api/v1/subgroup/{str(mocked_sub_groups[4].id)}"
+    )
+
+    assert sub_group_response.status_code == 200
+    sub_group = SubGroupRead(**sub_group_response.json())
+    assert len(sub_group.sub_sub_groups) == 2  # type: ignore[attr-defined]
+    assert any(
+        sub_sub_group.id == mocked_sub_sub_groups[3].id
+        for sub_sub_group in sub_group.sub_sub_groups  # type: ignore[attr-defined]
+    )
+    assert any(
+        sub_sub_group.id == mocked_sub_sub_groups[4].id
+        for sub_sub_group in sub_group.sub_sub_groups  # type: ignore[attr-defined]
+    )
+
+    # remove a sub_sub_group from the sub_group:
+    remove_response = await async_client.delete(
+        f"/api/v1/access/hierarchy/{str(mocked_sub_groups[4].id)}/child/{str(mocked_sub_sub_groups[4].id)}"
+    )
+    assert remove_response.status_code == 200
+
+    sub_group_after_delete_response = await async_client.get(
+        f"/api/v1/subgroup/{str(mocked_sub_groups[4].id)}"
+    )
+
+    assert sub_group_after_delete_response.status_code == 200
+    sub_group_after_delete = SubGroupRead(**sub_group_after_delete_response.json())
+    assert len(sub_group_after_delete.sub_sub_groups) == 1  # type: ignore[attr-defined]
+    assert all(
+        sub_sub_group.id != mocked_sub_sub_groups[4].id
+        for sub_sub_group in sub_group_after_delete.sub_sub_groups  # type: ignore[attr-defined]
+    )
+    assert any(
+        sub_sub_group.id == mocked_sub_sub_groups[3].id
+        for sub_sub_group in sub_group_after_delete.sub_sub_groups  # type: ignore[attr-defined]
+    )
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_admin_read_write],
+    indirect=True,
+)
+async def test_add_prohibited_groups_to_ueber_group(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_many_test_ueber_groups,
+    add_many_test_sub_groups,
+    add_many_test_sub_sub_groups,
+):
+    """Tests adding groups to an ueber-group."""
+    _ = app_override_provide_http_token_payload
+
+    mocked_ueber_groups = await add_many_test_ueber_groups()
+    mocked_sub_groups = await add_many_test_sub_groups()
+    mocked_sub_sub_groups = await add_many_test_sub_sub_groups()
+
+    response = await async_client.post(
+        f"/api/v1/access/hierarchy/{str(mocked_ueber_groups[1].id)}/child/{str(mocked_sub_groups[2].id)}"
+    )
+
+    assert response.status_code == 403
+    assert response.json() == {"detail": "Forbidden."}
+
+    response = await async_client.post(
+        f"/api/v1/access/hierarchy/{str(mocked_ueber_groups[1].id)}/child/{str(mocked_sub_sub_groups[3].id)}"
+    )
+
+    assert response.status_code == 403
+    assert response.json() == {"detail": "Forbidden."}
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_admin_read_write],
+    indirect=True,
+)
+async def test_add_prohibited_groups_to_group(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_many_test_ueber_groups,
+    add_many_test_groups,
+    add_many_test_sub_sub_groups,
+):
+    """Tests adding groups to an ueber-group."""
+    _ = app_override_provide_http_token_payload
+
+    mocked_ueber_groups = await add_many_test_ueber_groups()
+    mocked_groups = await add_many_test_groups()
+    mocked_sub_sub_groups = await add_many_test_sub_sub_groups()
+
+    response = await async_client.post(
+        f"/api/v1/access/hierarchy/{str(mocked_groups[2].id)}/child/{str(mocked_sub_sub_groups[3].id)}"
+    )
+
+    assert response.status_code == 403
+    assert response.json() == {"detail": "Forbidden."}
+
+    response = await async_client.post(
+        f"/api/v1/access/hierarchy/{str(mocked_ueber_groups[1].id)}/child/{str(mocked_sub_sub_groups[3].id)}"
+    )
+
+    assert response.status_code == 403
+    assert response.json() == {"detail": "Forbidden."}
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_admin_read_write],
+    indirect=True,
+)
+async def test_bulk_add_identity_hierarchies_get_bulk_and_bulk_remove(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    add_many_azure_test_users: List[User],
+    add_many_test_ueber_groups,
+    add_many_test_groups,
+    add_many_test_sub_groups,
+    add_many_test_sub_sub_groups,
+):
+    """Tests bulk adding identity hierarchies and bulk removing them."""
+    _ = app_override_provide_http_token_payload
+
+    existing_users = await add_many_azure_test_users()  # type: ignore[call-arg]
+
+    mocked_ueber_groups = await add_many_test_ueber_groups()
+    mocked_groups = await add_many_test_groups()
+    mocked_sub_groups = await add_many_test_sub_groups()
+    mocked_sub_sub_groups = await add_many_test_sub_sub_groups()
+    hierarchies = []
+    for group in mocked_groups:
+        hierarchies.append(
+            {
+                "parent_id": str(mocked_ueber_groups[1].id),
+                "child_id": str(group.id),
+                "inherit": True,
+            }
+        )
+    for user in existing_users:
+        hierarchies.append(
+            {
+                "parent_id": str(mocked_ueber_groups[1].id),
+                "child_id": str(user.id),
+                "inherit": True,
+            }
+        )
+    for sub_group in mocked_sub_groups:
+        hierarchies.append(
+            {
+                "parent_id": str(mocked_groups[3].id),
+                "child_id": str(sub_group.id),
+                "inherit": True,
+            }
+        )
+    for user in existing_users:
+        hierarchies.append(
+            {
+                "parent_id": str(mocked_groups[3].id),
+                "child_id": str(user.id),
+                "inherit": True,
+            }
+        )
+    for sub_sub_group in mocked_sub_sub_groups:
+        hierarchies.append(
+            {
+                "parent_id": str(mocked_sub_groups[4].id),
+                "child_id": str(sub_sub_group.id),
+                "inherit": True,
+            }
+        )
+    for user in existing_users:
+        hierarchies.append(
+            {
+                "parent_id": str(mocked_sub_groups[2].id),
+                "child_id": str(user.id),
+                "inherit": True,
+            }
+        )
+    for user in existing_users:
+        hierarchies.append(
+            {
+                "parent_id": str(mocked_sub_sub_groups[0].id),
+                "child_id": str(user.id),
+                "inherit": True,
+            }
+        )
+    response = await async_client.post(
+        "/api/v1/access/hierarchies",
+        json=hierarchies,
+    )
+
+    assert response.status_code == 201
+    created_relationships = response.json()
+    assert len(created_relationships) == len(hierarchies)
+    for created_relationship, hierarchy in zip(created_relationships, hierarchies):
+        assert created_relationship["parent_id"] == hierarchy["parent_id"]
+        assert created_relationship["child_id"] == hierarchy["child_id"]
+        assert created_relationship["inherit"] is True
+
+    ueber_group_response = await async_client.get(
+        f"/api/v1/uebergroup/{str(mocked_ueber_groups[1].id)}"
+    )
+
+    assert ueber_group_response.status_code == 200
+    ueber_group = UeberGroupRead(**ueber_group_response.json())
+    assert len(ueber_group.users) == 5  # type: ignore[attr-defined]
+    assert all(
+        user.id in [existing_user.id for existing_user in existing_users]
+        for user in ueber_group.users  # type: ignore[attr-defined]
+    )
+
+    # read one specific user in ueber group before deletion
+    specific_user_response = await async_client.get(
+        "/api/v1/access/hierarchies",
+        params={
+            "parent_id": str(mocked_ueber_groups[1].id),
+            "child_id": str(existing_users[0].id),
+        },
+    )
+    assert specific_user_response.status_code == 200
+    specific_user = specific_user_response.json()
+    assert len(specific_user) == 1
+    assert specific_user[0]["parent_id"] == str(mocked_ueber_groups[1].id)
+    assert specific_user[0]["child_id"] == str(existing_users[0].id)
+    assert specific_user[0]["inherit"] is True
+
+    # read all users in ueber group before deletion
+    ueber_group_response = await async_client.get(
+        "/api/v1/access/hierarchies",
+        params={"parent_id": str(mocked_ueber_groups[1].id)},
+    )
+    assert ueber_group_response.status_code == 200
+    ueber_group_children = ueber_group_response.json()
+    assert (
+        len(ueber_group_children) == 9
+    )  # 5 users directly in ueber group, 4 groups in ueber group
+    child_ids = {str(child["child_id"]) for child in ueber_group_children}
+    expected_user_ids = {str(existing_user.id) for existing_user in existing_users}
+    expected_group_ids = {str(group.id) for group in mocked_groups}
+    assert child_ids == (expected_user_ids | expected_group_ids)
+    assert all(child["inherit"] is True for child in ueber_group_children)
+
+    # get the user id form the user with azure_user_id
+    # being equal to the azure_user_id from many_azure_test_users[3],
+    # as this one doesn't have any azure_groups
+    user_id_without_azure_groups = next(
+        user.id
+        for user in existing_users
+        if user.azure_user_id == uuid.UUID(many_test_azure_users[3]["azure_user_id"])
+    )
+
+    # read all memberships for a user before deletion
+    user_membership_response = await async_client.get(
+        "/api/v1/access/hierarchies",
+        params={
+            "child_id": str(user_id_without_azure_groups)
+        },  # existing_users[3] is not member of any azure groups.
+    )
+
+    assert user_membership_response.status_code == 200
+    user_memberships = user_membership_response.json()
+    assert (
+        len(user_memberships) == 4
+    )  # user is member of ueber group, group, and sub-group
+    assert any(
+        membership["parent_id"] == str(mocked_ueber_groups[1].id)
+        for membership in user_memberships
+    )
+    assert any(
+        membership["parent_id"] == str(mocked_groups[3].id)
+        for membership in user_memberships
+    )
+    assert any(
+        membership["parent_id"] == str(mocked_sub_groups[2].id)
+        for membership in user_memberships
+    )
+    assert all(membership["inherit"] is True for membership in user_memberships)
+
+    # bulk remove users from ueber group
+    remove_response = await async_client.request(
+        "delete",
+        "/api/v1/access/hierarchies",
+        json=hierarchies,
+    )
+    assert remove_response.status_code == 200
+    assert remove_response.json() == len(hierarchies)
+
+    ueber_group_after_delete_response = await async_client.get(
+        f"/api/v1/uebergroup/{str(mocked_ueber_groups[1].id)}"
+    )
+
+    assert ueber_group_after_delete_response.status_code == 200
+    ueber_group_after_delete = UeberGroupRead(
+        **ueber_group_after_delete_response.json()
+    )
+    assert len(ueber_group_after_delete.users) == 0  # type: ignore[attr-defined]
+    assert any(
+        user.id not in [existing_user.id for existing_user in existing_users[0:2]]
+        for user in ueber_group.users  # type: ignore[attr-defined]
+    )
+    expected_ids = [existing_user.id for existing_user in existing_users[2:]]
+    ueber_group_user_ids = [user.id for user in ueber_group.users]  # type: ignore[attr-defined]
+    assert all(user_id in ueber_group_user_ids for user_id in expected_ids)
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_user_adds_hierarchy_without_access_to_parent_fails(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
+    add_many_test_protected_resources,
+    register_one_protected_child,
+    current_user_from_azure_token,
+    add_one_test_access_policy,
+):
+    """Tests if missing permission for parent resource is handled correctly."""
+    _ = app_override_provide_http_token_payload
+
+    mocked_protected_resources = await add_many_test_protected_resources()
+
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+
+    new_child_id = register_one_protected_child
+    await add_one_test_access_policy(
+        {
+            "identity_id": current_user.user_id,
+            "resource_id": str(new_child_id),
+            "action": Action.own,
+        }
+    )
+
+    response = await async_client.post(
+        f"/api/v1/access/hierarchy/{mocked_protected_resources[0].id}/child/{new_child_id}",
+        params={"inherit": True},
+    )
+
+    assert response.status_code == 403
+    assert response.json() == {"detail": "Forbidden."}
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_user_adds_hierarchy_without_access_to_child_fails(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
+    add_many_test_protected_resources,
+    register_one_protected_child,
+):
+    """Tests if missing permission for child resource is handled correctly."""
+    _ = app_override_provide_http_token_payload
+
+    mocked_protected_resources = await add_many_test_protected_resources(
+        mocked_provide_http_token_payload
+    )
+
+    new_child_id = register_one_protected_child
+
+    response = await async_client.post(
+        f"/api/v1/access/hierarchy/{mocked_protected_resources[0].id}/child/{new_child_id}",
+        params={"inherit": True},
+    )
+
+    assert response.status_code == 403
+    assert response.json() == {"detail": "Forbidden."}
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_user_adds_hierarchies(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
+    add_many_test_protected_resources,
+    register_one_resource,
+    current_user_from_azure_token,
+    add_one_test_access_policy,
+):
+    """Tests if bulk creation of hierarchies is handled correctly."""
+    _ = app_override_provide_http_token_payload
+
+    mocked_protected_resources = await add_many_test_protected_resources(
+        mocked_provide_http_token_payload
+    )
+
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+
+    new_child_ids = []
+    for _ in range(2):
+        new_child_id = uuid.uuid4()
+        await register_one_resource(new_child_id, ProtectedChild)
+        new_child_ids.append(new_child_id)
+        await add_one_test_access_policy(
+            {
+                "identity_id": current_user.user_id,
+                "resource_id": str(new_child_id),
+                "action": Action.own,
+            }
+        )
+
+    hierarchies = [
+        {
+            "parent_id": str(mocked_protected_resources[0].id),
+            "child_id": str(new_child_ids[0]),
+            "inherit": True,
+        },
+        {
+            "parent_id": str(mocked_protected_resources[0].id),
+            "child_id": str(new_child_ids[1]),
+            "inherit": False,
+        },
+    ]
+
+    response = await async_client.post("/api/v1/access/hierarchies", json=hierarchies)
+
+    assert response.status_code == 201
+    created_hierarchies = response.json()
+    for created_hierarchy, idx in zip(
+        created_hierarchies, range(len(created_hierarchies))
+    ):
+        created_hierarchy = ResourceHierarchyRead(**created_hierarchy)
+        assert created_hierarchy.parent_id == mocked_protected_resources[0].id
+        assert created_hierarchy.child_id in new_child_ids
+        assert created_hierarchy.inherit == hierarchies[idx]["inherit"]
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_admin_read_write],
+    indirect=True,
+)
+async def test_admin_adds_both_resource_and_identity_hierarchies(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
+    add_many_test_protected_resources,
+    register_one_resource,
+    add_many_test_ueber_groups,
+    add_many_test_groups,
+):
+    """Tests if bulk creation of hierarchies is handled correctly."""
+    _ = app_override_provide_http_token_payload
+
+    mocked_protected_resources = await add_many_test_protected_resources(
+        mocked_provide_http_token_payload
+    )
+
+    new_child_ids = []
+    for _ in range(2):
+        new_child_id = uuid.uuid4()
+        await register_one_resource(new_child_id, ProtectedChild)
+        new_child_ids.append(new_child_id)
+
+    hierarchies = [
+        {
+            "parent_id": str(mocked_protected_resources[0].id),
+            "child_id": str(new_child_ids[0]),
+            "inherit": True,
+        },
+        {
+            "parent_id": str(mocked_protected_resources[0].id),
+            "child_id": str(new_child_ids[1]),
+            "inherit": False,
+        },
+    ]
+    mocked_ueber_groups = await add_many_test_ueber_groups()
+    mocked_groups = await add_many_test_groups()
+    for group in mocked_groups:
+        hierarchies.append(
+            {
+                "parent_id": str(mocked_ueber_groups[2].id),
+                "child_id": str(group.id),
+                "inherit": True,
+            }
+        )
+
+    response = await async_client.post("/api/v1/access/hierarchies", json=hierarchies)
+
+    assert response.status_code == 201
+    created_hierarchies = response.json()
+    for created_hierarchy, hierarchy, idx in zip(
+        created_hierarchies, hierarchies, range(len(created_hierarchies))
+    ):
+        # IdentityHierarchy does not have a field order,
+        # otherwise the same as ResourceHierarchy,
+        # so we can use the same model for both here:
+        if idx < 2:
+            created_hierarchy = ResourceHierarchyRead(**created_hierarchy)
+            assert isinstance(created_hierarchy.order, int)
+        else:
+            created_hierarchy = IdentityHierarchyRead(**created_hierarchy)
+        assert created_hierarchy.parent_id == uuid.UUID(hierarchy["parent_id"])
+        assert created_hierarchy.child_id == uuid.UUID(hierarchy["child_id"])
+        assert created_hierarchy.inherit == hierarchy["inherit"]
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_admin_read_write],
+    indirect=True,
+)
+async def test_admin_adds_resource_to_identity_fails(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
+    add_many_test_protected_resources,
+    add_many_test_groups,
+):
+    """Tests if bulk creation of hierarchies is handled correctly."""
+    _ = app_override_provide_http_token_payload
+
+    mocked_protected_resources = await add_many_test_protected_resources(
+        mocked_provide_http_token_payload
+    )
+
+    mocked_groups = await add_many_test_groups()
+
+    try:
+        await async_client.post(
+            f"/api/v1/access/hierarchy/{str(mocked_groups[0].id)}/child/{str(mocked_protected_resources[0].id)}"
+        )
+    except ValueError as error:
+        assert str(error) == "Mixed entity types are not allowed."
+    else:
+        pytest.fail("Expected ValueError was not raised.")
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_admin_removes_a_child_resource_from_a_parent_protected_resource(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
+    current_test_user,
+    add_many_test_protected_resources,
+    add_many_test_protected_children,
+    add_one_test_access_policy,
+    add_one_parent_child_resource_relationship,
+):
+    """Tests if missing permission for parent resource is handled correctly."""
+    _ = app_override_provide_http_token_payload
+
+    mocked_protected_resources = await add_many_test_protected_resources(
+        mocked_provide_http_token_payload
+    )
+    mocked_protected_children = await add_many_test_protected_children()
+
+    current_test_user = current_test_user
+
+    first_child = await add_one_parent_child_resource_relationship(
+        child_id=mocked_protected_children[0].id,
+        parent_id=mocked_protected_resources[0].id,
+        type=ResourceType.protected_child,
+    )
+    assert first_child.parent_id == mocked_protected_resources[0].id
+    assert first_child.child_id == mocked_protected_children[0].id
+    assert first_child.inherit is False
+
+    policy_first_child = {
+        "resource_id": str(first_child.child_id),
+        "identity_id": current_test_user.user_id,
+        "action": "own",
+    }
+    await add_one_test_access_policy(policy_first_child)
+
+    second_child = await add_one_parent_child_resource_relationship(
+        child_id=mocked_protected_children[1].id,
+        parent_id=mocked_protected_resources[0].id,
+        type=ResourceType.protected_child,
+    )
+    assert second_child.parent_id == mocked_protected_resources[0].id
+    assert second_child.child_id == mocked_protected_children[1].id
+    assert second_child.inherit is False
+
+    policy_second_child = {
+        "resource_id": str(second_child.child_id),
+        "identity_id": current_test_user.user_id,
+        "action": "own",
+    }
+    await add_one_test_access_policy(policy_second_child)
+
+    response = await async_client.get(
+        f"/api/v1/protected/resource/{str(mocked_protected_resources[0].id)}",
+    )
+    assert response.status_code == 200
+    read_protected_resource = response.json()
+    modelled_protected_resource = ProtectedResourceRead(**read_protected_resource)
+
+    assert modelled_protected_resource.id == mocked_protected_resources[0].id  # type: ignore[attr-defined]
+    assert modelled_protected_resource.name == mocked_protected_resources[0].name  # type: ignore[attr-defined]
+    assert (
+        modelled_protected_resource.description  # type: ignore[attr-defined]
+        == mocked_protected_resources[0].description
+    )
+    assert len(modelled_protected_resource.protected_children) == 2  # type: ignore[attr-defined]
+    assert (
+        modelled_protected_resource.protected_children[0].id  # type: ignore[attr-defined]
+        == mocked_protected_children[0].id
+    )
+    assert (
+        modelled_protected_resource.protected_children[0].title  # type: ignore[attr-defined]
+        == mocked_protected_children[0].title
+    )
+    assert (
+        modelled_protected_resource.protected_children[1].id  # type: ignore[attr-defined]
+        == mocked_protected_children[1].id
+    )
+    assert (
+        modelled_protected_resource.protected_children[1].title  # type: ignore[attr-defined]
+        == mocked_protected_children[1].title
+    )
+
+    # deleting second child:
+    await async_client.delete(
+        f"/api/v1/access/hierarchy/{str(mocked_protected_resources[0].id)}/child/{str(mocked_protected_children[1].id)}",
+    )
+
+    # first child remains:
+    response = await async_client.get(
+        f"/api/v1/protected/resource/{str(mocked_protected_resources[0].id)}",
+    )
+    assert response.status_code == 200
+    read_protected_resource = response.json()
+    modelled_protected_resource = ProtectedResourceRead(**read_protected_resource)
+
+    assert modelled_protected_resource.id == mocked_protected_resources[0].id  # type: ignore[attr-defined]
+    assert modelled_protected_resource.name == mocked_protected_resources[0].name  # type: ignore[attr-defined]
+    assert (
+        modelled_protected_resource.description  # type: ignore[attr-defined]
+        == mocked_protected_resources[0].description
+    )
+    assert len(modelled_protected_resource.protected_children) == 1  # type: ignore[attr-defined]
+    assert (
+        modelled_protected_resource.protected_children[0].id  # type: ignore[attr-defined]
+        == mocked_protected_children[0].id
+    )
+    assert (
+        modelled_protected_resource.protected_children[0].title  # type: ignore[attr-defined]
+        == mocked_protected_children[0].title
+    )
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_user_removes_a_child_resource_from_a_parent_protected_resource(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
+    current_test_user,
+    add_many_test_protected_resources,
+    add_many_test_protected_children,
+    add_one_test_access_policy,
+    add_one_parent_child_resource_relationship,
+):
+    """Tests if missing permission for parent resource is handled correctly."""
+    _ = app_override_provide_http_token_payload
+
+    mocked_protected_resources = await add_many_test_protected_resources(
+        mocked_provide_http_token_payload
+    )
+    mocked_protected_children = await add_many_test_protected_children()
+
+    current_test_user = current_test_user
+
+    first_child = await add_one_parent_child_resource_relationship(
+        child_id=mocked_protected_children[0].id,
+        parent_id=mocked_protected_resources[0].id,
+        type=ResourceType.protected_child,
+    )
+    assert first_child.parent_id == mocked_protected_resources[0].id
+    assert first_child.child_id == mocked_protected_children[0].id
+    assert first_child.inherit is False
+
+    policy_first_child = {
+        "resource_id": str(first_child.child_id),
+        "identity_id": current_test_user.user_id,
+        "action": "own",
+    }
+    await add_one_test_access_policy(policy_first_child)
+
+    second_child = await add_one_parent_child_resource_relationship(
+        child_id=mocked_protected_children[1].id,
+        parent_id=mocked_protected_resources[0].id,
+        type=ResourceType.protected_child,
+    )
+    assert second_child.parent_id == mocked_protected_resources[0].id
+    assert second_child.child_id == mocked_protected_children[1].id
+    assert second_child.inherit is False
+
+    policy_second_child = {
+        "resource_id": str(second_child.child_id),
+        "identity_id": current_test_user.user_id,
+        "action": "own",
+    }
+    await add_one_test_access_policy(policy_second_child)
+
+    response = await async_client.get(
+        f"/api/v1/protected/resource/{str(mocked_protected_resources[0].id)}",
+    )
+    assert response.status_code == 200
+    read_protected_resource = response.json()
+    modelled_protected_resource = ProtectedResourceRead(**read_protected_resource)
+
+    assert modelled_protected_resource.id == mocked_protected_resources[0].id  # type: ignore[attr-defined]
+    assert modelled_protected_resource.name == mocked_protected_resources[0].name  # type: ignore[attr-defined]
+    assert (
+        modelled_protected_resource.description  # type: ignore[attr-defined]
+        == mocked_protected_resources[0].description
+    )
+    assert len(modelled_protected_resource.protected_children) == 2  # type: ignore[attr-defined]
+    assert (
+        modelled_protected_resource.protected_children[0].id  # type: ignore[attr-defined]
+        == mocked_protected_children[0].id
+    )
+    assert (
+        modelled_protected_resource.protected_children[0].title  # type: ignore[attr-defined]
+        == mocked_protected_children[0].title
+    )
+    assert (
+        modelled_protected_resource.protected_children[1].id  # type: ignore[attr-defined]
+        == mocked_protected_children[1].id
+    )
+    assert (
+        modelled_protected_resource.protected_children[1].title  # type: ignore[attr-defined]
+        == mocked_protected_children[1].title
+    )
+
+    # deleting second child:
+    await async_client.delete(
+        f"/api/v1/access/hierarchy/{str(mocked_protected_resources[0].id)}/child/{str(mocked_protected_children[1].id)}",
+    )
+
+    # first child remains:
+    response = await async_client.get(
+        f"/api/v1/protected/resource/{str(mocked_protected_resources[0].id)}",
+    )
+    assert response.status_code == 200
+    read_protected_resource = response.json()
+    modelled_protected_resource = ProtectedResourceRead(**read_protected_resource)
+
+    assert modelled_protected_resource.id == mocked_protected_resources[0].id  # type: ignore[attr-defined]
+    assert modelled_protected_resource.name == mocked_protected_resources[0].name  # type: ignore[attr-defined]
+    assert (
+        modelled_protected_resource.description  # type: ignore[attr-defined]
+        == mocked_protected_resources[0].description
+    )
+    assert len(modelled_protected_resource.protected_children) == 1  # type: ignore[attr-defined]
+    assert (
+        modelled_protected_resource.protected_children[0].id  # type: ignore[attr-defined]
+        == mocked_protected_children[0].id
+    )
+    assert (
+        modelled_protected_resource.protected_children[0].title  # type: ignore[attr-defined]
+        == mocked_protected_children[0].title
+    )
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_user_removes_a_child_resource_from_a_parent_protected_resource_missing_access_to_child(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
+    current_test_user,
+    add_many_test_protected_resources,
+    add_many_test_protected_children,
+    add_one_test_access_policy,
+    add_one_parent_child_resource_relationship,
+):
+    """Tests if missing permission for parent resource is handled correctly."""
+    _ = app_override_provide_http_token_payload
+
+    mocked_protected_resources = await add_many_test_protected_resources(
+        mocked_provide_http_token_payload
+    )
+    mocked_protected_children = await add_many_test_protected_children()
+
+    current_test_user = current_test_user
+
+    first_child = await add_one_parent_child_resource_relationship(
+        child_id=mocked_protected_children[0].id,
+        parent_id=mocked_protected_resources[0].id,
+        type=ResourceType.protected_child,
+    )
+    assert first_child.parent_id == mocked_protected_resources[0].id
+    assert first_child.child_id == mocked_protected_children[0].id
+    assert first_child.inherit is False
+
+    policy_first_child = {
+        "resource_id": str(first_child.child_id),
+        "identity_id": current_test_user.user_id,
+        "action": "own",
+    }
+    await add_one_test_access_policy(policy_first_child)
+
+    second_child = await add_one_parent_child_resource_relationship(
+        child_id=mocked_protected_children[1].id,
+        parent_id=mocked_protected_resources[0].id,
+        type=ResourceType.protected_child,
+    )
+    assert second_child.parent_id == mocked_protected_resources[0].id
+    assert second_child.child_id == mocked_protected_children[1].id
+    assert second_child.inherit is False
+
+    # policy_second_child = {
+    #     "resource_id": str(second_child.child_id),
+    #     "identity_id": current_test_user.user_id,
+    #     "action": "own",
+    # }
+    # await add_one_test_access_policy(policy_second_child)
+
+    response = await async_client.get(
+        f"/api/v1/protected/resource/{str(mocked_protected_resources[0].id)}",
+    )
+    assert response.status_code == 200
+    read_protected_resource = response.json()
+    modelled_protected_resource = ProtectedResourceRead(**read_protected_resource)
+
+    assert modelled_protected_resource.id == mocked_protected_resources[0].id  # type: ignore[attr-defined]
+    assert modelled_protected_resource.name == mocked_protected_resources[0].name  # type: ignore[attr-defined]
+    assert (
+        modelled_protected_resource.description  # type: ignore[attr-defined]
+        == mocked_protected_resources[0].description
+    )
+    assert len(modelled_protected_resource.protected_children) == 1  # type: ignore[attr-defined]
+    assert (
+        modelled_protected_resource.protected_children[0].id  # type: ignore[attr-defined]
+        == mocked_protected_children[0].id
+    )
+    assert (
+        modelled_protected_resource.protected_children[0].title  # type: ignore[attr-defined]
+        == mocked_protected_children[0].title
+    )
+
+    # deleting second child fails:
+    response = await async_client.delete(
+        f"/api/v1/access/hierarchy/{str(mocked_protected_resources[0].id)}/child/{str(mocked_protected_children[1].id)}",
+    )
+    assert response.status_code == 200
+    assert response.json() == 0
+
+
+# endregion ## POST, GET and DELETE tests
+
+
+# region PUT and move tests
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_admin_read_write, token_user1_read_write],
+    indirect=True,
+)
+async def test_update_protected_child_relationship_to_parent(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
+    current_test_user,
+    add_many_test_protected_resources,
+    add_many_test_protected_children,
+    add_one_test_access_policy,
+    add_one_parent_child_resource_relationship,
+):
+    """Tests if missing permission for parent resource is handled correctly."""
+    _ = app_override_provide_http_token_payload
+
+    mocked_protected_resources = await add_many_test_protected_resources(
+        mocked_provide_http_token_payload
+    )
+    mocked_protected_children = await add_many_test_protected_children(
+        mocked_provide_http_token_payload
+    )
+
+    current_test_user = current_test_user
+
+    first_child = await add_one_parent_child_resource_relationship(
+        child_id=mocked_protected_children[0].id,
+        parent_id=mocked_protected_resources[0].id,
+        type=ResourceType.protected_child,
+    )
+    assert first_child.parent_id == mocked_protected_resources[0].id
+    assert first_child.child_id == mocked_protected_children[0].id
+    assert first_child.inherit is False
+
+    # updating the relationship to inherit:
+    response = await async_client.put(
+        f"/api/v1/access/hierarchy/{str(mocked_protected_resources[0].id)}/child/{str(mocked_protected_children[0].id)}?inherit=True",
+    )
+    assert response.status_code == 200
+    updated_hierarchy = ResourceHierarchyRead(**response.json())
+    assert updated_hierarchy.parent_id == mocked_protected_resources[0].id
+    assert updated_hierarchy.child_id == mocked_protected_children[0].id
+    assert updated_hierarchy.inherit is True
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_user_moves_child_order_down_insert_before(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
+    current_user_from_azure_token,
+    add_one_test_access_policy,
+    add_many_test_protected_resources,
+    add_many_test_protected_children,
+    add_one_parent_child_resource_relationship,
+):
+    """Tests if children get reordered and returned correctly from read afterwards."""
+
+    _ = app_override_provide_http_token_payload
+
+    mocked_protected_resources = await add_many_test_protected_resources()
+    mocked_protected_children = await add_many_test_protected_children()
+
+    for protected_child in mocked_protected_children:
+        await add_one_parent_child_resource_relationship(
+            child_id=protected_child.id,
+            parent_id=mocked_protected_resources[0].id,
+            inherit=True,
+        )
+
+    parent_resource_id = mocked_protected_resources[0].id
+
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+    policy = {
+        "resource_id": str(parent_resource_id),
+        "identity_id": str(current_user.user_id),
+        "action": Action.connect,
+    }
+    await add_one_test_access_policy(policy)
+
+    policy = {
+        "resource_id": str(mocked_protected_children[1].id),
+        "identity_id": str(current_user.user_id),
+        "action": Action.write,
+    }
+    await add_one_test_access_policy(policy)
+
+    policy = {
+        "resource_id": str(mocked_protected_children[4].id),
+        "identity_id": str(current_user.user_id),
+        "action": Action.write,
+    }
+    await add_one_test_access_policy(policy)
+
+    # Move the order of a protected child forward:
+    response_moving = await async_client.post(
+        f"/api/v1/access/hierarchy/{str(parent_resource_id)}/move/{str(mocked_protected_children[1].id)}/before?other_child_id={str(mocked_protected_children[4].id)}"
+    )
+    payload_moving = response_moving.json()
+
+    assert response_moving.status_code == 201
+    assert payload_moving is None
+
+    # Assert the new order of the children:
+    response_new_parent = await async_client.get(
+        f"/api/v1/protected/resource/{str(parent_resource_id)}",
+    )
+    parent_new = ProtectedResourceRead(**response_new_parent.json())
+
+    assert parent_new.protected_children[0].id == mocked_protected_children[0].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[0].title == mocked_protected_children[0].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[1].id == mocked_protected_children[2].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[1].title == mocked_protected_children[2].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[2].id == mocked_protected_children[3].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[2].title == mocked_protected_children[3].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[3].id == mocked_protected_children[1].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[3].title == mocked_protected_children[1].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[4].id == mocked_protected_children[4].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[4].title == mocked_protected_children[4].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[5].id == mocked_protected_children[5].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[5].title == mocked_protected_children[5].title  # type: ignore[attr-defined]
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_user_moves_child_order_up_insert_before(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
+    current_user_from_azure_token,
+    add_one_test_access_policy,
+    add_many_test_protected_resources,
+    add_many_test_protected_children,
+    add_one_parent_child_resource_relationship,
+):
+    """Tests if children get reordered and returned correctly from read afterwards."""
+
+    _ = app_override_provide_http_token_payload
+
+    mocked_protected_resources = await add_many_test_protected_resources()
+    mocked_protected_children = await add_many_test_protected_children()
+
+    for protected_child in mocked_protected_children:
+        await add_one_parent_child_resource_relationship(
+            child_id=protected_child.id,
+            parent_id=mocked_protected_resources[0].id,
+            inherit=True,
+        )
+
+    parent_resource_id = mocked_protected_resources[0].id
+
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+    policy = {
+        "resource_id": str(parent_resource_id),
+        "identity_id": str(current_user.user_id),
+        "action": Action.connect,
+    }
+    await add_one_test_access_policy(policy)
+
+    policy = {
+        "resource_id": str(mocked_protected_children[5].id),
+        "identity_id": str(current_user.user_id),
+        "action": Action.write,
+    }
+    await add_one_test_access_policy(policy)
+
+    policy = {
+        "resource_id": str(mocked_protected_children[2].id),
+        "identity_id": str(current_user.user_id),
+        "action": Action.write,
+    }
+    await add_one_test_access_policy(policy)
+
+    # Move the order of a protected child forward:
+    response_moving = await async_client.post(
+        f"/api/v1/access/hierarchy/{str(parent_resource_id)}/move/{str(mocked_protected_children[5].id)}/before?other_child_id={str(mocked_protected_children[2].id)}"
+    )
+    payload_moving = response_moving.json()
+
+    assert response_moving.status_code == 201
+    assert payload_moving is None
+
+    # Assert the new order of the children:
+    response_new_parent = await async_client.get(
+        f"/api/v1/protected/resource/{str(parent_resource_id)}",
+    )
+    parent_new = ProtectedResourceRead(**response_new_parent.json())
+
+    assert parent_new.protected_children[0].id == mocked_protected_children[0].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[0].title == mocked_protected_children[0].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[1].id == mocked_protected_children[1].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[1].title == mocked_protected_children[1].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[2].id == mocked_protected_children[5].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[2].title == mocked_protected_children[5].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[3].id == mocked_protected_children[2].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[3].title == mocked_protected_children[2].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[4].id == mocked_protected_children[3].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[4].title == mocked_protected_children[3].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[5].id == mocked_protected_children[4].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[5].title == mocked_protected_children[4].title  # type: ignore[attr-defined]
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_user_moves_child_order_down_insert_after(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
+    current_user_from_azure_token,
+    add_one_test_access_policy,
+    add_many_test_protected_resources,
+    add_many_test_protected_children,
+    add_one_parent_child_resource_relationship,
+):
+    """Tests if children get reordered and returned correctly from read afterwards."""
+
+    _ = app_override_provide_http_token_payload
+
+    mocked_protected_resources = await add_many_test_protected_resources()
+    mocked_protected_children = await add_many_test_protected_children()
+
+    for protected_child in mocked_protected_children:
+        await add_one_parent_child_resource_relationship(
+            child_id=protected_child.id,
+            parent_id=mocked_protected_resources[0].id,
+            inherit=True,
+        )
+
+    parent_resource_id = mocked_protected_resources[0].id
+
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+    policy = {
+        "resource_id": str(parent_resource_id),
+        "identity_id": str(current_user.user_id),
+        "action": Action.connect,
+    }
+    await add_one_test_access_policy(policy)
+
+    policy = {
+        "resource_id": str(mocked_protected_children[1].id),
+        "identity_id": str(current_user.user_id),
+        "action": Action.write,
+    }
+    await add_one_test_access_policy(policy)
+
+    policy = {
+        "resource_id": str(mocked_protected_children[4].id),
+        "identity_id": str(current_user.user_id),
+        "action": Action.write,
+    }
+    await add_one_test_access_policy(policy)
+
+    # Move the order of a protected child forward:
+    response_moving = await async_client.post(
+        f"/api/v1/access/hierarchy/{str(parent_resource_id)}/move/{str(mocked_protected_children[1].id)}/after?other_child_id={str(mocked_protected_children[4].id)}"
+    )
+    payload_moving = response_moving.json()
+
+    assert response_moving.status_code == 201
+    assert payload_moving is None
+
+    # Assert the new order of the children:
+    response_new_parent = await async_client.get(
+        f"/api/v1/protected/resource/{str(parent_resource_id)}",
+    )
+    parent_new = ProtectedResourceRead(**response_new_parent.json())
+
+    assert parent_new.protected_children[0].id == mocked_protected_children[0].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[0].title == mocked_protected_children[0].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[1].id == mocked_protected_children[2].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[1].title == mocked_protected_children[2].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[2].id == mocked_protected_children[3].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[2].title == mocked_protected_children[3].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[3].id == mocked_protected_children[4].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[3].title == mocked_protected_children[4].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[4].id == mocked_protected_children[1].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[4].title == mocked_protected_children[1].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[5].id == mocked_protected_children[5].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[5].title == mocked_protected_children[5].title  # type: ignore[attr-defined]
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_user_moves_child_order_up_insert_after(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
+    current_user_from_azure_token,
+    add_one_test_access_policy,
+    add_many_test_protected_resources,
+    add_many_test_protected_children,
+    add_one_parent_child_resource_relationship,
+):
+    """Tests if children get reordered and returned correctly from read afterwards."""
+
+    _ = app_override_provide_http_token_payload
+
+    mocked_protected_resources = await add_many_test_protected_resources()
+    mocked_protected_children = await add_many_test_protected_children()
+
+    for protected_child in mocked_protected_children:
+        await add_one_parent_child_resource_relationship(
+            child_id=protected_child.id,
+            parent_id=mocked_protected_resources[0].id,
+            inherit=True,
+        )
+
+    parent_resource_id = mocked_protected_resources[0].id
+
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+    policy = {
+        "resource_id": str(parent_resource_id),
+        "identity_id": str(current_user.user_id),
+        "action": Action.connect,
+    }
+    await add_one_test_access_policy(policy)
+
+    policy = {
+        "resource_id": str(mocked_protected_children[5].id),
+        "identity_id": str(current_user.user_id),
+        "action": Action.write,
+    }
+    await add_one_test_access_policy(policy)
+
+    policy = {
+        "resource_id": str(mocked_protected_children[2].id),
+        "identity_id": str(current_user.user_id),
+        "action": Action.write,
+    }
+    await add_one_test_access_policy(policy)
+
+    # Move the order of a protected child forward:
+    response_moving = await async_client.post(
+        f"/api/v1/access/hierarchy/{str(parent_resource_id)}/move/{str(mocked_protected_children[5].id)}/after?other_child_id={str(mocked_protected_children[2].id)}"
+    )
+    payload_moving = response_moving.json()
+
+    assert response_moving.status_code == 201
+    assert payload_moving is None
+
+    # Assert the new order of the children:
+    response_new_parent = await async_client.get(
+        f"/api/v1/protected/resource/{str(parent_resource_id)}",
+    )
+    parent_new = ProtectedResourceRead(**response_new_parent.json())
+
+    assert parent_new.protected_children[0].id == mocked_protected_children[0].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[0].title == mocked_protected_children[0].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[1].id == mocked_protected_children[1].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[1].title == mocked_protected_children[1].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[2].id == mocked_protected_children[2].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[2].title == mocked_protected_children[2].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[3].id == mocked_protected_children[5].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[3].title == mocked_protected_children[5].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[4].id == mocked_protected_children[3].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[4].title == mocked_protected_children[3].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[5].id == mocked_protected_children[4].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[5].title == mocked_protected_children[4].title  # type: ignore[attr-defined]
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_user_moves_child_order_to_start(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
+    current_user_from_azure_token,
+    add_one_test_access_policy,
+    add_many_test_protected_resources,
+    add_many_test_protected_children,
+    add_one_parent_child_resource_relationship,
+):
+    """Tests if children get reordered and returned correctly from read afterwards."""
+
+    _ = app_override_provide_http_token_payload
+
+    mocked_protected_resources = await add_many_test_protected_resources()
+    mocked_protected_children = await add_many_test_protected_children()
+
+    for protected_child in mocked_protected_children:
+        await add_one_parent_child_resource_relationship(
+            child_id=protected_child.id,
+            parent_id=mocked_protected_resources[0].id,
+            inherit=True,
+        )
+
+    parent_resource_id = mocked_protected_resources[0].id
+
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+    policy = {
+        "resource_id": str(parent_resource_id),
+        "identity_id": str(current_user.user_id),
+        "action": Action.connect,
+    }
+    await add_one_test_access_policy(policy)
+
+    policy = {
+        "resource_id": str(mocked_protected_children[3].id),
+        "identity_id": str(current_user.user_id),
+        "action": Action.write,
+    }
+    await add_one_test_access_policy(policy)
+
+    # Move the order of a protected child forward:
+    response_moving = await async_client.post(
+        f"/api/v1/access/hierarchy/{str(parent_resource_id)}/move/{str(mocked_protected_children[3].id)}/start"
+    )
+    payload_moving = response_moving.json()
+
+    assert response_moving.status_code == 201
+    assert payload_moving is None
+
+    # Assert the new order of the children:
+    response_new_parent = await async_client.get(
+        f"/api/v1/protected/resource/{str(parent_resource_id)}",
+    )
+    parent_new = ProtectedResourceRead(**response_new_parent.json())
+
+    assert parent_new.protected_children[0].id == mocked_protected_children[3].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[0].title == mocked_protected_children[3].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[1].id == mocked_protected_children[0].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[1].title == mocked_protected_children[0].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[2].id == mocked_protected_children[1].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[2].title == mocked_protected_children[1].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[3].id == mocked_protected_children[2].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[3].title == mocked_protected_children[2].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[4].id == mocked_protected_children[4].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[4].title == mocked_protected_children[4].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[5].id == mocked_protected_children[5].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[5].title == mocked_protected_children[5].title  # type: ignore[attr-defined]
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_user_moves_child_order_to_end(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
+    current_user_from_azure_token,
+    add_one_test_access_policy,
+    add_many_test_protected_resources,
+    add_many_test_protected_children,
+    add_one_parent_child_resource_relationship,
+):
+    """Tests if children get reordered and returned correctly from read afterwards."""
+
+    _ = app_override_provide_http_token_payload
+
+    mocked_protected_resources = await add_many_test_protected_resources()
+    mocked_protected_children = await add_many_test_protected_children()
+
+    for protected_child in mocked_protected_children:
+        await add_one_parent_child_resource_relationship(
+            child_id=protected_child.id,
+            parent_id=mocked_protected_resources[0].id,
+            inherit=True,
+        )
+
+    parent_resource_id = mocked_protected_resources[0].id
+
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+    policy = {
+        "resource_id": str(parent_resource_id),
+        "identity_id": str(current_user.user_id),
+        "action": Action.connect,
+    }
+    await add_one_test_access_policy(policy)
+
+    policy = {
+        "resource_id": str(mocked_protected_children[3].id),
+        "identity_id": str(current_user.user_id),
+        "action": Action.write,
+    }
+    await add_one_test_access_policy(policy)
+
+    # Move the order of a protected child forward:
+    response_moving = await async_client.post(
+        f"/api/v1/access/hierarchy/{str(parent_resource_id)}/move/{str(mocked_protected_children[3].id)}/end"
+    )
+    payload_moving = response_moving.json()
+
+    assert response_moving.status_code == 201
+    assert payload_moving is None
+
+    # Assert the new order of the children:
+    response_new_parent = await async_client.get(
+        f"/api/v1/protected/resource/{str(parent_resource_id)}",
+    )
+    parent_new = ProtectedResourceRead(**response_new_parent.json())
+
+    assert parent_new.protected_children[0].id == mocked_protected_children[0].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[0].title == mocked_protected_children[0].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[1].id == mocked_protected_children[1].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[1].title == mocked_protected_children[1].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[2].id == mocked_protected_children[2].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[2].title == mocked_protected_children[2].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[3].id == mocked_protected_children[4].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[3].title == mocked_protected_children[4].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[4].id == mocked_protected_children[5].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[4].title == mocked_protected_children[5].title  # type: ignore[attr-defined]
+    assert parent_new.protected_children[5].id == mocked_protected_children[3].id  # type: ignore[attr-defined]
+    assert parent_new.protected_children[5].title == mocked_protected_children[3].title  # type: ignore[attr-defined]
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_user_moves_child_missing_access_to_children(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
+    current_user_from_azure_token,
+    add_one_test_access_policy,
+    add_many_test_protected_resources,
+    add_many_test_protected_children,
+    add_one_parent_child_resource_relationship,
+):
+    """Tests if children get reordered and returned correctly from read afterwards."""
+
+    _ = app_override_provide_http_token_payload
+
+    mocked_protected_resources = await add_many_test_protected_resources()
+    mocked_protected_children = await add_many_test_protected_children()
+
+    for protected_child in mocked_protected_children:
+        await add_one_parent_child_resource_relationship(
+            child_id=protected_child.id,
+            parent_id=mocked_protected_resources[0].id,
+            inherit=False,
+        )
+
+    parent_resource_id = mocked_protected_resources[0].id
+
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+    policy = {
+        "resource_id": str(parent_resource_id),
+        "identity_id": str(current_user.user_id),
+        "action": Action.write,
+    }
+    await add_one_test_access_policy(policy)
+
+    # Move the order of a protected child forward:
+    response_moving_before = await async_client.post(
+        f"/api/v1/access/hierarchy/{str(parent_resource_id)}/move/{str(mocked_protected_children[1].id)}/before?other_child_id={str(mocked_protected_children[4].id)}"
+    )
+    payload_moving_before = response_moving_before.json()
+
+    assert response_moving_before.status_code == 403
+    assert payload_moving_before == {"detail": "Forbidden."}
+
+    # Move the order of a protected child forward:
+    response_moving_after = await async_client.post(
+        f"/api/v1/access/hierarchy/{str(parent_resource_id)}/move/{str(mocked_protected_children[1].id)}/after?other_child_id={str(mocked_protected_children[4].id)}"
+    )
+    payload_moving_after = response_moving_after.json()
+
+    assert response_moving_after.status_code == 403
+    assert payload_moving_after == {"detail": "Forbidden."}
+
+    # Assert the order of the children is unchanged:
+    response_parent = await async_client.get(
+        f"/api/v1/protected/resource/{str(parent_resource_id)}",
+    )
+    parent = ProtectedResourceRead(**response_parent.json())
+
+    for parent_child, mocked_protected_child in zip(
+        parent.protected_children, mocked_protected_children  # type: ignore[attr-defined]
+    ):
+        assert parent_child.id == mocked_protected_child.id
+        assert parent_child.title == mocked_protected_child.title
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_user1_read_write],
+    indirect=True,
+)
+async def test_user_moves_child_missing_access_to_parent(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
+    current_user_from_azure_token,
+    add_one_test_access_policy,
+    add_many_test_protected_resources,
+    add_many_test_protected_children,
+    add_one_parent_child_resource_relationship,
+):
+    """Tests if children get reordered and returned correctly from read afterwards."""
+
+    _ = app_override_provide_http_token_payload
+
+    mocked_protected_resources = await add_many_test_protected_resources()
+    mocked_protected_children = await add_many_test_protected_children()
+
+    for protected_child in mocked_protected_children:
+        await add_one_parent_child_resource_relationship(
+            child_id=protected_child.id,
+            parent_id=mocked_protected_resources[0].id,
+            inherit=True,
+        )
+
+    parent_resource_id = mocked_protected_resources[0].id
+
+    # Move the order of a protected child forward:
+    response_moving_before = await async_client.post(
+        f"/api/v1/access/hierarchy/{str(parent_resource_id)}/move/{str(mocked_protected_children[1].id)}/before?other_child_id={str(mocked_protected_children[4].id)}"
+    )
+    payload_moving_before = response_moving_before.json()
+
+    assert response_moving_before.status_code == 403
+    assert payload_moving_before == {"detail": "Forbidden."}
+
+    # Move the order of a protected child forward:
+    response_moving_after = await async_client.post(
+        f"/api/v1/access/hierarchy/{str(parent_resource_id)}/move/{str(mocked_protected_children[1].id)}/after?other_child_id={str(mocked_protected_children[4].id)}"
+    )
+    payload_moving_after = response_moving_after.json()
+
+    assert response_moving_after.status_code == 403
+    assert payload_moving_after == {"detail": "Forbidden."}
+
+    # Give access rights after moving attempt to check if the parent is unchanged:
+    current_user = await current_user_from_azure_token(
+        mocked_provide_http_token_payload
+    )
+    policy = {
+        "resource_id": str(parent_resource_id),
+        "identity_id": str(current_user.user_id),
+        "action": Action.write,
+    }
+    await add_one_test_access_policy(policy)
+
+    # Assert the order of the children is unchanged:
+    response_parent = await async_client.get(
+        f"/api/v1/protected/resource/{str(parent_resource_id)}",
+    )
+    parent = ProtectedResourceRead(**response_parent.json())
+
+    for parent_child, mocked_protected_child in zip(
+        parent.protected_children, mocked_protected_children  # type: ignore[attr-defined]
+    ):
+        assert parent_child.id == mocked_protected_child.id
+        assert parent_child.title == mocked_protected_child.title
+
+
+# endregion: PUT and move tests
+
+
+# endregion: Hierarchy tests

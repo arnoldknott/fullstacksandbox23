@@ -10,7 +10,7 @@
 	import IdBadge from '../../IdBadge.svelte';
 
 	let {
-		demoResource = $bindable(),
+		demoResource,
 		identities,
 		edit = $bindable(false),
 		// deleteResource = (_id: string) => {},
@@ -18,16 +18,18 @@
 		// shareResource = (_accessPolicy: AccessPolicy) => {},
 		socketio
 	}: {
-		demoResource: DemoResourceExtended;
+		demoResource: () => DemoResourceExtended;
 		identities?: Identity[];
 		edit?: boolean;
 		// deleteResource?: (id: string) => void;
 		// submitResource?: (resource: DemoResourceExtended) => void;
 		// shareResource?: (accessPolicy: AccessPolicy) => void;
-		socketio?: SocketIO;
+		socketio?: SocketIO<DemoResourceExtended>;
 	} = $props();
 
 	// let editableDemoResource: DemoResourceExtended = $derived({ ...demoResource });
+
+	let thisDemoResource = $derived(demoResource());
 
 	let shareMenu: HTMLElement | null = $state(null);
 	// let shareMenu: HSDropdown | undefined = $derived(undefined);
@@ -37,8 +39,8 @@
 	};
 
 	let formatedDate = $derived(
-		demoResource.creation_date
-			? new Date(demoResource.creation_date).toLocaleString('da-DK', {
+		thisDemoResource.creation_date
+			? new Date(thisDemoResource.creation_date).toLocaleString('da-DK', {
 					timeZone: 'CET',
 					dateStyle: 'short',
 					timeStyle: 'short'
@@ -49,14 +51,17 @@
 					timeStyle: 'short'
 				})
 	);
-	if (demoResource.id?.slice(0, 4) === 'new_') edit = true;
+	// if (thisDemoResource.id?.slice(0, 4) === 'new_') edit = true;
+	$effect(() => {
+		if (thisDemoResource.id?.slice(0, 4) === 'new_') edit = true;
+	});
 
 	// TBD: reconsider the processing of identities - currently done both here and in the +page.svelte file.
 	// get most of the work done in the +page.svelte file to avoid passing unnecessary data to component!
 	// Adopt the simplifiaction of microsoftTeams into Identies and merge with other identity types from REST-API and move to +page.svelte
 	// use the generation of shareOptions from REST-API and move to accessHandler.ts -> feed with identities and accessPolicies
 	let shareOptions: AccessShareOption[] | undefined = $derived(
-		AccessHandler.createShareOptions(identities, demoResource.access_policies)
+		AccessHandler.createShareOptions(identities, thisDemoResource.access_policies)
 	);
 </script>
 
@@ -70,17 +75,19 @@
 				<input
 					type="text"
 					placeholder="Name the demo resource"
-					id="name_{demoResource.id}"
+					id="name_{thisDemoResource.id}"
 					class="input input-sm md:input-md"
 					name="name"
-					onblur={() => socketio?.submitEntity(demoResource)}
-					bind:value={demoResource.name}
+					onblur={() => {
+						socketio?.submitEntity(demoResource());
+					}}
+					bind:value={thisDemoResource.name}
 				/>
-				<label class="input-filled-label" for="name_{demoResource.id}">Name</label>
+				<label class="input-filled-label" for="name_{thisDemoResource.id}">Name</label>
 			</div>
 		{:else}
 			<h5 class="title-small md:title-small lg:title base-content card-title">
-				{demoResource.name}
+				{thisDemoResource.name}
 			</h5>
 		{/if}
 
@@ -89,11 +96,11 @@
 			class="title justify-self-start"
 			onblur={(event) => {
 				// TBD: onblur changes edit to false, as DemoResourceContainer is getting reloaded
-				demoResource.name = (event.target as HTMLElement)?.innerText || '';
-				submitResource(demoResource);
+				thisDemoResource.name = (event.target as HTMLElement)?.innerText || '';
+				submitResource(thisDemoResource);
 			}}
 		>
-			{demoResource.name}
+			{thisDemoResource.name}
 		</h5> -->
 		<div class="label justify-self-end">
 			{formatedDate}
@@ -106,38 +113,40 @@
 					<textarea
 						class="textarea h-fit"
 						placeholder="Describe the demo resource here."
-						id="description_{demoResource.id}"
-						onblur={() => socketio?.submitEntity(demoResource)}
+						id="description_{thisDemoResource.id}"
+						onblur={() => {
+							socketio?.submitEntity(demoResource());
+						}}
 						name="description"
-						bind:value={demoResource.description}
+						bind:value={thisDemoResource.description}
 					>
 					</textarea>
-					<label class="textarea-filled-label" for="description_{demoResource.id}">
+					<label class="textarea-filled-label" for="description_{thisDemoResource.id}">
 						Description
 					</label>
 				</div>
 			{:else}
 				<p class="body-small md:body text-primary-container-content">
-					{demoResource.description || 'No description available'}
+					{thisDemoResource.description || 'No description available'}
 				</p>
 			{/if}
 			<!-- <p
 				contenteditable={edit}
 				onblur={(event) => {
-					demoResource.description = (event.target as HTMLElement)?.innerText || '';
-					submitResource(demoResource);
+					thisDemoResource.description = (event.target as HTMLElement)?.innerText || '';
+					submitResource(thisDemoResource);
 				}}
 			>
-				{demoResource.description}
+				{thisDemoResource.description}
 			</p> -->
 			<div class="flex flex-row gap-2">
-				<IdBadge id={demoResource.id} />
+				<IdBadge id={thisDemoResource.id} />
 				<div class="badge badge-xs badge-accent label-small shadow-outline shadow">
-					{demoResource.access_right}
+					{thisDemoResource.access_right}
 				</div>
 			</div>
 		</div>
-		{#if demoResource.access_right === Action.WRITE || demoResource.access_right === Action.OWN}
+		{#if thisDemoResource.access_right === Action.WRITE || thisDemoResource.access_right === Action.OWN}
 			<div class="join flex flex-row items-end justify-center">
 				<button
 					class="btn btn-secondary-container btn-gradient text-secondary-container-content btn-sm join-item shadow-outline grow shadow shadow-sm"
@@ -153,7 +162,7 @@
 						<span class="icon-[ic--outline-do-not-disturb] col-start-1 row-start-1 size-4"></span>
 					</span>
 				</button>
-				{#if demoResource.access_right === Action.OWN}
+				{#if thisDemoResource.access_right === Action.OWN}
 					<div
 						class="dropdown join-item relative inline-flex grow [--placement:top]"
 						bind:this={shareMenu}
@@ -161,7 +170,7 @@
 					>
 						<!-- bind:this={actionButtonShareMenuElement} -->
 						<button
-							id="share-{demoResource.id}"
+							id="share-{thisDemoResource.id}"
 							class="dropdown-toggle btn btn-secondary-container btn-gradient text-secondary-container-content btn-sm shadow-outline w-full rounded-none shadow-sm"
 							aria-haspopup="menu"
 							aria-expanded="false"
@@ -174,7 +183,7 @@
 							{#each shareOptions as shareOption (shareOption.identity_id)}
 								{@attach initDropdown}
 								<ShareItem
-									resourceId={demoResource.id as string}
+									resourceId={thisDemoResource.id as string}
 									{shareOption}
 									share={socketio?.shareEntity.bind(socketio)}
 								/>
@@ -184,12 +193,12 @@
 							class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-[15rem] shadow-xs"
 							role="menu"
 							aria-orientation="vertical"
-							aria-labelledby="share-{demoResource.id}"
+							aria-labelledby="share-{thisDemoResource.id}"
 						>
 							{#if shareOptions}
 								{#each shareOptions as shareOption (shareOption.identity_id)}
 									<ShareItem
-										resourceId={demoResource.id as string}
+										resourceId={thisDemoResource.id as string}
 										{shareOption}
 										share={socketio?.shareEntity.bind(socketio)}
 										{closeShareMenu}
@@ -208,7 +217,7 @@
 						class="btn btn-error-container btn-gradient bg-error-container/70 hover:bg-error-container/50 focus:bg-error-container/50 text-error-container-content btn-sm join-item shadow-outline grow border-0 shadow-sm"
 						aria-label="Delete Button"
 						name="id"
-						onclick={() => !demoResource.id || socketio?.deleteEntity(demoResource.id)}
+						onclick={() => !demoResource()?.id || socketio?.deleteEntity(demoResource()?.id)}
 					>
 						<span class="icon-[tabler--trash] size-4"></span>
 					</button>

@@ -13,7 +13,7 @@ export type BackendAPIConfiguration = {
 	backendFqdn: string;
 	restApiPath: string;
 	websocketPath: string;
-	socketIOPath: string | null;
+	socketIOPath: string;
 };
 
 // TBD: rename into ServerSession:
@@ -87,29 +87,35 @@ export interface AccessPolicy {
 
 // identifies with whom and how a resource can be shared with:
 export interface AccessShareOption {
-	identity_id: string;
+	identity_id?: string;
 	identity_name: string;
 	identity_type: IdentityType;
 	action?: Action; // for existing AccessPolicy for this identity: it's an Action, otherwise undefined
 	public?: boolean;
 }
 
-export interface AccessRight {
-	resource_id: string;
-	action: Action;
-}
-
 export interface Hierarchy {
 	child_id: string;
 	parent_id: string;
 	order?: number; // for ordered hierarchies, i.e. resource hierarchies
-	inherit?: boolean;
+	inherit?: boolean; // TBD: Is this one known at all, when receiving the data in frontend?
 }
+
+export type Hierarchies = {
+	parents?: Hierarchy[];
+	children?: Hierarchy[];
+};
 
 // Generic for resources - and partially relevant for identities:
 // Create a generic type that extends a base type with additional properties
 type ExtendEntity<T> = T &
-	Partial<WithCreationDate & WithLastModifiedDate & WithAccessRights & WithAccessPolicies>;
+	Partial<
+		WithCreationDate &
+			WithLastModifiedDate &
+			WithAccessRights &
+			WithAccessPolicies &
+			WithHierarchies
+	>;
 
 // Define the additional properties as separate interfaces
 interface WithCreationDate {
@@ -133,8 +139,20 @@ interface WithAccessPolicies {
 	access_policies: AccessPolicy[];
 }
 
-interface WithAccessShareOptions {
-	access_share_options: AccessShareOption[];
+// interface WithAccessShareOptions {
+// 	access_share_options: AccessShareOption[];
+// }
+
+interface WithHierarchies {
+	// TBD: consider adding all relevant hierarchies here,
+	// where resource is either child or parent?
+	hierarchies: Hierarchy[];
+	// hierarchies: {
+	// parents: Hierarchy[];
+	// children: Hierarchy[];
+	// };
+	// inherit: boolean;
+	// order?: number;
 }
 
 // specific resources:
@@ -287,4 +305,9 @@ export type AnyEntityExtended =
 	| SubGroupExtended
 	| SubSubGroupExtended;
 
-export type AnyGroupIdentity = UeberGroup | Group | SubGroup | SubSubGroup;
+export type AnyIdentity = UeberGroup | Group | SubGroup | SubSubGroup;
+export type AnyIdentityExtended =
+	| UeberGroupExtended
+	| GroupExtended
+	| SubGroupExtended
+	| SubSubGroupExtended;

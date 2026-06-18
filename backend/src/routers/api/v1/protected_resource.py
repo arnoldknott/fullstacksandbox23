@@ -11,7 +11,6 @@ from crud.protected_resource import (
     ProtectedGrandChildCRUD,
     ProtectedResourceCRUD,
 )
-from models.access import ResourceHierarchyRead
 from models.protected_resource import (
     ProtectedChild,
     ProtectedChildCreate,
@@ -117,55 +116,6 @@ async def post_protected_child(
     )
 
 
-@router.post(
-    "/resource/{protected_resource_id}/move/{child_id}/before/{other_child_id}",
-    status_code=201,
-)
-async def post_reorder_child_insert_before(
-    protected_resource_id: UUID,
-    child_id: UUID,
-    other_child_id: UUID,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> None:
-    """Changes the order of the children."""
-    return await protected_child_view.post_reorder_children(
-        protected_resource_id, child_id, "before", other_child_id, token_payload, guards
-    )
-
-
-@router.post(
-    "/resource/{protected_resource_id}/move/{child_id}/after/{other_child_id}",
-    status_code=201,
-)
-async def post_reorder_child_insert_after(
-    protected_resource_id: UUID,
-    child_id: UUID,
-    other_child_id: UUID,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> None:
-    """Changes the order of the children."""
-    return await protected_child_view.post_reorder_children(
-        protected_resource_id, child_id, "after", other_child_id, token_payload, guards
-    )
-
-
-@router.post("/child/{child_id}/parent/{parent_id}", status_code=201)
-async def post_add_child_to_parent(
-    child_id: UUID,
-    parent_id: UUID,
-    inherit: Annotated[bool, Query()] = False,
-    # TBD: consider adding order here as another query parameter
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> ResourceHierarchyRead:
-    """Adds a child to a parent."""
-    return await protected_child_view.post_add_child_to_parent(
-        child_id, parent_id, token_payload, guards, inherit
-    )
-
-
 @router.get("/child/", status_code=200)
 async def get_protected_child(
     token_payload=Depends(get_http_access_token_payload),
@@ -206,19 +156,6 @@ async def delete_protected_child(
 ) -> None:
     """Deletes a protected child resource."""
     return await protected_child_view.delete(resource_id, token_payload, guards)
-
-
-@router.delete("/child/{child_id}/parent/{parent_id}", status_code=200)
-async def remove_child_from_parent(
-    parent_id: UUID,
-    child_id: UUID,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> None:
-    """Removes a child from a parent."""
-    return await protected_child_view.remove_child_from_parent(
-        child_id, parent_id, token_payload, guards
-    )
 
 
 # endregion ProtectedChild

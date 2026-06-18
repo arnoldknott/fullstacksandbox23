@@ -339,9 +339,14 @@ async def test_user_submits_resource_without_id_for_creation_admin_as_admin_user
     assert UUID(status_data[0]["id"])  # Check if the ID is a valid UUID
     assert status_data[0]["success"] == "created"
 
-    assert len(connection_admin.responses("status")) == 1
-    assert connection_admin.responses("status")[0]["success"] == "shared"
-    assert connection_admin.responses("status")[0]["id"] == status_data[0]["id"]
+    assert len(connection_admin.responses("status")) == 2
+    assert connection_admin.responses("status")[0]["success"] == "created"
+    assert connection_admin.responses("status")[0]["submitted_id"] is None
+    assert UUID(connection_admin.responses("status")[0]["id"]) == UUID(
+        status_data[0]["id"]
+    )
+    assert connection_admin.responses("status")[1]["success"] == "shared"
+    assert connection_admin.responses("status")[1]["id"] == status_data[0]["id"]
 
 
 @pytest.mark.anyio
@@ -451,12 +456,14 @@ async def test_admin_submits_resource_with_new__string_in_id_field_for_creation_
     await connection.client.sleep(0.3)
     status_data = connection.responses("status")
 
-    assert len(status_data) == 1
+    assert len(status_data) == 2
 
     # assert "id" in status[0]
     assert status_data[0]["success"] == "created"
     assert UUID(status_data[0]["id"])  # Check if the ID is a valid UUID
     assert status_data[0]["submitted_id"] == test_resource["id"]
+    assert status_data[1]["success"] == "shared"
+    assert UUID(status_data[1]["id"]) == UUID(status_data[0]["id"])
 
 
 @pytest.mark.anyio
@@ -556,11 +563,13 @@ async def test_user_submits_two_resource_with_new__string_in_id_field_for_creati
     await connection.client.sleep(0.3)
     status_data = connection.responses("status")
 
-    assert len(status_data) == 1
+    assert len(status_data) == 2
 
-    assert status_data[0]["submitted_id"] == test_resource["id"]
-    assert UUID(status_data[0]["id"])  # Check if the ID is a valid UUID
     assert status_data[0]["success"] == "created"
+    assert UUID(status_data[0]["id"])  # Check if the ID is a valid UUID
+    assert status_data[0]["submitted_id"] == test_resource["id"]
+    assert status_data[1]["success"] == "shared"
+    assert UUID(status_data[1]["id"]) == UUID(status_data[0]["id"])
 
     time_before_second_submit = datetime.now()
     await connection.client.emit(
@@ -572,14 +581,13 @@ async def test_user_submits_two_resource_with_new__string_in_id_field_for_creati
 
     status_data = connection.responses("status")
 
-    assert len(status_data) == 2
+    assert len(status_data) == 4
 
-    assert status_data[0]["submitted_id"] == test_resource["id"]
-    assert UUID(status_data[0]["id"])  # Check if the ID is a valid UUID
-    assert status_data[0]["success"] == "created"
-    assert status_data[1]["submitted_id"] == test_resource2["id"]
-    assert UUID(status_data[1]["id"])  # Check if the ID is a valid UUID
-    assert status_data[1]["success"] == "created"
+    assert status_data[2]["submitted_id"] == test_resource2["id"]
+    assert UUID(status_data[2]["id"])  # Check if the ID is a valid UUID
+    assert status_data[2]["success"] == "created"
+    assert status_data[3]["success"] == "shared"
+    assert UUID(status_data[3]["id"]) == UUID(status_data[2]["id"])
 
     assert time_before_first_submit < time_before_second_submit
 

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
-	import { SvelteSet } from 'svelte/reactivity';
+	// import { SvelteSet } from 'svelte/reactivity';
 	import { fade, scale } from 'svelte/transition';
 
 	import { goto } from '$app/navigation';
@@ -31,90 +31,161 @@
 	// let socketio: SocketIO<DemoResourceExtended> = $state(
 	// 	undefined as unknown as SocketIO<DemoResourceExtended>
 	// );
-	let editIds = new SvelteSet<string>();
+	// let editIds = new SvelteSet<string>();
 	let statusMessages = $state<SocketioStatus[]>([]);
+	// onMount(() => {
+	// 	const connection: SocketioConnection = {
+	// 		namespace: '/demo-resource',
+	// 		cookie_session_id: page.data.session.sessionId,
+	// 		query_params: {
+	// 			'request-access-data': true,
+	// 			'identity-ids': data.payload.identities.map((identity) => identity.id).join(','),
+	// 			'join-admin-room': 'true'
+	// 		}
+	// 	};
+	// 	// TBD: populate by REST-API call initially?
+
+	// 	socketio = new SocketIO<DemoResourceExtended>(connection, {
+	// 		pendingTemplate: () => ({
+	// 			name: '',
+	// 			description: '',
+	// 			access_right: Action.OWN
+	// 			// creation_date: new Date(Date.now()) // TBD: Check if this is necessary?
+	// 		})
+	// 	});
+	// let ownedDemoResources: DemoResourceExtended[] = $derived([
+	// 	...(socketio?.pendingEntities || []),
+	// 	...(socketio?.getSelectedEntities('owner') ?? [])
+	// ]);
+	let ownedDemoResources: DemoResourceExtended[] = $derived(
+		socketio?.getSelectedEntities('owner') || []
+	);
+	let writeDemoResources: DemoResourceExtended[] = $derived(
+		socketio?.getSelectedEntities('write') || []
+	);
+	let readDemoResources: DemoResourceExtended[] = $derived(
+		socketio?.getSelectedEntities('read') || []
+	);
+
 	onMount(() => {
 		const connection: SocketioConnection = {
 			namespace: '/demo-resource',
-			cookie_session_id: page.data.session.sessionId,
-			query_params: {
+			sessionId: page.data.session.sessionId,
+			queryParams: {
 				'request-access-data': true,
 				'identity-ids': data.payload.identities.map((identity) => identity.id).join(','),
-				'join-admin-room': 'true'
+				'join-admin-room': true
 			}
 		};
-		// TBD: populate by REST-API call initially?
 
 		socketio = new SocketIO<DemoResourceExtended>(connection, {
-			pendingTemplate: () => ({
+			template: {
 				name: '',
 				description: '',
 				access_right: Action.OWN
-				// creation_date: new Date(Date.now()) // TBD: Check if this is necessary?
-			})
+			}
 		});
+		socketio.addSelection('editing');
+		// socketio.createUserHasSpecificAccessRightSelection('owner', Action.OWN);
+		// socketio.createUserHasSpecificAccessRightSelection('write', Action.WRITE);
+		// socketio.createUserHasSpecificAccessRightSelection('read', Action.READ);
+		socketio.createSortedSelection('sortedDate', 'creation_date', false);
+		socketio.createUserHasSpecificAccessRightSelection('owner', Action.OWN, 'sortedDate');
+		socketio.createUserHasSpecificAccessRightSelection('write', Action.WRITE, 'sortedDate');
+		socketio.createUserHasSpecificAccessRightSelection('read', Action.READ, 'sortedDate');
+		// socketio.sortSelection('owner', 'creation_date', false);
+		// socketio.sortSelection('write', 'creation_date', false);
+		// socketio.sortSelection('read', 'creation_date', false);
 
 		// Extra `status` listener — runs alongside the default one. Maintains the local
 		// `statusMessages` log and the `editIds` set across the create round-trip.
 		socketio.client.on('status', (data: SocketioStatus) => {
 			statusMessages.unshift(data);
-			if ('success' in data && data.success === 'created') {
-				// The default handler swaps the preliminary `new_...` id for the real server id
-				// in the entities array. Mirror that swap inside `editIds` so editing stays active
-				// on the newly created resource.
-				editIds.delete(data.submitted_id);
-				editIds.add(data.id);
-			}
+			// if ('success' in data && data.success === 'created') {
+			// 	// The default handler swaps the preliminary `new_...` id for the real server id
+			// 	// in the entities array. Mirror that swap inside `editIds` so editing stays active
+			// 	// on the newly created resource.
+			// 	if (editIds.has(data.submitted_id)) {
+			// 		editIds.delete(data.submitted_id);
+			// 		editIds.add(data.id);
+			// 	}
+			// }
 		});
 
 		// Extra `deleted` listener — drop the id from `editIds` once the server confirms deletion.
-		socketio.client.on('deleted', (resource_id: string) => {
-			editIds.delete(resource_id);
-		});
+		// socketio.client.on('deleted', (resource_id: string) => {
+		// 	editIds.delete(resource_id);
+		// });
 	});
 
-	const sortResourcesByCreationDate = (a: DemoResourceExtended, b: DemoResourceExtended) => {
-		if (a.creation_date && b.creation_date) {
-			const dateA = new Date(a.creation_date);
-			const dateB = new Date(b.creation_date);
-			return dateB.getTime() - dateA.getTime();
-		} else {
-			return 0;
-		}
-	};
+	// $effect(() => {
+	// 	// ownedDemoResources = [
+	// 	// 	...socketio.pendingEntities,
+	// 	// 	...socketio.getSelectedEntities('owner').sort(sortResourcesByCreationDate)
+	// 	// ];
+	// 	// writeDemoResources = socketio.getSelectedEntities('write').sort(sortResourcesByCreationDate);
+	// 	// readDemoResources = socketio.getSelectedEntities('read').sort(sortResourcesByCreationDate);
+	// 	// ownedDemoResources = socketio.getSelectedEntities('owner');
+	// 	ownedDemoResources = [...socketio.pendingEntities, ...socketio.getSelectedEntities('owner')];
+	// 	writeDemoResources = socketio.getSelectedEntities('write');
+	// 	readDemoResources = socketio.getSelectedEntities('read');
+	// 	// console.log('=== length of demo resources in socketio ===', socketio.entities.length);
+	// 	// console.log(
+	// 	// 	'=== length of owned demo resources in socketio ===',
+	// 	// 	socketio.getSelectedEntities('owner').length
+	// 	// );
+	// 	// console.log(
+	// 	// 	'=== length of write demo resources in socketio ===',
+	// 	// 	socketio.getSelectedEntities('write').length
+	// 	// );
+	// 	// console.log(
+	// 	// 	'=== length of read demo resources in socketio ===',
+	// 	// 	socketio.getSelectedEntities('read').length
+	// 	// );
+	// });
 
-	let ownedDemoResources: DemoResourceExtended[] = $derived.by(() => {
-		if (!socketio) return [];
-		const pending = socketio?.pendingEntities;
-		const existing = (socketio?.entities ?? [])
-			.filter((demoResource) => {
-				if (demoResource.access_right === Action.OWN) {
-					return demoResource;
-				}
-			})
-			.sort(sortResourcesByCreationDate);
-		return [...pending, ...existing];
-	});
+	// const sortResourcesByCreationDate = (a: DemoResourceExtended, b: DemoResourceExtended) => {
+	// 	if (a.creation_date && b.creation_date) {
+	// 		const dateA = new Date(a.creation_date);
+	// 		const dateB = new Date(b.creation_date);
+	// 		return dateB.getTime() - dateA.getTime();
+	// 	} else {
+	// 		return 0;
+	// 	}
+	// };
 
-	let writeDemoResources: DemoResourceExtended[] = $derived(
-		(socketio?.entities ?? [])
-			.filter((demoResource) => {
-				if (demoResource.access_right === Action.WRITE) {
-					return demoResource;
-				}
-			})
-			.sort(sortResourcesByCreationDate)
-	);
+	// let ownedDemoResources: DemoResourceExtended[] = $derived.by(() => {
+	// 	if (!socketio) return [];
+	// 	const pending = socketio?.pendingEntities;
+	// 	const existing = (socketio?.entities ?? [])
+	// 		.filter((demoResource) => {
+	// 			if (demoResource.access_right === Action.OWN) {
+	// 				return demoResource;
+	// 			}
+	// 		})
+	// 		.sort(sortResourcesByCreationDate);
+	// 	return [...pending, ...existing];
+	// });
 
-	let readDemoResources: DemoResourceExtended[] = $derived(
-		(socketio?.entities ?? [])
-			.filter((demoResource) => {
-				if (demoResource.access_right === Action.READ) {
-					return demoResource;
-				}
-			})
-			.sort(sortResourcesByCreationDate)
-	);
+	// let writeDemoResources: DemoResourceExtended[] = $derived(
+	// 	(socketio?.entities ?? [])
+	// 		.filter((demoResource) => {
+	// 			if (demoResource.access_right === Action.WRITE) {
+	// 				return demoResource;
+	// 			}
+	// 		})
+	// 		.sort(sortResourcesByCreationDate)
+	// );
+
+	// let readDemoResources: DemoResourceExtended[] = $derived(
+	// 	(socketio?.entities ?? [])
+	// 		.filter((demoResource) => {
+	// 			if (demoResource.access_right === Action.READ) {
+	// 				return demoResource;
+	// 			}
+	// 		})
+	// 		.sort(sortResourcesByCreationDate)
+	// );
 
 	onDestroy(() => socketio?.client.disconnect());
 </script>
@@ -135,7 +206,13 @@
 			<button
 				class="btn-neutral-container btn btn-gradient shadow-outline rounded-full shadow-sm"
 				aria-label="Add Button"
-				onclick={() => socketio?.createPending()}
+				onclick={() => {
+					if (socketio?.pendingEntities.length === 0) socketio?.createPending();
+					if (!ownedDemoResources.includes(socketio.pendingEntities[0])) {
+						// ownedDemoResources.unshift(socketio.pendingEntities[0]);
+						ownedDemoResources = [socketio.pendingEntities[0], ...ownedDemoResources];
+					}
+				}}
 			>
 				<span class="icon-[fa6-solid--plus]"></span> Add
 			</button>
@@ -158,7 +235,10 @@
 		<div class="title-small italic">Currently editable</div>
 		<div class="divider divider-outline"></div>
 		<ul class="h-15 list-inside overflow-y-scroll">
-			{#each editIds as id (id)}
+			<!-- {#each editIds as id (id)}
+				<li class="label" transition:fade>{id}</li>
+			{/each} -->
+			{#each socketio?.selections['editing'] as id (id)}
 				<li class="label" transition:fade>{id}</li>
 			{/each}
 		</ul>
@@ -215,29 +295,24 @@
 		{#each ownedDemoResources as demoResource, idx (demoResource.id)}
 			<DemoResourceContainer
 				bind:edit={
-					() => {
-						if (demoResource.id) {
-							return editIds.has(demoResource.id);
-						} else {
-							return false;
-						}
-					},
+					() => socketio.selections['editing'].some((id) => id === demoResource.id),
 					(value) => {
-						if (demoResource.id) {
-							if (value) {
-								editIds.add(demoResource.id);
-							} else {
-								editIds.delete(demoResource.id || '');
-							}
-							// editIds = new Set(editIds); // trigger reactivity
-						}
+						// if (demoResource.id) {
+						const isEditing = socketio.selections['editing'].includes(demoResource.id);
+						if (value && !isEditing) socketio.addToSelection('editing', [demoResource.id]);
+						else if (!value && isEditing)
+							socketio.removeFromSelection('editing', [demoResource.id]);
+						// }
 					}
 				}
 				identities={data.payload.identities}
-				{demoResource}
+				demoResource={() => ownedDemoResources[idx]}
 				{socketio}
 			/>
-			<!-- bind:demoResource={demoResources[idx]} -->
+			<!-- bind:demoResource={ownedDemoResources[idx]} -->
+			<!-- {demoResource} -->
+			<!-- demoResource={ownedDemoResources[idx]} -->
+			<!-- // demoResource={() => demoResource} -->
 			<div class="px-2 {debug ? 'block' : 'hidden'}">
 				<p class="title">🚧 Debug Information 🚧</p>
 				<JsonData data={demoResource} />
@@ -250,6 +325,10 @@
 		{/each}
 	</div>
 	<div>
+		<div class={debug ? 'block' : 'hidden'}>
+			<h3 class="title">Pending Entities:</h3>
+			<JsonData data={socketio?.pendingEntities} />
+		</div>
 		<h3 class="title">
 			Identities access to demoresources: {data.payload.identities.length}
 		</h3>
@@ -302,13 +381,13 @@
 			Demo Resources with write access: {writeDemoResources.length}
 		</h3>
 		{#each writeDemoResources as demoResource, idx (demoResource.id)}
-			<DemoResourceContainer {demoResource} {socketio} />
+			<DemoResourceContainer demoResource={() => writeDemoResources[idx]} {socketio} />
 			<div class="px-2 {debug ? 'block' : 'hidden'}">
 				<p class="title">🚧 Debug Information 🚧</p>
 				<JsonData data={demoResource} />
 			</div>
 			<div
-				class="divider-outline-variant divider {idx === ownedDemoResources.length - 1
+				class="divider-outline-variant divider {idx === writeDemoResources.length - 1
 					? 'hidden'
 					: ''}"
 			></div>
@@ -320,13 +399,13 @@
 			Demo Resources with read access: {readDemoResources.length}
 		</h3>
 		{#each readDemoResources as demoResource, idx (demoResource.id)}
-			<DemoResourceContainer {demoResource} />
+			<DemoResourceContainer demoResource={() => readDemoResources[idx]} />
 			<div class="px-2 {debug ? 'block' : 'hidden'}">
 				<p class="title">🚧 Debug Information 🚧</p>
 				<JsonData data={demoResource} />
 			</div>
 			<div
-				class="divider-outline-variant divider {idx === ownedDemoResources.length - 1
+				class="divider-outline-variant divider {idx === readDemoResources.length - 1
 					? 'hidden'
 					: ''}"
 			></div>

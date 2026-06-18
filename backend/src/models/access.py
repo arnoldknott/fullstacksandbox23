@@ -116,13 +116,6 @@ class AccessRequest(BaseModel):
     action: Optional[Action]
 
 
-class AccessPermission(BaseModel):
-    """Model for the access permission"""
-
-    resource_id: uuid.UUID
-    action: Action | None
-
-
 # No update model for access policies: once created, they should not be updated, only deleted to keep loggings consistent.
 
 # Maybe the logs should just be derived from the AccessRequests and add the status code?
@@ -191,6 +184,20 @@ class BaseHierarchyCreate(SQLModel):
         return self
 
 
+class BaseHierarchyDelete(SQLModel):
+    """Delete model for entity hierarchy"""
+
+    parent_id: Optional[uuid.UUID] = None
+    child_id: Optional[uuid.UUID] = None
+
+    @model_validator(mode="after")
+    def at_least_parent_or_child_id_required(self):
+        """Validates that at least parent_id or child_id is provided"""
+        if self.parent_id is None and self.child_id is None:
+            raise ValueError("At least parent_id or child_id must be provided.")
+        return self
+
+
 class ResourceHierarchy(BaseHierarchyCreate, BaseHierarchy, table=True):
     """Table for resource hierarchy and its types"""
 
@@ -240,6 +247,12 @@ class ResourceHierarchy(BaseHierarchyCreate, BaseHierarchy, table=True):
 class ResourceHierarchyRead(BaseHierarchyCreate):
     """Read model for resource hierarchy"""
 
+    order: int
+
+
+class ResourceHierarchyUpdate(BaseHierarchyCreate):
+    """Update model for resource hierarchy"""
+
     pass
 
 
@@ -262,6 +275,12 @@ class IdentityHierarchy(BaseHierarchyCreate, BaseHierarchy, table=True):
 
 class IdentityHierarchyRead(BaseHierarchyCreate):
     """Read model for identity hierarchy"""
+
+    pass
+
+
+class IdentityHierarchyUpdate(BaseHierarchyCreate):
+    """Update model for identity hierarchy"""
 
     pass
 
