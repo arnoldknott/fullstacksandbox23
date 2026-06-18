@@ -293,7 +293,7 @@
 			<span class="icon-[tabler--key-filled] bg-success"></span>
 			Demo Resources with owner access: {ownedDemoResources.length}
 		</h3>
-		{#each ownedDemoResources as demoResource, idx (demoResource)}
+		{#each ownedDemoResources as demoResource, idx (demoResource.id)}
 			<DemoResourceContainer
 				bind:edit={
 					() => socketio.selections['editing'].some((id) => id === demoResource.id),
@@ -310,7 +310,10 @@
 				demoResource={() => ownedDemoResources[idx]}
 				{socketio}
 			/>
-			<!-- bind:demoResource={demoResources[idx]} -->
+			<!-- bind:demoResource={ownedDemoResources[idx]} -->
+			<!-- {demoResource} -->
+			<!-- demoResource={ownedDemoResources[idx]} -->
+			<!-- // demoResource={() => demoResource} -->
 			<div class="px-2 {debug ? 'block' : 'hidden'}">
 				<p class="title">🚧 Debug Information 🚧</p>
 				<JsonData data={demoResource} />
@@ -385,7 +388,7 @@
 				<JsonData data={demoResource} />
 			</div>
 			<div
-				class="divider-outline-variant divider {idx === ownedDemoResources.length - 1
+				class="divider-outline-variant divider {idx === writeDemoResources.length - 1
 					? 'hidden'
 					: ''}"
 			></div>
@@ -403,7 +406,7 @@
 				<JsonData data={demoResource} />
 			</div>
 			<div
-				class="divider-outline-variant divider {idx === ownedDemoResources.length - 1
+				class="divider-outline-variant divider {idx === readDemoResources.length - 1
 					? 'hidden'
 					: ''}"
 			></div>
