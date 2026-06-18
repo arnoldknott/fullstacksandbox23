@@ -316,7 +316,10 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 				this.client.emit('read', status.id);
 			} else if (status.success === 'linked') {
 				if (status.parent_id === this.parentId) {
-					const existingHierarchyIndex = (this.hierarchies[status.id]?.findIndex((hierarchy) => hierarchy.child_id === status.id && hierarchy.parent_id === status.parent_id))
+					const existingHierarchyIndex = this.hierarchies[status.id]?.findIndex(
+						(hierarchy) =>
+							hierarchy.child_id === status.id && hierarchy.parent_id === status.parent_id
+					);
 					if (existingHierarchyIndex > -1) {
 						// Update existing hierarchy in place
 						this.hierarchies[status.id][existingHierarchyIndex] = {
@@ -325,8 +328,7 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 							inherit: status.inherit,
 							order: status.order
 						};
-				
-						
+
 						// {
 						// this.hierarchies[status.id] = [
 						// 	...this.hierarchies[status.id],
