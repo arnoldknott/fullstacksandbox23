@@ -71,6 +71,10 @@ type SocketioHandlers<T> = {
 	status?: boolean | ((status: SocketioStatus) => void);
 };
 
+export type SocketioConfiguration<T extends AnyEntityExtended = AnyEntityExtended> = Partial<
+	Omit<EntityContainerConfiguration<T>, 'parentId'> & SocketioHandlers<T>
+>;
+
 /**
  * For managing new entities before submitting them to the backend,
  * they are alive in the frontend only and
@@ -103,9 +107,7 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 
 	constructor(
 		connection: SocketioConnection,
-		configuration: Partial<
-			Omit<EntityContainerConfiguration<T>, 'parentId'> & SocketioHandlers<T>
-		> = {}
+		configuration: SocketioConfiguration<T> = {}
 	) {
 		super({ parentId: connection.parentId, ...configuration });
 		const backendAPIConfiguration: BackendAPIConfiguration = getContext('backendAPIConfiguration');
