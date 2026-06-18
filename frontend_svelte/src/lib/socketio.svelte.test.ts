@@ -63,7 +63,7 @@ beforeAll(async () => {
 			// console.log('Server received event:', event, 'with data:', data);
 			serverMessages.push({ event, data });
 		});
-		socketioServer.on('disconnect', () => {
+		socket.on('disconnect', () => {
 			// console.log('✅ Client disconnected'); // your "life sign"
 		});
 	});
@@ -322,7 +322,7 @@ describe('SocketIO for DemoResources', () => {
 				overridesCalled.transferred = data;
 			},
 			deleted: (id) => {
-				console.log('custom deleted', id);
+				// console.log('custom deleted', id);
 				overridesCalled.deleted = id;
 			},
 			status: (status) => {
