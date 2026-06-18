@@ -46,21 +46,6 @@ export type SocketioStatus =
 	| { success: 'unlinked'; id: string; parent_id: string }
 	| { error: string };
 
-// /**
-//  * Functions that provide the Data for class SocketIO to manage. Evaluated inside a
-//  * `$effect`, so it runs once on construction (seeding the internal entities array) and
-//  * then re-runs whenever any reactive value it reads changes — typically `data.*` from
-//  * SvelteKit's PageData after navigation, `invalidate`, or form actions.
-//  */
-// type SocketioData<T> = {
-// 	seedEntities?: () => T[];
-// 	seedPendingEntities?: () => T[];
-// 	seedAccessPolicies?: () => Record<string, AccessPolicy[]>;
-// 	seedAccessRights?: () => Record<string, Action>;
-// 	seedHierarchies?: () => Hierarchy[];
-// 	seedSelections?: () => Record<string, string[]>;
-// 	// parentId?: string; // in connection!
-// };
 
 /**
  * Either disable via boolean or override via callback
@@ -75,35 +60,11 @@ export type SocketioConfiguration<T extends AnyEntityExtended = AnyEntityExtende
 	Omit<EntityContainerConfiguration<T>, 'parentId'> & SocketioHandlers<T>
 >;
 
-/**
- * For managing new entities before submitting them to the backend,
- * they are alive in the frontend only and
- * SocketIO holds space for them.
- */
-// type pendingConfiguration<T extends AnyEntityExtended = AnyEntityExtended> = {
-// 	// parentId?: string; // in connection!
-// 	inherit?: boolean;
-// 	public?: boolean;
-// 	publicAction?: Action;
-// 	template?: Partial<Omit<T, 'id'>>;
-// };
-
 export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 	extends EntityContainer<T>
 	implements EntityContainerInterface<T>
 {
 	public client: Socket;
-	// #entities = $state<T[]>([]); // AnyEntityExtended[];
-	// #pendingEntities = $state<T[]>([]); // AnyEntityExtended[];
-	// #accessPolicies = $state<Record<string, AccessPolicy[]>>({}); // UUID: AccessPolicy[]
-	// #accessRights = $state<Record<string, Action>>({}); // UUID: Action
-	// #hierarchies = $state<Hierarchy[]>([]); // flat array of all hierarchies
-	// #selections = $state<Record<string, string[]>>({}); // selectionName: entityIds[]
-	// parentId?: string | null;
-	// defaultInherit: boolean = false;
-	// defaultPublic: boolean = false;
-	// defaultPublicAction: Action = Action.READ;
-	// pendingTemplate?: Partial<Omit<T, 'id'>>; // AnyEntityExtended without id;
 
 	constructor(connection: SocketioConnection, configuration: SocketioConfiguration<T> = {}) {
 		super({ parentId: connection.parentId, ...configuration });
@@ -127,23 +88,6 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 		});
 
 		if (this.pendingTemplate) this.createPending();
-
-		// // TBD: do we need a function to seed the data (and first time use it here)
-		// // for re-seeding or is it enough to do this through the setter?
-		// $effect(() => {
-		// 	this.#entities = configuration.seedEntities ? configuration.seedEntities() : [];
-		// 	this.#pendingEntities = configuration.seedPendingEntities
-		// 		? configuration.seedPendingEntities()
-		// 		: [];
-		// 	this.#accessPolicies = configuration.seedAccessPolicies
-		// 		? configuration.seedAccessPolicies()
-		// 		: {};
-		// 	this.#accessRights = configuration.seedAccessRights ? configuration.seedAccessRights() : {};
-		// 	this.#hierarchies = configuration.seedHierarchies ? configuration.seedHierarchies() : [];
-		// 	this.#selections = configuration.seedSelections ? configuration.seedSelections() : {};
-		// });
-		// this.parentId = connection.parentId ?? undefined;
-		// this.pendingTemplate = configuration.template ?? undefined; // TBD: change into setting all values, but the id value to null/undifned/empty, whatver is adequate - note the mandartory keys!
 
 		// if handlers are not disabled, add the provided handler or the default one:
 		if (configuration.transferred !== false) {
@@ -175,151 +119,6 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 		}
 	}
 
-	// // --- reactive surface ---
-	// /**
-	//  * Getters and Setters for the main entities array managed by this SocketIO instance.
-	//  *
-	//  * Deeply reactive array of entities managed by this socketio class.
-	//  * Read in templates, mutate in place, or reassign.
-	//  */
-	// get entities(): T[] {
-	// 	return this.#entities;
-	// }
-	// set entities(value: T[]) {
-	// 	this.#entities = value;
-	// }
-
-	// /** Reactive collection of entities that are being prepared but not yet submitted. */
-	// get pendingEntities(): T[] {
-	// 	return this.#pendingEntities;
-	// }
-	// set pendingEntities(value: T[]) {
-	// 	this.#pendingEntities = value;
-	// }
-
-	// get accessPolicies(): Record<string, AccessPolicy[]> {
-	// 	return this.#accessPolicies;
-	// }
-	// set accessPolicies(value: Record<string, AccessPolicy[]>) {
-	// 	this.#accessPolicies = value;
-	// }
-
-	// get accessRights(): Record<string, Action> {
-	// 	return this.#accessRights;
-	// }
-	// set accessRights(value: Record<string, Action>) {
-	// 	this.#accessRights = value;
-	// }
-
-	// get hierarchies(): Hierarchy[] {
-	// 	return this.#hierarchies;
-	// }
-	// set hierarchies(value: Hierarchy[]) {
-	// 	this.#hierarchies = value;
-	// }
-
-	// get selections(): Record<string, string[]> {
-	// 	return this.#selections;
-	// }
-	// set selections(value: Record<string, string[]>) {
-	// 	this.#selections = value;
-	// }
-
-	// /**
-	//  * Produce a new entity with a preliminary `new_*` id (which the backend
-	//  * swaps for a real UUID on `status:created`, at which point {@link handleStatus}
-	//  * rewrites it in place). Merges, in order: the configured `pendingTemplate` (if any),
-	//  * then the optional `overrides` argument, then the freshly-generated id.
-	//  *
-	//  * Does not touch `entities` — callers either wrap the result in `$state(...)` to bind
-	//  * to form inputs and submit via {@link submitEntity} when ready.
-	//  */
-	// createPending(overrides?: Partial<T>): T {
-	// 	const pendingEntity = {
-	// 		...this.pendingTemplate,
-	// 		...overrides,
-	// 		id: 'new_' + Math.random().toString(36).substring(2, 9)
-	// 	} as T;
-	// 	this.#pendingEntities.unshift(pendingEntity);
-	// 	return pendingEntity;
-	// }
-
-	// // TBD: consider moving the Selection in its own class and here?
-
-	// /**
-	//  * Selections are named subsets of the main entity-id array, stored as arrays of ids.
-	//  *
-	//  * Deeply reactive array of an array of ids.
-	//  * Read in templates, mutate in place, or reassign.
-	//  * Use cases for selections might include:
-	//  * - marking the entities, that are editable in browser
-	//  * - marking the entities that are selected in a list for bulk actions
-	//  * - order of entities, that are sorted by a specific entity attribute
-	//  * - select by access policies: all entities that are shared with a specific team with a specific right, etc.
-	//  * - select by access rights: all entities that the user has 'own', 'write', 'connect' 'read' access to, etc.
-	//  * - select by hierarchy: all entities that are linked to a specific parent entity or have a specific child entity, etc.
-	//  */
-	// addSelection(name: string, entityIds: string[]) {
-	// 	if (this.#selections[name]) {
-	// 		throw new Error(`Selection with name "${name}" already exists.`);
-	// 	}
-	// 	this.#selections[name] = entityIds;
-	// 	return this.#selections[name];
-	// }
-
-	// // getSelection(name: string) {
-	// //     if (!this.#selections[name]) {
-	// //         throw new Error(`Selection with name "${name}" does not exist.`);
-	// //     }
-	// //     return this.#selections[name];
-	// // }
-
-	// getSelectedEntities(name: string) {
-	// 	const selectedIds = this.selections[name];
-	// 	return this.entities.filter((entity) => selectedIds.includes(entity.id));
-	// }
-
-	// addToSelection(name: string, entityIds: string[]) {
-	// 	if (!this.#selections[name]) {
-	// 		throw new Error(`Selection with name "${name}" does not exist.`);
-	// 	}
-	// 	this.#selections[name] = [...this.#selections[name], ...entityIds];
-	// 	return this.#selections[name];
-	// }
-
-	// removeFromSelection(name: string, entityIds: string[]) {
-	// 	if (!this.#selections[name]) {
-	// 		throw new Error(`Selection with name "${name}" does not exist.`);
-	// 	}
-	// 	this.#selections[name] = this.#selections[name].filter((id) => !entityIds.includes(id));
-	// 	return this.#selections[name];
-	// }
-
-	// /** for example all entities that match a specific condition */
-	// // TBD extend with choosing different data containers, such as
-	// // accessPolicies, hierarchies, etc. for more complex selection logic,
-	// // e.g. select all entities that are shared with a specific team with a specific right,
-	// // or select all entities that are linked to a specific parent entity or have a specific child entity, etc.
-	// createFilteredSelection(name: string, filterFn: (entity: T) => boolean) {
-	// 	const filteredIds = this.entities.filter(filterFn).map((entity) => entity.id);
-	// 	return this.addSelection(name, filteredIds);
-	// }
-
-	// createAllLinkedSelection(name: string, parentId: string) {
-	// 	const linkedIds =
-	// 		this.#hierarchies.filter((h) => h.parent_id === parentId).map((h) => h.child_id) || [];
-	// 	return this.addSelection(name, linkedIds);
-	// }
-
-	// sortSelectionBy(name: string, attribute: keyof T, ascending = true) {
-	// 	this.entities.sort((a, b) => {
-	// 		if (a[attribute] < b[attribute]) return ascending ? -1 : 1;
-	// 		if (a[attribute] > b[attribute]) return ascending ? 1 : -1;
-	// 		return 0;
-	// 	});
-	// 	this.#selections[name] = this.getSelectedEntities(name).map((entity) => entity.id);
-	// }
-
 	/**
 	 * Submits an entity. The backend decides whether it is a create or an update
 	 * based on whether `entity.id` is a UUID or a preliminary `new_*` id.
@@ -334,11 +133,6 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 		publicAccess?: boolean,
 		publicAction?: Action
 	): void {
-		// TBD: refactor to check why (undfined, ...)
-		// does not work and submits an empty payload,
-		// instead of the first pending entity as intended.
-		// TBD: consider autoSubmit based
-		// on the id == 'new_*' pattern instead of presence of the entity argument?
 		const autoSubmit = entity === undefined;
 		const target = autoSubmit ? this.pendingEntities[0] : entity;
 		if (!target) return;
@@ -487,17 +281,10 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 		if (index > -1) this.entities.splice(index, 1);
 		// remove from selections:
 		for (const selectionName in this.selections) {
-			// TBD: consider using getters and setters,
-			// i.e. this.selections[selectionName] = this.selections[selectionName].filter(...)
-			// to trigger reactivity?
 			this.selections[selectionName] = this.selections[selectionName].filter(
 				(id) => id !== resource_id
 			);
 		}
-		// remove from hierarchies:
-		// this.hierarchies = this.hierarchies.filter(
-		// 	(h) => h.child_id !== resource_id && h.parent_id !== resource_id
-		// );
 		delete this.accessPolicies[resource_id];
 		delete this.accessRights[resource_id];
 		delete this.hierarchies[resource_id];
@@ -520,9 +307,6 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 				}
 				// replace submitted_id with id in all selections, as it is now replaced by the real id
 				for (const selectionName in this.selections) {
-					// TBD: consider using getters and setters,
-					// i.e. this.selections[selectionName] = this.selections[selectionName].map(...)
-					// to trigger reactivity?
 					this.selections[selectionName] = this.selections[selectionName].map((id) =>
 						id === status.submitted_id ? status.id : id
 					);
@@ -550,18 +334,12 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 						];
 					}
 				}
-				// Re-read to resolve updated hierarchy
-				// TBD: or consider sending the updated hierarchy at link from backend?
-				// this.client.emit('read', status.id);
 			} else if (status.success === 'unlinked') {
 				if (status.parent_id === this.parentId) {
 					this.hierarchies[status.id] = this.hierarchies[status.id]?.filter(
 						(h) => h.child_id !== status.id
 					);
 				}
-				// Re-read to resolve updated hierarchy
-				// TBD: or consider sending the updated hierarchy at unlink from backend?
-				// this.client.emit('read', status.id);
 			}
 		}
 	}

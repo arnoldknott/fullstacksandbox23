@@ -4,23 +4,6 @@ import { Action } from './accessHandler';
 import type { AccessPolicy, AnyEntityExtended, AnyIdentityExtended, Hierarchy } from './types';
 
 /**
- * Functions that provide the Data for class EntityContainer to manage. Evaluated inside a
- * `$effect`, so it runs once on construction (seeding the internal entities array) and
- * then re-runs whenever any reactive value it reads changes — typically `data.*` from
- * SvelteKit's PageData after navigation, `invalidate`, or form actions.
- */
-// type EntityData<T> = {
-// 	seedEntities?: () => T[];
-// 	seedPendingEntities?: () => T[];
-// 	seedIdentities?: () => AnyIdentityExtended[];
-// 	seedAccessPolicies?: () => Record<string, AccessPolicy[]>;
-// 	seedAccessRights?: () => Record<string, Action>;
-// 	seedChildren?: () => Record<string, Hierarchy[]>;
-// 	seedSelections?: () => Record<string, string[]>;
-// 	parentId?: string; // should it be here?
-// };
-
-/**
  * For managing new entities before submitting them,
  * they are alive in the frontend only and EntityContainer holds space for them.
  */
@@ -48,9 +31,6 @@ export interface EntityContainerInterface<T extends AnyEntityExtended = AnyEntit
 	hierarchies: Record<string, Hierarchy[]>;
 	selections: Record<string, string[]>;
 	parentId?: string | null;
-	// defaultInherit: boolean;
-	// defaultPublic: boolean;
-	// defaultPublicAction: Action;
 	pendingTemplate?: Partial<Omit<T, 'id'>>;
 	pendingSubmitOptions?: {
 		parentId?: string;
@@ -121,9 +101,6 @@ export class EntityContainer<
 	// Collection of generic selections to manage subsests of data potentially based on specific metadata criteria:
 	#selections = $state<Record<string, string[]>>({}); // selectionName: entityIds[]
 	parentId?: string | null;
-	// defaultInherit: boolean = false;
-	// defaultPublic: boolean = false;
-	// defaultPublicAction: Action = Action.READ;
 	pendingTemplate?: Partial<Omit<T, 'id'>>; // AnyEntityExtended without id;
 	pendingSubmitOptions?: {
 		parentId?: string;
@@ -133,25 +110,10 @@ export class EntityContainer<
 	};
 
 	constructor(configuration: EntityContainerConfiguration<T> = {}) {
-		// TBD: do we need a function to seed the data (and first time use it here)
-		// for re-seeding or is it enough to do this through the setter?
-		// $effect(() => {
-		// 	this.#entities = configuration.seedEntities ? configuration.seedEntities() : [];
-		// 	this.#pendingEntities = configuration.seedPendingEntities
-		// 		? configuration.seedPendingEntities()
-		// 		: [];
-		// 	this.#identities = configuration.seedIdentities ? configuration.seedIdentities() : [];
-		// 	this.#accessPolicies = configuration.seedAccessPolicies
-		// 		? configuration.seedAccessPolicies()
-		// 		: {};
-		// 	this.#accessRights = configuration.seedAccessRights ? configuration.seedAccessRights() : {};
-		// 	this.#hierarchies = configuration.seedHierarchies ? configuration.seedHierarchies() : {};
-		// });
-		// this.#selections = configuration.seedSelections ? configuration.seedSelections() : {};
 		this.parentId = configuration.parentId ?? undefined;
-		this.pendingTemplate = configuration.template ?? undefined; // TBD: change into setting all values, but the id value to null/undifned/empty, whatver is adequate - note the mandartory keys!
+		this.pendingTemplate = configuration.template ?? undefined;
 		this.pendingSubmitOptions = {
-			parentId: configuration.parentId ?? undefined, // TBD: decide if this is double information?
+			parentId: configuration.parentId ?? undefined,
 			inherit: configuration.inherit ?? false,
 			public: configuration.public ?? false,
 			publicAction: configuration.publicAction ?? undefined
@@ -217,8 +179,8 @@ export class EntityContainer<
 
 	/**
 	 * Produce a new entity with a preliminary `new_*` id (which the backend
-	 * swaps for a real UUID on `status:created`, at which point {@link handleStatus}
-	 * rewrites it in place). Merges, in order: the configured `pendingTemplate` (if any),
+	 * swaps for a real UUID on `status:created`.
+	 * Merges, in order: the configured `pendingTemplate` (if any),
 	 * then the optional `overrides` argument, then the freshly-generated id.
 	 *
 	 * Does not touch `entities` — callers either wrap the result in `$state(...)` to bind
@@ -264,13 +226,6 @@ export class EntityContainer<
 		this.#selections[name] = entityIds;
 		return this.#selections[name];
 	}
-
-	// getSelection(name: string) {
-	//     if (!this.#selections[name]) {
-	//         throw new Error(`Selection with name "${name}" does not exist.`);
-	//     }
-	//     return this.#selections[name];
-	// }
 
 	/**
 	 * Removes the selection with the specified name from the entity container.
@@ -395,13 +350,6 @@ export class EntityContainer<
 	private createReactiveSelection(name: string, effectFunction: () => void) {
 		this.addSelection(name);
 		$effect(() => effectFunction());
-		// svelte-ignore state_referenced_locally
-		// const getSelectedData = $derived.by(() => this.getSelectedEntities(name));
-		// This is ensured to be called once only here as the addSelection is a singleton -
-		// but afterwards the result is reactive and updates
-		// whenever the dependencies of the effect function change.
-		// svelte-ignore state_referenced_locally
-		// return getSelectedData;
 		return () => this.getSelectedEntities(name);
 	}
 
@@ -409,6 +357,7 @@ export class EntityContainer<
 	// TBD: extend with choosing different data containers, such as
 	// accessPolicies, hierarchies, etc. for more complex selection logic,
 	// e.g. select all entities that are shared with a specific team with a specific right,
+	// or select all entities that are linked to a specific parent entity or have a specific child entity, etc.
 	/**
 	 *
 	 * @param name of the selection to create
@@ -461,22 +410,6 @@ export class EntityContainer<
 				})(),
 		fromOtherSelection?: string
 	) {
-		// this.addSelection(name);
-		// $effect(() => {
-		// const parentIdToUse = parentId ?? this.parentId;
-		// if (!parentIdToUse) {
-		// 	throw new Error(
-		// 		"Parent ID must be provided either as an argument or as the EntityContainer's parentId property."
-		// 	);
-		// }
-		// this.#selections[name] =
-		// 	this.#hierarchies
-		// 		.filter((hierarchy) => {
-		// 			if (!inverse) return hierarchy.parent_id === parentIdToUse;
-		// 			else return hierarchy.parent_id !== parentIdToUse;
-		// 		})
-		// 		.map((hierarchy) => hierarchy.child_id) || [];
-		// TBD: add option to find linked child(ren) instead of linked parent?
 		return this.createReactiveSelection(name, () => {
 			this.#selections[name] = this.getSelectedEntities(fromOtherSelection)
 				.filter((entity) => {
@@ -494,8 +427,6 @@ export class EntityContainer<
 
 				.map((entity) => entity.id);
 		});
-		// const selectionEntities = $derived.by(() => this.getSelectedEntities(name));
-		// return selectionEntities;
 	}
 
 	/**
@@ -568,8 +499,6 @@ export class EntityContainer<
 				.filter((identity) => matchingIdentityIds.has(identity.id))
 				.map((identity) => identity.id);
 		});
-		// const selectionIdentities = $derived.by(() => this.getSelectedIdentities(name));
-		// return selectionIdentities;
 		return () => this.getSelectedIdentities(name);
 	}
 
@@ -579,8 +508,6 @@ export class EntityContainer<
 		ascending = true,
 		fromOtherSelection?: string
 	) {
-		// this.addSelection(name)
-		// $effect(() => {
 		return this.createReactiveSelection(name, () => {
 			this.selections[name] = this.getSelectedEntities(fromOtherSelection)
 				.toSorted((a, b) => {
@@ -590,7 +517,6 @@ export class EntityContainer<
 				})
 				.map((entity) => entity.id);
 		});
-		// const sortedSelectionEntities =  $derived.by(() => this.getSelectedEntities(name));
-		// return sortedSelectionEntities;
+
 	}
 }
