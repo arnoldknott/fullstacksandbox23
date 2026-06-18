@@ -9,7 +9,7 @@ export const load: PageServerLoad = async ({ url }) => {
 	const presentationPath = url.pathname.split('/presentation/')[1];
 	console.log('=== 🧦 presentation - devF23 - INTENTION - presentationPath ===');
 	console.log(presentationPath);
-	const presentationResponse = await backendAPI.get(null, '/presentation/paths/' + presentationPath);
+	const presentationResponse = await backendAPI.get(null, '/presentation/path/' + presentationPath);
 	if (presentationResponse.status === 200) {
 		const presentationData = await presentationResponse.json();
 		console.log('=== 🧦 presentation - devF23 - INTENTION - pre-loaded presentationData ===');
