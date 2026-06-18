@@ -333,5 +333,29 @@ describe('SocketIO for DemoResources', () => {
 		});
 	});
 
+	test('submitBulk emits "submit" event with correct payload', async () => {
+		testSocketio.pendingTemplate = { name: 'bulk pending' };
+		testSocketio.createPending() as DemoResource;
+		testSocketio.createPending() as DemoResource;
+
+		testSocketio.submitBulk();
+
+		await vi.waitFor(() => {
+			expect(serverMessages.length).toBe(2);
+			expect(serverMessages).toContainEqual({
+				event: 'submit',
+				data: [
+					expect.objectContaining({ payload: expect.objectContaining({ name: 'bulk pending' }) })
+				]
+			});
+		});
+		expect(serverMessages).toContainEqual({
+			event: 'submit',
+			data: [
+				expect.objectContaining({ payload: expect.objectContaining({ name: 'bulk pending' }) })
+			]
+		});
+	});
+
 	// endregion: Tests for Submit Event Emitters
 });
