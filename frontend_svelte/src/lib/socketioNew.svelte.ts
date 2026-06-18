@@ -328,14 +328,11 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 							inherit: status.inherit,
 							order: status.order
 						};
-
-						// {
-						// this.hierarchies[status.id] = [
-						// 	...this.hierarchies[status.id],
-						// 	{ child_id: status.id, parent_id: this.parentId, inherit: status.inherit, order: status.order }
-						// ];
 					} else {
+						// Re-read the linked entity
 						this.client.emit('read', status.id);
+						// And add the new hierarchy link to the local state.
+						// TBD: should this one be removed and leave it to the read reconciliation?
 						this.hierarchies[status.id] = [
 							{
 								child_id: status.id,
