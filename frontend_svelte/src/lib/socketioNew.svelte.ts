@@ -46,7 +46,6 @@ export type SocketioStatus =
 	| { success: 'unlinked'; id: string; parent_id: string }
 	| { error: string };
 
-
 /**
  * Either disable via boolean or override via callback
  */

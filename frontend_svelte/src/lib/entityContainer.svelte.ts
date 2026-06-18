@@ -517,6 +517,5 @@ export class EntityContainer<
 				})
 				.map((entity) => entity.id);
 		});
-
 	}
 }
