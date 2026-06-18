@@ -5,7 +5,12 @@ import { Server, type Socket as ServerSocket } from 'socket.io';
 import { afterAll, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 import { WebSocketServer } from 'ws';
 
-import { SocketIO, type SocketioConfiguration, type SocketioConnection, type SocketioStatus } from './socketioNew.svelte';
+import {
+	SocketIO,
+	type SocketioConfiguration,
+	type SocketioConnection,
+	type SocketioStatus
+} from './socketioNew.svelte';
 import type { AnyEntityExtended, DemoResource } from './types';
 
 // Provide data for the mocked backendConfiguration. Port is filled in after the test server starts.
@@ -65,7 +70,7 @@ beforeAll(async () => {
 		});
 		// For debuging the connection - server can console.log a disconnect:
 		// socket.on('disconnect', () => {
-			// console.log('✅ Client disconnected'); // your "life sign"
+		// console.log('✅ Client disconnected'); // your "life sign"
 		// });
 	});
 });
@@ -91,7 +96,8 @@ class SocketioClientHandler<T extends AnyEntityExtended = AnyEntityExtended> {
 	}
 
 	static async create<T extends AnyEntityExtended = AnyEntityExtended>(
-		connection: SocketioConnection, configuration: SocketioConfiguration<T> = {}
+		connection: SocketioConnection,
+		configuration: SocketioConfiguration<T> = {}
 	): Promise<SocketioClientHandler<T>> {
 		serverMessages = [];
 		const testSocket = new SocketioClientHandler<T>(connection);
@@ -126,10 +132,10 @@ describe('SocketIO for DemoResources', () => {
 			sessionId: 'session-123'
 		});
 		testSocketio = socketioClientHandler.socketioClient as SocketIO<DemoResource>;
-		return(() => {
+		return () => {
 			testSocketio.client.disconnect();
 			serverMessages = [];
-		});
+		};
 	});
 
 	// region: Tests for constructor:
@@ -166,14 +172,17 @@ describe('SocketIO for DemoResources', () => {
 	});
 
 	test('disables  default handlers when specified in options', async () => {
-		const clientHandler = await SocketioClientHandler.create<DemoResource>({
-			namespace: '/demo-resource',
-			sessionId: 'session-123'
-		}, {
-			transferred: false,
-			deleted: false,
-			status: false
-		});
+		const clientHandler = await SocketioClientHandler.create<DemoResource>(
+			{
+				namespace: '/demo-resource',
+				sessionId: 'session-123'
+			},
+			{
+				transferred: false,
+				deleted: false,
+				status: false
+			}
+		);
 		const testClientWithDefaultHandlersDisabled = clientHandler.socketioClient;
 
 		const emitSpy = vi.spyOn(testClientWithDefaultHandlersDisabled.client, 'emit');
@@ -183,7 +192,9 @@ describe('SocketIO for DemoResources', () => {
 		// transferred handler should be overridden to do nothing
 		serverSocket.emit('transferred', { id: 'srv-1', name: 'from server' });
 		await vi.waitFor(() => {
-			expect(testClientWithDefaultHandlersDisabled.entities.map((e) => e.id)).not.toContain('srv-1');
+			expect(testClientWithDefaultHandlersDisabled.entities.map((e) => e.id)).not.toContain(
+				'srv-1'
+			);
 		});
 
 		// deleted handler should be overridden to do nothing
@@ -208,27 +219,30 @@ describe('SocketIO for DemoResources', () => {
 			status: false as boolean | SocketioStatus
 		};
 
-		const clientHandler = await SocketioClientHandler.create<DemoResource>({
-			namespace: '/demo-resource',
-			sessionId: 'session-123'
-		}, {
-			transferred:(data) => {
-				overridesCalled.transferred = data;
+		const clientHandler = await SocketioClientHandler.create<DemoResource>(
+			{
+				namespace: '/demo-resource',
+				sessionId: 'session-123'
 			},
-			deleted: (id) => {
-				overridesCalled.deleted = id;
-			},
-			status: (status) => {
-				overridesCalled.status = status;
+			{
+				transferred: (data) => {
+					overridesCalled.transferred = data;
+				},
+				deleted: (id) => {
+					overridesCalled.deleted = id;
+				},
+				status: (status) => {
+					overridesCalled.status = status;
+				}
 			}
-		});
+		);
 
 		serverSocket.emit('transferred', { id: 'srv-1', name: 'from server' });
 		await vi.waitFor(() => {
 			expect(overridesCalled.transferred).toEqual({ id: 'srv-1', name: 'from server' });
 		});
 		expect(overridesCalled.transferred).toEqual({ id: 'srv-1', name: 'from server' });
-		
+
 		serverSocket.emit('deleted', 'srv-1');
 		await vi.waitFor(() => {
 			expect(overridesCalled.deleted).toEqual('srv-1');
