@@ -105,10 +105,7 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 	// defaultPublicAction: Action = Action.READ;
 	// pendingTemplate?: Partial<Omit<T, 'id'>>; // AnyEntityExtended without id;
 
-	constructor(
-		connection: SocketioConnection,
-		configuration: SocketioConfiguration<T> = {}
-	) {
+	constructor(connection: SocketioConnection, configuration: SocketioConfiguration<T> = {}) {
 		super({ parentId: connection.parentId, ...configuration });
 		const backendAPIConfiguration: BackendAPIConfiguration = getContext('backendAPIConfiguration');
 		const backendFqdn = backendAPIConfiguration.backendFqdn;
