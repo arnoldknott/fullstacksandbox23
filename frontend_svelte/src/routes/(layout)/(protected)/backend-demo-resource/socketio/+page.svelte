@@ -54,6 +54,10 @@
 	// 			// creation_date: new Date(Date.now()) // TBD: Check if this is necessary?
 	// 		})
 	// 	});
+	// let ownedDemoResources: DemoResourceExtended[] = $derived([
+	// 	...(socketio?.pendingEntities || []),
+	// 	...(socketio?.getSelectedEntities('owner') ?? [])
+	// ]);
 	let ownedDemoResources: DemoResourceExtended[] = $derived(
 		socketio?.getSelectedEntities('owner') || []
 	);
@@ -204,8 +208,10 @@
 				class="btn-neutral-container btn btn-gradient shadow-outline rounded-full shadow-sm"
 				aria-label="Add Button"
 				onclick={() => {
+					if (socketio?.pendingEntities.length === 0) socketio?.createPending();
 					if (!ownedDemoResources.includes(socketio.pendingEntities[0])) {
-						ownedDemoResources = [...socketio.pendingEntities, ...ownedDemoResources];
+						// ownedDemoResources.unshift(socketio.pendingEntities[0]);
+						ownedDemoResources = [socketio.pendingEntities[0], ...ownedDemoResources];
 					}
 				}}
 			>
@@ -287,19 +293,21 @@
 			<span class="icon-[tabler--key-filled] bg-success"></span>
 			Demo Resources with owner access: {ownedDemoResources.length}
 		</h3>
-		{#each ownedDemoResources as demoResource, idx (demoResource.id)}
+		{#each ownedDemoResources as demoResource, idx (demoResource)}
 			<DemoResourceContainer
 				bind:edit={
 					() => socketio.selections['editing'].some((id) => id === demoResource.id),
 					(value) => {
 						// if (demoResource.id) {
-						if (value) socketio.addToSelection('editing', [demoResource.id]);
-						else socketio.removeFromSelection('editing', [demoResource.id]);
+						const isEditing = socketio.selections['editing'].includes(demoResource.id);
+						if (value && !isEditing) socketio.addToSelection('editing', [demoResource.id]);
+						else if (!value && isEditing)
+							socketio.removeFromSelection('editing', [demoResource.id]);
 						// }
 					}
 				}
 				identities={data.payload.identities}
-				{demoResource}
+				demoResource={() => ownedDemoResources[idx]}
 				{socketio}
 			/>
 			<!-- bind:demoResource={demoResources[idx]} -->
@@ -315,6 +323,10 @@
 		{/each}
 	</div>
 	<div>
+		<div class={debug ? 'block' : 'hidden'}>
+			<h3 class="title">Pending Entities:</h3>
+			<JsonData data={socketio?.pendingEntities} />
+		</div>
 		<h3 class="title">
 			Identities access to demoresources: {data.payload.identities.length}
 		</h3>
@@ -367,7 +379,7 @@
 			Demo Resources with write access: {writeDemoResources.length}
 		</h3>
 		{#each writeDemoResources as demoResource, idx (demoResource.id)}
-			<DemoResourceContainer {demoResource} {socketio} />
+			<DemoResourceContainer demoResource={() => writeDemoResources[idx]} {socketio} />
 			<div class="px-2 {debug ? 'block' : 'hidden'}">
 				<p class="title">🚧 Debug Information 🚧</p>
 				<JsonData data={demoResource} />
@@ -385,7 +397,7 @@
 			Demo Resources with read access: {readDemoResources.length}
 		</h3>
 		{#each readDemoResources as demoResource, idx (demoResource.id)}
-			<DemoResourceContainer {demoResource} />
+			<DemoResourceContainer demoResource={() => readDemoResources[idx]} />
 			<div class="px-2 {debug ? 'block' : 'hidden'}">
 				<p class="title">🚧 Debug Information 🚧</p>
 				<JsonData data={demoResource} />
