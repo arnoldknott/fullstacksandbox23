@@ -8,7 +8,7 @@
 	import { AccessHandler, IdentityType } from '$lib/accessHandler';
 	import { SocketIO, type SocketioConnection } from '$lib/socketioNew.svelte';
 	import type { UeberGroupExtended } from '$lib/types';
-	import { initAccordion } from '$lib/userInterface';
+	import { initAccordion, initOverlay } from '$lib/userInterface';
 
 	import type { PageData } from './$types';
 	import IdentityAccordion from './IdentityAccordion.svelte';
@@ -209,6 +209,7 @@
 			class="overlay modal modal-middle overlay-open:opacity-100 hidden"
 			role="dialog"
 			tabindex="-1"
+			{@attach initOverlay}
 		>
 			<div class="modal-dialog overlay-open:opacity-100">
 				<div class="modal-content bg-base-300 shadow-outline shadow">
