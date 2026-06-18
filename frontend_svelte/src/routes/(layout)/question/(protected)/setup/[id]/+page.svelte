@@ -63,9 +63,9 @@
 		messageSocketio = new SocketIO<MessageExtended>(messageConnection, {
 			template: { content: '', language: 'en' }
 		});
-		messageSocketio.createSortedSelection('sortedMessageAnswers', 'creation_date');
+		messageSocketio.createSortedSelection('sortedMessageAnswers', 'creation_date', false);
 		numericalSocketio = new SocketIO<NumericalExtended>(numericalConnection);
-		numericalSocketio.createSortedSelection('sortedNumericalAnswers', 'creation_date');
+		numericalSocketio.createSortedSelection('sortedNumericalAnswers', 'creation_date', false);
 		// messageSocketio.createPending();
 	});
 
@@ -209,12 +209,13 @@
 			<span class="icon-[tabler--send-2]"></span>
 		</button>
 	</div>
+	<!-- <JsonData data={messageSocketio?.getSelectedEntities('sortedMessageAnswers')} /> -->
 </div>
 
 <Heading id="messageAnswers">Message Answers:</Heading>
 
 <div class="mx-2 grid w-full grid-cols-5 gap-2">
-	{#each messageAnswersSorted as answer, index (index)}
+	{#each messageAnswersSorted as answer, index (answer.id)}
 		<div animate:flip>
 			{@render answerBubble(answer.content, answer.id, index)}
 		</div>
@@ -224,7 +225,7 @@
 <Heading id="numericalAnswers">Numerical Answers:</Heading>
 
 <div class="mx-2 grid w-full grid-cols-5 gap-2">
-	{#each numericalAnswersSorted as answer, index (index)}
+	{#each numericalAnswersSorted as answer, index (answer.id)}
 		<div animate:flip>
 			{@render answerBubble(answer.value, answer.id, index)}
 		</div>

@@ -30,7 +30,7 @@
 	let socketioComment: SocketIO<MessageExtended> = $state()!;
 	// let intentionAnswers = $derived(socketioIntention?.entities ?? []);
 	let motivationAnswers = $derived(socketioMotivation?.entities ?? []);
-	let commentsAnswers = $derived(socketioComment?.entities ?? []);
+	// let commentsAnswers = $derived(socketioComment?.entities ?? []);
 	let intentionQuestionId = $derived(data.questionsData?.intention?.id || '');
 	let motivationQuestionId = $derived(data.questionsData?.motivation?.id || '');
 	let commentsQuestionId = $derived(data.questionsData?.comments?.id || '');
@@ -57,7 +57,7 @@
 		socketioIntention = new SocketIO<MessageExtended>(intentionConnection, {
 			template: { content: '', language: 'en' }
 		});
-		socketioIntention.createSortedSelection('sortedIntentionAnswers', 'creation_date');
+		socketioIntention.createSortedSelection('sortedIntentionAnswers', 'creation_date', false);
 
 		const connectionMotivation: SocketioConnection = {
 			namespace: '/numerical',
@@ -73,6 +73,7 @@
 		socketioComment = new SocketIO<MessageExtended>(commentConnection, {
 			template: { content: '', language: 'en' }
 		});
+		socketioComment.createSortedSelection('sortedCommentsAnswers', 'creation_date', false);
 	});
 
 	$effect(() => {
@@ -142,14 +143,17 @@
 		}
 	});
 
-	let commentsAnswersSorted: MessageExtended[] = $derived(
-		commentsAnswers.toSorted((a, b) => {
-			if (!a.creation_date || !b.creation_date) {
-				return 1;
-			} else {
-				return !a.creation_date < !b.creation_date ? -1 : 1;
-			}
-		})
+	// let commentsAnswersSorted: MessageExtended[] = $derived(
+	// 	commentsAnswers.toSorted((a, b) => {
+	// 		if (!a.creation_date || !b.creation_date) {
+	// 			return 1;
+	// 		} else {
+	// 			return !a.creation_date < !b.creation_date ? -1 : 1;
+	// 		}
+	// 	})
+	// );
+	let commentsAnswersSorted = $derived(
+		socketioComment?.getSelectedEntities('sortedCommentsAnswers') ?? []
 	);
 
 	onDestroy(() => {
@@ -239,7 +243,7 @@
 		</div>
 		<div class="heading mt-8">
 			<div class="mx-5 grid max-h-[400px] grid-cols-3 gap-6 overflow-y-auto">
-				{#each intentionAnswersSorted as answer, index (index)}
+				{#each intentionAnswersSorted as answer, index (answer.id)}
 					<div animate:flip>
 						{@render messageAnswer(answer.content, answer.creation_date, index)}
 					</div>
@@ -404,7 +408,7 @@
 		</div>
 		<div class="heading mt-8">
 			<div class="mx-5 grid max-h-[400px] grid-cols-3 gap-6 overflow-y-auto">
-				{#each commentsAnswersSorted as answer, index (index)}
+				{#each commentsAnswersSorted as answer, index (answer.id)}
 					<div animate:flip>
 						{@render messageAnswer(answer.content, answer.creation_date, index)}
 					</div>
