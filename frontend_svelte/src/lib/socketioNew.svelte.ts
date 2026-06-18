@@ -341,5 +341,8 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 				}
 			}
 		}
+		// TBD: consider handling status.error,
+		// depending on the backend implementation and emitted data on error.
+		// Maybe just console.logging for now?
 	}
 }
