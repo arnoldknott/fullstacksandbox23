@@ -39,10 +39,9 @@ beforeAll(async () => {
 		cors: { origin: '*' }
 	});
 
-	// The client connects to the `/demo-resource` namespace, so register it,
-	// otherwise socket.io rejects the connection as an "invalid namespace".
+	// For debuging the connection - server can console.log an established connection:
 	// socketioServer.of('/demo-resource').on('connection', () => {
-	// 	// console.log('✅ Client connected'); // your "life sign"
+	// 	// console.log('✅ Client connected');
 	// });
 
 	await new Promise<void>((resolve) => {
@@ -60,21 +59,15 @@ beforeAll(async () => {
 		});
 		serverSocket.emit('connection_ack', 'Connection established with test server');
 		socket.onAny((event: string, ...data: unknown[]) => {
+			// For debugging - server side logging of the received data:
 			// console.log('Server received event:', event, 'with data:', data);
 			serverMessages.push({ event, data });
 		});
-		socket.on('disconnect', () => {
+		// For debuging the connection - server can console.log a disconnect:
+		// socket.on('disconnect', () => {
 			// console.log('✅ Client disconnected'); // your "life sign"
-		});
+		// });
 	});
-	// serverSocket = await new Promise<ServerSocket>((resolve) => {
-	// 	socketioServer.of('/demo-resource').on('connection', (socket: ServerSocket) => {
-	// 		socket.onAny((event: string, ...data: unknown[]) => {
-	// 			serverMessages.push({ event, data });
-	// 		});
-	// 		resolve(socket);
-	// 	});
-	// });
 });
 
 afterAll(() => {
@@ -86,18 +79,6 @@ afterAll(() => {
 
 class SocketioClientHandler<T extends AnyEntityExtended = AnyEntityExtended> {
 	connection: SocketioConnection;
-
-	// /** Promise that resolves when the socket connection
-	//  * between the client and server is established,
-	//  * allowing tests to wait for it before proceeding. */
-	// #establishSocket: Promise<ServerSocket>;
-
-	/** The server-side socket instance for this test socket */
-	// socket!: ServerSocket;
-
-	/** Server side received messages for any event*/
-	// serverMessages: Array<{ event: string; data: unknown[] }> = [];
-	// testSocket!: ServerClientTestSocket<T>;
 
 	/** The client instance for this test socket */
 	socketioClient!: SocketIO<T>;
@@ -114,14 +95,6 @@ class SocketioClientHandler<T extends AnyEntityExtended = AnyEntityExtended> {
 	): Promise<SocketioClientHandler<T>> {
 		serverMessages = [];
 		const testSocket = new SocketioClientHandler<T>(connection);
-		// const establishSocket = new Promise<ServerSocket>((resolve) => {
-		// 	socketioServer.of('/demo-resource').once('connection', (socket: ServerSocket) => {
-		// 		socket.onAny((event: string, ...data: unknown[]) => {
-		// 			testSocket.serverMessages.push({ event, data });
-		// 		});
-		// 		resolve(socket);
-		// 	});
-		// });
 
 		testSocket.cleanup = $effect.root(() => {
 			testSocket.socketioClient = new SocketIO(connection, configuration);
@@ -133,16 +106,10 @@ class SocketioClientHandler<T extends AnyEntityExtended = AnyEntityExtended> {
 			});
 		});
 
-		// testSocket.socket = await establishSocket;
 		return testSocket;
 	}
 
-	// get socket() {
-	// 	return this.testSocket;
-	// }
-
 	disconnect(): void {
-		// this.socket.offAny();
 		this.socketioClient.client.disconnect();
 		serverMessages = [];
 		this.cleanup();
@@ -150,17 +117,6 @@ class SocketioClientHandler<T extends AnyEntityExtended = AnyEntityExtended> {
 }
 
 describe('SocketIO for DemoResources', () => {
-	// const connection: SocketioConnection = {
-	// 	namespace: '/demo-resource',
-	// 	sessionId: 'session-123'
-	// };
-	// // let serverSocket: ServerSocket;
-	// let socketioClient: SocketIO<DemoResource>;
-	// // let serverMessages: Array<{ event: string; data: unknown[] }> = [];
-	// // let waitForServerConnection: Promise<ServerSocket>;
-	// // let onAnyHandler: ((event: string, ...args: unknown[]) => void) | undefined;
-	// let cleanup: () => void;
-	// let testSocket: ServerClientTestSocket<DemoResource>;
 	let socketioClientHandler: SocketioClientHandler;
 	let testSocketio: SocketIO<DemoResource>;
 
@@ -173,61 +129,8 @@ describe('SocketIO for DemoResources', () => {
 		return(() => {
 			testSocketio.client.disconnect();
 			serverMessages = [];
-			// cleanup();
-			// testSocket.cleanup();
-			// testSocket.socketioClient.client.disconnect();
-			// serverMessages = [];
-			// cleanup();
-			// testSocket.cleanup();
-			// testSocket.socketioClient.client.disconnect();
-			// serverMessages = [];
-			// cleanup();
 		});
-		// socketioClient = new SocketIO(connection);
-		// serverMessages = [];
-
-		// // waitForServerConnection = new Promise<ServerSocket>((resolve) => {
-		// 	socketioServer.of('/demo-resource').once('connection', (socket: ServerSocket) => {
-		// 		// onAnyHandler = ((event: string, ...data: unknown[]) => {
-		// 		socket.onAny ((event: string, ...data: unknown[]) => {
-		// 			serverMessages.push({ event, data });
-		// 		});
-		// 		// socket.onAny(onAnyHandler);
-		// 		resolve(socket);
-		// 	});
-		// });
-
-		// const connectionPromise=  new Promise<ServerSocket>((resolve) => {
-		// 	socketioServer.of('/demo-resource').once('connection', (socket: ServerSocket) => {
-		// 		socket.onAny((event: string, ...data: unknown[]) => {
-		// 			serverMessages.push({ event, data });
-		// 		});
-		// 		resolve(socket);
-		// 	});
-		// });
-
-		// cleanup = $effect.root(() => {
-		// 	socketioClient = new SocketIO(connection);
-		// });
-		// await new Promise<void>((resolve) => {
-		// 	socketioClient.client.on('connection_ack', (_message: string) => {
-		// 		resolve();
-		// 	});
-		// });
-
-		// serverSocket = await connectionPromise;
-		// serverSocket = await waitForServerConnection;
 	});
-
-	// afterEach(() => {
-	// 	// if (onAnyHandler) {
-	// 	// serverSocket.offAny();
-	// 	// }
-	// 	// socketioClient.client.disconnect();
-	// 	// serverMessages = [];
-	// 	// cleanup();
-	// 	testSocket.disconnect();
-	// });
 
 	// region: Tests for constructor:
 	// - instantiation
@@ -263,7 +166,6 @@ describe('SocketIO for DemoResources', () => {
 	});
 
 	test('disables  default handlers when specified in options', async () => {
-		// cleanup();
 		const clientHandler = await SocketioClientHandler.create<DemoResource>({
 			namespace: '/demo-resource',
 			sessionId: 'session-123'
@@ -273,11 +175,6 @@ describe('SocketIO for DemoResources', () => {
 			status: false
 		});
 		const testClientWithDefaultHandlersDisabled = clientHandler.socketioClient;
-		// socketioClient = new SocketIO(connection, {
-		// 	transferred: false,
-		// 	deleted: false,
-		// 	status: false
-		// });
 
 		const emitSpy = vi.spyOn(testClientWithDefaultHandlersDisabled.client, 'emit');
 		// Seed one entity so deleted/status behavior is observable
@@ -305,8 +202,6 @@ describe('SocketIO for DemoResources', () => {
 	});
 
 	test('overrides default handlers with custom implementations', async () => {
-		// cleanup();
-		// socketioClient.client.disconnect();
 		const overridesCalled = {
 			transferred: false as boolean | DemoResource,
 			deleted: false as boolean | string,
@@ -318,61 +213,30 @@ describe('SocketIO for DemoResources', () => {
 			sessionId: 'session-123'
 		}, {
 			transferred:(data) => {
-				// console.log('custom transferred', data);
 				overridesCalled.transferred = data;
 			},
 			deleted: (id) => {
-				// console.log('custom deleted', id);
 				overridesCalled.deleted = id;
 			},
 			status: (status) => {
-				// console.log('custom status', status);
 				overridesCalled.status = status;
 			}
 		});
-
-		// const newConnection = new Promise<ServerSocket>((resolve) => {
-		// 	socketioServer.of('/demo-resource').once('connection', (socket: ServerSocket) => {
-		// 		resolve(socket);
-		// 	});
-		// });
-		// socketioClient = new SocketIO(connection, {
-		// 	transferred: (data) => {
-		// 		console.log('custom transferred', data);
-		// 	},
-		// 	deleted: (id) => {
-		// 		console.log('custom deleted', id);
-		// 	},
-		// 	status: (status) => {
-		// 		console.log('custom status', status);
-		// 	}
-		// });
-		// serverSocket = await newConnection;
-
-		// const logSpy = vi.spyOn(console, 'log');
 
 		serverSocket.emit('transferred', { id: 'srv-1', name: 'from server' });
 		await vi.waitFor(() => {
 			expect(overridesCalled.transferred).toEqual({ id: 'srv-1', name: 'from server' });
 		});
 		expect(overridesCalled.transferred).toEqual({ id: 'srv-1', name: 'from server' });
-		// await vi.waitFor(() => {
-			// 	expect(logSpy).toHaveBeenCalledWith('custom transferred', {
-				// 	id: 'srv-1',
-				// 	name: 'from server'
-				// });
-		// });
 		
 		serverSocket.emit('deleted', 'srv-1');
 		await vi.waitFor(() => {
 			expect(overridesCalled.deleted).toEqual('srv-1');
 		});
 
-
 		const status = { success: 'shared', id: 'srv-1' } as SocketioStatus;
 		serverSocket.emit('status', status);
 		await vi.waitFor(() => {
-		// 	expect(logSpy).toHaveBeenCalledWith('custom status', status);
 			expect(overridesCalled.status).toEqual(status);
 		});
 
