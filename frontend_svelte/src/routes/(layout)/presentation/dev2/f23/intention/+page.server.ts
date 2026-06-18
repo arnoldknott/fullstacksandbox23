@@ -6,6 +6,22 @@ import type { Question } from '$lib/types';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ url }) => {
+	const presentationPath = url.pathname.split('/presentation/')[1];
+	console.log('=== 🧦 presentation - devF23 - INTENTION - presentationPath ===');
+	console.log(presentationPath);
+	const presentationResponse = await backendAPI.get(null, '/presentation/paths/' + presentationPath);
+	if (presentationResponse.status === 200) {
+		const presentationData = await presentationResponse.json();
+		console.log('=== 🧦 presentation - devF23 - INTENTION - pre-loaded presentationData ===');
+		console.log(presentationData);
+	} else {
+		// TBD: consider rising an error herem,
+		// so client side can react accordingly and not show the relevant elements
+		// error(404, 'presentationData could not be loaded');
+		console.error(404, 'presentationData could not be loaded');
+	}
+
+	// TBD: replace the id's from  query strings with the linked questions from the presentationResponse
 	const questionIntentionId = url.searchParams.get('q-intention');
 	const questionMotivationId = url.searchParams.get('q-motivation');
 	const questionCommentsId = url.searchParams.get('q-comments');
