@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime, timedelta
 from typing import List
+
 import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
@@ -18,8 +19,8 @@ from models.access import (
 from models.demo_resource import DemoResource
 from models.identity import AzureGroup, GroupRead, SubGroupRead, UeberGroupRead, User
 from models.protected_resource import (
-    ProtectedResource,
     ProtectedChild,
+    ProtectedResource,
     ProtectedResourceRead,
 )
 from tests.utils import (
@@ -31,6 +32,7 @@ from tests.utils import (
     identity_id_user1,
     identity_id_user2,
     identity_id_user3,
+    many_test_azure_users,
     many_test_policies,
     resource_id1,
     resource_id2,
@@ -49,7 +51,6 @@ from tests.utils import (
     token_user2_read,
     token_user2_read_write,
     token_user2_write,
-    many_test_azure_users,
 )
 
 # region AccessPolicy tests:
