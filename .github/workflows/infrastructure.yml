@@ -42,7 +42,7 @@ env:
 
 jobs:
   plan:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       id-token: write
       contents: write
@@ -245,7 +245,7 @@ jobs:
   apply:
     needs: plan
     if: ${{ needs.plan.outputs.tofu_plan_exit_code == 2 }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       id-token: write
     environment: infrastructure-apply
