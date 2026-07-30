@@ -4,8 +4,8 @@
 	import Heading from '$components/Heading.svelte';
 </script>
 
-<Display id={`presentation-${page.params.id}`}>Presentation</Display>
-<Heading id={`presentation-title-${page.params.id}`}>{page.params.id}</Heading>
+<Display id="presentation">Presentation</Display>
+<Heading id="presentation-title">{page.params.id}</Heading>
 
 <div
 	class="title-large alert alert-warning bg-warning-container/20 text-warning-container-content/80 label-large text-center"
