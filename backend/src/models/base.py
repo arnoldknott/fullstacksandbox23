@@ -55,7 +55,6 @@ Features:
 """
 
 import sys
-from uuid import uuid4, UUID
 from datetime import datetime
 from enum import Enum
 from typing import (
@@ -70,6 +69,7 @@ from typing import (
     get_args,
     get_origin,
 )
+from uuid import UUID, uuid4
 
 from pydantic import BaseModel
 from sqlmodel import Field

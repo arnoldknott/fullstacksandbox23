@@ -1,7 +1,7 @@
 import uuid
-from fastapi import HTTPException
 
 import pytest
+from fastapi import HTTPException
 
 from core.types import Action, CurrentUserData
 from crud.access import (
@@ -17,9 +17,9 @@ from models.access import (
     AccessPolicyDelete,
     AccessPolicyUpdate,
 )
-from models.protected_resource import ProtectedResource
 from models.demo_resource import DemoResource
 from models.identity import SubGroup, SubSubGroup, User
+from models.protected_resource import ProtectedResource
 from tests.utils import (
     child_identity_id1,
     child_identity_id4,

@@ -57,7 +57,6 @@ from tests.utils import (
     many_azure_user_accounts,
     many_current_users_data,
     many_entity_type_links,
-    parent_resource_id,
     many_resource_ids,
     many_test_access_logs,
     many_test_azure_users,
@@ -68,6 +67,7 @@ from tests.utils import (
     many_test_sub_groups,
     many_test_sub_sub_groups,
     many_test_ueber_groups,
+    parent_resource_id,
     token_admin,
 )
 

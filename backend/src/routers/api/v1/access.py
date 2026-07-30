@@ -3,22 +3,22 @@ from datetime import datetime
 from typing import Annotated, AsyncGenerator, List, cast
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 
+from core.databases import get_async_session
 from core.security import (
     Guards,
     GuardTypes,
     check_token_against_guards,
     get_http_access_token_payload,
 )
-from core.databases import get_async_session
 from core.types import Action, IdentityType, ResourceType
 from crud.access import (
-    get_types_from_ids,
     AccessLoggingCRUD,
     AccessPolicyCRUD,
-    ResourceHierarchyCRUD,
     IdentityHierarchyCRUD,
+    ResourceHierarchyCRUD,
+    get_types_from_ids,
 )
 from models.access import (
     AccessLogRead,
@@ -29,8 +29,8 @@ from models.access import (
     AccessPolicyUpdate,
     BaseHierarchyCreate,
     BaseHierarchyDelete,
-    ResourceHierarchyRead,
     IdentityHierarchyRead,
+    ResourceHierarchyRead,
 )
 
 from .base import BaseView

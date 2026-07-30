@@ -109,11 +109,11 @@
 	let actionButtonShareMenu: HTMLElement;
 </script>
 
+<Display id="overview-presentations">Presentations</Display>
+
 {#snippet newPresentationHeader()}
 	<Heading id="newPresentation">New presentation</Heading>
 {/snippet}
-
-<Display id="overview-presentations">Presentations</Display>
 
 {#snippet slugDescription()}
 	This is the endpoint added for user access. It is not mandatory, as the presentation is always

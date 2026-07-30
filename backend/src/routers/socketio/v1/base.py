@@ -2,8 +2,8 @@ import logging
 from typing import (
     Any,
     Dict,
-    List,
     Generic,
+    List,
     Literal,
     Optional,
     Type,
@@ -17,8 +17,6 @@ from uuid import UUID
 
 import socketio
 from sqlmodel import SQLModel
-
-from models.base import BaseReadSQLModel, BaseExtendedSQLModel
 
 from core.config import config
 from core.security import (
@@ -48,6 +46,7 @@ from models.access import (
     IdentityHierarchyRead,
     ResourceHierarchyRead,
 )
+from models.base import BaseExtendedSQLModel, BaseReadSQLModel
 from routers.socketio.v1 import register_namespace, registry_namespaces
 
 logger = logging.getLogger(__name__)

@@ -4,8 +4,8 @@ from uuid import UUID
 
 import pytest
 
-from models.access import Action
 from crud.quiz import MessageCRUD, NumericalCRUD, QuestionCRUD
+from models.access import Action
 from models.quiz import Message, Numerical, Question
 from tests.utils import (
     session_id_admin_read_write_socketio,

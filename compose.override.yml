@@ -54,7 +54,7 @@ services:
   # Mainly replaced by pgadmin app - reinstate if changing from app to containerization for pgadmin:
   pgadmin:
     # TBD: centralize with ${PGADMIN_IMAGE_TAG} from versions.env and align infrastructure references.
-    image: dpage/pgadmin4:9.14.0
+    image: dpage/pgadmin4:9.16
     depends_on:
       - postgres
     env_file:
