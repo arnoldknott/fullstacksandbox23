@@ -1,8 +1,17 @@
 {
+  "python.defaultInterpreterPath": "/usr/local/bin/python",
   "python.analysis.autoSearchPaths": true,
   "python.analysis.diagnosticMode": "workspace",
   "python.analysis.extraPaths": ["./src"],
   "python.analysis.exclude": ["src/migrations/**"],
+  "isort.args": ["--profile", "black"],
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
+  },
   "python.testing.pytestEnabled": true,
   "python.testing.cwd": "${workspaceFolder}",
   "python.testing.pytestArgs": ["-q"]
