@@ -612,7 +612,7 @@ resource "azurerm_container_app" "postgresAdmin" {
   template {
     container {
       name   = "pgadmin"
-      image  = "dpage/pgadmin4:9.16"
+      image  = "dpage/pgadmin4:9.17"
       cpu    = 0.25
       memory = "0.5Gi"
       # volume_mounts {
@@ -747,7 +747,7 @@ resource "azurerm_container_app" "postgresAdmin" {
       liveness_probe {
         transport               = "TCP"
         port                    = 8080
-        initial_delay           = 240
+        initial_delay           = 60
         interval_seconds        = 10
         timeout                 = 3
         failure_count_threshold = 6
