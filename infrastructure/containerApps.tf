@@ -700,7 +700,7 @@ resource "azurerm_container_app" "postgresAdmin" {
       }
       env {
         name  = "PGADMIN_CONFIG_MASTER_PASSWORD_HOOK"
-        value = "'/scripts/set_master_password.sh'"
+        value = "'/bin/sh /scripts/set_master_password.sh'"
         # value = "'/data/set_master_password.sh'"
         # value = "'/var/lib/pgadmin/storage/set_master_password.sh'"
       }
@@ -722,6 +722,35 @@ resource "azurerm_container_app" "postgresAdmin" {
       env {
         name        = "PGADMIN_CONFIG_OAUTH2_CONFIG"
         secret_name = "pgadmin-oauth2-config"
+      }
+
+      # Explicit probes avoid relying on portal defaults and allow slower startup.
+      startup_probe {
+        transport               = "TCP"
+        port                    = 8080
+        initial_delay           = 60
+        interval_seconds        = 5
+        timeout                 = 3
+        failure_count_threshold = 120
+      }
+
+      readiness_probe {
+        transport               = "TCP"
+        port                    = 8080
+        initial_delay           = 60
+        interval_seconds        = 5
+        timeout                 = 3
+        failure_count_threshold = 48
+        success_count_threshold = 1
+      }
+
+      liveness_probe {
+        transport               = "TCP"
+        port                    = 8080
+        initial_delay           = 240
+        interval_seconds        = 10
+        timeout                 = 3
+        failure_count_threshold = 6
       }
     }
     volume {
