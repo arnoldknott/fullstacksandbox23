@@ -57,7 +57,7 @@ services:
   pgadmin:
     # TBD: centralize with ${PGADMIN_IMAGE_TAG} from versions.env and align infrastructure references.
     container_name: dev_pgadmin
-    image: dpage/pgadmin4:9.16
+    image: dpage/pgadmin4:9.17
     depends_on:
       - postgres
     env_file:
