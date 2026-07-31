@@ -612,7 +612,7 @@ resource "azurerm_container_app" "postgresAdmin" {
   template {
     container {
       name   = "pgadmin"
-      image  = "dpage/pgadmin4:9.15"
+      image  = "dpage/pgadmin4:9.17"
       cpu    = 0.25
       memory = "0.5Gi"
       # volume_mounts {
@@ -643,6 +643,14 @@ resource "azurerm_container_app" "postgresAdmin" {
       env {
         name  = "CONSOLE_LOG_LEVEL"
         value = "10"
+      }
+      env {
+        name  = "PGADMIN_LISTEN_PORT"
+        value = "8080"
+      }
+      env {
+        name  = "PGADMIN_DISABLE_POSTFIX"
+        value = "True"
       }
       ################
       # TBD: comment after switching to OAuth2 login only
@@ -727,7 +735,7 @@ resource "azurerm_container_app" "postgresAdmin" {
   }
 
   ingress {
-    target_port      = 80
+    target_port      = 8080
     external_enabled = true
     # allow_insecure_connections = false # consider adding this
     traffic_weight {
