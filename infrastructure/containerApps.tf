@@ -604,9 +604,9 @@ resource "azurerm_container_app" "postgresAdmin" {
   container_app_environment_id = azurerm_container_app_environment.ContainerEnvironment.id
   resource_group_name          = azurerm_resource_group.resourceGroup.name
 
-  lifecycle {
-    # ignore_changes = [ingress]
-  }
+  # lifecycle {
+  #   ignore_changes = [ingress]
+  # }
   revision_mode = "Single"
 
   template {
@@ -766,6 +766,7 @@ resource "azurerm_container_app" "postgresAdmin" {
   ingress {
     target_port      = 8080
     external_enabled = true
+    client_certificate_mode = "ignore"
     # allow_insecure_connections = false # consider adding this
     traffic_weight {
       percentage      = 100
