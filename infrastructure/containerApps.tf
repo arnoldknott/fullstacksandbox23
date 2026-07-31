@@ -756,30 +756,30 @@ resource "azurerm_container_app" "postgresAdmin" {
   secret {
     name                = "pgadmin-default-email"
     identity            = azurerm_user_assigned_identity.pgadminIdentity.id
-    key_vault_secret_id = azurerm_key_vault_secret.pgadminDefaultEmail[0].id
+    key_vault_secret_id = azurerm_key_vault_secret.pgadminDefaultEmail[0].versionless_id
   }
 
   secret {
     name                = "pgadmin-default-password"
     identity            = azurerm_user_assigned_identity.pgadminIdentity.id
-    key_vault_secret_id = azurerm_key_vault_secret.pgadminDefaultPassword[0].id
+    key_vault_secret_id = azurerm_key_vault_secret.pgadminDefaultPassword[0].versionless_id
   }
   ################
   secret {
     name                = "pgadmin-database-uri"
     identity            = azurerm_user_assigned_identity.pgadminIdentity.id
-    key_vault_secret_id = azurerm_key_vault_secret.pgadminDatabaseURI[0].id
+    key_vault_secret_id = azurerm_key_vault_secret.pgadminDatabaseURI[0].versionless_id
   }
   secret {
     name                = "pgadmin-master-password"
     identity            = azurerm_user_assigned_identity.pgadminIdentity.id
-    key_vault_secret_id = azurerm_key_vault_secret.pgadminMasterPassword[0].id
+    key_vault_secret_id = azurerm_key_vault_secret.pgadminMasterPassword[0].versionless_id
   }
 
   secret {
     name                = "pgadmin-oauth2-config"
     identity            = azurerm_user_assigned_identity.pgadminIdentity.id
-    key_vault_secret_id = azurerm_key_vault_secret.pgadminOauth2Config[0].id
+    key_vault_secret_id = azurerm_key_vault_secret.pgadminOauth2Config[0].versionless_id
   }
 
   tags = {
