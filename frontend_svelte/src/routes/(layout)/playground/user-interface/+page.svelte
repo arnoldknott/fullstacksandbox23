@@ -11,8 +11,14 @@
 		},
 		{
 			name: 'Sidebar',
-			description: 'on the side of the screen for navigation for secondary application navigation.',
+			description:
+				'on the left side of the screen for navigation for secondary application navigation.',
 			url: 'user-interface/sidebar'
+		},
+		{
+			name: 'Toolbar',
+			description: 'as a drawer on the right side of the screen for detailed tools and actions.',
+			url: 'user-interface/toolbar'
 		},
 		{
 			name: 'In page links',
