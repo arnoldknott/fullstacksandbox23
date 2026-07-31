@@ -2,6 +2,7 @@ name: test-fssb23
 
 services:
   backend_api:
+    container_name: test_backend_api
     build:
       # context:
       #     ./backend
@@ -43,6 +44,7 @@ services:
       - test-app-data:/data
 
   backend_worker:
+    container_name: test_backend_worker
     build:
       target: worker_dev
     depends_on:
@@ -87,6 +89,7 @@ services:
       - test_network
 
   frontend_svelte:
+    container_name: test_frontend_svelte
     build:
       target: test
       args:

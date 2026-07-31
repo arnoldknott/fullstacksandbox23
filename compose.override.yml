@@ -2,6 +2,7 @@
 
 services:
   backend_api:
+    container_name: dev_backend_api
     build:
       target: api_dev
     depends_on:
@@ -20,6 +21,7 @@ services:
       - dev_network
 
   backend_worker:
+    container_name: dev_backend_worker
     build:
       target: worker_dev
     depends_on:
@@ -54,6 +56,7 @@ services:
   # Mainly replaced by pgadmin app - reinstate if changing from app to containerization for pgadmin:
   pgadmin:
     # TBD: centralize with ${PGADMIN_IMAGE_TAG} from versions.env and align infrastructure references.
+    container_name: dev_pgadmin
     image: dpage/pgadmin4:9.16
     depends_on:
       - postgres
@@ -79,6 +82,7 @@ services:
       - dev_network
 
   frontend_svelte:
+    container_name: dev_frontend_svelte
     build:
       target: setup
     env_file:
@@ -116,7 +120,7 @@ services:
   redisInsight:
     # TBD: centralize with ${REDISINSIGHT_IMAGE_TAG} from versions.env and align infrastructure references.
     image: redis/redisinsight:2.70
-    container_name: redisinsight
+    container_name: dev_redisinsight
     depends_on:
       - redis
     ports:
@@ -128,6 +132,7 @@ services:
       - dev_network
 
   flower:
+    container_name: dev_flower
     build:
       context: ./backend
       target: worker_dev
