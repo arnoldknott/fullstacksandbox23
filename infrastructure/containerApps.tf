@@ -605,7 +605,7 @@ resource "azurerm_container_app" "postgresAdmin" {
   resource_group_name          = azurerm_resource_group.resourceGroup.name
 
   lifecycle {
-    ignore_changes = [ingress]
+    # ignore_changes = [ingress]
   }
   revision_mode = "Single"
 
