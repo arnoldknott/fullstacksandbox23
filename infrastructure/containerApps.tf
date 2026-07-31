@@ -612,7 +612,7 @@ resource "azurerm_container_app" "postgresAdmin" {
   template {
     container {
       name   = "pgadmin"
-      image  = "dpage/pgadmin4:9.17"
+      image  = "dpage/pgadmin4:9.15"
       cpu    = 0.25
       memory = "0.5Gi"
       # volume_mounts {
