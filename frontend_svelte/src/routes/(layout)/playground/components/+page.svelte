@@ -2442,6 +2442,7 @@
 			class="overlay drawer drawer-end bg-base-200 overlay-open:translate-x-0 hidden"
 			role="dialog"
 			tabindex="-1"
+			{@attach initOverlay}
 		>
 			<div class="drawer-header">
 				<h3 class="drawer-title">Drawer Title</h3>
@@ -2455,10 +2456,7 @@
 				</button>
 			</div>
 			<div class="drawer-body">
-				<p>
-					Some text as placeholder. In real life you can have the elements you have chosen. Like,
-					text, images, lists, etc.
-				</p>
+				<p>Some text as placeholder. There can be elements like, text, images, lists, etc.</p>
 				<div
 					class="bg-base-150 shadow-outline max-h-96 min-h-44 overflow-y-auto rounded-lg p-2 shadow-inner"
 				>
