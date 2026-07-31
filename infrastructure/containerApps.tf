@@ -604,15 +604,15 @@ resource "azurerm_container_app" "postgresAdmin" {
   container_app_environment_id = azurerm_container_app_environment.ContainerEnvironment.id
   resource_group_name          = azurerm_resource_group.resourceGroup.name
 
-  lifecycle {
-    ignore_changes = [ingress]
-  }
+  # lifecycle {
+  #   ignore_changes = [ingress]
+  # }
   revision_mode = "Single"
 
   template {
     container {
       name   = "pgadmin"
-      image  = "dpage/pgadmin4:9.16"
+      image  = "dpage/pgadmin4:9.17"
       cpu    = 0.25
       memory = "0.5Gi"
       # volume_mounts {
@@ -643,6 +643,14 @@ resource "azurerm_container_app" "postgresAdmin" {
       env {
         name  = "CONSOLE_LOG_LEVEL"
         value = "10"
+      }
+      env {
+        name  = "PGADMIN_LISTEN_PORT"
+        value = "8080"
+      }
+      env {
+        name  = "PGADMIN_DISABLE_POSTFIX"
+        value = "True"
       }
       ################
       # TBD: comment after switching to OAuth2 login only
@@ -692,7 +700,7 @@ resource "azurerm_container_app" "postgresAdmin" {
       }
       env {
         name  = "PGADMIN_CONFIG_MASTER_PASSWORD_HOOK"
-        value = "'/scripts/set_master_password.sh'"
+        value = "'/bin/sh /scripts/set_master_password.sh'"
         # value = "'/data/set_master_password.sh'"
         # value = "'/var/lib/pgadmin/storage/set_master_password.sh'"
       }
@@ -715,6 +723,35 @@ resource "azurerm_container_app" "postgresAdmin" {
         name        = "PGADMIN_CONFIG_OAUTH2_CONFIG"
         secret_name = "pgadmin-oauth2-config"
       }
+
+      # Explicit probes avoid relying on portal defaults and allow slower startup.
+      startup_probe {
+        transport               = "TCP"
+        port                    = 8080
+        initial_delay           = 60
+        interval_seconds        = 5
+        timeout                 = 3
+        failure_count_threshold = 120
+      }
+
+      readiness_probe {
+        transport               = "TCP"
+        port                    = 8080
+        initial_delay           = 60
+        interval_seconds        = 5
+        timeout                 = 3
+        failure_count_threshold = 48
+        success_count_threshold = 1
+      }
+
+      liveness_probe {
+        transport               = "TCP"
+        port                    = 8080
+        initial_delay           = 60
+        interval_seconds        = 10
+        timeout                 = 3
+        failure_count_threshold = 6
+      }
     }
     volume {
       name         = "${terraform.workspace}-admin-data"
@@ -727,8 +764,9 @@ resource "azurerm_container_app" "postgresAdmin" {
   }
 
   ingress {
-    target_port      = 80
+    target_port      = 8080
     external_enabled = true
+    client_certificate_mode = "ignore"
     # allow_insecure_connections = false # consider adding this
     traffic_weight {
       percentage      = 100
@@ -748,30 +786,30 @@ resource "azurerm_container_app" "postgresAdmin" {
   secret {
     name                = "pgadmin-default-email"
     identity            = azurerm_user_assigned_identity.pgadminIdentity.id
-    key_vault_secret_id = azurerm_key_vault_secret.pgadminDefaultEmail[0].id
+    key_vault_secret_id = azurerm_key_vault_secret.pgadminDefaultEmail[0].versionless_id
   }
 
   secret {
     name                = "pgadmin-default-password"
     identity            = azurerm_user_assigned_identity.pgadminIdentity.id
-    key_vault_secret_id = azurerm_key_vault_secret.pgadminDefaultPassword[0].id
+    key_vault_secret_id = azurerm_key_vault_secret.pgadminDefaultPassword[0].versionless_id
   }
   ################
   secret {
     name                = "pgadmin-database-uri"
     identity            = azurerm_user_assigned_identity.pgadminIdentity.id
-    key_vault_secret_id = azurerm_key_vault_secret.pgadminDatabaseURI[0].id
+    key_vault_secret_id = azurerm_key_vault_secret.pgadminDatabaseURI[0].versionless_id
   }
   secret {
     name                = "pgadmin-master-password"
     identity            = azurerm_user_assigned_identity.pgadminIdentity.id
-    key_vault_secret_id = azurerm_key_vault_secret.pgadminMasterPassword[0].id
+    key_vault_secret_id = azurerm_key_vault_secret.pgadminMasterPassword[0].versionless_id
   }
 
   secret {
     name                = "pgadmin-oauth2-config"
     identity            = azurerm_user_assigned_identity.pgadminIdentity.id
-    key_vault_secret_id = azurerm_key_vault_secret.pgadminOauth2Config[0].id
+    key_vault_secret_id = azurerm_key_vault_secret.pgadminOauth2Config[0].versionless_id
   }
 
   tags = {

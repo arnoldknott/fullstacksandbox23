@@ -471,8 +471,10 @@ resource "azurerm_key_vault_secret" "pgadminDefaultPassword" {
 resource "azurerm_key_vault_secret" "pgadminDatabaseURI" {
   count = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
   name  = "pgadmin-database-uri"
-  value = "\"postgresql+psycopg://${random_string.postgresUser.result}:${urlencode(random_password.postgresPassword.result)}@${urlencode(azurerm_postgresql_flexible_server.postgresServer.fqdn)}:5432/${urlencode(azurerm_postgresql_flexible_server_database.pgadminDatabase[0].name)}\""
-  # value        = "\"postgresql+psycopg://${urlencode(random_string.postgresUser.result)}:${urlencode(random_password.postgresPassword.result)}@fssb23-postgres-dev.postgres.database.azure.com:5432/dev_pgadmin\""
+  # value = "postgresql+psycopg://${random_string.postgresUser.result}:${urlencode(random_password.postgresPassword.result)}@${urlencode(azurerm_postgresql_flexible_server.postgresServer.fqdn)}:5432/${urlencode(azurerm_postgresql_flexible_server_database.pgadminDatabase[0].name)}"
+  # value = "\"postgresql+psycopg://${random_string.postgresUser.result}:${urlencode(random_password.postgresPassword.result)}@${urlencode(azurerm_postgresql_flexible_server.postgresServer.fqdn)}:5432/${urlencode(azurerm_postgresql_flexible_server_database.pgadminDatabase[0].name)}\""
+  value = "'postgresql+psycopg://${random_string.postgresUser.result}:${urlencode(random_password.postgresPassword.result)}@${urlencode(azurerm_postgresql_flexible_server.postgresServer.fqdn)}:5432/${urlencode(azurerm_postgresql_flexible_server_database.pgadminDatabase[0].name)}'"
+  # value        = "postgresql+psycopg://${urlencode(random_string.postgresUser.result)}:${urlencode(random_password.postgresPassword.result)}@fssb23-postgres-dev.postgres.database.azure.com:5432/dev_pgadmin"
   key_vault_id = azurerm_key_vault.keyVault.id
 }
 
