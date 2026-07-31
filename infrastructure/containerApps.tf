@@ -280,7 +280,7 @@ resource "azurerm_container_app" "BackendAPIContainer" {
   secret {
     name                = "postgres-password"
     identity            = azurerm_user_assigned_identity.backendIdentity.id
-    key_vault_secret_id = azurerm_key_vault_secret.postgresPassword.id
+    key_vault_secret_id = azurerm_key_vault_secret.postgresPassword.versionless_id
     # value = data.azurerm_key_vault_secret.keyVaultSecret["postgres-password"].value
     # value = azurerm_key_vault_secret.postgresPassword.value
   }
@@ -288,7 +288,7 @@ resource "azurerm_container_app" "BackendAPIContainer" {
   secret {
     name                = "postgres-user"
     identity            = azurerm_user_assigned_identity.backendIdentity.id
-    key_vault_secret_id = azurerm_key_vault_secret.postgresUser.id
+    key_vault_secret_id = azurerm_key_vault_secret.postgresUser.versionless_id
     # value = data.azurerm_key_vault_secret.keyVaultSecret["postgres-user"].value
     # value = azurerm_key_vault_secret.postgresUser.value
   }
@@ -409,7 +409,7 @@ resource "azurerm_container_app" "BackendWorkerContainer" {
   secret {
     name                = "postgres-password"
     identity            = azurerm_user_assigned_identity.workerIdentity.id
-    key_vault_secret_id = azurerm_key_vault_secret.postgresPassword.id
+    key_vault_secret_id = azurerm_key_vault_secret.postgresPassword.versionless_id
     # value = "fromTerraformChangedInGithubActions"
     # value = azurerm_key_vault_secret.postgresPassword.value
     # value = data.azurerm_key_vault_secret.keyVaultSecret["postgres-password"].value
@@ -418,7 +418,7 @@ resource "azurerm_container_app" "BackendWorkerContainer" {
   secret {
     name                = "postgres-user"
     identity            = azurerm_user_assigned_identity.workerIdentity.id
-    key_vault_secret_id = azurerm_key_vault_secret.postgresUser.id
+    key_vault_secret_id = azurerm_key_vault_secret.postgresUser.versionless_id
     # value = "fromTerraformChangedInGithubActions"
     # value = azurerm_key_vault_secret.postgresUser.value
     # value = data.azurerm_key_vault_secret.keyVaultSecret["postgres-user"].value
@@ -552,28 +552,28 @@ resource "azurerm_container_app" "redisContainer" {
   secret {
     name                = "redis-password"
     identity            = azurerm_user_assigned_identity.redisIdentity.id
-    key_vault_secret_id = azurerm_key_vault_secret.redisPassword.id
+    key_vault_secret_id = azurerm_key_vault_secret.redisPassword.versionless_id
     # value = azurerm_key_vault_secret.redisPassword.value
     # value = data.azurerm_key_vault_secret.keyVaultSecret["redis-password"].value
   }
   secret {
     name                = "redis-session-password"
     identity            = azurerm_user_assigned_identity.redisIdentity.id
-    key_vault_secret_id = azurerm_key_vault_secret.redisSessionPassword.id
+    key_vault_secret_id = azurerm_key_vault_secret.redisSessionPassword.versionless_id
     # value = azurerm_key_vault_secret.redisSessionPassword.value
     # value = data.azurerm_key_vault_secret.keyVaultSecret["redis-session-password"].value
   }
   secret {
     name                = "redis-socketio-password"
     identity            = azurerm_user_assigned_identity.redisIdentity.id
-    key_vault_secret_id = azurerm_key_vault_secret.redisSocketioPassword.id
+    key_vault_secret_id = azurerm_key_vault_secret.redisSocketioPassword.versionless_id
     # value = azurerm_key_vault_secret.redisSocketioPassword.value
     # value = data.azurerm_key_vault_secret.keyVaultSecret["redis-socketio-password"].value
   }
   secret {
     name                = "redis-celery-password"
     identity            = azurerm_user_assigned_identity.redisIdentity.id
-    key_vault_secret_id = azurerm_key_vault_secret.redisCeleryPassword.id
+    key_vault_secret_id = azurerm_key_vault_secret.redisCeleryPassword.versionless_id
     # value = azurerm_key_vault_secret.redisCeleryPassword.value
     # value = data.azurerm_key_vault_secret.keyVaultSecret["redis-celery-password"].value
   }
