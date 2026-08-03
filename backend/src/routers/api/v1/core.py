@@ -1,7 +1,7 @@
 import logging
 from typing import Annotated
 
-import httpx
+import httpx2
 from fastapi import APIRouter, Depends, Header, Query
 from msal import ConfidentialClientApplication
 
@@ -29,8 +29,8 @@ confClientApp = ConfidentialClientApplication(
 # might require a working on-behalf-of workflow?
 def get_users_groups_ms_graph(access_token: str):
     """Dummy function to try if access token works from backend: getting transistiveMemberOf"""
-    # response = httpx.get("https://graph.microsoft.com/v1.0/me/transitiveMemberOf", headers = {"Authorization": f"Bearer {access_token}"})
-    response = httpx.get(
+    # response = httpx2.get("https://graph.microsoft.com/v1.0/me/transitiveMemberOf", headers = {"Authorization": f"Bearer {access_token}"})
+    response = httpx2.get(
         "https://graph.microsoft.com/v1.0/me/transitiveMemberOf",
         headers={"Authorization": f"Bearer {access_token}"},
     )
@@ -42,7 +42,7 @@ def get_users_groups_ms_graph(access_token: str):
 def get_me_ms_graph(access_token: str):
     """Dummy function to try if access token works from backend"""
     # response = httpx.get("https://graph.microsoft.com/v1.0/me/transitiveMemberOf", headers = {"Authorization": f"Bearer {access_token}"})
-    response = httpx.get(
+    response = httpx2.get(
         "https://graph.microsoft.com/v1.0/me",
         headers={"Authorization": f"Bearer {access_token}"},
     )

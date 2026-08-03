@@ -4,7 +4,7 @@ from typing import Annotated, Any, Awaitable, Callable, Optional
 
 import pytest
 from fastapi import Depends, FastAPI
-from httpx import AsyncClient
+from httpx2 import AsyncClient
 
 from core.security import (
     CurrentAccessTokenHasRole,

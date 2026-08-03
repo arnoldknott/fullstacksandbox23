@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 import pytest
 from fastapi import FastAPI
-from httpx import AsyncClient
+from httpx2 import AsyncClient
 
 from core.types import Action
 from crud.access import AccessLoggingCRUD
