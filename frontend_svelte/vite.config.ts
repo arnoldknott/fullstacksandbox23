@@ -10,6 +10,12 @@ export default defineConfig({
 	plugins: [sveltekit(), svelteTesting(), tailwindcss()],
 	server: {
 		host: '0.0.0.0',
+		watch: {
+			// Docker bind mounts can miss rename events; polling keeps route/type generation in sync.
+			usePolling: true,
+			interval: 150,
+			binaryInterval: 300
+		},
 		hmr: {
 			clientPort: 8661
 		},
