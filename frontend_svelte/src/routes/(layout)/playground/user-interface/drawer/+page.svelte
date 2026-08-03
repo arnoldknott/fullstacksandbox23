@@ -24,8 +24,10 @@
 	<button
 		type="button"
 		class="btn btn-secondary-container btn-gradient shadow-outline"
-		data-overlay="#overlay-with-footer">Close</button
+		data-overlay="#overlay-with-footer"
 	>
+		Close
+	</button>
 {/snippet}
 
 <Title id="drawer-with-footer">Drawer with footer</Title>
