@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Api } from 'reveal.js';
+	import type { RevealApi } from 'reveal.js';
 	import { onDestroy, onMount } from 'svelte';
 	import { flip } from 'svelte/animate';
 
@@ -21,7 +21,7 @@
 	const course = page.params.course || 'common';
 	let { data }: { data: PageData } = $props();
 
-	let revealInstance = $state<Api | undefined>(undefined);
+	let revealInstance = $state<RevealApi | undefined>(undefined);
 
 	// TBD: catch gracefully, if no intention or motivation question is available
 	// let intentionAnswers = $state(data.questionsData?.intention?.messages || []);
@@ -395,8 +395,7 @@
 								);
 								socketioComment.createPending();
 							}
-						}}
-					></textarea>
+						}}></textarea>
 				{:else}
 					<div class="label text-error">
 						<span class="icon-[svg-spinners--12-dots-scale-rotate] size-6"></span>connecting ...

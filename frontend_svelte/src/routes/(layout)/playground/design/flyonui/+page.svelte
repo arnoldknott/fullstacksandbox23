@@ -1577,8 +1577,7 @@
 				<textarea
 					class="textarea textarea-xs sm:textarea-sm md:textarea-md lg:textarea-lg xl:textarea-xl"
 					placeholder="Hello!!!"
-					id="filledTextareaResponsive"
-				></textarea>
+					id="filledTextareaResponsive"></textarea>
 				<label class="textarea-filled-label" for="filleTextareaResponsive"
 					>Your bio - responsive</label
 				>
@@ -1587,8 +1586,7 @@
 				<textarea
 					class="textarea textarea-xs sm:textarea-sm md:textarea-md lg:textarea-lg xl:textarea-xl"
 					placeholder="Hello!!!"
-					id="filledInputResponsive"
-				></textarea>
+					id="filledInputResponsive"></textarea>
 				<label class="textarea-floating-label" for="filledTextareaResponsive"
 					>Your bio - responsive</label
 				>

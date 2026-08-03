@@ -307,7 +307,4 @@ export type AnyEntityExtended =
 
 export type AnyIdentity = UeberGroup | Group | SubGroup | SubSubGroup;
 export type AnyIdentityExtended =
-	| UeberGroupExtended
-	| GroupExtended
-	| SubGroupExtended
-	| SubSubGroupExtended;
+	UeberGroupExtended | GroupExtended | SubGroupExtended | SubSubGroupExtended;

@@ -190,8 +190,7 @@
 					rows="8"
 					placeholder="Add an answer here. Use Enter for a new line."
 					id="sharing"
-					bind:value={messageSocketio.pendingEntities[0].content}
-				></textarea>
+					bind:value={messageSocketio.pendingEntities[0].content}></textarea>
 			{:else}
 				<div class="label text-error">
 					<span class="icon-[svg-spinners--12-dots-scale-rotate] size-6"></span>connecting ...

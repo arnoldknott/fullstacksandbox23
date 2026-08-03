@@ -118,9 +118,7 @@
 							socketio?.submitEntity(demoResource());
 						}}
 						name="description"
-						bind:value={thisDemoResource.description}
-					>
-					</textarea>
+						bind:value={thisDemoResource.description}></textarea>
 					<label class="textarea-filled-label" for="description_{thisDemoResource.id}">
 						Description
 					</label>
