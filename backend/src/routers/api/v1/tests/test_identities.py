@@ -4,7 +4,7 @@ from typing import List
 
 import pytest
 from fastapi import FastAPI
-from httpx import AsyncClient
+from httpx2 import AsyncClient
 from sqlmodel import select
 
 from core.config import config

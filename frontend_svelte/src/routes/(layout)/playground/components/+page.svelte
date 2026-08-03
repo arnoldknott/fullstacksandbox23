@@ -2395,9 +2395,7 @@
 									class="textarea shadow-shadow shadow-inner"
 									placeholder="Describe the demo resource here."
 									id="description_id_new_element"
-									name="description"
-								>
-								</textarea>
+									name="description"></textarea>
 								<label class="textarea-filled-label" for="description_id_new_element">
 									Description
 								</label>

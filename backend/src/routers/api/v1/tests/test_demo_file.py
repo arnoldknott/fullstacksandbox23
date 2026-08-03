@@ -3,7 +3,7 @@ from uuid import uuid4
 
 import pytest
 from fastapi import FastAPI
-from httpx import AsyncClient
+from httpx2 import AsyncClient
 
 from models.demo_file import DemoFile
 from models.demo_resource import DemoResource

@@ -4,7 +4,7 @@ from typing import List
 
 import pytest
 from fastapi import FastAPI
-from httpx import AsyncClient
+from httpx2 import AsyncClient
 
 from core.types import Action, CurrentUserData, IdentityType, ResourceType
 from crud.access import AccessPolicyCRUD

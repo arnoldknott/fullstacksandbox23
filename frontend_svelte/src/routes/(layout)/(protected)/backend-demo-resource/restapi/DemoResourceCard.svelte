@@ -288,9 +288,7 @@
 					id="description_{id}"
 					onblur={() => triggerSubmit()}
 					name="description"
-					bind:value={description}
-				>
-				</textarea>
+					bind:value={description}></textarea>
 				<label class="textarea-filled-label" for="description_{id}"> Description </label>
 			</div>
 		</form>

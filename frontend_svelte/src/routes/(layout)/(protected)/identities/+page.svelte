@@ -244,9 +244,7 @@
 										placeholder="Describe the Ueber-Group here."
 										id="description-new-ueber-group"
 										name="description"
-										bind:value={socketio.pendingEntities[0].description}
-									>
-									</textarea>
+										bind:value={socketio.pendingEntities[0].description}></textarea>
 									<label class="textarea-filled-label" for="description-new-ueber-group">
 										Description
 									</label>

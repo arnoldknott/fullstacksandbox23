@@ -16,9 +16,9 @@
 			url: 'user-interface/sidebar'
 		},
 		{
-			name: 'Toolbar',
-			description: 'as a drawer on the right side of the screen for detailed tools and actions.',
-			url: 'user-interface/toolbar'
+			name: 'Drawer',
+			description: 'on the right side of the screen for detailed tools and actions.',
+			url: 'user-interface/drawer'
 		},
 		{
 			name: 'In page links',

@@ -7,7 +7,7 @@ from typing import Annotated, Any, Dict, List, Optional, cast
 from uuid import UUID
 
 # import asyncio
-import httpx
+import httpx2
 import jwt
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2AuthorizationCodeBearer
@@ -70,14 +70,14 @@ async def get_azure_jwks(no_cache: bool = False) -> Dict[str, Any]:
                 raise HTTPException(
                     status_code=500, detail="AZURE_OPENID_CONFIG_URL not configured"
                 )
-            oidc_config = httpx.get(oidc_url).json()
+            oidc_config = httpx2.get(oidc_url).json()
             print("=== 🔑 got JWKs from Azure ===")
             if oidc_config is False:
                 raise HTTPException(
                     status_code=404, detail="Failed to fetch Open ID config."
                 )
             try:
-                jwks = httpx.get(oidc_config["jwks_uri"]).json()
+                jwks = httpx2.get(oidc_config["jwks_uri"]).json()
             except Exception as err:
                 raise HTTPException(
                     status_code=404, detail=f"Failed to fetch JWKS online ${err}"

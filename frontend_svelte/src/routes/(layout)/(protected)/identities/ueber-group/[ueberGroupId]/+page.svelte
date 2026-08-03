@@ -249,9 +249,7 @@
 						placeholder="Describe the Ueber-Group here."
 						id="description-ueber-group"
 						name="description"
-						bind:value={ueberGroup.description}
-					>
-					</textarea>
+						bind:value={ueberGroup.description}></textarea>
 					<label class="textarea-filled-label" for="description-ueber-group"> Description </label>
 				</div>
 			{/if}
@@ -413,9 +411,7 @@
 							class="textarea shadow-shadow shadow-inner"
 							placeholder="Describe the demo resource here."
 							name="groupdescription"
-							bind:value={socketioGroup.pendingEntities[0].description}
-						>
-						</textarea>
+							bind:value={socketioGroup.pendingEntities[0].description}></textarea>
 						<label class="textarea-filled-label" for="new-group-description"> Description </label>
 					</div>
 					<!-- TBD: make snippet and put into footer -->

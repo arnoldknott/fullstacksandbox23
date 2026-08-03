@@ -6,14 +6,7 @@
 	import ChatBubble from '$components/ChatBubble.svelte';
 
 	type FeedbackColor =
-		| 'primary'
-		| 'secondary'
-		| 'accent'
-		| 'neutral'
-		| 'info'
-		| 'success'
-		| 'warning'
-		| 'error';
+		'primary' | 'secondary' | 'accent' | 'neutral' | 'info' | 'success' | 'warning' | 'error';
 
 	type FeedbackMessage = {
 		id: string;

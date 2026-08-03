@@ -1,9 +1,10 @@
 <script lang="ts">
-	import 'reveal.js/dist/reveal.css';
+	import 'reveal.js/reveal.css';
 
-	import Reveal, { type Api, type Options } from 'reveal.js';
-	import revealThemeBlackHref from 'reveal.js/dist/theme/black.css?url';
-	import revealThemeWhiteHref from 'reveal.js/dist/theme/white.css?url';
+	import type { RevealApi, RevealConfig } from 'reveal.js';
+	import Reveal from 'reveal.js';
+	import revealThemeBlackHref from 'reveal.js/theme/black.css?url';
+	import revealThemeWhiteHref from 'reveal.js/theme/white.css?url';
 	import { onMount, type Snippet } from 'svelte';
 
 	export const ssr = false;
@@ -12,7 +13,7 @@
 		children,
 		options = {},
 		reveal = $bindable()
-	}: { children: Snippet; options?: Options; reveal?: Api } = $props();
+	}: { children: Snippet; options?: RevealConfig; reveal?: RevealApi } = $props();
 	const THEME_LINK_ID = 'reveal-theme-link';
 
 	const ensureRevealThemeLink = (): HTMLLinkElement => {

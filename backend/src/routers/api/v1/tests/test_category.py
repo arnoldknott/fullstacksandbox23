@@ -2,7 +2,7 @@ import uuid
 
 import pytest
 from fastapi import FastAPI
-from httpx import AsyncClient
+from httpx2 import AsyncClient
 
 from models.category import Category
 from tests.utils import (

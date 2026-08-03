@@ -2,7 +2,7 @@ import secrets
 import uuid
 
 import pytest
-from httpx import AsyncClient
+from httpx2 import AsyncClient
 
 from models.public_resource import PublicResource
 
