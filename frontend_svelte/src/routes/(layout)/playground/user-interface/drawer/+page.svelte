@@ -32,3 +32,20 @@
 
 <Title id="drawer-with-footer">Drawer with footer</Title>
 <Drawer id="with-footer" title="Drawer with Footer" footer={closeButton} />
+
+{#snippet overrideActivationButton()}
+	<button
+		type="button"
+		class="btn btn-secondary-container btn-gradient shadow-outline"
+		data-overlay="#overlay-override-activation-button"
+	>
+		Open Drawer
+	</button>
+{/snippet}
+
+<Title id="drawer-override-activation-button">Drawer with override activation button</Title>
+<Drawer
+	id="override-activation-button"
+	title="Override Activation Button"
+	activationElement={overrideActivationButton}
+/>

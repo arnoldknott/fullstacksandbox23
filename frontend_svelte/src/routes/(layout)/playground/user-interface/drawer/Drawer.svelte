@@ -6,20 +6,31 @@
 		id,
 		title,
 		children,
-		footer
-	}: { id: string; title?: string; children?: Snippet; footer?: Snippet } = $props();
+		footer,
+		activationElement
+	}: {
+		id: string;
+		title?: string;
+		children?: Snippet;
+		footer?: Snippet;
+		activationElement?: Snippet;
+	} = $props();
 </script>
 
-<button
-	type="button"
-	class="btn btn-primary-container btn-gradient btn-sm shadow-outline rounded-full shadow-sm"
-	aria-haspopup="dialog"
-	aria-expanded="false"
-	aria-controls={'overlay-' + id}
-	data-overlay={'#overlay-' + id}
->
-	{title ?? 'Open tools'}
-</button>
+{#if activationElement}
+	{@render activationElement?.()}
+{:else}
+	<button
+		type="button"
+		class="btn btn-primary-container btn-gradient btn-sm shadow-outline rounded-full shadow-sm"
+		aria-haspopup="dialog"
+		aria-expanded="false"
+		aria-controls={'overlay-' + id}
+		data-overlay={'#overlay-' + id}
+	>
+		{title ?? 'Open tools'}
+	</button>
+{/if}
 <div
 	id={'overlay-' + id}
 	class="overlay drawer drawer-end bg-base-200 overlay-open:translate-x-0 hidden"
