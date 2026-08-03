@@ -13,5 +13,10 @@ services:
     init: true
     volumes:
       - .:/workspaces/fullStackSandbox23:cached
+      - frontend-svelte-node-modules:/workspaces/fullStackSandbox23/frontend_svelte/node_modules
       - /var/run/docker.sock:/var/run/docker.sock
       - ${HOME}/.ssh:/root/.ssh:ro
+
+volumes:
+  frontend-svelte-node-modules:
+    name: fssb23-frontend-svelte-node-modules

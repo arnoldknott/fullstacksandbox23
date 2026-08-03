@@ -91,7 +91,7 @@ services:
       - "8661:80"
     volumes:
       - ${HOST_WORKSPACE_FOLDER:-.}/frontend_svelte:/app
-      - frontend-svelte-node-modules:/app/node_modules
+      - dev-frontend-svelte-node-modules:/app/node_modules
     restart: unless-stopped
     networks:
       - dev_network
@@ -159,7 +159,8 @@ volumes:
   dev-app-data:
   dev-redis-data:
   dev-redis-insight-data:
-  frontend-svelte-node-modules:
+  dev-frontend-svelte-node-modules:
+    name: fssb23-frontend-svelte-node-modules
 
 networks:
   dev_network:
