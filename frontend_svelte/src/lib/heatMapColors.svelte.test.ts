@@ -1,9 +1,8 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { describe, expect } from 'vitest';
 
 import { createHeatMapColors } from '$lib/heatMapColors.svelte';
-import { themeStore } from '$lib/stores';
 
-import { defaultThemeStoreValue } from '../test/fixtures/themeStore';
+import {test} from '../test/fixtures';
 
 const inputValues = [0, 50, 100];
 
@@ -49,44 +48,45 @@ const expectedChromaOnePointFive = [
 	{ background: '#446800', text: '#ffffff' }
 ];
 
-beforeEach(() => {
-	themeStore.set(defaultThemeStoreValue);
+
+test.beforeEach(({ setThemeStore }) => {
+    void setThemeStore;
 });
 
 describe('createHeatMapColors', () => {
-	it('returns expected hex colors for 3 input values with mocked theme store', () => {
+	test('returns expected hex colors for 3 input values with mocked theme store', () => {
 		expect(createHeatMapColors(inputValues)).toEqual(expectedToneOne);
 	});
 
-	it('applies toneMultiplier inside the supported 0..1 range', () => {
+	test('applies toneMultiplier inside the supported 0..1 range', () => {
 		expect(createHeatMapColors(inputValues, 1, 0.5)).toEqual(expectedToneHalf);
 	});
 
-	it('clamps toneMultiplier lower than 0', () => {
+	test('clamps toneMultiplier lower than 0', () => {
 		expect(createHeatMapColors(inputValues, 1, -0.2)).toEqual(expectedToneZero);
 	});
 
-	it('clamps toneMultiplier higher than 1', () => {
+	test('clamps toneMultiplier higher than 1', () => {
 		expect(createHeatMapColors(inputValues, 1, 2)).toEqual(expectedToneOne);
 	});
 
-	it('applies chromaMultiplier inside the supported range', () => {
+	test('applies chromaMultiplier inside the supported range', () => {
 		expect(createHeatMapColors(inputValues, 0.5, 1, 'hex')).toEqual(expectedChromaHalf);
 	});
 
-	it('clamps chromaMultiplier lower than 0', () => {
+	test('clamps chromaMultiplier lower than 0', () => {
 		expect(createHeatMapColors(inputValues, -0.2, 1, 'hex')).toEqual(expectedChromaZero);
 	});
 
-	it('allows chromaMultiplier higher than 1', () => {
+	test('allows chromaMultiplier higher than 1', () => {
 		expect(createHeatMapColors(inputValues, 1.5, 1, 'hex')).toEqual(expectedChromaOnePointFive);
 	});
 
-	it("returns rgb output when format is 'rgb'", () => {
+	test("returns rgb output when format is 'rgb'", () => {
 		expect(createHeatMapColors(inputValues, 1, 1, 'rgb')).toEqual(expectedRgbToneOne);
 	});
 
-	it('falls back to hex output for a gibberish format value', () => {
+	test('falls back to hex output for a gibberish format value', () => {
 		const gibberishFormat = 'not-a-real-format' as unknown as 'hex';
 		expect(createHeatMapColors(inputValues, 1, 1, gibberishFormat)).toEqual(expectedToneOne);
 	});
