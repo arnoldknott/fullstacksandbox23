@@ -2,7 +2,7 @@ import { describe, expect } from 'vitest';
 
 import { createHeatMapColors } from '$lib/heatMapColors.svelte';
 
-import {test} from '../test/fixtures';
+import { test } from '../test/fixtures';
 
 const inputValues = [0, 50, 100];
 
@@ -48,9 +48,8 @@ const expectedChromaOnePointFive = [
 	{ background: '#446800', text: '#ffffff' }
 ];
 
-
 test.beforeEach(({ setThemeStore }) => {
-    void setThemeStore;
+	void setThemeStore;
 });
 
 describe('createHeatMapColors', () => {

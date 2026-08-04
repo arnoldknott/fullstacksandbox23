@@ -40,7 +40,7 @@
 	{@attach initOverlay}
 >
 	<div class="drawer-header">
-		<h3 class="drawer-title" id={'title-' + id}>{title}</h3>
+		<h3 class="drawer-title" id={'drawer-title-' + id}>{title}</h3>
 		<button
 			type="button"
 			class="btn btn-circle btn-text btn-sm absolute end-3 top-3"
