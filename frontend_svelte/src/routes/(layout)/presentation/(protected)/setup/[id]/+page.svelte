@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import Display from '$components/Display.svelte';
+	import Drawer from '$components/Drawer.svelte';
 	import Heading from '$components/Heading.svelte';
 </script>
 
@@ -37,6 +38,17 @@
 		copy (don't keep the original answers and don't keep in sync) or link (keeps answers in sync)
 	</p>
 </div>
+<Drawer id="copy-questions" title="Copy Questions">
+	<p class="title text-center">
+		Opening a side drawer to select existing questions - for mode copy (don't keep the original
+		answers and don't keep in sync)
+	</p>
+</Drawer>
+<Drawer id="link-questions" title="Link Questions">
+	<p class="title text-center">
+		Opening a side drawer to select existing questions - for mode link (keeps answers in sync)
+	</p>
+</Drawer>
 <div
 	class="title-large alert alert-warning bg-warning-container/20 text-warning-container-content/80 label-large text-center"
 	role="alert"
