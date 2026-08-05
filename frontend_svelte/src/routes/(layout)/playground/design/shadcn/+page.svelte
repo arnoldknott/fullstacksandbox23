@@ -7,11 +7,6 @@
 	let blue = $state(128);
 
 	const color = $derived(`rgb(${red}, ${green}, ${blue})`);
-	// onMount set .root variable --my-color to var(--my-color-variable):
-	// // (imitates the behaviour set from app.css)
-	// onMount(() => {
-	// 	document.documentElement.style.setProperty('--my-color', 'var(--my-color-variable)');
-	// });
 	// immitates the behaviour from the dynamic update via themeing:
 	$effect(() => {
 		document.documentElement.style.setProperty('--color-success', color);

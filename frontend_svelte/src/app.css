@@ -115,9 +115,6 @@
 	--font-weight-label: 500;
 	--font-weight-prominent: 700;
 
-	/* Adding colors for Shadcn-svelte and keeping the enhancements from FlyonUI */
-	--color-my-color: var(--my-color);
-
 	/* Material Design utility classes for colors merged with FlyonUI */
 	--color-transparent: transparent;
 	--color-current: currentColor;
