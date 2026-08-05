@@ -33,7 +33,7 @@ B: {blue}
 	step={1}
 	type="single"
 	bind:value={red}
-	onValueChange={(next) => {
+	onValueChange={(next: number) => {
 		console.log('Slider value:', next);
 	}}
 />
@@ -44,7 +44,7 @@ B: {blue}
 	step={1}
 	type="single"
 	bind:value={green}
-	onValueChange={(next) => {
+	onValueChange={(next: number) => {
 		console.log('Slider value:', next);
 	}}
 />
@@ -55,7 +55,7 @@ B: {blue}
 	step={1}
 	type="single"
 	bind:value={blue}
-	onValueChange={(next) => {
+	onValueChange={(next: number) => {
 		console.log('Slider value:', next);
 	}}
 />
