@@ -1,6 +1,6 @@
 {
 	"extends": "./.svelte-kit/tsconfig.json",
-	"exclude": ["src/components/shadcn", "/static/*"],
+	"exclude": ["src/components/shadcn/*", "/static/*"],
 	"compilerOptions": {
 		"allowJs": true,
 		"checkJs": true,
