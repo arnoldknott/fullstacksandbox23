@@ -9,15 +9,16 @@
 
 <Display>Shadcn/ui demonstration</Display>
 
-<Heading id="integration">Integration</Heading>
+<Heading id="integration" class="link"
+	><a href={resolve('/(layout)/playground/design/shadcn/integration')}>Integration</a></Heading
+>
 <p class="m-4">
 	Shadcn comes itself with plenty of design configuration. Prior to shadcn, the project contained
 	FlyonUI, which is integrated with Material Design 3 design tokens and philospphy. The
-	<a
-		data-sveltekit-preload-code={false}
-		class="link"
-		href={resolve('/(layout)/playground/design/shadcn/integration')}>integration</a
-	> page adopts the previously developed features and designs to shadcn.
+	<a class="link" href={resolve('/(layout)/playground/design/shadcn/integration')}
+		>integration page</a
+	>
+	adopts the previously developed features and designs to shadcn.
 </p>
 
 <Heading id="button">Design Variables</Heading>
