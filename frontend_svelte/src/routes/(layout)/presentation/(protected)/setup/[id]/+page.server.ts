@@ -1,11 +1,12 @@
 import { backendAPI } from '$lib/server/apis/backendApi';
+import type { Presentation } from '$lib/types';
 
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ url, locals }) => {
 	const sessionId = locals.sessionData.sessionId;
 	const payload = {
-		presentation: null
+		presentation: {} as Presentation
 	};
 	const presentationId = url.pathname.split('/presentation/setup/')[1];
 	console.log('=== 🧦 presentation - setup - presentationId ===');

@@ -1,20 +1,43 @@
 <script lang="ts">
+	import { onDestroy, onMount } from 'svelte';
+
 	import { page } from '$app/state';
 	import Card from '$components/Card.svelte';
 	import Display from '$components/Display.svelte';
 	import Drawer from '$components/Drawer.svelte';
 	import Heading from '$components/Heading.svelte';
-	import JsonData from '$components/JsonData.svelte';
+	// import JsonData from '$components/JsonData.svelte';
+	import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
+	import type { Presentation } from '$lib/types';
 
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
+
+	let socketioPresentation: SocketIO<Presentation> = $state()!;
+	let presentation = $derived(
+		socketioPresentation?.entities.filter((entity) => entity.id === page.params.id)[0]
+	);
+	const socketioPresentationConnection: SocketioConnection = {
+		namespace: '/presentation',
+		sessionId: page.data.session.sessionId,
+		queryParams: { 'request-access-data': true }
+	};
+	onMount(() => {
+		socketioPresentation = new SocketIO<Presentation>(socketioPresentationConnection);
+	});
+	$effect(() => {
+		socketioPresentation.entities = [data.payload.presentation];
+	});
+	onDestroy(() => {
+		socketioPresentation?.client.disconnect();
+	});
 </script>
 
-<JsonData data={data.payload} />
+<!-- <JsonData data={socketioPresentation?.entities} /> -->
 
 <Display id="presentation">Presentation</Display>
-<Heading id="presentation-title">{page.params.id}</Heading>
+<Heading id="presentation-title">{presentation?.path || presentation?.id}</Heading>
 
 <Card
 	id="source"
