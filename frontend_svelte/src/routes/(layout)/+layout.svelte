@@ -287,6 +287,12 @@
 							id: 'design-building-blocks',
 							items: [
 								{
+									name: 'Shadcn-svelte',
+									icon: 'icon-[bxl--shadcn-ui]',
+									pathname: resolve('/(layout)/playground/design/shadcn'),
+									id: 'shadcn'
+								},
+								{
 									name: 'FlyonUI',
 									icon: 'icon-[mingcute--arrows-up-fill]',
 									pathname: resolve('/(layout)/playground/design/flyonui'),

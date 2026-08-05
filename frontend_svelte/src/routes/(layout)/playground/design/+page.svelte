@@ -11,8 +11,14 @@
 
 	const links = [
 		{
+			name: 'Shadcn-svelte 1',
+			description: 'Playground and showcase for shadcn-svelte components and design',
+			url: '/playground/design/shadcn'
+		},
+		{
 			name: 'FlyonUI 2',
-			description: 'Playground and showcase for flyonUI components and design',
+			description:
+				'Playground and showcase for flyonUI components and design, themed with material design. 3',
 			url: '/playground/design/flyonui'
 		},
 		{

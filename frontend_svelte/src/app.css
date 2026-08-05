@@ -1,4 +1,6 @@
 @import 'tailwindcss';
+@import "tw-animate-css";
+@import "shadcn-svelte/tailwind.css";
 
 /* Tailwind content sources - scan these files for classes */
 @source 'src/**/*.{html,js,svelte,ts}';
@@ -113,7 +115,10 @@
 	--font-weight-label: 500;
 	--font-weight-prominent: 700;
 
-	/* Material Design utility classes for colors */
+	/* Adding colors for Shadcn-svelte and keeping the enhancements from FlyonUI */
+	--color-my-color: var(--my-color);
+
+	/* Material Design utility classes for colors merged with FlyonUI */
 	--color-transparent: transparent;
 	--color-current: currentColor;
 	--color-primary: rgb(var(--md-rgb-color-primary));
