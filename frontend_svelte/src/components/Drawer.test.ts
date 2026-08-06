@@ -40,4 +40,15 @@ describe('Drawer', () => {
 		expect(heading.getAttribute('id')).toBe('drawer-title-test-drawer');
 		expect(heading.textContent).toBe('Test Drawer');
 	});
+
+	test('should allow an icon', async () => {
+		render(Drawer, { props: { id: 'test-drawer', icon: 'icon-[tabler--star]'} });
+
+		const icons = screen.getAllByText('', { selector: 'span.icon-\\[tabler--star\\]' });
+
+		expect(icons).toBeTruthy();
+		expect(icons.length).toBe(2);
+		expect(icons[0].className).toContain('size-4');
+		expect(icons[1].className).toContain('size-6');
+	});
 });
