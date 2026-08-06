@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
 
 	import { goto } from '$app/navigation';
@@ -60,6 +60,10 @@
 
 	$effect(() => {
 		socketioPresentations.entities = data.payload.presentations || [];
+	});
+
+	onDestroy(() => {
+		socketioPresentations?.client.disconnect();
 	});
 
 	let showNewPresentationCard: boolean = $state(page.url.searchParams.get('new') === 'true');

@@ -30,6 +30,7 @@
   },
   "[svelte]": {
     "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.codeActionsOnSave": {
       "source.fixAll.eslint": "explicit"
     }
@@ -47,6 +48,8 @@
   "editor.defaultFormatter": "svelte.svelte-vscode",
   "editor.formatOnSave": true,
   "prettier.prettierPath": "./frontend_svelte/node_modules/prettier",
+  "prettier.requireConfig": true,
+  "prettier.ignorePath": "frontend_svelte/.prettierignore",
   "python-envs.pythonProjects": [
     {
       "path": ".",

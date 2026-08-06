@@ -6,11 +6,11 @@ import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const sessionId = locals.sessionData.sessionId;
-	const responsePresentations = await backendAPI.get(sessionId, '/presentation/');
 	const payload = {
 		presentations: [] as Presentation[],
 		identities: [] as Identity[]
 	};
+	const responsePresentations = await backendAPI.get(sessionId, '/presentation/');
 	if (responsePresentations.status === 200) {
 		const presentationsData = await responsePresentations.json();
 		payload.presentations = presentationsData;

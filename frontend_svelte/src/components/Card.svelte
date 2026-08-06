@@ -1,14 +1,23 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 
+	import Title from './Title.svelte';
+
 	let {
 		id,
 		extraClasses,
 		header,
+		title,
 		children,
 		footer
-	}: { id: string; extraClasses?: string; header?: Snippet; children: Snippet; footer?: Snippet } =
-		$props();
+	}: {
+		id: string;
+		extraClasses?: string;
+		header?: Snippet;
+		title?: string;
+		children: Snippet;
+		footer?: Snippet;
+	} = $props();
 
 	let showCard = $state(true);
 
@@ -25,6 +34,10 @@
 		{#if header}
 			<div class="card-header">
 				{@render header()}
+			</div>
+		{:else if title}
+			<div class="card-header">
+				<Title id={id + '-header'}>{title}</Title>
 			</div>
 		{/if}
 		<div class="card-body">

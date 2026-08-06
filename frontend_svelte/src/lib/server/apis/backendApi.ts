@@ -27,45 +27,45 @@ class BackendAPI extends BaseAPI {
 	}
 
 	async post(
-		session_id: string | null,
+		sessionId: string | null,
 		path: string,
 		body: RequestBody,
 		scopes: string[] = [`${appConfig.api_scope}/api.read`, `${appConfig.api_scope}/api.write`],
 		options: RequestInit = {},
 		headers: HeadersInit = {}
 	) {
-		return await super.post(session_id, path, body, scopes, options, headers);
+		return await super.post(sessionId, path, body, scopes, options, headers);
 	}
 
 	async get(
-		session_id: string | null,
+		sessionId: string | null,
 		path: string,
 		scopes: string[] = [`${appConfig.api_scope}/api.read`],
 		options: RequestInit = {},
 		headers: HeadersInit = {}
 	) {
-		return await super.get(session_id, path, scopes, options, headers);
+		return await super.get(sessionId, path, scopes, options, headers);
 	}
 
 	async put(
-		session_id: string | null,
+		sessionId: string | null,
 		path: string,
 		body: RequestBody,
 		scopes: string[] = [`${appConfig.api_scope}/api.read`, `${appConfig.api_scope}/api.write`],
 		options: RequestInit = {},
 		headers: HeadersInit = {}
 	) {
-		return await super.put(session_id, path, body, scopes, options, headers);
+		return await super.put(sessionId, path, body, scopes, options, headers);
 	}
 
 	async delete(
-		session_id: string,
+		sessionId: string,
 		path: string,
 		scopes: string[] = [`${appConfig.api_scope}/api.read`, `${appConfig.api_scope}/api.write`],
 		options: RequestInit = {},
 		headers: HeadersInit = {}
 	) {
-		return await super.delete(session_id, path, scopes, options, headers);
+		return await super.delete(sessionId, path, scopes, options, headers);
 	}
 
 	async share(
@@ -167,13 +167,13 @@ class BackendAPI extends BaseAPI {
 				allIdentities.push(
 					...allAnyGroups.map((anyGroup: UeberGroup | Group | SubGroup | SubSubGroup) => {
 						let type: IdentityType;
-						if (endpoint === '/uebergroup') {
+						if (endpoint === '/uebergroup/') {
 							type = IdentityType.UEBER_GROUP;
-						} else if (endpoint === '/group') {
+						} else if (endpoint === '/group/') {
 							type = IdentityType.GROUP;
-						} else if (endpoint === '/subgroup') {
+						} else if (endpoint === '/subgroup/') {
 							type = IdentityType.SUB_GROUP;
-						} else if (endpoint === '/subsubgroup') {
+						} else if (endpoint === '/subsubgroup/') {
 							type = IdentityType.SUB_SUB_GROUP;
 						} else {
 							throw new Error('Unknown endpoint: ' + endpoint);
@@ -198,10 +198,10 @@ class BackendAPI extends BaseAPI {
 				);
 			}
 		};
-		await addAnyGroupType('/uebergroup');
-		await addAnyGroupType('/group');
-		await addAnyGroupType('/subgroup');
-		await addAnyGroupType('/subsubgroup');
+		await addAnyGroupType('/uebergroup/');
+		await addAnyGroupType('/group/');
+		await addAnyGroupType('/subgroup/');
+		await addAnyGroupType('/subsubgroup/');
 
 		return allIdentities;
 	}

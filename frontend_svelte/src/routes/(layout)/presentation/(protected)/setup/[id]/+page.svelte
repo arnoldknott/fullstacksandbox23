@@ -1,74 +1,149 @@
 <script lang="ts">
+	import { onDestroy, onMount } from 'svelte';
+
 	import { page } from '$app/state';
+	import Card from '$components/Card.svelte';
 	import Display from '$components/Display.svelte';
+	import Drawer from '$components/Drawer.svelte';
 	import Heading from '$components/Heading.svelte';
+	// import JsonData from '$components/JsonData.svelte';
+	import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
+	import type { Presentation } from '$lib/types';
+
+	import type { PageData } from './$types';
+
+	let { data }: { data: PageData } = $props();
+
+	let socketioPresentation: SocketIO<Presentation> = $state()!;
+	let presentation = $derived(
+		socketioPresentation?.entities.filter((entity) => entity.id === page.params.id)[0]
+	);
+	const socketioPresentationConnection: SocketioConnection = {
+		namespace: '/presentation',
+		sessionId: page.data?.session?.sessionId || '',
+		queryParams: { 'request-access-data': true }
+	};
+	onMount(() => {
+		socketioPresentation = new SocketIO<Presentation>(socketioPresentationConnection);
+	});
+	$effect(() => {
+		socketioPresentation.entities = [data.payload.presentation];
+	});
+	onDestroy(() => {
+		socketioPresentation?.client.disconnect();
+	});
 </script>
 
-<Display id="presentation">Presentation</Display>
-<Heading id="presentation-title">{page.params.id}</Heading>
+<!-- <JsonData data={socketioPresentation?.entities} /> -->
 
-<div
-	class="title-large alert alert-warning bg-warning-container/20 text-warning-container-content/80 label-large text-center"
-	role="alert"
+<Display id="presentation-name">{presentation?.path || presentation?.id}</Display>
+<a href="/presentation/setup" class="btn btn-primary btn-gradient shadow-outline mx-4 rounded-full">
+	<span class="icon-[tabler--chevron-left]"></span>
+	Go to all presentations
+</a>
+
+<Heading id="source">Source</Heading>
+<Card
+	id="code-location"
+	title="🚧 Code location for this presentation 🚧"
+	extraClasses="bg-warning-container/30 text-warning-container-content/80 label-large border-warning-container"
 >
-	Source
-	<p class="title text-center">
+	<p>
 		A card to set the source of the code for the presentation, like "intern", "github", which
 		branch, and or commit, and so on
 	</p>
-</div>
-<div
-	class="title-large alert alert-warning bg-warning-container/20 text-warning-container-content/80 label-large text-center"
-	role="alert"
+</Card>
+
+<Heading id="access">Access</Heading>
+<Card
+	id="managing-access"
+	title="🚧 Managing the accessibility of the presentation 🚧"
+	extraClasses="bg-warning-container/30 text-warning-container-content/80 label-large border-warning-container"
 >
-	Access
-	<p class="title text-center">
+	<p>
 		Setting the access for the presentation, like "public", "private", "shared with specific users
 		or groups", that is access policies.
 	</p>
-</div>
-<div
-	class="title-large alert alert-warning bg-warning-container/20 text-warning-container-content/80 label-large text-center"
-	role="alert"
->
-	Questions
-	<p class="title text-center">
-		Linked questions. Adding a question and opening sidebar to select existing questions - for mode
-		copy (don't keep the original answers and don't keep in sync) or link (keeps answers in sync)
+</Card>
+
+<Heading id="questions">Questions</Heading>
+<Drawer id="copy-questions" icon="icon-[tabler--copy]" title="Copy Existing Questions">
+	<p class="title">
+		Opening a side drawer to select existing questions - for mode copy (don't keep the original
+		answers and don't keep in sync)
 	</p>
-</div>
-<div
-	class="title-large alert alert-warning bg-warning-container/20 text-warning-container-content/80 label-large text-center"
-	role="alert"
->
-	Links
-	<p class="title text-center">
-		Links, that are under continuous check for 200 responses that are used inside the presentation.
+</Drawer>
+<Drawer id="link-questions" icon="icon-[tabler--link]" title="Link Existing Questions">
+	<p class="title">
+		Opening a side drawer to select existing questions - for mode link (keeps answers in sync)
 	</p>
-</div>
-<div
-	class="title-large alert alert-warning bg-warning-container/20 text-warning-container-content/80 label-large text-center"
-	role="alert"
+</Drawer>
+<Card id="link-questions" title="Linked Questions" extraClasses="label-large">
+	<p>
+		Potentially as an accordion with the answers in the panel? Adding a question and opening sidebar
+		to select existing questions - for mode copy (don't keep the original answers and don't keep in
+		sync) or link (keeps answers in sync)
+	</p>
+</Card>
+
+<Heading id="links">Links</Heading>
+<Card
+	id="link-checking"
+	title="🚧 Status of links 🚧"
+	extraClasses="bg-warning-container/30 text-warning-container-content/80 label-large border-warning-container"
 >
-	(Drawings)
+	<p>
+		Links, that are under continuous check for 200 responses that are used inside the presentation
+		and marking them, if they are broken or not. Can also open a side drawer for managing existing
+		links.
+	</p>
+</Card>
+
+<Heading id="drawings">Drawings?</Heading>
+<Card
+	id="drawings"
+	title="🚧 Draw.io and Excalibut embedded here 🚧"
+	extraClasses="bg-warning-container/30 text-warning-container-content/80 label-large border-warning-container"
+>
 	<p class="title text-center">
 		Draw.io and Excalibur, that are linked and used inside the presentation. Add anew, modify linked
-		or iopen sidedrawer for linking / copying existing. Maybe work with templates?
+		or open side drawer for linking / copying existing. Maybe work with templates?
 	</p>
-</div>
-<div
-	class="title-large alert alert-warning bg-warning-container/20 text-warning-container-content/80 label-large text-center"
-	role="alert"
+</Card>
+
+<Heading id="files">Files</Heading>
+<Card
+	id="attaching-files"
+	title="🚧 Uploading, updating, deleting files🚧"
+	extraClasses="bg-warning-container/30 text-warning-container-content/80 label-large border-warning-container"
 >
-	Files
 	<p class="title text-center">
-		Uploading, updating, deleting files, that are referenced in the presentation. Can also open a
-		side drawer for managing existing files.
+		The files are referenced in the presentation for example for embedding images, videos,
+		backgrounds, code, and anything else. Can also open a side drawer for managing existing files.
 	</p>
-</div>
-<div
-	class="title-large alert alert-warning bg-warning-container/20 text-warning-container-content/80 label-large text-center"
-	role="alert"
+</Card>
+
+<Heading id="misc">Miscellaneous</Heading>
+<Card
+	id="languages"
+	title="🚧 Languages 🚧"
+	extraClasses="bg-warning-container/30 text-warning-container-content/80 label-large border-warning-container"
 >
-	(Maybe languages?, AI activation?, ...)
-</div>
+	Setting the original language(s) of the presentation and enabling auto-translate. Potentially
+	manual override for errors in automatic translation?
+</Card>
+<Card
+	id="ai-activation"
+	title="🚧 AI Activation 🚧"
+	extraClasses="bg-warning-container/30 text-warning-container-content/80 label-large border-warning-container"
+>
+	Allowing AI inside the presentation, set the models, skills, model context protocol (MCP),
+	retrieval augmented generation (RAG), temperature and so on
+</Card>
+<Card
+	id="other-settings"
+	title="🚧 Other Settings 🚧"
+	extraClasses="bg-warning-container/30 text-warning-container-content/80 label-large border-warning-container"
+>
+	Whatever might be missing for now?
+</Card>

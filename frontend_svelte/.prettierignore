@@ -15,5 +15,8 @@ yarn.lock
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
+# Ignore shadcn components:
+src/components/shadcn
+
 # ignore static files for now:
 /static/*

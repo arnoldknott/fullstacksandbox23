@@ -36,6 +36,7 @@ export default [
 			'**/pnpm-lock.yaml',
 			'**/package-lock.json',
 			'**/yarn.lock',
+			'src/components/shadcn', // ignore shadcn components
 			'/static/*' // ignore static files for now
 		]
 	},

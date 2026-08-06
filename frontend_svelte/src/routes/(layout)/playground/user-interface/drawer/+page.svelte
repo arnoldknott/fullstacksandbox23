@@ -1,7 +1,6 @@
 <script lang="ts">
+	import Drawer from '$components/Drawer.svelte';
 	import Title from '$components/Title.svelte';
-
-	import Drawer from './Drawer.svelte';
 </script>
 
 <Title id="drawer-skeleton">Drawer skeleton</Title>

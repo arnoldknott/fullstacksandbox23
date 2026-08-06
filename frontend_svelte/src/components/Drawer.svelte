@@ -4,12 +4,14 @@
 	import { initOverlay } from '$lib/userInterface';
 	let {
 		id,
+		icon,
 		title,
 		children,
 		footer,
 		activationElement
 	}: {
 		id: string;
+		icon?: string;
 		title?: string;
 		children?: Snippet;
 		footer?: Snippet;
@@ -23,11 +25,15 @@
 	<button
 		type="button"
 		class="btn btn-primary-container btn-gradient btn-sm shadow-outline rounded-full shadow-sm"
+		aria-label="Open drawer"
 		aria-haspopup="dialog"
 		aria-expanded="false"
 		aria-controls={'overlay-' + id}
 		data-overlay={'#overlay-' + id}
 	>
+		{#if icon}
+			<span class="{icon} size-4"></span>
+		{/if}
 		{title ?? 'Open tools'}
 	</button>
 {/if}
@@ -39,11 +45,16 @@
 	{@attach initOverlay}
 >
 	<div class="drawer-header">
-		<h3 class="drawer-title" id={'title-' + id}>{title}</h3>
+		<div class="flex flex-row">
+			{#if icon}
+				<span class="{icon} mr-2 size-6"></span>
+			{/if}
+			<h3 class="drawer-title" id={'drawer-title-' + id}>{title}</h3>
+		</div>
 		<button
 			type="button"
 			class="btn btn-circle btn-text btn-sm absolute end-3 top-3"
-			aria-label="Close"
+			aria-label="Close drawer"
 			data-overlay={'#overlay-' + id}
 		>
 			<span class="icon-[tabler--x] size-5"></span>

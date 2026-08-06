@@ -10,7 +10,7 @@
 <!-- decide weather to use text-base-content or text-primary -->
 
 <div {...rest} class={rest.class ?? ''}>
-	<h2 class="heading-small md:heading lg:heading-large text-secondary mt-0 mb-2">
+	<h2 class="heading-small md:heading lg:heading-large text-primary mt-0 mb-2 italic">
 		{@render children?.()}
 	</h2>
 </div>
