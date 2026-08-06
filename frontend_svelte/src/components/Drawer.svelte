@@ -4,12 +4,14 @@
 	import { initOverlay } from '$lib/userInterface';
 	let {
 		id,
+		icon,
 		title,
 		children,
 		footer,
 		activationElement
 	}: {
 		id: string;
+		icon?: string;
 		title?: string;
 		children?: Snippet;
 		footer?: Snippet;
@@ -29,6 +31,9 @@
 		aria-controls={'overlay-' + id}
 		data-overlay={'#overlay-' + id}
 	>
+		{#if icon}
+			<span class="{icon} size-4"></span>
+		{/if}
 		{title ?? 'Open tools'}
 	</button>
 {/if}
@@ -40,7 +45,12 @@
 	{@attach initOverlay}
 >
 	<div class="drawer-header">
-		<h3 class="drawer-title" id={'drawer-title-' + id}>{title}</h3>
+		<div class="flex flex-row">
+			{#if icon}
+				<span class="{icon} mr-2 size-6"></span>
+			{/if}
+			<h3 class="drawer-title" id={'drawer-title-' + id}>{title}</h3>
+		</div>
 		<button
 			type="button"
 			class="btn btn-circle btn-text btn-sm absolute end-3 top-3"

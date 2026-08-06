@@ -67,23 +67,23 @@
 </Card>
 
 <Heading id="questions">Questions</Heading>
+<Drawer id="copy-questions" icon="icon-[tabler--copy]" title="Copy Existing Questions">
+	<p class="title">
+		Opening a side drawer to select existing questions - for mode copy (don't keep the original
+		answers and don't keep in sync)
+	</p>
+</Drawer>
+<Drawer id="link-questions" icon="icon-[tabler--link]" title="Link Existing Questions">
+	<p class="title">
+		Opening a side drawer to select existing questions - for mode link (keeps answers in sync)
+	</p>
+</Drawer>
 <Card id="link-questions" title="Linked Questions" extraClasses="label-large">
 	<p>
 		Potentially as an accordion with the answers in the panel? Adding a question and opening sidebar
 		to select existing questions - for mode copy (don't keep the original answers and don't keep in
 		sync) or link (keeps answers in sync)
 	</p>
-	<Drawer id="copy-questions" title="Copy Questions">
-		<p class="title text-center">
-			Opening a side drawer to select existing questions - for mode copy (don't keep the original
-			answers and don't keep in sync)
-		</p>
-	</Drawer>
-	<Drawer id="link-questions" title="Link Questions">
-		<p class="title text-center">
-			Opening a side drawer to select existing questions - for mode link (keeps answers in sync)
-		</p>
-	</Drawer>
 </Card>
 
 <Heading id="links">Links</Heading>
