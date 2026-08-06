@@ -20,7 +20,7 @@
 	);
 	const socketioPresentationConnection: SocketioConnection = {
 		namespace: '/presentation',
-		sessionId: page.data.session.sessionId,
+		sessionId: page.data?.session?.sessionId || '',
 		queryParams: { 'request-access-data': true }
 	};
 	onMount(() => {
@@ -36,12 +36,16 @@
 
 <!-- <JsonData data={socketioPresentation?.entities} /> -->
 
-<Display id="presentation">Presentation</Display>
-<Heading id="presentation-title">{presentation?.path || presentation?.id}</Heading>
+<Display id="presentation-name">{presentation?.path || presentation?.id}</Display>
+<a href="/presentation/setup" class="btn btn-primary btn-gradient shadow-outline mx-4 rounded-full">
+	<span class="icon-[tabler--chevron-left]"></span>
+	Go to all presentations
+</a>
 
+<Heading id="source">Source</Heading>
 <Card
-	id="source"
-	title="Source"
+	id="code-location"
+	title="🚧 Code location for this presentation 🚧"
 	extraClasses="bg-warning-container/30 text-warning-container-content/80 label-large border-warning-container"
 >
 	<p>
@@ -50,9 +54,10 @@
 	</p>
 </Card>
 
+<Heading id="access">Access</Heading>
 <Card
-	id="access"
-	title="Access"
+	id="managing-access"
+	title="🚧 Managing the accessibility of the presentation 🚧"
 	extraClasses="bg-warning-container/30 text-warning-container-content/80 label-large border-warning-container"
 >
 	<p>
@@ -60,10 +65,13 @@
 		or groups", that is access policies.
 	</p>
 </Card>
-<Card id="questions" title="Questions" extraClasses="label-large">
+
+<Heading id="questions">Questions</Heading>
+<Card id="link-questions" title="Linked Questions" extraClasses="label-large">
 	<p>
-		Linked questions. Adding a question and opening sidebar to select existing questions - for mode
-		copy (don't keep the original answers and don't keep in sync) or link (keeps answers in sync)
+		Potentially as an accordion with the answers in the panel? Adding a question and opening sidebar
+		to select existing questions - for mode copy (don't keep the original answers and don't keep in
+		sync) or link (keeps answers in sync)
 	</p>
 	<Drawer id="copy-questions" title="Copy Questions">
 		<p class="title text-center">
@@ -77,18 +85,24 @@
 		</p>
 	</Drawer>
 </Card>
+
+<Heading id="links">Links</Heading>
 <Card
-	id="links"
-	title="Links"
+	id="link-checking"
+	title="🚧 Status of links 🚧"
 	extraClasses="bg-warning-container/30 text-warning-container-content/80 label-large border-warning-container"
 >
 	<p>
-		Links, that are under continuous check for 200 responses that are used inside the presentation.
+		Links, that are under continuous check for 200 responses that are used inside the presentation
+		and marking them, if they are broken or not. Can also open a side drawer for managing existing
+		links.
 	</p>
 </Card>
+
+<Heading id="drawings">Drawings?</Heading>
 <Card
 	id="drawings"
-	title="(Drawings)"
+	title="🚧 Draw.io and Excalibut embedded here 🚧"
 	extraClasses="bg-warning-container/30 text-warning-container-content/80 label-large border-warning-container"
 >
 	<p class="title text-center">
@@ -96,20 +110,40 @@
 		or open side drawer for linking / copying existing. Maybe work with templates?
 	</p>
 </Card>
+
+<Heading id="files">Files</Heading>
 <Card
-	id="files"
-	title="Files"
+	id="attaching-files"
+	title="🚧 Uploading, updating, deleting files🚧"
 	extraClasses="bg-warning-container/30 text-warning-container-content/80 label-large border-warning-container"
 >
 	<p class="title text-center">
-		Uploading, updating, deleting files, that are referenced in the presentation. Can also open a
-		side drawer for managing existing files.
+		The files are referenced in the presentation for example for embedding images, videos,
+		backgrounds, code, and anything else. Can also open a side drawer for managing existing files.
 	</p>
 </Card>
+
+<Heading id="misc">Miscellaneous</Heading>
 <Card
-	id="misc"
-	title="Miscellaneous"
+	id="languages"
+	title="🚧 Languages 🚧"
 	extraClasses="bg-warning-container/30 text-warning-container-content/80 label-large border-warning-container"
 >
-	(Maybe languages?, AI activation?, ...)
+	Setting the original language(s) of the presentation and enabling auto-translate. Potentially
+	manual override for errors in automatic translation?
+</Card>
+<Card
+	id="ai-activation"
+	title="🚧 AI Activation 🚧"
+	extraClasses="bg-warning-container/30 text-warning-container-content/80 label-large border-warning-container"
+>
+	Allowing AI inside the presentation, set the models, skills, model context protocol (MCP),
+	retrieval augmented generation (RAG), temperature and so on
+</Card>
+<Card
+	id="other-settings"
+	title="🚧 Other Settings 🚧"
+	extraClasses="bg-warning-container/30 text-warning-container-content/80 label-large border-warning-container"
+>
+	Whatever might be missing for now?
 </Card>
