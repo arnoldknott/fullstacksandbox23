@@ -42,7 +42,7 @@ describe('Drawer', () => {
 	});
 
 	test('should allow an icon', async () => {
-		render(Drawer, { props: { id: 'test-drawer', icon: 'icon-[tabler--star]'} });
+		render(Drawer, { props: { id: 'test-drawer', icon: 'icon-[tabler--star]' } });
 
 		const icons = screen.getAllByText('', { selector: 'span.icon-\\[tabler--star\\]' });
 
