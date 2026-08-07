@@ -3,6 +3,7 @@
 
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
+	import Display from '$components/Display.svelte';
 	import Heading from '$components/Heading.svelte';
 	import JsonData from '$components/JsonData.svelte';
 	import { AccessHandler, IdentityType } from '$lib/accessHandler';
@@ -80,7 +81,13 @@
 	</div>
 </div>
 
-<Heading>My user data in this app</Heading>
+<Display
+	>Identity affiliation for <span class="italic"
+		>{page.data.session?.microsoftProfile?.displayName ?? 'current user'}</span
+	></Display
+>
+
+<Heading id="my-user-data">My user data in this app</Heading>
 
 <div
 	class="accordion accordion-bordered bg-primary-container text-primary-container-content shadow-outline-variant mb-5 shadow-lg"

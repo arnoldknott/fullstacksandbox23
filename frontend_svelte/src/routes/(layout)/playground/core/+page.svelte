@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Heading from '$components/Heading.svelte';
+	import Title from '$components/Title.svelte';
 
 	import type { PageData } from './$types';
 	let { data }: { data: PageData } = $props();
@@ -10,19 +10,21 @@
 </script>
 
 <div class="mx-5">
-	<Heading>Getting health status of backendAPI connection to keyvault:</Heading>
+	<Title id="getting-health-status-of-backendapi-connection-to-keyvault"
+		>Getting health status of backendAPI connection to keyvault:</Title
+	>
 </div>
 
 <code><pre>{JSON.stringify(data.keyvaultHealthBackend, null, ' ')}</pre></code>
 
 <div class="mx-5">
-	<Heading>Location name - client side:</Heading>
+	<Title id="location-name-client-side">Location name - client side:</Title>
 </div>
 
 <code>{urlClient}</code>
 
 <div class="mx-5">
-	<Heading>URL of this page - Svelte server side:</Heading>
+	<Title id="url-of-this-page-svelte-server-side">URL of this page - Svelte server side:</Title>
 </div>
 
 <code>{JSON.stringify(data.urlServer, null, ' ')}</code>

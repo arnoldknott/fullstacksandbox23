@@ -2,6 +2,7 @@
 	import { Hct, hexFromArgb } from '@material/material-color-utilities';
 	import { onDestroy } from 'svelte';
 
+	import Display from '$components/Display.svelte';
 	import Heading from '$components/Heading.svelte';
 	import HorizontalRule from '$components/HorizontalRule.svelte';
 	import JsonData from '$components/JsonData.svelte';
@@ -53,9 +54,11 @@
 <!-- <JsonData data={palettesArray} /> -->
 <!-- <JsonData data={theme} /> -->
 
+<Display>Material Design 3</Display>
+
 <div class="grid w-full grid-cols-1 gap-4 xl:grid-cols-2">
 	<div class="xl:col-span-2">
-		<Heading>Colors</Heading>
+		<Heading id="colors">Colors</Heading>
 		<div class="flex items-center gap-1">
 			<label class="label label-text text-base" for="switchColors">Hide</label>
 			<input
@@ -386,7 +389,7 @@
 	</div>
 
 	<div class="xl:col-span-2">
-		<Heading>Palettes</Heading>
+		<Heading id="palettes">Palettes</Heading>
 		<div class="flex items-center gap-1">
 			<label class="label label-text text-base" for="switchColors">Hide</label>
 			<input
@@ -457,7 +460,7 @@
 	</div>
 
 	<div>
-		<Heading>Typography</Heading>
+		<Heading id="typography">Typography</Heading>
 		<div class="flex items-center gap-1">
 			<label class="label label-text text-base" for="switchTypography">Hide</label>
 			<input
@@ -536,7 +539,7 @@
 	</div>
 
 	<div>
-		<Heading>Shapes (styles)</Heading>
+		<Heading id="shapes">Shapes (styles)</Heading>
 		<div class="flex items-center gap-1">
 			<label class="label label-text text-base" for="switchShapes">Hide</label>
 			<input

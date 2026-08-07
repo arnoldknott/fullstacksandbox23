@@ -13,12 +13,16 @@
 
 	<Section id="loreum1">
 		<!-- {#snippet header()}{/snippet} -->
-		<Heading><span class="italic">First</span> Lorem ipsum dolor sit amet...</Heading>
+		<Heading id="loreum1heading"
+			><span class="italic">First</span> Lorem ipsum dolor sit amet...</Heading
+		>
 		<Loreum repetition={30} />
 	</Section>
 	<Section id="loreum2">
 		<!-- {#snippet header()}{/snippet} -->
-		<Heading><span class="italic">Second</span> Lorem ipsum dolor sit amet...</Heading>
+		<Heading id="loreum2heading"
+			><span class="italic">Second</span> Lorem ipsum dolor sit amet...</Heading
+		>
 		<Loreum repetition={30} />
 	</Section>
 </div>

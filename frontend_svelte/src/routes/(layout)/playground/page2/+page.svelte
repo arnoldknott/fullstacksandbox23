@@ -34,14 +34,14 @@
 	<Loreum repetition={20} /> -->
 
 	<Section id="pg2loreum1">
-		<Heading>
+		<Heading id="pg2loreum1title">
 			<span class="italic">First</span> Lorem ipsum dolor sit amet...
 		</Heading>
 		<Loreum />
 	</Section>
 
 	<Section id="pg2loreum2">
-		<Heading>
+		<Heading id="pg2loreum2title">
 			<span class="italic">Second</span> Lorem ipsum dolor sit amet...
 		</Heading>
 
@@ -49,7 +49,7 @@
 	</Section>
 
 	<Section id="pg2sub-category">
-		<Heading>Sub Category</Heading>
+		<Heading id="pg2sub-categorytitle">Sub Category</Heading>
 	</Section>
 
 	<Section id="pg2loreum3">

@@ -8,7 +8,7 @@
 </script>
 
 <div class="mx-5">
-	<Heading>Getting schema from backend</Heading>
+	<Heading id="getting-schema-from-backend">Getting schema from backend</Heading>
 </div>
 
 <code><pre>{JSON.stringify(schema, null, ' ')}</pre></code>

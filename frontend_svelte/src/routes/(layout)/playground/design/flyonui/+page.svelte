@@ -2,6 +2,7 @@
 	// import { hexFromArgb } from '@material/material-color-utilities';
 	import { onDestroy } from 'svelte';
 
+	import Display from '$components/Display.svelte';
 	import Heading from '$components/Heading.svelte';
 	import HorizontalRule from '$components/HorizontalRule.svelte';
 	import JsonData from '$components/JsonData.svelte';
@@ -147,9 +148,11 @@
 	let edit = $state(false);
 </script>
 
+<Display>FlyonUI 2</Display>
+
 <div class="w-full xl:grid xl:grid-cols-2 xl:gap-4">
 	<div class="col-span-2">
-		<Heading>Colors</Heading>
+		<Heading id="colors">Colors</Heading>
 		<div class="flex items-center gap-1">
 			<label class="label label-text text-base" for="switchColors">Hide</label>
 			<input
@@ -919,7 +922,7 @@
 	</div>
 
 	<div class="col-span-2">
-		<Heading>Utility classes</Heading>
+		<Heading id="utility-classes">Utility classes</Heading>
 		<div class="flex items-center gap-1">
 			<label class="label label-text text-base" for="switchColors">Hide</label>
 			<input
@@ -1343,7 +1346,7 @@
 	</div>
 
 	<div>
-		<Heading>Components with utility classes</Heading>
+		<Heading id="components-with-utility-classes">Components with utility classes</Heading>
 		<p>Badges:</p>
 		<span class="badge badge-primary">Badge primary</span>
 		<span class="badge badge-secondary">Badge secondary</span>
@@ -1773,7 +1776,7 @@
 	</div>
 
 	<div>
-		<Heading>Typography</Heading>
+		<Heading id="typography">Typography</Heading>
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<p class="text-center">Fonts families</p>
 		<div class="grid grid-cols-1 divide-y-4">
@@ -1862,7 +1865,7 @@
 	</div>
 
 	<div>
-		<Heading>Styles</Heading>
+		<Heading id="styles">Styles</Heading>
 		Targets with their default values:
 		<ul>
 			<li>--rounded-box: 0.5rem ;</li>
@@ -1878,7 +1881,7 @@
 	</div>
 
 	<div>
-		<Heading>Icons</Heading>
+		<Heading id="icons">Icons</Heading>
 		<p class="title-large text-center text-xl">Iconify with FlyonUI</p>
 		<div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
 			<div>
@@ -2069,7 +2072,7 @@
 	</div>
 
 	<div>
-		<Heading>Buttons</Heading>
+		<Heading id="buttons">Buttons</Heading>
 		<div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
 			<div>
 				<p class="label text-center">Action Buttons</p>
@@ -2109,7 +2112,7 @@
 	</div>
 
 	<div>
-		<Heading>Badges</Heading>
+		<Heading id="badges">Badges</Heading>
 		<div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
 			<div>
 				<p class="label text-center">Text Badges</p>
@@ -2118,7 +2121,7 @@
 	</div>
 
 	<div>
-		<Heading>Swaps</Heading>
+		<Heading id="swaps">Swaps</Heading>
 		<div class="grid grid-cols-12 gap-4">
 			<div>
 				<label class="swap">
@@ -2171,7 +2174,7 @@
 	</div>
 
 	<!-- <div>
-        <Heading>Menus</Heading>
+        <Heading id="menus">Menus</Heading>
         <div class="grid grid-cols-6 gap-4">
             <div>
                 <ul class="menu w-64 space-y-0.5 [&_.nested-collapse-wrapper]:space-y-0.5 [&_ul]:space-y-0.5">
@@ -2250,7 +2253,7 @@
     </div> -->
 </div>
 
-<Heading>Current theme as JSON:</Heading>
+<Heading id="current-theme-as-json">Current theme as JSON:</Heading>
 <JsonData data={theme} />
 
 <!-- <style>

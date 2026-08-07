@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
+	import Display from '$components/Display.svelte';
 	import Heading from '$components/Heading.svelte';
 
 	import type { PageData } from './$types';
@@ -53,6 +54,10 @@
 	};
 </script>
 
+<Display>Websockets Playground</Display>
+
+<Heading id="type-your-message">Type your message</Heading>
+
 <form id="post-message" class="flex flex-col" onsubmit={sendMessage}>
 	<div class="flex flex-row items-center gap-4">
 		<div class="input-filled w-fit grow">
@@ -76,6 +81,8 @@
 	</div>
 </form>
 
+<Heading id="received-messages">Received Messages</Heading>
+
 {#each old_messages as old_message, i (i)}
-	<Heading>{old_message}</Heading>
+	<p id={'old-message-' + i}>{old_message}</p>
 {/each}

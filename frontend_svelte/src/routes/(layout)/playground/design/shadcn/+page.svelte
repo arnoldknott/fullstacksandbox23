@@ -7,7 +7,7 @@
 	import Title from '$components/Title.svelte';
 </script>
 
-<Display>Shadcn/ui demonstration</Display>
+<Display>Shadcn/ui 1</Display>
 
 <Heading id="integration" class="link"
 	><a href={resolve('/(layout)/playground/design/shadcn/integration')}>Integration</a></Heading
@@ -21,7 +21,7 @@
 	adopts the previously developed features and designs to shadcn.
 </p>
 
-<Heading id="button">Design Variables</Heading>
+<Heading id="design-variables">Design Variables</Heading>
 
 <Heading id="button">Button</Heading>
 

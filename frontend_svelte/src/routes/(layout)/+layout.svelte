@@ -283,8 +283,8 @@
 						{
 							name: 'Building Blocks',
 							icon: 'icon-[clarity--blocks-group-line]',
-							hash: '#design-building-blocks',
-							id: 'design-building-blocks',
+							hash: '#building-blocks',
+							id: 'building-blocks',
 							items: [
 								{
 									name: 'Shadcn-svelte',

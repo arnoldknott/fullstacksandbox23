@@ -1,7 +1,7 @@
 <!-- Rename the folder of this file "protected" into the real content -->
 
 <script lang="ts">
-	import Heading from '$components/Heading.svelte';
+	import Display from '$components/Display.svelte';
 	import NavigationCard from '$components/NavigationCard.svelte';
 
 	const links = [
@@ -21,9 +21,9 @@
 	];
 </script>
 
-<Heading>
+<Display>
 	Communicating Demo Resources to Backend API Service and handling access policies for identities.
-</Heading>
+</Display>
 
 <div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-3">
 	{#each links as link (link.name)}

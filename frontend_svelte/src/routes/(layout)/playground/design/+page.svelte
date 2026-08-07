@@ -104,7 +104,8 @@
 	></button
 >
 
-<Heading>👍 Results - ready for use 👍</Heading>
+<Heading id="results">👍 Results 👍</Heading>
+<p class="label text-base-content-variant ml-10">ready for use</p>
 <div class="mb-2 flex items-center gap-1">
 	<label class="label label-text text-base" for="debugSwitcher">Debug: </label>
 	<input type="checkbox" class="switch-neutral switch" bind:checked={debug} id="debugSwitcher" />
@@ -503,9 +504,8 @@
 	>
 </div>
 
-<div id="design-building-blocks">
-	<Heading>🚧 Building blocks - for design experiments 🚧</Heading>
-</div>
+<Heading id="building-blocks">🚧 Building blocks 🚧</Heading>
+<p class="label text-base-content-variant ml-10">for design experiments</p>
 
 <button
 	type="button"
