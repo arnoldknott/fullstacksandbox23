@@ -4,13 +4,13 @@
 	import { page } from '$app/state';
 	import Card from '$components/Card.svelte';
 	import Display from '$components/Display.svelte';
-	import Drawer from '$components/Drawer.svelte';
 	import Heading from '$components/Heading.svelte';
 	// import JsonData from '$components/JsonData.svelte';
 	import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
 	import type { Presentation } from '$lib/types';
 
 	import type { PageData } from './$types';
+	import QuestionDrawer from './QuestionDrawer.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -67,17 +67,8 @@
 </Card>
 
 <Heading id="questions">Questions</Heading>
-<Drawer id="copy-questions" icon="icon-[tabler--copy]" title="Copy Existing Questions">
-	<p class="title">
-		Opening a side drawer to select existing questions - for mode copy (don't keep the original
-		answers and don't keep in sync)
-	</p>
-</Drawer>
-<Drawer id="link-questions" icon="icon-[tabler--link]" title="Link Existing Questions">
-	<p class="title">
-		Opening a side drawer to select existing questions - for mode link (keeps answers in sync)
-	</p>
-</Drawer>
+<QuestionDrawer />
+
 <Card id="link-questions" title="Linked Questions" extraClasses="label-large">
 	<p>
 		Potentially as an accordion with the answers in the panel? Adding a question and opening sidebar
