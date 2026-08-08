@@ -91,7 +91,7 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 		// if (this.pendingTemplate) {
 		// 	setTimeout(() => {
 		// 		this.createPending();
-		// 	}, 4000);
+		// 	}, 3000);
 		// }
 
 		// if handlers are not disabled, add the provided handler or the default one:
