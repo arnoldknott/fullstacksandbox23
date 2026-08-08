@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
-	import { fade } from 'svelte/transition';
 
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -66,14 +65,14 @@
 		socketioPresentations?.client.disconnect();
 	});
 
-	let showNewPresentationCard: boolean = $state(page.url.searchParams.get('new') === 'true');
+	let hideNewPresentationCard: boolean = $state(!(page.url.searchParams.get('new') === 'true'));
 
 	const submitPresentation = () => {
 		const newPath = socketioPresentations.pendingEntities[0].path?.trim() ?? '';
 		socketioPresentations.pendingEntities[0].path =
 			newPath && !newPath.startsWith('/') ? `/${newPath}` : newPath;
 		socketioPresentations.submitEntity();
-		showNewPresentationCard = false;
+		hideNewPresentationCard = true;
 	};
 
 	const shareOptions: AccessShareOption[] = $state([
@@ -150,7 +149,7 @@
 			class="btn btn-secondary btn-gradient shadow-outline rounded-lg shadow"
 			aria-label="Cancel"
 			onclick={() => {
-				showNewPresentationCard = false;
+				hideNewPresentationCard = true;
 			}}><span class="icon-[tabler--x] size-5"></span>Cancel</button
 		>
 		<button
@@ -169,75 +168,76 @@
 <!-- <JsonData data={data.payload.identities} /> -->
 
 <!-- TBD: consider making the showCard a bindable prop in component Card and use it for example for the close button -->
-{#if showNewPresentationCard && socketioPresentations?.pendingEntities[0]}
-	<div transition:fade={{ duration: 600 }}>
-		<Card
-			id={socketioPresentations.pendingEntities[0].id}
-			header={newPresentationHeader}
-			footer={newPresentationFooter}
-			closeButton
-		>
-			<div class="flex w-full flex-wrap gap-6">
-				<div class="grow">
-					<FormElement title="Slug" description={slugDescription} extraClasses="w-full">
-						<div class="md:flex-cols-2 wrap flex gap-2">
-							<code class="mt-5 shrink">{page.url.origin}/presentation/</code>
-							<div class="input-filled input-primary w-full">
-								<input
-									type="text"
-									placeholder=""
-									class="input"
-									id="slugInput"
-									bind:value={socketioPresentations.pendingEntities[0].path}
-								/>
-								<label class="input-filled-label" for="slugInput"
-									>[add the path to your presentation here]</label
-								>
-							</div>
-						</div>
-					</FormElement>
-					<FormElement title="Source" description={sourceDescription} extraClasses="max-w-300">
-						{@render warning()} For now, all presentations are <IdBadge id="intern" />, e.g. hosted
-						with the source code of this platform. ON the long run, <IdBadge id="Github" />, <IdBadge
-							id="Gitlab"
-						/>, <IdBadge id="OneDrive" />, <IdBadge id="GoogleDrive" /> and other sources should be supported
-						as well.
-					</FormElement>
-					<FormElement title="Questions" extraClasses="max-w-300">
-						{@render warning()} Link interactive questions to your presentation, so they can be answered
-						while going through the presentation. Linking exisiting questions, also links their answers,
-						copying existing questions creates a new question without any answers.
-					</FormElement>
-					<FormElement title="Links" extraClasses="max-w-300">
-						{@render warning()} Maybe there's a need to add related links and / or embeddings. The service
-						to the user could be to check the aliveness of the links - if a link returns a 404, the user
-						gets a notification.
-					</FormElement>
-					<FormElement title="Files" extraClasses="max-w-300">
-						{@render warning()}Select existing files or drop new files into a container to upload
-						and make available to the presentation. This is the place to store binaries, so they can
-						be accessed via the presentation api and used in the presentation.
-					</FormElement>
-				</div>
-
-				<FormElement title="Access" description={accessDescription} extraClasses="max-w-96">
-					{@render warning()} Only the public access gets currently submitted with the presentation!
-					<ul
-						class="bg-base-150 shadow-outline max-h-48 max-w-fit overflow-y-auto rounded-lg p-2 shadow-inner"
-					>
-						{#each shareOptions, i}
-							<ShareItem
-								resourceId={socketioPresentations.pendingEntities[0].id}
-								bind:shareOption={shareOptions[i]}
-								share={socketioPresentations?.shareEntity.bind(socketioPresentations)}
-								wide
+{#if socketioPresentations?.pendingEntities[0]}
+	<!-- <div transition:fade={{ duration: 600 }}> -->
+	<Card
+		id={socketioPresentations.pendingEntities[0].id}
+		header={newPresentationHeader}
+		footer={newPresentationFooter}
+		closeButton
+		bind:hidden={hideNewPresentationCard}
+	>
+		<div class="flex w-full flex-wrap gap-6">
+			<div class="grow">
+				<FormElement title="Slug" description={slugDescription} extraClasses="w-full">
+					<div class="md:flex-cols-2 wrap flex gap-2">
+						<code class="mt-5 shrink">{page.url.origin}/presentation/</code>
+						<div class="input-filled input-primary w-full">
+							<input
+								type="text"
+								placeholder=""
+								class="input"
+								id="slugInput"
+								bind:value={socketioPresentations.pendingEntities[0].path}
 							/>
-						{/each}
-					</ul>
+							<label class="input-filled-label" for="slugInput"
+								>[add the path to your presentation here]</label
+							>
+						</div>
+					</div>
+				</FormElement>
+				<FormElement title="Source" description={sourceDescription} extraClasses="max-w-300">
+					{@render warning()} For now, all presentations are <IdBadge id="intern" />, e.g. hosted
+					with the source code of this platform. ON the long run, <IdBadge id="Github" />, <IdBadge
+						id="Gitlab"
+					/>, <IdBadge id="OneDrive" />, <IdBadge id="GoogleDrive" /> and other sources should be supported
+					as well.
+				</FormElement>
+				<FormElement title="Questions" extraClasses="max-w-300">
+					{@render warning()} Link interactive questions to your presentation, so they can be answered
+					while going through the presentation. Linking exisiting questions, also links their answers,
+					copying existing questions creates a new question without any answers.
+				</FormElement>
+				<FormElement title="Links" extraClasses="max-w-300">
+					{@render warning()} Maybe there's a need to add related links and / or embeddings. The service
+					to the user could be to check the aliveness of the links - if a link returns a 404, the user
+					gets a notification.
+				</FormElement>
+				<FormElement title="Files" extraClasses="max-w-300">
+					{@render warning()}Select existing files or drop new files into a container to upload and
+					make available to the presentation. This is the place to store binaries, so they can be
+					accessed via the presentation api and used in the presentation.
 				</FormElement>
 			</div>
-		</Card>
-	</div>
+
+			<FormElement title="Access" description={accessDescription} extraClasses="max-w-96">
+				{@render warning()} Only the public access gets currently submitted with the presentation!
+				<ul
+					class="bg-base-150 shadow-outline max-h-48 max-w-fit overflow-y-auto rounded-lg p-2 shadow-inner"
+				>
+					{#each shareOptions, i}
+						<ShareItem
+							resourceId={socketioPresentations.pendingEntities[0].id}
+							bind:shareOption={shareOptions[i]}
+							share={socketioPresentations?.shareEntity.bind(socketioPresentations)}
+							wide
+						/>
+					{/each}
+				</ul>
+			</FormElement>
+		</div>
+	</Card>
+	<!-- </div> -->
 {:else if !socketioPresentations?.pendingEntities[0]}
 	<div class="label text-error">
 		<span class="icon-[svg-spinners--12-dots-scale-rotate] size-6"></span>connecting ...
@@ -251,7 +251,7 @@
 			<button
 				class="btn btn-primary btn-gradient shadow-outline mx-4 rounded-lg shadow"
 				aria-label="Add new presentation"
-				onclick={() => (showNewPresentationCard = true)}
+				onclick={() => (hideNewPresentationCard = false)}
 			>
 				<!-- onclick={() => goto(resolve('/(layout)/presentation/(protected)/setup/new'))} -->
 				<span class="icon-[fa6-solid--plus] size-4"></span>Add

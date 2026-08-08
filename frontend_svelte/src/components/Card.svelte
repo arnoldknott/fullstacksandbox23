@@ -11,7 +11,8 @@
 		title,
 		closeButton = false,
 		children,
-		footer
+		footer,
+		hidden = $bindable(false)
 	}: {
 		id: string;
 		extraClasses?: string;
@@ -20,16 +21,15 @@
 		closeButton?: boolean;
 		children: Snippet;
 		footer?: Snippet;
+		hidden?: boolean;
 	} = $props();
 
-	let showCard = $state(true);
-
 	export const remove = () => {
-		showCard = false;
+		hidden = true;
 	};
 </script>
 
-{#if showCard}
+{#if !hidden}
 	<div transition:fade={{ duration: 600 }}>
 		<div
 			class="card border-outline-variant bg-base-200 shadow-outline-variant w-full rounded-xl border-[1px] shadow-md {extraClasses}"
@@ -50,7 +50,7 @@
 					class="btn btn-circle btn-text btn-sm absolute end-3 top-3"
 					aria-label="Close card"
 					onclick={() => {
-						showCard = false;
+						hidden = true;
 					}}
 				>
 					<span class="icon-[tabler--x] size-5"></span>
