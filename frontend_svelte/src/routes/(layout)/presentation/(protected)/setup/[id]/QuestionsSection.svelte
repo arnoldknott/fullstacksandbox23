@@ -12,6 +12,7 @@
 	// let hideNewFileCard: boolean = $state(!(page.url.searchParams.get('new-file') === 'true'));
 </script>
 
+<!-- TBD: potentially move into existing questions Card, same way as the add new presentation, then no slide transition is necessary any more. -->
 {#if hideNewQuestionCard}
 	<button
 		transition:slide={{ duration: 600 }}
