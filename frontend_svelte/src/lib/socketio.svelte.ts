@@ -87,6 +87,12 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 		});
 
 		if (this.pendingTemplate) this.createPending();
+		// simulate delay for testing UI elements like forms to create a new entity, that depend on the pendingEntity
+		// if (this.pendingTemplate) {
+		// 	setTimeout(() => {
+		// 		this.createPending();
+		// 	}, 4000);
+		// }
 
 		// if handlers are not disabled, add the provided handler or the default one:
 		if (configuration.transferred !== false) {

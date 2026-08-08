@@ -249,7 +249,7 @@
 	<div class="flex justify-between">
 		<Title id="existingPresentations" class="grow">Overview</Title>
 		<div class="flex flex-row items-center justify-center">
-			{#if hideNewPresentationCard}
+			{#if hideNewPresentationCard || !socketioPresentations?.pendingEntities[0]}
 				<button
 					transition:fade={{ duration: 600 }}
 					class="btn btn-primary-container btn-gradient btn-sm shadow-outline mx-4 rounded-full shadow-sm"
