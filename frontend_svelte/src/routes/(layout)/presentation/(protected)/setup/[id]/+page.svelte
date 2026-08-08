@@ -10,6 +10,7 @@
 	import type { Presentation } from '$lib/types';
 
 	import type { PageData } from './$types';
+	import QuestionSections from './QuestionsSection.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -66,19 +67,7 @@
 </Card>
 
 <Heading id="questions">Questions</Heading>
-
-<Card id="add-questions" title="Add Questions" extraClasses="label-large">
-	Add questions drawer with tabs for new and existing, where the existing questions get the button
-	to copy and link. Also a copy all selected and link all selected.
-</Card>
-
-<Card id="linked-questions" title="Linked Questions" extraClasses="label-large">
-	<p>
-		Potentially as an accordion with the answers in the panel? Adding a question and opening sidebar
-		to select existing questions - for mode copy (don't keep the original answers and don't keep in
-		sync) or link (keeps answers in sync)
-	</p>
-</Card>
+<QuestionSections />
 
 <Heading id="links">Links</Heading>
 <Card
