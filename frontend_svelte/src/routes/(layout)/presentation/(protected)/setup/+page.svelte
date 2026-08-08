@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
-	import { slide } from 'svelte/transition';
+	import { fade, slide } from 'svelte/transition';
 
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -249,17 +249,20 @@
 	<div class="flex justify-between">
 		<Title id="existingPresentations" class="grow">Overview</Title>
 		<div class="flex flex-row items-center justify-center">
-			<button
-				class="btn btn-primary-container btn-gradient btn-sm shadow-outline mx-4 rounded-full shadow-sm"
-				aria-label="Add new presentation"
-				onclick={() => (hideNewPresentationCard = false)}
-			>
-				<!-- onclick={() => goto(resolve('/(layout)/presentation/(protected)/setup/new'))} -->
-				<span class="icon-[fa6-solid--plus] size-4"></span>
-				<!-- <span class="hidden ">Add</span> -->
-				<span class="hidden sm:inline">Add new</span>
-				<span class="hidden md:inline">presentation</span>
-			</button>
+			{#if hideNewPresentationCard}
+				<button
+					transition:fade={{ duration: 600 }}
+					class="btn btn-primary-container btn-gradient btn-sm shadow-outline mx-4 rounded-full shadow-sm"
+					aria-label="Add new presentation"
+					onclick={() => (hideNewPresentationCard = false)}
+				>
+					<!-- onclick={() => goto(resolve('/(layout)/presentation/(protected)/setup/new'))} -->
+					<span class="icon-[fa6-solid--plus] size-4"></span>
+					<!-- <span class="hidden ">Add</span> -->
+					<span class="hidden sm:inline">Add new</span>
+					<span class="hidden md:inline">presentation</span>
+				</button>
+			{/if}
 			<div class="join rounded-lg">
 				<button
 					aria-label="Preview"
@@ -369,7 +372,7 @@
 	</div>
 {/snippet}
 
-<Card id="existing-presenations" header={existingPresentationsHeader} extraClasses="mt-6">
+<Card id="existing-presentations" header={existingPresentationsHeader} extraClasses="mt-6">
 	<div class="w-full overflow-x-auto {viewMode !== 'preview' ? 'hidden' : ''}">
 		<p class="bg-warning text-warning-content rounded-lg p-4">Preview mode is not developed yet</p>
 	</div>
