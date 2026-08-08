@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
+	import { slide } from 'svelte/transition';
 
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -238,8 +239,8 @@
 		</div>
 	</Card>
 	<!-- </div> -->
-{:else if !socketioPresentations?.pendingEntities[0]}
-	<div class="label text-error">
+{:else if !socketioPresentations?.pendingEntities[0] && !hideNewPresentationCard}
+	<div class="label text-error" transition:slide={{ duration: 600 }}>
 		<span class="icon-[svg-spinners--12-dots-scale-rotate] size-6"></span>connecting ...
 	</div>
 {/if}
