@@ -7,7 +7,7 @@
 	import { page } from '$app/state';
 	import Card from '$components/Card.svelte';
 	import Display from '$components/Display.svelte';
-	import Heading from '$components/Heading.svelte';
+	import Title from '$components/Title.svelte';
 	// import JsonData from '$components/JsonData.svelte';
 	import { AccessHandler, Action, IdentityType } from '$lib/accessHandler';
 	import { SocketIO, type SocketioStatus } from '$lib/socketio.svelte';
@@ -116,7 +116,17 @@
 <Display id="overview-presentations">Presentations</Display>
 
 {#snippet newPresentationHeader()}
-	<Heading id="newPresentation">New presentation</Heading>
+	<Title id="newPresentation">New presentation</Title>
+	<button
+		type="button"
+		class="btn btn-circle btn-text btn-sm absolute end-3 top-3"
+		aria-label="Close card"
+		onclick={() => {
+			showNewPresentationCard = false;
+		}}
+	>
+		<span class="icon-[tabler--x] size-5"></span>
+	</button>
 {/snippet}
 
 {#snippet slugDescription()}
@@ -244,7 +254,7 @@
 
 {#snippet existingPresentationsHeader()}
 	<div class="flex justify-between">
-		<Heading id="existingPresentations" class="grow">Overview</Heading>
+		<Title id="existingPresentations" class="grow">Overview</Title>
 		<div class="flex flex-row items-center justify-center">
 			<button
 				class="btn btn-primary btn-gradient shadow-outline mx-4 rounded-lg shadow"
