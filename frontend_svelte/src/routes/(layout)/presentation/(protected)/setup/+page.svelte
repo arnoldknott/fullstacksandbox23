@@ -249,17 +249,20 @@
 		<Title id="existingPresentations" class="grow">Overview</Title>
 		<div class="flex flex-row items-center justify-center">
 			<button
-				class="btn btn-primary btn-gradient shadow-outline mx-4 rounded-lg shadow"
+				class="btn btn-primary-container btn-gradient btn-sm shadow-outline mx-4 rounded-full shadow-sm"
 				aria-label="Add new presentation"
 				onclick={() => (hideNewPresentationCard = false)}
 			>
 				<!-- onclick={() => goto(resolve('/(layout)/presentation/(protected)/setup/new'))} -->
-				<span class="icon-[fa6-solid--plus] size-4"></span>Add
+				<span class="icon-[fa6-solid--plus] size-4"></span>
+				<!-- <span class="hidden ">Add</span> -->
+				<span class="hidden sm:inline">Add new</span>
+				<span class="hidden md:inline">presentation</span>
 			</button>
 			<div class="join rounded-lg">
 				<button
 					aria-label="Preview"
-					class="btn join-item btn-secondary btn-gradient shadow-outline py-4 shadow {viewMode !==
+					class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline rounded- py-4 shadow {viewMode !==
 					'preview'
 						? 'opacity-60'
 						: ''}"
@@ -269,7 +272,7 @@
 				</button>
 				<button
 					aria-label="Grid"
-					class="btn join-item btn-secondary btn-gradient shadow-outline py-4 shadow {viewMode !==
+					class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline py-4 shadow {viewMode !==
 					'grid'
 						? 'opacity-60'
 						: ''}"
@@ -279,7 +282,7 @@
 				</button>
 				<button
 					aria-label="List"
-					class="btn join-item btn-secondary btn-gradient shadow-outline py-4 shadow {viewMode !==
+					class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline py-4 shadow {viewMode !==
 					'list'
 						? 'opacity-60'
 						: ''}"
