@@ -115,10 +115,6 @@
 
 <Display id="overview-presentations">Presentations</Display>
 
-{#snippet newPresentationHeader()}
-	<Title id="newPresentation">New presentation</Title>
-{/snippet}
-
 {#snippet slugDescription()}
 	This is the endpoint added for user access. It is not mandatory, as the presentation is always
 	accessible via its id in place of the slug. <span class="text-accent"
@@ -168,12 +164,10 @@
 
 <!-- <JsonData data={data.payload.identities} /> -->
 
-<!-- TBD: consider making the showCard a bindable prop in component Card and use it for example for the close button -->
 {#if socketioPresentations?.pendingEntities[0]}
-	<!-- <div transition:fade={{ duration: 600 }}> -->
 	<Card
 		id={socketioPresentations.pendingEntities[0].id}
-		header={newPresentationHeader}
+		title="New presentation"
 		footer={newPresentationFooter}
 		closeButton
 		bind:hidden={hideNewPresentationCard}
@@ -238,7 +232,6 @@
 			</FormElement>
 		</div>
 	</Card>
-	<!-- </div> -->
 {:else if !socketioPresentations?.pendingEntities[0] && !hideNewPresentationCard}
 	<div class="label text-error" transition:slide={{ duration: 600 }}>
 		<span class="icon-[svg-spinners--12-dots-scale-rotate] size-6"></span>connecting ...
