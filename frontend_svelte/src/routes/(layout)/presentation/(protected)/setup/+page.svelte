@@ -117,16 +117,6 @@
 
 {#snippet newPresentationHeader()}
 	<Title id="newPresentation">New presentation</Title>
-	<button
-		type="button"
-		class="btn btn-circle btn-text btn-sm absolute end-3 top-3"
-		aria-label="Close card"
-		onclick={() => {
-			showNewPresentationCard = false;
-		}}
-	>
-		<span class="icon-[tabler--x] size-5"></span>
-	</button>
 {/snippet}
 
 {#snippet slugDescription()}
@@ -178,12 +168,14 @@
 
 <!-- <JsonData data={data.payload.identities} /> -->
 
+<!-- TBD: consider making the showCard a bindable prop in component Card and use it for example for the close button -->
 {#if showNewPresentationCard && socketioPresentations?.pendingEntities[0]}
 	<div transition:fade={{ duration: 600 }}>
 		<Card
 			id={socketioPresentations.pendingEntities[0].id}
 			header={newPresentationHeader}
 			footer={newPresentationFooter}
+			closeButton
 		>
 			<div class="flex w-full flex-wrap gap-6">
 				<div class="grow">

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { fade } from 'svelte/transition';
 
 	import Title from './Title.svelte';
 
@@ -8,6 +9,7 @@
 		extraClasses,
 		header,
 		title,
+		closeButton = false,
 		children,
 		footer
 	}: {
@@ -15,6 +17,7 @@
 		extraClasses?: string;
 		header?: Snippet;
 		title?: string;
+		closeButton?: boolean;
 		children: Snippet;
 		footer?: Snippet;
 	} = $props();
@@ -27,27 +30,41 @@
 </script>
 
 {#if showCard}
-	<div
-		class="card border-outline-variant bg-base-200 shadow-outline-variant w-full rounded-xl border-[1px] shadow-md {extraClasses}"
-		{id}
-	>
-		{#if header}
-			<div class="card-header">
-				{@render header()}
+	<div transition:fade={{ duration: 600 }}>
+		<div
+			class="card border-outline-variant bg-base-200 shadow-outline-variant w-full rounded-xl border-[1px] shadow-md {extraClasses}"
+			{id}
+		>
+			{#if header}
+				<div class="card-header">
+					{@render header()}
+				</div>
+			{:else if title}
+				<div class="card-header">
+					<Title id={id + '-header'}>{title}</Title>
+				</div>
+			{/if}
+			{#if closeButton}
+				<button
+					type="button"
+					class="btn btn-circle btn-text btn-sm absolute end-3 top-3"
+					aria-label="Close card"
+					onclick={() => {
+						showCard = false;
+					}}
+				>
+					<span class="icon-[tabler--x] size-5"></span>
+				</button>
+			{/if}
+			<div class="card-body">
+				{@render children()}
 			</div>
-		{:else if title}
-			<div class="card-header">
-				<Title id={id + '-header'}>{title}</Title>
-			</div>
-		{/if}
-		<div class="card-body">
-			{@render children()}
+			{#if footer}
+				<div class="card-footer">
+					{@render footer()}
+				</div>
+			{/if}
 		</div>
-		{#if footer}
-			<div class="card-footer">
-				{@render footer()}
-			</div>
-		{/if}
 	</div>
 {/if}
 
