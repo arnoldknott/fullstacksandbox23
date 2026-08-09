@@ -124,16 +124,16 @@
 		>
 			<button
 				class="join-item btn btn-sm btn-secondary rounded-l-full {showOnThisPageLinks
-					? 'btn-gradient'
-					: 'btn-outline'}"
+					? 'btn-outline'
+					: 'btn-gradient'}"
 				aria-label="App navigation"
 				onclick={() => (showOnThisPageLinks = !showOnThisPageLinks)}
 				><span class="icon-[tabler--chevron-left] size-5"></span></button
 			>
 			<button
 				class="join-item btn btn-sm btn-secondary grow rounded-r-full {showOnThisPageLinks
-					? 'btn-outline'
-					: 'btn-gradient'}"
+					? 'btn-gradient'
+					: 'btn-outline'}"
 				aria-label="On this page"
 				onclick={() => (showOnThisPageLinks = !showOnThisPageLinks)}
 				>On This Page <span class="icon-[tabler--chevrons-right] size-5"></span></button
