@@ -1,8 +1,37 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte';
+	import { onDestroy, onMount, type Snippet } from 'svelte';
 	import type { HTMLAttributes } from 'svelte/elements';
-	let { children, id, ...rest }: { children: Snippet; id: string } & HTMLAttributes<HTMLElement> =
+
+	import { getOnThisPageLinks } from '$lib/contexts/sidebar.svelte';
+	let {
+		children,
+		id,
+		sideBarEntry,
+		...rest
+	}: { children: Snippet; id: string; sideBarEntry?: string } & HTMLAttributes<HTMLElement> =
 		$props();
+
+	const onThisPageLinks = getOnThisPageLinks();
+
+	/*
+	TBD: consider also adding the Display component to the side bar (as folders),
+	Then Headings can be inside those folders
+	Also consider removing those items from the global side bar!
+	*/
+	onMount(() => {
+		if (sideBarEntry) {
+			onThisPageLinks.push({
+				id: `on-this-page-${id}`,
+				name: sideBarEntry,
+				icon: 'icon-[tabler--chevrons-right]',
+				hash: '#' + id
+			});
+		}
+	});
+	onDestroy(() => {
+		const index = onThisPageLinks.findIndex((item) => item.id === `on-this-page-${id}`);
+		if (index >= 0) onThisPageLinks.splice(index, 1);
+	});
 	// let props = $props();
 	// console.log('=== lib - components - title - children ===');
 	// console.log(children);

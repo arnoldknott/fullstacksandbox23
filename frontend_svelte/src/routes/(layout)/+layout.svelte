@@ -14,6 +14,7 @@
 		initialProtectedSidebarLinks,
 		initialSidebarLinks,
 		setDebugSidebarLinks,
+		setOnThisPageLinks,
 		setProtectedSidebarLinks,
 		setSidebarLinks
 	} from '$lib/contexts/sidebar.svelte';
@@ -426,6 +427,8 @@
 	setSidebarLinks(initialSidebarLinks);
 	setProtectedSidebarLinks(initialProtectedSidebarLinks);
 	setDebugSidebarLinks(initialDebugSidebarLinks);
+	const initialOnThisPageLinks: SidebarItemContent[] = $state([]);
+	setOnThisPageLinks(initialOnThisPageLinks);
 
 	const debugSidebarLinks: SidebarItemContent[] = $derived(getDebugSidebarLinks());
 </script>

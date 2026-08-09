@@ -42,7 +42,7 @@
 	Go to all presentations
 </a>
 
-<Heading id="source">Source</Heading>
+<Heading id="source" sideBarEntry="Source">Source</Heading>
 <Card
 	id="code-location"
 	title="🚧 Code location for this presentation 🚧"
@@ -54,7 +54,7 @@
 	</p>
 </Card>
 
-<Heading id="access">Access</Heading>
+<Heading id="access" sideBarEntry="Access">Access</Heading>
 <Card
 	id="managing-access"
 	title="🚧 Managing the accessibility of the presentation 🚧"
@@ -66,10 +66,10 @@
 	</p>
 </Card>
 
-<Heading id="questions">Questions</Heading>
+<Heading id="questions" sideBarEntry="Questions">Questions</Heading>
 <QuestionSections />
 
-<Heading id="links">Links</Heading>
+<Heading id="links" sideBarEntry="Links">Links</Heading>
 <Card
 	id="link-checking"
 	title="🚧 Status of links 🚧"
@@ -82,7 +82,7 @@
 	</p>
 </Card>
 
-<Heading id="drawings">Drawings?</Heading>
+<Heading id="drawings" sideBarEntry="Drawings?">Drawings?</Heading>
 <Card
 	id="drawings"
 	title="🚧 Draw.io and Excalibut embedded here 🚧"
@@ -94,7 +94,7 @@
 	</p>
 </Card>
 
-<Heading id="files">Files</Heading>
+<Heading id="files" sideBarEntry="Files">Files</Heading>
 <Card
 	id="attaching-files"
 	title="🚧 Uploading, updating, deleting files🚧"
@@ -106,7 +106,7 @@
 	</p>
 </Card>
 
-<Heading id="misc">Miscellaneous</Heading>
+<Heading id="misc" sideBarEntry="Miscellaneous">Miscellaneous</Heading>
 <Card
 	id="languages"
 	title="🚧 Languages 🚧"

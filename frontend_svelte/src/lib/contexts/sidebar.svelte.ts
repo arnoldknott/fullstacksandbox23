@@ -515,3 +515,4 @@ export const [getSidebarLinks, setSidebarLinks] = createContext<SidebarItemConte
 export const [getProtectedSidebarLinks, setProtectedSidebarLinks] =
 	createContext<SidebarItemContent[]>();
 export const [getDebugSidebarLinks, setDebugSidebarLinks] = createContext<SidebarItemContent[]>();
+export const [getOnThisPageLinks, setOnThisPageLinks] = createContext<SidebarItemContent[]>();

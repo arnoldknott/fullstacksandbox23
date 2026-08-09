@@ -13,6 +13,13 @@
 </script>
 
 <!-- TBD: potentially move into existing questions Card, same way as the add new presentation, then no slide transition is necessary any more. -->
+<!--
+The `slide` transition does not work correctly for elements with `display: inline-flex`
+https://svelte.dev/e/transition_slide_display 
+
+=> Ignore for now, as this button anyways will be replaced by the buutton inside the Existing Question Card (see existing presentations)!
+-->
+
 {#if hideNewQuestionCard}
 	<button
 		transition:slide={{ duration: 600 }}

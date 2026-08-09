@@ -6,6 +6,7 @@
 	import Guard from '$components/Guard.svelte';
 	import {
 		getDebugSidebarLinks,
+		getOnThisPageLinks,
 		getProtectedSidebarLinks,
 		getSidebarLinks,
 		page6Content
@@ -32,7 +33,7 @@
 	const sidebarLinks = getSidebarLinks();
 	const protectedSidebarLinks = getProtectedSidebarLinks();
 	const debugSidebarLinks = getDebugSidebarLinks();
-	const onThisPageLinks = $state(['dummy to keep button visisble']);
+	const onThisPageLinks = getOnThisPageLinks();
 
 	let showOnThisPageLinks = $state(false);
 
@@ -183,13 +184,12 @@
 				</ul>
 			{:else}
 				<ul class="menu absolute p-0" transition:fly={{ x: 250, duration: 600, opacity: 0 }}>
-					{#each debugSidebarLinks as debugSidebarItem (debugSidebarItem.id)}
+					{#each onThisPageLinks as onThisPageItem (onThisPageItem.id)}
 						<SidebarItem
 							content={{
-								...debugSidebarItem,
-								pathname: debugSidebarItem.pathname || page.url.pathname
+								...onThisPageItem,
+								pathname: onThisPageItem.pathname || page.url.pathname
 							}}
-							topLevel={true}
 						/>
 						<!-- {scrollspyParent} -->
 						<!-- topoffset={navBarBottom} -->
@@ -224,4 +224,6 @@
 		<br />
 		{locationPageAndHash?.page}{locationPageAndHash?.hash}
 		<br /> -->
+
+	onThisPageLinks: {onThisPageLinks.length}
 </aside>
