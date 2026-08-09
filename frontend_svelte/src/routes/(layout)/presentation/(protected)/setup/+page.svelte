@@ -301,6 +301,7 @@
 			aria-label={`Setup presentation ${path || resourceId}`}
 			class=""
 		> -->
+		<!-- TBD: hide the buttons, where the access_right for the logged in user are not enough to execute the action -->
 		<button
 			class="btn btn-secondary-container btn-gradient btn-sm text-secondary-container-content join-item shadow-outline shadow-sm"
 			aria-label="Edit Button"
