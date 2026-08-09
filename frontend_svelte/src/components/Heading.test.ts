@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/svelte';
 import { createRawSnippet } from 'svelte';
-import { describe, expect, test,vi } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 
 import type { SidebarItemContent } from '$lib/types';
 
@@ -20,7 +20,9 @@ vi.mock('$lib/contexts/sidebar.svelte', async (importOriginal) => {
 	};
 });
 
-const headingContentSnippet = createRawSnippet(() => ({ render: () => '<div>Heading Dummy title</div>' }));
+const headingContentSnippet = createRawSnippet(() => ({
+	render: () => '<div>Heading Dummy title</div>'
+}));
 
 // test.beforeEach(({ setSidebarContext }) => {
 // 	mockOnThisPageLinks.length = 0;
