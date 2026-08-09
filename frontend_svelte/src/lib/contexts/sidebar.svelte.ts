@@ -512,6 +512,6 @@ export 	const page6Content = $state([
 		}
 	]);
 
-export const [ getSidebarLinks, setSidebarLinks ] = createContext<() => SidebarItemContent[]>();
-export const [ getProtectedSidebarLinks, setProtectedSidebarLinks ] = createContext<() => SidebarItemContent[]>();
-export const [ getDebugSidebarLinks, setDebugSidebarLinks ] = createContext<() => SidebarItemContent[]>();
+export const [ getSidebarLinks, setSidebarLinks ] = createContext<SidebarItemContent[]>();
+export const [ getProtectedSidebarLinks, setProtectedSidebarLinks ] = createContext<SidebarItemContent[]>();
+export const [ getDebugSidebarLinks, setDebugSidebarLinks ] = createContext<SidebarItemContent[]>();

@@ -9,7 +9,6 @@
 		getSidebarLinks,
 		page6Content
 	} from '$lib/contexts/sidebar.svelte';
-	import type { SidebarItemContent } from '$lib/types';
 	import { initOverlay } from '$lib/userInterface';
 
 	import LoginOutButton from './LoginOutButton.svelte';
@@ -20,7 +19,7 @@
 	let {
 		loggedIn,
 		parentUrl,
-		debug,
+		debug = $bindable(),
 		navBarBottom
 	}: {
 		loggedIn: boolean;
@@ -480,27 +479,25 @@
 	// 	}
 	// ]);
 
-	const sidebarLinksAccessor = getSidebarLinks();
-	const protectedSidebarLinksAccessor = getProtectedSidebarLinks();
-	const debugSidebarLinksAccessor = getDebugSidebarLinks();
+	// const sidebarLinksAccessor = getSidebarLinks();
+	// const protectedSidebarLinksAccessor = getProtectedSidebarLinks();
+	// const debugSidebarLinksAccessor = getDebugSidebarLinks();
 
-	const sidebarLinks: SidebarItemContent[] = $derived(sidebarLinksAccessor());
-	const protectedSidebarLinks: SidebarItemContent[] = $derived(protectedSidebarLinksAccessor());
-	const debugSidebarLinks: SidebarItemContent[] = $derived(debugSidebarLinksAccessor());
+	const sidebarLinks = getSidebarLinks();
+	const protectedSidebarLinks = getProtectedSidebarLinks();
+	const debugSidebarLinks = getDebugSidebarLinks();
 
 	const PAGE6_ID = 'page6';
 	const hasPage6 = $derived(debugSidebarLinks.some((item) => item.id === PAGE6_ID));
 
 	const toggleDebugPage6 = () => {
-		const currentDebugLinks = debugSidebarLinksAccessor();
-
-		const existingIndex = currentDebugLinks.findIndex((item) => item.id === PAGE6_ID);
+		// const currentDebugLinks = getDebugSidebarLinks();
+		const existingIndex = debugSidebarLinks.findIndex((item) => item.id === PAGE6_ID);
 		if (existingIndex >= 0) {
-			currentDebugLinks.splice(existingIndex, 1);
+			debugSidebarLinks.splice(existingIndex, 1);
 			return;
 		}
-
-		currentDebugLinks.push(...page6Content);
+		debugSidebarLinks.push(...page6Content);
 	};
 </script>
 

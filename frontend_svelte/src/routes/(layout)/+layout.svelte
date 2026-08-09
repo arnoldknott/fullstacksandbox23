@@ -423,11 +423,11 @@
 		}
 	};
 
-	setSidebarLinks(() => initialSidebarLinks);
-	setProtectedSidebarLinks(() => initialProtectedSidebarLinks);
-	setDebugSidebarLinks(() => initialDebugSidebarLinks);
+	setSidebarLinks(initialSidebarLinks);
+	setProtectedSidebarLinks(initialProtectedSidebarLinks);
+	setDebugSidebarLinks(initialDebugSidebarLinks);
 
-	const debugSidebarLinks: SidebarItemContent[] = $derived(getDebugSidebarLinks()());
+	const debugSidebarLinks: SidebarItemContent[] = $derived(getDebugSidebarLinks());
 </script>
 
 <svelte:window
@@ -478,7 +478,7 @@
 	/>
 
 	<!-- TBD: put sidebar into component -->
-	<SideBar {loggedIn} {parentUrl} {debug} {navBarBottom} />
+	<SideBar {loggedIn} {parentUrl} bind:debug {navBarBottom} />
 	<div class="xs:mx-5 xs:mt-5 h-screen w-screen bg-transparent px-2">
 		<div
 			id="scrollspy"
