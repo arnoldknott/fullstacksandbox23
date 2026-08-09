@@ -1,10 +1,31 @@
 import { render, screen } from '@testing-library/svelte';
 import { createRawSnippet } from 'svelte';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test,vi } from 'vitest';
 
+import type { SidebarItemContent } from '$lib/types';
+
+// import { test } from '../test/fixtures.svelte';
 import Heading from './Heading.svelte';
 
-const headingContentSnippet = createRawSnippet(() => ({ render: () => 'Heading Dummy title' }));
+const { mockOnThisPageLinks } = vi.hoisted(() => ({
+	mockOnThisPageLinks: [] as SidebarItemContent[]
+}));
+
+vi.mock('$lib/contexts/sidebar.svelte', async (importOriginal) => {
+	const actual = await importOriginal<typeof import('$lib/contexts/sidebar.svelte')>();
+
+	return {
+		...actual,
+		getOnThisPageLinks: () => mockOnThisPageLinks
+	};
+});
+
+const headingContentSnippet = createRawSnippet(() => ({ render: () => '<div>Heading Dummy title</div>' }));
+
+// test.beforeEach(({ setSidebarContext }) => {
+// 	mockOnThisPageLinks.length = 0;
+// 	mockOnThisPageLinks.push(...setSidebarContext);
+// });
 
 describe('Heading', () => {
 	test('should contain an h2 header', async () => {
