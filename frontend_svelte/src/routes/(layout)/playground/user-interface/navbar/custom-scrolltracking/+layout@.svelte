@@ -23,6 +23,7 @@
 	import ThemePicker from '../../../components/ThemePicker.svelte';
 	import type { LayoutData } from './$types';
 	import SidebarItem from './SidebarItem.svelte';
+	import SidebarToggleButton from './SidebarToggleButton.svelte';
 
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
 
@@ -823,27 +824,6 @@
 
 <svelte:body use:applyTheming />
 
-{#snippet sidebarToggleButton(classes: string, overlayModifier: object)}
-	<button
-		type="button"
-		class="btn btn-square btn-sm btn-outline btn-primary {classes}"
-		aria-haspopup="dialog"
-		aria-expanded="false"
-		aria-controls="collapsible-mini-sidebar"
-		aria-label="Toggle Sidebar"
-		{...overlayModifier}
-	>
-		<!-- data-overlay="#collapsible-mini-sidebar"
-		data-overlay-options={ JSON.stringify({ "backdropClasses": "overlay-backdrop transition duration-300 fixed inset-0 bg-base-300/60 overflow-y-auto", "backdropParent": "#scrollspy" }) } -->
-		<!-- <div id="collapsible-mini-sidebar-backdrop" data-overlay-backdrop-template="overlay-backdrop transition duration-300 fixed inset-0 bg-base-300/60 overflow-y-auto" style="z-index: 79;" class=""></div> -->
-		<span
-			class="icon-[material-symbols--menu-open-rounded] overlay-minified:hidden flex size-5 max-sm:hidden"
-		></span>
-		<span class="icon-[material-symbols--menu] overlay-minified:flex hidden size-5 max-sm:flex"
-		></span>
-	</button>
-{/snippet}
-
 {#snippet navbarPartItem(href: string, icon: string, text: string, textClasses?: string)}
 	<li class="text-primary hidden items-center md:flex">
 		<a {href} aria-label={text} class="flex items-center gap-1"
@@ -875,12 +855,14 @@
 		<!-- {@attach updateNavbarBottom} -->
 		<div class="navbar-start rtl:[--placement:bottom-end]">
 			<ul class="menu menu-horizontal flex flex-nowrap items-center">
-				{@render sidebarToggleButton('hidden sm:flex', {
-					'data-overlay-minifier': '#collapsible-mini-sidebar'
-				})}
-				{@render sidebarToggleButton('sm:hidden', {
-					'data-overlay': '#collapsible-mini-sidebar'
-				})}
+				<SidebarToggleButton
+					extraClasses="hidden sm:flex"
+					overlayModifier={{ 'data-overlay-minifier': '#collapsible-mini-sidebar' }}
+				/>
+				<SidebarToggleButton
+					extraClasses="sm:hidden"
+					overlayModifier={{ 'data-overlay': '#collapsible-mini-sidebar' }}
+				/>
 				{@render navbarPartItem('/docs', 'icon-[oui--documentation]', 'Docs')}
 				{@render navbarPartItem(
 					'/playground',
@@ -1024,9 +1006,10 @@
 	>
 		<div class="mx-7 flex h-24 flex-row items-center justify-between md:h-26">
 			<div class="hidden sm:block">
-				{@render sidebarToggleButton('hidden sm:flex', {
-					'data-overlay-minifier': '#collapsible-mini-sidebar'
-				})}
+				<SidebarToggleButton
+					extraClasses="hidden sm:flex"
+					overlayModifier={{ 'data-overlay-minifier': '#collapsible-mini-sidebar' }}
+				/>
 			</div>
 			<div class="overlay-minified:hidden">
 				<Logo />
