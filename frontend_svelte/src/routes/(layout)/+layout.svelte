@@ -8,9 +8,19 @@
 	import { afterNavigate, goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { type ArtificialIntelligenceConfig, Model } from '$lib/artificialIntelligence';
+	import {
+		getDebugSidebarLinks,
+		initialDebugSidebarLinks,
+		initialProtectedSidebarLinks,
+		initialSidebarLinks,
+		setDebugSidebarLinks,
+		setProtectedSidebarLinks,
+		setSidebarLinks
+	} from '$lib/contexts/sidebar.svelte';
 	import { SessionStatus } from '$lib/session';
 	import theme from '$lib/stores/theme';
 	import { FSSB23_THEME_KEY, type ThemeRuntimeContext, Theming } from '$lib/theming';
+	import type { SidebarItemContent } from '$lib/types';
 
 	import type { LayoutData } from './$types';
 	import NavBar from './NavBar.svelte';
@@ -412,6 +422,12 @@
 			previousScrollY = currentScrollY;
 		}
 	};
+
+	setSidebarLinks(() => initialSidebarLinks);
+	setProtectedSidebarLinks(() => initialProtectedSidebarLinks);
+	setDebugSidebarLinks(() => initialDebugSidebarLinks);
+
+	const debugSidebarLinks: SidebarItemContent[] = $derived(getDebugSidebarLinks()());
 </script>
 
 <svelte:window
@@ -430,7 +446,7 @@
 		{loggedIn}
 		{updateProfileAccount}
 		{saveProfileAccount}
-		{artificialIntelligenceConfiguration}
+		bind:artificialIntelligenceConfiguration
 		bind:themeForm
 		bind:themeMode={themeRuntime.mode}
 		bind:themeConfiguration={themeRuntime.themeConfiguration}
@@ -444,6 +460,14 @@
 >
 	<!-- class="border-error h-screen w-screen overflow-x-scroll overflow-y-auto border border-4" -->
 	<!-- bind:session={data.session} -->
+	<!-- Works for debugging the   -->
+	{#if debug}
+		<div class="ml-66">
+			Does page6 exist: {debugSidebarLinks.findIndex((item) => item.id === 'page6') >= 0
+				? 'Yes'
+				: 'No'}
+		</div>
+	{/if}
 	<WelcomeModal
 		session={data.session}
 		bind:artificialIntelligenceConfiguration

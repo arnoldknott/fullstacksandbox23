@@ -17,7 +17,7 @@
 		loggedIn,
 		updateProfileAccount,
 		saveProfileAccount,
-		artificialIntelligenceConfiguration,
+		artificialIntelligenceConfiguration = $bindable(),
 		themeForm = $bindable(null),
 		themeMode = $bindable(),
 		themeConfiguration = $bindable(),
