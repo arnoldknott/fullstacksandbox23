@@ -546,6 +546,7 @@
 		</ul>
 		<div class="divider"></div>
 		<ul class="menu p-0">
+			<!-- TBD: add a toggle between "app navigation" and "on this page" -->
 			{#each sidebarLinks as sidebarItem (sidebarItem.id)}
 				<!-- TBD: remove topoffset -->
 				<SidebarItem
