@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { scrollY } from 'svelte/reactivity/window';
+	import { fly } from 'svelte/transition';
 
 	import { page } from '$app/state';
 	import Guard from '$components/Guard.svelte';
@@ -31,6 +32,9 @@
 	const sidebarLinks = getSidebarLinks();
 	const protectedSidebarLinks = getProtectedSidebarLinks();
 	const debugSidebarLinks = getDebugSidebarLinks();
+	const onThisPageLinks = $state(['dummy to keep button visisble']);
+
+	let showOnThisPageLinks = $state(false);
 
 	const page6Index = $derived(debugSidebarLinks.findIndex((item) => item.id === 'page6'));
 
@@ -54,7 +58,7 @@
 
 <aside
 	id="collapsible-mini-sidebar"
-	class="overlay overlay-minified:w-19 overlay-open:translate-x-0 drawer drawer-start bg-base-150 border-base-content/20 start-0 top-0 hidden w-66 border-e [--auto-close:sm] sm:z-0 sm:flex sm:translate-x-0 sm:shadow-none"
+	class="overlay overlay-minified:w-19 overlay-open:translate-x-0 drawer drawer-start bg-base-150 border-base-content/20 start-0 top-0 hidden w-66 overflow-hidden border-e [--auto-close:sm] sm:z-0 sm:flex sm:translate-x-0 sm:shadow-none"
 	tabindex="-1"
 	{@attach initOverlay}
 >
@@ -112,47 +116,87 @@
 			</li>
 		</ul>
 		<div class="divider"></div>
-		<ul class="menu p-0">
-			<!-- TBD: add a toggle between "app navigation" and "on this page" -->
-			{#each sidebarLinks as sidebarItem (sidebarItem.id)}
-				<!-- TBD: remove topoffset -->
-				<SidebarItem
-					content={{ ...sidebarItem, pathname: sidebarItem.pathname || page.url.pathname }}
-					topLevel={true}
-				/>
-				<!-- {scrollspyParent} -->
-				<!-- topoffset={navBarBottom} -->
-				<!-- topoffset={internalNavigationTarget} -->
-				<!-- topoffset={navBarBottom} -->
-				<!-- topoffset={`[--scrollspy-offset:${navBarBottom + 8}]`} -->
-			{/each}
-			<Guard>
-				{#each protectedSidebarLinks as protectedSidebarItem (protectedSidebarItem.id)}
-					<SidebarItem
-						content={{
-							...protectedSidebarItem,
-							pathname: protectedSidebarItem.pathname || page.url.pathname
-						}}
-						topLevel={true}
-					/>
-					<!-- {scrollspyParent} -->
-					<!-- topoffset={navBarBottom} -->
-				{/each}
-			</Guard>
-			{#if debug}
-				{#each debugSidebarLinks as debugSidebarItem (debugSidebarItem.id)}
-					<SidebarItem
-						content={{
-							...debugSidebarItem,
-							pathname: debugSidebarItem.pathname || page.url.pathname
-						}}
-						topLevel={true}
-					/>
-					<!-- {scrollspyParent} -->
-					<!-- topoffset={navBarBottom} -->
-				{/each}
+		<div
+			class="join flex w-full flex-row rounded-full p-3 {onThisPageLinks.length === 0
+				? 'pointer-events-none invisible'
+				: ''}"
+		>
+			<button
+				class="join-item btn btn-sm btn-secondary rounded-l-full {showOnThisPageLinks
+					? 'btn-gradient'
+					: 'btn-outline'}"
+				aria-label="App navigation"
+				onclick={() => (showOnThisPageLinks = !showOnThisPageLinks)}
+				><span class="icon-[tabler--chevron-left] size-5"></span></button
+			>
+			<button
+				class="join-item btn btn-sm btn-secondary grow rounded-r-full {showOnThisPageLinks
+					? 'btn-outline'
+					: 'btn-gradient'}"
+				aria-label="On this page"
+				onclick={() => (showOnThisPageLinks = !showOnThisPageLinks)}
+				>On This Page <span class="icon-[tabler--chevrons-right] size-5"></span></button
+			>
+		</div>
+		<div class="static">
+			{#if !showOnThisPageLinks}
+				<ul class="menu absolute p-0" transition:fly={{ x: -250, duration: 600, opacity: 0 }}>
+					<!-- TBD: add a toggle between "app navigation" and "on this page" -->
+					{#each sidebarLinks as sidebarItem (sidebarItem.id)}
+						<!-- TBD: remove topoffset -->
+						<SidebarItem
+							content={{ ...sidebarItem, pathname: sidebarItem.pathname || page.url.pathname }}
+							topLevel={true}
+						/>
+						<!-- {scrollspyParent} -->
+						<!-- topoffset={navBarBottom} -->
+						<!-- topoffset={internalNavigationTarget} -->
+						<!-- topoffset={navBarBottom} -->
+						<!-- topoffset={`[--scrollspy-offset:${navBarBottom + 8}]`} -->
+					{/each}
+					<Guard>
+						{#each protectedSidebarLinks as protectedSidebarItem (protectedSidebarItem.id)}
+							<SidebarItem
+								content={{
+									...protectedSidebarItem,
+									pathname: protectedSidebarItem.pathname || page.url.pathname
+								}}
+								topLevel={true}
+							/>
+							<!-- {scrollspyParent} -->
+							<!-- topoffset={navBarBottom} -->
+						{/each}
+					</Guard>
+					{#if debug}
+						{#each debugSidebarLinks as debugSidebarItem (debugSidebarItem.id)}
+							<SidebarItem
+								content={{
+									...debugSidebarItem,
+									pathname: debugSidebarItem.pathname || page.url.pathname
+								}}
+								topLevel={true}
+							/>
+							<!-- {scrollspyParent} -->
+							<!-- topoffset={navBarBottom} -->
+						{/each}
+					{/if}
+				</ul>
+			{:else}
+				<ul class="menu absolute p-0" transition:fly={{ x: 250, duration: 600, opacity: 0 }}>
+					{#each debugSidebarLinks as debugSidebarItem (debugSidebarItem.id)}
+						<SidebarItem
+							content={{
+								...debugSidebarItem,
+								pathname: debugSidebarItem.pathname || page.url.pathname
+							}}
+							topLevel={true}
+						/>
+						<!-- {scrollspyParent} -->
+						<!-- topoffset={navBarBottom} -->
+					{/each}
+				</ul>
 			{/if}
-		</ul>
+		</div>
 	</div>
 	<div class="mb-2 flex items-center gap-1">
 		<label class="label label-text text-base" for="debugSwitcher">Debug: </label>
