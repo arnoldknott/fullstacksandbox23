@@ -6,7 +6,7 @@
 	import Heading from '$components/Heading.svelte';
 	import HorizontalRule from '$components/HorizontalRule.svelte';
 	import JsonData from '$components/JsonData.svelte';
-	import { themeStore } from '$lib/stores';
+	import theme from '$lib/stores/theme';
 	import type { AppTheme } from '$lib/theming';
 
 	import ColorTileMaterialUi from './ColorTileMaterialUI.svelte';
@@ -19,15 +19,15 @@
 		sliders: true
 	});
 
-	let theme = $state({} as AppTheme);
-	const unsbscribeThemeStore = themeStore.subscribe((value) => {
-		theme = value;
+	let themeState = $state({} as AppTheme);
+	const unsbscribeThemeStore = theme.subscribe((value) => {
+		themeState = value;
 	});
 	let palettes = $derived.by(() => {
-		if (!theme.currentMode) {
+		if (!themeState.currentMode) {
 			return '';
 		} else {
-			return theme[theme.currentMode].palettes;
+			return themeState[themeState.currentMode].palettes;
 		}
 	});
 

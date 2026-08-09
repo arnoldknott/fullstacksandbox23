@@ -11,7 +11,7 @@
 	import Guard from '$components/Guard.svelte';
 	import { type ArtificialIntelligenceConfig, Model } from '$lib/artificialIntelligence';
 	import { SessionStatus } from '$lib/session';
-	import { themeStore } from '$lib/stores';
+	import theme from '$lib/stores/theme';
 	import { FSSB23_THEME_KEY, type ThemeRuntimeContext, Theming } from '$lib/theming';
 	import type { SidebarItemContent } from '$lib/types';
 	import { initDropdown, initOverlay } from '$lib/userInterface';
@@ -92,10 +92,10 @@
 		systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 		themeRuntime.mode = systemDark ? 'dark' : 'light';
 
-		let theme = $derived(theming.applyTheme(themeRuntime));
+		let themeState = $derived(theming.applyTheme(themeRuntime));
 
 		$effect(() => {
-			themeStore.set(theme);
+			theme.set(themeState);
 		});
 	};
 

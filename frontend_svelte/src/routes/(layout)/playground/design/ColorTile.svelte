@@ -3,7 +3,7 @@
 	import { onDestroy, type Snippet } from 'svelte';
 
 	import appCss from '/src/app.css?raw';
-	import { themeStore } from '$lib/stores';
+	import theme from '$lib/stores/theme';
 	import { type AppTheme } from '$lib/theming';
 
 	let {
@@ -14,9 +14,9 @@
 	}: { background: string; text: string; children?: Snippet; debug?: boolean } = $props();
 	// const text = background.replace('--md-sys-color-', '').replaceAll('-', ' ');
 
-	let theme = $state({} as AppTheme);
-	const unsubscribeThemeStore = themeStore.subscribe((value) => {
-		theme = value;
+	let themeState = $state({} as AppTheme);
+	const unsubscribeThemeStore = theme.subscribe((value) => {
+		themeState = value;
 	});
 
 	const findMaterialDesignVariable = (tailwindColorVariable: string): string | null => {
@@ -35,7 +35,7 @@
 	);
 
 	let colorValues = $derived.by(() => {
-		if (!theme.currentMode) {
+		if (!themeState.currentMode) {
 			return {
 				hex: '',
 				hct: {
@@ -51,7 +51,7 @@
 				}
 			};
 		} else {
-			let colors = theme[theme.currentMode].colors;
+			let colors = themeState[themeState.currentMode].colors;
 			const color = colors[materialDesignColorName as keyof typeof colors];
 			return {
 				hex: hexFromArgb(color),

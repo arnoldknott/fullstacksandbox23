@@ -6,7 +6,7 @@
 	import Heading from '$components/Heading.svelte';
 	import HorizontalRule from '$components/HorizontalRule.svelte';
 	import JsonData from '$components/JsonData.svelte';
-	import { themeStore } from '$lib/stores';
+	import theme from '$lib/stores/theme';
 	import { type AppTheme } from '$lib/theming';
 	import { initAccordion } from '$lib/userInterface';
 
@@ -44,10 +44,10 @@
 	// 	Theming.addStyle('.fill-inverse-primary', ['fill: var(--md-sys-color-inverse-primary)'])
 	// 	});// wouldn't it be the same as just using the scoped style further down?
 
-	let theme = $state({} as AppTheme);
-	const unsubscribeThemeStore = themeStore.subscribe((value) => {
+	let themeState = $state({} as AppTheme);
+	const unsubscribeThemeStore = theme.subscribe((value) => {
 		// console.log('themeStore:', value);
-		theme = value;
+		themeState = value;
 	});
 
 	// let inversePrimaryHex = $derived.by(() => {
@@ -2254,7 +2254,7 @@
 </div>
 
 <Heading id="current-theme-as-json">Current theme as JSON:</Heading>
-<JsonData data={theme} />
+<JsonData data={themeState} />
 
 <!-- <style>
 
