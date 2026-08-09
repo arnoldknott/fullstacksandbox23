@@ -245,21 +245,21 @@
 			{#if hideNewPresentationCard || !socketioPresentations?.pendingEntities[0]}
 				<button
 					transition:fade={{ duration: 600 }}
-					class="btn btn-primary-container btn-gradient btn-sm shadow-outline mx-4 rounded-full shadow-sm"
+					class="btn btn-primary-container btn-gradient label btn shadow-outline mx-4 rounded-full shadow-sm"
 					aria-label="Add new presentation"
 					onclick={() => (hideNewPresentationCard = false)}
 				>
 					<!-- onclick={() => goto(resolve('/(layout)/presentation/(protected)/setup/new'))} -->
-					<span class="icon-[fa6-solid--plus] size-4"></span>
+					<span class="icon-[fa6-solid--plus] size-5"></span>
 					<!-- <span class="hidden ">Add</span> -->
 					<span class="hidden sm:inline">Add new</span>
 					<span class="hidden md:inline">presentation</span>
 				</button>
 			{/if}
-			<div class="join rounded-lg">
+			<div class="join shadow-outline rounded-full shadow-sm">
 				<button
 					aria-label="Preview"
-					class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline rounded- py-4 shadow {viewMode !==
+					class="btn join-item btn-secondary btn-gradient btn-sm rounded-l-full py-4 {viewMode !==
 					'preview'
 						? 'opacity-60'
 						: ''}"
@@ -279,7 +279,7 @@
 				</button>
 				<button
 					aria-label="List"
-					class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline py-4 shadow {viewMode !==
+					class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline rounded-r-full py-4 shadow {viewMode !==
 					'list'
 						? 'opacity-60'
 						: ''}"
@@ -303,12 +303,12 @@
 		> -->
 		<!-- TBD: hide the buttons, where the access_right for the logged in user are not enough to execute the action -->
 		<button
-			class="btn btn-secondary-container btn-gradient btn-sm text-secondary-container-content join-item shadow-outline shadow-sm"
+			class="btn btn-secondary-container btn-gradient btn-sm text-secondary-container-content join-item shadow-outline rounded-l-full shadow-sm"
 			aria-label="Edit Button"
 			onclick={() =>
 				goto(resolve('/(layout)/presentation/(protected)/setup/[id]', { id: resourceId }))}
 		>
-			<span class="icon-[material-symbols--edit-outline-rounded] size-4"></span>
+			<span class="icon-[tabler--settings] size-4"></span>
 			<!-- <span
 					class="hidden 2xl:block">Edit</span
 				> -->
@@ -355,7 +355,7 @@
 			</ul>
 		</div>
 		<button
-			class="btn btn-error-container btn-gradient btn-sm bg-error-container/70 hover:bg-error-container/50 focus:bg-error-container/50 text-error-container-content join-item shadow-outline border-0 shadow-sm"
+			class="btn btn-error-container btn-gradient btn-sm bg-error-container/70 hover:bg-error-container/50 focus:bg-error-container/50 text-error-container-content join-item shadow-outline rounded-r-full border-0 shadow-sm"
 			aria-label="Delete Button"
 			name="id"
 			onclick={() => !resourceId || socketioPresentations?.deleteEntity(resourceId)}
