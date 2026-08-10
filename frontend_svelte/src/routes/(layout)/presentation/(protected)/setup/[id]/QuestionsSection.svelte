@@ -73,7 +73,9 @@ https://svelte.dev/e/transition_slide_display
 		class="bg-base-150 shadow-base-shadow max-h-96 min-h-44 overflow-y-auto rounded-lg shadow-inner"
 	>
 		<div
-			class="tabs tabs-lifted to-secondary m-1 rounded-lg bg-linear-to-b from-transparent"
+			// class="tabs tabs-secondary m-1"
+			// class="tabs tabs-lifted to-secondary m-1 rounded-lg bg-linear-to-b from-transparent"
+			class="tabs tabs-lifted to-secondary m-1 bg-linear-to-b from-transparent"
 			aria-label="Tabs"
 			role="tablist"
 			aria-orientation="horizontal"
