@@ -1,35 +1,121 @@
+
+
+.tab-primary {
+	@apply bg-primary-container text-primary-container-content opacity-80;
+	&:hover {
+		@apply opacity-100;
+	}
+
+	&.active {
+		@apply bg-primary text-primary-content opacity-80;
+
+		&:hover {
+			@apply opacity-100;
+		}
+	}
+}
+
 .tab-secondary {
-	@apply  bg-secondary-container  text-secondary-container-content;
-    /* &:active-tab { */
-    /* &:has(.tab:active-tab) {
-        /* @apply bg-secondary/40 border-outline; */
-        /* @apply bg-error border-outline; */
-        /* hover:active-tab:bg-secondary/60  */
-    /* } */
-    /* & > :hover {
-        /* hover:bg-secondary-container/60 */
-        /* @apply bg-error-container; */
-    /* } */
-    /* active:bg-secondary  active:text-secondary-content*/
+	@apply bg-secondary-container text-secondary-container-content opacity-80;
+	&:hover {
+		@apply opacity-100;
+	}
+
+	&.active {
+		@apply bg-secondary text-secondary-content opacity-80;
+
+		&:hover {
+			@apply opacity-100;
+		}
+	}
+}
+
+.tab-accent {
+	@apply bg-accent-container text-accent-container-content opacity-80;
+	&:hover {
+		@apply opacity-100;
+	}
+
+	&.active {
+		@apply bg-accent text-accent-content opacity-80;
+
+		&:hover {
+			@apply opacity-100;
+		}
+	}
+}
+
+.tab-neutral {
+    @apply bg-neutral-container text-neutral-container-content opacity-80;
     &:hover {
-        /* hover */
-        @apply bg-error-container;
-
-
+        @apply opacity-100;
     }
 
     &.active {
-        /* active + hover */
-        @apply bg-warning-container;
+        @apply bg-neutral text-neutral-content opacity-80;
 
         &:hover {
-        /* hover */
-        @apply bg-success-container;
-    }
+            @apply opacity-100;
+        }
     }
 }
 
-/* .tab-secondary:hover {
-    @apply bg-secondary-container/60;
-    @apply bg-error-container;
-} */
+.tab-info {
+    @apply bg-info-container text-info-container-content opacity-80;
+    &:hover {
+        @apply opacity-100;
+    }
+
+    &.active {
+        @apply bg-info text-info-content opacity-80;
+
+        &:hover {
+            @apply opacity-100;
+        }
+    }
+}
+
+.tab-success {
+    @apply bg-success-container text-success-container-content opacity-80;
+    &:hover {
+        @apply opacity-100;
+    }
+
+    &.active {
+        @apply bg-success text-success-content opacity-80;
+
+        &:hover {
+            @apply opacity-100;
+        }
+    }
+}
+
+.tab-warning {
+    @apply bg-warning-container text-warning-container-content opacity-80;
+    &:hover {
+        @apply opacity-100;
+    }
+
+    &.active {
+        @apply bg-warning text-warning-content opacity-80;
+
+        &:hover {
+            @apply opacity-100;
+        }
+    }
+}
+
+.tab-error {
+    @apply bg-error-container text-error-container-content opacity-80;
+    &:hover {
+        @apply opacity-100;
+    }
+
+    &.active {
+        @apply bg-error text-error-content opacity-80;
+
+        &:hover {
+            @apply opacity-100;
+        }
+    }
+}

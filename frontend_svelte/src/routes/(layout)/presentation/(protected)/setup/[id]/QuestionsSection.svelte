@@ -55,7 +55,7 @@ https://svelte.dev/e/transition_slide_display
 		>
 			<button
 				type="button"
-				class="tab active-tab:bg-secondary/40 hover:active-tab:bg-secondary/60 hover:active-tab:bg-secondary/60 hover:bg-secondary-container/60 bg-secondary-container active-tab:border-outline active:bg-secondary text-secondary-container-content active:text-secondary-content active w-full"
+				class="tab tab-secondary active w-full"
 				id="new-question-head"
 				data-tab="#new-question-tab"
 				aria-controls="new-question-tab"
@@ -66,7 +66,7 @@ https://svelte.dev/e/transition_slide_display
 			</button>
 			<button
 				type="button"
-				class="tab tab-secondary active-tab:tab-active w-full"
+				class="tab tab-secondary w-full"
 				id="existing-question-head"
 				data-tab="#existing-question-tab"
 				aria-controls="existing-question-tab"
