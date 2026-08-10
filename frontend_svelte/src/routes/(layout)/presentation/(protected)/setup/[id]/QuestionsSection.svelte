@@ -69,9 +69,11 @@ https://svelte.dev/e/transition_slide_display
 		{@render warning()} Add questions with tabs for new and existing, where the existing questions get
 		the button to copy and link. Also a copy all selected and link all selected.
 	</p>
-	<div class="bg-base-150 shadow-outline max-h-96 min-h-44 overflow-y-auto rounded-lg shadow-inner">
+	<div
+		class="bg-base-150 shadow-base-shadow max-h-96 min-h-44 overflow-y-auto rounded-lg shadow-inner"
+	>
 		<div
-			class="tabs tabs-lifted bg-secondary-container/80 shadow-outline rounded-lg"
+			class="tabs tabs-lifted to-secondary m-1 rounded-lg bg-linear-to-b from-transparent"
 			aria-label="Tabs"
 			role="tablist"
 			aria-orientation="horizontal"
