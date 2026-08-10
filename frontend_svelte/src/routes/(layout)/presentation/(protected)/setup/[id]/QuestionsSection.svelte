@@ -54,6 +54,10 @@ https://svelte.dev/e/transition_slide_display
 	</button>
 {/if}
 
+{#snippet warning()}
+	<span class="icon-[fluent-color--warning-24] size-4"></span>
+{/snippet}
+
 <Card
 	id="add-questions"
 	title="Add Questions"
@@ -61,9 +65,9 @@ https://svelte.dev/e/transition_slide_display
 	extraClasses="label-large"
 	bind:hidden={hideNewQuestionCard}
 >
-	<p class="label text-warning">
-		Add questions with tabs for new and existing, where the existing questions get the button to
-		copy and link. Also a copy all selected and link all selected.
+	<p class="label">
+		{@render warning()} Add questions with tabs for new and existing, where the existing questions get
+		the button to copy and link. Also a copy all selected and link all selected.
 	</p>
 	<div class="bg-base-150 shadow-outline max-h-96 min-h-44 overflow-y-auto rounded-lg shadow-inner">
 		<div
@@ -103,16 +107,16 @@ https://svelte.dev/e/transition_slide_display
 				<span class="hidden sm:inline">&nbsp;existing</span>
 			</button>
 		</div>
-		<div class="h-full max-h-100">
+		<div class="h-full max-h-100 p-2">
 			<div
 				id="new-question-tab"
-				class="h-full max-h-100 overflow-scroll p-2"
+				class="h-full max-h-100 overflow-scroll"
 				role="tabpanel"
 				aria-labelledby="new-question-head"
 			>
-				<div class="label text-warning">
-					Forms to add new questions, with the ability to add multiple questions at once and inherit
-					access rights - default: true - from presentation.
+				<div class="label">
+					{@render warning()} Forms to add new questions, with the ability to add multiple questions at
+					once and inherit access rights - default: true - from presentation.
 				</div>
 				{#snippet labelDescription()}
 					This label is the way to identify this particular quesion in the code of the presentation.
@@ -120,8 +124,9 @@ https://svelte.dev/e/transition_slide_display
 				{/snippet}
 				<FormElement title="Label" description={labelDescription} extraClasses="max-w-300">
 					The text input for a new question goes here; potentially call it 'label'?
-					<div class="label text-warning">
-						Add a red asterix to the label in FormElement to indicate that this is a mandatory field
+					<div class="label">
+						{@render warning()} Add a red asterix to the label in FormElement to indicate that this is
+						a mandatory field
 					</div>
 				</FormElement>
 				{#snippet languageDescription()}
@@ -130,8 +135,10 @@ https://svelte.dev/e/transition_slide_display
 					the language of the source.
 				{/snippet}
 				<FormElement title="Language" description={languageDescription} extraClasses="max-w-300">
-					A drop-down field to select the language for the question, with a default value of the
-					presentation's language.
+					<div class="label">
+						{@render warning()} A drop-down field to select the language for the question, with a default
+						value of the presentation's language.
+					</div>
 				</FormElement>
 			</div>
 			<div
@@ -140,8 +147,9 @@ https://svelte.dev/e/transition_slide_display
 				role="tabpanel"
 				aria-labelledby="existing-question-head"
 			>
-				<div class="label text-warning">
-					Table of existing questions and functionality to link or copy them into this presentation.
+				<div class="label">
+					{@render warning()} Table of existing questions and functionality to link or copy them into
+					this presentation.
 				</div>
 			</div>
 		</div>
