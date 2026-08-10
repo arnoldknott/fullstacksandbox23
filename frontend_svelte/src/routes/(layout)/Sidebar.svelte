@@ -219,11 +219,11 @@
 		scrollY: {scrollY.current}
 		<br />
 		navBarBottom: {navBarBottom}
+		<br />
+		onThisPageLinks: {onThisPageLinks.length}
 	{/if}
 	<!-- {navBarBottom}
 		<br />
 		{locationPageAndHash?.page}{locationPageAndHash?.hash}
 		<br /> -->
-
-	onThisPageLinks: {onThisPageLinks.length}
 </aside>
