@@ -1,0 +1,35 @@
+.tab-secondary {
+	@apply  bg-secondary-container  text-secondary-container-content;
+    /* &:active-tab { */
+    /* &:has(.tab:active-tab) {
+        /* @apply bg-secondary/40 border-outline; */
+        /* @apply bg-error border-outline; */
+        /* hover:active-tab:bg-secondary/60  */
+    /* } */
+    /* & > :hover {
+        /* hover:bg-secondary-container/60 */
+        /* @apply bg-error-container; */
+    /* } */
+    /* active:bg-secondary  active:text-secondary-content*/
+    &:hover {
+        /* hover */
+        @apply bg-error-container;
+
+
+    }
+
+    &.active {
+        /* active + hover */
+        @apply bg-warning-container;
+
+        &:hover {
+        /* hover */
+        @apply bg-success-container;
+    }
+    }
+}
+
+/* .tab-secondary:hover {
+    @apply bg-secondary-container/60;
+    @apply bg-error-container;
+} */
