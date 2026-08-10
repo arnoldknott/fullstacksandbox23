@@ -37,7 +37,7 @@
 <!-- <JsonData data={socketioPresentation?.entities} /> -->
 
 <Display id="presentation-name">{presentation?.path || presentation?.id}</Display>
-<div class="flex flex-row">
+<div class="flex flex-col gap-2 md:flex-row">
 	<a
 		href="/presentation/setup"
 		class="btn btn-primary btn-gradient shadow-outline mx-4 rounded-full"

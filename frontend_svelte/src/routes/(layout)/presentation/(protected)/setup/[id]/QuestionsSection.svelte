@@ -6,7 +6,7 @@
 	import Card from '$components/Card.svelte';
 	import { initTabs } from '$lib/userInterface';
 
-	// import FormElement from './FormElement.svelte';
+	import FormElement from '../FormElement.svelte';
 
 	let hideNewQuestionCard: boolean = $state(
 		!(page.url.searchParams.get('add-question') === 'true')
@@ -82,7 +82,9 @@ https://svelte.dev/e/transition_slide_display
 				role="tab"
 				aria-selected="true"
 			>
-				<span class="icon-[fa6-solid--plus] mr-2 size-4"></span>Add new...
+				<span class="icon-[fa6-solid--plus] mr-2 size-4"></span>
+				<span class="hidden md:inline">Add</span>
+				<span class="hidden sm:inline">&nbsp;new</span>
 			</button>
 			<button
 				type="button"
@@ -93,19 +95,25 @@ https://svelte.dev/e/transition_slide_display
 				role="tab"
 				aria-selected="false"
 			>
-				<span class="icon-[tabler--copy] mr-2 size-4"></span> Copy or
-				<span class="icon-[tabler--link] mx-2 size-4"></span> link existing...
+				<span class="icon-[tabler--copy] mr-2 size-4"></span>
+				<span class="hidden md:inline">Copy </span>
+				&nbsp;or&nbsp;
+				<span class="icon-[tabler--link] mx-2 size-4"></span>
+				<span class="hidden md:inline">link </span>
+				<span class="hidden sm:inline">&nbsp;existing</span>
 			</button>
 		</div>
 		<div class="h-full max-h-100">
 			<div
 				id="new-question-tab"
-				class="h-full max-h-100 overflow-scroll"
+				class="h-full max-h-100 overflow-scroll p-2"
 				role="tabpanel"
 				aria-labelledby="new-question-head"
 			>
-				Forms to add new questions, with the ability to add multiple questions at once and inherit
-				access rights - default: true - from presentation.
+				<div class="label text-warning">
+					Forms to add new questions, with the ability to add multiple questions at once and inherit
+					access rights - default: true - from presentation.
+				</div>
 			</div>
 			<div
 				id="existing-question-tab"
@@ -113,7 +121,9 @@ https://svelte.dev/e/transition_slide_display
 				role="tabpanel"
 				aria-labelledby="existing-question-head"
 			>
-				Table of existing questions and functionality to link or copy them into this presentation.
+				<div class="label text-warning">
+					Table of existing questions and functionality to link or copy them into this presentation.
+				</div>
 			</div>
 		</div>
 	</div>
