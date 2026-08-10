@@ -67,7 +67,7 @@ https://svelte.dev/e/transition_slide_display
 	</p>
 	<div class="bg-base-150 shadow-outline max-h-96 min-h-44 overflow-y-auto rounded-lg shadow-inner">
 		<div
-			class="tabs tabs-lifted bg-base-200 shadow-outline rounded-lg"
+			class="tabs tabs-lifted bg-secondary-container/80 shadow-outline rounded-lg"
 			aria-label="Tabs"
 			role="tablist"
 			aria-orientation="horizontal"
@@ -114,6 +114,25 @@ https://svelte.dev/e/transition_slide_display
 					Forms to add new questions, with the ability to add multiple questions at once and inherit
 					access rights - default: true - from presentation.
 				</div>
+				{#snippet labelDescription()}
+					This label is the way to identify this particular quesion in the code of the presentation.
+					It is mandatory.
+				{/snippet}
+				<FormElement title="Label" description={labelDescription} extraClasses="max-w-300">
+					The text input for a new question goes here; potentially call it 'label'?
+					<div class="label text-warning">
+						Add a red asterix to the label in FormElement to indicate that this is a mandatory field
+					</div>
+				</FormElement>
+				{#snippet languageDescription()}
+					Giving the language of the question text in the code. To allow automatic translation the
+					algorithm needs to know from what language to translate into all the others, so this is
+					the language of the source.
+				{/snippet}
+				<FormElement title="Language" description={languageDescription} extraClasses="max-w-300">
+					A drop-down field to select the language for the question, with a default value of the
+					presentation's language.
+				</FormElement>
 			</div>
 			<div
 				id="existing-question-tab"
