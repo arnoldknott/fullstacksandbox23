@@ -1,13 +1,35 @@
 <script lang="ts">
 	import { slide } from 'svelte/transition';
 
+	// import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import Card from '$components/Card.svelte';
 	import { initTabs } from '$lib/userInterface';
 
+	// import FormElement from './FormElement.svelte';
+
 	let hideNewQuestionCard: boolean = $state(
 		!(page.url.searchParams.get('add-question') === 'true')
 	);
+
+	// TBD: debug why this si scrolling - solution is probably already in +layout.svelte
+	// $effect(() => {
+	// 	const currentUrl = new URL(page.url.toString());
+
+	// 	if (!hideNewQuestionCard) {
+	// 		currentUrl.searchParams.set('add-question', 'true');
+	// 	} else {
+	// 		currentUrl.searchParams.delete('add-question');
+	// 	}
+
+	// 	if (currentUrl.search !== page.url.search) {
+	// 		goto(`${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`, {
+	// 			replaceState: true,
+	// 			noScroll: true,
+	// 			keepFocus: true
+	// 		});
+	// 	}
+	// });
 	// let hideNewLinkCard: boolean = $state(!(page.url.searchParams.get('new-link') === 'true'));
 	// let hideNewDrawingCard: boolean = $state(!(page.url.searchParams.get('new-drawing') === 'true'));
 	// let hideNewFileCard: boolean = $state(!(page.url.searchParams.get('new-file') === 'true'));
@@ -43,9 +65,7 @@ https://svelte.dev/e/transition_slide_display
 		Add questions with tabs for new and existing, where the existing questions get the button to
 		copy and link. Also a copy all selected and link all selected.
 	</p>
-	<div
-		class="bg-base-150 shadow-outline max-h-96 min-h-44 overflow-y-auto rounded-lg p-2 shadow-inner"
-	>
+	<div class="bg-base-150 shadow-outline max-h-96 min-h-44 overflow-y-auto rounded-lg shadow-inner">
 		<div
 			class="tabs tabs-lifted bg-base-200 shadow-outline rounded-lg"
 			aria-label="Tabs"
