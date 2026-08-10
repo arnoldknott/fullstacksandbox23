@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
-	import { fade } from 'svelte/transition';
+	import { fade, slide } from 'svelte/transition';
 
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import Card from '$components/Card.svelte';
 	import Display from '$components/Display.svelte';
-	import Heading from '$components/Heading.svelte';
+	import Title from '$components/Title.svelte';
 	// import JsonData from '$components/JsonData.svelte';
 	import { AccessHandler, Action, IdentityType } from '$lib/accessHandler';
 	import { SocketIO, type SocketioStatus } from '$lib/socketio.svelte';
@@ -66,14 +66,14 @@
 		socketioPresentations?.client.disconnect();
 	});
 
-	let showNewPresentationCard: boolean = $state(page.url.searchParams.get('new') === 'true');
+	let hideNewPresentationCard: boolean = $state(!(page.url.searchParams.get('new') === 'true'));
 
 	const submitPresentation = () => {
 		const newPath = socketioPresentations.pendingEntities[0].path?.trim() ?? '';
 		socketioPresentations.pendingEntities[0].path =
 			newPath && !newPath.startsWith('/') ? `/${newPath}` : newPath;
 		socketioPresentations.submitEntity();
-		showNewPresentationCard = false;
+		hideNewPresentationCard = true;
 	};
 
 	const shareOptions: AccessShareOption[] = $state([
@@ -115,10 +115,6 @@
 
 <Display id="overview-presentations">Presentations</Display>
 
-{#snippet newPresentationHeader()}
-	<Heading id="newPresentation">New presentation</Heading>
-{/snippet}
-
 {#snippet slugDescription()}
 	This is the endpoint added for user access. It is not mandatory, as the presentation is always
 	accessible via its id in place of the slug. <span class="text-accent"
@@ -150,7 +146,7 @@
 			class="btn btn-secondary btn-gradient shadow-outline rounded-lg shadow"
 			aria-label="Cancel"
 			onclick={() => {
-				showNewPresentationCard = false;
+				hideNewPresentationCard = true;
 			}}><span class="icon-[tabler--x] size-5"></span>Cancel</button
 		>
 		<button
@@ -168,96 +164,102 @@
 
 <!-- <JsonData data={data.payload.identities} /> -->
 
-{#if showNewPresentationCard && socketioPresentations?.pendingEntities[0]}
-	<div transition:fade={{ duration: 600 }}>
-		<Card
-			id={socketioPresentations.pendingEntities[0].id}
-			header={newPresentationHeader}
-			footer={newPresentationFooter}
-		>
-			<div class="flex w-full flex-wrap gap-6">
-				<div class="grow">
-					<FormElement title="Slug" description={slugDescription} extraClasses="w-full">
-						<div class="md:flex-cols-2 wrap flex gap-2">
-							<code class="mt-5 shrink">{page.url.origin}/presentation/</code>
-							<div class="input-filled input-primary w-full">
-								<input
-									type="text"
-									placeholder=""
-									class="input"
-									id="slugInput"
-									bind:value={socketioPresentations.pendingEntities[0].path}
-								/>
-								<label class="input-filled-label" for="slugInput"
-									>[add the path to your presentation here]</label
-								>
-							</div>
-						</div>
-					</FormElement>
-					<FormElement title="Source" description={sourceDescription} extraClasses="max-w-300">
-						{@render warning()} For now, all presentations are <IdBadge id="intern" />, e.g. hosted
-						with the source code of this platform. ON the long run, <IdBadge id="Github" />, <IdBadge
-							id="Gitlab"
-						/>, <IdBadge id="OneDrive" />, <IdBadge id="GoogleDrive" /> and other sources should be supported
-						as well.
-					</FormElement>
-					<FormElement title="Questions" extraClasses="max-w-300">
-						{@render warning()} Link interactive questions to your presentation, so they can be answered
-						while going through the presentation. Linking exisiting questions, also links their answers,
-						copying existing questions creates a new question without any answers.
-					</FormElement>
-					<FormElement title="Links" extraClasses="max-w-300">
-						{@render warning()} Maybe there's a need to add related links and / or embeddings. The service
-						to the user could be to check the aliveness of the links - if a link returns a 404, the user
-						gets a notification.
-					</FormElement>
-					<FormElement title="Files" extraClasses="max-w-300">
-						{@render warning()}Select existing files or drop new files into a container to upload
-						and make available to the presentation. This is the place to store binaries, so they can
-						be accessed via the presentation api and used in the presentation.
-					</FormElement>
-				</div>
-
-				<FormElement title="Access" description={accessDescription} extraClasses="max-w-96">
-					{@render warning()} Only the public access gets currently submitted with the presentation!
-					<ul
-						class="bg-base-150 shadow-outline max-h-48 max-w-fit overflow-y-auto rounded-lg p-2 shadow-inner"
-					>
-						{#each shareOptions, i}
-							<ShareItem
-								resourceId={socketioPresentations.pendingEntities[0].id}
-								bind:shareOption={shareOptions[i]}
-								share={socketioPresentations?.shareEntity.bind(socketioPresentations)}
-								wide
+{#if socketioPresentations?.pendingEntities[0]}
+	<Card
+		id={socketioPresentations.pendingEntities[0].id}
+		title="New presentation"
+		footer={newPresentationFooter}
+		closeButton
+		bind:hidden={hideNewPresentationCard}
+	>
+		<div class="flex w-full flex-wrap gap-6">
+			<div class="grow">
+				<FormElement title="Slug" description={slugDescription} extraClasses="w-full">
+					<div class="md:flex-cols-2 wrap flex gap-2">
+						<code class="mt-5 shrink">{page.url.origin}/presentation/</code>
+						<div class="input-filled input-primary w-full">
+							<input
+								type="text"
+								placeholder=""
+								class="input"
+								id="slugInput"
+								bind:value={socketioPresentations.pendingEntities[0].path}
 							/>
-						{/each}
-					</ul>
+							<label class="input-filled-label" for="slugInput"
+								>[add the path to your presentation here]</label
+							>
+						</div>
+					</div>
+				</FormElement>
+				<FormElement title="Source" description={sourceDescription} extraClasses="max-w-300">
+					{@render warning()} For now, all presentations are <IdBadge id="intern" />, e.g. hosted
+					with the source code of this platform. ON the long run, <IdBadge id="Github" />, <IdBadge
+						id="Gitlab"
+					/>, <IdBadge id="OneDrive" />, <IdBadge id="GoogleDrive" /> and other sources should be supported
+					as well.
+				</FormElement>
+				<FormElement title="Questions" extraClasses="max-w-300">
+					{@render warning()} Link interactive questions to your presentation, so they can be answered
+					while going through the presentation. Linking exisiting questions, also links their answers,
+					copying existing questions creates a new question without any answers.
+				</FormElement>
+				<FormElement title="Links" extraClasses="max-w-300">
+					{@render warning()} Maybe there's a need to add related links and / or embeddings. The service
+					to the user could be to check the aliveness of the links - if a link returns a 404, the user
+					gets a notification.
+				</FormElement>
+				<FormElement title="Files" extraClasses="max-w-300">
+					{@render warning()}Select existing files or drop new files into a container to upload and
+					make available to the presentation. This is the place to store binaries, so they can be
+					accessed via the presentation api and used in the presentation.
 				</FormElement>
 			</div>
-		</Card>
-	</div>
-{:else if !socketioPresentations?.pendingEntities[0]}
-	<div class="label text-error">
+
+			<FormElement title="Access" description={accessDescription} extraClasses="max-w-96">
+				{@render warning()} Only the public access gets currently submitted with the presentation!
+				<ul
+					class="bg-base-150 shadow-outline max-h-48 max-w-fit overflow-y-auto rounded-lg p-2 shadow-inner"
+				>
+					{#each shareOptions, i}
+						<ShareItem
+							resourceId={socketioPresentations.pendingEntities[0].id}
+							bind:shareOption={shareOptions[i]}
+							share={socketioPresentations?.shareEntity.bind(socketioPresentations)}
+							wide
+						/>
+					{/each}
+				</ul>
+			</FormElement>
+		</div>
+	</Card>
+{:else if !socketioPresentations?.pendingEntities[0] && !hideNewPresentationCard}
+	<div class="label text-error" transition:slide={{ duration: 600 }}>
 		<span class="icon-[svg-spinners--12-dots-scale-rotate] size-6"></span>connecting ...
 	</div>
 {/if}
 
 {#snippet existingPresentationsHeader()}
 	<div class="flex justify-between">
-		<Heading id="existingPresentations" class="grow">Overview</Heading>
+		<Title id="existingPresentations" class="grow">Overview</Title>
 		<div class="flex flex-row items-center justify-center">
-			<button
-				class="btn btn-primary btn-gradient shadow-outline mx-4 rounded-lg shadow"
-				aria-label="Add new presentation"
-				onclick={() => (showNewPresentationCard = true)}
-			>
-				<!-- onclick={() => goto(resolve('/(layout)/presentation/(protected)/setup/new'))} -->
-				<span class="icon-[fa6-solid--plus] size-4"></span>Add
-			</button>
-			<div class="join rounded-lg">
+			{#if hideNewPresentationCard || !socketioPresentations?.pendingEntities[0]}
+				<button
+					transition:fade={{ duration: 600 }}
+					class="btn btn-primary-container btn-gradient label btn shadow-outline mx-4 rounded-full shadow-sm"
+					aria-label="Add new presentation"
+					onclick={() => (hideNewPresentationCard = false)}
+				>
+					<!-- onclick={() => goto(resolve('/(layout)/presentation/(protected)/setup/new'))} -->
+					<span class="icon-[fa6-solid--plus] size-5"></span>
+					<!-- <span class="hidden ">Add</span> -->
+					<span class="hidden sm:inline">Add new</span>
+					<span class="hidden md:inline">presentation</span>
+				</button>
+			{/if}
+			<div class="join shadow-outline rounded-full shadow-sm">
 				<button
 					aria-label="Preview"
-					class="btn join-item btn-secondary btn-gradient shadow-outline py-4 shadow {viewMode !==
+					class="btn join-item btn-secondary btn-gradient btn-sm rounded-l-full py-4 {viewMode !==
 					'preview'
 						? 'opacity-60'
 						: ''}"
@@ -267,7 +269,7 @@
 				</button>
 				<button
 					aria-label="Grid"
-					class="btn join-item btn-secondary btn-gradient shadow-outline py-4 shadow {viewMode !==
+					class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline py-4 shadow {viewMode !==
 					'grid'
 						? 'opacity-60'
 						: ''}"
@@ -277,7 +279,7 @@
 				</button>
 				<button
 					aria-label="List"
-					class="btn join-item btn-secondary btn-gradient shadow-outline py-4 shadow {viewMode !==
+					class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline rounded-r-full py-4 shadow {viewMode !==
 					'list'
 						? 'opacity-60'
 						: ''}"
@@ -299,13 +301,14 @@
 			aria-label={`Setup presentation ${path || resourceId}`}
 			class=""
 		> -->
+		<!-- TBD: hide the buttons, where the access_right for the logged in user are not enough to execute the action -->
 		<button
-			class="btn btn-secondary-container btn-gradient btn-sm text-secondary-container-content join-item shadow-outline shadow-sm"
+			class="btn btn-secondary-container btn-gradient btn-sm text-secondary-container-content join-item shadow-outline rounded-l-full shadow-sm"
 			aria-label="Edit Button"
 			onclick={() =>
 				goto(resolve('/(layout)/presentation/(protected)/setup/[id]', { id: resourceId }))}
 		>
-			<span class="icon-[material-symbols--edit-outline-rounded] size-4"></span>
+			<span class="icon-[tabler--settings] size-4"></span>
 			<!-- <span
 					class="hidden 2xl:block">Edit</span
 				> -->
@@ -352,7 +355,7 @@
 			</ul>
 		</div>
 		<button
-			class="btn btn-error-container btn-gradient btn-sm bg-error-container/70 hover:bg-error-container/50 focus:bg-error-container/50 text-error-container-content join-item shadow-outline border-0 shadow-sm"
+			class="btn btn-error-container btn-gradient btn-sm bg-error-container/70 hover:bg-error-container/50 focus:bg-error-container/50 text-error-container-content join-item shadow-outline rounded-r-full border-0 shadow-sm"
 			aria-label="Delete Button"
 			name="id"
 			onclick={() => !resourceId || socketioPresentations?.deleteEntity(resourceId)}
@@ -363,7 +366,7 @@
 	</div>
 {/snippet}
 
-<Card id="existing-presenations" header={existingPresentationsHeader} extraClasses="mt-6">
+<Card id="existing-presentations" header={existingPresentationsHeader} extraClasses="mt-6">
 	<div class="w-full overflow-x-auto {viewMode !== 'preview' ? 'hidden' : ''}">
 		<p class="bg-warning text-warning-content rounded-lg p-4">Preview mode is not developed yet</p>
 	</div>

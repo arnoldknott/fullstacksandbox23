@@ -6,7 +6,7 @@
 	import { Button } from '$components/shadcn/button';
 	import { Slider } from '$components/shadcn/slider';
 	import Title from '$components/Title.svelte';
-	import { themeStore } from '$lib/stores';
+	import theme from '$lib/stores/theme';
 	import { Theming } from '$lib/theming';
 	// import { afterNavigate } from '$app/navigation';
 
@@ -14,7 +14,7 @@
 
 	onMount(() => {
 		$effect(() => {
-			const storedTheme = get(themeStore);
+			const storedTheme = get(theme);
 			if (storedTheme.currentMode === 'dark') {
 				const successColor = Theming.rgbFromHex(hexFromArgb(storedTheme.dark.colors.success)).split(
 					' '
@@ -53,13 +53,13 @@
 	// immitates the behaviour from the dynamic update via themeing:
 	$effect(() => {
 		document.documentElement.style.setProperty('--color-success', color);
-		// const storedTheme = get(themeStore);
+		// const storedTheme = get(theme);
 		// console.log('=== stored theme - dark-color===');
 		// console.log(storedTheme);
 	});
 
 	// afterNavigate(() => {
-	//     const storedTheme = get(themeStore);
+	//     const storedTheme = get(theme);
 	//     if (storedTheme.currentMode === 'dark') {
 	//         const successColor = Theming.rgbFromHex(hexFromArgb(storedTheme.dark.colors.success)).split(
 	//             ' '

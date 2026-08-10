@@ -8,7 +8,7 @@
 
 <div class="grid w-full grid-cols-1 gap-4 xl:grid-cols-2">
 	<div class="col-span-2">
-		<Heading>Colors</Heading>
+		<Heading id="colors">Colors</Heading>
 		<p class="title text-center text-2xl">Color matching Material Design => FlyonUI:</p>
 		<div
 			class="accordion accordion-bordered divide-y"

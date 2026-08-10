@@ -8,6 +8,7 @@
 	// import type { Attachment } from 'svelte/attachments';
 	// import { afterNavigate } from '$app/navigation';
 	import Card from '$components/Card.svelte';
+	import Drawer from '$components/Drawer.svelte';
 	import HorizontalRule from '$components/HorizontalRule.svelte';
 	import NavigationCard from '$components/NavigationCard.svelte';
 	import Title from '$components/Title.svelte';
@@ -403,6 +404,9 @@
 			resizeRightTriplePanesActive = false;
 		}
 	};
+
+	// for drawers:
+	let drawerMode: 'copy' | 'link' = $state('copy');
 </script>
 
 {#snippet paneTile(color: string, content: string)}
@@ -2473,8 +2477,65 @@
 			</div>
 		</div>
 
+		<div class="divider py-2"></div>
+
+		{#snippet openButtons()}
+			<button
+				type="button"
+				class="btn btn-primary-container btn-gradient btn-sm shadow-outline rounded-full shadow-sm"
+				aria-label="Open drawer"
+				aria-haspopup="dialog"
+				aria-expanded="false"
+				aria-controls="overlay-drawer-questions"
+				data-overlay="#overlay-drawer-questions"
+				onclick={() => (drawerMode = 'copy')}
+			>
+				<span class="icon-[tabler--copy] size-4"></span>
+				Copy Drawer
+			</button>
+			<button
+				type="button"
+				class="btn btn-primary-container btn-gradient btn-sm shadow-outline rounded-full shadow-sm"
+				aria-label="Open drawer"
+				aria-haspopup="dialog"
+				aria-expanded="false"
+				aria-controls="overlay-drawer-questions"
+				data-overlay="#overlay-drawer-questions"
+				onclick={() => (drawerMode = 'link')}
+			>
+				<span class="icon-[tabler--link] size-4"></span>
+				Link Drawer
+			</button>
+		{/snippet}
+
+		<Drawer
+			id="drawer-questions"
+			icon={drawerMode === 'copy' ? 'icon-[tabler--copy]' : 'icon-[tabler--link]'}
+			title={drawerMode.charAt(0).toUpperCase() + drawerMode.slice(1) + ' Mode'}
+			activationElement={openButtons}
+		>
+			Switch to
+			<button
+				type="button"
+				class="btn btn-primary-container btn-gradient btn-sm shadow-outline rounded-full shadow-sm"
+				aria-label="Switch mode"
+				onclick={() => (drawerMode = drawerMode === 'copy' ? 'link' : 'copy')}
+			>
+				<span class="{drawerMode === 'copy' ? 'icon-[tabler--link]' : 'icon-[tabler--copy]'} size-4"
+				></span>
+				{drawerMode === 'copy' ? 'Link ' : 'Copy'} Mode
+			</button>
+			<p class="title">Drawer with two different modes</p>
+			{#if drawerMode === 'copy'}
+				<p>Mode 1: Copy</p>
+			{:else if drawerMode === 'link'}
+				<p>Mode 2: Link</p>
+			{/if}
+		</Drawer>
+
 		<HorizontalRule />
 	</div>
+	{Math.random()}
 </div>
 
 <style>

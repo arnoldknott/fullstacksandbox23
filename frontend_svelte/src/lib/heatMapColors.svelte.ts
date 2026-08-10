@@ -1,7 +1,7 @@
 import { Hct, hexFromArgb } from '@material/material-color-utilities';
 import { fromStore } from 'svelte/store';
 
-import { themeStore } from './stores';
+import theme from './stores/theme';
 import { type AppTheme, Theming } from './theming';
 
 export type HeatMapColor = {
@@ -15,8 +15,8 @@ export const createHeatMapColors = (
 	toneMultiplier: number = 1,
 	format: 'hex' | 'rgb' = 'hex'
 ): HeatMapColor[] => {
-	const theme = fromStore(themeStore);
-	const activeTheme: AppTheme = theme.current;
+	const themeStore = fromStore(theme);
+	const activeTheme: AppTheme = themeStore.current;
 
 	// for HCT:
 	// red: hue = 25,

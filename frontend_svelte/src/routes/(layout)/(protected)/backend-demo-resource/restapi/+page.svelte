@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Heading from '$components/Heading.svelte';
 	import JsonData from '$components/JsonData.svelte';
+	import Title from '$components/Title.svelte';
 	import { Action } from '$lib/accessHandler';
 	import type { DemoResourceExtended } from '$lib/types';
 
@@ -45,7 +45,7 @@
 	{#each demoResources as demoResource (demoResource.id)}
 		<DemoResourceCard {demoResource} {identities} />
 		<div class={debug ? 'block' : 'hidden'}>
-			<Heading>{demoResource.name}</Heading>
+			<Title id={'debug-title-' + demoResource.id}>{demoResource.name}</Title>
 			<p class="title-small md:title text-secondary">=> demoResource</p>
 			<JsonData data={demoResource} />
 		</div>

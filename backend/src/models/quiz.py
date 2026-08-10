@@ -33,6 +33,15 @@ from .base import (
 # )
 
 
+# TBD: For code based entites,
+# add a a mixin "source", that specifies the source code location of the entity
+# including type (internal | github | gitlab | ...), repo, path, branch.
+
+# TBD: create a mixin to provide a "label" for all models,
+# which needs to be unique within the parent
+# so it will act as the identifier of this entity in code based entities,
+# like quizzes, presentations, questions, etc.
+
 Question = create_model(
     name="Question",
     attributes=[

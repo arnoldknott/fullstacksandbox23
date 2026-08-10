@@ -12,12 +12,16 @@
 	<p>Page 4.2 is a subpage to page 4</p>
 
 	<Section id="loreum1">
-		<Heading><span class="italic">First</span> Lorem ipsum dolor sit amet...</Heading>
+		<Heading id="loreum1title"
+			><span class="italic">First</span> Lorem ipsum dolor sit amet...</Heading
+		>
 		<Loreum repetition={30} />
 	</Section>
 
 	<Section id="loreum2">
-		<Heading><span class="italic">Second</span> Lorem ipsum dolor sit amet...</Heading>
+		<Heading id="loreum2title"
+			><span class="italic">Second</span> Lorem ipsum dolor sit amet...</Heading
+		>
 		<Loreum repetition={30} />
 	</Section>
 </div>

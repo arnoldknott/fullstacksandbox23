@@ -3,7 +3,6 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { flip } from 'svelte/animate';
 
-	import Heading from '$components/Heading.svelte';
 	import RevealJS from '$components/RevealJS.svelte';
 	import { Action } from '$lib/accessHandler';
 	import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
@@ -345,7 +344,7 @@
 	<!-- <div>{addColorToMotivationTable} {motivationAnswersAverage}</div> -->
 	<section>
 		<SlideTitle>Inclusion</SlideTitle>
-		<Heading>We have diversity on this course...</Heading>
+		<div class="display-small font-bold tracking-widest">We have diversity on this course...</div>
 		<ul>
 			<li>About 10 different study lines,</li>
 			<li>More than 100 students,</li>
@@ -373,7 +372,7 @@
 	</section> -->
 	<section>
 		<SlideTitle>Thank you for joining and participating!</SlideTitle>
-		<!-- <Heading>Do you have comments or questions?</Heading> -->
+		<!-- <div class="display-small font-bold tracking-widest">Do you have comments or questions?</div> -->
 		<div class="mx-10 mt-8">
 			<div class="text-left">
 				{#if socketioComment?.pendingEntities[0]}
@@ -415,6 +414,6 @@
 	</section>
 	<!-- <section>
 		<SlideTitle>To pass the course...</SlideTitle>
-		<Heading>Hand in the four assignments</Heading>
+		<div class="display-small font-bold tracking-widest">Hand in the four assignments</div>
 	</section> -->
 </RevealJS>

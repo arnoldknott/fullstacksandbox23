@@ -100,12 +100,12 @@
 <div class="m-5 grid grid-cols-2 gap-8">
 	<div class="grow">
 		<Chat connection={public_message_connection} socketioEvent="public_message"
-			><Heading>Public Message Namespace</Heading></Chat
+			><Heading id="public-message-namespace">Public Message Namespace</Heading></Chat
 		>
 	</div>
 	<div>
 		<Chat connection={demo_message_connection} socketioEvent="demo_message"
-			><Heading>Demo Message Namespace</Heading></Chat
+			><Heading id="demo-message-namespace">Demo Message Namespace</Heading></Chat
 		>
 	</div>
 </div>
@@ -134,7 +134,7 @@
 	</form>
 </div>
 
-<Heading>Socket.IO message history</Heading>
+<Heading id="socket-io-message-history">Socket.IO message history</Heading>
 
 {#each old_messages as old_message}
 	<p>{old_message}</p>

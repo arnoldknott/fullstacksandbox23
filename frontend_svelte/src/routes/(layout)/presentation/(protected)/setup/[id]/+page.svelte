@@ -4,13 +4,13 @@
 	import { page } from '$app/state';
 	import Card from '$components/Card.svelte';
 	import Display from '$components/Display.svelte';
-	import Drawer from '$components/Drawer.svelte';
 	import Heading from '$components/Heading.svelte';
 	// import JsonData from '$components/JsonData.svelte';
 	import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
 	import type { Presentation } from '$lib/types';
 
 	import type { PageData } from './$types';
+	import QuestionSections from './QuestionsSection.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -37,12 +37,32 @@
 <!-- <JsonData data={socketioPresentation?.entities} /> -->
 
 <Display id="presentation-name">{presentation?.path || presentation?.id}</Display>
-<a href="/presentation/setup" class="btn btn-primary btn-gradient shadow-outline mx-4 rounded-full">
-	<span class="icon-[tabler--chevron-left]"></span>
-	Go to all presentations
-</a>
+<div class="flex flex-row">
+	<a
+		href="/presentation/setup"
+		class="btn btn-primary btn-gradient shadow-outline mx-4 rounded-full"
+	>
+		<span class="icon-[tabler--chevron-left]"></span>
+		Go to all presentations
+	</a>
+	<div class="label text-warning">
+		Maybe this should be left to the sidebar? Potentially with the dropdown from the sidebar open to
+		quickly allow access to all presentations link?
+	</div>
+</div>
 
-<Heading id="source">Source</Heading>
+<Card
+	id="presentation-parameters"
+	title="🚧 This presentation's parameters 🚧"
+	extraClasses="bg-warning-container/30 text-warning-container-content/80 label-large border-warning-container"
+>
+	<p>
+		Pretty much the same as all the parameters when adding a new presentation in the all
+		presentations setup view. Here all fields are pre-filled with this presentation's parameters.
+	</p>
+</Card>
+
+<Heading id="source" sideBarEntry="Source">Source</Heading>
 <Card
 	id="code-location"
 	title="🚧 Code location for this presentation 🚧"
@@ -54,7 +74,7 @@
 	</p>
 </Card>
 
-<Heading id="access">Access</Heading>
+<Heading id="access" sideBarEntry="Access">Access</Heading>
 <Card
 	id="managing-access"
 	title="🚧 Managing the accessibility of the presentation 🚧"
@@ -66,27 +86,10 @@
 	</p>
 </Card>
 
-<Heading id="questions">Questions</Heading>
-<Drawer id="copy-questions" icon="icon-[tabler--copy]" title="Copy Existing Questions">
-	<p class="title">
-		Opening a side drawer to select existing questions - for mode copy (don't keep the original
-		answers and don't keep in sync)
-	</p>
-</Drawer>
-<Drawer id="link-questions" icon="icon-[tabler--link]" title="Link Existing Questions">
-	<p class="title">
-		Opening a side drawer to select existing questions - for mode link (keeps answers in sync)
-	</p>
-</Drawer>
-<Card id="link-questions" title="Linked Questions" extraClasses="label-large">
-	<p>
-		Potentially as an accordion with the answers in the panel? Adding a question and opening sidebar
-		to select existing questions - for mode copy (don't keep the original answers and don't keep in
-		sync) or link (keeps answers in sync)
-	</p>
-</Card>
+<Heading id="questions" sideBarEntry="Questions">Questions</Heading>
+<QuestionSections />
 
-<Heading id="links">Links</Heading>
+<Heading id="links" sideBarEntry="Links">Links</Heading>
 <Card
 	id="link-checking"
 	title="🚧 Status of links 🚧"
@@ -99,7 +102,7 @@
 	</p>
 </Card>
 
-<Heading id="drawings">Drawings?</Heading>
+<Heading id="drawings" sideBarEntry="Drawings?">Drawings?</Heading>
 <Card
 	id="drawings"
 	title="🚧 Draw.io and Excalibut embedded here 🚧"
@@ -111,7 +114,7 @@
 	</p>
 </Card>
 
-<Heading id="files">Files</Heading>
+<Heading id="files" sideBarEntry="Files">Files</Heading>
 <Card
 	id="attaching-files"
 	title="🚧 Uploading, updating, deleting files🚧"
@@ -123,7 +126,7 @@
 	</p>
 </Card>
 
-<Heading id="misc">Miscellaneous</Heading>
+<Heading id="misc" sideBarEntry="Miscellaneous">Miscellaneous</Heading>
 <Card
 	id="languages"
 	title="🚧 Languages 🚧"

@@ -1,10 +1,13 @@
 <script lang="ts">
+	import Display from '$components/Display.svelte';
 	import Heading from '$components/Heading.svelte';
 </script>
 
+<Display>TailwindCSS 4</Display>
+
 <div class="mx-5 grid grid-cols-1 gap-4 xl:grid-cols-2">
 	<div>
-		<Heading>Colors</Heading>
+		<Heading id="colors">Colors</Heading>
 		<div class="grid grid-cols-4 gap-4 xl:grid-cols-8">
 			<div>
 				<div class="skeleton flex h-36 w-36 items-center justify-center bg-orange-500">
@@ -21,7 +24,7 @@
 	</div>
 
 	<div>
-		<Heading>Responsive utilities</Heading>
+		<Heading id="responsive-utilities">Responsive utilities</Heading>
 		<div>
 			<div class="input-filled mt-4 w-full">
 				<input

@@ -164,7 +164,7 @@
 {#if !data.questionsData?.questions.question}
 	<Title id="note-on-query-string-question-id">Add id to question as query string (for now)!</Title>
 {/if}
-<Heading id="messageAnswers">Add an answer</Heading>
+<Heading id="add-an-answer">Add an answer</Heading>
 
 <div class="grid grid-cols-2 gap-2">
 	<div class="flex gap-1 text-left">
@@ -210,7 +210,7 @@
 	<!-- <JsonData data={messageSocketio?.getSelectedEntities('sortedMessageAnswers')} /> -->
 </div>
 
-<Heading id="messageAnswers">Message Answers:</Heading>
+<Heading id="message-answers">Message Answers:</Heading>
 
 <div class="mx-2 grid w-full grid-cols-5 gap-2">
 	{#each messageAnswersSorted as answer, index (answer.id)}
@@ -220,7 +220,7 @@
 	{/each}
 </div>
 
-<Heading id="numericalAnswers">Numerical Answers:</Heading>
+<Heading id="numerical-answers">Numerical Answers:</Heading>
 
 <div class="mx-2 grid w-full grid-cols-5 gap-2">
 	{#each numericalAnswersSorted as answer, index (answer.id)}
@@ -230,6 +230,6 @@
 	{/each}
 </div>
 
-<Heading id="numericalAnswers">JSONdata:</Heading>
+<Heading id="json-data">JSONdata:</Heading>
 
 <JsonData data={data.questionsData} />

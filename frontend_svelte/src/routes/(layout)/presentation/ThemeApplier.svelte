@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { getContext, type Snippet } from 'svelte';
 
-	import { themeStore } from '$lib/stores';
+	import theme from '$lib/stores/theme';
 	import { FSSB23_THEME_KEY, type ThemeRuntimeContext, Theming } from '$lib/theming';
 
 	let { children }: { children: Snippet } = $props();
@@ -10,7 +10,7 @@
 	const theming = new Theming();
 
 	$effect(() => {
-		themeStore.set(theming.applyTheme(themeRuntime));
+		theme.set(theming.applyTheme(themeRuntime));
 	});
 </script>
 

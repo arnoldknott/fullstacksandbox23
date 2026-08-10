@@ -38,7 +38,7 @@
 	// });
 </script>
 
-<Heading>My user Data in Azure</Heading>
+<Heading id="my-user-data-in-azure">My user Data in Azure</Heading>
 
 <!-- <div
 	class="accordion accordion-bordered bg-primary-container text-primary-container-content shadow-outline-variant mb-5 shadow-lg"
@@ -84,11 +84,11 @@
 </div>
 <!-- </div> -->
 
-<Heading>Microsoft User Profile on DTU Tenant</Heading>
+<Heading id="microsoft-user-profile-on-dtu-tenant">Microsoft User Profile on DTU Tenant</Heading>
 <code><pre>{JSON.stringify(userProfile, null, ' ')}</pre></code>
 
-<Heading>Azure Account</Heading>
+<Heading id="azure-account">Azure Account</Heading>
 <code><pre>{JSON.stringify(account, null, ' ')}</pre></code>
 
-<!-- <Heading>All Users</Heading>
+<!-- <Heading id="all-users">All Users</Heading>
 <code><pre>{JSON.stringify(data.allUsers, null, ' ')}</pre></code> -->

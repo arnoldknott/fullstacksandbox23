@@ -9,11 +9,12 @@
 		updateProfileAccount,
 		saveProfileAccount,
 		mode = $bindable<'light' | 'dark'>(),
+		// TBD: move global ArtificalIntelligenceConfig to a store and bind it here instead of passing it down as a prop!
 		themeConfiguration = $bindable()
 	}: {
 		themeForm: HTMLFormElement | null;
 		updateProfileAccount: SubmitFunction;
-		saveProfileAccount: () => void;
+		saveProfileAccount: () => Promise<void>;
 		mode: 'light' | 'dark';
 		themeConfiguration: ColorConfig;
 	} = $props();

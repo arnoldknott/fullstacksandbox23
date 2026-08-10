@@ -20,7 +20,7 @@
 	// import type { LayoutData } from './$types';
 	// import type { Action } from 'svelte/action';
 	// import { Variant, Theming, type ColorConfig } from '$lib/theming';
-	// import { themeStore } from '$lib/stores';
+	// import theme from '$lib/stores/theme';
 	// import { initScrollspy } from '$lib/userInterface';
 	// import Loreum from './(layout)/Loreum.svelte';
 	// import { scrollY } from 'svelte/reactivity/window';
@@ -107,10 +107,10 @@
 	// 	mode
 	// };
 
-	// 	let theme = $derived(theming.applyTheme(themeRuntime));
+	// 	let themeState = $derived(theming.applyTheme(themeRuntime));
 
 	// 	$effect(() => {
-	// 		themeStore.set(theme);
+	// 		theme.set(themeState);
 	// 	});
 	// };
 </script>

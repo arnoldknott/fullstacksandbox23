@@ -6,22 +6,26 @@
 	import { writable } from 'svelte/store';
 
 	import { afterNavigate, goto } from '$app/navigation';
-	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import Guard from '$components/Guard.svelte';
 	import { type ArtificialIntelligenceConfig, Model } from '$lib/artificialIntelligence';
+	import {
+		getDebugSidebarLinks,
+		initialDebugSidebarLinks,
+		initialProtectedSidebarLinks,
+		initialSidebarLinks,
+		setDebugSidebarLinks,
+		setOnThisPageLinks,
+		setProtectedSidebarLinks,
+		setSidebarLinks
+	} from '$lib/contexts/sidebar.svelte';
 	import { SessionStatus } from '$lib/session';
-	import { themeStore } from '$lib/stores';
+	import theme from '$lib/stores/theme';
 	import { FSSB23_THEME_KEY, type ThemeRuntimeContext, Theming } from '$lib/theming';
 	import type { SidebarItemContent } from '$lib/types';
-	import { initDropdown, initOverlay } from '$lib/userInterface';
 
 	import type { LayoutData } from './$types';
-	import LoginOutButton from './LoginOutButton.svelte';
-	import Logo from './Logo.svelte';
-	import ArtificialIntelligencePicker from './playground/components/ArtificialIntelligencePicker.svelte';
-	import ThemePicker from './playground/components/ThemePicker.svelte';
-	import SidebarItem from './SidebarItem.svelte';
+	import Navbar from './Navbar.svelte';
+	import Sidebar from './Sidebar.svelte';
 	import WelcomeModal from './WelcomeModal.svelte';
 
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
@@ -169,7 +173,7 @@
 		// max_tokens: 2048
 	});
 
-	let artificialIntelligenceForm = $state<HTMLFormElement | null>(null);
+	// let artificialIntelligenceForm = $state<HTMLFormElement | null>(null);
 
 	const themeRuntime = getContext<ThemeRuntimeContext>(FSSB23_THEME_KEY);
 
@@ -191,10 +195,10 @@
 		systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 		themeRuntime.mode = systemDark ? 'dark' : 'light';
 
-		let theme = $derived(theming.applyTheme(themeRuntime));
+		let themeState = $derived(theming.applyTheme(themeRuntime));
 
 		$effect(() => {
-			themeStore.set(theme);
+			theme.set(themeState);
 		});
 	};
 
@@ -220,457 +224,6 @@
 		// Prevents page from updating/reloading:
 		return () => {};
 	};
-
-	// Sidebar:
-	let sidebarLinks: SidebarItemContent[] = $state([
-		{
-			name: 'Docs',
-			pathname: resolve('/(plain)/docs'),
-			icon: 'icon-[oui--documentation]',
-			id: 'docs',
-			items: []
-		},
-		{
-			name: 'Open Playground',
-			pathname: resolve('/(layout)/playground'),
-			icon: 'icon-[mdi--playground-seesaw]',
-			id: 'playground',
-			items: [
-				{
-					name: 'User Interface',
-					pathname: resolve('/(layout)/playground/user-interface'),
-					icon: 'icon-[mdi--monitor-dashboard]',
-					id: 'user-interface',
-					items: []
-				},
-				{
-					name: 'Components',
-					pathname: resolve('/(layout)/playground/components') + '?prod=false&develop=true',
-					icon: 'icon-[tabler--components]',
-					id: 'components',
-					items: []
-				},
-				{
-					name: 'Design',
-					pathname: resolve('/(layout)/playground/design'),
-					icon: 'icon-[fluent--design-ideas-20-regular]',
-					id: 'design',
-					items: [
-						{
-							name: 'Backgrounds',
-							icon: 'icon-[mdi--palette-outline]',
-							hash: '#backgrounds-and-surfaces',
-							id: 'backgrounds'
-						},
-						{
-							name: 'Foregrounds',
-							icon: 'icon-[mdi--palette-outline]',
-							hash: '#foregrounds',
-							id: 'foregrounds'
-						},
-						{
-							name: 'Components',
-							icon: 'icon-[mdi--palette-outline]',
-							hash: '#components',
-							id: 'components'
-						},
-						{
-							name: 'Playground',
-							icon: 'icon-[mdi--playground-seesaw]',
-							hash: '#design-playground',
-							id: 'design-playground'
-						},
-						{
-							name: 'Building Blocks',
-							icon: 'icon-[clarity--blocks-group-line]',
-							hash: '#design-building-blocks',
-							id: 'design-building-blocks',
-							items: [
-								{
-									name: 'Shadcn-svelte',
-									icon: 'icon-[bxl--shadcn-ui]',
-									pathname: resolve('/(layout)/playground/design/shadcn'),
-									id: 'shadcn'
-								},
-								{
-									name: 'FlyonUI',
-									icon: 'icon-[mingcute--arrows-up-fill]',
-									pathname: resolve('/(layout)/playground/design/flyonui'),
-									id: 'flyonui'
-								},
-								{
-									name: 'Material Design',
-									icon: 'icon-[mdi--material-design]',
-									pathname: resolve('/(layout)/playground/design/materialdesign'),
-									id: 'material-design'
-								},
-								{
-									name: 'Svelte',
-									icon: 'icon-[tabler--brand-svelte]',
-									pathname: resolve('/(layout)/playground/design/svelte'),
-									id: 'svelte'
-								}
-							]
-						}
-					]
-				},
-				{
-					name: 'Data Flow & Navigation',
-					pathname: resolve('/(layout)/playground/dataflow'),
-					icon: 'icon-[iconoir--data-transfer-both]',
-					id: 'dataflow'
-				},
-				{
-					name: 'Backend Schema',
-					pathname: resolve('/(layout)/playground/backend-schema'),
-					icon: 'icon-[file-icons--openapi]',
-					id: 'backend-schema'
-				},
-				{
-					name: 'Counter',
-					pathname: resolve('/(layout)/playground/counter'),
-					icon: 'icon-[mdi--counter]',
-					id: 'counter'
-				},
-				{
-					name: 'Core',
-					pathname: resolve('/(layout)/playground/core'),
-					icon: 'icon-[streamline-ultimate--computer-chip-core]',
-					id: 'core'
-				},
-				{
-					name: 'Websockets',
-					pathname: resolve('/(layout)/playground/websockets'),
-					icon: 'icon-[solar--socket-linear]',
-					id: 'websockets'
-				}
-			]
-		}
-		// {
-		// 	name: 'Apps',
-		// 	pathname: resolve('/(layout)/(protected)/dashboard'),
-		// 	icon: 'icon-[material-symbols--dashboard-outline-rounded]',
-		// 	id: 'apps',
-		// 	items: []
-		// },
-	]);
-
-	let protectedSidebarLinks: SidebarItemContent[] = $state([
-		{
-			name: 'Protected Data',
-			pathname: resolve('/(layout)/(protected)/protected'),
-			icon: 'icon-[mingcute--lock-fill]',
-			id: 'dashboard',
-			items: [
-				{
-					name: 'Demo Resources',
-					pathname: resolve('/(layout)/(protected)/backend-demo-resource'),
-					icon: 'icon-[grommet-icons--resources]',
-					id: 'demo-resource',
-					items: [
-						{
-							name: 'Rest API',
-							pathname: resolve('/(layout)/(protected)/backend-demo-resource/restapi'),
-							icon: 'icon-[dashicons--rest-api]',
-							id: 'demo-resource-restapi'
-						},
-						{
-							name: 'Socket IO',
-							pathname: resolve('/(layout)/(protected)/backend-demo-resource/socketio'),
-							icon: 'icon-[tabler--brand-socket-io]',
-							id: 'demo-resource-socketio'
-						}
-					]
-				},
-				{
-					name: 'Presentations',
-					pathname: resolve('/(layout)/presentation/(protected)/setup'),
-					icon: 'icon-[fa6-solid--chalkboard]',
-					id: 'presentations'
-				},
-				{
-					name: 'Questions',
-					pathname: resolve('/(layout)/question/(protected)/setup'),
-					icon: 'icon-[codicon--question]',
-					id: 'questions'
-				},
-				{
-					name: 'Hierarchical Resources',
-					pathname: resolve('/(layout)/(protected)/backend-protected-hierarchy'),
-					icon: 'icon-[fluent-mdl2--family]',
-					id: 'hierarchical-resources'
-				},
-				{
-					name: 'Identities',
-					// pathname: resolve('/(layout)/(protected)/dashboard/identities'),
-					icon: 'icon-[material-symbols--identity-platform-outline-rounded]',
-					id: 'identities',
-					items: [
-						{
-							name: 'All identities',
-							pathname: resolve('/(layout)/(protected)/identities'),
-							icon: 'icon-[mdi--account-multiple-outline]',
-							id: 'identities-all'
-						},
-						{
-							name: 'Microsoft',
-							pathname: resolve('/(layout)/(protected)/msgraph'),
-							icon: 'icon-[fluent--person-20-filled]',
-							id: 'identities-microsoft'
-						}
-					]
-				},
-				{
-					name: 'Socket.IO',
-					pathname: resolve('/(layout)/(protected)/socketio'),
-					icon: 'icon-[tabler--brand-socket-io]',
-					id: 'socketio'
-				},
-				{
-					name: 'Session Data',
-					pathname: resolve('/(layout)/(protected)/sessiondata'),
-					icon: 'icon-[solar--hashtag-circle-linear]',
-					id: 'sessiondata'
-				}
-			]
-		}
-	]);
-
-	let debugSidebarLinks: SidebarItemContent[] = $state([
-		{
-			name: 'Page 1',
-			pathname: resolve('/(layout)/playground/page1'),
-			icon: 'icon-[tabler--user]',
-			id: 'page1',
-			items: []
-		},
-		{
-			name: 'Page 2',
-			pathname: resolve('/(layout)/playground/page2'),
-			icon: 'icon-[icon-park-outline--page]',
-			id: 'page2',
-			items: [
-				{
-					id: 'page2-loreum1',
-					name: 'Loreum 1',
-					icon: 'icon-[mdi--text]',
-					hash: '#pg2loreum1'
-				},
-				{
-					id: 'page2-loreum2',
-					name: 'Loreum 2',
-					icon: 'icon-[mdi--text]',
-					hash: '#pg2loreum2'
-				},
-				{
-					name: 'Sub category',
-					icon: 'icon-[material-symbols--folder-outline-rounded]',
-					hash: '#pg2sub-category',
-					id: 'page2-sub-category',
-					items: [
-						{
-							id: 'page2-loreum3',
-							name: 'Loreum 3',
-							icon: 'icon-[mdi--text]',
-							hash: '#pg2loreum3'
-						},
-						{
-							id: 'page2-loreum4',
-							name: 'Loreum 4',
-							icon: 'icon-[mdi--text]',
-							hash: '#pg2loreum4'
-						}
-					]
-				},
-				{
-					id: 'page2-loreum5',
-					name: 'Loreum 5',
-					icon: 'icon-[mdi--text]',
-					hash: '#pg2loreum5'
-				},
-				{
-					id: 'page2-loreum6',
-					name: 'Loreum 6',
-					icon: 'icon-[mdi--text]',
-					hash: '#pg2loreum6'
-				}
-			]
-		},
-		{
-			name: 'Page 3',
-			pathname: resolve('/(layout)/playground/page3'),
-			icon: 'icon-[icon-park-outline--page]',
-			id: 'page3',
-			items: [
-				{
-					id: 'page3-loreum1',
-					name: 'Loreum 1',
-					icon: 'icon-[mdi--text]',
-					hash: '#pg3loreum1'
-				},
-				{
-					id: 'page3-loreum2',
-					name: 'Loreum 2',
-					icon: 'icon-[mdi--text]',
-					hash: '#pg3loreum2'
-				},
-				{
-					id: 'page3-loreum2a',
-					name: 'Loreum 2a',
-					icon: 'icon-[mdi--text]',
-					hash: '#pg3loreum2a'
-				},
-				{
-					name: 'Sub category',
-					icon: 'icon-[material-symbols--folder-outline-rounded]',
-					hash: '#pg3sub-category',
-					id: 'pg3sub-category',
-					items: [
-						{
-							id: 'page3-loreum3p1',
-							name: 'Loreum 3.1',
-							icon: 'icon-[mdi--text]',
-							hash: '#pg3loreum3p1'
-						},
-						{
-							id: 'page3-loreum3p2',
-							name: 'Loreum 3.2',
-							icon: 'icon-[mdi--text]',
-							hash: '#pg3loreum3p2'
-						}
-					]
-				},
-				{
-					id: 'page3-loreum4',
-					name: 'Loreum 4',
-					icon: 'icon-[mdi--text]',
-					hash: '#pg3loreum4'
-				},
-				{
-					id: 'page3-loreum5',
-					name: 'Loreum 5',
-					icon: 'icon-[mdi--text]',
-					hash: '#pg3loreum5'
-				}
-			]
-		},
-		{
-			id: 'further-page',
-			name: 'Further Page',
-			pathname: resolve('/(layout)/playground/page4'),
-			icon: 'icon-[tabler--mail]',
-			items: [
-				{
-					id: 'page4-loreum1',
-					name: 'Loreum 1',
-					icon: 'icon-[mdi--text]',
-					hash: '#loreum1'
-				},
-				{
-					id: 'page4-loreum2',
-					name: 'Loreum 2',
-					icon: 'icon-[mdi--text]',
-					hash: '#loreum2'
-				},
-				{
-					name: 'Sub category',
-					icon: 'icon-[material-symbols--folder-outline-rounded]',
-					hash: '#sub-category-page4',
-					id: 'page4-sub-category',
-					items: [
-						{
-							id: 'page4-loreum3',
-							name: 'Loreum 3',
-							icon: 'icon-[mdi--text]',
-							hash: '#loreum3'
-						},
-						{
-							id: 'page4-loreum4',
-							name: 'Loreum 4',
-							icon: 'icon-[mdi--text]',
-							hash: '#loreum4'
-						}
-					]
-				},
-				{
-					id: 'page4-sub-pages-section',
-					name: 'Sub-pages',
-					icon: 'icon-[mdi--text]',
-					hash: '#page4-sub-pages-section'
-				},
-				{
-					name: 'Sub-page 4.1',
-					icon: 'icon-[mingcute--directory-line]',
-					pathname: resolve('/(layout)/playground/page4/page4-1'),
-					id: 'page4p1',
-					items: [
-						{
-							id: 'page4p1-loreum1',
-							name: 'Loreum 1 pg4.1',
-							icon: 'icon-[mdi--text]',
-							pathname: resolve('/(layout)/playground/page4/page4-1'),
-							hash: '#loreum1'
-						},
-						{
-							id: 'page4p1-loreum2',
-							name: 'Loreum 2 pg4.2',
-							icon: 'icon-[mdi--text]',
-							pathname: resolve('/(layout)/playground/page4/page4-1'),
-							hash: '#loreum2'
-						}
-					]
-				},
-				{
-					name: 'Sub-page 4.2',
-					icon: 'icon-[material-symbols--folder-outline-rounded]',
-					pathname: resolve('/(layout)/playground/page4/page4-2'),
-					id: 'page4p2',
-					items: [
-						{
-							id: 'page4p2-loreum1',
-							name: 'Loreum 1 pg4.2',
-							icon: 'icon-[mdi--text]',
-							pathname: resolve('/(layout)/playground/page4/page4-2'),
-							hash: '#loreum1'
-						},
-						{
-							id: 'page4p2-loreum2',
-							name: 'Loreum 2 pg4.2',
-							icon: 'icon-[mdi--text]',
-							pathname: resolve('/(layout)/playground/page4/page4-2'),
-							hash: '#loreum2'
-						}
-					]
-				},
-				{
-					id: 'page4-loreum6',
-					name: 'Loreum 6',
-					icon: 'icon-[mdi--text]',
-					hash: '#loreum6'
-				}
-			]
-		},
-		{
-			name: 'Page 5',
-			pathname: resolve('/(layout)/playground/page5'),
-			icon: 'icon-[tabler--user]',
-			id: 'page5',
-			items: [
-				{
-					id: 'page5-loreum1',
-					name: 'Loreum 1',
-					icon: 'icon-[mdi--text]',
-					hash: '#loreum1'
-				},
-				{
-					id: 'page5-loreum2',
-					name: 'Loreum 2',
-					icon: 'icon-[mdi--text]',
-					hash: '#loreum2'
-				}
-			]
-		}
-	]);
 
 	// TBD: potential useful features to encaspulate the scroll into:
 	// onMount, afterNavigate $effect, (beforeNavigate), (onNavigate), Attachment, onscrollend, derived, derived.by(), ...?
@@ -773,7 +326,6 @@
 		}
 	});
 
-	let navBar: HTMLElement | null = $state(null);
 	// Constant once measured — main's padding-top must NOT change when the
 	// navbar shows/hides, otherwise document height changes and scrollY gets
 	// clamped near the page bottom, which the direction check would then
@@ -871,6 +423,14 @@
 			previousScrollY = currentScrollY;
 		}
 	};
+
+	setSidebarLinks(initialSidebarLinks);
+	setProtectedSidebarLinks(initialProtectedSidebarLinks);
+	setDebugSidebarLinks(initialDebugSidebarLinks);
+	const initialOnThisPageLinks: SidebarItemContent[] = $state([]);
+	setOnThisPageLinks(initialOnThisPageLinks);
+
+	const debugSidebarLinks: SidebarItemContent[] = $derived(getDebugSidebarLinks());
 </script>
 
 <svelte:window
@@ -881,186 +441,36 @@
 
 <svelte:body use:applyTheming />
 
-{#snippet sidebarToggleButton(classes: string, overlayModifier: object)}
-	<button
-		type="button"
-		class="btn btn-square btn-sm btn-outline btn-primary {classes}"
-		aria-haspopup="dialog"
-		aria-expanded="false"
-		aria-controls="collapsible-mini-sidebar"
-		aria-label="Toggle Sidebar"
-		{...overlayModifier}
-	>
-		<!-- data-overlay="#collapsible-mini-sidebar"
-		data-overlay-options={ JSON.stringify({ "backdropClasses": "overlay-backdrop transition duration-300 fixed inset-0 bg-base-300/60 overflow-y-auto", "backdropParent": "#scrollspy" }) } -->
-		<!-- <div id="collapsible-mini-sidebar-backdrop" data-overlay-backdrop-template="overlay-backdrop transition duration-300 fixed inset-0 bg-base-300/60 overflow-y-auto" style="z-index: 79;" class=""></div> -->
-		<span
-			class="icon-[material-symbols--menu-open-rounded] overlay-minified:hidden flex size-5 max-sm:hidden"
-		></span>
-		<span class="icon-[material-symbols--menu] overlay-minified:flex hidden size-5 max-sm:flex"
-		></span>
-	</button>
-{/snippet}
-
-{#snippet navbarPartItem(href: string, icon: string, text: string, textClasses?: string)}
-	<li class="text-primary hidden items-center md:flex">
-		<a {href} aria-label={text} class="flex items-center gap-1"
-			><span class="{icon} size-5"></span>
-			<span class={textClasses}>{text}</span>
-		</a>
-	</li>
-{/snippet}
-
-{#snippet sidebarPartItem(href: string, icon: string, text: string, listItemClasses?: string)}
-	<li class="text-primary {listItemClasses}">
-		<a {href}>
-			<span class="{icon} size-5"></span>
-			<span class="overlay-minified:hidden">{text}</span>
-		</a>
-	</li>
-{/snippet}
-
 <header
 	bind:this={header}
 	class="xs:mx-5 xs:mt-5 fixed z-1 mt-2 w-screen px-2 transition-all duration-300"
 >
-	<!-- TBD: put navbar into component -->
-	<nav
-		class="navbar rounded-box shadow-shadow border-outline-variant bg-base-250 start-0 top-0 z-1 flex justify-between border-1 border-b px-3 shadow-md transition-all duration-300 max-sm:h-14 md:items-center"
-		bind:this={navBar}
-	>
-		<!-- {@attach updateNavbarBottom} -->
-		<div class="navbar-start rtl:[--placement:bottom-end]">
-			<ul class="menu menu-horizontal flex flex-nowrap items-center">
-				{@render sidebarToggleButton('hidden sm:flex', {
-					'data-overlay-minifier': '#collapsible-mini-sidebar'
-				})}
-				{@render sidebarToggleButton('sm:hidden', {
-					'data-overlay': '#collapsible-mini-sidebar'
-				})}
-				{@render navbarPartItem('/docs', 'icon-[oui--documentation]', 'Docs')}
-				{@render navbarPartItem(
-					'/playground',
-					'icon-[mdi--playground-seesaw]',
-					'Playground',
-					'hidden lg:block'
-				)}
-				<Guard>
-					{@render navbarPartItem(
-						'/dashboard',
-						'icon-[material-symbols--dashboard-outline-rounded]',
-						'Dashboard',
-						'hidden xl:block'
-					)}
-				</Guard>
-				<!-- {@render navbarPartItem(
-						'/features',
-						'icon-[mdi--feature-highlight]',
-						'Features',
-						'hidden xl:block'
-					)}
-					{@render navbarPartItem('/apps', 'icon-[tabler--apps]', 'Apps', 'hidden xl:block')}
-					{@render navbarPartItem(
-						'/construction',
-						'icon-[maki--construction]',
-						'Construction',
-						'hidden xl:block'
-					)} -->
-			</ul>
-		</div>
-		<Logo />
-		<div class="navbar-end">
-			<button
-				class="btn btn-sm btn-text btn-circle text-primary size-8.5 md:hidden"
-				aria-label="Search"
-			>
-				<span class="icon-[tabler--search] size-5"></span>
-			</button>
-			<div class="input bg-base-150 mx-2 max-w-56 rounded-full max-md:hidden">
-				<span class="icon-[tabler--search] text-base-content/80 my-auto me-3 size-5 shrink-0"
-				></span>
-				<label class="sr-only" for="searchInput">Search</label>
-				<input type="search" class="grow" placeholder="Search" id="searchInput" />
-			</div>
-			<div
-				class="dropdown flex items-center [--auto-close:inside] rtl:[--placement:bottom-end]"
-				{@attach initDropdown}
-			>
-				<span
-					id="dropdown-menu-icon-user"
-					class="dropdown-toggle {!loggedIn ? 'icon-[fa6-solid--user] bg-secondary size-5' : ''}"
-					role="button"
-					aria-haspopup="menu"
-					aria-expanded="false"
-					aria-label="User Menu"
-				>
-					{#if loggedIn}
-						<!-- {#if avatarUrl} -->
-						<img
-							src={avatarUrl ?? ''}
-							alt="your profile"
-							class="not-hover:mask-radial-t-0% h-10 min-w-10 rounded-full not-hover:mask-radial-from-40%"
-						/>
-						<!-- {:else}
-							<span class="icon-[fa6-solid--user] bg-secondary size-5 h-10 w-10 rounded-full"
-							></span>
-						{/if} -->
-					{/if}
-				</span>
-				<ul
-					class="dropdown-menu bg-base-200 text-secondary shadow-outline dropdown-open:opacity-100 hidden shadow-md"
-					role="menu"
-					aria-orientation="vertical"
-					aria-labelledby="dropdown-menu-icon-user"
-				>
-					<ArtificialIntelligencePicker
-						{updateProfileAccount}
-						{saveProfileAccount}
-						bind:artificialIntelligenceForm
-						bind:artificialIntelligenceConfiguration
-					/>
-					<li>
-						<hr class="border-outline -mx-2 my-5" />
-					</li>
-					<ThemePicker
-						{updateProfileAccount}
-						{saveProfileAccount}
-						bind:themeForm
-						bind:mode={themeRuntime.mode}
-						bind:themeConfiguration={themeRuntime.themeConfiguration}
-					/>
-					<li>
-						<hr class="border-outline -mx-2 my-5" />
-					</li>
-					<li class="flex items-center gap-2">
-						<button
-							aria-label="show Modal"
-							type="button"
-							class="dropdown-item dropdown-close"
-							aria-haspopup="dialog"
-							aria-expanded="false"
-							aria-controls="welcome-modal"
-							data-overlay="#welcome-modal"
-						>
-							<span class="icon-[tabler--eye] bg-secondary size-5"></span>
-							<span class="text-secondary grow">Show welcome modal</span>
-						</button>
-					</li>
-				</ul>
-			</div>
-			<div class="hidden items-center sm:flex md:ml-2">
-				<LoginOutButton {loggedIn} {parentUrl} />
-			</div>
-		</div>
-	</nav>
+	<Navbar
+		{loggedIn}
+		{updateProfileAccount}
+		{saveProfileAccount}
+		bind:artificialIntelligenceConfiguration
+		bind:themeForm
+		bind:themeMode={themeRuntime.mode}
+		bind:themeConfiguration={themeRuntime.themeConfiguration}
+		{parentUrl}
+	/>
 </header>
-<!--  -->
+
 <main
 	class="static w-screen transition-[padding-top] duration-300"
 	style="padding-top: {navBarBottom + 4}px;"
 >
 	<!-- class="border-error h-screen w-screen overflow-x-scroll overflow-y-auto border border-4" -->
 	<!-- bind:session={data.session} -->
+	<!-- Works for debugging the   -->
+	{#if debug}
+		<div class="ml-66">
+			Does page6 exist: {debugSidebarLinks.findIndex((item) => item.id === 'page6') >= 0
+				? 'Yes'
+				: 'No'}
+		</div>
+	{/if}
 	<WelcomeModal
 		session={data.session}
 		bind:artificialIntelligenceConfiguration
@@ -1071,125 +481,7 @@
 	/>
 
 	<!-- TBD: put sidebar into component -->
-	<aside
-		id="collapsible-mini-sidebar"
-		class="overlay overlay-minified:w-19 overlay-open:translate-x-0 drawer drawer-start bg-base-150 border-base-content/20 start-0 top-0 hidden w-66 border-e [--auto-close:sm] sm:z-0 sm:flex sm:translate-x-0 sm:shadow-none"
-		tabindex="-1"
-		{@attach initOverlay}
-	>
-		<div class="mx-7 flex h-24 flex-row items-center justify-between md:h-26">
-			<div class="hidden sm:block">
-				{@render sidebarToggleButton('hidden sm:flex', {
-					'data-overlay-minifier': '#collapsible-mini-sidebar'
-				})}
-			</div>
-			<div class="overlay-minified:hidden">
-				<Logo />
-			</div>
-		</div>
-		<div class="drawer-body px-2 pt-4">
-			<ul class="menu p-0">
-				<!-- <li><a href={resolve('/(layout)/playground/page2')}>Page 2 - top</a></li>
-				<li><a href={resolve('/(layout)/playground/page2') + '#pg2loreum1'}>Page 2 - Lor. 1</a></li>
-				<li><a href={resolve('/(layout)/playground/page2') + '#pg2loreum2'}>Page 2 - Lor. 2</a></li>
-				<li><a href={resolve('/(layout)/playground/page2') + '#pg2loreum4'}>Page 2 - Lor. 4</a></li> -->
-				{@render sidebarPartItem('/', 'icon-[material-symbols--home-outline-rounded]', 'Home')}
-				{@render sidebarPartItem('/docs', 'icon-[oui--documentation]', 'Docs', 'md:hidden')}
-				{@render sidebarPartItem(
-					'/playground',
-					'icon-[mdi--playground-seesaw]',
-					'Playground',
-					'md:hidden'
-				)}
-				<Guard>
-					<!-- <hr class="border-outline -mx-2 my-3" /> -->
-					{@render sidebarPartItem(
-						'/dashboard',
-						'icon-[material-symbols--dashboard-outline-rounded]',
-						'Dashboard',
-						'md:hidden'
-					)}
-				</Guard>
-				<!-- {@render sidebarPartItem(
-					'/features',
-					'icon-[mdi--feature-highlight]',
-					'Features',
-					'md:hidden'
-				)}
-				{@render sidebarPartItem('/apps', 'icon-[tabler--apps]', 'Apps', 'md:hidden')}
-				{@render sidebarPartItem(
-					'/construction',
-					'icon-[maki--construction]',
-					'Construction',
-					'md:hidden'
-				)} -->
-				<li>
-					<div class="items-center sm:hidden md:ml-2">
-						<LoginOutButton {loggedIn} {parentUrl} />
-					</div>
-				</li>
-			</ul>
-			<div class="divider"></div>
-			<ul class="menu p-0">
-				{#each sidebarLinks as sidebarItem (sidebarItem.id)}
-					<!-- TBD: remove topoffset -->
-					<SidebarItem
-						content={{ ...sidebarItem, pathname: sidebarItem.pathname || page.url.pathname }}
-						topLevel={true}
-					/>
-					<!-- {scrollspyParent} -->
-					<!-- topoffset={navBarBottom} -->
-					<!-- topoffset={internalNavigationTarget} -->
-					<!-- topoffset={navBarBottom} -->
-					<!-- topoffset={`[--scrollspy-offset:${navBarBottom + 8}]`} -->
-				{/each}
-				<Guard>
-					{#each protectedSidebarLinks as protectedSidebarItem (protectedSidebarItem.id)}
-						<SidebarItem
-							content={{
-								...protectedSidebarItem,
-								pathname: protectedSidebarItem.pathname || page.url.pathname
-							}}
-							topLevel={true}
-						/>
-						<!-- {scrollspyParent} -->
-						<!-- topoffset={navBarBottom} -->
-					{/each}
-				</Guard>
-				{#if debug}
-					{#each debugSidebarLinks as debugSidebarItem (debugSidebarItem.id)}
-						<SidebarItem
-							content={{
-								...debugSidebarItem,
-								pathname: debugSidebarItem.pathname || page.url.pathname
-							}}
-							topLevel={true}
-						/>
-						<!-- {scrollspyParent} -->
-						<!-- topoffset={navBarBottom} -->
-					{/each}
-				{/if}
-			</ul>
-		</div>
-		<div class="mb-2 flex items-center gap-1">
-			<label class="label label-text text-base" for="debugSwitcher">Debug: </label>
-			<input
-				type="checkbox"
-				class="switch-neutral switch"
-				bind:checked={debug}
-				id="debugSwitcher"
-			/>
-		</div>
-		{#if debug}
-			scrollY: {scrollY.current}
-			<br />
-			navBarBottom: {navBarBottom}
-		{/if}
-		<!-- {navBarBottom}
-		<br />
-		{locationPageAndHash?.page}{locationPageAndHash?.hash}
-		<br /> -->
-	</aside>
+	<Sidebar {loggedIn} {parentUrl} bind:debug {navBarBottom} />
 	<div class="xs:mx-5 xs:mt-5 h-screen w-screen bg-transparent px-2">
 		<div
 			id="scrollspy"

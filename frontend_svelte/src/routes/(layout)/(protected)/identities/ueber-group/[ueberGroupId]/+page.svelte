@@ -7,6 +7,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import Card from '$components/Card.svelte';
+	import Display from '$components/Display.svelte';
 	import Heading from '$components/Heading.svelte';
 	import JsonData from '$components/JsonData.svelte';
 	import Title from '$components/Title.svelte';
@@ -220,7 +221,7 @@
 {/snippet}
 
 {#if ueberGroup}
-	<Heading>
+	<Display>
 		{#if !editUeberGroup}
 			{ueberGroup.name + ' '}
 		{:else}
@@ -237,7 +238,7 @@
 			</div>
 		{/if}
 		<IdBadge id={ueberGroup.id} />
-	</Heading>
+	</Display>
 	<div class={debug ? 'grid grid-cols-2 justify-around gap-4 pb-4' : ''}>
 		<div class="flex flex-col">
 			{#if !editUeberGroup}
@@ -565,7 +566,7 @@
 		{/if}
 	</div>
 {:else}
-	<Heading>Error</Heading>
+	<Heading id="error">Error</Heading>
 	<p>No Ueber Group found.</p>
 {/if}
 

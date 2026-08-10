@@ -24,7 +24,7 @@
 		themeConfiguration: ColorConfig;
 		mode: 'light' | 'dark';
 		updateProfileAccount: SubmitFunction;
-		saveProfileAccount: () => void;
+		saveProfileAccount: () => Promise<void>;
 	} = $props();
 
 	let welcomeModal: HTMLDivElement | null = $state(null);

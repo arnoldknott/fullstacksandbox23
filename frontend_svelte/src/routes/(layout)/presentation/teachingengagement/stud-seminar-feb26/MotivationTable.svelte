@@ -3,7 +3,7 @@
 	// // import { Theming } from '$lib/theming';
 	// import { onDestroy } from 'svelte';
 
-	// import { themeStore } from '$lib/stores';
+	// import theme from '$lib/stores/theme';
 	// import type { AppTheme } from '$lib/theming';
 	import { createHeatMapColors } from '$lib/heatMapColors.svelte';
 	// import { SocketIO } from '$lib/socketio.svelte';
