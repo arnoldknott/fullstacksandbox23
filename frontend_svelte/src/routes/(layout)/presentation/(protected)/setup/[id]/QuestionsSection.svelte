@@ -73,9 +73,9 @@ https://svelte.dev/e/transition_slide_display
 		class="bg-base-150 shadow-base-shadow max-h-96 min-h-44 overflow-y-auto rounded-lg shadow-inner"
 	>
 		<div
-			// class="tabs tabs-secondary m-1"
+			class="tabs tabs-lifted tabs-secondary m-1"
 			// class="tabs tabs-lifted to-secondary m-1 rounded-lg bg-linear-to-b from-transparent"
-			class="tabs tabs-lifted to-secondary m-1 bg-linear-to-b from-transparent"
+			// class="tabs tabs-lifted to-secondary m-1 bg-linear-to-b from-transparent"
 			aria-label="Tabs"
 			role="tablist"
 			aria-orientation="horizontal"
@@ -83,7 +83,8 @@ https://svelte.dev/e/transition_slide_display
 		>
 			<button
 				type="button"
-				class="tab tab-secondary active w-full"
+				// class="tab tab-secondary active w-full"
+				class="tab active w-full"
 				id="new-question-head"
 				data-tab="#new-question-tab"
 				aria-controls="new-question-tab"
@@ -96,7 +97,8 @@ https://svelte.dev/e/transition_slide_display
 			</button>
 			<button
 				type="button"
-				class="tab tab-secondary w-full"
+				// class="tab tab-secondary w-full"
+				class="tab w-full"
 				id="existing-question-head"
 				data-tab="#existing-question-tab"
 				aria-controls="existing-question-tab"
