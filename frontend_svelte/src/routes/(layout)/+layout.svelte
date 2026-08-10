@@ -298,6 +298,10 @@
 		scrollObserverContext.visibleSections.set(new Set());
 		scrollObserverContext.activeSection.set(undefined);
 
+		// const hash = navigation.to?.url.hash ?? '';
+		// const pathChanged = navigation.from?.url.pathname !== navigation.to?.url.pathname;
+		// const shouldScrollToTop = !hash && pathChanged;
+
 		// Handle hash scrolling after navigation
 		const hash = location.hash;
 		if (hash) {
@@ -318,8 +322,10 @@
 				}
 				handleIntentionalNavigation();
 			}, 100);
-		} else {
-			// Scroll to top if no hash
+			// } else {
+			// } else if (shouldScrollToTop) {
+			// 	// Scroll to top only for actual page changes, not for same-route query updates
+			// 	// Scroll to top if no hash
 			intentionalTargetY = 0;
 			window.scrollTo({ top: 0, behavior: 'smooth' });
 			handleIntentionalNavigation();

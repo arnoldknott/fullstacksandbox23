@@ -59,7 +59,7 @@
 
 <aside
 	id="collapsible-mini-sidebar"
-	class="overlay overlay-minified:w-19 overlay-open:translate-x-0 drawer drawer-start bg-base-150 border-base-content/20 start-0 top-0 hidden w-66 overflow-hidden border-e [--auto-close:sm] sm:z-0 sm:flex sm:translate-x-0 sm:shadow-none"
+	class="overlay overlay-minified:w-19 overlay-open:translate-x-0 drawer drawer-start bg-base-150 border-base-content/20 start-0 top-0 hidden w-66 overflow-x-hidden border-e [--auto-close:sm] sm:z-0 sm:flex sm:translate-x-0 sm:shadow-none"
 	tabindex="-1"
 	{@attach initOverlay}
 >
@@ -219,11 +219,11 @@
 		scrollY: {scrollY.current}
 		<br />
 		navBarBottom: {navBarBottom}
+		<br />
+		onThisPageLinks: {onThisPageLinks.length}
 	{/if}
 	<!-- {navBarBottom}
 		<br />
 		{locationPageAndHash?.page}{locationPageAndHash?.hash}
 		<br /> -->
-
-	onThisPageLinks: {onThisPageLinks.length}
 </aside>
