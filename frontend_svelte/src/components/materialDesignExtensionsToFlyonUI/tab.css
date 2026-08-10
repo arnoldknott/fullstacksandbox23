@@ -1,11 +1,11 @@
 .tab-primary {
-	@apply bg-primary-container text-primary-container-content opacity-80 border-1 border-outline border-b-primary border-b-2;
+	@apply bg-primary-container text-primary-container-content border-outline border-b-primary border-1 border-b-2 opacity-80;
 	&:hover {
 		@apply opacity-100;
 	}
 
 	&.active {
-		@apply bg-primary text-primary-content opacity-80 border-b-0 border-primary rounded-b-none;
+		@apply bg-primary text-primary-content border-primary rounded-b-none border-b-0 opacity-80;
 
 		&:hover {
 			@apply opacity-100;
@@ -14,13 +14,13 @@
 }
 
 .tab-secondary {
-	@apply bg-secondary-container text-secondary-container-content opacity-80 border-1 border-outline border-b-secondary border-b-2;
+	@apply bg-secondary-container text-secondary-container-content border-outline border-b-secondary border-1 border-b-2 opacity-80;
 	&:hover {
 		@apply opacity-100;
 	}
 
 	&.active {
-		@apply bg-secondary text-secondary-content opacity-80 border-b-0 border-secondary rounded-b-none;
+		@apply bg-secondary text-secondary-content border-secondary rounded-b-none border-b-0 opacity-80;
 
 		&:hover {
 			@apply opacity-100;
@@ -29,13 +29,13 @@
 }
 
 .tab-accent {
-	@apply bg-accent-container text-accent-container-content opacity-80 border-1 border-outline border-b-accent border-b-2;
+	@apply bg-accent-container text-accent-container-content border-outline border-b-accent border-1 border-b-2 opacity-80;
 	&:hover {
 		@apply opacity-100;
 	}
 
 	&.active {
-		@apply bg-accent text-accent-content opacity-80 border-b-0 border-accent rounded-b-none;
+		@apply bg-accent text-accent-content border-accent rounded-b-none border-b-0 opacity-80;
 
 		&:hover {
 			@apply opacity-100;
@@ -44,13 +44,13 @@
 }
 
 .tab-neutral {
-	@apply bg-neutral-container text-neutral-container-content opacity-80 border-1 border-outline border-b-neutral border-b-2;
+	@apply bg-neutral-container text-neutral-container-content border-outline border-b-neutral border-1 border-b-2 opacity-80;
 	&:hover {
 		@apply opacity-100;
 	}
 
 	&.active {
-		@apply bg-neutral text-neutral-content opacity-80 border-b-0 border-neutral rounded-b-none;
+		@apply bg-neutral text-neutral-content border-neutral rounded-b-none border-b-0 opacity-80;
 
 		&:hover {
 			@apply opacity-100;
@@ -59,13 +59,13 @@
 }
 
 .tab-info {
-	@apply bg-info-container text-info-container-content opacity-80 border-1 border-outline border-b-info border-b-2;
+	@apply bg-info-container text-info-container-content border-outline border-b-info border-1 border-b-2 opacity-80;
 	&:hover {
 		@apply opacity-100;
 	}
 
 	&.active {
-		@apply bg-info text-info-content opacity-80 border-b-0 border-info rounded-b-none;
+		@apply bg-info text-info-content border-info rounded-b-none border-b-0 opacity-80;
 
 		&:hover {
 			@apply opacity-100;
@@ -74,13 +74,13 @@
 }
 
 .tab-success {
-	@apply bg-success-container text-success-container-content opacity-80 border-1 border-outline border-b-success border-b-2;
+	@apply bg-success-container text-success-container-content border-outline border-b-success border-1 border-b-2 opacity-80;
 	&:hover {
 		@apply opacity-100;
 	}
 
 	&.active {
-		@apply bg-success text-success-content opacity-80 border-b-0 border-success rounded-b-none;
+		@apply bg-success text-success-content border-success rounded-b-none border-b-0 opacity-80;
 
 		&:hover {
 			@apply opacity-100;
@@ -89,13 +89,13 @@
 }
 
 .tab-warning {
-	@apply bg-warning-container text-warning-container-content opacity-80 border-1 border-outline border-b-warning border-b-2;
+	@apply bg-warning-container text-warning-container-content border-outline border-b-warning border-1 border-b-2 opacity-80;
 	&:hover {
 		@apply opacity-100;
 	}
 
 	&.active {
-		@apply bg-warning text-warning-content opacity-80 border-b-0 border-warning rounded-b-none;
+		@apply bg-warning text-warning-content border-warning rounded-b-none border-b-0 opacity-80;
 
 		&:hover {
 			@apply opacity-100;
@@ -104,13 +104,13 @@
 }
 
 .tab-error {
-	@apply bg-error-container text-error-container-content opacity-80 border-1 border-outline border-b-error border-b-2;
+	@apply bg-error-container text-error-container-content border-outline border-b-error border-1 border-b-2 opacity-80;
 	&:hover {
 		@apply opacity-100;
 	}
 
 	&.active {
-		@apply bg-error text-error-content opacity-80 border-b-0 border-error rounded-b-none;
+		@apply bg-error text-error-content border-error rounded-b-none border-b-0 opacity-80;
 
 		&:hover {
 			@apply opacity-100;
