@@ -42,6 +42,8 @@
 			}
 		);
 
+		// TBD: remove this, that's a workaround
+		// and use the share option emit with all possible options.
 		socketioPresentations.client.on('status', (data: SocketioStatus) => {
 			if ('success' in data && data.success === 'created') {
 				const publicShare = shareOptions.filter(
