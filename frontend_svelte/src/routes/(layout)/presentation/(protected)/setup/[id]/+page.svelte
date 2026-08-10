@@ -37,10 +37,30 @@
 <!-- <JsonData data={socketioPresentation?.entities} /> -->
 
 <Display id="presentation-name">{presentation?.path || presentation?.id}</Display>
-<a href="/presentation/setup" class="btn btn-primary btn-gradient shadow-outline mx-4 rounded-full">
-	<span class="icon-[tabler--chevron-left]"></span>
-	Go to all presentations
-</a>
+<div class="flex flex-row">
+	<a
+		href="/presentation/setup"
+		class="btn btn-primary btn-gradient shadow-outline mx-4 rounded-full"
+	>
+		<span class="icon-[tabler--chevron-left]"></span>
+		Go to all presentations
+	</a>
+	<div class="label text-warning">
+		Maybe this should be left to the sidebar? Potentially with the dropdown from the sidebar open to
+		quickly allow access to all presentations link?
+	</div>
+</div>
+
+<Card
+	id="presentation-parameters"
+	title="🚧 This presentation's parameters 🚧"
+	extraClasses="bg-warning-container/30 text-warning-container-content/80 label-large border-warning-container"
+>
+	<p>
+		Pretty much the same as all the parameters when adding a new presentation in the all
+		presentations setup view. Here all fields are pre-filled with this presentation's parameters.
+	</p>
+</Card>
 
 <Heading id="source" sideBarEntry="Source">Source</Heading>
 <Card
