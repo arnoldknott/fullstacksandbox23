@@ -24,8 +24,8 @@
 	import type { SidebarItemContent } from '$lib/types';
 
 	import type { LayoutData } from './$types';
-	import NavBar from './NavBar.svelte';
-	import SideBar from './SideBar.svelte';
+	import Navbar from './Navbar.svelte';
+	import Sidebar from './Sidebar.svelte';
 	import WelcomeModal from './WelcomeModal.svelte';
 
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
@@ -445,7 +445,7 @@
 	bind:this={header}
 	class="xs:mx-5 xs:mt-5 fixed z-1 mt-2 w-screen px-2 transition-all duration-300"
 >
-	<NavBar
+	<Navbar
 		{loggedIn}
 		{updateProfileAccount}
 		{saveProfileAccount}
@@ -481,7 +481,7 @@
 	/>
 
 	<!-- TBD: put sidebar into component -->
-	<SideBar {loggedIn} {parentUrl} bind:debug {navBarBottom} />
+	<Sidebar {loggedIn} {parentUrl} bind:debug {navBarBottom} />
 	<div class="xs:mx-5 xs:mt-5 h-screen w-screen bg-transparent px-2">
 		<div
 			id="scrollspy"
