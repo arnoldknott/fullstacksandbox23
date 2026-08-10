@@ -3,9 +3,10 @@
 
 	import { page } from '$app/state';
 	import Card from '$components/Card.svelte';
+	import { initTabs } from '$lib/userInterface';
 
 	let hideNewQuestionCard: boolean = $state(
-		!(page.url.searchParams.get('new-question') === 'true')
+		!(page.url.searchParams.get('add-question') === 'true')
 	);
 	// let hideNewLinkCard: boolean = $state(!(page.url.searchParams.get('new-link') === 'true'));
 	// let hideNewDrawingCard: boolean = $state(!(page.url.searchParams.get('new-drawing') === 'true'));
@@ -38,8 +39,64 @@ https://svelte.dev/e/transition_slide_display
 	extraClasses="label-large"
 	bind:hidden={hideNewQuestionCard}
 >
-	Add questions drawer with tabs for new and existing, where the existing questions get the button
-	to copy and link. Also a copy all selected and link all selected.
+	<p class="label text-warning">
+		Add questions with tabs for new and existing, where the existing questions get the button to
+		copy and link. Also a copy all selected and link all selected.
+	</p>
+	<div
+		class="bg-base-150 shadow-outline max-h-96 min-h-44 overflow-y-auto rounded-lg p-2 shadow-inner"
+	>
+		<div
+			class="tabs tabs-lifted bg-base-200 shadow-outline rounded-lg"
+			aria-label="Tabs"
+			role="tablist"
+			aria-orientation="horizontal"
+			{@attach initTabs}
+		>
+			<button
+				type="button"
+				class="tab active-tab:bg-secondary-container active:bg-secondary text-secondary-container-content active:text-secondary-content active w-full"
+				id="new-question-head"
+				data-tab="#new-question-tab"
+				aria-controls="new-question-tab"
+				role="tab"
+				aria-selected="true"
+			>
+				<span class="icon-[fa6-solid--plus] mr-2 size-4"></span>Add new...
+			</button>
+			<button
+				type="button"
+				class="tab active-tab:tab-active w-full"
+				id="existing-question-head"
+				data-tab="#existing-question-tab"
+				aria-controls="existing-question-tab"
+				role="tab"
+				aria-selected="false"
+			>
+				<span class="icon-[tabler--copy] mr-2 size-4"></span> Copy or
+				<span class="icon-[tabler--link] mx-2 size-4"></span> link existing...
+			</button>
+		</div>
+		<div class="h-full max-h-100">
+			<div
+				id="new-question-tab"
+				class="h-full max-h-100 overflow-scroll"
+				role="tabpanel"
+				aria-labelledby="new-question-head"
+			>
+				Forms to add new questions, with the ability to add multiple questions at once and inherit
+				access rights - default: true - from presentation.
+			</div>
+			<div
+				id="existing-question-tab"
+				class="hidden h-full max-h-100 overflow-scroll"
+				role="tabpanel"
+				aria-labelledby="existing-question-head"
+			>
+				Table of existing questions and functionality to link or copy them into this presentation.
+			</div>
+		</div>
+	</div>
 </Card>
 
 <Card id="linked-questions" title="Linked Questions" extraClasses="label-large">
