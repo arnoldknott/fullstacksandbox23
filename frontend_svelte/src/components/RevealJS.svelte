@@ -1,5 +1,7 @@
 <script lang="ts">
 	import 'reveal.js/reveal.css';
+	// TBD: investigate where the color scheme is per default loaded for black, so RevealJS also needs to load black as default?
+	import 'reveal.js/theme/black.css';
 
 	import type { RevealApi, RevealConfig } from 'reveal.js';
 	import Reveal from 'reveal.js';
