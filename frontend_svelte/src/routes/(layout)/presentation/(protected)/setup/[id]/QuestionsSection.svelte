@@ -69,9 +69,7 @@ https://svelte.dev/e/transition_slide_display
 		{@render warning()} Add questions with tabs for new and existing, where the existing questions get
 		the button to copy and link. Also a copy all selected and link all selected.
 	</p>
-	<div
-		class="bg-base-150 shadow-base-shadow max-h-96 min-h-44 overflow-y-auto rounded-lg shadow-inner"
-	>
+	<div class="bg-base-150 shadow-base-shadow overflow-y-auto rounded-lg shadow-inner">
 		<div
 			class="tabs tabs-lifted tabs-secondary m-1"
 			// class="tabs tabs-lifted to-secondary m-1 rounded-lg bg-linear-to-b from-transparent"
@@ -113,7 +111,7 @@ https://svelte.dev/e/transition_slide_display
 				<span class="hidden sm:inline">&nbsp;existing</span>
 			</button>
 		</div>
-		<div class="h-full max-h-100 p-2">
+		<div class="h-fit p-2">
 			<div
 				id="new-question-tab"
 				class="h-full max-h-100 overflow-scroll"
@@ -129,7 +127,13 @@ https://svelte.dev/e/transition_slide_display
 					It is mandatory.
 				{/snippet}
 				<FormElement title="Label" description={labelDescription} extraClasses="max-w-300">
-					The text input for a new question goes here; potentially call it 'label'?
+					<div class="input-filled input-primary w-full">
+						<input type="text" placeholder="" class="input" id="slugInput" />
+						<!-- bind:value={socketioPresentations.pendingEntities[0].path} -->
+						<label class="input-filled-label" for="slugInput"
+							>[use this label to identify the question in your presentation]</label
+						>
+					</div>
 					<div class="label">
 						{@render warning()} Add a red asterix to the label in FormElement to indicate that this is
 						a mandatory field
