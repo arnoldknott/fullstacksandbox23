@@ -14,6 +14,8 @@
 	/** Reveal.js adds `.fragment` and `.fragments` to the `fragmentshown` / `fragmenthidden` events. */
 	type FragmentEvent = Event & { fragment?: HTMLElement; fragments?: HTMLElement[] };
 
+	// TBD: move the logic into $lib/userInterface.svelte.ts
+	// and import it here, so that it can be reused in other presentations
 	/**
 	 * Attachment for a Reveal.js fragment (the trigger). While that fragment is
 	 * shown the given classes are added to the target element; when it is hidden
