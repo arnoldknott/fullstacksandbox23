@@ -29,22 +29,15 @@
 	 * ```
 	 */
 	const toggleOnFragment = (
-		// targetSelector: string,
 		targetElement: HTMLElement,
 		classes: string,
 		invert = false
 	): Attachment<HTMLElement> => {
 		return (node) => {
-			// const target = (): HTMLElement | null =>
-			// 	node.closest('.reveal')?.querySelector<HTMLElement>(targetSelector) ??
-			// 	document.querySelector<HTMLElement>(targetSelector);
-
 			const show = (event: FragmentEvent) => {
-				// if (event.fragment === node) target()?.classList.add(...classes);
 				if (event.fragment === node) targetElement?.classList.add(...classes.split(' '));
 			};
 			const hide = (event: FragmentEvent) => {
-				// if (event.fragment === node) target()?.classList.remove(...classes);
 				if (event.fragment === node) targetElement?.classList.remove(...classes.split(' '));
 			};
 
@@ -75,21 +68,13 @@
 		// 	console.log('=== presentations - skeleton - develop - slide changed - event ===');
 		// 	console.log(event);
 		// });
-		revealInstance?.on('fragmentshown', (event) => {
-			console.log('=== presentations - skeleton - develop - fragment shown - event ===');
-			console.log(event);
-			// firstTextElement?.classList.add('text-error', 'mr-100');
-			// if (firstTextElement && event.fragment === ) {
-			// 	firstTextElement.classList.add('text-error');
-			// }
+		revealInstance?.on('fragmentshown', (_event) => {
+			// console.log('=== presentations - skeleton - develop - fragment shown - event ===');
+			// console.log(event);
 		});
-		revealInstance?.on('fragmenthidden', (event) => {
-			console.log('=== presentations - skeleton - develop - fragment hidden - event ===');
-			console.log(event);
-			// firstTextElement?.classList.remove('text-error', 'mr-100');
-			// if (firstTextElement && event.fragment === ) {
-			// 	firstTextElement.classList.add('text-error');
-			// }
+		revealInstance?.on('fragmenthidden', (_event) => {
+			// console.log('=== presentations - skeleton - develop - fragment hidden - event ===');
+			// console.log(event);
 		});
 	});
 
@@ -198,15 +183,6 @@
 	</FramedSlide>
 	<section>
 		<div class="r-stretch flex flex-col items-center justify-center gap-12">
-			<!-- <Badge title="Question 1" color="secondary" /> -->
-			<!-- <div class="text-secondary mt-8 mb-16 text-8xl font-semibold"></div> -->
-			<!-- <div
-				class="text-secondary-content bg-secondary shadow-base-shadow shadow-large mt-8 rounded-full p-10 px-40 text-7xl font-semibold shadow-inner"
-			>
-				<Badge title="Question 1" color="secondary" />
-				<br />
-				What are you hearing,<br /> sensing, feeling, observing, <br /> that I have not said or shown?
-			</div> -->
 			<Question title="Question 1" color="secondary">
 				What are you <br />
 				<span class="italic">interested</span> in today?
