@@ -32,7 +32,6 @@
 	}
 }
 
-
 .tabs-secondary {
 	@apply to-secondary m-1 rounded-lg bg-linear-to-b from-transparent;
 
