@@ -2151,6 +2151,243 @@
 				</div>
 			</div>
 		</div>
+
+		<p class="title text-primary mt-5">Styled with CSS - primary</p>
+		<div class="bg-base-200 shadow-base-shadow h-fit overflow-y-auto rounded-lg shadow-inner">
+			<div
+				class="tabs tabs-lifted tabs-primary m-1"
+				// class="tabs tabs-lifted to-primary m-1 rounded-lg bg-linear-to-b from-transparent"
+				// class="tabs tabs-lifted to-primary m-1 bg-linear-to-b from-transparent"
+				aria-label="Tabs"
+				role="tablist"
+				aria-orientation="horizontal"
+				{@attach initTabs}
+			>
+				<button
+					type="button"
+					// class="tab tab-primary active w-full"
+					class="tab active w-full"
+					id="styled-primary-left-head"
+					data-tab="#styled-primary-left-tab"
+					aria-controls="styled-primary-left-tab"
+					role="tab"
+					aria-selected="true"
+				>
+					<span class="icon-[stash--chevron-left] mr-2 size-4"></span>
+					Left
+				</button>
+				<button
+					type="button"
+					// class="tab tab-primary w-full"
+					class="tab w-full"
+					id="styled-primary-center-head"
+					data-tab="#styled-primary-center-tab"
+					aria-controls="styled-primary-center-tab"
+					role="tab"
+					aria-selected="false"
+				>
+					<span class="icon-[stash--circle-dot] mr-2 size-4"></span>
+					Center
+				</button>
+				<button
+					type="button"
+					// class="tab tab-primary w-full"
+					class="tab w-full"
+					id="styled-primary-right-head"
+					data-tab="#styled-primary-right-tab"
+					aria-controls="styled-primary-right-tab"
+					role="tab"
+					aria-selected="false"
+				>
+					<span class="icon-[tabler--chevron-right] mr-2 size-4"></span>
+					Right
+				</button>
+			</div>
+			<div class="h-full max-h-100 p-2">
+				<div
+					id="styled-primary-left-tab"
+					class="h-full max-h-100 overflow-scroll"
+					role="tabpanel"
+					aria-labelledby="styled-primary-left-head"
+				>
+					<p class="display-large text-center">Left tab content</p>
+				</div>
+				<div
+					id="styled-primary-center-tab"
+					class="hidden h-full max-h-100 overflow-scroll"
+					role="tabpanel"
+					aria-labelledby="styled-primary-center-head"
+				>
+					<p class="display-large text-center">Center tab content</p>
+				</div>
+				<div
+					id="styled-primary-right-tab"
+					class="hidden h-full max-h-100 overflow-scroll"
+					role="tabpanel"
+					aria-labelledby="styled-primary-right-head"
+				>
+					<p class="display-large text-center">Right tab content</p>
+				</div>
+			</div>
+		</div>
+
+		<p class="title text-primary mt-5">Styled with CSS - secondary</p>
+		<div class="bg-base-200 shadow-base-shadow h-fit overflow-y-auto rounded-lg shadow-inner">
+			<div
+				class="tabs tabs-lifted tabs-secondary m-1"
+				// class="tabs tabs-lifted to-secondary m-1 rounded-lg bg-linear-to-b from-transparent"
+				// class="tabs tabs-lifted to-secondary m-1 bg-linear-to-b from-transparent"
+				aria-label="Tabs"
+				role="tablist"
+				aria-orientation="horizontal"
+				{@attach initTabs}
+			>
+				<button
+					type="button"
+					// class="tab tab-secondary active w-full"
+					class="tab active w-full"
+					id="styled-secondary-left-head"
+					data-tab="#styled-secondary-left-tab"
+					aria-controls="styled-secondary-left-tab"
+					role="tab"
+					aria-selected="true"
+				>
+					<span class="icon-[stash--chevron-left] mr-2 size-4"></span>
+					Left
+				</button>
+				<button
+					type="button"
+					// class="tab tab-secondary w-full"
+					class="tab w-full"
+					id="styled-secondary-center-head"
+					data-tab="#styled-secondary-center-tab"
+					aria-controls="styled-secondary-center-tab"
+					role="tab"
+					aria-selected="false"
+				>
+					<span class="icon-[stash--circle-dot] mr-2 size-4"></span>
+					Center
+				</button>
+				<button
+					type="button"
+					// class="tab tab-secondary w-full"
+					class="tab w-full"
+					id="styled-secondary-right-head"
+					data-tab="#styled-secondary-right-tab"
+					aria-controls="styled-secondary-right-tab"
+					role="tab"
+					aria-selected="false"
+				>
+					<span class="icon-[tabler--chevron-right] mr-2 size-4"></span>
+					Right
+				</button>
+			</div>
+			<div class="h-full max-h-100 p-2">
+				<div
+					id="styled-secondary-left-tab"
+					class="h-full max-h-100 overflow-scroll"
+					role="tabpanel"
+					aria-labelledby="styled-secondary-left-head"
+				>
+					<p class="display-large text-center">Left tab content</p>
+				</div>
+				<div
+					id="styled-secondary-center-tab"
+					class="hidden h-full max-h-100 overflow-scroll"
+					role="tabpanel"
+					aria-labelledby="styled-secondary-center-head"
+				>
+					<p class="display-large text-center">Center tab content</p>
+				</div>
+				<div
+					id="styled-secondary-right-tab"
+					class="hidden h-full max-h-100 overflow-scroll"
+					role="tabpanel"
+					aria-labelledby="styled-secondary-right-head"
+				>
+					<p class="display-large text-center">Right tab content</p>
+				</div>
+			</div>
+		</div>
+
+		<p class="title text-primary mt-5">Styled with CSS - accent</p>
+		<div class="bg-base-200 shadow-base-shadow h-fit overflow-y-auto rounded-lg shadow-inner">
+			<div
+				class="tabs tabs-lifted tabs-accent m-1"
+				// class="tabs tabs-lifted to-accent m-1 rounded-lg bg-linear-to-b from-transparent"
+				// class="tabs tabs-lifted to-accent m-1 bg-linear-to-b from-transparent"
+				aria-label="Tabs"
+				role="tablist"
+				aria-orientation="horizontal"
+				{@attach initTabs}
+			>
+				<button
+					type="button"
+					// class="tab tab-secondary active w-full"
+					class="tab active w-full"
+					id="styled-accent-left-head"
+					data-tab="#styled-accent-left-tab"
+					aria-controls="styled-accent-left-tab"
+					role="tab"
+					aria-selected="true"
+				>
+					<span class="icon-[stash--chevron-left] mr-2 size-4"></span>
+					Left
+				</button>
+				<button
+					type="button"
+					// class="tab tab-secondary w-full"
+					class="tab w-full"
+					id="styled-accent-center-head"
+					data-tab="#styled-accent-center-tab"
+					aria-controls="styled-accent-center-tab"
+					role="tab"
+					aria-selected="false"
+				>
+					<span class="icon-[stash--circle-dot] mr-2 size-4"></span>
+					Center
+				</button>
+				<button
+					type="button"
+					// class="tab tab-secondary w-full"
+					class="tab w-full"
+					id="styled-accent-right-head"
+					data-tab="#styled-accent-right-tab"
+					aria-controls="styled-accent-right-tab"
+					role="tab"
+					aria-selected="false"
+				>
+					<span class="icon-[tabler--chevron-right] mr-2 size-4"></span>
+					Right
+				</button>
+			</div>
+			<div class="h-full max-h-100 p-2">
+				<div
+					id="styled-accent-left-tab"
+					class="h-full max-h-100 overflow-scroll"
+					role="tabpanel"
+					aria-labelledby="styled-accent-left-head"
+				>
+					<p class="display-large text-center">Left tab content</p>
+				</div>
+				<div
+					id="styled-accent-center-tab"
+					class="hidden h-full max-h-100 overflow-scroll"
+					role="tabpanel"
+					aria-labelledby="styled-accent-center-head"
+				>
+					<p class="display-large text-center">Center tab content</p>
+				</div>
+				<div
+					id="styled-accent-right-tab"
+					class="hidden h-full max-h-100 overflow-scroll"
+					role="tabpanel"
+					aria-labelledby="styled-accent-right-head"
+				>
+					<p class="display-large text-center">Right tab content</p>
+				</div>
+			</div>
+		</div>
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
