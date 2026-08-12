@@ -1,11 +1,12 @@
 import copy
 from os import path, remove
-from typing import List
+from typing import Any, Awaitable, Callable, List, Optional
 from uuid import UUID
 
 import pytest
 from fastapi import UploadFile
 
+from conftest import CurrentUserFactory, ParentAccessFactory
 from core.types import CurrentUserData
 from crud.access import AccessPolicyCRUD
 from crud.category import CategoryCRUD
@@ -20,7 +21,6 @@ from crud.public_resource import PublicResourceCRUD
 from crud.tag import TagCRUD
 from models.category import Category
 from models.demo_resource import DemoResource
-from models.identity import User
 from models.protected_resource import ProtectedChild, ProtectedResource
 from tests.utils import (
     current_user_data_admin,
@@ -79,10 +79,14 @@ from tests.utils import (
 
 
 @pytest.fixture(scope="function")
-async def add_test_policy_for_resource(current_user_from_azure_token: User):
+async def add_test_policy_for_resource(
+    current_user_from_azure_token: CurrentUserFactory,
+):
     """Adds a policy for a resource through CRUD to the database."""
 
-    async def _add_test_policy_for_resource(policy, token_payload: dict = None):
+    async def _add_test_policy_for_resource(
+        policy, token_payload: Optional[dict] = None
+    ):
         current_user = await current_user_from_azure_token(token_payload)
         # print("=== conftest - add_test_policy_for_resource - current_user ===")
         # print(current_user)
@@ -115,7 +119,7 @@ async def add_test_public_resources():
     public_resources_instances = []
     for public_resource in many_test_public_resources:
         async with PublicResourceCRUD() as crud:
-            public_resource_instance = await crud.create(public_resource)
+            public_resource_instance = await crud.create(public_resource)  # type: ignore[arg-type]
         public_resources_instances.append(public_resource_instance)
 
     yield public_resources_instances
@@ -123,13 +127,13 @@ async def add_test_public_resources():
 
 @pytest.fixture(scope="function")
 async def add_test_categories(
-    current_user_from_azure_token: User,
+    current_user_from_azure_token: CurrentUserFactory,
 ):
     """Adds test categories through CRUD to the database."""
 
     # TBD: add checks if token payload is not provided!
     # could be a public resource then?
-    async def _add_test_categories(token_payload: dict = None):
+    async def _add_test_categories(token_payload: Optional[dict] = None):
         categories = []
         current_user = await current_user_from_azure_token(token_payload)
         # TBD: refactor to use the post endpoint - the token should be mocked already here!
@@ -147,27 +151,27 @@ async def add_test_categories(
 
 @pytest.fixture(scope="function")
 async def add_test_demo_resources(
-    current_user_from_azure_token: User,
-    add_test_categories: list[Category],
+    current_user_from_azure_token: CurrentUserFactory,
+    add_test_categories: Callable[..., Awaitable[list[Category]]],
 ):
     """Adds demo resources to the database."""
     # TBD, when refactoring add_test_demo_resources, the mocked token should be available here and
     # needs to be provided to to add_test_categories as well!
 
     async def _add_test_demo_resources(
-        token_payload: dict = None,
+        token_payload: Optional[dict] = None,
     ) -> List[DemoResource]:
         existing_test_categories = await add_test_categories(token_payload)
         many_test_demo_resources_with_categories = copy.deepcopy(
             many_test_demo_resources
         )
-        many_test_demo_resources_with_categories[0]["category_id"] = (
+        many_test_demo_resources_with_categories[0]["category_id"] = (  # type: ignore[assignment]
             existing_test_categories[1].id
         )
-        many_test_demo_resources_with_categories[1]["category_id"] = (
+        many_test_demo_resources_with_categories[1]["category_id"] = (  # type: ignore[assignment]
             existing_test_categories[0].id
         )
-        many_test_demo_resources_with_categories[2]["category_id"] = (
+        many_test_demo_resources_with_categories[2]["category_id"] = (  # type: ignore[assignment]
             existing_test_categories[1].id
         )
 
@@ -187,7 +191,8 @@ async def add_test_demo_resources(
 
 @pytest.fixture(scope="function")
 async def add_many_test_demo_files(
-    current_user_from_azure_token: User, access_to_one_parent: UUID
+    current_user_from_azure_token: CurrentUserFactory,
+    access_to_one_parent: ParentAccessFactory,
 ):
     """Adds test demo files to the database and the appdata on disk."""
 
@@ -201,7 +206,7 @@ async def add_many_test_demo_files(
             )
         )
 
-    async def _add_many_test_demo_files(token_payload: dict = None):
+    async def _add_many_test_demo_files(token_payload: Optional[dict] = None):
         demo_files_metadata = []
 
         for demo_file in test_demo_files:
@@ -228,11 +233,11 @@ async def add_many_test_demo_files(
 
 @pytest.fixture(scope="function")
 async def add_test_tags(
-    current_user_from_azure_token: User,
+    current_user_from_azure_token: CurrentUserFactory,
 ):  # (get_async_test_session: AsyncSession):
     """Adds tags to the database."""
 
-    async def _add_test_tags(token_payload: dict = None):
+    async def _add_test_tags(token_payload: Optional[dict] = None):
         tags = []
         current_user = await current_user_from_azure_token(token_payload)
         for tag in many_test_tags:
@@ -249,11 +254,11 @@ async def add_test_tags(
 
 @pytest.fixture(scope="function")
 async def add_many_test_protected_resources(
-    current_user_from_azure_token: User,
+    current_user_from_azure_token: CurrentUserFactory,
 ):
     """Adds test protected resources to the database."""
 
-    async def _add_many_test_protected_resources(token_payload: dict = None):
+    async def _add_many_test_protected_resources(token_payload: Optional[dict] = None):
         protected_resources = []
         for protected_resource in many_test_protected_resources:
             current_user = await current_user_from_azure_token(token_payload)
@@ -271,12 +276,12 @@ async def add_many_test_protected_resources(
 
 
 async def add_test_protected_child(
-    current_user_from_azure_token: User,
+    current_user_from_azure_token: CurrentUserFactory,
     protected_child: dict,
-    current_user: CurrentUserData = None,
-    parent_id: UUID = None,
+    current_user: Optional[CurrentUserData] = None,
+    parent_id: Optional[UUID] = None,
     inherit: bool = False,
-    add_one_test_access_policy=None,
+    add_one_test_access_policy: Any = None,
 ):
     """Adds a test protected child to the database."""
 
@@ -301,14 +306,14 @@ async def add_test_protected_child(
 
 @pytest.fixture(scope="function")
 async def add_one_test_protected_child(
-    current_user_from_azure_token: User,
+    current_user_from_azure_token: CurrentUserFactory,
 ):
     """Adds a test protected child to the database."""
 
     async def _add_one_test_protected_child(
         protected_child: dict,
-        current_user: CurrentUserData = None,
-        parent_id: UUID = None,
+        current_user: Optional[CurrentUserData] = None,
+        parent_id: Optional[UUID] = None,
         inherit: bool = False,
     ):
         return await add_test_protected_child(
@@ -324,12 +329,12 @@ async def add_one_test_protected_child(
 
 @pytest.fixture(scope="function")
 async def add_many_test_protected_children(
-    current_user_from_azure_token: User,
-    access_to_one_parent: UUID,
+    current_user_from_azure_token: CurrentUserFactory,
+    access_to_one_parent: ParentAccessFactory,
 ):
     """Adds test protected children to the database."""
 
-    async def _add_many_test_protected_children(token_payload: dict = None):
+    async def _add_many_test_protected_children(token_payload: Optional[dict] = None):
         current_user = await current_user_from_azure_token(token_payload)
         protected_children = []
         parent_resource_id = await access_to_one_parent(ProtectedResource)
@@ -348,10 +353,10 @@ async def add_many_test_protected_children(
 
 
 async def add_test_protected_grandchild(
-    current_user_from_azure_token: User,
+    current_user_from_azure_token: CurrentUserFactory,
     protected_grandchild: dict,
-    current_user: CurrentUserData = None,
-    parent_id: UUID = None,
+    current_user: Optional[CurrentUserData] = None,
+    parent_id: Optional[UUID] = None,
     inherit: bool = False,
 ):
     """Adds a test protected grandchild to the database."""
@@ -368,14 +373,14 @@ async def add_test_protected_grandchild(
 
 @pytest.fixture(scope="function")
 async def add_one_test_protected_grandchild(
-    current_user_from_azure_token: User,
+    current_user_from_azure_token: CurrentUserFactory,
 ):
     """Adds a test protected grandchild to the database."""
 
     async def _add_one_test_protected_grandchild(
         protected_grandchild: dict,
-        current_user: CurrentUserData = None,
-        parent_id: UUID = None,
+        current_user: Optional[CurrentUserData] = None,
+        parent_id: Optional[UUID] = None,
         inherit: bool = False,
     ):
         return await add_test_protected_grandchild(
@@ -391,11 +396,14 @@ async def add_one_test_protected_grandchild(
 
 @pytest.fixture(scope="function")
 async def add_many_test_protected_grandchildren(
-    current_user_from_azure_token: User, access_to_one_parent: UUID
+    current_user_from_azure_token: CurrentUserFactory,
+    access_to_one_parent: ParentAccessFactory,
 ):
     """Adds test protected grandchildren to the database."""
 
-    async def _add_many_test_protected_grandchildren(token_payload: dict = None):
+    async def _add_many_test_protected_grandchildren(
+        token_payload: Optional[dict] = None,
+    ):
         current_user = await current_user_from_azure_token(token_payload)
         protected_grandchildren = []
         parent_resource_id = await access_to_one_parent(ProtectedChild)

@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { type AppTheme } from '$lib/theming';
-	import { hexFromArgb, Hct, rgbaFromArgb } from '@material/material-color-utilities';
-	import { themeStore } from '$lib/stores';
+	import { Hct, hexFromArgb, rgbaFromArgb } from '@material/material-color-utilities';
 	import { onDestroy, type Snippet } from 'svelte';
+
 	import appCss from '/src/app.css?raw';
+	import theme from '$lib/stores/theme';
+	import { type AppTheme } from '$lib/theming';
 
 	let {
 		background,
@@ -13,9 +14,9 @@
 	}: { background: string; text: string; children?: Snippet; debug?: boolean } = $props();
 	// const text = background.replace('--md-sys-color-', '').replaceAll('-', ' ');
 
-	let theme = $state({} as AppTheme);
-	const unsubscribeThemeStore = themeStore.subscribe((value) => {
-		theme = value;
+	let themeState = $state({} as AppTheme);
+	const unsubscribeThemeStore = theme.subscribe((value) => {
+		themeState = value;
 	});
 
 	const findMaterialDesignVariable = (tailwindColorVariable: string): string | null => {
@@ -26,13 +27,15 @@
 		return match ? match[1] : null;
 	};
 
-	const materialDesignVariable = findMaterialDesignVariable(`--color-${background}`);
-	const materialDesignColorName = materialDesignVariable
-		?.replace('--md-rgb-color-', '')
-		.replace(/-./g, (x) => x.toUpperCase()[1]);
+	const materialDesignVariable = $derived.by(() =>
+		findMaterialDesignVariable(`--color-${background}`)
+	);
+	const materialDesignColorName = $derived.by(() =>
+		materialDesignVariable?.replace('--md-rgb-color-', '').replace(/-./g, (x) => x.toUpperCase()[1])
+	);
 
 	let colorValues = $derived.by(() => {
-		if (!theme.currentMode) {
+		if (!themeState.currentMode) {
 			return {
 				hex: '',
 				hct: {
@@ -48,7 +51,7 @@
 				}
 			};
 		} else {
-			let colors = theme[theme.currentMode].colors;
+			let colors = themeState[themeState.currentMode].colors;
 			const color = colors[materialDesignColorName as keyof typeof colors];
 			return {
 				hex: hexFromArgb(color),

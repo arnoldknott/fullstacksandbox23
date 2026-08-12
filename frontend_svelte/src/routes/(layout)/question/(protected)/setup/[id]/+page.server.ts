@@ -1,0 +1,14 @@
+import { backendAPI } from '$lib/server/apis/backendApi';
+
+import type { PageServerLoad } from './$types';
+
+export const load: PageServerLoad = async ({ params }) => {
+	const questionId = params.id;
+	const response = await backendAPI.get(null, '/quiz/question/' + questionId);
+	let questionsData = null;
+	if (response.status === 200) {
+		const questionData = await response.json();
+		questionsData = { questions: questionData };
+	}
+	return { questionsData };
+};

@@ -1,9 +1,19 @@
+import { fail } from '@sveltejs/kit';
+
+import { Action, IdentityType } from '$lib/accessHandler';
 import AppConfig from '$lib/server/config';
 import { msalAuthProvider } from '$lib/server/oauth';
-import type { AccessPolicy } from '$lib/types';
+import type {
+	AccessPolicy,
+	Group,
+	Identity,
+	SubGroup,
+	SubSubGroup,
+	UeberGroup,
+	User
+} from '$lib/types';
+
 import { BaseAPI, type RequestBody } from './base';
-import { Action } from '$lib/accessHandler';
-import { fail } from '@sveltejs/kit';
 
 const appConfig = await AppConfig.getInstance();
 
@@ -17,45 +27,45 @@ class BackendAPI extends BaseAPI {
 	}
 
 	async post(
-		session_id: string | null,
+		sessionId: string | null,
 		path: string,
 		body: RequestBody,
 		scopes: string[] = [`${appConfig.api_scope}/api.read`, `${appConfig.api_scope}/api.write`],
 		options: RequestInit = {},
 		headers: HeadersInit = {}
 	) {
-		return await super.post(session_id, path, body, scopes, options, headers);
+		return await super.post(sessionId, path, body, scopes, options, headers);
 	}
 
 	async get(
-		session_id: string | null,
+		sessionId: string | null,
 		path: string,
 		scopes: string[] = [`${appConfig.api_scope}/api.read`],
 		options: RequestInit = {},
 		headers: HeadersInit = {}
 	) {
-		return await super.get(session_id, path, scopes, options, headers);
+		return await super.get(sessionId, path, scopes, options, headers);
 	}
 
 	async put(
-		session_id: string | null,
+		sessionId: string | null,
 		path: string,
 		body: RequestBody,
 		scopes: string[] = [`${appConfig.api_scope}/api.read`, `${appConfig.api_scope}/api.write`],
 		options: RequestInit = {},
 		headers: HeadersInit = {}
 	) {
-		return await super.put(session_id, path, body, scopes, options, headers);
+		return await super.put(sessionId, path, body, scopes, options, headers);
 	}
 
 	async delete(
-		session_id: string,
+		sessionId: string,
 		path: string,
 		scopes: string[] = [`${appConfig.api_scope}/api.read`, `${appConfig.api_scope}/api.write`],
 		options: RequestInit = {},
 		headers: HeadersInit = {}
 	) {
-		return await super.delete(session_id, path, scopes, options, headers);
+		return await super.delete(sessionId, path, scopes, options, headers);
 	}
 
 	async share(
@@ -144,6 +154,56 @@ class BackendAPI extends BaseAPI {
 			// 	return fail(400, { error: 'Action and New Action cannot be the same.' });
 			// }
 		}
+	}
+
+	async getAllIdentities(sessionId: string): Promise<Identity[]> {
+		const allIdentities: Identity[] = [];
+		// const allLinkedUsers: User[] = [];
+
+		const addAnyGroupType = async (endpoint: string) => {
+			const anyGroupResponse = await this.get(sessionId, endpoint);
+			if (anyGroupResponse.status === 200) {
+				const allAnyGroups: UeberGroup[] = await anyGroupResponse.json();
+				allIdentities.push(
+					...allAnyGroups.map((anyGroup: UeberGroup | Group | SubGroup | SubSubGroup) => {
+						let type: IdentityType;
+						if (endpoint === '/uebergroup/') {
+							type = IdentityType.UEBER_GROUP;
+						} else if (endpoint === '/group/') {
+							type = IdentityType.GROUP;
+						} else if (endpoint === '/subgroup/') {
+							type = IdentityType.SUB_GROUP;
+						} else if (endpoint === '/subsubgroup/') {
+							type = IdentityType.SUB_SUB_GROUP;
+						} else {
+							throw new Error('Unknown endpoint: ' + endpoint);
+						}
+						return {
+							id: anyGroup.id,
+							name: anyGroup.name,
+							type: type
+						};
+					})
+				);
+				allIdentities.push(
+					...allAnyGroups.flatMap((anyGroup: UeberGroup | Group | SubGroup | SubSubGroup) =>
+						anyGroup.users
+							? anyGroup.users.map((user: User) => ({
+									id: user.id,
+									name: 'Get name from Identity Service Provider',
+									type: IdentityType.USER
+								}))
+							: []
+					)
+				);
+			}
+		};
+		await addAnyGroupType('/uebergroup/');
+		await addAnyGroupType('/group/');
+		await addAnyGroupType('/subgroup/');
+		await addAnyGroupType('/subsubgroup/');
+
+		return allIdentities;
 	}
 }
 

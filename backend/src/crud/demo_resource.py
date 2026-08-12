@@ -1,6 +1,8 @@
 from typing import List
 from uuid import UUID
 
+from sqlmodel import col
+
 from core.types import CurrentUserData
 from models.demo_resource import (
     DemoResource,
@@ -53,10 +55,10 @@ class DemoResourceCRUD(
     # TBD: should the return type be a DemoResourceRead?
     async def read_by_category_id(
         self, current_user: CurrentUserData, category_id: UUID
-    ) -> List[DemoResource]:
+    ) -> List[DemoResourceRead]:
         """Returns all demo resources within category."""
         return await self.read(
-            current_user, filters=[DemoResource.category_id == category_id]
+            current_user, filters=[col(DemoResource.category_id) == category_id]
         )
 
     async def read_by_tag_id(
@@ -64,6 +66,6 @@ class DemoResourceCRUD(
     ) -> List[DemoResourceRead]:
         """Returns all demo resources with tag."""
         results = await self.read(
-            current_user, filters=[DemoResource.tags.any(Tag.id == tag_id)]
+            current_user, filters=[col(DemoResource.tags).any(col(Tag.id) == tag_id)]
         )
         return results

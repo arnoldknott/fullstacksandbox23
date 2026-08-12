@@ -1,5 +1,5 @@
 import logging
-from typing import Annotated
+from typing import Annotated, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
@@ -11,7 +11,6 @@ from core.security import (
     get_http_access_token_payload,
 )
 from core.types import GuardTypes
-from crud.access import BaseHierarchyModelRead
 from crud.identity import (
     GroupCRUD,
     SubGroupCRUD,
@@ -74,7 +73,7 @@ async def post_user(
 async def post_invite_azure_user(
     azure_user_id: str,  # The Azure user ID to invite as path parameter
     azure_tenant_id: Annotated[
-        UUID, Query()
+        Optional[UUID], Query()
     ] = None,  # The Azure tenant ID as optional query parameter
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
@@ -84,28 +83,9 @@ async def post_invite_azure_user(
     current_user = await check_token_against_guards(token_payload, guards)
     async with UserCRUD() as crud:
         invited_user = await crud.create_invited_azure_user(
-            current_user, azure_user_id, azure_tenant_id
+            current_user, UUID(azure_user_id), azure_tenant_id
         )
     return User.model_validate(invited_user)
-
-
-@user_router.post("/{user_id}/group/{group_id}", status_code=201)
-async def post_existing_user_to_group(
-    user_id: UUID,
-    group_id: UUID,
-    inherit: Annotated[bool, Query()] = True,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> BaseHierarchyModelRead:
-    """Adds a user to an ueber-group, group, sub-group or sub-sub-group."""
-    logger.info("POST user to group")
-    return await user_view.post_add_child_to_parent(
-        user_id,
-        group_id,
-        token_payload,
-        guards,
-        inherit,
-    )
 
 
 @user_router.get("/me", status_code=200)
@@ -206,23 +186,6 @@ async def delete_user(
     return await user_view.delete(user_id, token_payload, guards)
 
 
-@user_router.delete("/{user_id}/group/{group_id}", status_code=200)
-async def delete_user_from_group(
-    user_id: UUID,
-    group_id: UUID,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> None:
-    """Removes a user from an ueber-group, group, sub-group or sub-sub-group."""
-    logger.info("DELETE user from group")
-    return await user_view.remove_child_from_parent(
-        user_id,
-        group_id,
-        token_payload,
-        guards,
-    )
-
-
 # endregion User
 
 # region UeberGroup:
@@ -236,7 +199,7 @@ async def post_ueber_group(
     ueber_group: UeberGroupCreate,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["Admin"])),
-) -> UeberGroup:
+) -> UeberGroup:  # type: ignore[valid-type]
     """Creates a new ueber_group."""
     logger.info("POST ueber_group")
     return await ueber_group_view.post(
@@ -246,29 +209,6 @@ async def post_ueber_group(
     )
 
 
-@ueber_group_router.post("/{ueber_group_id}/users", status_code=201)
-async def post_existing_users_to_uebergroup(
-    ueber_group_id: UUID,
-    user_ids: list[UUID],
-    inherit: Annotated[bool, Query()] = True,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> list[BaseHierarchyModelRead]:
-    """Adds bulk of users to an ueber_group."""
-    logger.info("POST users to ueber_group")
-    hierarchy_response = []
-    for user_id in user_ids:
-        response = await user_view.post_add_child_to_parent(
-            user_id,
-            ueber_group_id,
-            token_payload,
-            guards,
-            inherit,
-        )
-        hierarchy_response.append(response)
-    return hierarchy_response
-
-
 @ueber_group_router.post("/{ueber_group_id}/group", status_code=201)
 async def post_group_to_uebergroup(
     group: GroupCreate,
@@ -276,35 +216,12 @@ async def post_group_to_uebergroup(
     inherit: Annotated[bool, Query()] = True,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["Admin"])),
-) -> SubGroup:
+) -> SubGroup:  # type: ignore[valid-type]
     """Creates a new group as a child of an ueber_group with ueber_group_id."""
     logger.info("POST group to ueber_group")
     return await group_view.post(
         group, token_payload, guards, ueber_group_id, inherit=inherit
     )
-
-
-@ueber_group_router.post("/{ueber_group_id}/groups", status_code=201)
-async def post_existing_groups_to_uebergroup(
-    ueber_group_id: UUID,
-    group_ids: list[UUID],
-    inherit: Annotated[bool, Query()] = True,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> list[BaseHierarchyModelRead]:
-    """Adds bulk of groups to an ueber_group."""
-    logger.info("POST groups to ueber_group")
-    hierarchy_response = []
-    for group_id in group_ids:
-        response = await group_view.post_add_child_to_parent(
-            group_id,
-            ueber_group_id,
-            token_payload,
-            guards,
-            inherit,
-        )
-        hierarchy_response.append(response)
-    return hierarchy_response
 
 
 @ueber_group_router.get("/", status_code=200)
@@ -336,7 +253,7 @@ async def put_ueber_group(
     ueber_group: UeberGroupUpdate,
     token_payload=Depends(get_http_access_token_payload),
     guards=Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> UeberGroup:
+) -> UeberGroup:  # type: ignore[valid-type]
     """Updates an ueber_group."""
     return await ueber_group_view.put(
         ueber_group_id,
@@ -356,42 +273,6 @@ async def delete_ueber_group(
     return await ueber_group_view.delete(ueber_group_id, token_payload, guards)
 
 
-@ueber_group_router.delete("/{ueber_group_id}/users", status_code=200)
-async def remove_users_from_uebergroup(
-    ueber_group_id: UUID,
-    user_ids: list[UUID],
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> None:
-    """Removes users from an ueber_group."""
-    logger.info("DELETE users from ueber_group")
-    for user_id in user_ids:
-        await user_view.remove_child_from_parent(
-            user_id,
-            ueber_group_id,
-            token_payload,
-            guards,
-        )
-
-
-@ueber_group_router.delete("/{ueber_group_id}/groups", status_code=200)
-async def remove_groups_from_uebergroup(
-    ueber_group_id: UUID,
-    group_ids: list[UUID],
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> None:
-    """Removes groups from an ueber_group."""
-    logger.info("DELETE groups from ueber_group")
-    for group_id in group_ids:
-        await group_view.remove_child_from_parent(
-            group_id,
-            ueber_group_id,
-            token_payload,
-            guards,
-        )
-
-
 # endregion UeberGroup
 
 # region Group:
@@ -406,7 +287,7 @@ async def post_group(
     group: GroupCreate,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["Admin"])),
-) -> Group:
+) -> Group:  # type: ignore[valid-type]
     """Creates a new group without a parent ueber-group."""
     logger.info("POST group")
     return await group_view.post(
@@ -416,48 +297,6 @@ async def post_group(
     )
 
 
-@group_router.post("/{group_id}/uebergroup/{ueber_group_id}", status_code=201)
-async def post_group_to_existing_uebergroup(
-    group_id: UUID,
-    ueber_group_id: UUID,
-    inherit: Annotated[bool, Query()] = True,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> BaseHierarchyModelRead:
-    """Adds an existing group to an ueber_group."""
-    logger.info("POST group to ueber_group")
-    return await group_view.post_add_child_to_parent(
-        group_id,
-        ueber_group_id,
-        token_payload,
-        guards,
-        inherit,
-    )
-
-
-@group_router.post("/{group_id}/users", status_code=201)
-async def post_existing_users_to_group(
-    group_id: UUID,
-    user_ids: list[UUID],
-    inherit: Annotated[bool, Query()] = True,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> list[BaseHierarchyModelRead]:
-    """Adds bulk of existing users to a group."""
-    logger.info("POST users to group")
-    hierarchy_response = []
-    for user_id in user_ids:
-        response = await user_view.post_add_child_to_parent(
-            user_id,
-            group_id,
-            token_payload,
-            guards,
-            inherit,
-        )
-        hierarchy_response.append(response)
-    return hierarchy_response
-
-
 @group_router.post("/{group_id}/subgroup", status_code=201)
 async def post_sub_group_to_group(
     sub_group: SubGroupCreate,
@@ -465,35 +304,12 @@ async def post_sub_group_to_group(
     inherit: Annotated[bool, Query()] = True,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["Admin"])),
-) -> SubGroup:
+) -> SubGroup:  # type: ignore[valid-type]
     """Creates a new sub_group as a child of group with group_id."""
     logger.info("POST sub_group to group")
     return await sub_group_view.post(
         sub_group, token_payload, guards, group_id, inherit=inherit
     )
-
-
-@group_router.post("/{group_id}/subgroups", status_code=201)
-async def post_existing_subgroups_to_group(
-    group_id: UUID,
-    sub_group_ids: list[UUID],
-    inherit: Annotated[bool, Query()] = True,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> list[BaseHierarchyModelRead]:
-    """Adds bulk of existing sub-groups by their id to a group."""
-    logger.info("POST sub-groups to group")
-    hierarchy_response = []
-    for sub_group_id in sub_group_ids:
-        response = await sub_group_view.post_add_child_to_parent(
-            sub_group_id,
-            group_id,
-            token_payload,
-            guards,
-            inherit,
-        )
-        hierarchy_response.append(response)
-    return hierarchy_response
 
 
 @group_router.get("/", status_code=200)
@@ -525,7 +341,7 @@ async def put_group(
     group: UeberGroupUpdate,
     token_payload=Depends(get_http_access_token_payload),
     guards=Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> Group:
+) -> Group:  # type: ignore[valid-type]
     """Updates a group."""
     return await group_view.put(
         group_id,
@@ -543,59 +359,6 @@ async def delete_group(
 ) -> None:
     """Deletes a group."""
     return await group_view.delete(group_id, token_payload, guards)
-
-
-@group_router.delete("/{group_id}/uebergroup/{ueber_group_id}", status_code=200)
-async def remove_group_from_uebergroup(
-    group_id: UUID,
-    ueber_group_id: UUID,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> None:
-    """Removes a group from an ueber_group."""
-    logger.info("DELETE group from ueber_group")
-    return await group_view.remove_child_from_parent(
-        group_id,
-        ueber_group_id,
-        token_payload,
-        guards,
-    )
-
-
-@group_router.delete("/{group_id}/users", status_code=200)
-async def remove_users_from_group(
-    group_id: UUID,
-    user_ids: list[UUID],
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> None:
-    """Removes users from a group."""
-    logger.info("DELETE users from group")
-    for user_id in user_ids:
-        await user_view.remove_child_from_parent(
-            user_id,
-            group_id,
-            token_payload,
-            guards,
-        )
-
-
-@group_router.delete("/{group_id}/subgroups", status_code=200)
-async def remove_subgroups_from_group(
-    group_id: UUID,
-    sub_group_ids: list[UUID],
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> None:
-    """Removes sub-groups from a group."""
-    logger.info("DELETE sub-groups from a group")
-    for sub_group_id in sub_group_ids:
-        await sub_group_view.remove_child_from_parent(
-            sub_group_id,
-            group_id,
-            token_payload,
-            guards,
-        )
 
 
 # endregion Group
@@ -624,48 +387,6 @@ sub_group_view = BaseView(SubGroupCRUD)
 #     )
 
 
-@sub_group_router.post("/{sub_group_id}/group/{group_id}", status_code=201)
-async def post_existing_subgroup_to_group(
-    sub_group_id: UUID,
-    group_id: UUID,
-    inherit: Annotated[bool, Query()] = True,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> BaseHierarchyModelRead:
-    """Adds an existing sub_group to a group."""
-    logger.info("POST sub_group to group")
-    return await sub_group_view.post_add_child_to_parent(
-        sub_group_id,
-        group_id,
-        token_payload,
-        guards,
-        inherit,
-    )
-
-
-@sub_group_router.post("/{sub_group_id}/users", status_code=201)
-async def post_existing_users_to_subgroup(
-    sub_group_id: UUID,
-    user_ids: list[UUID],
-    inherit: Annotated[bool, Query()] = True,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> list[BaseHierarchyModelRead]:
-    """Adds bulk of users to a sub_group."""
-    logger.info("POST users to sub_group")
-    hierarchy_response = []
-    for user_id in user_ids:
-        response = await user_view.post_add_child_to_parent(
-            user_id,
-            sub_group_id,
-            token_payload,
-            guards,
-            inherit,
-        )
-        hierarchy_response.append(response)
-    return hierarchy_response
-
-
 @sub_group_router.post("/{sub_group_id}/subsubgroup", status_code=201)
 async def post_sub_sub_group_to_sub_group(
     sub_sub_group: SubSubGroupCreate,
@@ -673,35 +394,12 @@ async def post_sub_sub_group_to_sub_group(
     inherit: Annotated[bool, Query()] = True,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> SubGroup:
+) -> SubGroup:  # type: ignore[valid-type]
     """Creates a new sub_sub_group as a child of sub_group with sub_group_id."""
     logger.info("POST sub_sub_group to sub_group")
     return await sub_sub_group_view.post(
         sub_sub_group, token_payload, guards, sub_group_id, inherit=inherit
     )
-
-
-@sub_group_router.post("/{sub_group_id}/subsubgroups", status_code=201)
-async def post_existing_subsubgroups_to_subgroup(
-    sub_group_id: UUID,
-    sub_sub_group_ids: list[UUID],
-    inherit: Annotated[bool, Query()] = True,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> list[BaseHierarchyModelRead]:
-    """Adds bulk of sub-sub-groups to a sub-group."""
-    logger.info("POST sub-sub-groups to sub-group")
-    hierarchy_response = []
-    for sub_sub_group_id in sub_sub_group_ids:
-        response = await sub_sub_group_view.post_add_child_to_parent(
-            sub_sub_group_id,
-            sub_group_id,
-            token_payload,
-            guards,
-            inherit,
-        )
-        hierarchy_response.append(response)
-    return hierarchy_response
 
 
 @sub_group_router.get("/", status_code=200)
@@ -733,7 +431,7 @@ async def put_sub_group(
     sub_group: SubGroupUpdate,
     token_payload=Depends(get_http_access_token_payload),
     guards=Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> SubGroup:
+) -> SubGroup:  # type: ignore[valid-type]
     """Updates a sub_group."""
     return await sub_group_view.put(
         sub_group_id,
@@ -751,59 +449,6 @@ async def delete_sub_group(
 ) -> None:
     """Deletes a sub_group."""
     return await sub_group_view.delete(sub_group_id, token_payload, guards)
-
-
-@sub_group_router.delete("/{sub_group_id}/group/{group_id}", status_code=200)
-async def remove_sub_group_from_group(
-    sub_group_id: UUID,
-    group_id: UUID,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> None:
-    """Removes a sub_group from a group."""
-    logger.info("DELETE sub_group from group")
-    return await sub_group_view.remove_child_from_parent(
-        sub_group_id,
-        group_id,
-        token_payload,
-        guards,
-    )
-
-
-@sub_group_router.delete("/{sub_group_id}/users", status_code=200)
-async def remove_users_from_subgroup(
-    sub_group_id: UUID,
-    user_ids: list[UUID],
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> None:
-    """Removes users from a sub-group."""
-    logger.info("DELETE users from sub-group")
-    for user_id in user_ids:
-        await user_view.remove_child_from_parent(
-            user_id,
-            sub_group_id,
-            token_payload,
-            guards,
-        )
-
-
-@sub_group_router.delete("/{sub_group_id}/subsubgroups", status_code=200)
-async def remove_subsubgroups_from_subgroup(
-    sub_group_id: UUID,
-    sub_sub_group_ids: list[UUID],
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> None:
-    """Removes sub-sub-groups from a sub-group."""
-    logger.info("DELETE sub-sub-groups from a sub-group")
-    for sub_sub_group_id in sub_sub_group_ids:
-        await sub_sub_group_view.remove_child_from_parent(
-            sub_sub_group_id,
-            sub_group_id,
-            token_payload,
-            guards,
-        )
 
 
 # endregion SubGroup
@@ -830,50 +475,6 @@ sub_sub_group_view = BaseView(SubSubGroupCRUD)
 #         token_payload,
 #         guards,
 #     )
-
-
-@sub_sub_group_router.post(
-    "/{sub_sub_group_id}/subgroup/{sub_group_id}", status_code=201
-)
-async def post_existing_subsubgroup_to_subgroup(
-    sub_sub_group_id: UUID,
-    sub_group_id: UUID,
-    inherit: Annotated[bool, Query()] = True,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> BaseHierarchyModelRead:
-    """Adds an existing sub_sub_group to a sub_group."""
-    logger.info("POST sub_sub_group to sub_group")
-    return await sub_sub_group_view.post_add_child_to_parent(
-        sub_sub_group_id,
-        sub_group_id,
-        token_payload,
-        guards,
-        inherit,
-    )
-
-
-@sub_sub_group_router.post("/{sub_sub_group_id}/users", status_code=201)
-async def post_existing_users_to_subsubgroup(
-    sub_sub_group_id: UUID,
-    user_ids: list[UUID],
-    inherit: Annotated[bool, Query()] = True,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> list[BaseHierarchyModelRead]:
-    """Adds bulk of users to a sub_sub_group."""
-    logger.info("POST users to sub_sub_group")
-    hierarchy_response = []
-    for user_id in user_ids:
-        response = await user_view.post_add_child_to_parent(
-            user_id,
-            sub_sub_group_id,
-            token_payload,
-            guards,
-            inherit,
-        )
-        hierarchy_response.append(response)
-    return hierarchy_response
 
 
 @sub_sub_group_router.get("/", status_code=200)
@@ -905,7 +506,7 @@ async def put_sub_sub_group(
     sub_sub_group: SubGroupUpdate,
     token_payload=Depends(get_http_access_token_payload),
     guards=Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> SubGroup:
+) -> SubGroup:  # type: ignore[valid-type]
     """Updates a sub_sub_group."""
     return await sub_sub_group_view.put(
         sub_sub_group_id,
@@ -923,43 +524,6 @@ async def delete_sub_sub_group(
 ) -> None:
     """Deletes a sub_sub_group."""
     return await sub_sub_group_view.delete(sub_sub_group_id, token_payload, guards)
-
-
-@sub_sub_group_router.delete(
-    "/{sub_sub_group_id}/subgroup/{sub_group_id}", status_code=200
-)
-async def remove_sub_sub_group_from_group(
-    sub_sub_group_id: UUID,
-    sub_group_id: UUID,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> None:
-    """Removes a sub_sub_group from a sub_group."""
-    logger.info("DELETE sub_sub_group from sub_group")
-    return await sub_sub_group_view.remove_child_from_parent(
-        sub_sub_group_id,
-        sub_group_id,
-        token_payload,
-        guards,
-    )
-
-
-@sub_sub_group_router.delete("/{sub_sub_group_id}/users", status_code=200)
-async def remove_users_from_subsubgroup(
-    sub_sub_group_id: UUID,
-    user_ids: list[UUID],
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> None:
-    """Removes users from a sub-sub-group."""
-    logger.info("DELETE users from sub-sub-group")
-    for user_id in user_ids:
-        await user_view.remove_child_from_parent(
-            user_id,
-            sub_sub_group_id,
-            token_payload,
-            guards,
-        )
 
 
 # endregion SubSubGroup

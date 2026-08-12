@@ -1,18 +1,19 @@
 import type { AccountInfo } from '@azure/msal-node';
 import type {
-	User as MicrosoftProfile,
-	Team as MicrosoftTeam
+	Team as MicrosoftTeam,
+	User as MicrosoftProfile
 } from '@microsoft/microsoft-graph-types';
+
 import type { Action, IdentityType } from '$lib/accessHandler';
-import type { Variant } from '$lib/theming';
 import type { SessionStatus } from '$lib/session';
+import type { Variant } from '$lib/theming';
 
 // App specific:
 export type BackendAPIConfiguration = {
 	backendFqdn: string;
 	restApiPath: string;
 	websocketPath: string;
-	socketIOPath: string | null;
+	socketIOPath: string;
 };
 
 // TBD: rename into ServerSession:
@@ -77,7 +78,7 @@ export type SidebarItem = {
 // Access types:
 export interface AccessPolicy {
 	resource_id: string;
-	identity_id: string; // can be optional for public resources
+	identity_id?: string; // can be optional for public resources
 	action?: Action;
 	new_action?: Action; // for updates
 	public?: boolean;
@@ -86,28 +87,35 @@ export interface AccessPolicy {
 
 // identifies with whom and how a resource can be shared with:
 export interface AccessShareOption {
-	identity_id: string;
+	identity_id?: string;
 	identity_name: string;
 	identity_type: IdentityType;
 	action?: Action; // for existing AccessPolicy for this identity: it's an Action, otherwise undefined
 	public?: boolean;
 }
 
-export interface AccessRight {
-	resource_id: string;
-	action: Action;
-}
-
 export interface Hierarchy {
 	child_id: string;
 	parent_id: string;
-	inherit?: boolean;
+	order?: number; // for ordered hierarchies, i.e. resource hierarchies
+	inherit?: boolean; // TBD: Is this one known at all, when receiving the data in frontend?
 }
+
+export type Hierarchies = {
+	parents?: Hierarchy[];
+	children?: Hierarchy[];
+};
 
 // Generic for resources - and partially relevant for identities:
 // Create a generic type that extends a base type with additional properties
 type ExtendEntity<T> = T &
-	Partial<WithCreationDate & WithLastModifiedDate & WithAccessRights & WithAccessPolicies>;
+	Partial<
+		WithCreationDate &
+			WithLastModifiedDate &
+			WithAccessRights &
+			WithAccessPolicies &
+			WithHierarchies
+	>;
 
 // Define the additional properties as separate interfaces
 interface WithCreationDate {
@@ -131,8 +139,20 @@ interface WithAccessPolicies {
 	access_policies: AccessPolicy[];
 }
 
-interface WithAccessShareOptions {
-	access_share_options: AccessShareOption[];
+// interface WithAccessShareOptions {
+// 	access_share_options: AccessShareOption[];
+// }
+
+interface WithHierarchies {
+	// TBD: consider adding all relevant hierarchies here,
+	// where resource is either child or parent?
+	hierarchies: Hierarchy[];
+	// hierarchies: {
+	// parents: Hierarchy[];
+	// children: Hierarchy[];
+	// };
+	// inherit: boolean;
+	// order?: number;
 }
 
 // specific resources:
@@ -144,6 +164,12 @@ export interface DemoResource {
 	category?: string;
 	category_id?: string;
 	tags?: string[];
+}
+
+export interface Presentation {
+	id: string;
+	source: string;
+	path?: string;
 }
 
 export interface Question {
@@ -168,6 +194,7 @@ export interface Numerical {
 
 // add all specific resources that share the extension properties here:
 export type DemoResourceExtended = ExtendEntity<DemoResource>;
+export type PresentationExtended = ExtendEntity<Presentation>;
 export type QuestionExtended = ExtendEntity<Question>;
 export type MessageExtended = ExtendEntity<Message>;
 export type NumericalExtended = ExtendEntity<Numerical>;
@@ -268,6 +295,7 @@ export type MicrosoftTeamExtended = MicrosoftTeam & Partial<WithAccessRights & W
 
 export type AnyEntityExtended =
 	| DemoResourceExtended
+	| PresentationExtended
 	| NumericalExtended
 	| UserExtended
 	| MessageExtended
@@ -277,4 +305,6 @@ export type AnyEntityExtended =
 	| SubGroupExtended
 	| SubSubGroupExtended;
 
-export type AnyGroupIdentity = UeberGroup | Group | SubGroup | SubSubGroup;
+export type AnyIdentity = UeberGroup | Group | SubGroup | SubSubGroup;
+export type AnyIdentityExtended =
+	UeberGroupExtended | GroupExtended | SubGroupExtended | SubSubGroupExtended;

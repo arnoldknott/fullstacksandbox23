@@ -1,22 +1,33 @@
 <script lang="ts">
 	import '../app.css';
-	import { setContext } from 'svelte';
+
 	import type { Snippet } from 'svelte';
-	import { page } from '$app/state';
-	import { onMount } from 'svelte';
+	import { onMount, setContext } from 'svelte';
+
+	// import type { Action } from 'svelte/action';
 	import { invalidateAll } from '$app/navigation';
+	import { page } from '$app/state';
+	import {
+		type ColorConfig,
+		FSSB23_THEME_KEY,
+		type ThemeRuntimeContext,
+		Variant
+	} from '$lib/theming';
+
+	import type { LayoutData } from './$types';
 
 	// import InitialScrollspy from './InitialScrollspy.svelte';
 	// import type { LayoutData } from './$types';
 	// import type { Action } from 'svelte/action';
 	// import { Variant, Theming, type ColorConfig } from '$lib/theming';
-	// import { themeStore } from '$lib/stores';
+	// import theme from '$lib/stores/theme';
 	// import { initScrollspy } from '$lib/userInterface';
 	// import Loreum from './(layout)/Loreum.svelte';
 	// import { scrollY } from 'svelte/reactivity/window';
 	// import ReproductionScrollspyDocumentationOnBodyScroll from './ReproductionScrollspyDocumentationOnBodyScroll.svelte';
 
-	let { children }: { children: Snippet } = $props();
+	let { data, children }: { data: LayoutData; children: Snippet } = $props();
+	// let { children }: { children: Snippet } = $props();
 	// let { data }: { data: LayoutData } = $props();
 	// let { children, data }: { children: Snippet; data: LayoutData } = $props();
 
@@ -56,6 +67,30 @@
 		// }
 	});
 
+	// set Theming - but don't apply it here
+	// application is only in the routes (layout)
+	// but making it available here, so routes,
+	// that break out of the layout, can still
+	// access the themeStore and apply the theming if needed.
+	// svelte-ignore state_referenced_locally
+	const initialThemeConfig = data?.session?.currentUser?.user_profile;
+	const themeRuntime: ThemeRuntimeContext = $state({
+		themeConfiguration: {
+			sourceColor: initialThemeConfig?.theme_color || '#941ff4', // <= That's a good color!// '#353c6e' // '#769CDF',
+			variant: initialThemeConfig?.theme_variant || Variant.TONAL_SPOT, // Variant.FIDELITY,//
+			contrast: initialThemeConfig?.contrast || 0.0
+		} satisfies ColorConfig,
+		mode: 'dark'
+	});
+
+	setContext(FSSB23_THEME_KEY, themeRuntime);
+
+	onMount(() => {
+		themeRuntime.mode = window.matchMedia('(prefers-color-scheme: dark)').matches
+			? 'dark'
+			: 'light';
+	});
+
 	// let systemDark = $state(false);
 	// let mode: 'light' | 'dark' = $state('dark');
 	// const theming = $state(new Theming());
@@ -67,17 +102,18 @@
 	// const applyTheming: Action = (_node) => {
 	// 	systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 	// 	mode = systemDark ? 'dark' : 'light';
+	// 	const themeRuntime = {
+	// 	themeConfiguration,
+	// 	mode
+	// };
 
-	// 	let theme = $derived(theming.applyTheme(themeConfiguration, mode));
+	// 	let themeState = $derived(theming.applyTheme(themeRuntime));
 
 	// 	$effect(() => {
-	// 		themeStore.set(theme);
+	// 		theme.set(themeState);
 	// 	});
 	// };
 </script>
-
-<!-- Remove from here after debugging scrollspy! Belongs to (layout)-->
-<!-- <svelte:body use:applyTheming /> -->
 
 <!-- <InitialScrollspy /> -->
 <!-- <ReproductionScrollspyDocumentationOnBodyScroll /> -->

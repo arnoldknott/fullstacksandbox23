@@ -1,4 +1,5 @@
 import AppConfig from '$lib/server/config';
+
 import type { Actions } from './$types';
 import type { PageServerLoad } from './$types';
 
@@ -12,7 +13,11 @@ export const actions = {
 
 export const load: PageServerLoad = async () => {
 	// TBD: we need the external url here - not the one inside the network
-	return { body: `http://localhost:8660/docs` };
+	const backendUrl = appConfig.backend_fqdn.startsWith('localhost')
+		? `http://${appConfig.backend_fqdn}`
+		: `https://${appConfig.backend_fqdn}`;
+	//
+	return { payload: `${backendUrl}/docs` };
 	// return { body: `${appConfig.backend_origin}/docs` };
 	// TBD: if socket.io is required in admin pages, make sure user is authenticated by calling
 	// await msalAuthProvider.getAccessToken(sessionId, [

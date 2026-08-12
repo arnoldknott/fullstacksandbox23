@@ -1,18 +1,20 @@
 <script lang="ts">
 	import { type SubmitFunction } from '@sveltejs/kit';
+
 	import { enhance } from '$app/forms';
-	import { Variant, type ColorConfig } from '$lib/theming';
+	import { type ColorConfig, Variant } from '$lib/theming';
 
 	let {
 		themeForm = $bindable<HTMLFormElement | null>(),
 		updateProfileAccount,
 		saveProfileAccount,
 		mode = $bindable<'light' | 'dark'>(),
+		// TBD: move global ArtificalIntelligenceConfig to a store and bind it here instead of passing it down as a prop!
 		themeConfiguration = $bindable()
 	}: {
 		themeForm: HTMLFormElement | null;
 		updateProfileAccount: SubmitFunction;
-		saveProfileAccount: () => void;
+		saveProfileAccount: () => Promise<void>;
 		mode: 'light' | 'dark';
 		themeConfiguration: ColorConfig;
 	} = $props();

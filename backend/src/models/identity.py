@@ -7,21 +7,23 @@ from pydantic import AfterValidator, ConfigDict
 from sqlmodel import Field, Relationship, SQLModel
 
 from core.config import config
-from models.access import IdentityHierarchy
-from .base import (
-    create_model,
-    Attribute,
-    Relationship as AppRelationship,
-    RelationshipHierarchyType,
-    rebuild_model_forward_refs,
-)
 from core.types import IdentityType
+from models.access import IdentityHierarchy
 
 from .base import (
     AccessPolicyMixin,
     AccessRightsMixin,
+    Attribute,
+    BaseSQLModel,
     CreatedAtMixin,
+    HierarchyMixin,
+)
+from .base import Relationship as AppRelationship
+from .base import (
+    RelationshipHierarchyType,
     UpdatedAtMixin,
+    create_model,
+    rebuild_model_forward_refs,
 )
 
 # region account linking
@@ -50,14 +52,14 @@ class AzureGroupCreate(SQLModel):
 
     id: uuid.UUID
     # enables multi-tenancy, if None, then it's the internal tenant:
-    azure_tenant_id: Optional[uuid.UUID] = config.AZURE_TENANT_ID
+    azure_tenant_id: Optional[uuid.UUID] = uuid.UUID(config.AZURE_TENANT_ID)
     is_active: bool = True
 
 
 class AzureGroupRead(AzureGroupCreate):
     """Schema for reading a group."""
 
-    id: uuid.UUID
+    id: uuid.UUID  # type: ignore[assignment]
     # id: uuid.UUID  # no longer optional - needs to exist now
     azure_users: Optional[List["User"]] = []
 
@@ -65,17 +67,17 @@ class AzureGroupRead(AzureGroupCreate):
     # but only what's realistically needed!
 
 
-class AzureGroup(AzureGroupCreate, table=True):
+class AzureGroup(AzureGroupCreate, BaseSQLModel, table=True):
     """Schema for a group in the database."""
 
-    id: uuid.UUID = Field(
+    id: uuid.UUID = Field(  # type: ignore[assignment]
         index=True,
         primary_key=True,
         foreign_key="identifiertypelink.id",
         description="Identical to the uuid for this group from Azure.",
     )
     created_at: datetime = Field(default=datetime.now())
-    is_active: Optional[bool] = Field(default=True)
+    is_active: Optional[bool] = Field(default=True)  # type: ignore[assignment]
 
     users: Optional[List["User"]] = Relationship(
         back_populates="azure_groups",
@@ -94,7 +96,7 @@ class AzureGroup(AzureGroupCreate, table=True):
 class AzureGroupUpdate(AzureGroupCreate):
     """Schema for updating a group."""
 
-    is_active: Optional[bool] = None
+    is_active: Optional[bool] = None  # type: ignore[assignment]
 
 
 # endregion AzureGroup
@@ -126,13 +128,13 @@ class UserCreate(SQLModel):
 
     azure_user_id: Optional[uuid.UUID] = None
     # # enables multi-tenancy, if None, then it's the internal tenant:
-    azure_tenant_id: Optional[uuid.UUID] = config.AZURE_TENANT_ID
+    azure_tenant_id: Optional[uuid.UUID] = uuid.UUID(config.AZURE_TENANT_ID)
     # Could be an option in future to implement roles for the app:
     # app_roles: Optional[List[AppRoles]] = None
     is_active: bool = False
 
 
-class User(UserCreate, table=True):
+class User(UserCreate, BaseSQLModel, table=True):
     """Schema for a user in the database."""
 
     # Rules of thumb:
@@ -145,7 +147,7 @@ class User(UserCreate, table=True):
         foreign_key="identifiertypelink.id",
         primary_key=True,
     )
-    is_active: Optional[bool] = Field(default=True)
+    is_active: Optional[bool] = Field(default=True)  # type: ignore[assignment]
 
     # ### User Account ###
     user_account_id: Optional[uuid.UUID] = Field(
@@ -178,7 +180,7 @@ class User(UserCreate, table=True):
     )
 
     ### App specific groups ###
-    ueber_groups: Optional[List["UeberGroup"]] = Relationship(
+    ueber_groups: Optional[List["UeberGroup"]] = Relationship(  # type: ignore[valid-type]
         back_populates="users",
         link_model=IdentityHierarchy,
         sa_relationship_kwargs={
@@ -189,7 +191,7 @@ class User(UserCreate, table=True):
             "secondaryjoin": "UeberGroup.id == foreign(IdentityHierarchy.parent_id)",
         },
     )
-    groups: Optional[List["Group"]] = Relationship(
+    groups: Optional[List["Group"]] = Relationship(  # type: ignore[valid-type]
         back_populates="users",
         link_model=IdentityHierarchy,
         sa_relationship_kwargs={
@@ -200,7 +202,7 @@ class User(UserCreate, table=True):
             "secondaryjoin": "Group.id == foreign(IdentityHierarchy.parent_id)",
         },
     )
-    sub_groups: Optional[List["SubGroup"]] = Relationship(
+    sub_groups: Optional[List["SubGroup"]] = Relationship(  # type: ignore[valid-type]
         back_populates="users",
         link_model=IdentityHierarchy,
         sa_relationship_kwargs={
@@ -211,7 +213,7 @@ class User(UserCreate, table=True):
             "secondaryjoin": "SubGroup.id == foreign(IdentityHierarchy.parent_id)",
         },
     )
-    sub_sub_groups: Optional[List["SubSubGroup"]] = Relationship(
+    sub_sub_groups: Optional[List["SubSubGroup"]] = Relationship(  # type: ignore[valid-type]
         back_populates="users",
         link_model=IdentityHierarchy,
         sa_relationship_kwargs={
@@ -224,7 +226,7 @@ class User(UserCreate, table=True):
     )
 
     ### Foreign account: Azure AD ###
-    azure_user_id: Optional[uuid.UUID] = Field(index=True, unique=True)
+    azure_user_id: Optional[uuid.UUID] = Field(default=None, index=True, unique=True)
     azure_groups: Optional[List["AzureGroup"]] = Relationship(
         back_populates="users",
         link_model=IdentityHierarchy,
@@ -252,7 +254,7 @@ class User(UserCreate, table=True):
     # discord_account: Optional["DiscordAccount"] = Relationship(back_populates="user")
 
 
-class UserAccount(SQLModel, table=True):
+class UserAccount(BaseSQLModel, table=True):
     """Schema for a linking a user account to the database."""
 
     # Add all personal user settings like permissions to various functionalities of the app here.
@@ -307,7 +309,7 @@ def validate_contrast_range(contrast: float):
         raise ValueError("Contrast must be between -1.0 and 1.0.")
 
 
-class UserProfile(SQLModel, table=True):
+class UserProfile(BaseSQLModel, table=True):
     """Schema for a user profile in the database."""
 
     # Theme settings, localization settings, notification settings,
@@ -337,7 +339,7 @@ class UserProfile(SQLModel, table=True):
     theme_variant: ThemeVariants = ThemeVariants.tonal_spot
     contrast: Annotated[float, AfterValidator(validate_contrast_range)] = 0.0
 
-    model_config = ConfigDict(use_enum_values=True)
+    model_config = ConfigDict(use_enum_values=True)  # type: ignore[assignment]
 
 
 # - User getting their own data uses model Me()
@@ -375,6 +377,8 @@ class UserRead(UserCreate):
 
 
 # This is the model, a users can see about themselves.
+# Only use of this model is in the /user/me endpoint, which ensures,
+# that only the user can see their own user_account and user_profile, but not other users.
 class Me(UserRead):
     azure_token_roles: Optional[list[str]] = None
     azure_token_groups: Optional[list[uuid.UUID]] = None
@@ -385,7 +389,7 @@ class Me(UserRead):
 class UserUpdate(UserCreate):
     """Schema for updating a user."""
 
-    is_active: Optional[bool] = None
+    is_active: Optional[bool] = None  # type: ignore[assignment]
 
     # TBD: this is one-to-one relationship, so it's not an extra table. Add to user instead for reduced complexity.
     # class BrightspaceAccount(SQLModel, table=True):
@@ -402,8 +406,13 @@ class UserUpdate(UserCreate):
     #     org_defined_id: int
 
 
-class UserExtended(
-    UserRead, AccessRightsMixin, AccessPolicyMixin, CreatedAtMixin, UpdatedAtMixin
+class UserExtended(  # type: ignore[misc]
+    UserRead,
+    AccessRightsMixin,
+    AccessPolicyMixin,
+    CreatedAtMixin,
+    UpdatedAtMixin,
+    HierarchyMixin,
 ):
     pass
 

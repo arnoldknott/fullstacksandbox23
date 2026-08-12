@@ -1,0 +1,419 @@
+<script lang="ts">
+	import type { RevealApi } from 'reveal.js';
+	import { onDestroy, onMount } from 'svelte';
+	import { flip } from 'svelte/animate';
+
+	import RevealJS from '$components/RevealJS.svelte';
+	import { Action } from '$lib/accessHandler';
+	import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
+	import type { MessageExtended, NumericalExtended } from '$lib/types';
+
+	import type { PageData } from './$types';
+	import MotivationTable from './MotivationTable.svelte';
+	import SlideTitle from './SlideTitle.svelte';
+
+	interface RevealFragmentEvent extends Event {
+		fragment: HTMLElement;
+		fragments: HTMLElement[];
+	}
+
+	let { data }: { data: PageData } = $props();
+
+	let revealInstance = $state<RevealApi | undefined>(undefined);
+	// const questions = $derived(data.questionsData || []);
+
+	// TBD: catch gracefully, if no intention or motivation question is available
+	let socketioIntention: SocketIO<MessageExtended> = $state()!;
+	let socketioMotivation: SocketIO<NumericalExtended> = $state()!;
+	let socketioComment: SocketIO<MessageExtended> = $state()!;
+	// let intentionAnswers = $derived(socketioIntention?.entities ?? []);
+	let motivationAnswers = $derived(socketioMotivation?.entities ?? []);
+	// let commentsAnswers = $derived(socketioComment?.entities ?? []);
+	let intentionQuestionId = $derived(data.questionsData?.intention?.id || '');
+	let motivationQuestionId = $derived(data.questionsData?.motivation?.id || '');
+	let commentsQuestionId = $derived(data.questionsData?.comments?.id || '');
+
+	// let intentionAnswersSorted: MessageExtended[] = $derived(
+	// 	intentionAnswers.toSorted((a, b) => {
+	// 		if (!a.creation_date || !b.creation_date) {
+	// 			return 1;
+	// 		} else {
+	// 			return !a.creation_date < !b.creation_date ? -1 : 1;
+	// 		}
+	// 	})
+	// );
+	let intentionAnswersSorted = $derived(
+		socketioIntention?.getSelectedEntities('sortedIntentionAnswers') ?? []
+	);
+
+	onMount(() => {
+		const intentionConnection: SocketioConnection = {
+			namespace: '/message',
+			parentId: intentionQuestionId,
+			queryParams: { 'request-access-data': true }
+		};
+		socketioIntention = new SocketIO<MessageExtended>(intentionConnection, {
+			template: { content: '', language: 'en' }
+		});
+		socketioIntention.createSortedSelection('sortedIntentionAnswers', 'creation_date', false);
+
+		const connectionMotivation: SocketioConnection = {
+			namespace: '/numerical',
+			parentId: motivationQuestionId
+		};
+		socketioMotivation = new SocketIO<NumericalExtended>(connectionMotivation, {});
+
+		const commentConnection: SocketioConnection = {
+			namespace: '/message',
+			parentId: commentsQuestionId,
+			queryParams: { 'request-access-data': true }
+		};
+		socketioComment = new SocketIO<MessageExtended>(commentConnection, {
+			template: { content: '', language: 'en' }
+		});
+		socketioComment.createSortedSelection('sortedCommentsAnswers', 'creation_date', false);
+	});
+
+	$effect(() => {
+		// Preseed data:
+		socketioIntention.entities = data.questionsData?.intention?.messages ?? [];
+		socketioMotivation.entities = data.questionsData?.motivation?.numericals ?? [];
+		socketioComment.entities = data.questionsData?.comments?.messages ?? [];
+	});
+
+	let motivationAnswersAverage: number = $derived.by(() => {
+		if (motivationAnswers.length <= 5) {
+			// if (motivationAnswers.length <= 1) {
+			return 50;
+		} else {
+			const sum = motivationAnswers.reduce((acc, curr) => acc + curr.value, 0);
+			return Math.round(sum / motivationAnswers.length);
+		}
+	});
+
+	let averageMotivationColors = $state({ background: '0 0 0', text: '255 255 255' });
+
+	// $effect(() => {
+	// 	console.log('=== dev2 / F23 - Motivation Answers Average ===');
+	// 	console.log($state.snapshot(motivationAnswersAverage));
+	// 	console.log('=== dev2 / F23 - Motivation Answers Average Colors ===');
+	// 	console.log($state.snapshot(averageMotivationColors));
+	// });
+
+	let addColorToMotivationTable = $state(false);
+
+	$effect(() => {
+		if (revealInstance) {
+			revealInstance.on('fragmentshown', (event: Event) => {
+				const fragmentEvent = event as RevealFragmentEvent;
+				// console.log('=== fragment shown and captured in presentation ===');
+				// console.log(fragmentEvent);
+
+				if (fragmentEvent.fragment?.innerText === 'Dummy to trigger color event') {
+					addColorToMotivationTable = true;
+				}
+			});
+			revealInstance.on('fragmenthidden', (event: Event) => {
+				const fragmentEvent = event as RevealFragmentEvent;
+				// console.log('=== fragment shown and captured in presentation ===');
+				// console.log(fragmentEvent);
+
+				if (fragmentEvent.fragment?.innerText === 'Dummy to trigger color event') {
+					addColorToMotivationTable = false;
+				}
+			});
+		}
+		// console.log('=== dev2 / F23 - Motivation Average Color ===');
+		// console.log($state.snapshot(averageMotivationColors));
+		// updates background color on the slides, where addColorToMotivationTable changes
+		// if (revealInstance && averageMotivationColors && addColorToMotivationTable !== undefined) {
+		if (
+			revealInstance &&
+			(motivationAnswersAverage || motivationAnswers.length === 6) &&
+			addColorToMotivationTable !== undefined
+		) {
+			const currentSlide = revealInstance.getCurrentSlide();
+			// console.log('=== synchronizing slide to update background color ===');
+			// console.log($state.snapshot(averageMotivationColors));
+			if (currentSlide) {
+				revealInstance.syncSlide(currentSlide);
+			}
+		}
+	});
+
+	// let commentsAnswersSorted: MessageExtended[] = $derived(
+	// 	commentsAnswers.toSorted((a, b) => {
+	// 		if (!a.creation_date || !b.creation_date) {
+	// 			return 1;
+	// 		} else {
+	// 			return !a.creation_date < !b.creation_date ? -1 : 1;
+	// 		}
+	// 	})
+	// );
+	let commentsAnswersSorted = $derived(
+		socketioComment?.getSelectedEntities('sortedCommentsAnswers') ?? []
+	);
+
+	onDestroy(() => {
+		socketioIntention?.client.disconnect();
+		socketioMotivation?.client.disconnect();
+		socketioComment?.client.disconnect();
+	});
+
+	// let revealFragmentShownEvent = $derived.by(() => {
+	// 	return revealInstance?.on('fragmentshown', (event) => {
+	// 		console.log('=== fragment shown and captures in presentation ===');
+	// 		console.log(event);
+	// 		// if (event?.fragment?.innerText === 'Dummy to trigger event') {
+	// 		// 	addColorToMotivationTable = true;
+	// 		// }
+	// 		return event;})
+	// // works returtning the event, but cannot access it outside of this function
+	// 	});
+
+	// $effect(() => {
+	// 	if (revealFragmentShownEvent?.fragment?.innerText === 'Dummy to trigger event') {
+	// 		addColorToMotivationTable = true;
+	// 	}
+	// });
+
+	// let addColorToMotivationTable = $derived( revealFragmentShownEvent?.fragment?.innerText === 'Dummy to trigger event' ? true : false)
+
+	// $effect(() => console.log($state.snapshot(revealFragmentShownEvent)))
+	// const backgroundColor = true
+
+	// const backgroundColor = false;
+</script>
+
+{#snippet messageAnswer(text: string, date: Date | undefined, index: number)}
+	<div class="chat chat-receiver">
+		<div class="chat-bubble text-left {index % 2 ? 'chat-bubble-accent' : 'chat-bubble-primary'}">
+			{text}
+			<div class="label text-right">
+				{date
+					? new Date(date).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })
+					: 'Thanks for your contribution 🙏'}
+			</div>
+		</div>
+	</div>
+{/snippet}
+
+<!-- Allows covering the whole screen - but needs to be responsive in sizes to adapt to projectors  -->
+<!-- <RevealJS bind:reveal={revealInstance} options={{disableLayout: true}}> -->
+<RevealJS bind:reveal={revealInstance}>
+	<section>
+		<h1>Welcome</h1>
+	</section>
+	<section>
+		<SlideTitle>Sharing Round</SlideTitle>
+		<div class="mx-10 mt-8">
+			<div class="text-left">
+				{#if socketioIntention?.pendingEntities[0]}
+					<label class="heading" for="sharing"
+						>What is your intention for your studies, your course, this lecture? 🤔</label
+					>
+					<textarea
+						class="heading placeholder:title-large w-full border border-2 p-2 shadow-inner placeholder:italic"
+						placeholder="The sharing is publically available on the internet for everyone, who has a link to this presentation. Sharing is caring 🫶 Press Enter to send."
+						id="sharing"
+						bind:value={socketioIntention.pendingEntities[0].content}
+						onkeydown={(event) => {
+							if (event.key === 'Enter' && !event.shiftKey) {
+								event.preventDefault();
+								// socketioIntention.addEntity(myIntention);
+								socketioIntention.submitEntity(
+									socketioIntention.pendingEntities[0],
+									intentionQuestionId,
+									true,
+									true,
+									Action.READ
+								);
+								socketioIntention.createPending();
+							}
+						}}></textarea>
+				{:else}
+					<div class="label text-error">
+						<span class="icon-[svg-spinners--12-dots-scale-rotate] size-6"></span>connecting ...
+					</div>
+				{/if}
+			</div>
+		</div>
+		<div class="heading mt-8">
+			<div class="mx-5 grid max-h-[400px] grid-cols-3 gap-6 overflow-y-auto">
+				{#each intentionAnswersSorted as answer, index (answer.id)}
+					<div animate:flip>
+						{@render messageAnswer(answer.content, answer.creation_date, index)}
+					</div>
+				{/each}
+			</div>
+		</div>
+	</section>
+	<!-- <section data-background-color={backgroundColor || 'rgb(var(--md-rgb-color-primary-container))'}> -->
+	<section data-background-color="rgb(var(--md-rgb-color-primary-container))">
+		<SlideTitle>Motivation</SlideTitle>
+		<h2 class="heading-large text-primary-container-content">Self determination theory</h2>
+		<h3>
+			Ryan and Deci / Ib Ravn - <a
+				href="https://opentextbc.ca/peersupport/chapter/self-determination-theory/"
+				target="_blank"
+				class="title-large link text-secondary-content pb-5">Source of Definitions</a
+			>
+		</h3>
+		<div class="mx-5 grid h-120 grid-cols-4 gap-4">
+			<div class="heading fragment flex flex-col">
+				<div>Autonomy</div>
+				<div
+					class="btn btn-primary btn-gradient shadow-outline heading-small flex h-full flex-col rounded-4xl shadow-sm"
+				>
+					Humans need to feel in control of their own life behaviours and goals.
+				</div>
+			</div>
+			<div class="heading-large fragment flex flex-col">
+				<div>Competence</div>
+				<div
+					class="btn btn-secondary btn-gradient shadow-outline heading-small flex h-full flex-col rounded-4xl shadow-sm"
+				>
+					Humans need to gain mastery and control of their own lives & their environment. Essential
+					for self-esteem.
+				</div>
+			</div>
+			<div class="heading-large fragment flex flex-col">
+				<div>Relatedness</div>
+				<div
+					class="btn btn-accent btn-gradient shadow-outline heading-small flex h-full flex-col rounded-4xl shadow-sm"
+				>
+					Humans need to experince a sense of belonging and connection with other people. Feeling
+					cared for by others and to care for others
+				</div>
+			</div>
+			<div class="heading-large fragment flex flex-col">
+				<div>Meaning</div>
+				<div
+					class="btn btn-info btn-gradient shadow-outline heading-small flex h-full flex-col rounded-4xl shadow-sm"
+				>
+					Humans need to feel theri positive impact on others and their influence on improving
+					welfare to contribute to a better society.
+				</div>
+			</div>
+		</div>
+
+		<!-- <ul>
+			<li>Autonomy</li>
+			<li>Competence</li>
+			<li>Sense of Belonging</li>
+			<li>(Meaning)</li>
+		</ul> -->
+	</section>
+	<!-- <section
+		data-background-color={addColorToMotivationTable
+			? 'rgb(var(--md-rgb-color-primary-container))'
+			: ''}
+	> -->
+	<!-- <section class="h-screen rounded-lg p-2 {addColorToMotivationTable ? 'bg-green-300/30 ' : ''}"> -->
+	<!-- <section class="h-screen rounded-lg p-2" style={addColorToMotivationTable ? 'background-color: rgb(var(--md-rgb-color-primary-container))' : ''}> -->
+	<section
+		data-background-color={addColorToMotivationTable
+			? `rgb(${averageMotivationColors.background})`
+			: ''}
+	>
+		<div
+			style="color: {addColorToMotivationTable
+				? `rgb(${averageMotivationColors.text})`
+				: 'var(--color-base-content)'}"
+		>
+			<SlideTitle>Motivation</SlideTitle>
+			<MotivationTable
+				questionId={motivationQuestionId}
+				socketio={socketioMotivation}
+				averageMotivation={motivationAnswersAverage}
+				bind:averageColors={averageMotivationColors}
+			/>
+		</div>
+		<div class="relative mt-5">
+			<div class="absolute top-0 right-0 mt-20">
+				<span class="badge badge-lg badge-secondary shadow-outline shadow">
+					{motivationAnswersAverage}
+				</span>
+				<span class="badge badge-lg badge-info shadow-outline shadow">
+					{motivationAnswers.length}
+				</span>
+				<span class="text-base-300"> {addColorToMotivationTable}</span>
+			</div>
+		</div>
+	</section>
+	<!-- <div>{addColorToMotivationTable} {motivationAnswersAverage}</div> -->
+	<section>
+		<SlideTitle>Inclusion</SlideTitle>
+		<div class="display-small font-bold tracking-widest">We have diversity on this course...</div>
+		<ul>
+			<li>About 10 different study lines,</li>
+			<li>More than 100 students,</li>
+			<li>Online and physical attendance,</li>
+		</ul>
+		<div class="fragment">
+			<p>and everyone has their own</p>
+			<ul>
+				<li>individual learning preferences,</li>
+				<li>technical backgrounds,</li>
+				<li>life situations, and</li>
+				<li>intentions,</li>
+			</ul>
+		</div>
+		<p
+			class="btn btn-gradient btn-primary-container heading fragment mx-5 mt-5 h-fit rounded-xl p-4 px-5"
+		>
+			What can you do, to make this a pleasureable learning environment where everyone feels
+			included and can strive?
+		</p>
+	</section>
+	<!-- <section>
+		<SlideTitle>My motivation</SlideTitle>
+		<p class="text-error">Consider removing?</p>
+	</section> -->
+	<section>
+		<SlideTitle>Thank you for joining and participating!</SlideTitle>
+		<!-- <div class="display-small font-bold tracking-widest">Do you have comments or questions?</div> -->
+		<div class="mx-10 mt-8">
+			<div class="text-left">
+				{#if socketioComment?.pendingEntities[0]}
+					<label class="heading" for="sharing"> Do you have comments or questions? 🤔 </label>
+					<textarea
+						class="heading placeholder:title-large w-full border border-2 p-2 shadow-inner placeholder:italic"
+						placeholder="These questions and comments are publically available on the internet for everyone, who has a link to this presentation. Sharing is caring 🫶 Press Enter to send."
+						id="sharing"
+						bind:value={socketioComment.pendingEntities[0].content}
+						onkeydown={(event) => {
+							if (event.key === 'Enter' && !event.shiftKey) {
+								event.preventDefault();
+								socketioComment.submitEntity(
+									socketioComment.pendingEntities[0],
+									commentsQuestionId,
+									true,
+									true,
+									Action.READ
+								);
+								socketioComment.createPending();
+							}
+						}}></textarea>
+				{:else}
+					<div class="label text-error">
+						<span class="icon-[svg-spinners--12-dots-scale-rotate] size-6"></span>connecting ...
+					</div>
+				{/if}
+			</div>
+		</div>
+		<div class="heading mt-8">
+			<div class="mx-5 grid max-h-[400px] grid-cols-3 gap-6 overflow-y-auto">
+				{#each commentsAnswersSorted as answer, index (answer.id)}
+					<div animate:flip>
+						{@render messageAnswer(answer.content, answer.creation_date, index)}
+					</div>
+				{/each}
+			</div>
+		</div>
+	</section>
+	<!-- <section>
+		<SlideTitle>To pass the course...</SlideTitle>
+		<div class="display-small font-bold tracking-widest">Hand in the four assignments</div>
+	</section> -->
+</RevealJS>

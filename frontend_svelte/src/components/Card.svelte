@@ -1,24 +1,37 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { slide } from 'svelte/transition';
+
+	import Title from './Title.svelte';
 
 	let {
 		id,
 		extraClasses,
 		header,
+		title,
+		closeButton = false,
 		children,
-		footer
-	}: { id: string; extraClasses?: string; header?: Snippet; children: Snippet; footer?: Snippet } =
-		$props();
-
-	let showCard = $state(true);
+		footer,
+		hidden = $bindable(false)
+	}: {
+		id: string;
+		extraClasses?: string;
+		header?: Snippet;
+		title?: string;
+		closeButton?: boolean;
+		children: Snippet;
+		footer?: Snippet;
+		hidden?: boolean;
+	} = $props();
 
 	export const remove = () => {
-		showCard = false;
+		hidden = true;
 	};
 </script>
 
-{#if showCard}
+{#if !hidden}
 	<div
+		transition:slide={{ duration: 600 }}
 		class="card border-outline-variant bg-base-200 shadow-outline-variant w-full rounded-xl border-[1px] shadow-md {extraClasses}"
 		{id}
 	>
@@ -26,6 +39,22 @@
 			<div class="card-header">
 				{@render header()}
 			</div>
+		{:else if title}
+			<div class="card-header">
+				<Title id={id + '-header'}>{title}</Title>
+			</div>
+		{/if}
+		{#if closeButton}
+			<button
+				type="button"
+				class="btn btn-circle btn-text btn-sm absolute end-3 top-3"
+				aria-label="Close card"
+				onclick={() => {
+					hidden = true;
+				}}
+			>
+				<span class="icon-[tabler--x] size-5"></span>
+			</button>
 		{/if}
 		<div class="card-body">
 			{@render children()}

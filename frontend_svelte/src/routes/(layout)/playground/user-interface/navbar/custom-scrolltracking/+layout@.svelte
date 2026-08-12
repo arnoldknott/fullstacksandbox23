@@ -1,26 +1,29 @@
 <script lang="ts">
-	import type { LayoutData } from './$types';
-	import { SessionStatus } from '$lib/session';
-	import { Variant, Theming, type ColorConfig } from '$lib/theming';
-	import { Model, type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
+	import { type SubmitFunction } from '@sveltejs/kit';
+	import { getContext, onMount, setContext, type Snippet } from 'svelte';
 	import type { Action } from 'svelte/action';
+	import { scrollY } from 'svelte/reactivity/window';
 	import { writable } from 'svelte/store';
-	import { onMount, setContext, type Snippet } from 'svelte';
+
+	import { afterNavigate, goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import Guard from '$components/Guard.svelte';
+	import { type ArtificialIntelligenceConfig, Model } from '$lib/artificialIntelligence';
+	import { SessionStatus } from '$lib/session';
+	import theme from '$lib/stores/theme';
+	import { FSSB23_THEME_KEY, type ThemeRuntimeContext, Theming } from '$lib/theming';
+	import type { SidebarItemContent } from '$lib/types';
 	import { initDropdown, initOverlay } from '$lib/userInterface';
-	import ThemePicker from '../../../components/ThemePicker.svelte';
-	import ArtificialIntelligencePicker from '../../../components/ArtificialIntelligencePicker.svelte';
-	import { themeStore } from '$lib/stores';
-	import { type SubmitFunction } from '@sveltejs/kit';
-	import { resolve } from '$app/paths';
-	import WelcomeModal from '../../../../WelcomeModal.svelte';
-	import { goto, afterNavigate } from '$app/navigation';
-	import type { SidebarItemContent, Session } from '$lib/types';
-	import SidebarItem from './SidebarItem.svelte';
+
 	import LoginOutButton from '../../../../LoginOutButton.svelte';
 	import Logo from '../../../../Logo.svelte';
-	import { scrollY } from 'svelte/reactivity/window';
+	import WelcomeModal from '../../../../WelcomeModal.svelte';
+	import ArtificialIntelligencePicker from '../../../components/ArtificialIntelligencePicker.svelte';
+	import ThemePicker from '../../../components/ThemePicker.svelte';
+	import type { LayoutData } from './$types';
+	import SidebarItem from './SidebarItem.svelte';
+	import SidebarToggleButton from './SidebarToggleButton.svelte';
 
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
 
@@ -53,8 +56,6 @@
 				: true
 	);
 
-	let session: Session | undefined = $state(data.session);
-
 	let welcomeModal: HTMLDivElement | null = $state(null);
 
 	onMount(() => {
@@ -72,34 +73,30 @@
 
 	let artificialIntelligenceForm = $state<HTMLFormElement | null>(null);
 
-	const theming = $state(new Theming());
+	const themeRuntime = getContext<ThemeRuntimeContext>(FSSB23_THEME_KEY);
 
-	// TBD: refactor this to decently use the reactivity of Svelte - potentially use $derived!
-	let themeConfiguration: ColorConfig = $state({
-		sourceColor: data?.session?.currentUser?.user_profile.theme_color || '#941ff4', // <= That's a good color!// '#353c6e' // '#769CDF',
-		variant: data?.session?.currentUser?.user_profile.theme_variant || Variant.TONAL_SPOT, // Variant.FIDELITY,//
-		contrast: data?.session?.currentUser?.user_profile.contrast || 0.0
-	});
+	// Keep this component's session payload in sync with the shared root-level theme runtime.
+	const theming = $state(new Theming());
 
 	$effect(() => {
 		if (data.session?.currentUser?.user_profile) {
-			data.session.currentUser.user_profile.theme_color = themeConfiguration.sourceColor;
-			data.session.currentUser.user_profile.theme_variant = themeConfiguration.variant;
-			data.session.currentUser.user_profile.contrast = themeConfiguration.contrast;
+			data.session.currentUser.user_profile.theme_color =
+				themeRuntime.themeConfiguration.sourceColor;
+			data.session.currentUser.user_profile.theme_variant = themeRuntime.themeConfiguration.variant;
+			data.session.currentUser.user_profile.contrast = themeRuntime.themeConfiguration.contrast;
 		}
 	});
 
 	let systemDark = $state(false);
-	let mode: 'light' | 'dark' = $state('dark');
 
 	const applyTheming: Action = (_node) => {
 		systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-		mode = systemDark ? 'dark' : 'light';
+		themeRuntime.mode = systemDark ? 'dark' : 'light';
 
-		let theme = $derived(theming.applyTheme(themeConfiguration, mode));
+		let themeState = $derived(theming.applyTheme(themeRuntime));
 
 		$effect(() => {
-			themeStore.set(theme);
+			theme.set(themeState);
 		});
 	};
 
@@ -695,29 +692,52 @@
 			setTimeout(() => {
 				const targetElement = document.getElementById(hash.substring(1));
 				if (targetElement) {
+					// Compute the actual scrollY that `scrollIntoView` will land
+					// on (target's top aligned with viewport top). Do NOT subtract
+					// the header height — native scrollIntoView ignores the fixed
+					// header, so subtracting would make the positional flag-clear
+					// check miss the landing position and the flag would get stuck.
+					const rectTop = targetElement.getBoundingClientRect().top;
+					intentionalTargetY = Math.max(0, rectTop + (scrollY.current ?? window.scrollY));
 					targetElement.scrollIntoView({ behavior: 'smooth' });
+				} else {
+					intentionalTargetY = scrollY.current ?? window.scrollY;
 				}
 				handleIntentionalNavigation();
 			}, 100);
 		} else {
 			// Scroll to top if no hash
+			intentionalTargetY = 0;
 			window.scrollTo({ top: 0, behavior: 'smooth' });
 			handleIntentionalNavigation();
 		}
 	});
 
 	let navBar: HTMLElement | null = $state(null);
+	// Constant once measured — main's padding-top must NOT change when the
+	// navbar shows/hides, otherwise document height changes and scrollY gets
+	// clamped near the page bottom, which the direction check would then
+	// misread as "scrolling up" and re-show the navbar (visible bouncing).
 	let navBarBottom: number = $state(0);
 
 	// Hide / show  navbar on scroll down / up
 	let header: HTMLElement | null = $state(null);
 	let previousScrollY = $state(scrollY.current ?? 0);
 	let intentionalNavigationInProgress = $state(false);
+	// Target scrollY of the in-progress programmatic smooth scroll. The
+	// intentional-navigation flag is cleared as soon as the viewport reaches
+	// (or passes) this position (positional, not time-based).
+	let intentionalTargetY = $state(0);
+	// scrollY at the moment the intentional navigation starts — used to know
+	// whether the programmatic scroll is heading up or down so the flag can
+	// be cleared once the target is reached or crossed in that direction.
+	let intentionalStartY = $state(0);
 
 	// Show navbar and mark navigation as intentional:
 	const handleIntentionalNavigation = () => {
 		if (header) {
 			// Show navbar when browser back/forward is used
+			intentionalStartY = scrollY.current ?? 0;
 			intentionalNavigationInProgress = true;
 			header.classList.add('mt-2');
 			header.style.top = '0';
@@ -741,28 +761,52 @@
 	};
 
 	const toggleTopNavBar = () => {
+		const currentScrollY = scrollY.current ?? 0;
+
+		// Positionally clear the intentional-navigation guard once the
+		// programmatic smooth scroll has reached or crossed its target in
+		// the direction it was heading. Using "crossed" (not just "within 1
+		// px") is essential: scrollIntoView may land a couple of pixels off
+		// the computed target, and a user who interrupts the smooth scroll
+		// can carry scrollY past the target between scroll events. A simple
+		// abs-distance check would then miss the window and the flag would
+		// stay stuck — visible as "navbar won't hide after in-page hash nav".
+		if (intentionalNavigationInProgress) {
+			const goingDown = intentionalTargetY >= intentionalStartY;
+			const reached = goingDown
+				? currentScrollY >= intentionalTargetY - 1
+				: currentScrollY <= intentionalTargetY + 1;
+			if (reached) {
+				intentionalNavigationInProgress = false;
+			}
+		}
+
 		// Don't hide navbar during intentional navigation (sidebar clicks, browser back/forward)
 		if (!intentionalNavigationInProgress) {
 			// console.log('=== toggleTopNavBar ===');
-			// const currentScrollY = scrollspyParent?.scrollTop ?? 0;
 			// see https://www.w3schools.com/howto/howto_js_navbar_hide_scroll.asp
-			const currentScrollY = scrollY.current ?? 0;
-			// if (navBar) {
 			if (header) {
 				if (currentScrollY > previousScrollY) {
-					// Scrolling down removes navbar
-					// navBar.classList.add('-mt-[var(--header-height)]');
+					// Scrolling down: hide via `top` (NOT transform). Safari/iOS
+					// latches transforms on position:fixed elements until the
+					// scroll ends, so a transform-based hide would not animate
+					// during the scroll. `top` is treated as layout and repaints
+					// during scroll in every browser.
+					// Crucially: do NOT touch the main padding-top here. Document
+					// height must stay constant so scrollY isn't clamped near the
+					// page bottom (which would be misread as "scrolling up").
 					header.classList.remove('mt-2');
 					header.style.top = `-${header.offsetHeight}px`;
-					navBarBottom = 0;
 				} else {
-					// Scrolling up shows navbar
-					// navBar.classList.remove('-mt-[var(--header-height)]');
+					// Scrolling up: slide navbar back in.
 					header.classList.add('mt-2');
 					header.style.top = '0';
-					navBarBottom = header.offsetHeight;
 				}
 			}
+			previousScrollY = currentScrollY;
+		} else {
+			// Keep previousScrollY synced so the first real toggle after the
+			// programmatic scroll uses a sensible direction baseline.
 			previousScrollY = currentScrollY;
 		}
 	};
@@ -775,34 +819,10 @@
 <svelte:window
 	onresize={(event) => windowResizeHandler(event)}
 	onscroll={toggleTopNavBar}
-	onscrollend={() => {
-		intentionalNavigationInProgress = false;
-	}}
 	onpopstate={handleIntentionalNavigation}
 />
 
 <svelte:body use:applyTheming />
-
-{#snippet sidebarToggleButton(classes: string, overlayModifier: object)}
-	<button
-		type="button"
-		class="btn btn-square btn-sm btn-outline btn-primary {classes}"
-		aria-haspopup="dialog"
-		aria-expanded="false"
-		aria-controls="collapsible-mini-sidebar"
-		aria-label="Toggle Sidebar"
-		{...overlayModifier}
-	>
-		<!-- data-overlay="#collapsible-mini-sidebar"
-		data-overlay-options={ JSON.stringify({ "backdropClasses": "overlay-backdrop transition duration-300 fixed inset-0 bg-base-300/60 overflow-y-auto", "backdropParent": "#scrollspy" }) } -->
-		<!-- <div id="collapsible-mini-sidebar-backdrop" data-overlay-backdrop-template="overlay-backdrop transition duration-300 fixed inset-0 bg-base-300/60 overflow-y-auto" style="z-index: 79;" class=""></div> -->
-		<span
-			class="icon-[material-symbols--menu-open-rounded] overlay-minified:hidden flex size-5 max-sm:hidden"
-		></span>
-		<span class="icon-[material-symbols--menu] overlay-minified:flex hidden size-5 max-sm:flex"
-		></span>
-	</button>
-{/snippet}
 
 {#snippet navbarPartItem(href: string, icon: string, text: string, textClasses?: string)}
 	<li class="text-primary hidden items-center md:flex">
@@ -835,12 +855,14 @@
 		<!-- {@attach updateNavbarBottom} -->
 		<div class="navbar-start rtl:[--placement:bottom-end]">
 			<ul class="menu menu-horizontal flex flex-nowrap items-center">
-				{@render sidebarToggleButton('hidden sm:flex', {
-					'data-overlay-minifier': '#collapsible-mini-sidebar'
-				})}
-				{@render sidebarToggleButton('sm:hidden', {
-					'data-overlay': '#collapsible-mini-sidebar'
-				})}
+				<SidebarToggleButton
+					extraClasses="hidden sm:flex"
+					overlayModifier={{ 'data-overlay-minifier': '#collapsible-mini-sidebar' }}
+				/>
+				<SidebarToggleButton
+					extraClasses="sm:hidden"
+					overlayModifier={{ 'data-overlay': '#collapsible-mini-sidebar' }}
+				/>
 				{@render navbarPartItem('/docs', 'icon-[oui--documentation]', 'Docs')}
 				{@render navbarPartItem(
 					'/playground',
@@ -924,8 +946,8 @@
 						{updateProfileAccount}
 						{saveProfileAccount}
 						bind:themeForm
-						bind:mode
-						bind:themeConfiguration
+						bind:mode={themeRuntime.mode}
+						bind:themeConfiguration={themeRuntime.themeConfiguration}
 					/>
 					<li>
 						<hr class="border-outline -mx-2 my-5" />
@@ -966,10 +988,10 @@
 	<!-- class="border-error h-screen w-screen overflow-x-scroll overflow-y-auto border border-4" -->
 	<!-- bind:session={data.session} -->
 	<WelcomeModal
-		bind:session
+		session={data.session}
 		bind:artificialIntelligenceConfiguration
-		bind:themeConfiguration
-		bind:mode
+		bind:mode={themeRuntime.mode}
+		bind:themeConfiguration={themeRuntime.themeConfiguration}
 		{updateProfileAccount}
 		{saveProfileAccount}
 	/>
@@ -984,9 +1006,10 @@
 	>
 		<div class="mx-7 flex h-24 flex-row items-center justify-between md:h-26">
 			<div class="hidden sm:block">
-				{@render sidebarToggleButton('hidden sm:flex', {
-					'data-overlay-minifier': '#collapsible-mini-sidebar'
-				})}
+				<SidebarToggleButton
+					extraClasses="hidden sm:flex"
+					overlayModifier={{ 'data-overlay-minifier': '#collapsible-mini-sidebar' }}
+				/>
 			</div>
 			<div class="overlay-minified:hidden">
 				<Logo />

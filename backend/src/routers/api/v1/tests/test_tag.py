@@ -2,7 +2,7 @@ import uuid
 
 import pytest
 from fastapi import FastAPI
-from httpx import AsyncClient
+from httpx2 import AsyncClient
 
 from models.tag import Tag
 from tests.utils import (
@@ -37,7 +37,7 @@ async def test_post_tag(
 ):
     """Tests POST of a tag."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     tag = {
         "name": "TestTag",
@@ -68,7 +68,7 @@ async def test_post_tag_name_too_long(
 ):
     """Tests POST of too long tag."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     tag = {
         "name": "TestTag  with more than 10 characters",
@@ -101,8 +101,8 @@ async def test_get_all_tags(
     mocked_provide_http_token_payload: dict,
 ):
     """Tests GET all tags."""
-    app_override_provide_http_token_payload
-    tags = await add_test_tags(mocked_provide_http_token_payload)
+    _ = app_override_provide_http_token_payload
+    tags = await add_test_tags(mocked_provide_http_token_payload)  # type: ignore[call-arg]
     response = await async_client.get("/api/v1/tag/")
 
     assert response.status_code == 200
@@ -133,8 +133,8 @@ async def test_get_tag_by_id(
     mocked_provide_http_token_payload: dict,
 ):
     """Tests GET all tags."""
-    app_override_provide_http_token_payload
-    tags = await add_test_tags(mocked_provide_http_token_payload)
+    _ = app_override_provide_http_token_payload
+    tags = await add_test_tags(mocked_provide_http_token_payload)  # type: ignore[call-arg]
 
     response = await async_client.get(f"/api/v1/tag/{str(tags[1].id)}")
 
@@ -161,7 +161,7 @@ async def test_get_tag_by_invalid_id(
     async_client: AsyncClient, app_override_provide_http_token_payload: FastAPI
 ):
     """Tests GET of a tag with invalid id."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
     response = await async_client.get("/api/v1/tag/invalid_id")
     assert response.status_code == 422
 
@@ -187,9 +187,9 @@ async def test_put_tag(
 ):
     """Tests PUT of a tag."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
-    tags = await add_test_tags(mocked_provide_http_token_payload)
+    tags = await add_test_tags(mocked_provide_http_token_payload)  # type: ignore[call-arg]
 
     updated_tag = {
         "name": "NewTag",
@@ -224,9 +224,9 @@ async def test_put_tag_does_not_exist(
 ):
     """Tests PUT of a tag."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
-    await add_test_tags(mocked_provide_http_token_payload)
+    await add_test_tags(mocked_provide_http_token_payload)  # type: ignore[call-arg]
 
     updated_tag = {
         "name": "Uptag",
@@ -262,9 +262,9 @@ async def test_delete_tag(
 ):
     """Tests DELETE of a tag."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
-    tags = await add_test_tags(mocked_provide_http_token_payload)
+    tags = await add_test_tags(mocked_provide_http_token_payload)  # type: ignore[call-arg]
     # the get endpoints are public, so no current user is passed -
     # that means all tags need a public access policy in the fine grained access control!
     # TBD: should this be solved in the tags_CRUD, create method;
@@ -317,7 +317,7 @@ async def test_delete_tag_by_invalid_id(
 ):
     """Tests DELETE of a tag with invalid id."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     response = await async_client.delete("/api/v1/tag/invalid_id")
 
@@ -345,9 +345,9 @@ async def test_delete_tag_does_not_exist(
 ):
     """Tests DELETE of a tag."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
-    await add_test_tags(mocked_provide_http_token_payload)
+    await add_test_tags(mocked_provide_http_token_payload)  # type: ignore[call-arg]
     response = await async_client.delete(f"/api/v1/tag/{str(uuid.uuid4())}")
 
     assert response.status_code == 404

@@ -1,15 +1,24 @@
 import logging
+from typing import Annotated, Any, Optional, cast
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 
 from core.security import (
     Guards,
+    check_token_against_guards,
     get_http_access_token_payload,
+    provide_http_token_payload_optional,
 )
 from core.types import GuardTypes
 from crud.presentation import PresentationCRUD
-from models.presentation import Presentation
+from models.presentation import (
+    Presentation,
+    PresentationCreate,
+    PresentationRead,
+    PresentationUpdate,
+    validate_endpoint_path,
+)
 
 # from models import PresentationCreate, PresentationRead, PresentationUpdate
 from .base import BaseView
@@ -25,12 +34,12 @@ presentation_view = BaseView(PresentationCRUD)
 
 @router.post("/", status_code=201)
 async def post_presentation(
-    presentation: Presentation.Create,
+    presentation: PresentationCreate,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(
         Guards(scopes=["api.read", "api.write"], roles=["User"])
     ),
-) -> Presentation:
+) -> PresentationRead:
     """Creates a new presentation."""
     return await presentation_view.post(presentation, token_payload, guards)
 
@@ -39,7 +48,7 @@ async def post_presentation(
 async def get_presentations(
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
-) -> list[Presentation.Read]:
+) -> list[PresentationRead]:
     """Returns all presentations."""
     return await presentation_view.get(token_payload, guards)
 
@@ -47,32 +56,51 @@ async def get_presentations(
 @router.get("/{resource_id}", status_code=200)
 async def get_presentation_by_id(
     resource_id: UUID,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
-) -> Presentation.Read:
-    """Returns a presentation."""
-    return await presentation_view.get_by_id(resource_id, token_payload, guards)
+    token_payload: Annotated[
+        Optional[dict], Depends(provide_http_token_payload_optional)
+    ] = None,
+) -> PresentationRead:
+    """Returns a presentation by resource_id."""
+    return await presentation_view.get_by_id(resource_id, token_payload, guards=None)
 
 
-@router.get("/public/{resource_id}", status_code=200)
-async def get_public_presentation_by_id(
-    resource_id: UUID,
-) -> Presentation.Read:
-    """Returns a public presentation without authentication."""
-    return await presentation_view.get_by_id(
-        resource_id, token_payload=None, guards=None
-    )
+@router.get("/path/{path:path}", status_code=200)
+async def get_presentation_by_path(
+    path: str,
+    token_payload: Annotated[
+        Optional[dict], Depends(provide_http_token_payload_optional)
+    ] = None,
+) -> PresentationRead:
+    """Returns a presentation by path."""
+    current_user = None
+    if token_payload:
+        current_user = await check_token_against_guards(token_payload, guards=None)
+
+    # Normalize to leading slash so "/a/b" and "a/b" resolve consistently.
+    normalized_path = path if path.startswith("/") else f"/{path}"
+
+    async with PresentationCRUD() as crud:
+        validated_path = validate_endpoint_path(normalized_path)
+        presentation_path = cast(Any, getattr(Presentation, "path"))
+        by_path = await crud.read(
+            current_user=current_user,
+            filters=[presentation_path == validated_path],
+            limit=1,
+        )
+        if not by_path:
+            raise HTTPException(status_code=404, detail="Presentation not found.")
+        return by_path[0]
 
 
 @router.put("/{resource_id}", status_code=200)
 async def put_presentation(
     resource_id: UUID,
-    presentation: Presentation.Update,
+    presentation: PresentationUpdate,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(
         Guards(scopes=["api.read", "api.write"], roles=["User"])
     ),
-) -> Presentation:
+) -> PresentationRead:
     """Updates a presentation."""
     return await presentation_view.put(resource_id, presentation, token_payload, guards)
 

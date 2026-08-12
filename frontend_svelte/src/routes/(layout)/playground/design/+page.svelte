@@ -1,17 +1,24 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import NavigationCard from '$components/NavigationCard.svelte';
 	import Heading from '$components/Heading.svelte';
+	import NavigationCard from '$components/NavigationCard.svelte';
+	import { initAccordion } from '$lib/userInterface';
+
 	import AccordionItem from './AccordionItem.svelte';
 	import ColorTile from './ColorTile.svelte';
-	import { initAccordion } from '$lib/userInterface';
 
 	let debug = $state(page.url.searchParams.get('debug') === 'true' ? true : false);
 
 	const links = [
 		{
+			name: 'Shadcn-svelte 1',
+			description: 'Playground and showcase for shadcn-svelte components and design',
+			url: '/playground/design/shadcn'
+		},
+		{
 			name: 'FlyonUI 2',
-			description: 'Playground and showcase for flyonUI components and design',
+			description:
+				'Playground and showcase for flyonUI components and design, themed with material design. 3',
 			url: '/playground/design/flyonui'
 		},
 		{
@@ -97,7 +104,8 @@
 	></button
 >
 
-<Heading>👍 Results - ready for use 👍</Heading>
+<Heading id="results">👍 Results 👍</Heading>
+<p class="label text-base-content-variant ml-10">ready for use</p>
 <div class="mb-2 flex items-center gap-1">
 	<label class="label label-text text-base" for="debugSwitcher">Debug: </label>
 	<input type="checkbox" class="switch-neutral switch" bind:checked={debug} id="debugSwitcher" />
@@ -339,7 +347,7 @@
 </div>
 
 <div
-	class="mt-5 grid h-screen min-h-fit w-full grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4"
+	class="mt-5 grid h-fit w-full grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4"
 	id="design-playground"
 >
 	<div class="heading col-span-full w-full grow">Playground to preview color combinations</div>
@@ -496,9 +504,8 @@
 	>
 </div>
 
-<div id="design-building-blocks">
-	<Heading>🚧 Building blocks - for design experiments 🚧</Heading>
-</div>
+<Heading id="building-blocks">🚧 Building blocks 🚧</Heading>
+<p class="label text-base-content-variant ml-10">for design experiments</p>
 
 <button
 	type="button"

@@ -166,7 +166,7 @@ resource "azurerm_container_app" "BackendAPIContainer" {
     container {
       name   = "backend"
       image  = "mcr.microsoft.com/azuredocs/containerapps-helloworld:latest"
-      cpu    = terraform.workspace == "stage" || terraform.workspace == "prod" ? 0.75 : 0.25 # 0.5 was still too small with 160 user hits # load limited at around 100 users with 0.25 CPU!
+      cpu    = terraform.workspace == "stage" || terraform.workspace == "prod" ? 0.75 : 0.25       # 0.5 was still too small with 160 user hits # load limited at around 100 users with 0.25 CPU!
       memory = terraform.workspace == "stage" || terraform.workspace == "prod" ? "1.5Gi" : "0.5Gi" # "1Gi"
       volume_mounts {
         name = "${terraform.workspace}-application-data"
@@ -280,7 +280,7 @@ resource "azurerm_container_app" "BackendAPIContainer" {
   secret {
     name                = "postgres-password"
     identity            = azurerm_user_assigned_identity.backendIdentity.id
-    key_vault_secret_id = azurerm_key_vault_secret.postgresPassword.id
+    key_vault_secret_id = azurerm_key_vault_secret.postgresPassword.versionless_id
     # value = data.azurerm_key_vault_secret.keyVaultSecret["postgres-password"].value
     # value = azurerm_key_vault_secret.postgresPassword.value
   }
@@ -288,7 +288,7 @@ resource "azurerm_container_app" "BackendAPIContainer" {
   secret {
     name                = "postgres-user"
     identity            = azurerm_user_assigned_identity.backendIdentity.id
-    key_vault_secret_id = azurerm_key_vault_secret.postgresUser.id
+    key_vault_secret_id = azurerm_key_vault_secret.postgresUser.versionless_id
     # value = data.azurerm_key_vault_secret.keyVaultSecret["postgres-user"].value
     # value = azurerm_key_vault_secret.postgresUser.value
   }
@@ -409,7 +409,7 @@ resource "azurerm_container_app" "BackendWorkerContainer" {
   secret {
     name                = "postgres-password"
     identity            = azurerm_user_assigned_identity.workerIdentity.id
-    key_vault_secret_id = azurerm_key_vault_secret.postgresPassword.id
+    key_vault_secret_id = azurerm_key_vault_secret.postgresPassword.versionless_id
     # value = "fromTerraformChangedInGithubActions"
     # value = azurerm_key_vault_secret.postgresPassword.value
     # value = data.azurerm_key_vault_secret.keyVaultSecret["postgres-password"].value
@@ -418,7 +418,7 @@ resource "azurerm_container_app" "BackendWorkerContainer" {
   secret {
     name                = "postgres-user"
     identity            = azurerm_user_assigned_identity.workerIdentity.id
-    key_vault_secret_id = azurerm_key_vault_secret.postgresUser.id
+    key_vault_secret_id = azurerm_key_vault_secret.postgresUser.versionless_id
     # value = "fromTerraformChangedInGithubActions"
     # value = azurerm_key_vault_secret.postgresUser.value
     # value = data.azurerm_key_vault_secret.keyVaultSecret["postgres-user"].value
@@ -552,28 +552,28 @@ resource "azurerm_container_app" "redisContainer" {
   secret {
     name                = "redis-password"
     identity            = azurerm_user_assigned_identity.redisIdentity.id
-    key_vault_secret_id = azurerm_key_vault_secret.redisPassword.id
+    key_vault_secret_id = azurerm_key_vault_secret.redisPassword.versionless_id
     # value = azurerm_key_vault_secret.redisPassword.value
     # value = data.azurerm_key_vault_secret.keyVaultSecret["redis-password"].value
   }
   secret {
     name                = "redis-session-password"
     identity            = azurerm_user_assigned_identity.redisIdentity.id
-    key_vault_secret_id = azurerm_key_vault_secret.redisSessionPassword.id
+    key_vault_secret_id = azurerm_key_vault_secret.redisSessionPassword.versionless_id
     # value = azurerm_key_vault_secret.redisSessionPassword.value
     # value = data.azurerm_key_vault_secret.keyVaultSecret["redis-session-password"].value
   }
   secret {
     name                = "redis-socketio-password"
     identity            = azurerm_user_assigned_identity.redisIdentity.id
-    key_vault_secret_id = azurerm_key_vault_secret.redisSocketioPassword.id
+    key_vault_secret_id = azurerm_key_vault_secret.redisSocketioPassword.versionless_id
     # value = azurerm_key_vault_secret.redisSocketioPassword.value
     # value = data.azurerm_key_vault_secret.keyVaultSecret["redis-socketio-password"].value
   }
   secret {
     name                = "redis-celery-password"
     identity            = azurerm_user_assigned_identity.redisIdentity.id
-    key_vault_secret_id = azurerm_key_vault_secret.redisCeleryPassword.id
+    key_vault_secret_id = azurerm_key_vault_secret.redisCeleryPassword.versionless_id
     # value = azurerm_key_vault_secret.redisCeleryPassword.value
     # value = data.azurerm_key_vault_secret.keyVaultSecret["redis-celery-password"].value
   }
@@ -604,15 +604,15 @@ resource "azurerm_container_app" "postgresAdmin" {
   container_app_environment_id = azurerm_container_app_environment.ContainerEnvironment.id
   resource_group_name          = azurerm_resource_group.resourceGroup.name
 
-  lifecycle {
-    ignore_changes = [ingress]
-  }
+  # lifecycle {
+  #   ignore_changes = [ingress]
+  # }
   revision_mode = "Single"
 
   template {
     container {
       name   = "pgadmin"
-      image  = "dpage/pgadmin4:9.11.0"
+      image  = "dpage/pgadmin4:9.17"
       cpu    = 0.25
       memory = "0.5Gi"
       # volume_mounts {
@@ -643,6 +643,14 @@ resource "azurerm_container_app" "postgresAdmin" {
       env {
         name  = "CONSOLE_LOG_LEVEL"
         value = "10"
+      }
+      env {
+        name  = "PGADMIN_LISTEN_PORT"
+        value = "8080"
+      }
+      env {
+        name  = "PGADMIN_DISABLE_POSTFIX"
+        value = "True"
       }
       ################
       # TBD: comment after switching to OAuth2 login only
@@ -692,7 +700,7 @@ resource "azurerm_container_app" "postgresAdmin" {
       }
       env {
         name  = "PGADMIN_CONFIG_MASTER_PASSWORD_HOOK"
-        value = "'/scripts/set_master_password.sh'"
+        value = "'/bin/sh /scripts/set_master_password.sh'"
         # value = "'/data/set_master_password.sh'"
         # value = "'/var/lib/pgadmin/storage/set_master_password.sh'"
       }
@@ -715,6 +723,35 @@ resource "azurerm_container_app" "postgresAdmin" {
         name        = "PGADMIN_CONFIG_OAUTH2_CONFIG"
         secret_name = "pgadmin-oauth2-config"
       }
+
+      # Explicit probes avoid relying on portal defaults and allow slower startup.
+      startup_probe {
+        transport               = "TCP"
+        port                    = 8080
+        initial_delay           = 60
+        interval_seconds        = 5
+        timeout                 = 3
+        failure_count_threshold = 120
+      }
+
+      readiness_probe {
+        transport               = "TCP"
+        port                    = 8080
+        initial_delay           = 60
+        interval_seconds        = 5
+        timeout                 = 3
+        failure_count_threshold = 48
+        success_count_threshold = 1
+      }
+
+      liveness_probe {
+        transport               = "TCP"
+        port                    = 8080
+        initial_delay           = 60
+        interval_seconds        = 10
+        timeout                 = 3
+        failure_count_threshold = 6
+      }
     }
     volume {
       name         = "${terraform.workspace}-admin-data"
@@ -727,8 +764,9 @@ resource "azurerm_container_app" "postgresAdmin" {
   }
 
   ingress {
-    target_port      = 80
+    target_port      = 8080
     external_enabled = true
+    client_certificate_mode = "ignore"
     # allow_insecure_connections = false # consider adding this
     traffic_weight {
       percentage      = 100
@@ -748,30 +786,30 @@ resource "azurerm_container_app" "postgresAdmin" {
   secret {
     name                = "pgadmin-default-email"
     identity            = azurerm_user_assigned_identity.pgadminIdentity.id
-    key_vault_secret_id = azurerm_key_vault_secret.pgadminDefaultEmail[0].id
+    key_vault_secret_id = azurerm_key_vault_secret.pgadminDefaultEmail[0].versionless_id
   }
 
   secret {
     name                = "pgadmin-default-password"
     identity            = azurerm_user_assigned_identity.pgadminIdentity.id
-    key_vault_secret_id = azurerm_key_vault_secret.pgadminDefaultPassword[0].id
+    key_vault_secret_id = azurerm_key_vault_secret.pgadminDefaultPassword[0].versionless_id
   }
   ################
   secret {
     name                = "pgadmin-database-uri"
     identity            = azurerm_user_assigned_identity.pgadminIdentity.id
-    key_vault_secret_id = azurerm_key_vault_secret.pgadminDatabaseURI[0].id
+    key_vault_secret_id = azurerm_key_vault_secret.pgadminDatabaseURI[0].versionless_id
   }
   secret {
     name                = "pgadmin-master-password"
     identity            = azurerm_user_assigned_identity.pgadminIdentity.id
-    key_vault_secret_id = azurerm_key_vault_secret.pgadminMasterPassword[0].id
+    key_vault_secret_id = azurerm_key_vault_secret.pgadminMasterPassword[0].versionless_id
   }
 
   secret {
     name                = "pgadmin-oauth2-config"
     identity            = azurerm_user_assigned_identity.pgadminIdentity.id
-    key_vault_secret_id = azurerm_key_vault_secret.pgadminOauth2Config[0].id
+    key_vault_secret_id = azurerm_key_vault_secret.pgadminOauth2Config[0].versionless_id
   }
 
   tags = {

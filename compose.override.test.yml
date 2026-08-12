@@ -2,6 +2,7 @@ name: test-fssb23
 
 services:
   backend_api:
+    container_name: test_backend_api
     build:
       # context:
       #     ./backend
@@ -43,6 +44,7 @@ services:
       - test-app-data:/data
 
   backend_worker:
+    container_name: test_backend_worker
     build:
       target: worker_dev
     depends_on:
@@ -87,16 +89,20 @@ services:
       - test_network
 
   frontend_svelte:
+    container_name: test_frontend_svelte
     build:
-      target: build
+      target: test
       args:
-        - REDIS_HOST=$REDIS_HOST
-        - REDIS_PORT=$REDIS_PORT
-        - REDIS_SESSION_DB=$REDIS_SESSION_DB
-        - REDIS_PASSWORD=$REDIS_PASSWORD
-        - FRONTEND_SVELTE_CLIENT_ID=$FRONTEND_SVELTE_CLIENT_ID
-        - FRONTEND_SVELTE_CLIENT_SECRET=$FRONTEND_SVELTE_CLIENT_SECRET
-        - AZURE_TENANT_ID=$AZURE_TENANT_ID
+        NODE_VERSION: ${NODE_VERSION}
+        ALPINE_VERSION: ${ALPINE_VERSION}
+        BUN_VERSION: ${BUN_VERSION}
+        REDIS_HOST: $REDIS_HOST
+        REDIS_PORT: $REDIS_PORT
+        REDIS_SESSION_DB: $REDIS_SESSION_DB
+        REDIS_PASSWORD: $REDIS_PASSWORD
+        FRONTEND_SVELTE_CLIENT_ID: $FRONTEND_SVELTE_CLIENT_ID
+        FRONTEND_SVELTE_CLIENT_SECRET: $FRONTEND_SVELTE_CLIENT_SECRET
+        AZURE_TENANT_ID: $AZURE_TENANT_ID
         # - API_SCOPE=$API_SCOPE
     environment:
       - REDIS_HOST=$REDIS_HOST
@@ -109,11 +115,9 @@ services:
       # - API_SCOPE=$API_SCOPE
     networks:
       - test_network
-    command:
-      sh -c "npm install && npm run dev"
-      # npm run dev
+    command: sh -c "bun install && bun dev"
     volumes:
-      - ./frontend_svelte:/app
+      - ${HOST_WORKSPACE_FOLDER:-.}/frontend_svelte:/app
       - /app/node_modules
       # - ./frontend_svelte/node_modules:/app/node_modules
 
@@ -121,11 +125,11 @@ services:
     container_name: test_redis
     volumes:
       - test-redis-data:/data
-      - ./cache/redis.conf:/data/redis.conf:ro
-      - ./cache/redis-full.conf:/data/redis-full.conf:ro
+      - ${HOST_WORKSPACE_FOLDER:-.}/cache/redis.conf:/data/redis.conf:ro
+      - ${HOST_WORKSPACE_FOLDER:-.}/cache/redis-full.conf:/data/redis-full.conf:ro
       # Note the template is read-only, the created user.acl is read write, so redis-cli can alter the user list.
-      - ./cache/users_template.acl:/data/users_template.acl:ro
-      - ./cache/entrypoint.sh:/data/entrypoint.sh:ro
+      - ${HOST_WORKSPACE_FOLDER:-.}/cache/users_template.acl:/data/users_template.acl:ro
+      - ${HOST_WORKSPACE_FOLDER:-.}/cache/entrypoint.sh:/data/entrypoint.sh:ro
     environment:
       - REDIS_PORT=$REDIS_PORT
       - REDIS_PASSWORD=$REDIS_PASSWORD

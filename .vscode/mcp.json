@@ -2,11 +2,13 @@
   "servers": {
     "SvelteMCP": {
       "url": "https://mcp.svelte.dev/mcp",
-      "type": "http"
+      "type": "http",
+      "autoStart": true
     },
     "Context7": {
       "command": "npx",
-      "args": ["-y", "@upstash/context7-mcp@latest"]
+      "args": ["-y", "@upstash/context7-mcp@latest"],
+      "autoStart": true
     }
   },
   "inputs": []

@@ -127,9 +127,14 @@ variable "redis_celery_backend_db" {
   type        = number
 }
 
-
-# Public SSH key configuration for virtual machines:
-variable "public_ssh_key_path" {
-  description = "Path to public SSH key"
+variable "dtu_campusai_api_key" {
+  description = "API key for DTU Campus AI"
   type        = string
+  sensitive   = true
 }
+
+# # Public SSH key configuration for virtual machines:
+# variable "public_ssh_key_path" {
+#   description = "Path to public SSH key"
+#   type        = string
+# }

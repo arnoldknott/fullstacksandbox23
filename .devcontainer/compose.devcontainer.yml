@@ -1,0 +1,22 @@
+services:
+  devcontainer:
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+      args:
+        PYTHON_VERSION: ${PYTHON_VERSION}
+        NODE_VERSION: ${NODE_VERSION}
+        ALPINE_VERSION: ${ALPINE_VERSION}
+        UV_VERSION: ${UV_VERSION}
+        BUN_VERSION: ${BUN_VERSION}
+    command: sleep infinity
+    init: true
+    volumes:
+      - .:/workspaces/fullStackSandbox23:cached
+      - frontend-svelte-node-modules:/workspaces/fullStackSandbox23/frontend_svelte/node_modules
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${HOME}/.ssh:/root/.ssh:ro
+
+volumes:
+  frontend-svelte-node-modules:
+    name: fssb23-frontend-svelte-node-modules

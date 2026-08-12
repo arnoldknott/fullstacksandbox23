@@ -1,0 +1,235 @@
+<script lang="ts">
+	import { onDestroy, onMount } from 'svelte';
+	import { flip } from 'svelte/animate';
+
+	import Display from '$components/Display.svelte';
+	import Heading from '$components/Heading.svelte';
+	import JsonData from '$components/JsonData.svelte';
+	import Title from '$components/Title.svelte';
+	import { Action } from '$lib/accessHandler';
+	import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
+	import type { MessageExtended, NumericalExtended } from '$lib/types';
+
+	import type { PageData } from './$types';
+
+	let { data }: { data: PageData } = $props();
+
+	// let messageMetaData = $state('{"course":"dev2","year":2023,"number": NaN}');
+	let messageMetaData = $state('');
+	let metadataError = $state('');
+	let questionId = $derived(data.questionsData?.questions.id || '');
+	let messageSocketio: SocketIO<MessageExtended> = $state()!;
+	let numericalSocketio: SocketIO<NumericalExtended> = $state()!;
+	// let messageAnswers = $derived(messageSocketio?.entities ?? []);
+	// let numericalAnswers = $derived(numericalSocketio?.entities ?? []);
+
+	// let messageAnswersSorted: MessageExtended[] = $derived(
+	// 	messageAnswers.toSorted((a, b) => {
+	// 		if (!a.creation_date) return 1;
+	// 		if (!b.creation_date) return 1;
+	// 		return a.creation_date < b.creation_date ? 1 : -1;
+	// 	})
+	// );
+	// let numericalAnswersSorted: NumericalExtended[] = $derived(
+	// 	numericalAnswers.toSorted((a, b) => {
+	// 		if (!a.creation_date) return 1;
+	// 		if (!b.creation_date) return 1;
+	// 		return a.creation_date < b.creation_date ? 1 : -1;
+	// 	})
+	// );
+
+	let messageAnswersSorted: MessageExtended[] = $derived(
+		messageSocketio?.getSelectedEntities('sortedMessageAnswers') ?? []
+	);
+	let numericalAnswersSorted: NumericalExtended[] = $derived(
+		numericalSocketio?.getSelectedEntities('sortedNumericalAnswers') ?? []
+	);
+
+	const messageConnection: SocketioConnection = $derived({
+		namespace: '/message',
+		sessionId: data?.session?.sessionId || '',
+		parentId: questionId,
+		queryParams: { 'request-access-data': true }
+	});
+
+	const numericalConnection: SocketioConnection = $derived({
+		namespace: '/numerical',
+		sessionId: data?.session?.sessionId || '',
+		parentId: questionId,
+		queryParams: { 'request-access-data': true }
+	});
+	onMount(() => {
+		messageSocketio = new SocketIO<MessageExtended>(messageConnection, {
+			template: { content: '', language: 'en' }
+		});
+		messageSocketio.createSortedSelection('sortedMessageAnswers', 'creation_date', false);
+		numericalSocketio = new SocketIO<NumericalExtended>(numericalConnection);
+		numericalSocketio.createSortedSelection('sortedNumericalAnswers', 'creation_date', false);
+		// messageSocketio.createPending();
+	});
+
+	$effect(() => {
+		messageSocketio.entities = data.questionsData?.questions.messages || [];
+		numericalSocketio.entities = data.questionsData?.questions.numericals || [];
+	});
+
+	onDestroy(() => {
+		messageSocketio?.client.disconnect();
+		numericalSocketio?.client.disconnect();
+	});
+
+	const parseMetadataInput = (raw: string): Record<string, unknown> | null => {
+		if (!raw.trim()) {
+			return {};
+		}
+
+		try {
+			const parsed = JSON.parse(raw);
+			if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+				return parsed as Record<string, unknown>;
+			}
+			metadataError =
+				'Metadata must be a JSON object, e.g. {"course":"dev2","year":2023,"number": 42}';
+			return null;
+		} catch {
+			metadataError = 'Invalid JSON metadata. Example: {"course":"dev2","year":2023,"number": 42}';
+			return null;
+		}
+	};
+
+	const buildMessageContent = (metadata: Record<string, unknown>, body: string): string => {
+		if (!Object.keys(metadata).length) {
+			return body;
+		}
+
+		const metadataLines = Object.entries(metadata).map(
+			([key, value]) => `${key}: ${String(value)}`
+		);
+		return `---\n${metadataLines.join('\n')}\n---\n\n${body}`;
+	};
+
+	const submitMessage = () => {
+		metadataError = '';
+		const parsedMetadata = parseMetadataInput(messageMetaData);
+		if (parsedMetadata === null) {
+			return;
+		}
+
+		const body = messageSocketio.pendingEntities[0].content.trim();
+		if (!body) {
+			metadataError = 'Message body is empty.';
+			return;
+		}
+
+		const outgoingMessage: MessageExtended = {
+			...messageSocketio.pendingEntities[0],
+			content: buildMessageContent(parsedMetadata, messageSocketio.pendingEntities[0].content)
+		};
+
+		messageSocketio.submitEntity(outgoingMessage, questionId, true, true, Action.READ);
+		messageSocketio.createPending();
+		// messageMetaData = '';
+	};
+</script>
+
+{#snippet answerBubble(text: string | number, id: string, index: number)}
+	<div class="chat chat-receiver">
+		<div class="chat-bubble text-left {index % 2 ? 'chat-bubble-accent' : 'chat-bubble-primary'}">
+			<div class="flex flex-col">
+				<button
+					type="button"
+					class="btn btn-sm btn-error-container text-error-container-content"
+					aria-label="Close"
+					data-combo-box-close=""
+					onclick={() => {
+						if (id) {
+							if (typeof text === 'string') {
+								messageSocketio?.deleteEntity(id);
+							} else {
+								numericalSocketio?.deleteEntity(id);
+							}
+						}
+					}}
+				>
+					Delete <span class="icon-[tabler--trash] size-4 shrink-0"></span>
+				</button>
+				<div class="title-small break-words whitespace-pre-wrap">{text}</div>
+				<span class="label-small badge rounded-full px-4">{id.slice(0, 8)}...</span>
+			</div>
+		</div>
+	</div>
+{/snippet}
+
+<Display>{data.questionsData?.questions.question || 'No question selected.'}</Display>
+{#if !data.questionsData?.questions.question}
+	<Title id="note-on-query-string-question-id">Add id to question as query string (for now)!</Title>
+{/if}
+<Heading id="add-an-answer">Add an answer</Heading>
+
+<div class="grid grid-cols-2 gap-2">
+	<div class="flex gap-1 text-left">
+		<div class="grow-1">
+			<label class="label-text" for="sharing">
+				<div class="heading-large">Message Answer</div>
+				<div class="label">(currently inherit=true and public=true and publicAccess=read)</div>
+			</label>
+			<input
+				type="text"
+				bind:value={messageMetaData}
+				placeholder={'Metadata JSON, e.g. {"course":"dev2","year":2023,"number": 42}'}
+				class="input mb-2 w-full"
+			/>
+			{#if metadataError}
+				<div class="label text-error mb-2">{metadataError}</div>
+			{/if}
+
+			<!-- <div class="flex items-end gap-3 "> -->
+			{#if messageSocketio?.pendingEntities[0]}
+				<textarea
+					class="textarea w-full border border-2 p-2 shadow-inner placeholder:italic"
+					rows="8"
+					placeholder="Add an answer here. Use Enter for a new line."
+					id="sharing"
+					bind:value={messageSocketio.pendingEntities[0].content}></textarea>
+			{:else}
+				<div class="label text-error">
+					<span class="icon-[svg-spinners--12-dots-scale-rotate] size-6"></span>connecting ...
+				</div>
+			{/if}
+			<!-- </div> -->
+		</div>
+		<button
+			type="button"
+			class="btn-secondary-container btn btn-circle btn-gradient shrink-0 self-end"
+			aria-label="Add Icon Button"
+			onclick={submitMessage}
+		>
+			<span class="icon-[tabler--send-2]"></span>
+		</button>
+	</div>
+	<!-- <JsonData data={messageSocketio?.getSelectedEntities('sortedMessageAnswers')} /> -->
+</div>
+
+<Heading id="message-answers">Message Answers:</Heading>
+
+<div class="mx-2 grid w-full grid-cols-5 gap-2">
+	{#each messageAnswersSorted as answer, index (answer.id)}
+		<div animate:flip>
+			{@render answerBubble(answer.content, answer.id, index)}
+		</div>
+	{/each}
+</div>
+
+<Heading id="numerical-answers">Numerical Answers:</Heading>
+
+<div class="mx-2 grid w-full grid-cols-5 gap-2">
+	{#each numericalAnswersSorted as answer, index (answer.id)}
+		<div animate:flip>
+			{@render answerBubble(answer.value, answer.id, index)}
+		</div>
+	{/each}
+</div>
+
+<Heading id="json-data">JSONdata:</Heading>
+
+<JsonData data={data.questionsData} />

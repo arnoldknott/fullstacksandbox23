@@ -168,7 +168,7 @@ async def test_connection_to_production_server_fails_authorization(
 
         response = None
 
-        @client.on("demo_message", namespace="/demo-namespace")
+        @client.on("demo_message", namespace="/demo-namespace")  # type: ignore[misc]
         async def handler(data):
             nonlocal response
             response = data

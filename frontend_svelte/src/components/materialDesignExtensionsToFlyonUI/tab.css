@@ -1,0 +1,182 @@
+/* .tab-primary {
+	@apply bg-primary-container text-primary-container-content border-outline border-b-primary border-1 border-b-2 opacity-80;
+	&:hover {
+		@apply opacity-100;
+	}
+
+	&.active {
+		@apply bg-primary text-primary-content border-primary rounded-b-none border-b-0 opacity-80;
+
+		&:hover {
+			@apply opacity-100;
+		}
+	}
+} */
+
+.tabs-primary {
+	@apply to-primary m-1 rounded-lg bg-linear-to-b from-transparent;
+
+	& > button {
+		@apply bg-primary-container text-primary-container-content border-outline border-b-primary border-1 border-b-2 opacity-80;
+		&:hover {
+			@apply opacity-100;
+		}
+
+		&.active {
+			@apply bg-primary text-primary-content border-primary rounded-b-none border-b-0 opacity-80;
+
+			&:hover {
+				@apply opacity-100;
+			}
+		}
+	}
+}
+
+.tabs-secondary {
+	@apply to-secondary m-1 rounded-lg bg-linear-to-b from-transparent;
+
+	& > button {
+		@apply bg-secondary-container text-secondary-container-content border-outline border-b-secondary border-1 border-b-2 opacity-80;
+		&:hover {
+			@apply opacity-100;
+		}
+
+		&.active {
+			@apply bg-secondary text-secondary-content border-secondary rounded-b-none border-b-0 opacity-80;
+
+			&:hover {
+				@apply opacity-100;
+			}
+		}
+	}
+}
+
+.tabs-accent {
+	@apply to-accent m-1 rounded-lg bg-linear-to-b from-transparent;
+
+	& > button {
+		@apply bg-accent-container text-accent-container-content border-outline border-b-accent border-1 border-b-2 opacity-80;
+		&:hover {
+			@apply opacity-100;
+		}
+
+		&.active {
+			@apply bg-accent text-accent-content border-accent rounded-b-none border-b-0 opacity-80;
+
+			&:hover {
+				@apply opacity-100;
+			}
+		}
+	}
+}
+
+.tabs-neutral {
+	@apply to-neutral m-1 rounded-lg bg-linear-to-b from-transparent;
+
+	& > button {
+		@apply bg-neutral-container text-neutral-container-content border-outline border-b-neutral border-1 border-b-2 opacity-80;
+		&:hover {
+			@apply opacity-100;
+		}
+
+		&.active {
+			@apply bg-neutral text-neutral-content border-neutral rounded-b-none border-b-0 opacity-80;
+
+			&:hover {
+				@apply opacity-100;
+			}
+		}
+	}
+
+	&.active {
+		@apply bg-neutral text-neutral-content border-neutral rounded-b-none border-b-0 opacity-80;
+
+		&:hover {
+			@apply opacity-100;
+		}
+	}
+}
+
+.tabs-info {
+	@apply to-info m-1 rounded-lg bg-linear-to-b from-transparent;
+
+	& > button {
+		@apply bg-info-container text-info-container-content border-outline border-b-info border-1 border-b-2 opacity-80;
+		&:hover {
+			@apply opacity-100;
+		}
+
+		&.active {
+			@apply bg-info text-info-content border-info rounded-b-none border-b-0 opacity-80;
+
+			&:hover {
+				@apply opacity-100;
+			}
+		}
+	}
+
+	&.active {
+		@apply bg-info text-info-content border-info rounded-b-none border-b-0 opacity-80;
+
+		&:hover {
+			@apply opacity-100;
+		}
+	}
+}
+
+.tabs-success {
+	@apply to-success m-1 rounded-lg bg-linear-to-b from-transparent;
+
+	& > button {
+		@apply bg-success-container text-success-container-content border-outline border-b-success border-1 border-b-2 opacity-80;
+		&:hover {
+			@apply opacity-100;
+		}
+
+		&.active {
+			@apply bg-success text-success-content border-success rounded-b-none border-b-0 opacity-80;
+
+			&:hover {
+				@apply opacity-100;
+			}
+		}
+	}
+}
+
+.tabs-warning {
+	@apply to-warning m-1 rounded-lg bg-linear-to-b from-transparent;
+
+	& > button {
+		@apply bg-warning-container text-warning-container-content border-outline border-b-warning border-1 border-b-2 opacity-80;
+		&:hover {
+			@apply opacity-100;
+		}
+
+		&.active {
+			@apply bg-warning text-warning-content border-warning rounded-b-none border-b-0 opacity-80;
+
+			&:hover {
+				@apply opacity-100;
+			}
+		}
+	}
+}
+
+.tabs-error {
+	@apply to-error m-1 rounded-lg bg-linear-to-b from-transparent;
+
+	& > button {
+		@apply bg-error-container text-error-container-content border-outline border-b-error border-1 border-b-2 opacity-80;
+		&:hover {
+			@apply opacity-100;
+		}
+
+		&.active {
+			@apply bg-error text-error-content border-error rounded-b-none border-b-0 opacity-80;
+
+			&:hover {
+				@apply opacity-100;
+			}
+		}
+	}
+}

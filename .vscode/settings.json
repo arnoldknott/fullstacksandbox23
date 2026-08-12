@@ -1,16 +1,60 @@
 {
+  "python.defaultInterpreterPath": "/usr/local/bin/python",
+  "python.terminal.activateEnvInCurrentTerminal": false,
+  "python.terminal.activateEnvironment": false,
+  "python.analysis.autoSearchPaths": true,
+  "python.analysis.diagnosticMode": "workspace",
   "python.analysis.extraPaths": ["./backend/src"],
+  "python.analysis.exclude": ["**/node_modules", "**/__pycache__", "**/.git", "**/.pytest_cache", "**/.mypy_cache", "backend/src/migrations/**", "**/.venv/**", "backend/.venv/**", "**/.*"],
+  "python.analysis.typeCheckingMode": "basic",
   "python.autoComplete.extraPaths": ["./backend/src"],
+  "isort.args": ["--profile", "black"],
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter",
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
   },
+  "[javascript]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    }
+  },
+  "[typescript]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    }
+  },
+  "[svelte]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    }
+  },
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "eslint.codeActionsOnSave.mode": "all",
+  "eslint.validate": ["javascript", "typescript", "svelte"],
   "editor.hover.enabled": "on",
   "svelte.plugin.css.hover.enable": true,
   "svelte.plugin.html.hover.enable": true,
   "svelte.plugin.svelte.hover.enable": true,
   "svelte.plugin.typescript.hover.enable": true,
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.defaultFormatter": "svelte.svelte-vscode",
   "editor.formatOnSave": true,
-  "prettier.prettierPath": "./frontend_svelte/node_modules/prettier"
+  "prettier.prettierPath": "./frontend_svelte/node_modules/prettier",
+  "prettier.requireConfig": true,
+  "prettier.ignorePath": "frontend_svelte/.prettierignore",
+  "python-envs.pythonProjects": [
+    {
+      "path": ".",
+      "envManager": "ms-python.python:system",
+      "packageManager": "ms-python.python:pip"
+    }
+  ]
 }

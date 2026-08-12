@@ -1,13 +1,13 @@
 import json
 import logging
 from datetime import datetime, timedelta
-from typing import Annotated, List, Optional
+from typing import Annotated, Any, Dict, List, Optional, cast
 
 # from enum import Enum
 from uuid import UUID
 
 # import asyncio
-import httpx
+import httpx2
 import jwt
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2AuthorizationCodeBearer
@@ -48,7 +48,7 @@ logger = logging.getLogger(__name__)
 
 
 # Helper function for get_token_payload:
-async def get_azure_jwks(no_cache: bool = False):
+async def get_azure_jwks(no_cache: bool = False) -> Dict[str, Any]:
     """Fetches the JWKs from identity provider"""
     logger.info("🔑 Fetching JWKs")
     try:
@@ -60,19 +60,24 @@ async def get_azure_jwks(no_cache: bool = False):
             # print(jwks)
             if jwks:
                 # print("=== 🔑 JWKS fetched from cache ===")
-                return jwks
+                return cast(Dict[str, Any], jwks)
             else:
-                await get_azure_jwks(no_cache=True)
+                return await get_azure_jwks(no_cache=True)
         else:
             logger.info("🔑 Getting JWKs from Azure")
-            oidc_config = httpx.get(config.AZURE_OPENID_CONFIG_URL).json()
+            oidc_url = config.AZURE_OPENID_CONFIG_URL
+            if not oidc_url:
+                raise HTTPException(
+                    status_code=500, detail="AZURE_OPENID_CONFIG_URL not configured"
+                )
+            oidc_config = httpx2.get(oidc_url).json()
             print("=== 🔑 got JWKs from Azure ===")
             if oidc_config is False:
                 raise HTTPException(
                     status_code=404, detail="Failed to fetch Open ID config."
                 )
             try:
-                jwks = httpx.get(oidc_config["jwks_uri"]).json()
+                jwks = httpx2.get(oidc_config["jwks_uri"]).json()
             except Exception as err:
                 raise HTTPException(
                     status_code=404, detail=f"Failed to fetch JWKS online ${err}"
@@ -82,7 +87,7 @@ async def get_azure_jwks(no_cache: bool = False):
                 redis_session_client.json().set("jwks:microsoft", ".", jwks)
                 logger.info("🔑 Setting JWKs in cache")
                 print("=== 🔑 JWKS set in cache ===")
-                return jwks
+                return cast(Dict[str, Any], jwks)
             except Exception as err:
                 raise HTTPException(
                     status_code=404, detail=f"Failed to set JWKS in redis: ${err}"
@@ -92,29 +97,34 @@ async def get_azure_jwks(no_cache: bool = False):
         raise err
 
 
-async def decode_token(token: str, jwks: dict) -> dict:
+async def decode_token(token: str, jwks: Dict[str, Any]) -> dict:
     """Decodes the token"""
     # Get the key that matches the kid:
     kid = jwt.get_unverified_header(token)["kid"]
     rsa_key = {}
-    for key in jwks["keys"]:
+    for key in jwks.get("keys", []):
         if key["kid"] == kid:
             rsa_key = RSAAlgorithm.from_jwk(key)
     logger.info("Decoding token")
-    # validate the token
+    # validate the token. `RSAAlgorithm.from_jwk` may return a private or public
+    # key type; the JWKS endpoint only publishes public keys, so we view it as
+    # `Any` to satisfy PyJWT's typed `decode()` overloads.
     payload = jwt.decode(
         token,
-        rsa_key,
+        cast(Any, rsa_key),
         algorithms=["RS256"],
         audience=config.API_SCOPE,
         issuer=config.AZURE_ISSUER_URL,
-        options={
-            "validate_iss": True,
-            "validate_aud": True,
-            "validate_exp": True,
-            "validate_nbf": True,
-            "validate_iat": True,
-        },
+        options=cast(
+            Any,
+            {
+                "validate_iss": True,
+                "validate_aud": True,
+                "validate_exp": True,
+                "validate_nbf": True,
+                "validate_iat": True,
+            },
+        ),
     )
     # print("=== decode_token - payload ===")
     # print(payload)
@@ -142,10 +152,10 @@ async def get_azure_token_payload(token: str) -> Optional[dict]:
         return payload
 
 
-oauth2_scheme = OAuth2AuthorizationCodeBearer(
-    authorizationUrl=f"https://login.microsoftonline.com/{config.AZURE_TENANT_ID}/oauth2/v2.0/authorize",
-    tokenUrl=f"https://login.microsoftonline.com/{config.AZURE_TENANT_ID}/oauth2/v2.0/token",
-    scopes={
+oauth2_config = {
+    "authorizationUrl": f"https://login.microsoftonline.com/{config.AZURE_TENANT_ID}/oauth2/v2.0/authorize",
+    "tokenUrl": f"https://login.microsoftonline.com/{config.AZURE_TENANT_ID}/oauth2/v2.0/token",
+    "scopes": {
         # 'User.Read' : "Read user profile",
         # "openid": "OpenID Connect scope",
         # "profile": "Read user profile",
@@ -154,8 +164,17 @@ oauth2_scheme = OAuth2AuthorizationCodeBearer(
         f"api://{config.API_SCOPE}/api.write": "Write API",
         # f"api://{config.API_SCOPE}/socketio": "Socket.io",
     },
-    scheme_name="OAuth2 Authorization Code",
-    description="OAuth2 Authorization Code Bearer implementation for Swagger UI - identity provider is Microsoft Azure AD",
+    "scheme_name": "OAuth2 Authorization Code",
+    "description": "OAuth2 Authorization Code Bearer implementation for Swagger UI - identity provider is Microsoft Azure AD",
+}
+
+oauth2_scheme = OAuth2AuthorizationCodeBearer(
+    **oauth2_config,
+)
+
+oauth2_scheme_optional = OAuth2AuthorizationCodeBearer(
+    **oauth2_config,
+    auto_error=False,
 )
 
 
@@ -167,6 +186,22 @@ async def provide_http_token_payload(
         return await get_azure_token_payload(token)
     except Exception as err:
         logger.error(f"🔑 Token validation failed: ${err}")
+        return None
+
+
+async def provide_http_token_payload_optional(
+    token: Annotated[Optional[str], Depends(oauth2_scheme_optional)],
+) -> Optional[dict]:
+    """General function to get the access token payload"""
+    try:
+        if token is None:
+            logger.debug("🔑 optional_auth: no token provided")
+            return None
+        return await get_azure_token_payload(token)
+    except Exception as err:
+        logger.warning(
+            f"🔑 optional_auth: invalid token provided; treating as unauthenticated: {err}"
+        )
         return None
 
 
@@ -192,7 +227,7 @@ class RedisPersistence(BasePersistence):
     def __init__(self, user_account):
         self.user_account = user_account
 
-    def save(self, content):
+    def save(self, content):  # type: ignore[override]
         """Saves the token to the cache"""
         # raise Exception("Backend does not support saving tokens")
         result = redis_session_client.json().set(
@@ -215,7 +250,12 @@ class RedisPersistence(BasePersistence):
     def time_last_modified(self):
         """Returns the time the cache was last modified"""
         try:
-            idle_time = redis_session_client.object("idletime", self.get_location())
+            # `redis_session_client` is the sync client; `.object()` is typed as a
+            # `ResponseT` union to support the async client too. Narrow to int here.
+            idle_time = cast(
+                Optional[int],
+                redis_session_client.object("idletime", self.get_location()),
+            )
             if idle_time:
                 last_accessed_time = datetime.now() - timedelta(seconds=idle_time)
                 return last_accessed_time.timestamp()
@@ -234,11 +274,12 @@ def get_persistent_cache(user_account):
 
 
 # TBD: write tests for this
-async def get_user_account_from_session_cache(session_id: str) -> dict:
+async def get_user_account_from_session_cache(session_id: str) -> Dict[str, Any]:
     """Gets the user account from the cache"""
     logger.info("🔑 Getting user account from cache")
-    user_account = redis_session_client.json().get(
-        f"session:{session_id}", "$.microsoftAccount"
+    user_account = cast(
+        List[Dict[str, Any]],
+        redis_session_client.json().get(f"session:{session_id}", "$.microsoftAccount"),
     )
     if not user_account:
         raise ValueError("User account not found in session.")
@@ -246,8 +287,11 @@ async def get_user_account_from_session_cache(session_id: str) -> dict:
 
 
 # TBD: write tests for this
-async def get_azure_token_from_cache(user_account, scopes: List[str] = []) -> str:
+async def get_azure_token_from_cache(
+    user_account: Dict[str, Any], scopes: List[str] | None = None
+) -> str | None:
     """Gets the azure token from the cache"""
+    scopes = scopes or []
     # Create the PersistentTokenCache
     cache = get_persistent_cache(user_account)
     msal_conf_client = ConfidentialClientApplication(
@@ -262,21 +306,28 @@ async def get_azure_token_from_cache(user_account, scopes: List[str] = []) -> st
         # TBD: change into scopes:
         # result = msal_conf_client.acquire_token_silent(["User.Read"], account=account)
         result = msal_conf_client.acquire_token_silent(scopes, account=account)
-        if "access_token" in result:
+        if result and "access_token" in result:
             # print("===🔑 azure access_token from cache - access-token ===")
             # print(result["access_token"])
             return result["access_token"]
     return None
 
 
-async def get_token_payload_from_cache(session_id: str, scopes: List[str] = []) -> dict:
+async def get_token_payload_from_cache(
+    session_id: str, scopes: List[str] | None = None
+) -> dict:
     """Gets the azure token from the cache"""
     logger.info("🔑 Getting token from cache")
     user_account = await get_user_account_from_session_cache(session_id)
 
     # Can be extended to further identity service providers:
     token = await get_azure_token_from_cache(user_account, scopes)
-    return await get_azure_token_payload(token)
+    if not token:
+        raise HTTPException(status_code=401, detail="No cached access token found.")
+    payload = await get_azure_token_payload(token)
+    if payload is None:
+        raise HTTPException(status_code=401, detail="Invalid token.")
+    return payload
 
     # # Create the PersistentTokenCache
     # cache = get_persistent_cache(user_account)
@@ -421,7 +472,7 @@ class CurrentAccessToken:
     # -> gives and revokes access for users and groups based on roles
     #
     # TBD: make sure this one get's triggered from all checks that require a user
-    async def gets_or_signs_up_current_user(self) -> UserRead:
+    async def gets_or_signs_up_current_user(self) -> tuple[UserRead, int]:
         """Checks user in database, if not adds user (self-sign-up) and adds or updates the group membership of the user"""
         groups = []
         try:
@@ -576,7 +627,7 @@ class CurrentAzureUserInDatabase(CurrentAccessToken):
 
 
 async def check_token_against_guards(
-    token_payload: dict, guards: GuardTypes
+    token_payload: Optional[dict], guards: Optional[GuardTypes]
 ) -> CurrentUserData:
     """checks if token fulfills the required guards and returns current user."""
     token = CurrentAccessToken(token_payload)
@@ -589,7 +640,7 @@ async def check_token_against_guards(
                 await token.has_role(role)
         if guards.groups is not None:
             for group in guards.groups:
-                await token.has_group(group)
+                await token.has_group(str(group))
     return await token.provides_current_user()
 
 

@@ -74,13 +74,13 @@ else
 fi
 echo "==> workspace is set to: $WORKSPACE <=="
 
-echo ""
-echo "=== get public ssh keys from localhost ==="
-local_public_ssh_key_path=$(eval echo $(grep SSH_KEY_PATH_LOCALHOST .env | cut -d '=' -f 2 | tr -d ' "'))
-public_ssh_key_path=$(eval echo $(grep PUBLIC_SSH_KEY_PATH .env | cut -d '=' -f 2 | tr -d ' "'))
-# echo "local_public_ssh_key_path: $local_public_ssh_key_path"
-# echo "public_ssh_key_path: $public_ssh_key_path"
-cp $local_public_ssh_key_path $public_ssh_key_path
+# echo ""
+# echo "=== get public ssh keys from localhost ==="
+# local_public_ssh_key_path=$(eval echo $(grep SSH_KEY_PATH_LOCALHOST .env | cut -d '=' -f 2 | tr -d ' "'))
+# public_ssh_key_path=$(eval echo $(grep PUBLIC_SSH_KEY_PATH .env | cut -d '=' -f 2 | tr -d ' "'))
+# # echo "local_public_ssh_key_path: $local_public_ssh_key_path"
+# # echo "public_ssh_key_path: $public_ssh_key_path"
+# cp $local_public_ssh_key_path $public_ssh_key_path
 
 
 echo ""
@@ -137,6 +137,7 @@ echo ""
 echo "=== tofu - init ==="
 docker compose run --rm --entrypoint '/bin/sh -c' tofu 'cp -fR .azure/ ~/.azure &&
 tofu init \
+        -upgrade \
         -backend-config="resource_group_name=${AZ_RESOURCE_GROUP_NAME}" \
         -backend-config="storage_account_name=${AZ_STORAGE_ACCOUNT_NAME}" \
         -backend-config="container_name=${AZ_CONTAINER_NAME}" \
@@ -168,6 +169,12 @@ set +e
 # docker compose run --rm -e "WORKSPACE=${WORKSPACE}" tofu plan -out=${WORKSPACE}.tfplan \
 # docker compose cp ./ssh_key.pub tofu:$local_public_ssh_key_path
 docker compose run --rm -e "WORKSPACE=${WORKSPACE}" --entrypoint '/bin/sh -c' tofu 'cp -fR .azure/ ~/.azure &&
+case "$WORKSPACE" in
+  dev)   export DTU_CAMPUSAI_API_KEY="$DTU_CAMPUSAI_API_KEY_DEV" ;;
+  stage) export DTU_CAMPUSAI_API_KEY="$DTU_CAMPUSAI_API_KEY_STAGE" ;;
+  prod)  export DTU_CAMPUSAI_API_KEY="$DTU_CAMPUSAI_API_KEY_PROD" ;;
+  *) echo "Unknown WORKSPACE: $WORKSPACE"; exit 1 ;;
+esac &&
 ARM_CLIENT_SECRET=$AZURE_CLIENT_SECRET &&
 tofu plan -out=${WORKSPACE}.tfplan \
         -detailed-exitcode \
@@ -187,7 +194,8 @@ tofu plan -out=${WORKSPACE}.tfplan \
         -var "pgadmin_default_email=${PGADMIN_DEFAULT_EMAIL}" \
         -var "redis_port=${REDIS_PORT}" \
         -var "redis_insight_port=${REDIS_INSIGHT_PORT}" \
-        -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}"'
+        -var "dtu_campusai_api_key=${DTU_CAMPUSAI_API_KEY}"'
+# -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}"'
 
 # Comes from ARM_ environment variable, as it is not needed with managed identity in the Github Actions workflow:
 # -var "azure_client_secret=${AZURE_CLIENT_SECRET}" \
@@ -259,13 +267,13 @@ else
     tofu_changes_applied=1
 fi
 
-echo ""
-echo "=== remove the public ssh from working directory ==="
-rm -f $public_ssh_key_path
+# echo ""
+# echo "=== remove the public ssh from working directory ==="
+# rm -f $public_ssh_key_path
 
 echo ""
 echo "=== remove the azure login information ==="
-rm -rfd .azure/*
+rm -rf .azure/*
 
 echo ""
 echo "=== tofu - finished ==="

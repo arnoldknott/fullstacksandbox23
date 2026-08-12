@@ -1,19 +1,19 @@
-from .base import BaseCRUD
-
 from models.presentation import (
     Presentation,
-    # PresentationCreate,
-    # PresentationRead,
-    # PresentationUpdate,
+    PresentationCreate,
+    PresentationRead,
+    PresentationUpdate,
 )
+
+from .base import BaseCRUD
 
 
 class PresentationCRUD(
     BaseCRUD[
         Presentation,
-        Presentation.Create,
-        Presentation.Read,
-        Presentation.Update,
+        PresentationCreate,
+        PresentationRead,
+        PresentationUpdate,
     ]
 ):
     def __init__(self):

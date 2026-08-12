@@ -1,9 +1,12 @@
 <script lang="ts">
+	import { flip } from 'svelte/animate';
+	import { blur, crossfade, draw, fade, fly, scale, slide } from 'svelte/transition';
+
+	import Display from '$components/Display.svelte';
 	import Heading from '$components/Heading.svelte';
+
 	import Box from './Box.svelte';
 	import Slider from './Slider.svelte';
-	import { blur, crossfade, draw, fade, fly, scale, slide } from 'svelte/transition';
-	import { flip } from 'svelte/animate';
 
 	let blurParameters = $state({
 		delay: 0,
@@ -102,7 +105,9 @@
 	};
 </script>
 
-<Heading>Transitions and Animations</Heading>
+<Display>Svelte 5</Display>
+
+<Heading id="transitions-and-animations">Transitions and Animations</Heading>
 
 <div class="sm w-full md:grid md:grid-cols-4 md:gap-4">
 	<Box title="Blur">

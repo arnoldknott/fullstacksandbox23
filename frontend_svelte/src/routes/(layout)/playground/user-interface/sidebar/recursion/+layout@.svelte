@@ -1,17 +1,20 @@
 <script lang="ts">
-	import { page } from '$app/state';
-	import { resolve } from '$app/paths';
-	import { initDropdown, initOverlay } from '$lib/userInterface';
-	import { type Snippet } from 'svelte';
 	import { type SubmitFunction } from '@sveltejs/kit';
-	import { Variant, type ColorConfig } from '$lib/theming';
-	import { Model, type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
-	import ThemePicker from '../../../components/ThemePicker.svelte';
-	import ArtificialIntelligencePicker from '../../../components/ArtificialIntelligencePicker.svelte';
-	import { afterNavigate } from '$app/navigation';
+	import { type Snippet } from 'svelte';
 	import { onMount } from 'svelte';
+
+	import { afterNavigate } from '$app/navigation';
+	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
+	import { type ArtificialIntelligenceConfig, Model } from '$lib/artificialIntelligence';
+	import { type ColorConfig, Variant } from '$lib/theming';
 	import type { SidebarItemContent } from '$lib/types';
+	import { initDropdown, initOverlay } from '$lib/userInterface';
+
+	import ArtificialIntelligencePicker from '../../../components/ArtificialIntelligencePicker.svelte';
+	import ThemePicker from '../../../components/ThemePicker.svelte';
 	import SidebarItem from './SidebarItem.svelte';
+	import SidebarToggleButton from './SidebarToggleButton.svelte';
 	let { children }: { children: Snippet } = $props();
 
 	let sidebarLinks: SidebarItemContent[] = $state([
@@ -393,24 +396,6 @@
 	let mode: 'light' | 'dark' = $state('dark');
 </script>
 
-{#snippet sidebarToggleButton(classes: string, overlayModifier: object)}
-	<button
-		type="button"
-		class="btn btn-square btn-sm btn-outline btn-primary {classes}"
-		aria-haspopup="dialog"
-		aria-expanded="false"
-		aria-controls="collapsible-mini-sidebar"
-		aria-label="Toggle Sidebar"
-		{...overlayModifier}
-	>
-		<span
-			class="icon-[material-symbols--menu-open-rounded] overlay-minified:hidden flex size-6 max-sm:hidden"
-		></span>
-		<span class="icon-[material-symbols--menu] overlay-minified:flex hidden size-6 max-sm:flex"
-		></span>
-	</button>
-{/snippet}
-
 {#snippet navbarPartItem(href: string, icon: string, text: string, textClasses?: string)}
 	<li class="text-primary hidden items-center md:flex">
 		<a {href} aria-label={text} class="flex items-center gap-1"
@@ -434,12 +419,15 @@
 >
 	<div class="navbar-start rtl:[--placement:bottom-end]">
 		<ul class="menu menu-horizontal flex flex-nowrap items-center">
-			{@render sidebarToggleButton('hidden sm:flex', {
-				'data-overlay-minifier': '#collapsible-mini-sidebar'
-			})}
-			{@render sidebarToggleButton('sm:hidden', {
-				'data-overlay': '#collapsible-mini-sidebar'
-			})}
+			<SidebarToggleButton
+				extraClasses="hidden sm:flex"
+				overlayModifier={{ 'data-overlay-minifier': '#collapsible-mini-sidebar' }}
+			/>
+			<SidebarToggleButton
+				extraClasses="sm:hidden"
+				overlayModifier={{ 'data-overlay': '#collapsible-mini-sidebar' }}
+			/>
+
 			<!-- {@render navbarPartItem('/features', 'icon-[mdi--feature-highlight]', 'Features')}
 			{@render navbarPartItem('/apps', 'icon-[tabler--apps]', 'Apps')}
 			{@render navbarPartItem(

@@ -1,7 +1,7 @@
 <script lang="ts">
-	import NavigationCard from '$components/NavigationCard.svelte';
 	import Display from '$components/Display.svelte';
 	import Heading from '$components/Heading.svelte';
+	import NavigationCard from '$components/NavigationCard.svelte';
 	const navigation = [
 		{
 			name: 'Top Navbar',
@@ -11,8 +11,14 @@
 		},
 		{
 			name: 'Sidebar',
-			description: 'on the side of the screen for navigation for secondary application navigation.',
+			description:
+				'on the left side of the screen for navigation for secondary application navigation.',
 			url: 'user-interface/sidebar'
+		},
+		{
+			name: 'Drawer',
+			description: 'on the right side of the screen for detailed tools and actions.',
+			url: 'user-interface/drawer'
 		},
 		{
 			name: 'In page links',
@@ -63,14 +69,14 @@
 	<div
 		class="col-span-12 md:col-start-2 md:col-end-11 xl:col-span-6 xl:col-start-1 xl:col-end-7 xl:mt-30 2xl:col-start-2 2xl:col-end-6"
 	>
-		<Heading id="services">Design</Heading>
+		<Heading id="design">Design</Heading>
 		<div>Theming of color, typography and spacing coming here.</div>
 	</div>
 
 	<div
 		class="col-span-12 md:col-start-2 md:col-end-11 xl:col-span-6 xl:col-start-7 xl:col-end-12 xl:mt-30 2xl:col-start-8 2xl:col-end-11"
 	>
-		<Heading id="components">Services</Heading>
+		<Heading id="services">Services</Heading>
 		<div>
 			Integrations, interfaces, identity management and content handling coming here. TBD: move
 			somewhere else or rename user interface.

@@ -13,6 +13,7 @@ on:
     paths:
       - "backend/**"
       - "compose*.yml"
+      - "versions.env"
       - ".github/workflows/backendAPI.yml"
 
 env:
@@ -22,7 +23,7 @@ env:
 
 jobs:
   test:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     environment: test
     env:
       KEYVAULT_HEALTH: ${{ vars.KEYVAULT_HEALTH }}
@@ -99,7 +100,7 @@ jobs:
         # echo $REDIS_PORT
         # echo "=== REDIS_SESSION_DB ==="
         # echo $REDIS_SESSION_DB
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       # - name: Build
       #   run: |
       #     docker compose \
@@ -109,12 +110,14 @@ jobs:
       - name: Build
         run: |
           docker compose \
+            --env-file versions.env \
             -f compose.yml \
             -f compose.override.test.yml \
             build
       - name: Spin up containers
         run: |
           docker compose \
+            --env-file versions.env \
             -f compose.yml \
             -f compose.override.test.yml \
             up -d
@@ -128,6 +131,7 @@ jobs:
       - name: Code Formating
         run: |
           docker compose \
+            --env-file versions.env \
             -f compose.yml \
             -f compose.override.test.yml \
             exec -T backend_api \
@@ -142,10 +146,19 @@ jobs:
       - name: Linting
         run: |
           docker compose \
+            --env-file versions.env \
             -f compose.yml \
             -f compose.override.test.yml \
             exec -T backend_api \
             sh -c "ruff check ."
+      - name: Type checking
+        run: |
+          docker compose \
+            --env-file versions.env \
+            -f compose.yml \
+            -f compose.override.test.yml \
+            exec -T backend_api \
+            sh -c "pyright ."
       # - name: Unit testing
       #   run: |
       #     docker compose \
@@ -164,13 +177,16 @@ jobs:
       - name: Unit testing
         run: |
           docker compose \
+            --env-file versions.env \
             -f compose.yml \
             -f compose.override.test.yml \
             exec -T backend_api \
-            sh -c "pytest -v"
+            sh -c "pytest -vv"
       - name: Stop containers
+        if: ${{ always() }}
         run: |
           docker compose \
+            --env-file versions.env \
             -f compose.yml \
             -f compose.override.test.yml \
             down
@@ -186,10 +202,10 @@ jobs:
         #   sh -c "pytest -v"
 
   check_for_infrastructure_change:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 2
       - name: echos github variables
@@ -231,7 +247,7 @@ jobs:
     # TBD: split into multiline if statement:
     if: ${{((github.event.ref == 'refs/heads/main' || github.event.ref == 'refs/heads/stage') && needs.check_for_infrastructure_change.outputs.infrastructure_changed == 'FALSE' ) || ( ( github.event.workflow_run.head_branch == 'main' || github.event.workflow_run.head_branch == 'stage' ) && github.event.workflow_run.name == 'Infrastructure' && github.event.workflow_run.conclusion == 'success') }}
     needs: [test, check_for_infrastructure_change]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       id-token: write
       contents: read
@@ -243,18 +259,18 @@ jobs:
       #     echo "=== Is this the correct tag: github.event.after? ==="
       #     echo ${{ github.event.after }}
       #     echo $CONTAINER_TAG
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build images for production
         run: |
-          docker compose -f compose.yml -f compose.prod.yml build --build-arg COMMIT_SHA=${{env.COMMIT_SHA}} backend_worker backend_api
+          docker compose --env-file versions.env -f compose.yml -f compose.prod.yml build --build-arg COMMIT_SHA=${{env.COMMIT_SHA}} backend_worker backend_api
       - name: Show images
         run: docker image list
       - name: Tag and push with latest and commit hash
@@ -294,7 +310,7 @@ jobs:
     # if: ${{ github.event.ref == 'refs/heads/main' || github.event.ref == 'refs/heads/stage' }}
     # if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/stage' }}
     if: ${{((github.event.ref == 'refs/heads/main' || github.event.ref == 'refs/heads/stage') && needs.check_for_infrastructure_change.outputs.infrastructure_changed == 'FALSE' ) || ( ( github.event.workflow_run.head_branch == 'main' || github.event.workflow_run.head_branch == 'stage' ) && github.event.workflow_run.name == 'Infrastructure' && github.event.workflow_run.conclusion == 'success') }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       id-token: write
       packages: read
@@ -306,13 +322,13 @@ jobs:
       #     echo ${{ github.event.after }}
       #     echo $CONTAINER_TAG
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Login to Azure
-        uses: azure/login@v2
+        uses: azure/login@v3
         with:
           client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
@@ -367,7 +383,7 @@ jobs:
           echo "=== Contents of postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log ==="
           cat postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log
       - name: Upload migration upgrade artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: postgres_migration_upgrade_stage_results_${{ env.COMMIT_SHA }}
           path: postgres_migration/upgrade_stage_${{ env.COMMIT_SHA }}.log
@@ -375,7 +391,7 @@ jobs:
       # implemented as in https://learn.microsoft.com/en-us/azure/container-apps/manage-secrets?tabs=azure-cli
       # TBD: consider putting all of this into a deploymentscript and reuse it and in deploy_prod!
       - name: Logout from Azure
-        uses: azure/CLI@v2
+        uses: azure/CLI@v3
         with:
           inlineScript: |
             az logout
@@ -386,14 +402,14 @@ jobs:
   # Make sure to persist the changes to mounted volume and commit them to the repo afterwards!
   check_postgres_migrations:
     needs: deploy_stage
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       id-token: write
       # packages: read
     environment: stage
     steps:
       - name: Login to Azure
-        uses: azure/login@v2
+        uses: azure/login@v3
         with:
           client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
@@ -420,7 +436,7 @@ jobs:
           echo "Alembic exit code: $ALEMBIC_EXIT_CODE"
           echo "alembic_check_exit_code=$ALEMBIC_EXIT_CODE" >> $GITHUB_OUTPUT
       - name: Upload migration check artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: postgres_migration_check_results_${{ env.COMMIT_SHA }}
           path: |
@@ -432,7 +448,7 @@ jobs:
       #     echo ${{ steps.check_run.outputs.script_output }}
       #     echo ${{ steps.check_run.outputs.script_exit_code }}
       - name: Logout from Azure
-        uses: azure/CLI@v2
+        uses: azure/CLI@v3
         with:
           inlineScript: |
             az logout
@@ -444,7 +460,7 @@ jobs:
   create_postgres_migration_scripts:
     needs: check_postgres_migrations
     if: ${{ needs.check_postgres_migrations.outputs.alembic_check != 0 }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       id-token: write
       contents: write
@@ -453,7 +469,7 @@ jobs:
     env:
       MIGRATION_FILES_PATH: backend/src/migrations/stage_prod/versions
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Check what directory we are in
         # maybe we need a checkout repo step?
         run: |
@@ -464,7 +480,7 @@ jobs:
           echo ${{ env.COMMIT_SHA }}
           echo $COMMIT_SHA
       - name: Login to Azure
-        uses: azure/login@v2
+        uses: azure/login@v3
         with:
           client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
@@ -508,7 +524,7 @@ jobs:
         # For debugging enter container with:
         # az containerapp exec -n <resource_name> -g <resource_group> --command "/bin/sh"
       - name: Upload migration check artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: postgres_migration_revision_results_${{ env.COMMIT_SHA }}
           path: |
@@ -527,7 +543,7 @@ jobs:
       #   run: |
       #     git status
       - name: Create a pull request
-        uses: peter-evans/create-pull-request@v5
+        uses: peter-evans/create-pull-request@v8
         with:
           title: "[migrations] for postgres for commit ${{ env.COMMIT_SHA }}"
           add-paths: "${{ env.MIGRATION_FILES_PATH}}/*"
@@ -561,7 +577,7 @@ jobs:
     # as this environmnet requires a manual review:
     # also wait on the pull request from postgres migrations to be merged
     # if check migrations detected changes.
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       id-token: write
       packages: read
@@ -573,13 +589,13 @@ jobs:
       #     echo ${{ github.event.after }}
       #     echo $CONTAINER_TAG
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Login to Azure
-        uses: azure/login@v2
+        uses: azure/login@v3
         with:
           client-id: ${{ secrets.AZURE_GITHUBACTIONSMANAGEDIDENTITY_CLIENT_ID }}
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
@@ -634,7 +650,7 @@ jobs:
           echo "=== Contents of postgres_migration/upgrade_prod_${{ env.COMMIT_SHA }}.log ==="
           cat postgres_migration/upgrade_prod_${{ env.COMMIT_SHA }}.log
       - name: Upload migration upgrade artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: postgres_migration_upgrade_prod_results_${{ env.COMMIT_SHA }}
           path: postgres_migration/upgrade_prod_${{ env.COMMIT_SHA }}.log
@@ -643,7 +659,7 @@ jobs:
       # TBD: consider displaying a "maintanance" page while the migrations are running - but more likely, the new container hasn't activated anyways yet.
       # TBD: or consider creating separate migration scripts for stage and prod? => another pull request? 2 different directories?
       - name: Logout from Azure
-        uses: azure/CLI@v2
+        uses: azure/CLI@v3
         with:
           inlineScript: |
             az logout

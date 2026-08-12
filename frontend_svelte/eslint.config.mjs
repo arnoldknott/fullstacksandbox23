@@ -1,13 +1,16 @@
-import typescriptEslint from '@typescript-eslint/eslint-plugin';
-import globals from 'globals';
-import tsParser from '@typescript-eslint/parser';
-import parser from 'svelte-eslint-parser';
-import svelte from 'eslint-plugin-svelte';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import js from '@eslint/js';
-import svelteConfig from './svelte.config.js';
+
 import { FlatCompat } from '@eslint/eslintrc';
+import js from '@eslint/js';
+import typescriptEslint from '@typescript-eslint/eslint-plugin';
+import tsParser from '@typescript-eslint/parser';
+import simpleImportSort from 'eslint-plugin-simple-import-sort';
+import svelte from 'eslint-plugin-svelte';
+import globals from 'globals';
+import parser from 'svelte-eslint-parser';
+
+import svelteConfig from './svelte.config.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -32,7 +35,9 @@ export default [
 			'!**/.env.example',
 			'**/pnpm-lock.yaml',
 			'**/package-lock.json',
-			'**/yarn.lock'
+			'**/yarn.lock',
+			'src/components/shadcn', // ignore shadcn components
+			'/static/*' // ignore static files for now
 		]
 	},
 	...compat.extends(
@@ -43,7 +48,8 @@ export default [
 	),
 	{
 		plugins: {
-			'@typescript-eslint': typescriptEslint
+			'@typescript-eslint': typescriptEslint,
+			'simple-import-sort': simpleImportSort
 		},
 		languageOptions: {
 			globals: {
@@ -62,7 +68,6 @@ export default [
 	},
 	{
 		files: ['**/*.svelte', '**/*.svelte.js'],
-
 		languageOptions: {
 			parser: parser,
 			ecmaVersion: 5,
@@ -71,11 +76,19 @@ export default [
 				parser: '@typescript-eslint/parser',
 				svelteConfig
 			}
+		},
+		rules: {
+			'svelte/no-navigation-without-resolve': 'off', // TBD: consider re-enabling
+			'no-useless-assignment': 'off', // Svelte's reactivity syntax causes false positives
+			'no-undef': 'off' // TypeScript handles this — no-undef causes false positives
 		}
 	},
 	{
 		rules: {
-			'@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }]
+			'@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+			'sort-imports': 'off',
+			'simple-import-sort/imports': 'error',
+			'simple-import-sort/exports': 'error'
 		}
 	}
 ];

@@ -1,10 +1,10 @@
 import uuid
 from datetime import datetime, timedelta
-from typing import Annotated, List
+from typing import Annotated, Any, Awaitable, Callable, Optional
 
 import pytest
 from fastapi import Depends, FastAPI
-from httpx import AsyncClient
+from httpx2 import AsyncClient
 
 from core.security import (
     CurrentAccessTokenHasRole,
@@ -12,12 +12,16 @@ from core.security import (
     CurrentAccessTokenIsValid,
     CurrentAzureUserInDatabase,
     get_azure_jwks,
+    get_http_access_token_payload,
     get_user_account_from_session_cache,
+    provide_http_token_payload,
+    provide_http_token_payload_optional,
 )
 from core.types import Action, CurrentUserData
 from crud.access import AccessLoggingCRUD
+from main import fastapi_app
 from models.access import AccessLogRead
-from models.identity import User, UserRead
+from models.identity import UserRead
 from routers.api.v1.identities import get_user_by_id
 from tests.utils import (  # token_payload_roles_user,; token_payload_scope_api_write,
     current_user_data_admin,
@@ -228,16 +232,18 @@ async def test_azure_user_self_signup_invalid_token(
 async def test_existing_azure_user_has_new_group_in_token(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
-    add_one_azure_test_user: List[User],
+    add_one_azure_test_user: Callable[[int], Awaitable[UserRead]],
     mock_guards,
 ):
     """Tests if an user that got added to a new azure group also gets added the new azure group in the database."""
     # preparing the test: adds a user to the database and ensure that this user is member of 3 groups:
     existing_user = await add_one_azure_test_user(0)
+    assert existing_user.id is not None
     existing_db_user = await get_user_by_id(
-        str(existing_user.id), token_admin_read, mock_guards(roles=["User"])
+        existing_user.id, token_admin_read, mock_guards(roles=["User"])
     )
 
+    assert existing_db_user.azure_groups is not None
     assert len(existing_db_user.azure_groups) == 3
     # print("=== existing_db_user.azure_groups ===")
     # pprint(existing_db_user.azure_groups)
@@ -247,7 +253,7 @@ async def test_existing_azure_user_has_new_group_in_token(
     @app.get("/test_existing_azure_user_has_new_group_in_token")
     def temp_endpoint(
         current_user: Annotated[str, Depends(CurrentAzureUserInDatabase())],
-    ) -> UserRead:
+    ) -> Any:
         """Returns the result of the guard."""
         return current_user
 
@@ -264,7 +270,7 @@ async def test_existing_azure_user_has_new_group_in_token(
 
     # Verify that the user now has the new group in the database
     db_user = await get_user_by_id(
-        str(existing_user.id), token_admin_read, mock_guards(roles=["User"])
+        existing_user.id, token_admin_read, mock_guards(roles=["User"])
     )
     assert db_user is not None
     assert db_user.azure_user_id == uuid.UUID(many_test_azure_users[0]["azure_user_id"])
@@ -273,6 +279,7 @@ async def test_existing_azure_user_has_new_group_in_token(
     )
     # print("=== db_user.azure_groups ===")
     # pprint(db_user.azure_groups)
+    assert db_user.azure_groups is not None
     assert len(db_user.azure_groups) == 4
 
     azure_groups = db_user.azure_groups
@@ -315,17 +322,19 @@ async def test_existing_azure_user_has_new_group_in_token(
 async def test_existing_azure_user_got_group_removed_in_token(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
-    add_one_azure_test_user: List[User],
+    add_one_azure_test_user: Callable[[int], Awaitable[UserRead]],
     mock_guards,
 ):
     """Tests if an user that got removed from an azure group also gets removed the group from the database."""
 
     # preparing the test: adds a user to the database and ensure that this user is member of 3 groups:
     existing_user = await add_one_azure_test_user(0)
+    assert existing_user.id is not None
     existing_db_user = await get_user_by_id(
-        str(existing_user.id), token_admin_read, mock_guards(roles=["User"])
+        existing_user.id, token_admin_read, mock_guards(roles=["User"])
     )
 
+    assert existing_db_user.azure_groups is not None
     assert len(existing_db_user.azure_groups) == 3
     app = app_override_provide_http_token_payload
 
@@ -333,7 +342,7 @@ async def test_existing_azure_user_got_group_removed_in_token(
     @app.get("/test_existing_azure_user_got_group_removed_in_token")
     def temp_endpoint(
         current_user: Annotated[str, Depends(CurrentAzureUserInDatabase())],
-    ) -> UserRead:
+    ) -> Any:
         """Returns the result of the guard."""
         return current_user
 
@@ -366,13 +375,14 @@ async def test_existing_azure_user_got_group_removed_in_token(
 
     # Verify that the user has only the remaining groups in the database but not the deleted group any more
     db_user = await get_user_by_id(
-        str(existing_user.id), token_admin_read, mock_guards(roles=["User"])
+        existing_user.id, token_admin_read, mock_guards(roles=["User"])
     )
     assert db_user is not None
     assert db_user.azure_user_id == uuid.UUID(many_test_azure_users[0]["azure_user_id"])
     assert db_user.azure_tenant_id == uuid.UUID(
         many_test_azure_users[0]["azure_tenant_id"]
     )
+    assert db_user.azure_groups is not None
     assert len(db_user.azure_groups) == 2
 
     azure_groups = db_user.azure_groups
@@ -420,7 +430,7 @@ async def test_existing_azure_user_got_group_removed_in_token(
 async def test_existing_user_logs_in(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
-    add_one_azure_test_user: List[UserRead],
+    add_one_azure_test_user: Callable[[int], Awaitable[UserRead]],
 ):
     """Test an existing user logs in successfully"""
 
@@ -511,6 +521,114 @@ async def test_get_user_account_from_session_cache_nonexistent():
 
 
 # endregion: Testing Session and Cache interaction
+
+
+# region: Non-mocked dependency behavior
+
+
+@pytest.mark.anyio
+async def test_optional_token_dependency_missing_authorization_header_returns_none(
+    async_client: AsyncClient,
+):
+    """Optional dependency should not fail when Authorization header is absent."""
+
+    @fastapi_app.get("/test_optional_dependency_without_authorization")
+    def temp_endpoint(
+        payload: Annotated[
+            Optional[dict], Depends(provide_http_token_payload_optional)
+        ],
+    ) -> dict[str, Any]:
+        return {"is_none": payload is None}
+
+    response = await async_client.get("/test_optional_dependency_without_authorization")
+
+    assert response.status_code == 200
+    assert response.json() == {"is_none": True}
+
+
+@pytest.mark.anyio
+async def test_optional_token_dependency_with_invalid_bearer_token_returns_none(
+    async_client: AsyncClient,
+):
+    """Optional dependency should treat invalid bearer token as unauthenticated."""
+
+    @fastapi_app.get("/test_optional_dependency_with_invalid_bearer")
+    def temp_endpoint(
+        payload: Annotated[
+            Optional[dict], Depends(provide_http_token_payload_optional)
+        ],
+    ) -> dict[str, Any]:
+        return {"is_none": payload is None}
+
+    response = await async_client.get(
+        "/test_optional_dependency_with_invalid_bearer",
+        headers={"Authorization": "Bearer definitely-not-a-jwt"},
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {"is_none": True}
+
+
+@pytest.mark.anyio
+async def test_strict_token_dependency_missing_authorization_header_returns_401(
+    async_client: AsyncClient,
+):
+    """Strict dependency should fail fast when Authorization header is absent."""
+
+    @fastapi_app.get("/test_strict_dependency_without_authorization")
+    def temp_endpoint(
+        payload: Annotated[Optional[dict], Depends(provide_http_token_payload)],
+    ) -> dict[str, Any]:
+        return {"is_none": payload is None}
+
+    response = await async_client.get("/test_strict_dependency_without_authorization")
+
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Not authenticated"}
+
+
+@pytest.mark.anyio
+async def test_strict_access_token_payload_missing_authorization_header_returns_401(
+    async_client: AsyncClient,
+):
+    """Strict access token dependency should return 401 without Authorization header."""
+
+    @fastapi_app.get("/test_strict_access_token_without_authorization")
+    def temp_endpoint(
+        payload: Annotated[dict, Depends(get_http_access_token_payload)],
+    ) -> dict[str, Any]:
+        return {"payload_present": payload is not None}
+
+    response = await async_client.get("/test_strict_access_token_without_authorization")
+
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Not authenticated"}
+
+
+@pytest.mark.anyio
+async def test_optional_token_dependency_with_non_bearer_authorization_returns_none(
+    async_client: AsyncClient,
+):
+    """Optional dependency should treat non-bearer Authorization as unauthenticated."""
+
+    @fastapi_app.get("/test_optional_dependency_with_non_bearer_authorization")
+    def temp_endpoint(
+        payload: Annotated[
+            Optional[dict], Depends(provide_http_token_payload_optional)
+        ],
+    ) -> dict[str, Any]:
+        return {"is_none": payload is None}
+
+    response = await async_client.get(
+        "/test_optional_dependency_with_non_bearer_authorization",
+        headers={"Authorization": "Basic invalid"},
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {"is_none": True}
+
+
+# endregion: Non-mocked dependency behavior
 
 
 # region: Testing guards:

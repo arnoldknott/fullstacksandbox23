@@ -1,9 +1,10 @@
 <script lang="ts">
-	import Title from '$components/Title.svelte';
-	import Heading from '$components/Heading.svelte';
-	import Loreum from '../../Loreum.svelte';
 	import Display from '$components/Display.svelte';
+	import Heading from '$components/Heading.svelte';
 	import Section from '$components/Section.svelte';
+	import Title from '$components/Title.svelte';
+
+	import Loreum from '../../Loreum.svelte';
 </script>
 
 <div class="bg-warning-container/70 rounded-xl p-4">
@@ -33,14 +34,14 @@
 	<Loreum repetition={20} /> -->
 
 	<Section id="pg2loreum1">
-		<Heading>
+		<Heading id="pg2loreum1heading">
 			<span class="italic">First</span> Lorem ipsum dolor sit amet...
 		</Heading>
 		<Loreum />
 	</Section>
 
 	<Section id="pg2loreum2">
-		<Heading>
+		<Heading id="pg2loreum2heading">
 			<span class="italic">Second</span> Lorem ipsum dolor sit amet...
 		</Heading>
 
@@ -48,7 +49,7 @@
 	</Section>
 
 	<Section id="pg2sub-category">
-		<Heading>Sub Category</Heading>
+		<Heading id="pg2sub-categoryheading">Sub Category</Heading>
 	</Section>
 
 	<Section id="pg2loreum3">
@@ -66,14 +67,14 @@
 	</Section>
 
 	<Section id="pg2loreum5">
-		<Heading id="pg2loreum5title">
+		<Heading id="pg2loreum5heading">
 			<span class="italic">Fifth</span> Lorem ipsum dolor sit amet...
 		</Heading>
 		<Loreum />
 	</Section>
 
 	<Section id="pg2loreum6">
-		<Heading id="pg2loreum6title">
+		<Heading id="pg2loreum6heading">
 			<span class="italic">Sixth</span> Lorem ipsum dolor sit amet...
 		</Heading>
 		<Loreum repetition={20} />

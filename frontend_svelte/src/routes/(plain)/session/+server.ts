@@ -1,6 +1,7 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
-import AppConfig from '$lib/server/config';
+
 import { redisCache } from '$lib/server/cache';
+import AppConfig from '$lib/server/config';
 
 const appConfig = await AppConfig.getInstance();
 

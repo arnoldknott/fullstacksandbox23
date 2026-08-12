@@ -84,6 +84,7 @@ class UserNamespace(BaseNamespace):
     #     try:
     #         me = None
     #         # The CRUD in callback_on_connect does not work with admin tokens
+    #         assert self.crud is not None
     #         async with self.crud() as crud:
     #             me = await crud.read_me(current_user)
     #         await self.server.emit(
@@ -104,6 +105,7 @@ class UserNamespace(BaseNamespace):
             current_user = await self._get_current_user_and_check_guard(sid, "connect")
             me = None
             # The CRUD in callback_on_connect does not work with admin tokens
+            assert self.crud is not None
             async with self.crud() as crud:
                 me = await crud.read_me(current_user)
             await self.server.emit(
@@ -126,6 +128,7 @@ class UserNamespace(BaseNamespace):
             )
             new_me = Me(**data)
             updated_me = None
+            assert self.crud is not None
             async with self.crud() as crud:
                 updated_me = await crud.update_me(current_user, new_me)
             await self.server.emit(
@@ -185,7 +188,7 @@ class UeberGroupNamespace(BaseNamespace):
         """Callback on connect for socket.io namespaces."""
         # trigger the read all event to fetch all ueber groups:
         current_user = kwargs.get("current_user")
-        request_access_data = kwargs.get("request_access_data")
+        request_access_data = bool(kwargs.get("request_access_data"))
         parent_id = kwargs.get("parent_id")
         await self._get_all(sid, current_user, request_access_data, parent_id=parent_id)
 
@@ -333,6 +336,6 @@ class SubSubGroupNamespace(BaseNamespace):
         """Callback on connect for socket.io namespaces."""
         # trigger the read all event to fetch all sub sub groups:
         current_user = kwargs.get("current_user")
-        request_access_data = kwargs.get("request_access_data")
+        request_access_data = bool(kwargs.get("request_access_data"))
         parent_id = kwargs.get("parent_id")
         await self._get_all(sid, current_user, request_access_data, parent_id=parent_id)

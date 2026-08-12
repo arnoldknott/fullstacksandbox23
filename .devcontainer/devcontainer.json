@@ -1,0 +1,62 @@
+{
+  "name": "fssb23",
+  "initializeCommand": "ln -sf versions.env .env",
+  "dockerComposeFile": [
+    "../compose.yml",
+    "compose.devcontainer.yml"
+  ],
+  "service": "devcontainer",
+  "runServices": ["devcontainer"],
+  "workspaceFolder": "/workspaces/fullStackSandbox23",
+  "remoteEnv": {
+    "HOST_WORKSPACE_FOLDER": "${localWorkspaceFolder}"
+  },
+  "postCreateCommand": "apk add --no-cache mandoc man-pages git-doc && uv pip install --system -e ${containerWorkspaceFolder}/backend[dev] && npm install -g @google/gemini-cli",
+  "forwardPorts": [8660, 8661, 5432, 5533, 5540, 5555, 8001],
+  "portsAttributes": {
+    "8660": {
+      "label": "backend_api"
+    },
+    "8661": {
+      "label": "frontend_svelte",
+      "onAutoForward": "silent"
+    },
+    "5432": {
+      "label": "postgres"
+    },
+    "5533": {
+      "label": "pgadmin"
+    },
+    "5540": {
+      "label": "redisInsight"
+    },
+    "5555": {
+      "label": "flower"
+    },
+    "8001": {
+      "label": "redis"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "task.allowAutomaticTasks": "on"
+      },
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.black-formatter",
+        "ms-python.isort",
+        "ms-azuretools.vscode-docker",
+        "svelte.svelte-vscode",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "openai.chatgpt",
+        "opentofu.vscode-opentofu",
+        "google.geminiclicompanion",
+        "tamasfe.even-better-toml",
+        "google.gemini-cli-vscode-ide-companion"
+      ]
+    }
+  }
+}

@@ -79,11 +79,11 @@ def translate(
 
 # TBD: replace the strings with EntityType enums
 event_dispatcher_map: Mapping[Tuple[Event, EntityType], List[Callable]] = {
-    (Event.AFTER_CREATE, EntityType.TEXT_DOCUMENT): [partial(vectorize, version=1)],
-    (Event.AFTER_UPDATE, EntityType.PDF_DOCUMENT): [
+    (Event.AFTER_CREATE, EntityType.TEXT_DOCUMENT): [partial(vectorize, version=1)],  # type: ignore[attr-defined]
+    (Event.AFTER_UPDATE, EntityType.PDF_DOCUMENT): [  # type: ignore[attr-defined]
         partial(vectorize, version=1, preprocessor="ocr")
     ],
-    (Event.AFTER_UPDATE, EntityType.CODE_SNIPPET): [
+    (Event.AFTER_UPDATE, EntityType.CODE_SNIPPET): [  # type: ignore[attr-defined]
         partial(compile_code, version=1, language="python"),
     ],
 }

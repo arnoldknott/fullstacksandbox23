@@ -3,7 +3,7 @@ from typing import List, Optional
 from uuid import UUID
 
 from fastapi import HTTPException
-from sqlmodel import delete, select
+from sqlmodel import col, delete, select
 
 from core.types import Action, CurrentUserData, IdentityType
 from models.access import AccessLogCreate, AccessPolicyCreate
@@ -54,6 +54,7 @@ class AzureGroupCRUD(
         self, azure_group_id: UUID, azure_tenant_id: UUID
     ) -> AzureGroupRead:
         """Creates a new group if it does not exist."""
+        session = self.session
         try:
             existing_group = await self.session.get(AzureGroup, azure_group_id)
             if existing_group is None:
@@ -66,14 +67,14 @@ class AzureGroupCRUD(
                 # TBD: After refactoring into access control, the create method should cannot be used any more here.
                 # group does not exist and there is no access policy for the group to create itself.
                 # Do we need the current user here? Make sure not to run into a circular dependency!
-                session = self.session
                 database_group = AzureGroup.model_validate(group_create)
+                assert database_group.id is not None
                 await self._write_identifier_type_link(database_group.id)
                 session.add(database_group)
                 await session.commit()
                 await session.refresh(database_group)
                 existing_group = database_group
-            return existing_group
+            return AzureGroupRead.model_validate(existing_group)
         except Exception as err:
             await session.rollback()
             logging.error(err)
@@ -105,20 +106,23 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         azure_user_id: UUID,
         azure_tenant_id: UUID,
         groups: Optional[List[str]],
-    ) -> UserRead:
+    ) -> tuple[UserRead, int]:
         """Checks if user and its groups exist, if not create and link them."""
         session = self.session
-        current_user_data = None
+        current_user: Optional[User] = None
+        current_user_data: Optional[CurrentUserData] = None
         response_status_code = 200
+        # Normalize the JWT groups (string UUIDs) into typed UUIDs once.
+        group_uuids: List[UUID] = [UUID(g) for g in (groups or [])]
         try:
             # Note: current_user is not available here during self-sign-up! So no access control here!
             statement = select(User).where(User.azure_user_id == azure_user_id)
             results = await session.exec(statement)
             current_user = results.first()
             if current_user is None or not current_user.is_active:
-                database_user = None
-                user_account = None
-                user_profile = None
+                database_user: Optional[User] = None
+                user_account: Optional[UserAccount] = None
+                user_profile: Optional[UserProfile] = None
                 if not current_user:
                     user_create = UserCreate(
                         azure_user_id=azure_user_id,
@@ -128,6 +132,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                     # The model-validation adds the default values (id) to the user_create object!
                     # Can be used for linked tables: avoids multiple round trips to database
                     database_user = User.model_validate(user_create)
+                    assert database_user.id is not None
                     await self._write_identifier_type_link(database_user.id)
                 elif current_user.is_active is False:
                     database_user = current_user
@@ -145,10 +150,14 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                         if existing_user.user_profile
                         else None
                     )
+                # The branches above always assign `database_user`.
+                assert database_user is not None
+                assert database_user.id is not None
 
                 # check if user_account and user_profile already exist:
                 if not database_user.user_account:
                     user_account = UserAccount(user_id=database_user.id)
+                    assert user_account.id is not None
                     await self._write_identifier_type_link(
                         user_account.id, IdentityType.user_account
                     )
@@ -157,6 +166,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                     session.add(user_account)
                 if not database_user.user_profile:
                     user_profile = UserProfile(user_id=database_user.id)
+                    assert user_profile.id is not None
                     await self._write_identifier_type_link(
                         user_profile.id, IdentityType.user_profile
                     )
@@ -167,14 +177,16 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                 session.add(database_user)
                 await session.commit()
                 await session.refresh(database_user)
-                await session.refresh(user_account)
-                await session.refresh(user_profile)
+                if user_account is not None:
+                    await session.refresh(user_account)
+                if user_profile is not None:
+                    await session.refresh(user_profile)
 
                 response_status_code = 201
                 current_user_data = CurrentUserData(
                     user_id=database_user.id,
                     azure_token_roles=[],  # Roles are coming from the token - but this information is not available here!
-                    azure_token_groups=groups,
+                    azure_token_groups=group_uuids,
                 )
 
                 # User is owner of itself:
@@ -200,6 +212,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                 current_user = database_user
                 logger.info("USER created in database")
             else:
+                assert current_user.id is not None
                 access_log = AccessLogCreate(
                     resource_id=current_user.id,
                     action=Action.read,
@@ -210,10 +223,15 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                 current_user_data = CurrentUserData(
                     user_id=current_user.id,
                     azure_token_roles=[],  # Roles are coming from the token - but this information is not available here!
-                    azure_token_groups=groups,
+                    azure_token_groups=group_uuids,
                 )
         except HTTPException as err:
-            if current_user_data is not None and current_user_data.user_id is not None:
+            if (
+                current_user_data is not None
+                and current_user_data.user_id is not None
+                and current_user is not None
+                and current_user.id is not None
+            ):
                 access_log = AccessLogCreate(
                     resource_id=current_user.id,
                     action=Action.own,
@@ -226,7 +244,9 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                 # )
             logger.error(f"Error in BaseCRUD.create: {err}")
             raise HTTPException(status_code=404, detail="User not found")
-        for azure_group_id in groups:
+        assert current_user is not None
+        assert current_user_data is not None
+        for azure_group_id in group_uuids:
             # call group crud to check if group exists, if not create it!
             # TBD: refactor into using the access controlled protected methods:
             # Now the user actually exists and security can provide the CurrentUserData!
@@ -286,7 +306,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                 )
                 # TBD: fix this: what rights should a user have to a newly created group_group?
                 await self.policy_crud.create(access_policy, current_user_data)
-                await self.add_child_to_parent(
+                await hierarchy_CRUD.create(
                     parent_id=azure_group_id,
                     child_id=current_user_data.user_id,
                     current_user=current_user_data,
@@ -295,8 +315,8 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                 logger.info("User got linked to group in database.")
 
         # # remove hierarchy links for groups, that are no longer in the token:
-        for linked_group in current_user.azure_groups:
-            if str(linked_group.id) not in groups:
+        for linked_group in current_user.azure_groups or []:
+            if linked_group.id is not None and linked_group.id not in group_uuids:
                 hierarchy_CRUD = self.hierarchy_CRUD(session=session)
                 await hierarchy_CRUD.delete(
                     parent_id=linked_group.id,
@@ -309,7 +329,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         # current_user = await self.read_by_azure_user_id(
         #     azure_user_id  # , update_last_access
         # )
-        return current_user, response_status_code
+        return UserRead.model_validate(current_user), response_status_code
 
     async def create_invited_azure_user(
         self,
@@ -330,6 +350,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             # The model-validation adds the default values (id) to the user_create object!
             # Can be used for linked tables: avoids multiple round trips to database
             database_user = User.model_validate(user_create)
+            assert database_user.id is not None
             await self._write_identifier_type_link(database_user.id)
 
             self.session.add(database_user)
@@ -357,47 +378,18 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             await self.session.rollback()
             logging.error(err)
             raise HTTPException(status_code=404, detail="User not found")
-        return database_user
+        return UserRead.model_validate(database_user)
 
     async def read_me(self, current_user: CurrentUserData) -> Me:
         """Returns the current user."""
         try:
 
-            # This is for checking the access rights of the user to itself:
-            # Version 1:
-            # TBD fix cartesian product in the query when admin calls this!
-            # problem started since the user_account was added to the user!
-            # Challenge is in the model, not in the query!
+            # This is for checking the access rights of the user to itself.
+            # Returns model Me, which includes user_profile and user_account.
+            # Always filters by current_user.user_id, so even Admin only ever gets
+            # their own profile/account through this method.
             user = await self.read_by_id(current_user.user_id, current_user)
 
-            # Version 2: check access first and then read directly from the database:
-            # access_request = AccessRequest(
-            #     current_user=current_user,
-            #     resource_id=current_user.user_id,
-            #     action=Action.own,
-            # )
-            # await self.policy_CRUD.allows(access_request)
-            # user_query = (
-            #     select(User).where(User.id == current_user.user_id)
-            #     # .join(UserAccount, UserAccount.user_id == User.id)
-            #     # .options(selectinload(User.user_account))
-            # )
-            # user_response = await self.session.exec(user_query)
-            # user = user_response.unique().one()
-
-            # me = Me.model_validate(user)
-            # print("=== user crud - read_me - me ===")
-            # print(me)
-            query = select(UserAccount, UserProfile).where(
-                UserAccount.user_id == current_user.user_id,
-                UserProfile.user_id == current_user.user_id,
-            )
-            response = await self.session.exec(query)
-            account, profile = response.unique().one()
-            user.user_account = account
-            user.user_profile = profile
-
-            # Add detailed logging before model_validate
             me = Me.model_validate(user)
             me.azure_token_roles = current_user.azure_token_roles
             me.azure_token_groups = current_user.azure_token_groups
@@ -480,17 +472,18 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
     async def delete(
         self,
         current_user: "CurrentUserData",
-        user_id: UUID,
+        object_id: UUID,
     ) -> None:
         """Deletes a user, user_account and user_profile."""
+        user_id = object_id
         await super().delete(current_user, user_id)
         # Access control is handled in the super().delete() call above!
         delete_user_account = delete(UserAccount).where(
-            UserAccount.user_id == user_id,
+            col(UserAccount.user_id) == user_id,
         )
         await self.session.exec(delete_user_account)
         delete_user_profile = delete(UserProfile).where(
-            UserProfile.user_id == user_id,
+            col(UserProfile.user_id) == user_id,
         )
         await self.session.exec(delete_user_profile)
         await self.session.commit()

@@ -1,15 +1,17 @@
 <script lang="ts">
-	import Heading from '$components/Heading.svelte';
-	import HorizontalRule from '$components/HorizontalRule.svelte';
-	// import { createRawSnippet, type Snippet } from 'svelte';
-
-	import ColorTileFlyonUi from './ColorTileFlyonUI.svelte';
-	import { type AppTheme } from '$lib/theming';
-	import { themeStore } from '$lib/stores';
 	// import { hexFromArgb } from '@material/material-color-utilities';
 	import { onDestroy } from 'svelte';
+
+	import Display from '$components/Display.svelte';
+	import Heading from '$components/Heading.svelte';
+	import HorizontalRule from '$components/HorizontalRule.svelte';
 	import JsonData from '$components/JsonData.svelte';
+	import theme from '$lib/stores/theme';
+	import { type AppTheme } from '$lib/theming';
 	import { initAccordion } from '$lib/userInterface';
+
+	// import { createRawSnippet, type Snippet } from 'svelte';
+	import ColorTileFlyonUi from './ColorTileFlyonUI.svelte';
 	// import {Theming }from '$lib/theming';
 
 	// const createdComponent: Snippet = createRawSnippet(() => {
@@ -42,10 +44,10 @@
 	// 	Theming.addStyle('.fill-inverse-primary', ['fill: var(--md-sys-color-inverse-primary)'])
 	// 	});// wouldn't it be the same as just using the scoped style further down?
 
-	let theme = $state({} as AppTheme);
-	const unsubscribeThemeStore = themeStore.subscribe((value) => {
+	let themeState = $state({} as AppTheme);
+	const unsubscribeThemeStore = theme.subscribe((value) => {
 		// console.log('themeStore:', value);
-		theme = value;
+		themeState = value;
 	});
 
 	// let inversePrimaryHex = $derived.by(() => {
@@ -146,9 +148,11 @@
 	let edit = $state(false);
 </script>
 
+<Display>FlyonUI 2</Display>
+
 <div class="w-full xl:grid xl:grid-cols-2 xl:gap-4">
 	<div class="col-span-2">
-		<Heading>Colors</Heading>
+		<Heading id="colors">Colors</Heading>
 		<div class="flex items-center gap-1">
 			<label class="label label-text text-base" for="switchColors">Hide</label>
 			<input
@@ -918,7 +922,7 @@
 	</div>
 
 	<div class="col-span-2">
-		<Heading>Utility classes</Heading>
+		<Heading id="utility-classes">Utility classes</Heading>
 		<div class="flex items-center gap-1">
 			<label class="label label-text text-base" for="switchColors">Hide</label>
 			<input
@@ -1342,7 +1346,7 @@
 	</div>
 
 	<div>
-		<Heading>Components with utility classes</Heading>
+		<Heading id="components-with-utility-classes">Components with utility classes</Heading>
 		<p>Badges:</p>
 		<span class="badge badge-primary">Badge primary</span>
 		<span class="badge badge-secondary">Badge secondary</span>
@@ -1576,8 +1580,7 @@
 				<textarea
 					class="textarea textarea-xs sm:textarea-sm md:textarea-md lg:textarea-lg xl:textarea-xl"
 					placeholder="Hello!!!"
-					id="filledTextareaResponsive"
-				></textarea>
+					id="filledTextareaResponsive"></textarea>
 				<label class="textarea-filled-label" for="filleTextareaResponsive"
 					>Your bio - responsive</label
 				>
@@ -1586,8 +1589,7 @@
 				<textarea
 					class="textarea textarea-xs sm:textarea-sm md:textarea-md lg:textarea-lg xl:textarea-xl"
 					placeholder="Hello!!!"
-					id="filledInputResponsive"
-				></textarea>
+					id="filledInputResponsive"></textarea>
 				<label class="textarea-floating-label" for="filledTextareaResponsive"
 					>Your bio - responsive</label
 				>
@@ -1774,7 +1776,7 @@
 	</div>
 
 	<div>
-		<Heading>Typography</Heading>
+		<Heading id="typography">Typography</Heading>
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<p class="text-center">Fonts families</p>
 		<div class="grid grid-cols-1 divide-y-4">
@@ -1821,14 +1823,14 @@
 				a line break.
 			</p>
 			<p class="title py-4">
-				And that is another <i>Title</i> typography with some text to fill the line, so we can get a
-				line break, which requires long enough text get the line breaking over into a new line.
+				And that is another <i>Title</i> typography with some text to fill the line, so we can get a line
+				break, which requires long enough text get the line breaking over into a new line.
 			</p>
 			<p class="title-small py-4">
 				And the third <i>Title - small</i> typography needs quite some extra meaningless text, just to
-				demonstrate the line break even on larger screens, where it might get hard to provoke a line
-				break with such small text, but we'll get there with to make the text long enough text to get
-				a line break.
+				demonstrate the line break even on larger screens, where it might get hard to provoke a line break
+				with such small text, but we'll get there with to make the text long enough text to get a line
+				break.
 			</p>
 		</div>
 		<p class="pt-5 text-center">Typography styles for Body</p>
@@ -1863,7 +1865,7 @@
 	</div>
 
 	<div>
-		<Heading>Styles</Heading>
+		<Heading id="styles">Styles</Heading>
 		Targets with their default values:
 		<ul>
 			<li>--rounded-box: 0.5rem ;</li>
@@ -1879,7 +1881,7 @@
 	</div>
 
 	<div>
-		<Heading>Icons</Heading>
+		<Heading id="icons">Icons</Heading>
 		<p class="title-large text-center text-xl">Iconify with FlyonUI</p>
 		<div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
 			<div>
@@ -2041,12 +2043,36 @@
 				</p>
 				<span class="icon-[streamline--hierarchy-2] size-12"></span>
 			</div>
+			<div>
+				<p class="label text-center">
+					<span class="label-prominent badge min-h-fit">Clarity</span>
+				</p>
+				<span class="icon-[clarity--new-solid] size-12"></span>
+			</div>
+			<div>
+				<p class="label text-center">
+					<span class="label-prominent badge min-h-fit">Gis</span>
+				</p>
+				<span class="icon-[gis--globe-earth-alt] size-12"></span>
+			</div>
+			<div>
+				<p class="label text-center">
+					<span class="label-prominent badge min-h-fit">Codicon</span>
+				</p>
+				<span class="icon-[codicon--question] size-12"></span>
+			</div>
+			<div>
+				<p class="label text-center">
+					<span class="label-prominent badge min-h-fit">Solar</span>
+				</p>
+				<span class="icon-[solar--hashtag-circle-linear] size-12"></span>
+			</div>
 		</div>
 		<HorizontalRule />
 	</div>
 
 	<div>
-		<Heading>Buttons</Heading>
+		<Heading id="buttons">Buttons</Heading>
 		<div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
 			<div>
 				<p class="label text-center">Action Buttons</p>
@@ -2086,7 +2112,7 @@
 	</div>
 
 	<div>
-		<Heading>Badges</Heading>
+		<Heading id="badges">Badges</Heading>
 		<div class="grid grid-cols-3 gap-4 sm:grid-cols-5">
 			<div>
 				<p class="label text-center">Text Badges</p>
@@ -2095,7 +2121,7 @@
 	</div>
 
 	<div>
-		<Heading>Swaps</Heading>
+		<Heading id="swaps">Swaps</Heading>
 		<div class="grid grid-cols-12 gap-4">
 			<div>
 				<label class="swap">
@@ -2148,7 +2174,7 @@
 	</div>
 
 	<!-- <div>
-        <Heading>Menus</Heading>
+        <Heading id="menus">Menus</Heading>
         <div class="grid grid-cols-6 gap-4">
             <div>
                 <ul class="menu w-64 space-y-0.5 [&_.nested-collapse-wrapper]:space-y-0.5 [&_ul]:space-y-0.5">
@@ -2227,8 +2253,8 @@
     </div> -->
 </div>
 
-<Heading>Current theme as JSON:</Heading>
-<JsonData data={theme} />
+<Heading id="current-theme-as-json">Current theme as JSON:</Heading>
+<JsonData data={themeState} />
 
 <!-- <style>
 

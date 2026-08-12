@@ -1,6 +1,7 @@
 // import type { PageLoad } from './$types';
-import type { Actions } from './$types.js';
 import { error, fail, redirect } from '@sveltejs/kit';
+
+import type { Actions } from './$types.js';
 
 // Data flow highly inspired by https://joyofcode.xyz/sveltekit-data-flow
 export const load = async ({ parent }) => {

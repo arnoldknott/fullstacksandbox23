@@ -8,7 +8,9 @@ from .access import ResourceHierarchy
 from .base import (
     AccessPolicyMixin,
     AccessRightsMixin,
+    BaseSQLModel,
     CreatedAtMixin,
+    HierarchyMixin,
     UpdatedAtMixin,
 )
 from .category import Category, CategoryRead
@@ -27,7 +29,7 @@ class DemoResourceCreate(SQLModel):
     category_id: Optional[uuid.UUID] = None
 
 
-class DemoResource(DemoResourceCreate, table=True):
+class DemoResource(DemoResourceCreate, BaseSQLModel, table=True):
     # id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
     id: Optional[uuid.UUID] = Field(
         default_factory=uuid.uuid4,
@@ -64,18 +66,19 @@ class DemoResourceRead(DemoResourceCreate):
     tags: Optional[List["TagRead"]] = None
 
 
-class DemoResourceExtended(
+class DemoResourceExtended(  # type: ignore[misc]
     DemoResourceRead,
     AccessRightsMixin,
     AccessPolicyMixin,
     CreatedAtMixin,
     UpdatedAtMixin,
+    HierarchyMixin,
 ):
     pass
 
 
 class DemoResourceUpdate(DemoResourceCreate):
-    name: Optional[str] = None
+    name: Optional[str] = None  # type: ignore[assignment]
     # last_updated_at: datetime = Field(default=datetime.now(), exclude=True)
 
 

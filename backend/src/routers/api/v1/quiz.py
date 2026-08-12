@@ -1,18 +1,29 @@
 import logging
+from typing import Annotated, Optional
 from uuid import UUID
 
-from typing import Annotated
 from fastapi import APIRouter, Depends, Query
 
 from core.security import (
     Guards,
     get_http_access_token_payload,
+    provide_http_token_payload_optional,
 )
 from core.types import GuardTypes
 
 # from crud.quiz import QuizCRUD, QuestionCRUD, MessageCRUD, NumericalCRUD
-from crud.quiz import QuestionCRUD, MessageCRUD, NumericalCRUD
-from models.quiz import Question, Message, Numerical
+from crud.quiz import MessageCRUD, NumericalCRUD, QuestionCRUD
+from models.quiz import (
+    MessageCreate,
+    MessageRead,
+    MessageUpdate,
+    NumericalCreate,
+    NumericalRead,
+    NumericalUpdate,
+    QuestionCreate,
+    QuestionRead,
+    QuestionUpdate,
+)
 
 from .base import BaseView
 
@@ -59,14 +70,6 @@ numerical_view = BaseView(NumericalCRUD)
 #     return await quiz_view.get_by_id(resource_id, token_payload, guards)
 
 
-# @router.get("/public/{resource_id}", status_code=200)
-# async def get_public_quiz_by_id(
-#     resource_id: UUID,
-# ) -> Quiz.Read:
-#     """Returns a public quiz without authentication."""
-#     return await quiz_view.get_by_id(resource_id, token_payload=None, guards=None)
-
-
 # @router.put("/{resource_id}", status_code=200)
 # async def put_quiz(
 #     resource_id: UUID,
@@ -99,12 +102,12 @@ numerical_view = BaseView(NumericalCRUD)
 
 @router.post("/question/", status_code=201)
 async def post_question(
-    question: Question.Create,
+    question: QuestionCreate,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(
         Guards(scopes=["api.read", "api.write"], roles=["User"])
     ),
-) -> Question:
+) -> QuestionRead:
     """Creates a new question."""
     return await question_view.post(question, token_payload, guards)
 
@@ -112,14 +115,14 @@ async def post_question(
 @router.post("/question/{question_id}/message/", status_code=201)
 async def post_question_message(
     question_id: UUID,
-    message: Message.Create,
+    message: MessageCreate,
     inherit: Annotated[bool, Query()] = True,
     public: Annotated[bool, Query()] = False,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(
         Guards(scopes=["api.read", "api.write"], roles=["User"])
     ),
-) -> Message:
+) -> MessageRead:
     """Creates a new message answer for a question."""
     return await message_view.post(
         object=message,
@@ -134,14 +137,14 @@ async def post_question_message(
 @router.post("/question/{question_id}/numerical/", status_code=201)
 async def post_question_numerical(
     question_id: UUID,
-    numerical: Numerical.Create,
+    numerical: NumericalCreate,
     inherit: Annotated[bool, Query()] = True,
     public: Annotated[bool, Query()] = False,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(
         Guards(scopes=["api.read", "api.write"], roles=["User"])
     ),
-) -> Numerical:
+) -> NumericalRead:
     """Creates a new numerical answer for a question."""
     return await numerical_view.post(
         object=numerical,
@@ -157,7 +160,7 @@ async def post_question_numerical(
 async def get_questions(
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
-) -> list[Question.Read]:
+) -> list[QuestionRead]:
     """Returns all questions."""
     return await question_view.get(token_payload, guards)
 
@@ -165,30 +168,23 @@ async def get_questions(
 @router.get("/question/{resource_id}", status_code=200)
 async def get_question_by_id(
     resource_id: UUID,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
-) -> Question.Read:
+    token_payload: Annotated[
+        Optional[dict], Depends(provide_http_token_payload_optional)
+    ] = None,
+) -> QuestionRead:
     """Returns a question."""
-    return await question_view.get_by_id(resource_id, token_payload, guards)
-
-
-@router.get("/question/public/{resource_id}", status_code=200)
-async def get_public_question_by_id(
-    resource_id: UUID,
-) -> Question.Read:
-    """Returns a public question without authentication."""
-    return await question_view.get_by_id(resource_id, token_payload=None, guards=None)
+    return await question_view.get_by_id(resource_id, token_payload, guards=None)
 
 
 @router.put("/question/{resource_id}", status_code=200)
 async def put_question(
     resource_id: UUID,
-    question: Question.Update,
+    question: QuestionUpdate,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(
         Guards(scopes=["api.read", "api.write"], roles=["User"])
     ),
-) -> Question:
+) -> QuestionRead:
     """Updates a question."""
     return await question_view.put(resource_id, question, token_payload, guards)
 
@@ -212,31 +208,21 @@ async def delete_question(
 
 @router.post("/message/", status_code=201)
 async def post_message(
-    message: Message.Create,
+    message: MessageCreate,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(
         Guards(scopes=["api.read", "api.write"], roles=["User"])
     ),
-) -> Message:
+) -> MessageRead:
     """Creates a new message."""
     return await message_view.post(message, token_payload, guards)
-
-
-# @router.post("/message/public", status_code=201)
-# async def post_public_message(
-#     message: Message.Create,
-# ) -> Message:
-#     """Creates a new public message without authentication."""
-#     return await message_view.post_with_public_access(
-#         message, token_payload=None, guards=None
-#     )
 
 
 @router.get("/message/", status_code=200)
 async def get_messages(
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
-) -> list[Message.Read]:
+) -> list[MessageRead]:
     """Returns all messages."""
     return await message_view.get(token_payload, guards)
 
@@ -244,30 +230,23 @@ async def get_messages(
 @router.get("/message/{resource_id}", status_code=200)
 async def get_message_by_id(
     resource_id: UUID,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
-) -> Message.Read:
+    token_payload: Annotated[
+        Optional[dict], Depends(provide_http_token_payload_optional)
+    ] = None,
+) -> MessageRead:
     """Returns a message."""
-    return await message_view.get_by_id(resource_id, token_payload, guards)
-
-
-@router.get("/message/public/{resource_id}", status_code=200)
-async def get_public_message_by_id(
-    resource_id: UUID,
-) -> Message.Read:
-    """Returns a public message without authentication."""
-    return await message_view.get_by_id(resource_id, token_payload=None, guards=None)
+    return await message_view.get_by_id(resource_id, token_payload, guards=None)
 
 
 @router.put("/message/{resource_id}", status_code=200)
 async def put_message(
     resource_id: UUID,
-    message: Message.Update,
+    message: MessageUpdate,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(
         Guards(scopes=["api.read", "api.write"], roles=["User"])
     ),
-) -> Message:
+) -> MessageRead:
     """Updates a message."""
     return await message_view.put(resource_id, message, token_payload, guards)
 
@@ -301,21 +280,11 @@ async def delete_message(
 #     return await numerical_view.post(numerical, token_payload, guards)
 
 
-# @router.post("/numerical/public", status_code=201)
-# async def post_public_numerical(
-#     numerical: Numerical.Create,
-# ) -> Numerical:
-#     """Creates a new public numerical answer without authentication."""
-#     return await numerical_view.post_with_public_access(
-#         numerical, token_payload=None, guards=None
-#     )
-
-
 @router.get("/numerical/", status_code=200)
 async def get_numericals(
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
-) -> list[Numerical.Read]:
+) -> list[NumericalRead]:
     """Returns all numerical answers."""
     return await numerical_view.get(token_payload, guards)
 
@@ -323,30 +292,23 @@ async def get_numericals(
 @router.get("/numerical/{resource_id}", status_code=200)
 async def get_numerical_by_id(
     resource_id: UUID,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
-) -> Numerical.Read:
+    token_payload: Annotated[
+        Optional[dict], Depends(provide_http_token_payload_optional)
+    ] = None,
+) -> NumericalRead:
     """Returns a numerical answer."""
-    return await numerical_view.get_by_id(resource_id, token_payload, guards)
-
-
-@router.get("/numerical/public/{resource_id}", status_code=200)
-async def get_public_numerical_by_id(
-    resource_id: UUID,
-) -> Numerical.Read:
-    """Returns a public numerical answer without authentication."""
-    return await numerical_view.get_by_id(resource_id, token_payload=None, guards=None)
+    return await numerical_view.get_by_id(resource_id, token_payload, guards=None)
 
 
 @router.put("/numerical/{resource_id}", status_code=200)
 async def put_numerical(
     resource_id: UUID,
-    numerical: Numerical.Update,
+    numerical: NumericalUpdate,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(
         Guards(scopes=["api.read", "api.write"], roles=["User"])
     ),
-) -> Numerical:
+) -> NumericalRead:
     """Updates a numerical answer."""
     return await numerical_view.put(resource_id, numerical, token_payload, guards)
 

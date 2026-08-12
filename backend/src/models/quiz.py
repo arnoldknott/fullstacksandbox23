@@ -1,14 +1,15 @@
-from pydantic_extra_types.language_code import LanguageAlpha2
 from typing import Optional
 
+from pydantic_extra_types.language_code import LanguageAlpha2
+
+from core.types import ResourceType
+
 from .base import (
-    create_model,
     Attribute,
     Relationship,
     RelationshipHierarchyType,
+    create_model,
 )
-
-from core.types import ResourceType
 
 # Quiz = create_model(
 #     name="Quiz",
@@ -31,6 +32,15 @@ from core.types import ResourceType
 #     ],
 # )
 
+
+# TBD: For code based entites,
+# add a a mixin "source", that specifies the source code location of the entity
+# including type (internal | github | gitlab | ...), repo, path, branch.
+
+# TBD: create a mixin to provide a "label" for all models,
+# which needs to be unique within the parent
+# so it will act as the identifier of this entity in code based entities,
+# like quizzes, presentations, questions, etc.
 
 Question = create_model(
     name="Question",
@@ -67,6 +77,12 @@ Question = create_model(
     ],
 )
 
+# TBD: Figure out how to do this better - maybe a generic way to create these type aliases?
+QuestionCreate = Question.Create
+QuestionRead = Question.Read
+QuestionUpdate = Question.Update
+QuestionExtended = Question.Extended
+
 # TBD: add another step: A Question has many Answers
 # Intention: the parent needs to have write access to create answers
 # So the parent to a mesage / numerical should be an Answer entity, not a Question.
@@ -92,6 +108,12 @@ Message = create_model(
     ],
 )
 
+# TBD: Figure out how to do this better - maybe a generic way to create these type aliases?
+MessageCreate = Message.Create
+MessageRead = Message.Read
+MessageUpdate = Message.Update
+MessageExtended = Message.Extended
+
 # For numerical answers, create Numerical model:
 # For now float also covers integers,
 # can be extended later if needed
@@ -110,3 +132,9 @@ Numerical = create_model(
         )
     ],
 )
+
+# TBD: Figure out how to do this better - maybe a generic way to create these type aliases?
+NumericalCreate = Numerical.Create
+NumericalRead = Numerical.Read
+NumericalUpdate = Numerical.Update
+NumericalExtended = Numerical.Extended

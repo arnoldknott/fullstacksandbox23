@@ -1,19 +1,20 @@
 import uuid
-
 from typing import Optional
 
-# from sqlmodel import Field, Relationship, SQLModel
+from core.types import ResourceType
 
 # from .access import ResourceHierarchy
 # TBD: rename AppRelationship into Rrelationship, when sqlmodel is out?
 from .base import (
-    create_model,
     Attribute,
     Relationship,
     RelationshipHierarchyType,
+    create_model,
     rebuild_model_forward_refs,
 )
-from core.types import ResourceType
+
+# from sqlmodel import Field, Relationship, SQLModel
+
 
 # region ProtectedResource
 

@@ -1,16 +1,18 @@
 <script lang="ts">
-	import type { Session } from '$lib/types';
 	import { type SubmitFunction } from '@sveltejs/kit';
-	import { SessionStatus } from '$lib/session';
 	import { onMount } from 'svelte';
-	import { page } from '$app/state';
+
 	import { enhance } from '$app/forms';
+	import { page } from '$app/state';
 	import { type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
+	import { SessionStatus } from '$lib/session';
 	import { type ColorConfig } from '$lib/theming';
+	import type { Session } from '$lib/types';
+
 	import ArtificialIntelligencePicker from './playground/components/ArtificialIntelligencePicker.svelte';
 	import ThemePicker from './playground/components/ThemePicker.svelte';
 	let {
-		session = $bindable(),
+		session,
 		artificialIntelligenceConfiguration = $bindable(),
 		themeConfiguration = $bindable(),
 		mode = $bindable(),
@@ -22,7 +24,7 @@
 		themeConfiguration: ColorConfig;
 		mode: 'light' | 'dark';
 		updateProfileAccount: SubmitFunction;
-		saveProfileAccount: () => void;
+		saveProfileAccount: () => Promise<void>;
 	} = $props();
 
 	let welcomeModal: HTMLDivElement | null = $state(null);

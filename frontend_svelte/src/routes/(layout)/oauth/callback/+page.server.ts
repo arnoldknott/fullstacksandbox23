@@ -1,14 +1,16 @@
-import { msalAuthProvider } from '$lib/server/oauth';
-import type { PageServerLoad } from './$types';
+import type { User as MicrosoftProfile } from '@microsoft/microsoft-graph-types';
 // import { v4 as uuidv4 } from 'uuid';
 import { redirect } from '@sveltejs/kit';
-import AppConfig from '$lib/server/config';
-import { redisCache } from '$lib/server/cache';
-import type { User as MicrosoftProfile } from '@microsoft/microsoft-graph-types';
+
 // import type { AuthenticationResult } from '@azure/msal-node';
 import { backendAPI } from '$lib/server/apis/backendApi';
 import { microsoftGraph } from '$lib/server/apis/msgraph';
+import { redisCache } from '$lib/server/cache';
+import AppConfig from '$lib/server/config';
+import { msalAuthProvider } from '$lib/server/oauth';
 import { SessionStatus } from '$lib/session';
+
+import type { PageServerLoad } from './$types';
 
 const appConfig = await AppConfig.getInstance();
 

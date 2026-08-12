@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 import pytest
 from fastapi import FastAPI
-from httpx import AsyncClient
+from httpx2 import AsyncClient
 
 from core.types import Action
 from crud.access import AccessLoggingCRUD
@@ -34,7 +34,7 @@ async def test_post_demo_resource(
 ):
     """Tests POST of a demo_resource."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     resource = one_test_demo_resource
     before_time = datetime.now()
@@ -76,7 +76,7 @@ async def test_post_demo_resource_with_nonexisting_category(
 ):
     """Tests POST of a demo_resource."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     resource = one_test_demo_resource
     resource["category_id"] = str(uuid.uuid4())
@@ -108,8 +108,8 @@ async def test_get_all_demo_resources(
     mocked_provide_http_token_payload,
 ):
     """Tests GET all demo resources."""
-    app_override_provide_http_token_payload
-    resources = await add_test_demo_resources(mocked_provide_http_token_payload)
+    _ = app_override_provide_http_token_payload
+    resources = await add_test_demo_resources(mocked_provide_http_token_payload)  # type: ignore[call-arg]
     response = await async_client.get("/api/v1/demoresource/")
 
     assert response.status_code == 200
@@ -150,9 +150,9 @@ async def test_get_all_public_demo_resources(
     mocked_provide_http_token_payload,
 ):
     """Tests GET all demo resources."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
-    resources = await add_test_demo_resources(token_admin_read_write)
+    resources = await add_test_demo_resources(token_admin_read_write)  # type: ignore[call-arg]
     for resource in resources:
         policy = {
             "resource_id": resource.id,
@@ -160,7 +160,7 @@ async def test_get_all_public_demo_resources(
             "action": "read",
             "public": True,
         }
-        await add_test_policy_for_resource(policy)
+        await add_test_policy_for_resource(policy)  # type: ignore[call-arg]
     response = await async_client.get("/api/v1/demoresource/")
 
     assert response.status_code == 200
@@ -200,8 +200,8 @@ async def test_get_demo_resource_by_id(
     mocked_provide_http_token_payload,
 ):
     """Tests GET of a demo resources."""
-    app_override_provide_http_token_payload
-    resources = await add_test_demo_resources(mocked_provide_http_token_payload)
+    _ = app_override_provide_http_token_payload
+    resources = await add_test_demo_resources(mocked_provide_http_token_payload)  # type: ignore[call-arg]
 
     # before_time = datetime.now()
     response = await async_client.get(f"/api/v1/demoresource/{resources[0].id}")
@@ -229,16 +229,16 @@ async def test_get_public_demo_resource_by_id(
     mocked_provide_http_token_payload,
 ):
     """Tests GET of a demo resources."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
-    resources = await add_test_demo_resources(token_admin_read_write)
+    resources = await add_test_demo_resources(token_admin_read_write)  # type: ignore[call-arg]
     policy = {
         "resource_id": resources[0].id,
         # "resource_type": "DemoResource",
         "action": "read",
         "public": True,
     }
-    await add_test_policy_for_resource(policy)
+    await add_test_policy_for_resource(policy)  # type: ignore[call-arg]
 
     # before_time = datetime.now()
     response = await async_client.get(f"/api/v1/demoresource/{resources[0].id}")
@@ -264,7 +264,7 @@ async def test_get_demo_resource_by_invalid_id_type(
     mocked_provide_http_token_payload,
 ):
     """Tests GET of a demo resources with invalid id."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     response = await async_client.get("/api/v1/demoresource/invalid_id")
     assert response.status_code == 422
@@ -282,7 +282,7 @@ async def test_get_demo_resource_by_nonexisting_uuid(
     mocked_provide_http_token_payload,
 ):
     """Tests GET of a demo resources with invalid id."""
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     response = await async_client.get(f"/api/v1/demoresource/{str(uuid.uuid4())}")
     assert response.status_code == 404
@@ -305,9 +305,9 @@ async def test_put_demo_resource(
 ):
     """Tests PUT of a demo resource."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
-    resources = await add_test_demo_resources(mocked_provide_http_token_payload)
+    resources = await add_test_demo_resources(mocked_provide_http_token_payload)  # type: ignore[call-arg]
     updated_resource = {
         "name": "Updated Name",
         "description": "Updated Description",
@@ -355,9 +355,9 @@ async def test_put_demo_resource_partial_update(
 ):
     """Tests PUT of a demo resource, where not all fields are updated."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
-    resources = await add_test_demo_resources(mocked_provide_http_token_payload)
+    resources = await add_test_demo_resources(mocked_provide_http_token_payload)  # type: ignore[call-arg]
     updated_resource = {
         "name": "Updated Name",
         "description": "Updated Description",
@@ -387,9 +387,9 @@ async def test_put_demo_resource_by_invalid_id(
 ):
     """Tests PUT of a demo resources with invalid id."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
-    await add_test_demo_resources(mocked_provide_http_token_payload)
+    await add_test_demo_resources(mocked_provide_http_token_payload)  # type: ignore[call-arg]
     updated_resource = {
         "name": "Updated Name",
         "description": "Updated Description",
@@ -415,9 +415,9 @@ async def test_put_demo_resource_by_resource_does_not_exist(
 ):
     """Tests PUT of nonexisting demo resources."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
-    await add_test_demo_resources(mocked_provide_http_token_payload)
+    await add_test_demo_resources(mocked_provide_http_token_payload)  # type: ignore[call-arg]
     updated_resource = {
         "name": "Updated Name",
         "description": "Updated Description",
@@ -463,9 +463,9 @@ async def test_delete_demo_resource(
 ):
     """Tests DELETE of a demo resource."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
-    resources = await add_test_demo_resources(mocked_provide_http_token_payload)
+    resources = await add_test_demo_resources(mocked_provide_http_token_payload)  # type: ignore[call-arg]
     current_user = current_test_user
 
     # Check if resource exists before deleting:
@@ -524,7 +524,7 @@ async def test_delete_demo_resource_by_invalid_id(
 ):
     """Tests DELETE of a demo resources with invalid id."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     response = await async_client.delete("/api/v1/demoresource/invalid_id")
 
@@ -543,7 +543,7 @@ async def test_delete_demo_resource_by_resource_does_not_exist(
 ):
     """Tests GET of a demo resources."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
     response = await async_client.delete(f"/api/v1/demoresource/{str(uuid.uuid4())}")
 
@@ -567,10 +567,10 @@ async def test_attach_tag_to_demo_resource(
 ):
     """Tests POST of a tag to a demo resource."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
-    resources = await add_test_demo_resources(mocked_provide_http_token_payload)
-    tags = await add_test_tags(mocked_provide_http_token_payload)
+    resources = await add_test_demo_resources(mocked_provide_http_token_payload)  # type: ignore[call-arg]
+    tags = await add_test_tags(mocked_provide_http_token_payload)  # type: ignore[call-arg]
     response = await async_client.post(
         f"/api/v1/demoresource/{str(resources[1].id)}/tag/?tag_ids={str(tags[0].id)}&tag_ids={str(tags[2].id)}"
     )
@@ -606,8 +606,8 @@ async def test_get_all_demo_resources_by_category_id(
 ):
     """Tests GET all demo resources by category id."""
 
-    app_override_provide_http_token_payload
-    resources = await add_test_demo_resources(mocked_provide_http_token_payload)
+    _ = app_override_provide_http_token_payload
+    resources = await add_test_demo_resources(mocked_provide_http_token_payload)  # type: ignore[call-arg]
 
     categories = await async_client.get("/api/v1/category/")
     categories = categories.json()
@@ -651,9 +651,9 @@ async def test_get_demo_resources_for_lonely_category(
 ):
     """Tests GET error for category, that has no demo resources attached."""
 
-    app_override_provide_http_token_payload
+    _ = app_override_provide_http_token_payload
 
-    await add_test_demo_resources(mocked_provide_http_token_payload)
+    await add_test_demo_resources(mocked_provide_http_token_payload)  # type: ignore[call-arg]
     # add_test_demo_resources
     categories_response = await async_client.get("/api/v1/category/")
     categories = categories_response.json()
@@ -687,9 +687,9 @@ async def test_get_all_demo_resources_by_tag_id(
 ):
     """Tests GET all demo resources by category id."""
 
-    app_override_provide_http_token_payload
-    resources = await add_test_demo_resources(mocked_provide_http_token_payload)
-    tags = await add_test_tags(mocked_provide_http_token_payload)
+    _ = app_override_provide_http_token_payload
+    resources = await add_test_demo_resources(mocked_provide_http_token_payload)  # type: ignore[call-arg]
+    tags = await add_test_tags(mocked_provide_http_token_payload)  # type: ignore[call-arg]
 
     # current_user = current_test_user
 
@@ -743,7 +743,7 @@ async def test_get_all_demo_resources_by_tag_id(
     # print("=== demo_resource_1 ===")
     # print(demo_resource_1)
     # print([tag.name for tag in demo_resource_1.tags])
-    demo_resource_1_tag_names = [tag.name for tag in demo_resource_1.tags]
+    demo_resource_1_tag_names = [tag.name for tag in demo_resource_1.tags]  # type: ignore[union-attr]
     assert tags[0].name in demo_resource_1_tag_names
     assert tags[1].name not in demo_resource_1_tag_names
     assert tags[2].name in demo_resource_1_tag_names
@@ -760,7 +760,7 @@ async def test_get_all_demo_resources_by_tag_id(
     assert demo_resource_3.description == resources[3].description
     assert demo_resource_3.language == resources[3].language
     assert "category_id" in second_content
-    demo_resource_3_tag_names = [tag.name for tag in demo_resource_3.tags]
+    demo_resource_3_tag_names = [tag.name for tag in demo_resource_3.tags]  # type: ignore[union-attr]
     assert tags[0].name not in demo_resource_3_tag_names
     assert tags[1].name not in demo_resource_3_tag_names
     assert tags[2].name in demo_resource_3_tag_names

@@ -1,9 +1,11 @@
-import type { PageServerLoad } from './$types';
+import { redirect } from '@sveltejs/kit';
+
 // import { signOut } from '$lib/server/oauth';
 import { redisCache } from '$lib/server/cache';
-import { redirect } from '@sveltejs/kit';
 // import {redirect} from '@sveltejs/kit';
 import AppConfig from '$lib/server/config';
+
+import type { PageServerLoad } from './$types';
 const appConfig = await AppConfig.getInstance();
 
 export const load: PageServerLoad = async ({ locals, url, cookies }) => {

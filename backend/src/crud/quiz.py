@@ -1,31 +1,26 @@
-from .base import BaseCRUD
-
-from models.quiz import (
-    # Quiz,
-    # QuizCreate,
-    # QuizRead,
-    # QuizUpdate,
-    Question,
-    # QuestionCreate,
-    # QuestionRead,
-    # QuestionUpdate,
+from models.quiz import (  # Quiz, QuizCreate, QuizRead, QuizUpdate,
     Message,
-    # MessageCreate,
-    # MessageRead,
-    # MessageUpdate,
+    MessageCreate,
+    MessageRead,
+    MessageUpdate,
     Numerical,
-    # NumericalCreate,
-    # NumericalRead,
-    # NumericalUpdate,
+    NumericalCreate,
+    NumericalRead,
+    NumericalUpdate,
+    Question,
+    QuestionCreate,
+    QuestionRead,
+    QuestionUpdate,
 )
 
+from .base import BaseCRUD
 
 # class QuizCRUD(
 #     BaseCRUD[
 #         Quiz,
-#         Quiz.Create,
-#         Quiz.Read,
-#         Quiz.Update,
+#         QuizCreate,
+#         QuizRead,
+#         QuizUpdate,
 #     ]
 # ):
 #     def __init__(self):
@@ -35,9 +30,9 @@ from models.quiz import (
 class QuestionCRUD(
     BaseCRUD[
         Question,
-        Question.Create,
-        Question.Read,
-        Question.Update,
+        QuestionCreate,
+        QuestionRead,
+        QuestionUpdate,
     ]
 ):
     def __init__(self):
@@ -47,9 +42,9 @@ class QuestionCRUD(
 class MessageCRUD(
     BaseCRUD[
         Message,
-        Message.Create,
-        Message.Read,
-        Message.Update,
+        MessageCreate,
+        MessageRead,
+        MessageUpdate,
     ]
 ):
     def __init__(self):
@@ -59,9 +54,9 @@ class MessageCRUD(
 class NumericalCRUD(
     BaseCRUD[
         Numerical,
-        Numerical.Create,
-        Numerical.Read,
-        Numerical.Update,
+        NumericalCreate,
+        NumericalRead,
+        NumericalUpdate,
     ]
 ):
     def __init__(self):

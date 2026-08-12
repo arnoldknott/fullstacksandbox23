@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { type SubmitFunction } from '@sveltejs/kit';
+
 	import { enhance } from '$app/forms';
 	import type { ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
 
@@ -7,11 +8,12 @@
 		artificialIntelligenceForm = $bindable<HTMLFormElement | null>(),
 		updateProfileAccount,
 		saveProfileAccount,
+		// TBD: move global ArtificalIntelligenceConfig to a store and bind it here instead of passing it down as a prop!
 		artificialIntelligenceConfiguration = $bindable()
 	}: {
 		artificialIntelligenceForm: HTMLFormElement | null;
 		updateProfileAccount: SubmitFunction;
-		saveProfileAccount: () => void;
+		saveProfileAccount: () => Promise<void>;
 		artificialIntelligenceConfiguration: ArtificialIntelligenceConfig;
 	} = $props();
 

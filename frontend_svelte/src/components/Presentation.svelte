@@ -1,8 +1,10 @@
 <script lang="ts">
-	import Card from '$components/Card.svelte';
-	import Heading from './Heading.svelte';
 	// import RevealJs from './RevealJS.svelte';
 	import type { Snippet } from 'svelte';
+
+	import Card from '$components/Card.svelte';
+
+	import Title from './Title.svelte';
 	let { title, link, children }: { title: string; link: string; children: Snippet } = $props();
 </script>
 
@@ -18,6 +20,6 @@
 </md-filled-card> -->
 
 <Card id={link}>
-	<Heading><a href={link}>{title}</a></Heading>
+	<Title id={title}><a href={link}>{title}</a></Title>
 	{@render children?.()}
 </Card>

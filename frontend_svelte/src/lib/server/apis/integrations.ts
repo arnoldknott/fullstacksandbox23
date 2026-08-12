@@ -1,5 +1,6 @@
-import { microsoftGraph } from './msgraph';
 import type { User } from '$lib/types';
+
+import { microsoftGraph } from './msgraph';
 // import type { User as MicrosoftUser } from '@microsoft/microsoft-graph-types';
 // import type { SvelteMap } from 'svelte/reactivity';
 
@@ -8,6 +9,8 @@ import type { User } from '$lib/types';
 export class MicrosoftAccountLinking {
 	constructor() {}
 
+	// TBD: rename into getMicrosoftUsers?
+	// would make more sense to put this into msgraphAPI, as it returns microsoft data.
 	static async getUsers(sessionId: string, users: User[]) {
 		const filter = users.map((user) => `id eq '${user.azure_user_id}'`).join(' or ');
 		const response = await microsoftGraph.get(sessionId, `/users?$filter=(${filter})`);

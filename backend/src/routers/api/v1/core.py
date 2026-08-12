@@ -1,7 +1,7 @@
 import logging
 from typing import Annotated
 
-import httpx
+import httpx2
 from fastapi import APIRouter, Depends, Header, Query
 from msal import ConfidentialClientApplication
 
@@ -29,8 +29,8 @@ confClientApp = ConfidentialClientApplication(
 # might require a working on-behalf-of workflow?
 def get_users_groups_ms_graph(access_token: str):
     """Dummy function to try if access token works from backend: getting transistiveMemberOf"""
-    # response = httpx.get("https://graph.microsoft.com/v1.0/me/transitiveMemberOf", headers = {"Authorization": f"Bearer {access_token}"})
-    response = httpx.get(
+    # response = httpx2.get("https://graph.microsoft.com/v1.0/me/transitiveMemberOf", headers = {"Authorization": f"Bearer {access_token}"})
+    response = httpx2.get(
         "https://graph.microsoft.com/v1.0/me/transitiveMemberOf",
         headers={"Authorization": f"Bearer {access_token}"},
     )
@@ -42,7 +42,7 @@ def get_users_groups_ms_graph(access_token: str):
 def get_me_ms_graph(access_token: str):
     """Dummy function to try if access token works from backend"""
     # response = httpx.get("https://graph.microsoft.com/v1.0/me/transitiveMemberOf", headers = {"Authorization": f"Bearer {access_token}"})
-    response = httpx.get(
+    response = httpx2.get(
         "https://graph.microsoft.com/v1.0/me",
         headers={"Authorization": f"Bearer {access_token}"},
     )
@@ -92,7 +92,7 @@ async def run_demo_task_in_celery(
 ):
     """Executes a demo task in celery - adding two numbers."""
     logger.info("Celery demo task executed")
-    celery_result = demo_task.delay(x, y)
+    celery_result = demo_task.delay(x, y)  # type: ignore[attr-defined]
     print("=== api - v1 - core - celery - celery_result ===")
     print(celery_result)
     result = celery_result.get(timeout=10)
@@ -130,6 +130,7 @@ async def get_onbehalfof(
     await check_token_against_guards(token_payload, guards)
     # print("=== header ===")
     # print(authorization)
+    assert authorization is not None, "Authorization header is missing"
     token = authorization.split("Bearer ")[1]
     # token = get_token_from_header(authorization)
     logger.info("🔑 Acquiring token on behalf of")

@@ -10,9 +10,9 @@ services:
     # entrypoint: /bin/sh
     env_file: .env
     volumes:
-      - .:/src
-      - ../cache:/cache:ro
-      - ../pgadmin:/pgadmin:ro
+      - ${HOST_WORKSPACE_FOLDER:-.}/infrastructure:/src
+      - ${HOST_WORKSPACE_FOLDER:-.}/cache:/cache:ro
+      - ${HOST_WORKSPACE_FOLDER:-.}/pgadmin:/pgadmin:ro
     # ports:
     #   - "443:443"
     # environment:

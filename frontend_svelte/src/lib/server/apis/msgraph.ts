@@ -1,8 +1,12 @@
-import AppConfig from '$lib/server/config';
-import { BaseAPI, type RequestBody } from './base';
-import { msalAuthProvider } from '$lib/server/oauth';
 // import type { MicrosoftTeamBasic } from '$lib/types';
 import type { Team } from '@microsoft/microsoft-graph-types';
+
+import { IdentityType } from '$lib/accessHandler';
+import AppConfig from '$lib/server/config';
+import { msalAuthProvider } from '$lib/server/oauth';
+import type { Identity } from '$lib/types';
+
+import { BaseAPI, type RequestBody } from './base';
 
 const appConfig = await AppConfig.getInstance();
 
@@ -50,7 +54,7 @@ class MicrosoftGraph extends BaseAPI {
 
 	// TBD: implement put and delete methods
 
-	async getAttachedTeams(sessionId: string, azureGroups: string[]) {
+	async getAttachedTeams(sessionId: string, azureGroups: string[]): Promise<Team[]> {
 		// const myTeams: MicrosoftTeamBasic[] = [];
 		const myTeams: Team[] = [];
 		await Promise.all(
@@ -68,6 +72,27 @@ class MicrosoftGraph extends BaseAPI {
 			})
 		);
 		return myTeams;
+	}
+
+	// TBD: move to integrations MicrosoftAccountLinking API?
+	// Integrations shold return app data,
+	// api's should return the data from the 3rd party API - here Microsoft!
+	async getAttachedTeamsAsIdentities(
+		sessionId: string,
+		azureGroups: string[] | undefined
+	): Promise<Identity[]> {
+		if (azureGroups) {
+			const myTeams: Team[] = await this.getAttachedTeams(sessionId, azureGroups);
+			return myTeams
+				.filter((team): team is Team & { id: string } => Boolean(team.id))
+				.map((team) => ({
+					id: team.id,
+					name: team.displayName || 'Unknown Microsoft Team',
+					type: IdentityType.MICROSOFT_TEAM
+				}));
+		} else {
+			return [];
+		}
 	}
 
 	// async getAttachedSecuriyGroups(sessionId: string, azureGroups: string[]) {

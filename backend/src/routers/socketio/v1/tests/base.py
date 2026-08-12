@@ -64,13 +64,13 @@ class BaseSocketIOTest:
         await connection.client.sleep(0.2)
 
         # Submit new resource
-        test_data = {**self._test_data_single}
+        test_data = {**self._test_data_single}  # type: ignore[misc]
         submit_data = {"payload": test_data}
 
         if token_payload is None:
-            submit_data["public"] = True
+            submit_data["public"] = True  # type: ignore[arg-type]
         if parent_id:
-            submit_data["parent_id"] = str(parent_id)
+            submit_data["parent_id"] = str(parent_id)  # type: ignore[arg-type]
 
         await connection.client.emit(
             "submit",
@@ -119,6 +119,7 @@ class BaseSocketIOTest:
         socketio_test_client,
         session_ids=None,
         access_to_one_parent=None,
+        expected_error=None,
     ):
         """Test resource creation error via submit event."""
         connection = await self.helper_submit_data(
@@ -131,17 +132,20 @@ class BaseSocketIOTest:
         status_data = connection.responses("status", self.namespace_path)
         assert len(status_data) >= 1
 
+        expected_error = expected_error or (
+            f"403: {self.model.__name__} - Forbidden."  # type: ignore[attr-defined]
+        )
+
         # Find the created status
         created_status = None
         for status in status_data:
-            if (
-                isinstance(status, dict)
-                and status.get("error") == f"403: {self.model.__name__} - Forbidden."
-            ):
+            if isinstance(status, dict) and status.get("error") == expected_error:
                 created_status = status
                 break
 
-        assert created_status is not None, f"No 'error' status found in {status_data}"
+        assert (
+            created_status is not None
+        ), f"Expected error '{expected_error}' not found in {status_data}"
 
         await connection.client.disconnect()
 
@@ -178,7 +182,7 @@ class BaseSocketIOTest:
         await connection.client.sleep(0.2)
 
         # Submit update
-        update_data = {**self._test_data_update, "id": str(resource.id)}
+        update_data = {**self._test_data_update, "id": str(resource.id)}  # type: ignore[misc]
         await connection.client.emit(
             "submit",
             {"payload": update_data},
@@ -195,12 +199,12 @@ class BaseSocketIOTest:
         assert transfer_data[0]["id"] == str(resource.id)
 
         # Verify original fields
-        for key, value in self._test_data_single.items():
+        for key, value in self._test_data_single.items():  # type: ignore[attr-defined]
             assert transfer_data[0][key] == value
 
         # Verify updated fields
         assert transfer_data[1]["id"] == str(resource.id)
-        for key, value in self._test_data_update.items():
+        for key, value in self._test_data_update.items():  # type: ignore[attr-defined]
             assert transfer_data[1][key] == value
 
         await connection.client.disconnect()

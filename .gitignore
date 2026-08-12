@@ -1,7 +1,13 @@
 **.DS_Store
 **.env
+!/versions.env
 
 **/node_modules
 **/dist
 
 data/
+
+# Personal AI-tool overrides
+.claude/settings.local.json
+.gemini/settings.local.json
+CLAUDE.local.md

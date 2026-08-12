@@ -92,7 +92,8 @@ async def add_tag_to_demo_resource(
     current_user = await check_token_against_guards(token_payload, guards)
     async with TagCRUD() as crud:
         for tag_id in tag_ids:
-            await crud.add_child_to_parent(
+            hierarchy_CRUD = crud.hierarchy_CRUD(session=crud.session)
+            await hierarchy_CRUD.create(
                 parent_id=resource_id,
                 child_id=tag_id,
                 current_user=current_user,
@@ -107,7 +108,7 @@ async def get_all_in_category(
     category_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
-) -> list[DemoResource]:
+) -> list[DemoResourceRead]:
     """Gets all demo resources that belong to specific category."""
     current_user = await check_token_against_guards(token_payload, guards)
     async with demo_resource_view.crud() as crud:

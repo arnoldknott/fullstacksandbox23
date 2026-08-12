@@ -2,6 +2,9 @@
 
 REPO_ROOT_DIR=$(git rev-parse --show-toplevel)
 BRANCH_NAME=$(git branch --show-current)
+# When running inside a devcontainer the host-side workspace path is injected
+# as HOST_WORKSPACE_FOLDER. Fall back to the repo root for host-side usage.
+export HOST_WORKSPACE_FOLDER="${HOST_WORKSPACE_FOLDER:-$REPO_ROOT_DIR}"
 cd $REPO_ROOT_DIR/infrastructure
 
 echo ""
@@ -41,6 +44,7 @@ echo ""
 echo "=== tofu - init ==="
 docker compose run --rm --entrypoint '/bin/sh -c' tofu 'cp -fR .azure/ ~/.azure &&
 tofu init \
+        -upgrade \
         -backend-config="resource_group_name=${AZ_RESOURCE_GROUP_NAME}" \
         -backend-config="storage_account_name=${AZ_STORAGE_ACCOUNT_NAME}" \
         -backend-config="container_name=${AZ_CONTAINER_NAME}" \
@@ -62,9 +66,15 @@ docker compose run --rm --entrypoint 'tofu' tofu workspace show
 
 echo ""
 echo "=== entering the tofu container with \$TOFU_VARIABLES and 't' function ==="
-docker compose run --rm -it --entrypoint "/bin/sh" tofu -c '
+docker compose run --rm -e "WORKSPACE=${WORKSPACE}" -it --entrypoint "/bin/sh" tofu -c '
 cp -fR .azure/ ~/.azure
-export TOFU_VARIABLES="-var \"azure_tenant_id=${AZURE_TENANT_ID}\" -var \"azure_client_id=${AZURE_CLIENT_ID}\" -var \"azure_subscription_id=${AZURE_SUBSCRIPTION_ID}\" -var \"developer_localhost_object_id=${DEVELOPER_LOCALHOST_OBJECT_ID}\" -var \"managed_identity_github_actions_object_id=${MANAGED_IDENTITY_GITHUB_ACTIONS_OBJECT_ID}\" -var \"project_name=${PROJECT_NAME}\" -var \"project_short_name=${PROJECT_SHORT_NAME}\" -var \"project_repository_name=${PROJECT_REPOSITORY_NAME}\" -var \"costcenter=${COSTCENTER}\" -var \"owner_name=${OWNER_NAME}\" -var \"budget_notification_email=${BUDGET_NOTIFICATION_EMAIL}\" -var \"owner_object_id=${OWNER_OBJECT_ID}\" -var \"postgres_port=${POSTGRES_PORT}\" -var \"pgadmin_default_email=${PGADMIN_DEFAULT_EMAIL}\" -var \"redis_port=${REDIS_PORT}\" -var \"redis_insight_port=${REDIS_INSIGHT_PORT}\" -var \"public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}\""
+case "$WORKSPACE" in
+  dev)   export DTU_CAMPUSAI_API_KEY="$DTU_CAMPUSAI_API_KEY_DEV" ;;
+  stage) export DTU_CAMPUSAI_API_KEY="$DTU_CAMPUSAI_API_KEY_STAGE" ;;
+  prod)  export DTU_CAMPUSAI_API_KEY="$DTU_CAMPUSAI_API_KEY_PROD" ;;
+  *) echo "Unknown WORKSPACE: $WORKSPACE"; exit 1 ;;
+esac
+export TOFU_VARIABLES="-var \"azure_tenant_id=${AZURE_TENANT_ID}\" -var \"azure_client_id=${AZURE_CLIENT_ID}\" -var \"azure_subscription_id=${AZURE_SUBSCRIPTION_ID}\" -var \"developer_localhost_object_id=${DEVELOPER_LOCALHOST_OBJECT_ID}\" -var \"managed_identity_github_actions_object_id=${MANAGED_IDENTITY_GITHUB_ACTIONS_OBJECT_ID}\" -var \"project_name=${PROJECT_NAME}\" -var \"project_short_name=${PROJECT_SHORT_NAME}\" -var \"project_repository_name=${PROJECT_REPOSITORY_NAME}\" -var \"costcenter=${COSTCENTER}\" -var \"owner_name=${OWNER_NAME}\" -var \"budget_notification_email=${BUDGET_NOTIFICATION_EMAIL}\" -var \"owner_object_id=${OWNER_OBJECT_ID}\" -var \"postgres_port=${POSTGRES_PORT}\" -var \"pgadmin_default_email=${PGADMIN_DEFAULT_EMAIL}\" -var \"redis_port=${REDIS_PORT}\" -var \"redis_insight_port=${REDIS_INSIGHT_PORT}\" -var \"dtu_campusai_api_key=${DTU_CAMPUSAI_API_KEY}\""
 echo ""
 echo "Environment variable TOFU_VARIABLES is set with all required -var flags."
 echo "Usage: tofu plan \$TOFU_VARIABLES"
@@ -85,3 +95,4 @@ echo "Try it with '\''t validate'\''."
 echo ""
 ENV=~/.tofu_alias /bin/sh
 '
+# -var \"public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}\"

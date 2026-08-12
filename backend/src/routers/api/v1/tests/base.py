@@ -1,10 +1,14 @@
 """Base test class for API endpoint testing."""
 
+from typing import Any, ClassVar, List, Optional, Type
 from uuid import UUID, uuid4
-from core.types import CurrentUserData
-import pytest
 
-from tests.utils import token_admin_read_write, current_user_data_admin
+import pytest
+from sqlmodel import SQLModel
+
+from core.types import CurrentUserData
+from crud.base import BaseCRUD
+from tests.utils import current_user_data_admin, token_admin_read_write
 
 
 class AbstractTestMixin:
@@ -33,9 +37,61 @@ class BaseTest:
         _parent_model: The SQLModel table model for parent (e.g., Question)
     """
 
+    # Required: subclasses override these.
+    crud: ClassVar[Type[BaseCRUD]]
+    model: ClassVar[Type[Any]]
+    router_path: ClassVar[str]
+    _test_data_single: ClassVar[dict]
+    _test_data_wrong: ClassVar[List[dict]]
+    _test_data_many: ClassVar[List[dict]]
+    _test_data_update: ClassVar[dict]
+
     # Optional: Override in child classes that require parent resources
-    _hierarchical_router_path = None
-    _parent_model = None
+    _hierarchical_router_path: ClassVar[Optional[str]] = None
+    _parent_model: ClassVar[Optional[Type[SQLModel]]] = None
+
+    async def _create_one_resource_as_admin(
+        self,
+        register_current_user,
+        add_one_test_resource,
+        access_to_one_parent: Any = None,
+    ):
+        """Create one resource owned by admin for optional-auth visibility tests."""
+        await register_current_user(current_user_data_admin)
+
+        current_user = CurrentUserData(**current_user_data_admin)
+        parent_id = None
+        if self._parent_model is not None:
+            if access_to_one_parent is None:
+                pytest.fail(
+                    "access_to_one_parent fixture is required for hierarchical resources"
+                )
+            parent_id = await access_to_one_parent(
+                self._parent_model, token_admin_read_write
+            )
+
+        return await add_one_test_resource(
+            self.crud,
+            self._test_data_single,
+            current_user,
+            parent_id=parent_id,
+        )
+
+    async def _add_public_read_policy(self, resource_id, add_one_test_access_policy):
+        """Attach a public read policy for a resource."""
+        current_user = CurrentUserData(**current_user_data_admin)
+        await add_one_test_access_policy(
+            {
+                "resource_id": str(resource_id),
+                "action": "read",
+                "public": True,
+            },
+            current_user=current_user,
+        )
+
+    async def _get_by_id(self, resource_id):
+        """Execute GET by id for the resource under test."""
+        return await self.async_client.get(f"{self.router_path}{resource_id}")
 
     ## Fixtures
     @pytest.fixture(autouse=True)
@@ -77,7 +133,7 @@ class BaseTest:
         else:
             token_payload = mocked_provide_http_token_payload
 
-        async def _added_resources(parent_id: UUID = None):
+        async def _added_resources(parent_id: Optional[UUID] = None):
             """Factory function to add resources with optional parent_id."""
             # If no parent_id provided but this resource requires a parent, create one
             if parent_id is None and self._parent_model is not None:
@@ -100,7 +156,7 @@ class BaseTest:
         self,
         test_data_single,
         mocked_provide_http_token_payload,
-        access_to_one_parent=None,
+        access_to_one_parent: Any = None,
     ):
         """Test successful POST creation."""
         # Determine which path to use (hierarchical or standalone)
@@ -124,7 +180,9 @@ class BaseTest:
         for key, value in test_data_single.items():
             assert data[key] == value
 
-    async def run_post_missing_auth(self, test_data_single, access_to_one_parent=None):
+    async def run_post_missing_auth(
+        self, test_data_single, access_to_one_parent: Any = None
+    ):
         """Test POST fails without authentication."""
         # For hierarchical resources, we still need the path format (even though auth will fail)
         if self._hierarchical_router_path and self._parent_model:
@@ -143,7 +201,7 @@ class BaseTest:
         self,
         test_data_single,
         mocked_provide_http_token_payload,
-        access_to_one_parent=None,
+        access_to_one_parent: Any = None,
     ):
         """Test POST fails without proper authorization."""
         # Determine which path to use
@@ -162,7 +220,7 @@ class BaseTest:
         self,
         test_data_wrong,
         mocked_provide_http_token_payload,
-        access_to_one_parent=None,
+        access_to_one_parent: Any = None,
     ):
         """Test POST with invalid data fails."""
         # Determine which path to use
@@ -281,33 +339,83 @@ class BaseTest:
         assert validated is not None
         assert data["id"] == str(resource_id)
 
-    async def run_get_public_by_id_success(
-        self, add_one_test_access_policy, added_resources
+    async def run_get_by_id_with_auth_and_public_policy_success(
+        self,
+        register_current_user,
+        add_one_test_resource,
+        add_one_test_access_policy,
+        access_to_one_parent: Any = None,
     ):
-        """Test successful public GET by ID without authentication."""
-        resources = await added_resources()
-        resource_id = resources[0].id
-        current_user = CurrentUserData(**current_user_data_admin)
-        await add_one_test_access_policy(
-            {
-                "resource_id": str(resource_id),
-                "action": "read",
-                "public": True,
-            },
-            current_user=current_user,
+        """Test optional-auth GET by ID succeeds with authentication and public policy."""
+        resource = await self._create_one_resource_as_admin(
+            register_current_user,
+            add_one_test_resource,
+            access_to_one_parent,
         )
+        await self._add_public_read_policy(resource.id, add_one_test_access_policy)
 
-        response = await self.async_client.get(
-            f"{self.router_path}public/{resource_id}"
-        )
-
+        response = await self._get_by_id(resource.id)
         assert response.status_code == 200
         data = response.json()
 
-        # Validate response
         validated = self.model.Read(**data)
         assert validated is not None
-        assert data["id"] == str(resource_id)
+        assert data["id"] == str(resource.id)
+
+    async def run_get_by_id_with_auth_and_without_public_policy_fails(
+        self,
+        register_current_user,
+        add_one_test_resource,
+        access_to_one_parent: Any = None,
+    ):
+        """Test optional-auth GET by ID returns 404 with authentication and no public policy."""
+        resource = await self._create_one_resource_as_admin(
+            register_current_user,
+            add_one_test_resource,
+            access_to_one_parent,
+        )
+
+        response = await self._get_by_id(resource.id)
+        assert response.status_code == 404
+
+    async def run_get_by_id_without_auth_and_public_policy_success(
+        self,
+        register_current_user,
+        add_one_test_resource,
+        add_one_test_access_policy,
+        access_to_one_parent: Any = None,
+    ):
+        """Test optional-auth GET by ID succeeds without authentication when public policy exists."""
+        resource = await self._create_one_resource_as_admin(
+            register_current_user,
+            add_one_test_resource,
+            access_to_one_parent,
+        )
+        await self._add_public_read_policy(resource.id, add_one_test_access_policy)
+
+        response = await self._get_by_id(resource.id)
+        assert response.status_code == 200
+        data = response.json()
+
+        validated = self.model.Read(**data)
+        assert validated is not None
+        assert data["id"] == str(resource.id)
+
+    async def run_get_by_id_without_auth_and_without_public_policy_fails(
+        self,
+        register_current_user,
+        add_one_test_resource,
+        access_to_one_parent: Any = None,
+    ):
+        """Test optional-auth GET by ID returns 404 without authentication and no public policy."""
+        resource = await self._create_one_resource_as_admin(
+            register_current_user,
+            add_one_test_resource,
+            access_to_one_parent,
+        )
+
+        response = await self._get_by_id(resource.id)
+        assert response.status_code == 404
 
     async def run_put_success(
         self, added_resources, update_data, mocked_provide_http_token_payload

@@ -1,12 +1,15 @@
 <script lang="ts">
-	import ColorTileMaterialUi from './ColorTileMaterialUI.svelte';
+	import { Hct, hexFromArgb } from '@material/material-color-utilities';
+	import { onDestroy } from 'svelte';
+
+	import Display from '$components/Display.svelte';
 	import Heading from '$components/Heading.svelte';
 	import HorizontalRule from '$components/HorizontalRule.svelte';
 	import JsonData from '$components/JsonData.svelte';
-	import { themeStore } from '$lib/stores';
+	import theme from '$lib/stores/theme';
 	import type { AppTheme } from '$lib/theming';
-	import { onDestroy } from 'svelte';
-	import { Hct, hexFromArgb } from '@material/material-color-utilities';
+
+	import ColorTileMaterialUi from './ColorTileMaterialUI.svelte';
 
 	let showSections = $state({
 		colors: true,
@@ -16,15 +19,15 @@
 		sliders: true
 	});
 
-	let theme = $state({} as AppTheme);
-	const unsbscribeThemeStore = themeStore.subscribe((value) => {
-		theme = value;
+	let themeState = $state({} as AppTheme);
+	const unsbscribeThemeStore = theme.subscribe((value) => {
+		themeState = value;
 	});
 	let palettes = $derived.by(() => {
-		if (!theme.currentMode) {
+		if (!themeState.currentMode) {
 			return '';
 		} else {
-			return theme[theme.currentMode].palettes;
+			return themeState[themeState.currentMode].palettes;
 		}
 	});
 
@@ -51,9 +54,11 @@
 <!-- <JsonData data={palettesArray} /> -->
 <!-- <JsonData data={theme} /> -->
 
+<Display>Material Design 3</Display>
+
 <div class="grid w-full grid-cols-1 gap-4 xl:grid-cols-2">
 	<div class="xl:col-span-2">
-		<Heading>Colors</Heading>
+		<Heading id="colors">Colors</Heading>
 		<div class="flex items-center gap-1">
 			<label class="label label-text text-base" for="switchColors">Hide</label>
 			<input
@@ -384,7 +389,7 @@
 	</div>
 
 	<div class="xl:col-span-2">
-		<Heading>Palettes</Heading>
+		<Heading id="palettes">Palettes</Heading>
 		<div class="flex items-center gap-1">
 			<label class="label label-text text-base" for="switchColors">Hide</label>
 			<input
@@ -455,7 +460,7 @@
 	</div>
 
 	<div>
-		<Heading>Typography</Heading>
+		<Heading id="typography">Typography</Heading>
 		<div class="flex items-center gap-1">
 			<label class="label label-text text-base" for="switchTypography">Hide</label>
 			<input
@@ -534,7 +539,7 @@
 	</div>
 
 	<div>
-		<Heading>Shapes (styles)</Heading>
+		<Heading id="shapes">Shapes (styles)</Heading>
 		<div class="flex items-center gap-1">
 			<label class="label label-text text-base" for="switchShapes">Hide</label>
 			<input

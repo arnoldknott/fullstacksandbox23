@@ -1,4 +1,4 @@
-import uuid
+from uuid import UUID, uuid4
 
 import pytest
 
@@ -49,14 +49,14 @@ async def test_admin_access_user_connect_create_read_update_delete(
     await connection.client.emit("submit", {"payload": test_user}, namespace="/user")
     await connection.client.sleep(0.5)
     # Check if the user was created successfully:
+    assert len(connection.responses("status")) == 2
     assert connection.responses("status")[0]["success"] == "created"
     assert "id" in connection.responses("status")[0]
     created_user_id = connection.responses("status")[0]["id"]
     # Admin did not automatically get shared notification when not explicietly joining admin room::
-    assert len(connection.responses("status")) == 1
-    # assert connection.responses("status")[1]["success"] == "shared"
-    # assert connection.responses("status")[1]["id"] == created_user_id
-    # assert len(connection.responses("transferred")) == 0
+    assert connection.responses("status")[1]["success"] == "shared"
+    assert connection.responses("status")[1]["id"] == created_user_id
+    assert len(connection.responses("transferred")) == 0
 
     # Read:
     await connection.client.emit("read", created_user_id, namespace="/user")
@@ -80,8 +80,8 @@ async def test_admin_access_user_connect_create_read_update_delete(
     }
     await connection.client.emit("submit", {"payload": updated_user}, namespace="/user")
     await connection.client.sleep(0.3)
-    assert connection.responses("status")[1]["success"] == "updated"
-    assert connection.responses("status")[1]["id"] == created_user_id
+    assert connection.responses("status")[2]["success"] == "updated"
+    assert connection.responses("status")[2]["id"] == created_user_id
     assert len(connection.responses("transferred")) == 2
     assert connection.responses("transferred")[1]["id"] == created_user_id
     assert connection.responses("transferred")[1]["is_active"] is False
@@ -89,18 +89,18 @@ async def test_admin_access_user_connect_create_read_update_delete(
     # Delete user:
     await connection.client.emit("delete", created_user_id, namespace="/user")
     await connection.client.sleep(0.3)
-    assert connection.responses("status")[2]["success"] == "deleted"
-    assert connection.responses("status")[2]["id"] == created_user_id
+    assert connection.responses("status")[3]["success"] == "deleted"
+    assert connection.responses("status")[3]["id"] == created_user_id
     assert connection.responses("deleted")[0] == created_user_id
 
     # Read deleted user fails:
     await connection.client.emit("read", created_user_id, namespace="/user")
     await connection.client.sleep(1)
     assert len(connection.responses("transferred")) == 2
-    assert connection.responses("status")[3]["success"] == "deleted"
-    assert connection.responses("status")[3]["id"] == created_user_id
+    assert connection.responses("status")[4]["success"] == "deleted"
+    assert connection.responses("status")[4]["id"] == created_user_id
     assert (
-        connection.responses("status")[4]["error"]
+        connection.responses("status")[5]["error"]
         == f"Resource {created_user_id} not found."
     )
 
@@ -428,7 +428,7 @@ async def test_deletes_user_where_being_owner_fails(
     # in case the current_user is the same
     # as the selected entry from many_test_users
     test_user = many_test_users[2]
-    test_user.id = uuid.uuid4()
+    test_user.id = uuid4()
     await add_one_test_access_policy(
         {
             "resource_id": str(test_user.id),
@@ -478,11 +478,13 @@ async def test_admin_access_ueber_group_connect_create_update_delete(
         "submit", {"payload": test_group}, namespace="/ueber-group"
     )
     await connection.client.sleep(0.3)
+    assert len(connection.responses("status")) == 2
     assert connection.responses("status")[0]["success"] == "created"
     assert "id" in connection.responses("status")[0]
     created_uber_group_id = connection.responses("status")[0]["id"]
+    assert connection.responses("status")[1]["success"] == "shared"
+    assert UUID(connection.responses("status")[1]["id"]) == UUID(created_uber_group_id)
     # Admin does not get automatically notification without joining admin room:
-    assert len(connection.responses("status")) == 1
     assert len(connection.responses("transferred")) == 0
 
     # Update ueber group:
@@ -495,8 +497,8 @@ async def test_admin_access_ueber_group_connect_create_update_delete(
         "submit", {"payload": updated_group}, namespace="/ueber-group"
     )
     await connection.client.sleep(0.3)
-    assert connection.responses("status")[1]["success"] == "updated"
-    assert connection.responses("status")[1]["id"] == created_uber_group_id
+    assert connection.responses("status")[2]["success"] == "updated"
+    assert connection.responses("status")[2]["id"] == created_uber_group_id
     assert len(connection.responses("transferred")) == 1
     assert connection.responses("transferred")[0]["id"] == created_uber_group_id
     assert (
@@ -509,8 +511,8 @@ async def test_admin_access_ueber_group_connect_create_update_delete(
         "delete", created_uber_group_id, namespace="/ueber-group"
     )
     await connection.client.sleep(0.3)
-    assert connection.responses("status")[2]["success"] == "deleted"
-    assert connection.responses("status")[2]["id"] == created_uber_group_id
+    assert connection.responses("status")[3]["success"] == "deleted"
+    assert connection.responses("status")[3]["id"] == created_uber_group_id
     assert connection.responses("deleted")[0] == created_uber_group_id
 
 
@@ -794,6 +796,8 @@ async def test_connect_create_read_update_delete_group(
     assert connection.responses("status")[0]["success"] == "created"
     assert "id" in connection.responses("status")[0]
     created_group_id = connection.responses("status")[0]["id"]
+    assert connection.responses("status")[1]["success"] == "shared"
+    assert UUID(connection.responses("status")[1]["id"]) == UUID(created_group_id)
     assert len(connection.responses("transferred")) == 0
 
     # Read:
@@ -817,8 +821,8 @@ async def test_connect_create_read_update_delete_group(
         "submit", {"payload": updated_group}, namespace="/group"
     )
     await connection.client.sleep(0.3)
-    assert connection.responses("status")[1]["success"] == "updated"
-    assert connection.responses("status")[1]["id"] == created_group_id
+    assert connection.responses("status")[2]["success"] == "updated"
+    assert connection.responses("status")[2]["id"] == created_group_id
     assert len(connection.responses("transferred")) == 2
     assert connection.responses("transferred")[1]["id"] == created_group_id
     assert connection.responses("transferred")[1]["name"] == test_group["name"]
@@ -829,18 +833,18 @@ async def test_connect_create_read_update_delete_group(
     # Delete group:
     await connection.client.emit("delete", created_group_id, namespace="/group")
     await connection.client.sleep(0.3)
-    assert connection.responses("status")[2]["success"] == "deleted"
-    assert connection.responses("status")[2]["id"] == created_group_id
+    assert connection.responses("status")[3]["success"] == "deleted"
+    assert connection.responses("status")[3]["id"] == created_group_id
     assert connection.responses("deleted")[0] == created_group_id
 
     # Read deleted group fails:
     await connection.client.emit("read", created_group_id, namespace="/group")
     await connection.client.sleep(1)
     assert len(connection.responses("transferred")) == 2
-    assert connection.responses("status")[3]["success"] == "deleted"
-    assert connection.responses("status")[3]["id"] == created_group_id
+    assert connection.responses("status")[4]["success"] == "deleted"
+    assert connection.responses("status")[4]["id"] == created_group_id
     assert (
-        connection.responses("status")[4]["error"]
+        connection.responses("status")[5]["error"]
         == f"Resource {created_group_id} not found."
     )
 
@@ -878,12 +882,12 @@ async def test_get_requested_existing_groups_on_connect(
     indirect=True,
 )
 async def test_user_reads_all_groups(
-    add_many_test_groups: list[Group],
+    add_many_test_groups: list[Group],  # type: ignore[valid-type]
     socketio_test_client,
 ):
     """Test the demo resource read event without argument reads all resources."""
     connection = await socketio_test_client(group_client_config)
-    existing_groups = await add_many_test_groups(connection.token_payload())
+    existing_groups = await add_many_test_groups(connection.token_payload())  # type: ignore[call-arg]
 
     await connection.connect()
 
@@ -909,12 +913,12 @@ async def test_user_reads_all_groups(
     indirect=True,
 )
 async def test_user_reads_one_group(
-    add_many_test_groups: list[Group],
+    add_many_test_groups: list[Group],  # type: ignore[valid-type]
     socketio_test_client,
 ):
     """Test the demo resource read event without argument reads all resources."""
     connection = await socketio_test_client(group_client_config)
-    existing_groups = await add_many_test_groups(connection.token_payload())
+    existing_groups = await add_many_test_groups(connection.token_payload())  # type: ignore[call-arg]
 
     await connection.connect()
 
@@ -968,16 +972,16 @@ async def test_user_links_group_to_ueber_group(
     session_ids,
     socketio_test_client,
     socketio_test_client_ueber_group_namespace,
-    add_many_test_ueber_groups: list[UeberGroup],
-    add_many_test_groups: list[Group],
+    add_many_test_ueber_groups: list[UeberGroup],  # type: ignore[valid-type]
+    add_many_test_groups: list[Group],  # type: ignore[valid-type]
     add_one_test_access_policy,
 ):
     """Test the demo resource read event without argument reads all resources."""
     connection1 = await socketio_test_client(group_and_ueber_group_client_config)
-    existing_ueber_groups = await add_many_test_ueber_groups(
+    existing_ueber_groups = await add_many_test_ueber_groups(  # type: ignore[call-arg]
         connection1.token_payload()
     )
-    existing_groups = await add_many_test_groups(connection1.token_payload())
+    existing_groups = await add_many_test_groups(connection1.token_payload())  # type: ignore[call-arg]
     connection2 = await socketio_test_client_ueber_group_namespace(session_ids[1])
     current_user2 = await connection2.current_user()
     connection3 = await socketio_test_client(group_client_config, session_ids[2])
@@ -1028,24 +1032,24 @@ async def test_user_links_group_to_ueber_group(
     assert len(status_data_client1) == 2
     # Connection 1 gets the status twice: once in group namespace and once in ueber-group-namespace:
     assert status_data_client1[0]["success"] == "linked"
-    assert uuid.UUID(status_data_client1[0]["id"]) == existing_groups[2].id
-    assert uuid.UUID(status_data_client1[0]["parent_id"]) == existing_ueber_groups[1].id
+    assert UUID(status_data_client1[0]["id"]) == existing_groups[2].id
+    assert UUID(status_data_client1[0]["parent_id"]) == existing_ueber_groups[1].id
     assert status_data_client1[0]["inherit"] is True
     assert status_data_client1[1]["success"] == "linked"
-    assert uuid.UUID(status_data_client1[1]["id"]) == existing_groups[2].id
-    assert uuid.UUID(status_data_client1[1]["parent_id"]) == existing_ueber_groups[1].id
+    assert UUID(status_data_client1[1]["id"]) == existing_groups[2].id
+    assert UUID(status_data_client1[1]["parent_id"]) == existing_ueber_groups[1].id
     assert status_data_client1[1]["inherit"] is True
     status_data_client2 = connection2.responses("status")
     assert len(status_data_client2) == 1
     assert status_data_client2[0]["success"] == "linked"
-    assert uuid.UUID(status_data_client2[0]["id"]) == existing_groups[2].id
-    assert uuid.UUID(status_data_client2[0]["parent_id"]) == existing_ueber_groups[1].id
+    assert UUID(status_data_client2[0]["id"]) == existing_groups[2].id
+    assert UUID(status_data_client2[0]["parent_id"]) == existing_ueber_groups[1].id
     assert status_data_client2[0]["inherit"] is True
     status_data_client3 = connection3.responses("status")
     assert len(status_data_client3) == 1
     assert status_data_client3[0]["success"] == "linked"
-    assert uuid.UUID(status_data_client3[0]["id"]) == existing_groups[2].id
-    assert uuid.UUID(status_data_client3[0]["parent_id"]) == existing_ueber_groups[1].id
+    assert UUID(status_data_client3[0]["id"]) == existing_groups[2].id
+    assert UUID(status_data_client3[0]["parent_id"]) == existing_ueber_groups[1].id
     assert status_data_client3[0]["inherit"] is True
 
 
@@ -1065,17 +1069,17 @@ async def test_user_unlinks_group_from_ueber_group(
     session_ids,
     socketio_test_client,
     socketio_test_client_ueber_group_namespace,
-    add_many_test_ueber_groups: list[UeberGroup],
-    add_many_test_groups: list[Group],
+    add_many_test_ueber_groups: list[UeberGroup],  # type: ignore[valid-type]
+    add_many_test_groups: list[Group],  # type: ignore[valid-type]
     add_one_parent_child_identity_relationship,
     add_one_test_access_policy,
 ):
     """Test the demo resource read event without argument reads all resources."""
     connection1 = await socketio_test_client(group_and_ueber_group_client_config)
-    existing_ueber_groups = await add_many_test_ueber_groups(
+    existing_ueber_groups = await add_many_test_ueber_groups(  # type: ignore[call-arg]
         connection1.token_payload()
     )
-    existing_groups = await add_many_test_groups(connection1.token_payload())
+    existing_groups = await add_many_test_groups(connection1.token_payload())  # type: ignore[call-arg]
     await add_one_parent_child_identity_relationship(
         parent_id=existing_ueber_groups[1].id,
         child_id=existing_groups[2].id,
@@ -1122,16 +1126,13 @@ async def test_user_unlinks_group_from_ueber_group(
     )
     assert len(transferred_data_client1) == 4
     # Connection 1 gets the status twice: once in group namespace and once in ueber-group-namespace:
-    assert uuid.UUID(transferred_data_client1[3]["id"]) == existing_ueber_groups[1].id
+    assert UUID(transferred_data_client1[3]["id"]) == existing_ueber_groups[1].id
     assert transferred_data_client1[3]["name"] == existing_ueber_groups[1].name
     assert (
         transferred_data_client1[3]["description"]
         == existing_ueber_groups[1].description
     )
-    assert (
-        uuid.UUID(transferred_data_client1[0]["groups"][0]["id"])
-        == existing_groups[2].id
-    )
+    assert UUID(transferred_data_client1[0]["groups"][0]["id"]) == existing_groups[2].id
     assert transferred_data_client1[0]["groups"][0]["name"] == existing_groups[2].name
     assert (
         transferred_data_client1[0]["groups"][0]["description"]
@@ -1153,21 +1154,21 @@ async def test_user_unlinks_group_from_ueber_group(
     # # Connection 1 gets the status twice: once in group namespace and once in ueber-group-namespace:
     status_data_client1 = connection1.responses("status", namespace="/ueber-group")
     assert status_data_client1[0]["success"] == "unlinked"
-    assert uuid.UUID(status_data_client1[0]["id"]) == existing_groups[2].id
-    assert uuid.UUID(status_data_client1[0]["parent_id"]) == existing_ueber_groups[1].id
+    assert UUID(status_data_client1[0]["id"]) == existing_groups[2].id
+    assert UUID(status_data_client1[0]["parent_id"]) == existing_ueber_groups[1].id
     assert status_data_client1[1]["success"] == "unlinked"
-    assert uuid.UUID(status_data_client1[1]["id"]) == existing_groups[2].id
-    assert uuid.UUID(status_data_client1[1]["parent_id"]) == existing_ueber_groups[1].id
+    assert UUID(status_data_client1[1]["id"]) == existing_groups[2].id
+    assert UUID(status_data_client1[1]["parent_id"]) == existing_ueber_groups[1].id
     status_data_client2 = connection2.responses("status")
     assert len(status_data_client2) == 1
     assert status_data_client2[0]["success"] == "unlinked"
-    assert uuid.UUID(status_data_client2[0]["id"]) == existing_groups[2].id
-    assert uuid.UUID(status_data_client2[0]["parent_id"]) == existing_ueber_groups[1].id
+    assert UUID(status_data_client2[0]["id"]) == existing_groups[2].id
+    assert UUID(status_data_client2[0]["parent_id"]) == existing_ueber_groups[1].id
     status_data_client3 = connection3.responses("status")
     assert len(status_data_client3) == 1
     assert status_data_client3[0]["success"] == "unlinked"
-    assert uuid.UUID(status_data_client3[0]["id"]) == existing_groups[2].id
-    assert uuid.UUID(status_data_client3[0]["parent_id"]) == existing_ueber_groups[1].id
+    assert UUID(status_data_client3[0]["id"]) == existing_groups[2].id
+    assert UUID(status_data_client3[0]["parent_id"]) == existing_ueber_groups[1].id
 
     # Read the ueber group that has no longer the group attached:
     await connection1.client.emit(
@@ -1181,7 +1182,7 @@ async def test_user_unlinks_group_from_ueber_group(
     assert len(transferred_data_client1) == 5
     # Connection 1 gets the status twice: once in group namespace and once in ueber-group-namespace:
     assert (
-        uuid.UUID(transferred_data_client1_after_unlinking[4]["id"])
+        UUID(transferred_data_client1_after_unlinking[4]["id"])
         == existing_ueber_groups[1].id
     )
     assert (
@@ -1277,6 +1278,16 @@ async def test_connect_create_read_update_delete_sub_group(
     assert connection_user2.responses("status")[0]["success"] == "created"
     assert "id" in connection_user2.responses("status")[0]
     created_sub_group_id = connection_user2.responses("status")[0]["id"]
+    assert connection_user2.responses("status")[1]["success"] == "linked"
+    assert connection_user2.responses("status")[1]["id"] == created_sub_group_id
+    assert connection_user2.responses("status")[1]["parent_id"] == str(
+        added_test_groups[3].id
+    )
+    assert not connection_user2.responses("status")[1]["inherit"]
+    assert connection_user2.responses("status")[2]["success"] == "shared"
+    assert UUID(connection_user2.responses("status")[2]["id"]) == UUID(
+        created_sub_group_id
+    )
     assert len(connection_user2.responses("transferred")) == 0
 
     # Read:
@@ -1319,8 +1330,8 @@ async def test_connect_create_read_update_delete_sub_group(
         "submit", {"payload": updated_sub_group}, namespace="/sub-group"
     )
     await connection_user2.client.sleep(0.3)
-    assert connection_user2.responses("status")[1]["success"] == "updated"
-    assert connection_user2.responses("status")[1]["id"] == shared_sub_group_id
+    assert connection_user2.responses("status")[3]["success"] == "updated"
+    assert connection_user2.responses("status")[3]["id"] == shared_sub_group_id
     assert len(connection_user1.responses("transferred")) == 4
     assert connection_user1.responses("transferred")[3]["id"] == shared_sub_group_id
     assert connection_user1.responses("transferred")[3]["name"] == str(
@@ -1345,8 +1356,8 @@ async def test_connect_create_read_update_delete_sub_group(
         "delete", shared_sub_group_id, namespace="/sub-group"
     )
     await connection_user2.client.sleep(0.3)
-    assert connection_user2.responses("status")[2]["success"] == "deleted"
-    assert connection_user2.responses("status")[2]["id"] == shared_sub_group_id
+    assert connection_user2.responses("status")[4]["success"] == "deleted"
+    assert connection_user2.responses("status")[4]["id"] == shared_sub_group_id
     assert connection_user2.responses("deleted")[0] == shared_sub_group_id
 
     # Read deleted sub group fails:
@@ -1355,9 +1366,9 @@ async def test_connect_create_read_update_delete_sub_group(
     )
     await connection_user2.client.sleep(0.3)
     assert len(connection_user2.responses("transferred")) == 2
-    assert connection_user2.responses("status")[3]["success"] == "deleted"
-    assert connection_user2.responses("status")[3]["id"] == shared_sub_group_id
+    assert connection_user2.responses("status")[5]["success"] == "deleted"
+    assert connection_user2.responses("status")[5]["id"] == shared_sub_group_id
     assert (
-        connection_user2.responses("status")[4]["error"]
+        connection_user2.responses("status")[6]["error"]
         == f"Resource {shared_sub_group_id} not found."
     )

@@ -11,7 +11,6 @@ from crud.protected_resource import (
     ProtectedGrandChildCRUD,
     ProtectedResourceCRUD,
 )
-from models.access import ResourceHierarchyRead
 from models.protected_resource import (
     ProtectedChild,
     ProtectedChildCreate,
@@ -45,10 +44,10 @@ protected_resource_view = BaseView(ProtectedResourceCRUD)
 
 @router.post("/resource/", status_code=201)
 async def post_protected_resource(
-    protected_resource: ProtectedResourceCreate,
+    protected_resource: ProtectedResourceCreate,  # pyright: ignore[reportInvalidTypeForm]
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> ProtectedResource:
+) -> ProtectedResource:  # pyright: ignore[reportInvalidTypeForm]
     """Creates a new protected resource."""
     return await protected_resource_view.post(protected_resource, token_payload, guards)
 
@@ -75,10 +74,10 @@ async def get_protected_resource_by_id(
 @router.put("/resource/{resource_id}", status_code=200)
 async def put_protected_resource(
     resource_id: UUID,
-    protected_resource: ProtectedResourceUpdate,
+    protected_resource: ProtectedResourceUpdate,  # pyright: ignore[reportInvalidTypeForm]
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> ProtectedResource:
+) -> ProtectedResource:  # pyright: ignore[reportInvalidTypeForm]
     """Updates a protected resource."""
     return await protected_resource_view.put(
         resource_id, protected_resource, token_payload, guards
@@ -104,65 +103,16 @@ protected_child_view = BaseView(ProtectedChildCRUD)
 
 @router.post("/resource/{protected_resource_id}/child", status_code=201)
 async def post_protected_child(
-    protected_child: ProtectedChildCreate,
+    protected_child: ProtectedChildCreate,  # pyright: ignore[reportInvalidTypeForm]
     # parent_id: Annotated[UUID | None, Query()] = None,
     protected_resource_id: UUID,
     inherit: Annotated[bool, Query()] = False,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> ProtectedChild:
+) -> ProtectedChild:  # pyright: ignore[reportInvalidTypeForm]
     """Creates a new protected child."""
     return await protected_child_view.post(
         protected_child, token_payload, guards, protected_resource_id, inherit
-    )
-
-
-@router.post(
-    "/resource/{protected_resource_id}/move/{child_id}/before/{other_child_id}",
-    status_code=201,
-)
-async def post_reorder_child_insert_before(
-    protected_resource_id: UUID,
-    child_id: UUID,
-    other_child_id: UUID,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> None:
-    """Changes the order of the children."""
-    return await protected_child_view.post_reorder_children(
-        protected_resource_id, child_id, "before", other_child_id, token_payload, guards
-    )
-
-
-@router.post(
-    "/resource/{protected_resource_id}/move/{child_id}/after/{other_child_id}",
-    status_code=201,
-)
-async def post_reorder_child_insert_after(
-    protected_resource_id: UUID,
-    child_id: UUID,
-    other_child_id: UUID,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> None:
-    """Changes the order of the children."""
-    return await protected_child_view.post_reorder_children(
-        protected_resource_id, child_id, "after", other_child_id, token_payload, guards
-    )
-
-
-@router.post("/child/{child_id}/parent/{parent_id}", status_code=201)
-async def post_add_child_to_parent(
-    child_id: UUID,
-    parent_id: UUID,
-    inherit: Annotated[bool, Query()] = False,
-    # TBD: consider adding order here as another query parameter
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> ResourceHierarchyRead:
-    """Adds a child to a parent."""
-    return await protected_child_view.post_add_child_to_parent(
-        child_id, parent_id, token_payload, guards, inherit
     )
 
 
@@ -188,10 +138,10 @@ async def get_protected_child_by_id(
 @router.put("/child/{resource_id}", status_code=200)
 async def put_protected_child(
     resource_id: UUID,
-    protected_child: ProtectedChildUpdate,
+    protected_child: ProtectedChildUpdate,  # pyright: ignore[reportInvalidTypeForm]
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> ProtectedChild:
+) -> ProtectedChild:  # pyright: ignore[reportInvalidTypeForm]
     """Updates a protected child resource."""
     return await protected_child_view.put(
         resource_id, protected_child, token_payload, guards
@@ -208,19 +158,6 @@ async def delete_protected_child(
     return await protected_child_view.delete(resource_id, token_payload, guards)
 
 
-@router.delete("/child/{child_id}/parent/{parent_id}", status_code=200)
-async def remove_child_from_parent(
-    parent_id: UUID,
-    child_id: UUID,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> None:
-    """Removes a child from a parent."""
-    return await protected_child_view.remove_child_from_parent(
-        child_id, parent_id, token_payload, guards
-    )
-
-
 # endregion ProtectedChild
 
 # region ProtectedGrandChild
@@ -230,13 +167,13 @@ protected_grand_child_view = BaseView(ProtectedGrandChildCRUD)
 
 @router.post("/child/{protected_child_id}/grandchild", status_code=201)
 async def post_protected_grandchild(
-    protected_grandchild: ProtectedGrandChildCreate,
+    protected_grandchild: ProtectedGrandChildCreate,  # pyright: ignore[reportInvalidTypeForm]
     protected_child_id: UUID,
     # parent_id: Annotated[UUID | None, Query()] = None,
     inherit: Annotated[bool, Query()] = False,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> ProtectedGrandChild:
+) -> ProtectedGrandChild:  # pyright: ignore[reportInvalidTypeForm]
     """Creates a new protected grandchild."""
     return await protected_grand_child_view.post(
         protected_grandchild, token_payload, guards, protected_child_id, inherit
@@ -267,10 +204,10 @@ async def get_protected_grandchild_by_id(
 @router.put("/grandchild/{resource_id}", status_code=200)
 async def put_protected_grandchild(
     resource_id: UUID,
-    protected_grandchild: ProtectedGrandChildUpdate,
+    protected_grandchild: ProtectedGrandChildUpdate,  # pyright: ignore[reportInvalidTypeForm]
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
-) -> ProtectedGrandChild:
+) -> ProtectedGrandChild:  # pyright: ignore[reportInvalidTypeForm]
     """Updates a protected grandchild resource."""
     return await protected_grand_child_view.put(
         resource_id, protected_grandchild, token_payload, guards

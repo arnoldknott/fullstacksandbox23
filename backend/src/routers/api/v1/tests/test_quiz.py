@@ -2,32 +2,32 @@
 
 import pytest
 
-from crud.quiz import QuestionCRUD, MessageCRUD, NumericalCRUD
-from models.quiz import Question, Message, Numerical
+from crud.quiz import MessageCRUD, NumericalCRUD, QuestionCRUD
+from models.quiz import Message, Numerical, Question
+from routers.api.v1.tests.base import BaseTest
 from tests.utils import (
-    token_admin_read_write,
-    token_user1_read_write,
+    token_admin,
     token_admin_read,
+    token_admin_read_write,
     token_admin_write,
     token_user1_read,
+    token_user1_read_write,
     token_user1_write,
-    token_admin,
 )
 from tests.utils_quiz import (
-    one_test_question,
-    many_test_questions,
-    wrong_test_questions,
-    question_update_data,
-    one_test_message,
     many_test_messages,
-    wrong_test_messages,
-    message_update_data,
-    one_test_numerical,
     many_test_numericals,
-    wrong_test_numericals,
+    many_test_questions,
+    message_update_data,
     numerical_update_data,
+    one_test_message,
+    one_test_numerical,
+    one_test_question,
+    question_update_data,
+    wrong_test_messages,
+    wrong_test_numericals,
+    wrong_test_questions,
 )
-from routers.api.v1.tests.base import BaseTest
 
 
 class TestQuestion(BaseTest):
@@ -142,31 +142,59 @@ class TestQuestion(BaseTest):
         await super().run_get_by_id_not_found(mocked_provide_http_token_payload)
 
     @pytest.mark.anyio
-    async def test_get_by_id_missing_auth(self, added_resources):
-        """Test GET by ID fails without authentication."""
-        await super().run_get_by_id_missing_auth(added_resources)
-
-    @pytest.mark.anyio
     @pytest.mark.parametrize(
         "mocked_provide_http_token_payload",
         [token_admin, token_admin_write, token_user1_write],
         indirect=True,
     )
-    async def test_get_by_id_fails_authorization(
-        self, added_resources, mocked_provide_http_token_payload
+    async def test_get_by_id_with_auth_and_public_policy_success(
+        self,
+        register_current_user,
+        add_one_test_resource,
+        add_one_test_access_policy,
     ):
-        """Test GET question by ID fails without proper authorization."""
-        await super().run_get_by_id_fails_authorization(
-            added_resources, mocked_provide_http_token_payload
+        """Test optional-auth GET question by ID succeeds with auth and public policy."""
+        await super().run_get_by_id_with_auth_and_public_policy_success(
+            register_current_user,
+            add_one_test_resource,
+            add_one_test_access_policy,
         )
 
     @pytest.mark.anyio
-    async def test_get_public_by_id_success(
-        self, add_one_test_access_policy, added_resources
+    @pytest.mark.parametrize(
+        "mocked_provide_http_token_payload", [token_user1_write], indirect=True
+    )
+    async def test_get_by_id_with_auth_and_without_public_policy_fails(
+        self, register_current_user, add_one_test_resource
     ):
-        """Test public GET question by ID success (no auth)."""
-        await super().run_get_public_by_id_success(
-            add_one_test_access_policy, added_resources
+        """Test optional-auth GET question by ID returns 404 with auth and no public policy."""
+        await super().run_get_by_id_with_auth_and_without_public_policy_fails(
+            register_current_user,
+            add_one_test_resource,
+        )
+
+    @pytest.mark.anyio
+    async def test_get_by_id_without_auth_and_public_policy_success(
+        self,
+        register_current_user,
+        add_one_test_resource,
+        add_one_test_access_policy,
+    ):
+        """Test optional-auth GET question by ID succeeds without auth when public policy exists."""
+        await super().run_get_by_id_without_auth_and_public_policy_success(
+            register_current_user,
+            add_one_test_resource,
+            add_one_test_access_policy,
+        )
+
+    @pytest.mark.anyio
+    async def test_get_by_id_without_auth_and_without_public_policy_fails(
+        self, register_current_user, add_one_test_resource
+    ):
+        """Test optional-auth GET question by ID returns 404 without auth and no public policy."""
+        await super().run_get_by_id_without_auth_and_without_public_policy_fails(
+            register_current_user,
+            add_one_test_resource,
         )
 
     # PUT tests
@@ -397,31 +425,65 @@ class TestMessage(BaseTest):
         await super().run_get_by_id_not_found(mocked_provide_http_token_payload)
 
     @pytest.mark.anyio
-    async def test_get_by_id_missing_auth(self, added_resources):
-        """Test GET by ID fails without authentication."""
-        await super().run_get_by_id_missing_auth(added_resources)
-
-    @pytest.mark.anyio
     @pytest.mark.parametrize(
         "mocked_provide_http_token_payload",
         [token_admin, token_admin_write, token_user1_write],
         indirect=True,
     )
-    async def test_get_by_id_fails_authorization(
-        self, added_resources, mocked_provide_http_token_payload
+    async def test_get_by_id_with_auth_and_public_policy_success(
+        self,
+        register_current_user,
+        add_one_test_resource,
+        add_one_test_access_policy,
+        access_to_one_parent,
     ):
-        """Test GET message by ID fails without proper authorization."""
-        await super().run_get_by_id_fails_authorization(
-            added_resources, mocked_provide_http_token_payload
+        """Test optional-auth GET message by ID succeeds with auth and public policy."""
+        await super().run_get_by_id_with_auth_and_public_policy_success(
+            register_current_user,
+            add_one_test_resource,
+            add_one_test_access_policy,
+            access_to_one_parent,
         )
 
     @pytest.mark.anyio
-    async def test_get_public_by_id_success(
-        self, add_one_test_access_policy, added_resources
+    @pytest.mark.parametrize(
+        "mocked_provide_http_token_payload", [token_user1_write], indirect=True
+    )
+    async def test_get_by_id_with_auth_and_without_public_policy_fails(
+        self, register_current_user, add_one_test_resource, access_to_one_parent
     ):
-        """Test public GET message by ID success (no auth)."""
-        await super().run_get_public_by_id_success(
-            add_one_test_access_policy, added_resources
+        """Test optional-auth GET message by ID returns 404 with auth and no public policy."""
+        await super().run_get_by_id_with_auth_and_without_public_policy_fails(
+            register_current_user,
+            add_one_test_resource,
+            access_to_one_parent,
+        )
+
+    @pytest.mark.anyio
+    async def test_get_by_id_without_auth_and_public_policy_success(
+        self,
+        register_current_user,
+        add_one_test_resource,
+        add_one_test_access_policy,
+        access_to_one_parent,
+    ):
+        """Test optional-auth GET message by ID succeeds without auth when public policy exists."""
+        await super().run_get_by_id_without_auth_and_public_policy_success(
+            register_current_user,
+            add_one_test_resource,
+            add_one_test_access_policy,
+            access_to_one_parent,
+        )
+
+    @pytest.mark.anyio
+    async def test_get_by_id_without_auth_and_without_public_policy_fails(
+        self, register_current_user, add_one_test_resource, access_to_one_parent
+    ):
+        """Test optional-auth GET message by ID returns 404 without auth and no public policy."""
+        await super().run_get_by_id_without_auth_and_without_public_policy_fails(
+            register_current_user,
+            add_one_test_resource,
+            access_to_one_parent,
         )
 
     # PUT tests
@@ -652,31 +714,65 @@ class TestNumerical(BaseTest):
         await super().run_get_by_id_not_found(mocked_provide_http_token_payload)
 
     @pytest.mark.anyio
-    async def test_get_by_id_missing_auth(self, added_resources):
-        """Test GET by ID fails without authentication."""
-        await super().run_get_by_id_missing_auth(added_resources)
-
-    @pytest.mark.anyio
     @pytest.mark.parametrize(
         "mocked_provide_http_token_payload",
         [token_admin, token_admin_write, token_user1_write],
         indirect=True,
     )
-    async def test_get_by_id_fails_authorization(
-        self, added_resources, mocked_provide_http_token_payload
+    async def test_get_by_id_with_auth_and_public_policy_success(
+        self,
+        register_current_user,
+        add_one_test_resource,
+        add_one_test_access_policy,
+        access_to_one_parent,
     ):
-        """Test GET numerical by ID fails without proper authorization."""
-        await super().run_get_by_id_fails_authorization(
-            added_resources, mocked_provide_http_token_payload
+        """Test optional-auth GET numerical by ID succeeds with auth and public policy."""
+        await super().run_get_by_id_with_auth_and_public_policy_success(
+            register_current_user,
+            add_one_test_resource,
+            add_one_test_access_policy,
+            access_to_one_parent,
         )
 
     @pytest.mark.anyio
-    async def test_get_public_by_id_success(
-        self, add_one_test_access_policy, added_resources
+    @pytest.mark.parametrize(
+        "mocked_provide_http_token_payload", [token_user1_write], indirect=True
+    )
+    async def test_get_by_id_with_auth_and_without_public_policy_fails(
+        self, register_current_user, add_one_test_resource, access_to_one_parent
     ):
-        """Test public GET numerical by ID success (no auth)."""
-        await super().run_get_public_by_id_success(
-            add_one_test_access_policy, added_resources
+        """Test optional-auth GET numerical by ID returns 404 with auth and no public policy."""
+        await super().run_get_by_id_with_auth_and_without_public_policy_fails(
+            register_current_user,
+            add_one_test_resource,
+            access_to_one_parent,
+        )
+
+    @pytest.mark.anyio
+    async def test_get_by_id_without_auth_and_public_policy_success(
+        self,
+        register_current_user,
+        add_one_test_resource,
+        add_one_test_access_policy,
+        access_to_one_parent,
+    ):
+        """Test optional-auth GET numerical by ID succeeds without auth when public policy exists."""
+        await super().run_get_by_id_without_auth_and_public_policy_success(
+            register_current_user,
+            add_one_test_resource,
+            add_one_test_access_policy,
+            access_to_one_parent,
+        )
+
+    @pytest.mark.anyio
+    async def test_get_by_id_without_auth_and_without_public_policy_fails(
+        self, register_current_user, add_one_test_resource, access_to_one_parent
+    ):
+        """Test optional-auth GET numerical by ID returns 404 without auth and no public policy."""
+        await super().run_get_by_id_without_auth_and_without_public_policy_fails(
+            register_current_user,
+            add_one_test_resource,
+            access_to_one_parent,
         )
 
     # PUT tests
@@ -1005,7 +1101,7 @@ class TestNumerical(BaseTest):
 #     await async_client.post("/api/v1/quiz/message/", json=child_with_parent)
 #
 #     # GET the public parent endpoint
-#     response = await async_client.get(f"/api/v1/quiz/question/public/{parent.id}")
+#     response = await async_client.get(f"/api/v1/quiz/question/{parent.id}")
 #
 #     assert response.status_code == 200
 #     content = response.json()

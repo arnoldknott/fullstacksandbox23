@@ -8,13 +8,14 @@ if TYPE_CHECKING:
 # from .demo_resource import DemoResource
 # from .demo_resource_tag_link import DemoResourceTagLink
 from .access import ResourceHierarchy
+from .base import BaseSQLModel
 
 
 class TagCreate(SQLModel):
     name: str = Field(max_length=10)
 
 
-class Tag(TagCreate, table=True):
+class Tag(TagCreate, BaseSQLModel, table=True):
     id: Optional[uuid.UUID] = Field(
         default_factory=uuid.uuid4,
         foreign_key="identifiertypelink.id",

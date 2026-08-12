@@ -1,10 +1,17 @@
 <script lang="ts">
-	import 'reveal.js/dist/reveal.css';
-	import 'reveal.js/dist/theme/black.css';
-	import type { Snippet } from 'svelte';
-	import { onMount } from 'svelte';
+	import 'reveal.js/reveal.css';
+	// TBD: investigate where the color scheme is per default loaded for black,
+	// so RevealJS also needs to load black as default?
+	// for small screens, the black theme needs to be loaded as default,
+	// otherwise the slides will be white whitebackground with black's color theme,
+	// that is most of the text is very light color and not readable!
+	import 'reveal.js/theme/black.css';
+
+	import type { RevealApi, RevealConfig } from 'reveal.js';
 	import Reveal from 'reveal.js';
-	import type { Options, Api } from 'reveal.js';
+	import revealThemeBlackHref from 'reveal.js/theme/black.css?url';
+	import revealThemeWhiteHref from 'reveal.js/theme/white.css?url';
+	import { onMount, type Snippet } from 'svelte';
 
 	export const ssr = false;
 	// let { children, keyboard=true }: {  children: Snippet, keyboard: boolean} = $props();
@@ -12,9 +19,38 @@
 		children,
 		options = {},
 		reveal = $bindable()
-	}: { children: Snippet; options?: Options; reveal?: Api } = $props();
+	}: { children: Snippet; options?: RevealConfig; reveal?: RevealApi } = $props();
+	const THEME_LINK_ID = 'reveal-theme-link';
+
+	const ensureRevealThemeLink = (): HTMLLinkElement => {
+		let link = document.getElementById(THEME_LINK_ID) as HTMLLinkElement | null;
+
+		if (!link) {
+			link = document.createElement('link');
+			link.id = THEME_LINK_ID;
+			link.rel = 'stylesheet';
+			document.head.appendChild(link);
+		}
+
+		return link;
+	};
+
+	const applyRevealTheme = (isDark: boolean): void => {
+		const link = ensureRevealThemeLink();
+		const stylesheetHref = isDark ? revealThemeBlackHref : revealThemeWhiteHref;
+
+		if (link.href !== stylesheetHref) {
+			link.href = stylesheetHref;
+		}
+	};
 
 	onMount(() => {
+		const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+		const handleThemeChange = (event: MediaQueryListEvent) => applyRevealTheme(event.matches);
+
+		applyRevealTheme(mediaQuery.matches);
+		mediaQuery.addEventListener('change', handleThemeChange);
+
 		reveal = new Reveal({});
 		reveal.initialize({
 			// Default options
@@ -30,6 +66,10 @@
 		// 	console.log('=== fragment shown ===');
 		// 	console.log(event);
 		// });
+
+		return () => {
+			mediaQuery.removeEventListener('change', handleThemeChange);
+		};
 	});
 </script>
 

@@ -1,16 +1,9 @@
 <script lang="ts">
-	import type { HTMLAttributes } from 'svelte/elements';
 	import type { Snippet } from 'svelte';
+	import type { HTMLAttributes } from 'svelte/elements';
 
 	type ColorVariant =
-		| 'primary'
-		| 'secondary'
-		| 'accent'
-		| 'warning'
-		| 'error'
-		| 'success'
-		| 'info'
-		| 'neutral';
+		'primary' | 'secondary' | 'accent' | 'warning' | 'error' | 'success' | 'info' | 'neutral';
 
 	interface ChatBubbleProps extends HTMLAttributes<HTMLDivElement> {
 		children: Snippet;

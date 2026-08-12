@@ -16,7 +16,7 @@ async def test_public_message_event_in_public_namespace():
 
     response = None
 
-    @client.on("public_message", namespace="/public-namespace")
+    @client.on("public_message", namespace="/public-namespace")  # type: ignore[misc]
     async def handler(data):
         nonlocal response
         response = data

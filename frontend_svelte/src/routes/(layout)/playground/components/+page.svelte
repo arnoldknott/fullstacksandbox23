@@ -1,34 +1,35 @@
 <script lang="ts">
-	import { themeStore } from '$lib/stores';
-	import type { AppTheme } from '$lib/theming';
-	import { Hct, hexFromArgb } from '@material/material-color-utilities';
-	import { onDestroy } from 'svelte';
-	import Title from '$components/Title.svelte';
-	import HorizontalRule from '$components/HorizontalRule.svelte';
-	import NavigationCard from '$components/NavigationCard.svelte';
+	import type { ActionResult } from '@sveltejs/kit';
+	import { type SubmitFunction } from '@sveltejs/kit';
+
+	import { enhance } from '$app/forms';
+	// import type { PageProps } from '../$types';
+	import { page } from '$app/state';
 	// import type { Attachment } from 'svelte/attachments';
 	// import { afterNavigate } from '$app/navigation';
 	import Card from '$components/Card.svelte';
-	import { Variant, type ColorConfig } from '$lib/theming';
-	import { type SubmitFunction } from '@sveltejs/kit';
-	import { enhance } from '$app/forms';
-	import ShareItem from './ShareItem.svelte';
-	// import type { PageProps } from '../$types';
-	import { page } from '$app/state';
-	import type { ActionResult } from '@sveltejs/kit';
+	import Drawer from '$components/Drawer.svelte';
+	import HorizontalRule from '$components/HorizontalRule.svelte';
+	import NavigationCard from '$components/NavigationCard.svelte';
+	import Title from '$components/Title.svelte';
+	import { AccessHandler, Action, IdentityType } from '$lib/accessHandler';
+	import { type ArtificialIntelligenceConfig, Model } from '$lib/artificialIntelligence';
+	import { createHeatMapColors } from '$lib/heatMapColors.svelte';
+	import { type ColorConfig, Variant } from '$lib/theming';
+	import type { AccessShareOption } from '$lib/types';
 	import {
+		initCarousel,
 		initDropdown,
 		initOverlay,
-		initCarousel,
 		initTabs,
 		initTooltip
 	} from '$lib/userInterface';
-	import { Action, AccessHandler, IdentityType } from '$lib/accessHandler';
-	import type { AccessShareOption } from '$lib/types';
-	import ThemePicker from './ThemePicker.svelte';
+
 	import ArtificialIntelligencePicker from './ArtificialIntelligencePicker.svelte';
-	import { Model, type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
+	import HelpTooltip from './HelpTooltip.svelte';
 	import Panes, { type PaneData } from './Panes.svelte';
+	import ShareItem from './ShareItem.svelte';
+	import ThemePicker from './ThemePicker.svelte';
 	// import Panes from './Panes.svelte';
 	// import JsonData from '$components/JsonData.svelte';
 
@@ -195,48 +196,8 @@
 	};
 
 	// for status sliders:
-	let theme = $state({} as AppTheme);
-	const unsbscribeThemeStore = themeStore.subscribe((value) => {
-		theme = value;
-	});
-
-	// for HCT:
-	// red: hue = 25,
-	// (yellow: hue = 104,)
-	// green: hue = 130
-	// use chroma and tone from error container - always keeps the color!
-	// text on it:
-	// chorma and tone always from "on error container"
-	let errorHct = $derived.by(() => {
-		if (!theme.currentMode) {
-			return Hct.from(25, 80, 30);
-		} else {
-			return Hct.fromInt(theme[theme.currentMode].colors['error']);
-		}
-	});
-	let onErrorHct = $derived.by(() => {
-		if (!theme.currentMode) {
-			return Hct.from(24, 13, 90);
-		} else {
-			return Hct.fromInt(theme[theme.currentMode].colors['onError']);
-		}
-	});
 	let status = $state([50, 0, 100]);
-	let statusColorsHue = $derived(
-		status.map((s) => ({
-			background: s * 1.05 + 25,
-			text: s * 1.05 + 25
-		}))
-	);
-	let statusColors = $derived(
-		statusColorsHue.map((hue) => ({
-			background: hexFromArgb(Hct.from(hue.background, errorHct.chroma, errorHct.tone).toInt()),
-			text: hexFromArgb(Hct.from(hue.text, onErrorHct.chroma, onErrorHct.tone).toInt())
-		}))
-	);
-	onDestroy(() => {
-		unsbscribeThemeStore();
-	});
+	let statusColors = $derived.by(() => createHeatMapColors(status));
 
 	// for edit button:
 	let edit = $state(false);
@@ -443,6 +404,9 @@
 			resizeRightTriplePanesActive = false;
 		}
 	};
+
+	// for drawers:
+	let drawerMode: 'copy' | 'link' = $state('copy');
 </script>
 
 {#snippet paneTile(color: string, content: string)}
@@ -637,7 +601,7 @@
 			{/snippet}
 			<Card id="chatCard" extraClasses="md:w-4/5" header={headerChat} footer={footerChat}>
 				<div
-					class="bg-base-150 shadow-outline max-h-96 min-h-44 overflow-y-auto rounded-lg p-2 shadow-inner"
+					class="bg-base-150 shadow-base-shadow max-h-96 min-h-44 overflow-y-auto rounded-lg p-2 shadow-inner"
 				>
 					<div class="chat chat-receiver">
 						<div class="avatar chat-avatar">
@@ -720,7 +684,7 @@
 		>
 		<div class="mb-5 grid grid-cols-1 gap-8 md:grid-cols-3">
 			<div
-				class="card border-outline-variant bg-base-250 shadow-outline-variant rounded-xl border-[1px] shadow-lg"
+				class="card border-outline-variant bg-base-200 shadow-outline-variant rounded-xl border-[1px] shadow-md"
 			>
 				<div class="card-header">
 					<a href="#top" class="link link-base-content link-animated">
@@ -738,7 +702,7 @@
 				</div>
 			</div>
 			<div
-				class="card border-outline-variant bg-base-250 shadow-outline-variant rounded-xl border-[1px] shadow-lg"
+				class="card border-outline-variant bg-base-200 shadow-outline-variant rounded-xl border-[1px] shadow-md"
 			>
 				<div class="card-header">
 					<a href="#top" class="link link-base-content link-animated">
@@ -754,7 +718,7 @@
 				</div>
 			</div>
 			<div
-				class="card border-outline-variant bg-base-250 shadow-outline-variant rounded-xl border-[1px] shadow-lg"
+				class="card border-outline-variant bg-base-200 shadow-outline-variant rounded-xl border-[1px] shadow-md"
 			>
 				<div class="card-header">
 					<a href="#top" class="link link-base-content link-animated">
@@ -844,11 +808,11 @@
 			{#snippet footerAction()}
 				<div class="join flex flex-row items-center justify-center">
 					<button
-						class="btn btn-secondary-container text-secondary-container-content join-item grow"
+						class="btn btn-secondary-container btn-gradient shadow-outline text-secondary-container-content join-item grow shadow-sm"
 						aria-label="Edit Button"
 						onclick={() => (edit ? (edit = false) : (edit = true))}
 					>
-						<span class="icon-[material-symbols--edit-outline-rounded]"></span>Edit
+						<span class="icon-[material-symbols--edit-outline-rounded] size-5"></span>Edit
 					</button>
 					<div
 						class="dropdown join-item relative inline-flex grow [--auto-close:inside] [--placement:top]"
@@ -857,12 +821,12 @@
 					>
 						<button
 							id="action-share"
-							class="dropdown-toggle btn btn-secondary-container text-secondary-container-content w-full rounded-none"
+							class="dropdown-toggle btn btn-secondary-container btn-gradient shadow-outline text-secondary-container-content w-full rounded-none shadow-sm"
 							aria-haspopup="menu"
 							aria-expanded="false"
 							aria-label="Share with"
 						>
-							<span class="icon-[tabler--share-2]"></span>Share
+							<span class="icon-[tabler--share-2] size-5"></span>Share
 							<span class="icon-[tabler--chevron-up] dropdown-open:rotate-180 size-4"></span>
 						</button>
 						<ul
@@ -901,12 +865,12 @@
 						</ul>
 					</div>
 					<button
-						class="btn btn-error-container bg-error-container/70 hover:bg-error-container/50 focus:bg-error-container/50 text-error-container-content join-item grow border-0"
+						class="btn btn-error-container btn-gradient bg-error-container/70 hover:bg-error-container/50 focus:bg-error-container/50 text-error-container-content join-item shadow-outline grow border-0 shadow-sm"
 						aria-label="Delete Button"
 						name="id"
 						formaction="?/delete"
 					>
-						<span class="icon-[tabler--trash]"></span>Delete
+						<span class="icon-[tabler--trash] size-5"></span>Delete
 					</button>
 				</div>
 			{/snippet}
@@ -1294,7 +1258,7 @@
 			</div>
 			<!-- <div
 					class="flex h-20 w-full items-center justify-center text-2xl"
-					style="background: linear-gradient(to right, {statusColors[1]}, {statusColors[2]});"
+					style="background: linear-gradient(to right, {heatMapColors[1]}, {heatMapColors[2]});"
 				></div> -->
 		</div>
 		<HorizontalRule />
@@ -1319,7 +1283,14 @@
 					<span class="tooltip-body">Tooltip on top</span>
 				</span>
 			</div>
+			<HelpTooltip text="Plain text as tooltip" />
+			{#snippet helpToolTipText()}
+				<span class="icon-[tabler--home]"></span> Some HTML text in a Snippet as tooltip<br />
+				<p class="text-accent">even with different colors</p>
+			{/snippet}
+			<HelpTooltip text={helpToolTipText} />
 		</div>
+
 		<HorizontalRule />
 	</div>
 
@@ -2180,6 +2151,243 @@
 				</div>
 			</div>
 		</div>
+
+		<p class="title text-primary mt-5">Styled with CSS - primary</p>
+		<div class="bg-base-200 shadow-base-shadow h-fit overflow-y-auto rounded-lg shadow-inner">
+			<div
+				class="tabs tabs-lifted tabs-primary m-1"
+				// class="tabs tabs-lifted to-primary m-1 rounded-lg bg-linear-to-b from-transparent"
+				// class="tabs tabs-lifted to-primary m-1 bg-linear-to-b from-transparent"
+				aria-label="Tabs"
+				role="tablist"
+				aria-orientation="horizontal"
+				{@attach initTabs}
+			>
+				<button
+					type="button"
+					// class="tab tab-primary active w-full"
+					class="tab active w-full"
+					id="styled-primary-left-head"
+					data-tab="#styled-primary-left-tab"
+					aria-controls="styled-primary-left-tab"
+					role="tab"
+					aria-selected="true"
+				>
+					<span class="icon-[stash--chevron-left] mr-2 size-4"></span>
+					Left
+				</button>
+				<button
+					type="button"
+					// class="tab tab-primary w-full"
+					class="tab w-full"
+					id="styled-primary-center-head"
+					data-tab="#styled-primary-center-tab"
+					aria-controls="styled-primary-center-tab"
+					role="tab"
+					aria-selected="false"
+				>
+					<span class="icon-[stash--circle-dot] mr-2 size-4"></span>
+					Center
+				</button>
+				<button
+					type="button"
+					// class="tab tab-primary w-full"
+					class="tab w-full"
+					id="styled-primary-right-head"
+					data-tab="#styled-primary-right-tab"
+					aria-controls="styled-primary-right-tab"
+					role="tab"
+					aria-selected="false"
+				>
+					<span class="icon-[tabler--chevron-right] mr-2 size-4"></span>
+					Right
+				</button>
+			</div>
+			<div class="h-full max-h-100 p-2">
+				<div
+					id="styled-primary-left-tab"
+					class="h-full max-h-100 overflow-scroll"
+					role="tabpanel"
+					aria-labelledby="styled-primary-left-head"
+				>
+					<p class="display-large text-center">Left tab content</p>
+				</div>
+				<div
+					id="styled-primary-center-tab"
+					class="hidden h-full max-h-100 overflow-scroll"
+					role="tabpanel"
+					aria-labelledby="styled-primary-center-head"
+				>
+					<p class="display-large text-center">Center tab content</p>
+				</div>
+				<div
+					id="styled-primary-right-tab"
+					class="hidden h-full max-h-100 overflow-scroll"
+					role="tabpanel"
+					aria-labelledby="styled-primary-right-head"
+				>
+					<p class="display-large text-center">Right tab content</p>
+				</div>
+			</div>
+		</div>
+
+		<p class="title text-primary mt-5">Styled with CSS - secondary</p>
+		<div class="bg-base-200 shadow-base-shadow h-fit overflow-y-auto rounded-lg shadow-inner">
+			<div
+				class="tabs tabs-lifted tabs-secondary m-1"
+				// class="tabs tabs-lifted to-secondary m-1 rounded-lg bg-linear-to-b from-transparent"
+				// class="tabs tabs-lifted to-secondary m-1 bg-linear-to-b from-transparent"
+				aria-label="Tabs"
+				role="tablist"
+				aria-orientation="horizontal"
+				{@attach initTabs}
+			>
+				<button
+					type="button"
+					// class="tab tab-secondary active w-full"
+					class="tab active w-full"
+					id="styled-secondary-left-head"
+					data-tab="#styled-secondary-left-tab"
+					aria-controls="styled-secondary-left-tab"
+					role="tab"
+					aria-selected="true"
+				>
+					<span class="icon-[stash--chevron-left] mr-2 size-4"></span>
+					Left
+				</button>
+				<button
+					type="button"
+					// class="tab tab-secondary w-full"
+					class="tab w-full"
+					id="styled-secondary-center-head"
+					data-tab="#styled-secondary-center-tab"
+					aria-controls="styled-secondary-center-tab"
+					role="tab"
+					aria-selected="false"
+				>
+					<span class="icon-[stash--circle-dot] mr-2 size-4"></span>
+					Center
+				</button>
+				<button
+					type="button"
+					// class="tab tab-secondary w-full"
+					class="tab w-full"
+					id="styled-secondary-right-head"
+					data-tab="#styled-secondary-right-tab"
+					aria-controls="styled-secondary-right-tab"
+					role="tab"
+					aria-selected="false"
+				>
+					<span class="icon-[tabler--chevron-right] mr-2 size-4"></span>
+					Right
+				</button>
+			</div>
+			<div class="h-full max-h-100 p-2">
+				<div
+					id="styled-secondary-left-tab"
+					class="h-full max-h-100 overflow-scroll"
+					role="tabpanel"
+					aria-labelledby="styled-secondary-left-head"
+				>
+					<p class="display-large text-center">Left tab content</p>
+				</div>
+				<div
+					id="styled-secondary-center-tab"
+					class="hidden h-full max-h-100 overflow-scroll"
+					role="tabpanel"
+					aria-labelledby="styled-secondary-center-head"
+				>
+					<p class="display-large text-center">Center tab content</p>
+				</div>
+				<div
+					id="styled-secondary-right-tab"
+					class="hidden h-full max-h-100 overflow-scroll"
+					role="tabpanel"
+					aria-labelledby="styled-secondary-right-head"
+				>
+					<p class="display-large text-center">Right tab content</p>
+				</div>
+			</div>
+		</div>
+
+		<p class="title text-primary mt-5">Styled with CSS - accent</p>
+		<div class="bg-base-200 shadow-base-shadow h-fit overflow-y-auto rounded-lg shadow-inner">
+			<div
+				class="tabs tabs-lifted tabs-accent m-1"
+				// class="tabs tabs-lifted to-accent m-1 rounded-lg bg-linear-to-b from-transparent"
+				// class="tabs tabs-lifted to-accent m-1 bg-linear-to-b from-transparent"
+				aria-label="Tabs"
+				role="tablist"
+				aria-orientation="horizontal"
+				{@attach initTabs}
+			>
+				<button
+					type="button"
+					// class="tab tab-secondary active w-full"
+					class="tab active w-full"
+					id="styled-accent-left-head"
+					data-tab="#styled-accent-left-tab"
+					aria-controls="styled-accent-left-tab"
+					role="tab"
+					aria-selected="true"
+				>
+					<span class="icon-[stash--chevron-left] mr-2 size-4"></span>
+					Left
+				</button>
+				<button
+					type="button"
+					// class="tab tab-secondary w-full"
+					class="tab w-full"
+					id="styled-accent-center-head"
+					data-tab="#styled-accent-center-tab"
+					aria-controls="styled-accent-center-tab"
+					role="tab"
+					aria-selected="false"
+				>
+					<span class="icon-[stash--circle-dot] mr-2 size-4"></span>
+					Center
+				</button>
+				<button
+					type="button"
+					// class="tab tab-secondary w-full"
+					class="tab w-full"
+					id="styled-accent-right-head"
+					data-tab="#styled-accent-right-tab"
+					aria-controls="styled-accent-right-tab"
+					role="tab"
+					aria-selected="false"
+				>
+					<span class="icon-[tabler--chevron-right] mr-2 size-4"></span>
+					Right
+				</button>
+			</div>
+			<div class="h-full max-h-100 p-2">
+				<div
+					id="styled-accent-left-tab"
+					class="h-full max-h-100 overflow-scroll"
+					role="tabpanel"
+					aria-labelledby="styled-accent-left-head"
+				>
+					<p class="display-large text-center">Left tab content</p>
+				</div>
+				<div
+					id="styled-accent-center-tab"
+					class="hidden h-full max-h-100 overflow-scroll"
+					role="tabpanel"
+					aria-labelledby="styled-accent-center-head"
+				>
+					<p class="display-large text-center">Center tab content</p>
+				</div>
+				<div
+					id="styled-accent-right-tab"
+					class="hidden h-full max-h-100 overflow-scroll"
+					role="tabpanel"
+					aria-labelledby="styled-accent-right-head"
+				>
+					<p class="display-large text-center">Right tab content</p>
+				</div>
+			</div>
+		</div>
 	</div>
 
 	<div class={prod ? 'block' : 'hidden'}>
@@ -2191,7 +2399,7 @@
 		<Title id="modals-dev">🚧 Modals 🚧</Title>
 		<button
 			type="button"
-			class="btn btn-accent"
+			class="btn btn-accent btn-gradient shadow-outline"
 			aria-haspopup="dialog"
 			aria-expanded="false"
 			aria-controls="basic-modal"
@@ -2236,10 +2444,14 @@
 						needed.
 					</div>
 					<div class="modal-footer">
-						<button type="button" class="btn btn-secondary btn-soft" data-overlay="#basic-modal"
-							>Close</button
+						<button
+							type="button"
+							class="btn btn-secondary btn-gradient shadow-outline"
+							data-overlay="#basic-modal">Close</button
 						>
-						<button type="button" class="btn btn-primary">Save changes</button>
+						<button type="button" class="btn btn-primary btn-gradient shadow-outline"
+							>Save changes</button
+						>
 					</div>
 				</div>
 			</div>
@@ -2247,7 +2459,7 @@
 
 		<button
 			type="button"
-			class="btn btn-primary"
+			class="btn btn-primary btn-gradient shadow-outline"
 			aria-haspopup="dialog"
 			aria-expanded="false"
 			aria-controls="centered-modal"
@@ -2283,10 +2495,14 @@
 						needed.
 					</div>
 					<div class="modal-footer">
-						<button type="button" class="btn btn-secondary btn-soft" data-overlay="#centered-modal"
-							>Close</button
+						<button
+							type="button"
+							class="btn btn-secondary btn-gradient shadow-outline"
+							data-overlay="#centered-modal">Close</button
 						>
-						<button type="button" class="btn btn-primary">Save changes</button>
+						<button type="button" class="btn btn-primary btn-gradient shadow-outline"
+							>Save changes</button
+						>
 					</div>
 				</div>
 			</div>
@@ -2294,7 +2510,7 @@
 
 		<button
 			type="button"
-			class="btn btn-primary"
+			class="btn btn-primary btn-gradient shadow-outline"
 			aria-haspopup="dialog"
 			aria-expanded="false"
 			aria-controls="share-modal"
@@ -2359,10 +2575,14 @@
 						</div>
 					</div>
 					<div class="modal-footer">
-						<button type="button" class="btn btn-secondary btn-soft" data-overlay="#share-modal"
-							>Close</button
+						<button
+							type="button"
+							class="btn btn-secondary btn-gradient shadow-outline"
+							data-overlay="#share-modal">Close</button
 						>
-						<button type="button" class="btn btn-primary">Save changes</button>
+						<button type="button" class="btn btn-primary btn-gradient shadow-outline"
+							>Save changes</button
+						>
 					</div>
 				</div>
 			</div>
@@ -2370,7 +2590,7 @@
 
 		<button
 			type="button"
-			class="btn btn-warning"
+			class="btn btn-warning btn-gradient shadow-outline"
 			aria-haspopup="dialog"
 			aria-expanded="false"
 			aria-controls="add-element-modal"
@@ -2416,9 +2636,7 @@
 									class="textarea shadow-shadow shadow-inner"
 									placeholder="Describe the demo resource here."
 									id="description_id_new_element"
-									name="description"
-								>
-								</textarea>
+									name="description"></textarea>
 								<label class="textarea-filled-label" for="description_id_new_element">
 									Description
 								</label>
@@ -2451,7 +2669,7 @@
 		<Title id="drawer-dev">🚧 Drawer 🚧</Title>
 		<button
 			type="button"
-			class="btn btn-primary"
+			class="btn btn-primary btn-gradient shadow-outline"
 			aria-haspopup="dialog"
 			aria-expanded="false"
 			aria-controls="overlay-example"
@@ -2460,9 +2678,10 @@
 
 		<div
 			id="overlay-example"
-			class="overlay drawer drawer-start overlay-open:translate-x-0 hidden"
+			class="overlay drawer drawer-end bg-base-200 overlay-open:translate-x-0 hidden"
 			role="dialog"
 			tabindex="-1"
+			{@attach initOverlay}
 		>
 			<div class="drawer-header">
 				<h3 class="drawer-title">Drawer Title</h3>
@@ -2476,21 +2695,84 @@
 				</button>
 			</div>
 			<div class="drawer-body">
-				<p>
-					Some text as placeholder. In real life you can have the elements you have chosen. Like,
-					text, images, lists, etc.
-				</p>
+				<p>Some text as placeholder. There can be elements like, text, images, lists, etc.</p>
+				<div
+					class="bg-base-150 shadow-outline max-h-96 min-h-44 overflow-y-auto rounded-lg p-2 shadow-inner"
+				>
+					Some text
+				</div>
 			</div>
 			<div class="drawer-footer">
-				<button type="button" class="btn btn-secondary btn-soft" data-overlay="#overlay-example"
-					>Close</button
+				<button
+					type="button"
+					class="btn btn-secondary-container btn-gradient shadow-outline"
+					data-overlay="#overlay-example">Close</button
 				>
-				<button type="button" class="btn btn-primary">Save changes</button>
+				<button type="button" class="btn btn-primary-container btn-gradient shadow-outline"
+					>Save changes</button
+				>
 			</div>
 		</div>
 
+		<div class="divider py-2"></div>
+
+		{#snippet openButtons()}
+			<button
+				type="button"
+				class="btn btn-primary-container btn-gradient btn-sm shadow-outline rounded-full shadow-sm"
+				aria-label="Open drawer"
+				aria-haspopup="dialog"
+				aria-expanded="false"
+				aria-controls="overlay-drawer-questions"
+				data-overlay="#overlay-drawer-questions"
+				onclick={() => (drawerMode = 'copy')}
+			>
+				<span class="icon-[tabler--copy] size-4"></span>
+				Copy Drawer
+			</button>
+			<button
+				type="button"
+				class="btn btn-primary-container btn-gradient btn-sm shadow-outline rounded-full shadow-sm"
+				aria-label="Open drawer"
+				aria-haspopup="dialog"
+				aria-expanded="false"
+				aria-controls="overlay-drawer-questions"
+				data-overlay="#overlay-drawer-questions"
+				onclick={() => (drawerMode = 'link')}
+			>
+				<span class="icon-[tabler--link] size-4"></span>
+				Link Drawer
+			</button>
+		{/snippet}
+
+		<Drawer
+			id="drawer-questions"
+			icon={drawerMode === 'copy' ? 'icon-[tabler--copy]' : 'icon-[tabler--link]'}
+			title={drawerMode.charAt(0).toUpperCase() + drawerMode.slice(1) + ' Mode'}
+			activationElement={openButtons}
+		>
+			Switch to
+			<button
+				type="button"
+				class="btn btn-primary-container btn-gradient btn-sm shadow-outline rounded-full shadow-sm"
+				aria-label="Switch mode"
+				onclick={() => (drawerMode = drawerMode === 'copy' ? 'link' : 'copy')}
+			>
+				<span class="{drawerMode === 'copy' ? 'icon-[tabler--link]' : 'icon-[tabler--copy]'} size-4"
+				></span>
+				{drawerMode === 'copy' ? 'Link ' : 'Copy'} Mode
+			</button>
+			<p class="title">Drawer with two different modes</p>
+			{#if drawerMode === 'copy'}
+				<p>Mode 1: Copy</p>
+			{:else if drawerMode === 'link'}
+				<p>Mode 2: Link</p>
+			{/if}
+		</Drawer>
+
 		<HorizontalRule />
 	</div>
+	{Math.random()}
 </div>
 
 <style>

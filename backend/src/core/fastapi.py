@@ -15,36 +15,40 @@ from routers.api.v1.identities import (
     ueber_group_router,
     user_router,
 )
+from routers.api.v1.presentation import router as presentation_router
 from routers.api.v1.protected_resource import router as protected_resource_router
 from routers.api.v1.public_resource import router as public_resource_router
-from routers.api.v1.tag import router as tag_router
-from routers.api.v1.presentation import router as presentation_router
 from routers.api.v1.quiz import router as quiz_router
+from routers.api.v1.tag import router as tag_router
 from routers.ws.v1.websockets import router as websocket_router
 
 
 def attach_middeleware(app: FastAPI):
     """Attaches middleware to the FastAPI application."""
+    allow_origins_list = [
+        config.FRONTEND_SVELTE_ORIGIN,
+        (
+            f"https://{config.FRONTEND_SVELTE_FQDN}:80"
+            if config.FRONTEND_SVELTE_FQDN
+            else None
+        ),
+        (
+            f"https://{config.FRONTEND_SVELTE_FQDN}"
+            if config.FRONTEND_SVELTE_FQDN
+            else None
+        ),
+        (
+            "https://admin.socket.io"
+            if config.SOCKETIO_ADMIN_USERNAME and config.SOCKETIO_ADMIN_PASSWORD
+            else None
+        ),
+    ]
+    # Filter out None values
+    allow_origins_filtered = [origin for origin in allow_origins_list if origin]
+
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[
-            config.FRONTEND_SVELTE_ORIGIN,
-            (
-                f"https://{config.FRONTEND_SVELTE_FQDN}:80"
-                if config.FRONTEND_SVELTE_FQDN
-                else None
-            ),
-            (
-                f"https://{config.FRONTEND_SVELTE_FQDN}"
-                if config.FRONTEND_SVELTE_FQDN
-                else None
-            ),
-            (
-                "https://admin.socket.io"
-                if config.SOCKETIO_ADMIN_USERNAME and config.SOCKETIO_ADMIN_PASSWORD
-                else None
-            ),
-        ],
+        allow_origins=allow_origins_filtered,
         allow_credentials=True,
         allow_methods=["POST", "GET", "PUT", "DELETE"],  # or ["*"],
         allow_headers=["*"],

@@ -1,9 +1,10 @@
 /** @type {import('@sveltejs/kit').Handle} */
 // TBD: import to ES6 typescript import
+import { type Handle, type HandleFetch, redirect } from '@sveltejs/kit';
+
+import { backendAPI } from '$lib/server/apis/backendApi';
 import { redisCache } from '$lib/server/cache';
 import type { Session } from '$lib/types'; // or types.d.ts?
-import { redirect, type Handle, type HandleFetch } from '@sveltejs/kit';
-import { backendAPI } from '$lib/server/apis/backendApi';
 
 const getSession = async (sessionId: string): Promise<Session | void> => {
 	try {

@@ -32,7 +32,7 @@ async def get_all_public_resources() -> list[PublicResourceRead]:
     logger.info("GET all public_resources")
     async with PublicResourceCRUD() as crud:
         response = await crud.read_all()
-    return response
+    return [PublicResourceRead.model_validate(item) for item in response]
 
 
 @router.get("/{public_resource_id}", status_code=200)
@@ -41,7 +41,7 @@ async def get_public_resource_by_id(public_resource_id: UUID) -> PublicResourceR
     logger.info("GET public_resource")
     async with PublicResourceCRUD() as crud:
         response = await crud.read_by_id(public_resource_id)
-    return response
+    return PublicResourceRead.model_validate(response)
 
 
 @router.put("/{public_resource_id}")

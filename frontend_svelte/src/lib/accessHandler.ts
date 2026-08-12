@@ -1,4 +1,4 @@
-import type { AccessPolicy, AccessShareOption, Identity, MicrosoftTeamExtended } from '$lib/types';
+import type { AccessPolicy, AccessShareOption, Identity } from '$lib/types';
 
 export enum Action {
 	OWN = 'own',
@@ -14,7 +14,8 @@ export enum IdentityType {
 	GROUP,
 	SUB_GROUP,
 	SUB_SUB_GROUP,
-	MICROSOFT_TEAM
+	MICROSOFT_TEAM,
+	PUBLIC
 }
 
 export class AccessHandler {
@@ -42,16 +43,6 @@ export class AccessHandler {
 		} else {
 			return undefined;
 		}
-	}
-
-	static reduceMicrosoftTeamsToIdentities(microsoftTeams: MicrosoftTeamExtended[]): Identity[] {
-		return microsoftTeams
-			.filter((team: MicrosoftTeamExtended) => team.id !== undefined)
-			.map((team: MicrosoftTeamExtended) => ({
-				id: team.id as string,
-				name: team.displayName || 'Unknown Team',
-				type: IdentityType.MICROSOFT_TEAM
-			}));
 	}
 
 	static createShareOptions(
@@ -133,6 +124,8 @@ export class AccessHandler {
 				return 'icon-[fa6-solid--user-group]';
 			case IdentityType.MICROSOFT_TEAM:
 				return 'icon-[fluent--people-team-16-filled]';
+			case IdentityType.PUBLIC:
+				return 'icon-[gis--globe-earth-alt]';
 			default:
 				return 'icon-[ic--round-question-mark]';
 		}

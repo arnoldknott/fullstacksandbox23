@@ -14,13 +14,13 @@ from routers.socketio.v1.identities import (
     UserNamespace,
 )
 from routers.socketio.v1.interactive_documentation import InteractiveDocumentation
+from routers.socketio.v1.presentation_namespace import PresentationNamespace
 from routers.socketio.v1.public_namespace import PublicNamespace
 from routers.socketio.v1.quiz_namespace import (
-    QuestionNamespace,
     MessageNamespace,
     NumericalNamespace,
+    QuestionNamespace,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +56,7 @@ async def disconnect(sid):
     logger.warning(f"Client with session id {sid} disconnected / outside namespaces.")
 
 
-@socketio_server.on("*")
+@socketio_server.on("*")  # pyright: ignore[reportOptionalCall]
 async def catch_all(event, sid, data):
     """Catch all events for socket.io, that don't have an event handler defined."""
     logger.warning(
@@ -84,6 +84,7 @@ def mount_socketio_app(fastapi_app: FastAPI):
     # TBD: refactor the interactive documentation
     # into more generic features, like polls, quizzes, surveys, etc.
     socketio_server.register_namespace(InteractiveDocumentation(server=socketio_server))
+    socketio_server.register_namespace(PresentationNamespace(server=socketio_server))
     socketio_server.register_namespace(QuestionNamespace(server=socketio_server))
     socketio_server.register_namespace(MessageNamespace(server=socketio_server))
     socketio_server.register_namespace(NumericalNamespace(server=socketio_server))

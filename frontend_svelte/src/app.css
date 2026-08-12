@@ -1,8 +1,10 @@
 @import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn-svelte/tailwind.css';
 
 /* Tailwind content sources - scan these files for classes */
-@source "src/**/*.{html,js,svelte,ts}";
-@source "../node_modules/flyonui/flyonui/index.js";
+@source 'src/**/*.{html,js,svelte,ts}';
+@source '../node_modules/flyonui/flyonui/index.js';
 
 @import './components/materialDesignExtensionsToFlyonUI/typography.css';
 @import './components/materialDesignExtensionsToFlyonUI/chat.css';
@@ -10,20 +12,21 @@
 @import './components/materialDesignExtensionsToFlyonUI/button.css';
 @import './components/materialDesignExtensionsToFlyonUI/checkbox.css';
 @import './components/materialDesignExtensionsToFlyonUI/input.css';
+@import './components/materialDesignExtensionsToFlyonUI/tab.css';
 @import './components/materialDesignExtensionsToFlyonUI/textarea.css';
 @import './components/materialDesignExtensionsToFlyonUI/radio.css';
 @import './components/materialDesignExtensionsToFlyonUI/select.css';
 
 @import '../node_modules/flyonui/variants.css';
-@plugin "@iconify/tailwind4";
-@plugin "flyonui";
+@plugin '@iconify/tailwind4';
+@plugin 'flyonui';
 /* @plugin "flyonui" {
     themes: light --default, dark --prefersdark, soft;
   } */
 /* @plugin "flyonui" {
   themes: false;
 }; */
-@plugin "flyonui/theme" {
+@plugin 'flyonui/theme' {
 	name: 'materialdesign';
 	default: true;
 	prefersdark: true;
@@ -113,7 +116,7 @@
 	--font-weight-label: 500;
 	--font-weight-prominent: 700;
 
-	/* Material Design utility classes for colors */
+	/* Material Design utility classes for colors merged with FlyonUI */
 	--color-transparent: transparent;
 	--color-current: currentColor;
 	--color-primary: rgb(var(--md-rgb-color-primary));
@@ -193,6 +196,41 @@
 	--container-8xl: 96rem;
 	--container-9xl: 108rem;
 	--container-10xl: 120rem;
+
+	/* Mapping to shadcn-svelte variables */
+	/* Why is this affecting the frame of card? */
+	--color-foreground: var(--color-base-content);
+	--color-primary-foreground: var(--color-primary-content);
+	--color-secondary-foreground: var(--color-secondary-content);
+	--color-muted: var(--color-neutral);
+	--color-muted-foreground: var(--color-neutral-content);
+	--color-accent-foreground: var(--color-accent-content);
+	--color-destructive: var(--color-error);
+	--color-destructive-foreground: var(--color-error-content);
+
+	--color-border: var(--color-outline);
+	--color-ring: var(--color-outline-variant);
+	/* TBD: Check what to do with the component colors: */
+	/* Component based colors */
+	--color-card: var(--color-base-200);
+	--color-card-foreground: var(--color-base-content);
+	--color-popover: var(--color-base-200);
+	--color-popover-foreground: var(--color-base-content);
+	--color-input: var(--color-base-200);
+	/* TBD: Check what to do with the chart colors: */
+	/* --color-chart-1: var(--color-primary);
+	--color-chart-2: var(--color-secondary);
+	--color-chart-3: var(--color-accent);
+	--color-chart-4: var(--color-success);
+	--color-chart-5: var(--color-warning); */
+	--color-sidebar: var(--color-base-150);
+	--color-sidebar-foreground: var(--color-base-content);
+	--color-sidebar-primary: var(--color-primary-container);
+	--color-sidebar-primary-foreground: var(--color-primary-container-content);
+	--color-sidebar-accent: var(--color-accent-container);
+	--color-sidebar-accent-foreground: var(--color-accent-container-content);
+	--color-sidebar-border: var(--color-outline);
+	--color-sidebar-ring: var(--color-outline-variant);
 }
 
 /*
@@ -333,6 +371,7 @@ body {
 	margin: 0;
 	padding: 0;
 	padding-bottom: 5px;
+	background-color: var(--color-background);
 }
 
 body {
