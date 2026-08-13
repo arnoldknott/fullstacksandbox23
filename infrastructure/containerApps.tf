@@ -177,11 +177,6 @@ resource "azurerm_container_app" "BackendAPIContainer" {
         # value = azurerm_container_app.FrontendSvelteContainer.name
         value = "https://${azurerm_container_app.FrontendSvelteContainer.ingress[0].fqdn}"
       }
-      // TBD: Is FQDN redundant now?
-      env {
-        name  = "FRONTEND_SVELTE_FQDN"
-        value = azurerm_container_app.FrontendSvelteContainer.ingress[0].fqdn
-      }
       # BackendAPI:
       // Needs client id for Pod implmentations - see here:
       // https://learn.microsoft.com/en-us/python/api/azure-identity/azure.identity.managedidentitycredential?view=azure-python
