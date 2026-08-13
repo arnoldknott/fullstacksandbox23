@@ -174,8 +174,10 @@ resource "azurerm_container_app" "BackendAPIContainer" {
       }
       env {
         name  = "FRONTEND_SVELTE_ORIGIN"
-        value = azurerm_container_app.FrontendSvelteContainer.name
+        # value = azurerm_container_app.FrontendSvelteContainer.name
+        value = "https://${azurerm_container_app.FrontendSvelteContainer.ingress[0].fqdn}"
       }
+      // TBD: Is FQDN redundant now?
       env {
         name  = "FRONTEND_SVELTE_FQDN"
         value = azurerm_container_app.FrontendSvelteContainer.ingress[0].fqdn
