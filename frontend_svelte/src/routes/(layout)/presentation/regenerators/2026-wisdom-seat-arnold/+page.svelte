@@ -382,14 +382,15 @@
 			some content goes here
 		</NodeOverlay> -->
 		<Tension initiatives />
-		<button onclick={() => (hideMeditation = !hideMeditation)} class="absolute top-0 right-6/10">
-			<ChatBubble variant="success" tailAngle={10} shadow={true}>
-				<div class="heading-large">Starting Lectures with guided meditation</div>
-			</ChatBubble>
-		</button>
-		<button onclick={() => (hideInvitation = !hideInvitation)} class="absolute top-1/10 left-4/10">
+
+		<button onclick={() => (hideInvitation = !hideInvitation)} class="absolute top-0 right-6/10">
 			<ChatBubble variant="success" tailAngle={130} shadow={true}>
 				<div class="heading-large">Everything is an invitation.</div>
+			</ChatBubble>
+		</button>
+		<button onclick={() => (hideMeditation = !hideMeditation)} class="absolute top-1/10 left-3/10">
+			<ChatBubble variant="success" tailAngle={10} shadow={true}>
+				<div class="heading-large">Starting Lectures with guided meditation</div>
 			</ChatBubble>
 		</button>
 		<button onclick={() => (hideMotivation = !hideMotivation)} class="absolute top-4/10 right-0/10">
@@ -406,7 +407,8 @@
 			hidden={hideMeditation}
 			class="bg-success-container text-success-container-content z-50 pt-6"
 		>
-			<p class=" text-7xl font-semibold">250 answers</p>
+			<p class=" text-7xl font-semibold">Would you like to have more meditations?</p>
+			<p class=" text-5xl">(250 answers)</p>
 			<!-- <div class="relative -mt-8 w-fit" style="perspective: 1800px;">
                     <button
                         type="button"
@@ -484,16 +486,24 @@
 		>
 	</FramedSlide>
 	<FramedSlide part="tension" section="strategy" color="primary">
+		{#snippet footer()}
+			<a
+				href="https://www.dtu.dk/english/about/strategy-policy/strategy-2026-2031"
+				class="link link-animated mt-30"
+			>
+				🌐 DTU Strategy 2026 - 2031
+			</a>
+		{/snippet}
 		<Tension strategy />
-		<div class="justify-centergap-4 grid grid-cols-2 items-center">
+		<div class="absolute grid grid-cols-2 items-center justify-center gap-2">
 			<p class="text-warning-container-content col-span-2 text-7xl font-semibold">
-				Educating Europe´s most competent engineers
+				"Educating Europe´s most competent engineers..."
 			</p>
 			<ChatBubble variant="warning" tailAngle={10} shadow={true}>
-				<div class="heading">...experimenting with alternatives to traditional exam forms</div>
+				<div class="heading">"...experimenting with alternatives to traditional exam forms."</div>
 			</ChatBubble>
 			<ChatBubble variant="warning" tailAngle={130} shadow={true}>
-				<div class="heading-large">...learning innovation through hands-on business creation.</div>
+				<div class="heading">"...learning innovation through hands-on business creation.""</div>
 			</ChatBubble>
 		</div>
 	</FramedSlide>
@@ -563,11 +573,14 @@
 	<!-- <FramedSlide part="tension" section="strategy" color="primary">content here</FramedSlide>
 	<FramedSlide part="tension" section="leadership" color="primary">content here</FramedSlide> -->
 	<FramedSlide part="tension" section="dna-wheel" color="primary">
+		{#snippet footer()}
+			<div>📖 G. Hutchins & L. Storm: Regenerative Leadership</div>
+		{/snippet}
 		<img
 			bind:this={dnaWheel}
 			src="/regenerators/2026-wisdom-seat-arnold/dna-wheel.jpg"
 			alt="Eco System Mapping"
-			class="shadow-primary absolute h-fit w-fit rounded-4xl object-contain shadow-lg"
+			class="shadow-primary absolute h-[80%] w-fit rounded-4xl object-contain shadow-lg"
 		/>
 	</FramedSlide>
 	<!-- <FramedSlide part="tension" section="different-teaching" color="primary">
