@@ -8,6 +8,7 @@
 	// import { initOverlay } from '$lib/userInterface';
 	import Badge from './Badge.svelte';
 	import CardOverlay from './CardOverlay.svelte';
+	import FeedbackCaroussel from './FeedbackCaroussel.svelte';
 	// import DivergingStackedChart from './DivergingStackedChart.svelte';
 	import FramedSlide from './FramedSlide.svelte';
 	import MotivationTable from './MotivationTable.svelte';
@@ -610,9 +611,20 @@
 				<p class="text-7xl font-semibold">
 					500+ students have participated <br /> in "no exam" courses
 				</p>
-				<p class="text-5xl">~ 2/3 report lower stress</p>
-				<p class="text-5xl">very emotional moments</p>
-				<p class="text-5xl">lots of reflections</p>
+				<p class="text-5xl">
+					<span class="icon-[tabler--plus] align-center"> </span> Significantly reduced stress<br />
+					<span class="text-3xl">about 2/3 report lower stress in open-ended questions</span>
+				</p>
+				<p class="text-5xl">
+					<span class="icon-[tabler--plus] align-center"> </span> Deeper learning
+				</p>
+				<p class="text-5xl">
+					<span class="icon-[tabler--plus] align-center"> </span> More responsibility
+				</p>
+				<p class="text-5xl">
+					<span class="icon-[tabler--minus] align-center"> </span> Focus goes, where the pressure is:
+					other courses
+				</p>
 			</NodeOverlay>
 			{#snippet colleaguesTitle()}Colleagues{/snippet}
 			<NodeOverlay
@@ -622,9 +634,10 @@
 			>
 				<p class="text-7xl">One colleague went to press:</p>
 				<p class="text-5xl">"University drops exams"</p>
-				<p class="text-5xl">judges teaching material</p>
-				<p class="text-5xl">bad videos</p>
-				<p class="text-5xl">incomprehensible exercise</p>
+				<p class="text-5xl">judges teaching material:</p>
+				<p class="text-5xl">"bad videos"</p>
+				<p class="text-5xl">"incomprehensible exercise"</p>
+				<div class="align-right text-3xl">🗞️ Ingeniøren: DTU drops exams</div>
 			</NodeOverlay>
 			{#snippet feedbackTitle()}Feedback{/snippet}
 			<NodeOverlay
@@ -632,7 +645,9 @@
 				buttonExtraClasses="btn-neutral top-8/10 right-3/10 mt-5 mr-20"
 				cardExtraClasses="bg-neutral-container text-neutral-container-content"
 			>
-				<p class="text-7xl font-semibold">From open question answers:</p>
+				<p class="text-7xl font-semibold">Quantitative Feedback</p>
+				<FeedbackCaroussel />
+				<!-- <p class="text-7xl font-semibold">From open question answers:</p>
 				<p class="text-5xl">
 					<span class="icon-[tabler--plus] align-center"> </span> Significantly reduced stress
 				</p>
@@ -648,7 +663,7 @@
 				<p class="text-5xl">
 					<span class="icon-[tabler--minus] align-center"> </span> Focus goes, where the pressure is:
 					other courses
-				</p>
+				</p> -->
 			</NodeOverlay>
 			{#snippet legalTitle()}Legal{/snippet}
 			<NodeOverlay
@@ -656,12 +671,18 @@
 				buttonExtraClasses="btn-error top-8/10 right-2/10 -mt-5 mr-8"
 				cardExtraClasses="bg-error-container text-error-container-content"
 			>
-				<p class="text-7xl">Legal requirement</p>
-				<p class="text-5xl">Teacher needs to ensure, that student learns</p>
-				<p class="text-7xl">Honours Codex</p>
-				<p class="text-5xl">Full back up from leadership</p>
-				<p class="text-7xl">Attention from ministry</p>
-				<p class="text-5xl">Course description censored</p>
+				<p class="text-5xl">
+					Legal requirement <br />
+					<span class="text-3xl">Teacher needs to ensure, that student learns</span>
+				</p>
+
+				<p class="text-5xl">
+					Honours Codex <br /> <span class="text-3xl">Full back up from leadership</span>
+				</p>
+
+				<p class="text-5xl">
+					Attention from ministry <br /> <span class="text-3xl">Course description censored</span>
+				</p>
 			</NodeOverlay>
 			{#snippet interestTitle()}Interest{/snippet}
 			<NodeOverlay
