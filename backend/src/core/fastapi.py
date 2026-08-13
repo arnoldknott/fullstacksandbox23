@@ -26,6 +26,8 @@ from routers.ws.v1.websockets import router as websocket_router
 def attach_middeleware(app: FastAPI):
     """Attaches middleware to the FastAPI application."""
     allow_origins_list = [
+        config.FRONTEND_SVELTE_ORIGIN,
+        f"{config.FRONTEND_SVELTE_ORIGIN}:80",
         (
             config.FRONTEND_SVELTE_ORIGIN.split(".")[0]
             if config.FRONTEND_SVELTE_ORIGIN
