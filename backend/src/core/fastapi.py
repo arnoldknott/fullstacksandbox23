@@ -38,16 +38,6 @@ def attach_middeleware(app: FastAPI):
             if config.FRONTEND_SVELTE_ORIGIN
             else None
         ),
-        # (
-        #     f"https://{config.FRONTEND_SVELTE_FQDN}:80"
-        #     if config.FRONTEND_SVELTE_FQDN
-        #     else None
-        # ),
-        # (
-        #     f"https://{config.FRONTEND_SVELTE_FQDN}"
-        #     if config.FRONTEND_SVELTE_FQDN
-        #     else None
-        # ),
         (
             "https://admin.socket.io"
             if config.SOCKETIO_ADMIN_USERNAME and config.SOCKETIO_ADMIN_PASSWORD
