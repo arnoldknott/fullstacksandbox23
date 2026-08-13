@@ -8,6 +8,7 @@
 		color,
 		section,
 		// title,
+		footer,
 		debug
 	}: {
 		children: Snippet;
@@ -15,6 +16,7 @@
 		color?: string;
 		section?: string;
 		// title?: string;
+		footer?: Snippet;
 		debug?: boolean;
 	} = $props();
 	// let color = $derived(symbol === 'history' ? 'info' : symbol === '' ? 'secondary' : 'success');
@@ -117,6 +119,17 @@
 				<!-- consider also class: content-center -->
 				{@render children?.()}
 			</div>
+		</div>
+		<div class="absolute right-0 bottom-0 mr-20 p-2">
+			{#if footer}
+				{@render footer?.()}
+			{/if}
+			<!-- {#if part}
+				<span class="font-bold">{part}</span>
+			{/if}
+			{#if section}
+				<span class="font-bold"> - {section}</span>
+			{/if} -->
 		</div>
 	</div>
 </section>
