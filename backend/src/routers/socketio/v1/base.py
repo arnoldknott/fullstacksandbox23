@@ -661,6 +661,10 @@ class BaseNamespace(
                         # if id is not present, it is a create
                         # validate data with create model
                         assert self.create_model is not None
+                        print(
+                            "=== routers - socketio - v1 - on_submit - CREATE - payload ==="
+                        )
+                        print(payload, flush=True)
                         object_create = self.create_model(**payload)
                         parent_id = data.get("parent_id", None)
                         # TBD: add tests for inherit, public and public_action flags

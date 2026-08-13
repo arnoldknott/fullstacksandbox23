@@ -26,17 +26,26 @@ from routers.ws.v1.websockets import router as websocket_router
 def attach_middeleware(app: FastAPI):
     """Attaches middleware to the FastAPI application."""
     allow_origins_list = [
-        config.FRONTEND_SVELTE_ORIGIN,
         (
-            f"https://{config.FRONTEND_SVELTE_FQDN}:80"
-            if config.FRONTEND_SVELTE_FQDN
+            config.FRONTEND_SVELTE_ORIGIN.split(".")[0]
+            if config.FRONTEND_SVELTE_ORIGIN
             else None
         ),
         (
-            f"https://{config.FRONTEND_SVELTE_FQDN}"
-            if config.FRONTEND_SVELTE_FQDN
+            f"{config.FRONTEND_SVELTE_ORIGIN.split('.')[0]}:80"
+            if config.FRONTEND_SVELTE_ORIGIN
             else None
         ),
+        # (
+        #     f"https://{config.FRONTEND_SVELTE_FQDN}:80"
+        #     if config.FRONTEND_SVELTE_FQDN
+        #     else None
+        # ),
+        # (
+        #     f"https://{config.FRONTEND_SVELTE_FQDN}"
+        #     if config.FRONTEND_SVELTE_FQDN
+        #     else None
+        # ),
         (
             "https://admin.socket.io"
             if config.SOCKETIO_ADMIN_USERNAME and config.SOCKETIO_ADMIN_PASSWORD

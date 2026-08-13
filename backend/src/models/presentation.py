@@ -36,6 +36,10 @@ def validate_endpoint_path(path: str | None) -> str | None:
     Falls back to 'http://localhost' when FRONTEND_SVELTE_ORIGIN is unset."""
     if path is None:
         return None
+    print("=== validate_endpoint_path - path ===")
+    print(path, flush=True)
+    print("=== validate_endpoint_path - FRONTEND_SVELTE_ORIGIN ===")
+    print(config.FRONTEND_SVELTE_ORIGIN, flush=True)
     HttpUrl(f"{config.FRONTEND_SVELTE_ORIGIN}{path}")
     return path
 
