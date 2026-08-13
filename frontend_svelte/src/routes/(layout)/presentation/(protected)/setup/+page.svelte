@@ -74,10 +74,6 @@
 		const newPath = socketioPresentations.pendingEntities[0].path?.trim() ?? '';
 		socketioPresentations.pendingEntities[0].path =
 			newPath && !newPath.startsWith('/') ? `/${newPath}` : newPath;
-		console.log(
-			'=== presentation - setupo - submitPresentation - socketioPresentations.pendingEntities[0].path ==='
-		);
-		console.log(socketioPresentations.pendingEntities[0].path);
 		socketioPresentations.submitEntity();
 		hideNewPresentationCard = true;
 	};
