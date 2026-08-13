@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import type { HTMLAttributes } from 'svelte/elements';
 	import { slide } from 'svelte/transition';
 
 	import Title from './Title.svelte';
@@ -12,7 +13,8 @@
 		closeButton = false,
 		children,
 		footer,
-		hidden = $bindable(false)
+		hidden = $bindable(false),
+		...rest
 	}: {
 		id: string;
 		extraClasses?: string;
@@ -22,7 +24,7 @@
 		children: Snippet;
 		footer?: Snippet;
 		hidden?: boolean;
-	} = $props();
+	} & HTMLAttributes<HTMLElement> = $props();
 
 	export const remove = () => {
 		hidden = true;
@@ -34,6 +36,7 @@
 		transition:slide={{ duration: 600 }}
 		class="card border-outline-variant bg-base-200 shadow-outline-variant w-full rounded-xl border-[1px] shadow-md {extraClasses}"
 		{id}
+		{...rest}
 	>
 		{#if header}
 			<div class="card-header">

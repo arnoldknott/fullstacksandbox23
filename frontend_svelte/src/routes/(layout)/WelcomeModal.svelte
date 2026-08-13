@@ -8,6 +8,7 @@
 	import { SessionStatus } from '$lib/session';
 	import { type ColorConfig } from '$lib/theming';
 	import type { Session } from '$lib/types';
+	import { initOverlay } from '$lib/userInterface';
 
 	import ArtificialIntelligencePicker from './playground/components/ArtificialIntelligencePicker.svelte';
 	import ThemePicker from './playground/components/ThemePicker.svelte';
@@ -61,6 +62,7 @@
 	role="dialog"
 	tabindex="-1"
 	bind:this={welcomeModal}
+	{@attach initOverlay}
 >
 	<div class="modal-dialog modal-dialog-md">
 		<div class="modal-content bg-base-300 shadow-outline ring-outline-variant shadow-lg ring">
