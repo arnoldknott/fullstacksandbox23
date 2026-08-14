@@ -297,6 +297,8 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 	}
 
 	handleStatus(status: SocketioStatus): void {
+		console.log('=== 🧦  socketio - handleStatus ===')
+		console.log(status);
 		if ('success' in status) {
 			if (status.success === 'created') {
 				// Move the pending draft into entities under its real server-assigned id.
