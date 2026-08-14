@@ -174,11 +174,8 @@ resource "azurerm_container_app" "BackendAPIContainer" {
       }
       env {
         name  = "FRONTEND_SVELTE_ORIGIN"
-        value = azurerm_container_app.FrontendSvelteContainer.name
-      }
-      env {
-        name  = "FRONTEND_SVELTE_FQDN"
-        value = azurerm_container_app.FrontendSvelteContainer.ingress[0].fqdn
+        # value = azurerm_container_app.FrontendSvelteContainer.name
+        value = "https://${azurerm_container_app.FrontendSvelteContainer.ingress[0].fqdn}"
       }
       # BackendAPI:
       // Needs client id for Pod implmentations - see here:

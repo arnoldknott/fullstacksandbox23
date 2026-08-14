@@ -27,14 +27,15 @@ def attach_middeleware(app: FastAPI):
     """Attaches middleware to the FastAPI application."""
     allow_origins_list = [
         config.FRONTEND_SVELTE_ORIGIN,
+        f"{config.FRONTEND_SVELTE_ORIGIN}:80",
         (
-            f"https://{config.FRONTEND_SVELTE_FQDN}:80"
-            if config.FRONTEND_SVELTE_FQDN
+            config.FRONTEND_SVELTE_ORIGIN.split(".")[0]
+            if config.FRONTEND_SVELTE_ORIGIN
             else None
         ),
         (
-            f"https://{config.FRONTEND_SVELTE_FQDN}"
-            if config.FRONTEND_SVELTE_FQDN
+            f"{config.FRONTEND_SVELTE_ORIGIN.split('.')[0]}:80"
+            if config.FRONTEND_SVELTE_ORIGIN
             else None
         ),
         (
