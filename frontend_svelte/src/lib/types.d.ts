@@ -208,11 +208,17 @@ export interface DemoResourceWithCreationDate extends DemoResource {
 
 // Identity specific:
 
-export type Identity = {
-	id: string;
-	name: string;
-	type: IdentityType;
-};
+export type Identity =
+	| {
+			id?: string;
+			name: string;
+			type: IdentityType.PUBLIC;
+	  }
+	| {
+			id: string;
+			name: string;
+			type: Exclude<IdentityType, IdentityType.PUBLIC>;
+	  };
 
 export type User = {
 	id: string;
