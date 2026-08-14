@@ -363,11 +363,7 @@ class BaseNamespace(
             receivers += rooms
         if namespace is None:
             namespace = self.namespace
-        print("=== socketio - emit_status ===", flush=True)
-        print(f"namespace: {namespace}", flush=True)
-        print(f"receivers: {receivers}", flush=True)
         public = rooms == "public"
-        print(f"public: {public}", flush=True)
         await self.server.emit(
             "status",
             data,
@@ -834,13 +830,13 @@ class BaseNamespace(
                 access_policy_delete = AccessPolicyDelete(**access_policy)
                 async with AccessPolicyCRUD() as crud:
                     await crud.delete(current_user, access_policy_delete)
-                    # print("=== socketio - DELETE - access_policy ===", flush=True)
                     await self._emit_status(
                         sid,
                         {
                             "success": "unshared",
                             "id": str(access_policy_delete.resource_id),
                         },
+                        # TBD: add a test for a public unshare event!
                         rooms=(
                             "public"
                             if public
