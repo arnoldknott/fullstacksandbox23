@@ -830,8 +830,6 @@ class BaseNamespace(
         try:
             current_user = await self._get_current_user_and_check_guard(sid, "share")
             public = access_policy.get("public", False)
-            print("===  socketio - SHARE - access_policy - public ===")
-            print(public, flush=True)
             if "action" not in access_policy:
                 access_policy_delete = AccessPolicyDelete(**access_policy)
                 async with AccessPolicyCRUD() as crud:
@@ -849,16 +847,11 @@ class BaseNamespace(
                             else [f"identity:{str(access_policy_delete.identity_id)}"]
                         ),
                     )
-                # print("=== socketio - DELETE - access_policy ===", flush=True)
             elif (
                 "new_action" not in access_policy
                 or access_policy["action"] != access_policy["new_action"]
             ):
                 # elif "new_action" not in access_policy:
-                # print(
-                #     "=== routers - socketio - v1 - on_share - CREATE - access_policy ==="
-                # )
-                # pprint(access_policy)
                 resource_id_value: Any = access_policy.get("resource_id")
                 identity_id_value: Any = access_policy.get("identity_id")
                 if "new_action" not in access_policy:
@@ -867,14 +860,12 @@ class BaseNamespace(
                         await crud.create(access_policy_create, current_user)
                     resource_id_value = access_policy_create.resource_id
                     identity_id_value = access_policy_create.identity_id
-                    # print("=== socketio - CREATE - access_policy ===", flush=True)
                 elif access_policy["action"] != access_policy["new_action"]:
                     access_policy_update = AccessPolicyUpdate(**access_policy)
                     async with AccessPolicyCRUD() as crud:
                         await crud.update(current_user, access_policy_update)
                     resource_id_value = access_policy_update.resource_id
                     identity_id_value = access_policy_update.identity_id
-                    # print("=== socketio - UPDATE - access_policy ===", flush=True)
                 await self._emit_status(
                     sid,
                     {
@@ -885,12 +876,10 @@ class BaseNamespace(
                         "public" if public else [f"identity:{str(identity_id_value)}"]
                     ),
                 )
-                # print("=== socketio - CREATE - access_policy ===", flush=True)
             # elif access_policy["action"] != access_policy["new_action"]:
             #     access_policy = AccessPolicyUpdate(**access_policy)
             #     async with AccessPolicyCRUD() as crud:
             #         await crud.update(current_user, access_policy)
-            #     # print("=== socketio - UPDATE - access_policy ===", flush=True)
             #     await self._emit_status(
             #         sid,
             #         {
@@ -899,7 +888,6 @@ class BaseNamespace(
             #         },
             #         rooms=[f"identity:{str(access_policy.identity_id)}"],
             #     )
-            #     print("=== socketio - UPDATE - access_policy ===", flush=True)
         except Exception as error:
             logger.error(f"🧦 Failed update access attempted from client {sid}.")
             print(error, flush=True)
