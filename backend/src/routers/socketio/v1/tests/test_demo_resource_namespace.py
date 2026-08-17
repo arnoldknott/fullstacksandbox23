@@ -1190,6 +1190,21 @@ async def test_user_shares_owned_resource_publically(
         else len(transfer_data3) == 0
     )
 
+    await connection2.client.emit(
+        "share",
+        {
+            "resource_id": str(resources[0].id),
+            "public": True,
+        },
+        namespace="/demo-resource",
+    )
+
+    await connection1.client.sleep(0.4)
+
+    assert status_data1[1] == {"success": "unshared", "id": str(resources[0].id)}
+    assert status_data2[1] == {"success": "unshared", "id": str(resources[0].id)}
+    assert status_data3[1] == {"success": "unshared", "id": str(resources[0].id)}
+
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
