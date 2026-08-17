@@ -142,6 +142,10 @@
 			year: 2025,
 			comparison: [5, 9, 11, 38, 47]
 		}
+		// {
+		// 	year: 2026,
+		// 	comparison: [TBD: extract from mid-term evaluation!]
+		// }
 	];
 
 	const categoriesNoExam: [string, string, string, string, string] = [
@@ -182,6 +186,23 @@
 			takeMoreResponsibility: [1, 4, 17, 22, 13],
 			moreMotivated: [2, 10, 18, 19, 8]
 		}
+		// {
+		// 	year: 2026,
+		// 	course: '34601', // includes 34603.
+		// 	learnedMore: [7, 22, 41, 21, 12],
+		// 	takeMoreResponsibility: [4, 20, 34, 28, 17],
+		// 	moreMotivated: [7, 22, 25, 29, 18]
+		// },
+		// {
+		// 	year: 2026,
+		// 	course: '34620',
+		// 	learnedMore: [2, 16, 41, 30, 4],
+		// 	takeMoreResponsibility: [1, 16, 26, 42, 7],
+		// 	moreMotivated: [2, 23, 33, 23, 11]
+		// }
+		// totalLearnedMore up to here: [26, 109, 246, 123, 51] = 555
+		// totalTakeMoreResponsibility up to here: [16, 94, 161, 202, 90] = 563
+		// totalMoreMotivated up to here: [29, 129, 175, 150, 78] = 561
 	];
 
 	const learnSetupData = learnSetup.map((entry) => ({
