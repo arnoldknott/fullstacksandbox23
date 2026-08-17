@@ -21,7 +21,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	// one public identity:
 	payload.identities.push({
 		id: undefined,
-		name: 'Public',
+		name: 'All users',
 		type: IdentityType.PUBLIC
 	});
 
