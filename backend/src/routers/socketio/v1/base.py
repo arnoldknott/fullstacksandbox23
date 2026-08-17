@@ -427,8 +427,8 @@ class BaseNamespace(
         }
         # TBD: consider switching the if and for
         for identity_id in identity_ids:
-            UUID(identity_id)  # type checking for valid UUID, will raise if invalid
             if identity_id:
+                UUID(identity_id)  # type checking for valid UUID, will raise if invalid
                 # Assign the identity id to the room for hierarchical resource system
                 # TBD: Is access control necessary here?
                 # AccessCRUD.allows(
