@@ -46,13 +46,13 @@
 		// and use the share option emit with all possible options.
 		socketioPresentations.client.on('status', (data: SocketioStatus) => {
 			if ('success' in data && data.success === 'created') {
-				const publicShare = shareOptions.filter(
+				const publicShare = shareOptions?.filter(
 					(shareOption) => shareOption.identity_type === IdentityType.PUBLIC
 				);
-				if (publicShare[0].action) {
+				if (publicShare?.[0]?.action) {
 					socketioPresentations?.shareEntity({
 						resource_id: data.id,
-						action: publicShare[0].action,
+						action: publicShare?.[0]?.action,
 						public: true
 					});
 				}
@@ -108,6 +108,9 @@
 			identity_type: IdentityType.UEBER_GROUP
 		}
 	]);
+	// let shareOptions: AccessShareOption[] | undefined = $derived(
+	// 	AccessHandler.createShareOptions(data.payload.identities, [])
+	// );
 
 	// For showing existing presentations:
 	let viewMode = $state<'preview' | 'grid' | 'list'>('list');
@@ -217,19 +220,19 @@
 				</FormElement>
 			</div>
 
-			<FormElement title="Access" description={accessDescription} extraClasses="max-w-96">
+			<FormElement title="Access" description={accessDescription} extraClasses="max-w-100">
 				{@render warning()} Only the public access gets currently submitted with the presentation!
-				<ul
-					class="bg-base-150 shadow-outline max-h-48 max-w-fit overflow-y-auto rounded-lg p-2 shadow-inner"
-				>
-					{#each shareOptions, i}
-						<ShareItem
-							resourceId={socketioPresentations.pendingEntities[0].id}
-							bind:shareOption={shareOptions[i]}
-							share={socketioPresentations?.shareEntity.bind(socketioPresentations)}
-							wide
-						/>
-					{/each}
+				<ul class="bg-base-150 shadow-outline overflow-y-auto rounded-lg p-2 shadow-inner">
+					{#if shareOptions}
+						{#each shareOptions, i}
+							<ShareItem
+								resourceId={socketioPresentations.pendingEntities[0].id}
+								bind:shareOption={shareOptions[i]}
+								share={socketioPresentations?.shareEntity.bind(socketioPresentations)}
+								wide
+							/>
+						{/each}
+					{/if}
 				</ul>
 			</FormElement>
 		</div>
