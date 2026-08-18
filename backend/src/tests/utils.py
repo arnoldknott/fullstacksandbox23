@@ -314,7 +314,7 @@ token_admin_read_write_socketio_groups = {
     **token_payload_random_user_id,
     **token_payload_tenant_id,
     **token_payload_scope_api_read_write_socketio,
-    **token_payload_roles_user,
+    **token_payload_roles_admin,
     **token_payload_many_groups,
 }
 
@@ -855,6 +855,12 @@ one_test_policy_share = {
 one_test_policy_public_read = {
     "resource_id": resource_id1,
     "action": "read",
+    "public": True,
+}
+
+one_test_policy_public_write = {
+    "resource_id": resource_id1,
+    "action": "write",
     "public": True,
 }
 

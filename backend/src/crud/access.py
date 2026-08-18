@@ -688,7 +688,7 @@ class AccessPolicyCRUD:
             # or create a AccessPolicyDelete model, that has all fields optional,
             # but uses the same validation as AccessPolicyCreate
             if public is not None:
-                statement.where(AccessPolicy.public == public)
+                statement = statement.where(AccessPolicy.public == public)
 
             # TBD: at least one owner needs to be left!
 

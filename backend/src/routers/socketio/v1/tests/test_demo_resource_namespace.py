@@ -989,6 +989,7 @@ async def test_client_tries_to_delete_demo_resource_without_owner_rights_fails_a
 # - not implemented
 
 # ✔︎ user shares a resource with a group: success
+# ✔︎ user shares a resource publically and other user gets the "status - shared" event.
 # ✔︎ user owning resource updates access to a different action level: success
 # ✔︎ user owning resource updates access to same action level: error
 # ✔︎ user deletes access to a resource: success
@@ -1078,18 +1079,131 @@ async def test_user_shares_owned_resource_with_groups_in_azure_token(
 
     assert status_data1 == [{"success": "shared", "id": str(resources[0].id)}]
     assert status_data2 == [{"success": "shared", "id": str(resources[0].id)}]
-    # Even the third user is admin, share events don't get emitted automatically to admin,
+    # Even one user is admin, share events don't get emitted automatically to admin,
+    # Admin needs to subscribe in query paramenter with "join-admin-room = True" to get all events.
     # Anyways can see everything!
     # Unless the admin also has the team in the groups from token.
     assert status_data3 == []
 
     transfer_data1 = connection1.responses("transferred")
     transfer_data2 = connection2.responses("transferred")
+    transfer_data3 = connection3.responses("transferred")
     assert len(transfer_data1) == len(resources)
     # Even though the access has been granted, no resources are transferred yet.
     # User needs to make another emit to event read, to get the resource,
     # because other existing access policies might influence the access rights.
-    assert len(transfer_data2) == 0
+    assert (
+        len(transfer_data2) == len(resources)
+        if token_user2["roles"][0] == "Admin"
+        else len(transfer_data2) == 0
+    )
+    assert (
+        len(transfer_data3) == len(resources)
+        if token_user3["roles"][0] == "Admin"
+        else len(transfer_data3) == 0
+    )
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "session_ids",
+    [
+        [
+            session_id_user1_read_write_socketio_groups,
+            session_id_user2_read_write_socketio_groups,
+            session_id_admin_read_write_socketio,
+        ],
+        [
+            session_id_admin_read_write_socketio_groups,
+            session_id_user1_read_write_socketio_groups,
+            session_id_user2_read_write_socketio,
+        ],
+        [
+            session_id_user2_read_write_socketio_groups,
+            session_id_admin_read_write_socketio_groups,
+            session_id_user1_read_write_socketio,
+        ],
+    ],
+    indirect=True,
+)
+async def test_user_shares_owned_resource_publically(
+    session_ids,
+    socketio_test_client_demo_resource_namespace,
+    add_test_demo_resources: list[DemoResource],
+):
+    """Test the demo resource connect event."""
+    # First user owns the resources:
+    connection1 = await socketio_test_client_demo_resource_namespace()
+    connection2 = await socketio_test_client_demo_resource_namespace(session_ids[1])
+    connection3 = await socketio_test_client_demo_resource_namespace(session_ids[2])
+    token_user1 = connection1.token_payload()
+    token_user2 = connection2.token_payload()
+    token_user3 = connection3.token_payload()
+
+    resources = await add_test_demo_resources(token_user2)  # type: ignore[call-arg]
+
+    await connection1.connect()
+    await connection2.connect()
+    await connection3.connect()
+
+    # First user shares the resources with a group, that first and second user are member of:
+    await connection2.client.emit(
+        "share",
+        {
+            "resource_id": str(resources[0].id),
+            "action": "read",
+            "public": True,
+        },
+        namespace="/demo-resource",
+    )
+
+    # Wait for the response to be set
+    await connection1.client.sleep(0.4)
+
+    status_data1 = connection1.responses("status")
+    status_data2 = connection2.responses("status")
+    status_data3 = connection3.responses("status")
+
+    assert status_data1 == [{"success": "shared", "id": str(resources[0].id)}]
+    assert status_data2 == [{"success": "shared", "id": str(resources[0].id)}]
+    # Even the third user is admin, share events don't get emitted automatically to admin,
+    # Anyways can see everything!
+    # Unless the admin also has the team in the groups from token.
+    assert status_data3 == [{"success": "shared", "id": str(resources[0].id)}]
+
+    transfer_data1 = connection1.responses("transferred")
+    transfer_data3 = connection3.responses("transferred")
+    # Admin's get everything on connect:
+    assert (
+        len(transfer_data1) == len(resources)
+        if token_user1["roles"][0] == "Admin"
+        else len(transfer_data1) == 0
+    )
+    # assert len(transfer_data1) == 0
+    # Even though the access has been granted, no resources are transferred yet.
+    # User needs to make another emit to event read, to get the resource,
+    # because other existing access policies might influence the access rights.
+    # But Admin alwasy gets everything on connect
+    assert (
+        len(transfer_data3) == len(resources)
+        if token_user3["roles"][0] == "Admin"
+        else len(transfer_data3) == 0
+    )
+
+    await connection2.client.emit(
+        "share",
+        {
+            "resource_id": str(resources[0].id),
+            "public": True,
+        },
+        namespace="/demo-resource",
+    )
+
+    await connection1.client.sleep(0.4)
+
+    assert status_data1[1] == {"success": "unshared", "id": str(resources[0].id)}
+    assert status_data2[1] == {"success": "unshared", "id": str(resources[0].id)}
+    assert status_data3[1] == {"success": "unshared", "id": str(resources[0].id)}
 
 
 @pytest.mark.anyio
@@ -1134,6 +1248,7 @@ async def test_user_updates_access_to_owned_resource_for_a_group_identity(
 
     # First user owns the resources:
     token_user1 = connection1.token_payload()
+    token_user2 = connection2.token_payload()
 
     current_user1 = await connection1.current_user()
     current_user2 = await connection2.current_user()
@@ -1187,8 +1302,13 @@ async def test_user_updates_access_to_owned_resource_for_a_group_identity(
     transfer_data1 = connection1.responses("transferred")
     transfer_data2 = connection2.responses("transferred")
     assert len(transfer_data1) == len(resources)
-    # Group had access before, so user2 got the resource on_connect:
-    assert len(transfer_data2) == 1
+    # Group had access before, so user2 got the resource on_connect,
+    # unless being Admin, than user 2 got everything:
+    assert (
+        len(transfer_data2) == len(resources)
+        if token_user2["roles"][0] == "Admin"
+        else len(transfer_data2) == 1
+    )
 
 
 @pytest.mark.anyio
@@ -1233,6 +1353,7 @@ async def test_user_updates_access_to_owned_resource_for_a_group_identity_to_sam
     query_parameters_user2 = {"identity-ids": str(common_group_id)}
 
     token_user1 = connection1.token_payload()
+    token_user2 = connection2.token_payload()
     current_user1 = await connection1.current_user()
     current_user2 = await connection2.current_user()
 
@@ -1284,8 +1405,13 @@ async def test_user_updates_access_to_owned_resource_for_a_group_identity_to_sam
     transfer_data1 = connection1.responses("transferred")
     transfer_data2 = connection2.responses("transferred")
     assert len(transfer_data1) == len(resources)
-    # Group had access before, so user2 got the resource on_connect:
-    assert len(transfer_data2) == 1
+    # Group had access before, so user2 got the resource on_connect,
+    # unless being Admin, than user 2 got everything:
+    assert (
+        len(transfer_data2) == len(resources)
+        if token_user2["roles"][0] == "Admin"
+        else len(transfer_data2) == 1
+    )
 
     await connection1.client.disconnect()
     await connection2.client.disconnect()
@@ -1334,6 +1460,7 @@ async def test_user_removes_share_with_group(
     query_parameters_user2 = {"identity-ids": str(common_group_id)}
 
     token_user1 = connection1.token_payload()
+    token_user2 = connection2.token_payload()
     current_user1 = await connection1.current_user()
     current_user2 = await connection2.current_user()
 
@@ -1395,15 +1522,24 @@ async def test_user_removes_share_with_group(
             "id": str(resources[1].id),
         }
     ]
-    # After read event, triggered by unshare, user2 has no longer access:
-    assert status_data2 == [
-        {
-            "success": "unshared",
-            "id": str(resources[1].id),
-        },
-        {"success": "deleted", "id": str(resources[1].id)},
-        {"error": f"Resource {str(resources[1].id)} not found."},
-    ]
+    # After read event, triggered by unshare, user2 has no longer access,
+    # unless this user is an Admin:
+    if token_user2["roles"][0] != "Admin":
+        assert status_data2 == [
+            {
+                "success": "unshared",
+                "id": str(resources[1].id),
+            },
+            {"success": "deleted", "id": str(resources[1].id)},
+            {"error": f"Resource {str(resources[1].id)} not found."},
+        ]
+    else:
+        assert status_data2 == [
+            {
+                "success": "unshared",
+                "id": str(resources[1].id),
+            }
+        ]
     # Even the third user is admin, share events don't get emitted automatically to admin,
     # Anyways can see everything!
     # Unless the admin also has the team in the groups from token.
@@ -1412,8 +1548,12 @@ async def test_user_removes_share_with_group(
     # user one gets the resource again after the unshare event
     # still has access from own access policy:
     assert len(connection1.responses("transferred")) == len(resources) + 1
-    # Group had access before, so user2 got the resource on_connect:
-    assert len(connection2.responses("transferred")) == 1
+    # unless being Admin, than user 2 got everything:
+    assert (
+        len(connection2.responses("transferred")) == len(resources) + 1
+        if token_user2["roles"][0] == "Admin"
+        else len(connection2.responses("transferred")) == 1
+    )
 
 
 @pytest.mark.anyio
