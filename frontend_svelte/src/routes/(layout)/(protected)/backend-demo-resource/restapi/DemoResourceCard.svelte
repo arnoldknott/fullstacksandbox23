@@ -219,7 +219,7 @@
 								</button>
 								<!-- {#if shareOptions}
 									{#each shareOptions as shareOption (shareOption.identity_id)}
-										<ShareItem resourceId={id} {shareOption} {handleRightsChangeResponse} />
+										<ShareItem resourceId={id} {shareOption} shareFromActionEndpoint="/share" {handleRightsChangeResponse} />
 									{/each}
 								{/if} -->
 								<ul
@@ -241,7 +241,7 @@
 											}}
 										>
 											{#each shareOptions as shareOption (shareOption.identity_id)}
-												<ShareItem resourceId={id} {shareOption} />
+												<ShareItem resourceId={id} shareFromActionEndpoint="/share" {shareOption} />
 											{/each}
 											<li class="dropdown-footer gap-2">
 												<button

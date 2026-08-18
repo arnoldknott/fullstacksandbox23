@@ -839,6 +839,7 @@
 								<ShareItem
 									resourceId="actionButtonShareResourceId"
 									{shareOption}
+									shareFromActionEndpoint="/share"
 									{handleRightsChangeResponse}
 								/>
 							{/each} -->
@@ -853,7 +854,11 @@
 								}}
 							>
 								{#each shareOptions as shareOption, i (i)}
-									<ShareItem resourceId="actionButtonShareResourceId" {shareOption} />
+									<ShareItem
+										resourceId="actionButtonShareResourceId"
+										{shareOption}
+										shareFromActionEndpoint="/share"
+									/>
 								{/each}
 							</form>
 							<li class="dropdown-footer gap-2">
@@ -976,6 +981,7 @@
 								<ShareItem
 									resourceId="dropdownShareDropdownResourceId"
 									{shareOption}
+									shareFromActionEndpoint="/share"
 									{handleRightsChangeResponse}
 								/>
 							{/each} -->
@@ -991,7 +997,11 @@
 								}}
 							>
 								{#each shareOptions as shareOption, i (i)}
-									<ShareItem resourceId="dropdownShareDropdownResourceId" {shareOption} />
+									<ShareItem
+										resourceId="dropdownShareDropdownResourceId"
+										{shareOption}
+										shareFromActionEndpoint="/share"
+									/>
 								{/each}
 							</form>
 							<li class="dropdown-footer gap-2">
@@ -1038,6 +1048,7 @@
 						<!-- <ShareItem
 							resourceId="dropdownShareResourceId"
 							shareOption={shareOptions[0]}
+							shareFromActionEndpoint="/share"
 							{handleRightsChangeResponse}
 						/> -->
 						<form
@@ -1050,7 +1061,11 @@
 								};
 							}}
 						>
-							<ShareItem resourceId="dropdownShareResourceId" shareOption={shareOptions[0]} />
+							<ShareItem
+								resourceId="dropdownShareResourceId"
+								shareOption={shareOptions[0]}
+								shareFromActionEndpoint="/share"
+							/>
 						</form>
 					</ul>
 				</div>

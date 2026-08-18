@@ -8,6 +8,7 @@
 	let {
 		resourceId,
 		shareOption = $bindable(),
+		shareFromActionEndpoint,
 		share,
 		closeShareMenu,
 		wide
@@ -15,6 +16,7 @@
 	}: {
 		resourceId: string;
 		shareOption: AccessShareOption;
+		shareFromActionEndpoint?: string;
 		share?: (accessPolicy: AccessPolicy) => void;
 		// handleRightsChangeResponse?: (result: ActionResult, update: () => void) => void;
 		closeShareMenu?: () => void;
@@ -82,8 +84,8 @@
 			name="id"
 			type="submit"
 			value={resourceId}
-			formaction={!share
-				? `?/share&identity-id=${shareOption.identity_id}&action=${desiredActions(selectedAction).action}&new-action=${desiredActions(selectedAction).new_action}`
+			formaction={shareFromActionEndpoint
+				? `?${shareFromActionEndpoint}&identity-id=${shareOption.identity_id}&action=${desiredActions(selectedAction).action}&new-action=${desiredActions(selectedAction).new_action}`
 				: undefined}
 			onclick={() => {
 				if (share) {
