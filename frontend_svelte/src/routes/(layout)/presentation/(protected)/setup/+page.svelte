@@ -222,7 +222,7 @@
 
 			<FormElement title="Access" description={accessDescription} extraClasses="max-w-100">
 				{@render warning()} Only the public access gets currently submitted with the presentation!
-				<ul class="bg-base-150 shadow-outline overflow-y-auto rounded-lg p-2 shadow-inner">
+				<ul class="bg-base-150 shadow-base-shadow overflow-y-auto rounded-lg p-2 shadow-inner">
 					{#if shareOptions}
 						{#each shareOptions, i}
 							<ShareItem
