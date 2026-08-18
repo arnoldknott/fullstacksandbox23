@@ -858,6 +858,12 @@ one_test_policy_public_read = {
     "public": True,
 }
 
+one_test_policy_public_write = {
+    "resource_id": resource_id1,
+    "action": "write",
+    "public": True,
+}
+
 many_test_policies = [
     {
         "identity_id": identity_id_user2,

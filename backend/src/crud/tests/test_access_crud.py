@@ -46,6 +46,7 @@ from tests.utils import (
     many_test_policies,
     one_test_policy_own,
     one_test_policy_public_read,
+    one_test_policy_public_write,
     one_test_policy_read,
     one_test_policy_share,
     one_test_policy_write,
@@ -168,31 +169,6 @@ async def test_writer_creates_access_policy_fails(
 
 
 @pytest.mark.anyio
-async def test_prevent_create_duplicate_access_policy(
-    register_many_current_users,
-    register_many_resources,
-    add_many_test_access_policies,
-):
-    """Test preventing the creation of a duplicate access policy."""
-
-    current_users = register_many_current_users
-    _ = register_many_resources
-    _ = add_many_test_access_policies
-    async with AccessPolicyCRUD() as policy_crud:
-        try:
-            policy = await policy_crud.create(many_test_policies[2], current_users[0])
-            print(policy)
-        except HTTPException as err:
-            assert err.status_code == 409
-            assert (
-                err.detail
-                == "Access policy for identity and resource already exists. Update instead of create."
-            )
-        else:
-            pytest.fail("No HTTPexception raised!")
-
-
-@pytest.mark.anyio
 async def test_create_access_policy_for_public_resource(
     register_current_user, register_many_resources
 ):
@@ -207,6 +183,37 @@ async def test_create_access_policy_for_public_resource(
     assert created_policy.resource_id == modelled_policy.resource_id
     assert created_policy.identity_id is None
     assert created_policy.action == modelled_policy.action
+
+
+@pytest.mark.anyio
+async def test_prevent_create_duplicate_public_access_policy_fails(
+    register_current_user,
+    register_many_resources,
+):
+    """Test preventing the creation of a duplicate public access policy."""
+
+    current_admin_user = await register_current_user(current_user_data_admin)
+    _ = register_many_resources
+    read_policy = AccessPolicy.model_validate(one_test_policy_public_read)
+    async with AccessPolicyCRUD() as policy_crud:
+        created_policy = await policy_crud.create(read_policy, current_admin_user)
+
+    assert created_policy.resource_id == read_policy.resource_id
+    assert created_policy.identity_id is None
+    assert created_policy.action == read_policy.action
+    async with AccessPolicyCRUD() as policy_crud:
+        try:
+            write_policy = AccessPolicy.model_validate(one_test_policy_public_write)
+            policy = await policy_crud.create(write_policy, current_admin_user)
+            print(policy)
+        except HTTPException as err:
+            assert err.status_code == 409
+            assert (
+                err.detail
+                == "Access policy for identity and resource already exists. Update instead of create."
+            )
+        else:
+            pytest.fail("No HTTPexception raised!")
 
 
 @pytest.mark.anyio
