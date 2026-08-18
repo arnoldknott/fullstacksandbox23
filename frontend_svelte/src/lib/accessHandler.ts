@@ -20,18 +20,46 @@ export enum IdentityType {
 
 export class AccessHandler {
 	static getRights(identityId?: string, accessPolicies?: AccessPolicy[]): Action | undefined {
-		const hasOwnerRights = accessPolicies?.some(
-			(policy) => policy.identity_id === identityId && policy.action === Action.OWN
-		);
-		const hasWriteRights = accessPolicies?.some(
-			(policy) => policy.identity_id === identityId && policy.action === Action.WRITE
-		);
-		const hasConnectRights = accessPolicies?.some(
-			(policy) => policy.identity_id === identityId && policy.action === Action.CONNECT
-		);
-		const hasReadRights = accessPolicies?.some(
-			(policy) => policy.identity_id === identityId && policy.action === Action.READ
-		);
+		// check for the highest level of access for the given identityId in the accessPolicies array
+		let hasOwnerRights;
+		let hasWriteRights;
+		let hasConnectRights;
+		let hasReadRights;
+		// check for highest level of access for the public identity in the accessPolicies array
+		if (!identityId) {
+			hasOwnerRights = accessPolicies?.find(
+				(policy) => policy.public === true && policy.action === Action.OWN
+			);
+			hasWriteRights = accessPolicies?.find(
+				(policy) => policy.public === true && policy.action === Action.WRITE
+			);
+			hasConnectRights = accessPolicies?.find(
+				(policy) => policy.public === true && policy.action === Action.CONNECT
+			);
+			hasReadRights = accessPolicies?.find(
+				(policy) => policy.public === true && policy.action === Action.READ
+			);
+		}
+		hasOwnerRights =
+			hasOwnerRights ||
+			accessPolicies?.some(
+				(policy) => policy.identity_id === identityId && policy.action === Action.OWN
+			);
+		hasWriteRights =
+			hasWriteRights ||
+			accessPolicies?.some(
+				(policy) => policy.identity_id === identityId && policy.action === Action.WRITE
+			);
+		hasConnectRights =
+			hasConnectRights ||
+			accessPolicies?.some(
+				(policy) => policy.identity_id === identityId && policy.action === Action.CONNECT
+			);
+		hasReadRights =
+			hasReadRights ||
+			accessPolicies?.some(
+				(policy) => policy.identity_id === identityId && policy.action === Action.READ
+			);
 		if (hasOwnerRights) {
 			return Action.OWN;
 		} else if (hasWriteRights) {
@@ -56,7 +84,7 @@ export class AccessHandler {
 					identity_name: identity.name,
 					identity_type: identity.type,
 					action: AccessHandler.getRights(identity.id, accessPolicies),
-					public: false
+					public: identity.type === IdentityType.PUBLIC || false
 				};
 			})
 			.sort((a: AccessShareOption, b: AccessShareOption) => {

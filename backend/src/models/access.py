@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import ClassVar, List, Optional
 
 from pydantic import BaseModel, model_validator
-from sqlalchemy import UniqueConstraint
+from sqlalchemy import Index, UniqueConstraint, text
 from sqlmodel import Field, SQLModel
 
 # if TYPE_CHECKING:
@@ -65,7 +65,15 @@ class AccessPolicy(AccessPolicyCreate, table=True):
     action: "Action" = Field()
 
     # consider refactoring into a unique constraint for identity_id, resource_id only - highest access level only:
-    __table_args__ = (UniqueConstraint("identity_id", "resource_id"),)
+    __table_args__ = (
+        UniqueConstraint("identity_id", "resource_id"),
+        Index(
+            "uq_access_policy_public_resource",
+            "resource_id",
+            unique=True,
+            postgresql_where=text("identity_id IS NULL"),
+        ),
+    )
 
 
 class AccessPolicyUpdate(AccessPolicyCreate):

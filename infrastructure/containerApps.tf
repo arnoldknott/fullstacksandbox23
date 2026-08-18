@@ -173,7 +173,7 @@ resource "azurerm_container_app" "BackendAPIContainer" {
         path = "/data"
       }
       env {
-        name  = "FRONTEND_SVELTE_ORIGIN"
+        name = "FRONTEND_SVELTE_ORIGIN"
         # value = azurerm_container_app.FrontendSvelteContainer.name
         value = "https://${azurerm_container_app.FrontendSvelteContainer.ingress[0].fqdn}"
       }
@@ -761,8 +761,8 @@ resource "azurerm_container_app" "postgresAdmin" {
   }
 
   ingress {
-    target_port      = 8080
-    external_enabled = true
+    target_port             = 8080
+    external_enabled        = true
     client_certificate_mode = "ignore"
     # allow_insecure_connections = false # consider adding this
     traffic_weight {
