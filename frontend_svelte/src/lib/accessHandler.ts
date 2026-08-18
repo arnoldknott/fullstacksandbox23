@@ -56,7 +56,7 @@ export class AccessHandler {
 					identity_name: identity.name,
 					identity_type: identity.type,
 					action: AccessHandler.getRights(identity.id, accessPolicies),
-					public: false
+					public: identity.type === IdentityType.PUBLIC || false
 				};
 			})
 			.sort((a: AccessShareOption, b: AccessShareOption) => {
