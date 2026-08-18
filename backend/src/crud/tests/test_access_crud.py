@@ -217,6 +217,57 @@ async def test_prevent_create_duplicate_public_access_policy_fails(
 
 
 @pytest.mark.anyio
+async def test_prevent_deleting_public_leaves_all_other_access(
+    register_current_user,
+    register_many_current_users,
+    register_many_resources,
+):
+    """Test preventing the deletion of a public access policy leaves all other access policies intact."""
+
+    current_admin_user = await register_current_user(current_user_data_admin)
+    _ = register_many_resources
+    _ = register_many_current_users
+    read_policy = AccessPolicy.model_validate(one_test_policy_public_read)
+    user_owns_policy = AccessPolicy.model_validate(many_test_policies[0])
+    async with AccessPolicyCRUD() as policy_crud:
+        created_public_policy = await policy_crud.create(
+            read_policy, current_admin_user
+        )
+        created_user_owns_policy = await policy_crud.create(
+            user_owns_policy, current_admin_user
+        )
+
+    assert created_public_policy.resource_id == read_policy.resource_id
+    assert created_public_policy.identity_id is None
+    assert created_public_policy.action == read_policy.action
+    assert created_public_policy.public is True
+
+    assert created_user_owns_policy.resource_id == user_owns_policy.resource_id
+    assert created_user_owns_policy.identity_id == user_owns_policy.identity_id
+    assert created_user_owns_policy.action == user_owns_policy.action
+    assert created_user_owns_policy.public is False
+
+    async with AccessPolicyCRUD() as policy_crud:
+        await policy_crud.delete(
+            current_admin_user,
+            AccessPolicyDelete(
+                resource_id=created_public_policy.resource_id,
+                public=True,
+            ),
+        )
+        remaining_policies = await policy_crud.read(
+            resource_id=created_public_policy.resource_id,
+            current_user=current_admin_user,
+        )
+
+    assert len(remaining_policies) == 1
+    assert remaining_policies[0].resource_id == created_user_owns_policy.resource_id
+    assert remaining_policies[0].identity_id == created_user_owns_policy.identity_id
+    assert remaining_policies[0].action == created_user_owns_policy.action
+    assert remaining_policies[0].public is False
+
+
+@pytest.mark.anyio
 async def test_create_access_policy_for_public_resource_with_identity_fails(
     register_current_user,
 ):
