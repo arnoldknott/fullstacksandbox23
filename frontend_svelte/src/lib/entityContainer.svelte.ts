@@ -223,6 +223,31 @@ export class EntityContainer<
 		}
 	}
 
+	/**
+	 * Add an access policy for a pending entity to the accessPolicies collection.
+	 * The accessPolicies collection stores all access policies for entities
+	 * After submission and creation of the entity in the backend,
+	 * the pending access policies - identified by the "new_" prefix in the id
+	 * can be sent to the backend via a share method for processing.
+	 */
+	addPendingHierarchy(entityId: string, hierarchy: Hierarchy) {
+		if (entityId.startsWith('new_')) {
+			if (!this.#hierarchies[entityId]) {
+				this.#hierarchies[entityId] = [];
+			}
+			// replace existing pending or create new pending access policy for the entity
+			// TBD: check if this covers public, where identity_id is undefined, and if it should be handled differently!
+			const existingIndex = this.#hierarchies[entityId].findIndex(
+				(p) => p.parent_id == hierarchy.parent_id && p.child_id == hierarchy.child_id
+			);
+			if (existingIndex !== -1) {
+				this.#hierarchies[entityId][existingIndex] = hierarchy;
+			} else {
+				this.#hierarchies[entityId].push(hierarchy);
+			}
+		}
+	}
+
 	/** SELECTION MANAGEMENT **/
 
 	/**
