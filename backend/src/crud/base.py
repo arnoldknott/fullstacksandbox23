@@ -215,6 +215,10 @@ class BaseCRUD(
         parent_id: Optional[uuid.UUID] = None,
         inherit: Optional[bool] = False,
         # TBD: add tests in protected resource to check public and public_action creation:
+        # TBD: separate concerns and remove creation of additional polices from the create method,
+        # as it is not the responsibility of the CRUD to create additional policies,
+        # but only to create the resource, access log the creation and give the permission to the creator.
+        # Caller should call AccessPolicyCRUD.create to create additional policies, if needed.
         public: Optional[bool] = False,
         public_action: Optional[Action] = None,
     ) -> BaseModelType:
@@ -342,6 +346,8 @@ class BaseCRUD(
             await self.session.refresh(database_object)
 
             # Create public access policy
+            # TBD: move this responsibility to the caller -
+            # see comments above in the method signature.
             if public:
                 if not public_action:
                     public_action = read
