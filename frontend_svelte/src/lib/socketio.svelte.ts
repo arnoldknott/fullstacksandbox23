@@ -1,7 +1,7 @@
 import { io, type ManagerOptions, type Socket, type SocketOptions } from 'socket.io-client';
 import { getContext } from 'svelte';
 
-import { Action } from './accessHandler';
+import { Action, PUBLIC_IDENTITY_ID } from './accessHandler';
 import {
 	EntityContainer,
 	type EntityContainerConfiguration,
@@ -73,7 +73,14 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 			? `http://${backendFqdn}`
 			: `https://${backendFqdn}`;
 
-		const queryParams: QueryParameters = connection.queryParams ?? {};
+		const queryParams: QueryParameters = { ...(connection.queryParams ?? {}) };
+		if (queryParams['identity-ids']) {
+			// the public sentinel id is client-side only and has no backend room to join
+			queryParams['identity-ids'] = queryParams['identity-ids']
+				.split(',')
+				.filter((identityId) => identityId !== PUBLIC_IDENTITY_ID)
+				.join(',');
+		}
 		if (connection.parentId) {
 			queryParams['parent-id'] = connection.parentId;
 		}

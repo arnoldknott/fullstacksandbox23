@@ -2,7 +2,7 @@ import { flushSync } from 'svelte';
 import { v4 } from 'uuid';
 import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 
-import { Action } from './accessHandler';
+import { Action, IdentityType } from './accessHandler';
 import { EntityContainer } from './entityContainer.svelte';
 
 type AnyEntityExtended = {
@@ -51,7 +51,7 @@ describe('EntityContainer', () => {
 		entityContainer.pendingEntities = [];
 		expect(entityContainer.pendingEntities).toEqual([]);
 		// Identities:
-		const identity = { id: v4(), name: 'Test Identity' };
+		const identity = { id: v4(), name: 'Test Identity', type: IdentityType.USER };
 		entityContainer.identities = [identity];
 		expect(entityContainer.identities).toEqual([identity]);
 		entityContainer.identities = [];

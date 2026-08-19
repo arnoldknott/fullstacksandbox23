@@ -1,7 +1,7 @@
 import { SvelteSet } from 'svelte/reactivity';
 
 import { Action } from './accessHandler';
-import type { AccessPolicy, AnyEntityExtended, AnyIdentityExtended, Hierarchy } from './types';
+import type { AccessPolicy, AnyEntityExtended, Hierarchy, Identity } from './types';
 
 /**
  * For managing new entities before submitting them,
@@ -24,7 +24,7 @@ export type EntityContainerConfiguration<T extends AnyEntityExtended = AnyEntity
 export interface EntityContainerInterface<T extends AnyEntityExtended = AnyEntityExtended> {
 	entities: T[];
 	pendingEntities: T[];
-	identities: AnyIdentityExtended[];
+	identities: Identity[];
 	// TBD: when payload separated from metadta, these should track the metadata:
 	accessPolicies: Record<string, AccessPolicy[]>;
 	accessRights: Record<string, Action>;
@@ -46,7 +46,7 @@ export interface EntityContainerInterface<T extends AnyEntityExtended = AnyEntit
 	addToSelection(name: string, entityIds: string[]): string[];
 	removeFromSelection(name: string, entityIds: string[]): string[];
 	getSelectedEntities(name?: string): T[];
-	getSelectedIdentities(name?: string): AnyIdentityExtended[];
+	getSelectedIdentities(name?: string): Identity[];
 	// Helper functions to creater specific selections:
 	createFilteredEntitySelection(name: string, filterFn: (entity: T) => boolean): () => T[];
 	createLinkedSelection(
@@ -69,7 +69,7 @@ export interface EntityContainerInterface<T extends AnyEntityExtended = AnyEntit
 		name: string,
 		policyFilterFn: (policy: AccessPolicy) => boolean,
 		fromOtherSelection?: string
-	): () => AnyIdentityExtended[];
+	): () => Identity[];
 	// Modifying selections:
 	createSortedSelection(
 		name: string,
@@ -93,7 +93,7 @@ export class EntityContainer<
 	// Data:
 	#entities = $state<T[]>([]); // AnyEntityExtended[];
 	#pendingEntities = $state<T[]>([]); // AnyEntityExtended[];
-	#identities = $state<AnyIdentityExtended[]>([]); // AnyIdentityExtended[];
+	#identities = $state<Identity[]>([]); // Identity[];
 	// Metadata:
 	#accessPolicies = $state<Record<string, AccessPolicy[]>>({}); // UUID: AccessPolicy[]
 	#accessRights = $state<Record<string, Action>>({}); // UUID: Action
@@ -142,10 +142,10 @@ export class EntityContainer<
 		this.#pendingEntities = value;
 	}
 
-	get identities(): AnyIdentityExtended[] {
+	get identities(): Identity[] {
 		return this.#identities;
 	}
-	set identities(value: AnyIdentityExtended[]) {
+	set identities(value: Identity[]) {
 		this.#identities = value;
 	}
 
@@ -194,6 +194,33 @@ export class EntityContainer<
 		} as T;
 		this.#pendingEntities.unshift(pendingEntity);
 		return pendingEntity;
+	}
+
+	/**
+	 * Add an access policy for a pending entity to the accessPolicies collection.
+	 * The accessPolicies collection stores all access policies for entities
+	 * After submission and creation of the entity in the backend,
+	 * the pending access policies - identified by the "new_" prefix in the id
+	 * can be sent to the backend via a share method for processing.
+	 */
+	addPendingAccessPolicy(entityId: string, policy: AccessPolicy) {
+		if (entityId.startsWith('new_')) {
+			if (!this.#accessPolicies[entityId]) {
+				this.#accessPolicies[entityId] = [];
+			}
+			// replace existing pending or create new pending access policy for the entity
+			// TBD: check if this covers public, where identity_id is undefined, and if it should be handled differently!
+			const existingIndex = this.#accessPolicies[entityId].findIndex(
+				(p) => p.identity_id == policy.identity_id
+			);
+			if (existingIndex !== -1) {
+				console.log('=== entityContainer - replaces existing pending access policy ===');
+				this.#accessPolicies[entityId][existingIndex] = policy;
+			} else {
+				console.log('=== entityContainer - adds new pending access policy ===');
+				this.#accessPolicies[entityId].push(policy);
+			}
+		}
 	}
 
 	/** SELECTION MANAGEMENT **/
@@ -311,7 +338,7 @@ export class EntityContainer<
 	 * @param name specifies which selection to retrieve
 	 * @returns the identities that correlate to the specified selection
 	 */
-	getSelectedIdentities(name?: string): AnyIdentityExtended[] {
+	getSelectedIdentities(name?: string): Identity[] {
 		if (name) {
 			const selectedIds = this.selections[name] ?? [];
 			// return this.identities.filter((identity) => selectedIds.includes(identity.id));
@@ -324,11 +351,11 @@ export class EntityContainer<
 			// 	.filter((identity): identity is AnyIdentityExtended => identity !== undefined);
 			const identitiesById = Object.fromEntries(
 				this.identities.map((identity) => [identity.id, identity] as const)
-			) as Record<string, AnyIdentityExtended>;
+			) as Record<string, Identity>;
 
 			return selectedIds
 				.map((id) => identitiesById[id])
-				.filter((identity): identity is AnyIdentityExtended => identity !== undefined);
+				.filter((identity): identity is Identity => identity !== undefined);
 		} else {
 			return this.identities;
 		}

@@ -18,6 +18,11 @@ export enum IdentityType {
 	PUBLIC
 }
 
+// Stable client-side id for the singleton public identity ("All users").
+// It is never sent to the backend as an identity_id: public access is expressed
+// through the `public` flag on an AccessPolicy instead.
+export const PUBLIC_IDENTITY_ID = 'public';
+
 export class AccessHandler {
 	static getRights(identityId?: string, accessPolicies?: AccessPolicy[]): Action | undefined {
 		// check for the highest level of access for the given identityId in the accessPolicies array
@@ -26,7 +31,7 @@ export class AccessHandler {
 		let hasConnectRights;
 		let hasReadRights;
 		// check for highest level of access for the public identity in the accessPolicies array
-		if (!identityId) {
+		if (identityId === PUBLIC_IDENTITY_ID) {
 			hasOwnerRights = accessPolicies?.find(
 				(policy) => policy.public === true && policy.action === Action.OWN
 			);
@@ -79,12 +84,14 @@ export class AccessHandler {
 	): AccessShareOption[] | undefined {
 		return identities
 			?.map((identity: Identity) => {
+				const isPublic = identity.type === IdentityType.PUBLIC;
 				return {
-					identity_id: identity.id,
+					// the public identity has no backend identity_id: it maps to the `public` flag
+					identity_id: isPublic ? undefined : identity.id,
 					identity_name: identity.name,
 					identity_type: identity.type,
 					action: AccessHandler.getRights(identity.id, accessPolicies),
-					public: identity.type === IdentityType.PUBLIC || false
+					public: isPublic
 				};
 			})
 			.sort((a: AccessShareOption, b: AccessShareOption) => {
