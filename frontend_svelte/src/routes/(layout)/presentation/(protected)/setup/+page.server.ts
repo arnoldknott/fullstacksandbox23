@@ -1,4 +1,4 @@
-import { IdentityType } from '$lib/accessHandler';
+import { IdentityType, PUBLIC_IDENTITY_ID } from '$lib/accessHandler';
 import { backendAPI } from '$lib/server/apis/backendApi';
 import { microsoftGraph } from '$lib/server/apis/msgraph';
 import type { Identity, Presentation } from '$lib/types';
@@ -27,7 +27,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	payload.identities.push(...allIdentities);
 	// add one public identity:
 	payload.identities.push({
-		id: undefined,
+		id: PUBLIC_IDENTITY_ID,
 		name: 'All users',
 		type: IdentityType.PUBLIC
 	});

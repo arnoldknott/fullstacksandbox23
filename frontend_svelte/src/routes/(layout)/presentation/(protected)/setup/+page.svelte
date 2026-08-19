@@ -228,7 +228,8 @@
 							<ShareItem
 								resourceId={socketioPresentations.pendingEntities[0].id}
 								bind:shareOption={shareOptions[i]}
-								share={socketioPresentations?.shareEntity.bind(socketioPresentations)}
+								socketio={socketioPresentations}
+								// share={socketioPresentations?.shareEntity.bind(socketioPresentations)}
 								wide
 							/>
 						{/each}
@@ -347,7 +348,8 @@
 					<ShareItem
 						{resourceId}
 						{shareOption}
-						share={socketioPresentations?.shareEntity.bind(socketioPresentations)}
+						socketio={socketioPresentations}
+						// share={socketioPresentations?.shareEntity.bind(socketioPresentations)}
 						closeShareMenu={() => window.HSDropdown.close(actionButtonShareMenu)}
 					/>
 				{/each}
