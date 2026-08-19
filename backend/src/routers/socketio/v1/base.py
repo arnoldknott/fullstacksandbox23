@@ -836,7 +836,6 @@ class BaseNamespace(
                             "success": "unshared",
                             "id": str(access_policy_delete.resource_id),
                         },
-                        # TBD: add a test for a public unshare event!
                         rooms=(
                             "public"
                             if public
