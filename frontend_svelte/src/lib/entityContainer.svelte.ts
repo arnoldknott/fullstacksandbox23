@@ -203,7 +203,10 @@ export class EntityContainer<
 	 * the pending access policies - identified by the "new_" prefix in the id
 	 * can be sent to the backend via a share method for processing.
 	 */
-	addPendingAccessPolicy(entityId: string, policy: AccessPolicy) {
+	addPendingAccessPolicy(
+		entityId: string,
+		policy: AccessPolicy | Omit<AccessPolicy, 'resource_id'>
+	) {
 		if (entityId.startsWith('new_')) {
 			if (!this.#accessPolicies[entityId]) {
 				this.#accessPolicies[entityId] = [];
@@ -214,11 +217,9 @@ export class EntityContainer<
 				(p) => p.identity_id == policy.identity_id
 			);
 			if (existingIndex !== -1) {
-				console.log('=== entityContainer - replaces existing pending access policy ===');
-				this.#accessPolicies[entityId][existingIndex] = policy;
+				this.#accessPolicies[entityId][existingIndex] = { resource_id: entityId, ...policy };
 			} else {
-				console.log('=== entityContainer - adds new pending access policy ===');
-				this.#accessPolicies[entityId].push(policy);
+				this.#accessPolicies[entityId].push({ resource_id: entityId, ...policy });
 			}
 		}
 	}
@@ -230,7 +231,7 @@ export class EntityContainer<
 	 * the pending access policies - identified by the "new_" prefix in the id
 	 * can be sent to the backend via a share method for processing.
 	 */
-	addPendingHierarchy(entityId: string, hierarchy: Hierarchy) {
+	addPendingHierarchy(entityId: string, hierarchy: Hierarchy | Omit<Hierarchy, 'child_id'>) {
 		if (entityId.startsWith('new_')) {
 			if (!this.#hierarchies[entityId]) {
 				this.#hierarchies[entityId] = [];
@@ -238,12 +239,14 @@ export class EntityContainer<
 			// replace existing pending or create new pending access policy for the entity
 			// TBD: check if this covers public, where identity_id is undefined, and if it should be handled differently!
 			const existingIndex = this.#hierarchies[entityId].findIndex(
-				(p) => p.parent_id == hierarchy.parent_id && p.child_id == hierarchy.child_id
+				(p) =>
+					p.parent_id == hierarchy.parent_id &&
+					p.child_id == ('child_id' in hierarchy ? hierarchy.child_id : entityId)
 			);
 			if (existingIndex !== -1) {
-				this.#hierarchies[entityId][existingIndex] = hierarchy;
+				this.#hierarchies[entityId][existingIndex] = { child_id: entityId, ...hierarchy };
 			} else {
-				this.#hierarchies[entityId].push(hierarchy);
+				this.#hierarchies[entityId].push({ child_id: entityId, ...hierarchy });
 			}
 		}
 	}

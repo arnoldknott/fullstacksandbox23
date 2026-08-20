@@ -1,9 +1,10 @@
 """Tests for Quiz SocketIO namespaces (Message, Question, Numerical)."""
 
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import pytest
 
+from crud.access import AccessPolicyCRUD
 from crud.quiz import MessageCRUD, NumericalCRUD, QuestionCRUD
 from models.access import Action
 from models.quiz import Message, Numerical, Question
@@ -430,7 +431,7 @@ class TestMessage(BaseSocketIOTest):
             "submit",
             {
                 "payload": {**self._test_data_single},
-                "public": True,
+                "access_policies": [{"public": True, "action": "read"}],
             },
             namespace=self.namespace_path,
         )
@@ -471,8 +472,7 @@ class TestMessage(BaseSocketIOTest):
             "submit",
             {
                 "payload": {**self._test_data_single},
-                "public": True,
-                "public_action": "write",
+                "access_policies": [{"public": True, "action": "write"}],
             },
             namespace=self.namespace_path,
         )
@@ -513,8 +513,7 @@ class TestMessage(BaseSocketIOTest):
             "submit",
             {
                 "payload": {**self._test_data_single},
-                "public": True,
-                "public_action": "connect",
+                "access_policies": [{"public": True, "action": "connect"}],
             },
             namespace=self.namespace_path,
         )
@@ -538,6 +537,308 @@ class TestMessage(BaseSocketIOTest):
         assert len(transfer_data) == 1
         assert transfer_data[0]["id"] == created_id
         assert transfer_data[0]["access_right"] == "connect"
+
+    # Only one public access policy can be attached to a resource at a time.
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "session_ids",
+        [
+            [session_id_admin_read_write_socketio],
+            [session_id_user1_read_write_socketio],
+        ],
+        indirect=True,
+    )
+    async def test_submit_create_public_with_duplicate_public_access_policies_fails(
+        self,
+        socketio_test_client,
+    ):
+        """Test that creating a public resource with duplicate public access policies fails."""
+
+        connection = await socketio_test_client(client_config=self.client_config())
+
+        await connection.connect(query_parameters={"request-access-data": "true"})
+        await connection.client.sleep(0.2)
+
+        await connection.client.emit(
+            "submit",
+            {
+                "payload": {**self._test_data_single},
+                "access_policies": [
+                    {"public": True, "action": "connect"},
+                    {"public": True, "action": "read"},
+                ],
+            },
+            namespace=self.namespace_path,
+        )
+        await connection.client.sleep(0.5)
+
+        status_data = connection.responses("status", self.namespace_path)
+
+        assert len(status_data) == 1
+        assert (
+            status_data[0]["error"] == "409: Only one public access policy is allowed."
+        )
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "session_ids",
+        [
+            [
+                session_id_admin_read_write_socketio,
+                session_id_user1_read_write_socketio,
+                session_id_user2_read_write_socketio,
+            ],
+            [
+                session_id_user1_read_write_socketio,
+                session_id_user2_read_write_socketio,
+                session_id_admin_read_write_socketio,
+            ],
+        ],
+        indirect=True,
+    )
+    async def test_submit_create_with_multiple_access_policies(
+        self,
+        socketio_test_client,
+        session_ids,
+    ):
+        """Test that creating a public resource with multiple access policies succeeds."""
+
+        connection_submitter = await socketio_test_client(
+            client_config=self.client_config()
+        )
+        connection_user1 = await socketio_test_client(
+            client_config=self.client_config(),
+            session_id=session_ids[1],
+        )
+        connection_user2 = await socketio_test_client(
+            client_config=self.client_config(),
+            session_id=session_ids[2],
+        )
+
+        await connection_submitter.connect(
+            query_parameters={"request-access-data": "true"}
+        )
+        await connection_user1.connect()
+        await connection_user2.connect()
+        current_user = await connection_submitter.current_user()
+        current_user1 = await connection_user1.current_user()
+        current_user2 = await connection_user2.current_user()
+        await connection_submitter.client.sleep(0.2)
+
+        await connection_submitter.client.emit(
+            "submit",
+            {
+                "payload": {**self._test_data_single},
+                "access_policies": [
+                    {"identity_id": str(current_user1.user_id), "action": "connect"},
+                    {"identity_id": str(current_user2.user_id), "action": "read"},
+                ],
+            },
+            namespace=self.namespace_path,
+        )
+        await connection_submitter.client.sleep(0.5)
+
+        status_data = connection_submitter.responses("status", self.namespace_path)
+
+        assert len(status_data) == 2
+        assert status_data[0]["success"] == "created"
+        resource_id = status_data[0]["id"]
+        assert status_data[1]["success"] == "shared"
+        assert status_data[1]["id"] == resource_id
+
+        async with AccessPolicyCRUD() as access_crud:
+            policies = await access_crud.read_access_policies_by_resource_id(
+                current_user=current_user, resource_id=status_data[0]["id"]
+            )
+            assert len(policies) == 3
+            assert any(
+                policy.identity_id == current_user.user_id
+                and policy.action == Action.own
+                for policy in policies
+            )
+            assert any(
+                policy.identity_id == current_user1.user_id
+                and policy.action == Action.connect
+                for policy in policies
+            )
+            assert any(
+                policy.identity_id == current_user2.user_id
+                and policy.action == Action.read
+                for policy in policies
+            )
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "session_ids",
+        [
+            [
+                session_id_user1_read_write_socketio,
+                session_id_admin_read_write_socketio,
+                session_id_user2_read_write_socketio,
+            ],
+        ],
+        indirect=True,
+    )
+    async def test_submit_create_public_emits_shared(
+        self,
+        socketio_test_client,
+        session_ids,
+    ):
+        """Test that creating a public resource with multiple access policies succeeds."""
+
+        connection_submitter = await socketio_test_client(
+            client_config=self.client_config()
+        )
+        connection_user1 = await socketio_test_client(
+            client_config=self.client_config(),
+            session_id=session_ids[1],
+        )
+        connection_user2 = await socketio_test_client(
+            client_config=self.client_config(),
+            session_id=session_ids[2],
+        )
+
+        parent_id = uuid4()
+
+        await connection_submitter.connect(
+            query_parameters={"request-access-data": "true"}
+        )
+        await connection_user1.connect()
+        await connection_user2.connect(query_parameters={"parent_id": str(parent_id)})
+        await connection_submitter.client.sleep(0.2)
+
+        await connection_submitter.client.emit(
+            "submit",
+            {
+                "payload": {**self._test_data_single},
+                "access_policies": [{"public": True, "action": "read"}],
+            },
+            namespace=self.namespace_path,
+        )
+        await connection_submitter.client.sleep(0.5)
+
+        status_data_submitter = connection_submitter.responses(
+            "status", self.namespace_path
+        )
+        status_data_receiver1 = connection_user1.responses(
+            "status", self.namespace_path
+        )
+        status_data_receiver2 = connection_user2.responses(
+            "status", self.namespace_path
+        )
+
+        assert len(status_data_submitter) == 2
+        assert status_data_submitter[0]["success"] == "created"
+        resource_id = status_data_submitter[0]["id"]
+        assert status_data_submitter[1]["success"] == "shared"
+        assert status_data_submitter[1]["id"] == resource_id
+
+        assert len(status_data_receiver1) == 1
+        assert status_data_receiver1[0]["success"] == "shared"
+        assert status_data_receiver1[0]["id"] == resource_id
+
+        assert len(status_data_receiver2) == 1
+        assert status_data_receiver2[0]["success"] == "shared"
+        assert status_data_receiver2[0]["id"] == resource_id
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "session_ids",
+        [
+            [
+                session_id_user1_read_write_socketio,
+                session_id_user2_read_write_socketio,
+                session_id_admin_read_write_socketio,
+            ],
+        ],
+        indirect=True,
+    )
+    async def test_submit_create_public_emits_shared_only_for_shared_parent_rooms(
+        self,
+        socketio_test_client,
+        session_ids,
+        access_to_one_parent,
+        add_one_test_access_policy,
+    ):
+        """Test that creating a public resource with multiple access policies succeeds."""
+
+        connection_submitter = await socketio_test_client(
+            client_config=self.client_config()
+        )
+        connection_user1 = await socketio_test_client(
+            client_config=self.client_config(),
+            session_id=session_ids[1],
+        )
+        connection_user2 = await socketio_test_client(
+            client_config=self.client_config(),
+            session_id=session_ids[2],
+        )
+
+        parent_id = await access_to_one_parent(
+            Question, connection_submitter.token_payload()
+        )
+        current_user1 = await connection_user1.current_user()
+        current_admin = await connection_user2.current_user()
+        await add_one_test_access_policy(
+            {
+                "resource_id": str(parent_id),
+                "identity_id": current_user1.user_id,
+                "action": Action.read,
+            },
+            current_admin,
+            Question,
+        )
+
+        await connection_submitter.connect(
+            query_parameters={
+                "request-access-data": "true",
+                # "parent_id": str(parent_id),
+            }
+        )
+        await connection_user1.connect(query_parameters={"parent-id": str(parent_id)})
+        await connection_user2.connect()
+        await connection_submitter.client.sleep(0.2)
+
+        await connection_submitter.client.emit(
+            "submit",
+            {
+                "payload": {**self._test_data_single},
+                "parent_id": str(parent_id),
+                "access_policies": [{"public": True, "action": "read"}],
+            },
+            namespace=self.namespace_path,
+        )
+        await connection_submitter.client.sleep(0.5)
+
+        status_data_submitter = connection_submitter.responses(
+            "status", self.namespace_path
+        )
+        status_data_receiver1 = connection_user1.responses(
+            "status", self.namespace_path
+        )
+        status_data_receiver2 = connection_user2.responses(
+            "status", self.namespace_path
+        )
+
+        assert len(status_data_submitter) == 3
+        assert status_data_submitter[0]["success"] == "created"
+        resource_id = status_data_submitter[0]["id"]
+        assert status_data_submitter[1]["success"] == "linked"
+        assert status_data_submitter[1]["id"] == resource_id
+        assert status_data_submitter[1]["parent_id"] == str(parent_id)
+        assert status_data_submitter[1]["inherit"] is False
+        assert status_data_submitter[1]["order"] == 1
+        assert status_data_submitter[2]["success"] == "shared"
+        assert status_data_submitter[2]["id"] == resource_id
+
+        assert len(status_data_receiver1) == 1
+        assert status_data_receiver1[0]["success"] == "shared"
+        assert status_data_receiver1[0]["id"] == resource_id
+
+        # Didn't subscribe to parent-id channel, so should not receive shared event.
+        assert len(status_data_receiver2) == 0
+
+    # TBD: add tests for hierarchy creation on submit fro create.
 
     @pytest.mark.anyio
     @pytest.mark.parametrize(

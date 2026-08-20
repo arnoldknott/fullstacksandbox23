@@ -125,8 +125,12 @@
 			...messageSocketio.pendingEntities[0],
 			content: buildMessageContent(parsedMetadata, messageSocketio.pendingEntities[0].content)
 		};
-
-		messageSocketio.submitEntity(outgoingMessage, questionId, true, true, Action.READ);
+		// TBD: add true access control selection and not just default public read access!
+		messageSocketio.addPendingAccessPolicy(outgoingMessage.id, {
+			public: true,
+			action: Action.READ
+		});
+		messageSocketio.submitEntity(outgoingMessage, questionId, true);
 		messageSocketio.createPending();
 		// messageMetaData = '';
 	};

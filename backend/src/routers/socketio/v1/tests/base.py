@@ -68,7 +68,8 @@ class BaseSocketIOTest:
         submit_data = {"payload": test_data}
 
         if token_payload is None:
-            submit_data["public"] = True  # type: ignore[arg-type]
+            # submit_data["public"] = True  # type: ignore[arg-type]
+            submit_data["access_policies"] = [{"public": True, "action": "read"}]  # type: ignore[arg-type]
         if parent_id:
             submit_data["parent_id"] = str(parent_id)  # type: ignore[arg-type]
 

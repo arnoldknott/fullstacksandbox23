@@ -43,7 +43,9 @@ from models.access import (
     AccessPolicyUpdate,
     AccessRequest,
     BaseHierarchyCreate,
+    IdentityHierarchy,
     IdentityHierarchyRead,
+    ResourceHierarchy,
     ResourceHierarchyRead,
 )
 from models.base import BaseExtendedSQLModel, BaseReadSQLModel
@@ -627,7 +629,19 @@ class BaseNamespace(
                         assert self.update_model is not None
                         object_update = self.update_model(**payload)
                         async with self.crud() as crud:
-                            # TBD: check the hierarchical resource system all the way through other events as
+                            # TBD: Don't add hierarchies and access_policies through submit:update!
+                            # They should be added through their own events "share" and "link",
+                            # as they are separate resources!
+                            # if crud.model.__name__ in ResourceType.list():
+                            #     hierarchies = [
+                            #         ResourceHierarchy(**hierarchy)
+                            #         for hierarchy in hierarchies
+                            #     ]
+                            # elif crud.model.__name__ in IdentityType.list():
+                            #     hierarchies = [
+                            #         IdentityHierarchy(**hierarchy)
+                            #         for hierarchy in hierarchies
+                            #     ]
                             database_object = await crud.update(
                                 current_user, resource_id, object_update
                             )
@@ -643,6 +657,24 @@ class BaseNamespace(
                                     f"resource:{str(database_object.id)}",  # type: ignore[attr-defined]
                                     namespace=self.namespace,
                                 )
+                            # TBD: reuse from submit:create
+                            # TBD: check handling of public up to here in submit:update!
+                            # public = False
+                            # if access_policies:
+                            #     async with crud.policy_CRUD(
+                            #         session=crud.session
+                            #     ) as policy_crud:
+                            #         for policy in access_policies:
+                            #             await policy_crud.create(policy, current_user)
+                            #             public = policy.public or public
+                            # if hierarchies:
+                            #     async with crud.hierarchy_CRUD(
+                            #         session=crud.session
+                            #     ) as hierarchy_crud:
+                            #         for hierarchy in hierarchies:
+                            #             await hierarchy_crud.create(
+                            #                 hierarchy, current_user
+                            #             )
                             # transfer after update is necessary for other clients,
                             # which are in the same room of this resource_id to get the updated data
                             await self.server.emit(
@@ -651,27 +683,75 @@ class BaseNamespace(
                                 namespace=self.namespace,
                                 to=f"resource:{str(database_object.id)}",
                             )
+                            # rooms = "public" if public else None
+                            # if not rooms:
+                            #     rooms = [
+                            #         f"identity:{str(policy.identity_id)}"
+                            #         for policy in access_policies
+                            #     ]
+                            #     rooms += [
+                            #         f"resource:{str(hierarchy.parent_id)}"
+                            #         for hierarchy in hierarchies
+                            #     ]
+                            #     rooms += [
+                            #         f"resource:{str(hierarchy.child_id)}"
+                            #         for hierarchy in hierarchies
+                            #     ]
                             await self._emit_status(
                                 sid,
                                 {
                                     "success": "updated",
                                     "id": str(database_object.id),
                                 },
+                                # rooms=rooms,
                             )
                     else:
                         # if id is not present, it is a create
                         # validate data with create model
                         assert self.create_model is not None
                         object_create = self.create_model(**payload)
+                        # TBD: refactor to use the submitted hierarchies instead of parent_id?
                         parent_id = data.get("parent_id", None)
                         # TBD: add tests for inherit, public and public_action flags
                         # in protected resource hierarchy
                         # (There are tests for public in QuizNamespace already.)
                         inherit = data.get("inherit", False)
-                        public = data.get("public", False)
-                        public_action = data.get("public_action", Action.read)
+                        # public = data.get("public", False)
+                        # public_action = data.get("public_action", Action.read)
+                        access_policies = data.get("access_policies", [])
+                        hierarchies = data.get("hierarchies", [])
+                        public_policy = None
+                        for policy in access_policies:
+                            if policy.get("public", False):
+                                # Raise the error already
+                                # before the first access policy gets created in the database,
+                                # so it's not the first one that wins.
+                                if public_policy is not None:
+                                    raise ValueError(
+                                        "409: Only one public access policy is allowed."
+                                    )
+                                else:
+                                    public_policy = policy
+                        if public_policy is not None:
+                            access_policies.remove(public_policy)
+
+                        public = bool(public_policy)
+                        public_action = (
+                            public_policy["action"] if public_policy else None
+                        )
                         async with self.crud() as crud:
-                            # TBD: check the hierarchical resource system all the way through other events as well!
+                            # TBD: adjust the namespaces for the submit events
+                            # and write tests for hierarchies
+                            if crud.model.__name__ in ResourceType.list():
+                                hierarchies = [
+                                    ResourceHierarchy(**hierarchy)
+                                    for hierarchy in hierarchies
+                                ]
+                            elif crud.model.__name__ in IdentityType.list():
+                                hierarchies = [
+                                    IdentityHierarchy(**hierarchy)
+                                    for hierarchy in hierarchies
+                                ]
                             database_object = await crud.create(
                                 object_create,
                                 current_user,
@@ -680,6 +760,17 @@ class BaseNamespace(
                                 public,
                                 public_action,
                             )
+                            submitted_id = payload.get("id", None)
+                            for idx, policy in enumerate(access_policies):
+                                policy_resource_id = policy.get("resource_id")
+                                if policy_resource_id is None or str(
+                                    policy_resource_id
+                                ).startswith("new_"):
+                                    policy["resource_id"] = str(database_object.id)
+                                access_policies[idx] = AccessPolicyCreate(**policy)
+                                await crud.policy_crud.create(
+                                    access_policies[idx], current_user
+                                )
                             await self.server.enter_room(
                                 sid,
                                 f"resource:{str(database_object.id)}",
@@ -690,11 +781,13 @@ class BaseNamespace(
                                 {
                                     "success": "created",
                                     "id": str(database_object.id),
-                                    "submitted_id": payload.get("id", None),
+                                    "submitted_id": submitted_id,
                                 },
                             )
+                            # TBD: also emit to parent namespace for all parent_ids!
                             # transfer after create is necessary for other clients,
-                            # so they get notified through a "shared" event.
+                            # so they get notified through a "linked" event.
+                            # TBD: is this still necessary after adding hierarchies above?
                             if parent_id is not None:
                                 parent_types = await get_types_from_ids(
                                     crud.session, [parent_id]
@@ -750,12 +843,41 @@ class BaseNamespace(
                                     [f"resource:{str(parent_id)}"],
                                     namespace=parent_namespace,
                                 )
+                            rooms_shared_event = None
+                            # If the
+                            if public:
+                                if parent_id:
+                                    rooms_shared_event = [
+                                        f"parent:{str(parent_id)}",
+                                    ]
+                                else:
+                                    rooms_shared_event = "public"
+
+                            if not rooms_shared_event:
+                                rooms_shared_event = []
+                                rooms_shared_event += [
+                                    f"identity:{str(policy.identity_id)}"
+                                    for policy in access_policies
+                                ]
+                                # TBD: emit those in the parent_id's namespace!
+                                rooms_shared_event += [
+                                    f"resource:{str(hierarchy.parent_id)}"
+                                    for hierarchy in hierarchies
+                                ]
+                                # TBD: potentially check if child_id
+                                # belongs to another namespace and
+                                # emit there instead?
+                                rooms_shared_event += [
+                                    f"resource:{str(hierarchy.child_id)}"
+                                    for hierarchy in hierarchies
+                                ]
                             await self._emit_status(
                                 sid,
                                 {
                                     "success": "shared",
                                     "id": str(database_object.id),
                                 },
+                                rooms=rooms_shared_event,
                             )
                             # This previous implementation prevented the status to be sent to the clinet, which called [sid].
                             # await self.server.emit(

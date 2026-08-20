@@ -71,8 +71,7 @@ describe('EntityContainer', () => {
 		const publicAccessPolicy = {
 			resource_id: v4(),
 			action: Action.READ,
-			public: true,
-			public_action: Action.WRITE
+			public: true
 		};
 		const publicAccessPolicyKey = v4();
 		entityContainer.accessPolicies = { [publicAccessPolicyKey]: [publicAccessPolicy] };
@@ -138,6 +137,16 @@ describe('EntityContainer', () => {
 		expect(entityContainer.accessPolicies[existingEntityId]).toBeUndefined();
 	});
 
+	test('should add entity_id as default resource_id for pending access policies', () => {
+		const entityId = 'new_' + Math.random().toString(36).substring(2, 9);
+		const policy = { identity_id: v4(), action: Action.READ };
+		entityContainer.addPendingAccessPolicy(entityId, policy);
+		expect(entityContainer.accessPolicies[entityId]).toContainEqual({
+			resource_id: entityId,
+			...policy
+		});
+	});
+
 	test('should manage pending hierarchies', () => {
 		const entityId = 'new_' + Math.random().toString(36).substring(2, 9);
 		const hierarchy = { child_id: v4(), parent_id: v4() };
@@ -147,6 +156,16 @@ describe('EntityContainer', () => {
 		const hierarchyForExistingEntity = { child_id: existingChildId, parent_id: v4() };
 		entityContainer.addPendingHierarchy(existingChildId, hierarchyForExistingEntity);
 		expect(entityContainer.hierarchies[existingChildId]).toBeUndefined();
+	});
+
+	test('should add entity_id as default child_id for pending hierarchies', () => {
+		const entityId = 'new_' + Math.random().toString(36).substring(2, 9);
+		const hierarchy = { parent_id: v4() };
+		entityContainer.addPendingHierarchy(entityId, hierarchy);
+		expect(entityContainer.hierarchies[entityId]).toContainEqual({
+			child_id: entityId,
+			...hierarchy
+		});
 	});
 
 	test('should manage selections', () => {

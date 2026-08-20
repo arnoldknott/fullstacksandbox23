@@ -141,19 +141,24 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 	submitEntity(
 		entity?: T,
 		parent_id?: string,
-		inherit?: boolean,
-		publicAccess?: boolean,
-		publicAction?: Action
+		inherit?: boolean
+		// publicAccess?: boolean,
+		// publicAction?: Action
 	): void {
 		const autoSubmit = entity === undefined;
 		const target = autoSubmit ? this.pendingEntities[0] : entity;
 		if (!target) return;
+		const newId = target.id.startsWith('new_') ? target.id : undefined;
+		const access_policies = newId ? this.accessPolicies[target.id] : [];
+		const hierarchies = newId ? this.hierarchies[target.id] : [];
 		this.client.emit('submit', {
 			payload: target,
 			...(parent_id ? { parent_id } : {}),
 			...(inherit ? { inherit } : {}),
-			...(publicAccess ? { public: publicAccess } : {}),
-			...(publicAction ? { public_action: publicAction } : {})
+			...(access_policies ? { access_policies: access_policies } : {}),
+			...(hierarchies ? { hierarchies: hierarchies } : {})
+			// ...(publicAccess ? { public: publicAccess } : {}),
+			// ...(publicAction ? { public_action: publicAction } : {})
 		});
 		// If auto-submitting, immediately create a fresh pending entity
 		// to replace the one just submitted,
@@ -167,19 +172,12 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 	 */
 	submitBulk(
 		parent_id?: string,
-		inherit?: boolean,
-		publicAccess?: boolean,
-		publicAction?: Action
+		inherit?: boolean
+		// publicAccess?: boolean,
+		// publicAction?: Action
 	): void {
 		for (const pending of [...this.pendingEntities]) {
-			// TBD: refactor to use submitEntity
-			this.client.emit('submit', {
-				payload: pending,
-				...(parent_id ? { parent_id } : {}),
-				...(inherit ? { inherit } : {}),
-				...(publicAccess ? { public: publicAccess } : {}),
-				...(publicAction ? { public_action: publicAction } : {})
-			});
+			this.submitEntity(pending, parent_id, inherit);
 		}
 	}
 

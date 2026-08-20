@@ -5,6 +5,7 @@ import { Server, type Socket as ServerSocket } from 'socket.io';
 import { afterAll, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 import { WebSocketServer } from 'ws';
 
+import { Action } from './accessHandler';
 import {
 	SocketIO,
 	type SocketioConfiguration,
@@ -341,6 +342,50 @@ describe('SocketIO for DemoResources', () => {
 		expect(serverMessages).not.toContainEqual({
 			event: 'submit',
 			data: [expect.objectContaining({ payload: expect.objectContaining({ name: 'pending' }) })]
+		});
+	});
+
+	test('submits access policies and hierarchies when submitting a new entity', async () => {
+		const newEntity = { id: 'new_123', name: 'new entity' } as DemoResource;
+		testSocketio.entities = [newEntity];
+
+		const accessPolicy: AccessPolicy = {
+			resource_id: newEntity.id,
+			identity_id: 'identity-1',
+			action: Action.READ
+		};
+		testSocketio.addPendingAccessPolicy(newEntity.id, accessPolicy);
+
+		const hierarchy = { child_id: newEntity.id, parent_id: 'parent-1', order: 1 } as never;
+		testSocketio.addPendingHierarchy(newEntity.id, hierarchy);
+
+		testSocketio.submitEntity(newEntity);
+
+		await vi.waitFor(() => {
+			expect(serverMessages.length).toBe(1);
+		});
+
+		expect(serverMessages).toContainEqual({
+			event: 'submit',
+			data: [
+				expect.objectContaining({
+					payload: expect.objectContaining({ id: 'new_123', name: 'new entity' }),
+					access_policies: expect.arrayContaining([
+						expect.objectContaining({
+							resource_id: 'new_123',
+							identity_id: 'identity-1',
+							action: Action.READ
+						})
+					]),
+					hierarchies: expect.arrayContaining([
+						expect.objectContaining({
+							child_id: 'new_123',
+							parent_id: 'parent-1',
+							order: 1
+						})
+					])
+				})
+			]
 		});
 	});
 
