@@ -771,6 +771,18 @@ class BaseNamespace(
                                 await crud.policy_crud.create(
                                     access_policies[idx], current_user
                                 )
+                            # # TBD: add transferred hierarchies here and
+                            # # write tests for it
+                            # # currently the similar access_policy tests
+                            # # life in TestMessage!
+                            # if hierarchies:
+                            #     async with crud.hierarchy_CRUD(
+                            #         session=crud.session
+                            #     ) as hierarchy_crud:
+                            #         for hierarchy in hierarchies:
+                            #             await hierarchy_crud.create(
+                            #                 hierarchy, current_user
+                            #             )
                             await self.server.enter_room(
                                 sid,
                                 f"resource:{str(database_object.id)}",
@@ -859,18 +871,19 @@ class BaseNamespace(
                                     f"identity:{str(policy.identity_id)}"
                                     for policy in access_policies
                                 ]
-                                # TBD: emit those in the parent_id's namespace!
-                                rooms_shared_event += [
-                                    f"resource:{str(hierarchy.parent_id)}"
-                                    for hierarchy in hierarchies
-                                ]
-                                # TBD: potentially check if child_id
-                                # belongs to another namespace and
-                                # emit there instead?
-                                rooms_shared_event += [
-                                    f"resource:{str(hierarchy.child_id)}"
-                                    for hierarchy in hierarchies
-                                ]
+                                # # TBD: emit those in the parent_id's namespace!
+                                # # Hierarchies should emit a "linked" event, not a shared!
+                                # rooms_shared_event += [
+                                #     f"resource:{str(hierarchy.parent_id)}"
+                                #     for hierarchy in hierarchies
+                                # ]
+                                # # TBD: potentially check if child_id
+                                # # belongs to another namespace and
+                                # # emit there instead?
+                                # rooms_shared_event += [
+                                #     f"resource:{str(hierarchy.child_id)}"
+                                #     for hierarchy in hierarchies
+                                # ]
                             await self._emit_status(
                                 sid,
                                 {
