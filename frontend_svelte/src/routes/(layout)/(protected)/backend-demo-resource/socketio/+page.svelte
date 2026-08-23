@@ -85,6 +85,7 @@
 				access_right: Action.OWN
 			}
 		});
+		socketio.identities = data.payload.identities;
 		socketio.addSelection('editing');
 		// socketio.createUserHasSpecificAccessRightSelection('owner', Action.OWN);
 		// socketio.createUserHasSpecificAccessRightSelection('write', Action.WRITE);

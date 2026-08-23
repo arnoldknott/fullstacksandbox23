@@ -208,17 +208,13 @@ export interface DemoResourceWithCreationDate extends DemoResource {
 
 // Identity specific:
 
-export type Identity =
-	| {
-			id?: string;
-			name: string;
-			type: IdentityType.PUBLIC;
-	  }
-	| {
-			id: string;
-			name: string;
-			type: Exclude<IdentityType, IdentityType.PUBLIC>;
-	  };
+// `id` is always a reliable, unique string selector. The public identity is a
+// client-side singleton that uses the PUBLIC_IDENTITY_ID sentinel (see accessHandler.ts).
+export type Identity = {
+	id: string;
+	name: string;
+	type: IdentityType;
+};
 
 export type User = {
 	id: string;

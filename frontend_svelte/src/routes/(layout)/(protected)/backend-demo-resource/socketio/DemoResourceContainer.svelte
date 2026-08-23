@@ -198,7 +198,8 @@
 									<ShareItem
 										resourceId={thisDemoResource.id as string}
 										{shareOption}
-										share={socketio?.shareEntity.bind(socketio)}
+										{socketio}
+										// share={socketio?.shareEntity.bind(socketio)}
 										{closeShareMenu}
 									/>
 								{/each}

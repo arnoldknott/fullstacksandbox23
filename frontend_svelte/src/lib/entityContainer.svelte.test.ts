@@ -2,7 +2,7 @@ import { flushSync } from 'svelte';
 import { v4 } from 'uuid';
 import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 
-import { Action } from './accessHandler';
+import { Action, IdentityType, PUBLIC_IDENTITY_ID } from './accessHandler';
 import { EntityContainer } from './entityContainer.svelte';
 
 type AnyEntityExtended = {
@@ -51,7 +51,7 @@ describe('EntityContainer', () => {
 		entityContainer.pendingEntities = [];
 		expect(entityContainer.pendingEntities).toEqual([]);
 		// Identities:
-		const identity = { id: v4(), name: 'Test Identity' };
+		const identity = { id: v4(), name: 'Test Identity', type: IdentityType.USER };
 		entityContainer.identities = [identity];
 		expect(entityContainer.identities).toEqual([identity]);
 		entityContainer.identities = [];
@@ -71,8 +71,7 @@ describe('EntityContainer', () => {
 		const publicAccessPolicy = {
 			resource_id: v4(),
 			action: Action.READ,
-			public: true,
-			public_action: Action.WRITE
+			public: true
 		};
 		const publicAccessPolicyKey = v4();
 		entityContainer.accessPolicies = { [publicAccessPolicyKey]: [publicAccessPolicy] };
@@ -113,6 +112,60 @@ describe('EntityContainer', () => {
 		expect(begining_of_id).toBe('new');
 		entityContainer.pendingEntities = [];
 		expect(entityContainer.pendingEntities).toEqual([]);
+	});
+
+	test('should manage pending access policies', () => {
+		const entityId = 'new_' + Math.random().toString(36).substring(2, 9);
+		const policy = { resource_id: entityId, identity_id: v4(), action: Action.READ };
+		entityContainer.addPendingAccessPolicy(entityId, policy);
+		expect(entityContainer.accessPolicies[entityId]).toContainEqual(policy);
+		const public_policy = {
+			resource_id: entityId,
+			identity_id: PUBLIC_IDENTITY_ID,
+			action: Action.READ,
+			public: true
+		};
+		entityContainer.addPendingAccessPolicy(entityId, public_policy);
+		expect(entityContainer.accessPolicies[entityId]).toContainEqual(public_policy);
+		const existingEntityId = v4();
+		const policyForExistingEntity = {
+			resource_id: existingEntityId,
+			identity_id: v4(),
+			action: Action.WRITE
+		};
+		entityContainer.addPendingAccessPolicy(existingEntityId, policyForExistingEntity);
+		expect(entityContainer.accessPolicies[existingEntityId]).toBeUndefined();
+	});
+
+	test('should add entity_id as default resource_id for pending access policies', () => {
+		const entityId = 'new_' + Math.random().toString(36).substring(2, 9);
+		const policy = { identity_id: v4(), action: Action.READ };
+		entityContainer.addPendingAccessPolicy(entityId, policy);
+		expect(entityContainer.accessPolicies[entityId]).toContainEqual({
+			resource_id: entityId,
+			...policy
+		});
+	});
+
+	test('should manage pending hierarchies', () => {
+		const entityId = 'new_' + Math.random().toString(36).substring(2, 9);
+		const hierarchy = { child_id: v4(), parent_id: v4() };
+		entityContainer.addPendingHierarchy(entityId, hierarchy);
+		expect(entityContainer.hierarchies[entityId]).toContainEqual(hierarchy);
+		const existingChildId = v4();
+		const hierarchyForExistingEntity = { child_id: existingChildId, parent_id: v4() };
+		entityContainer.addPendingHierarchy(existingChildId, hierarchyForExistingEntity);
+		expect(entityContainer.hierarchies[existingChildId]).toBeUndefined();
+	});
+
+	test('should add entity_id as default child_id for pending hierarchies', () => {
+		const entityId = 'new_' + Math.random().toString(36).substring(2, 9);
+		const hierarchy = { parent_id: v4() };
+		entityContainer.addPendingHierarchy(entityId, hierarchy);
+		expect(entityContainer.hierarchies[entityId]).toContainEqual({
+			child_id: entityId,
+			...hierarchy
+		});
 	});
 
 	test('should manage selections', () => {
