@@ -224,6 +224,8 @@
 							intentionAnswers = [myIntention, ...intentionAnswers];
 							// socketioIntention.addEntity(myIntention);
 							socketioIntention.submitEntity(
+								// Note: this is an obsolete call-pattern, use payload,
+								access_policies and hierarchies instead of publicAccess and publicAction
 								myIntention,
 								intentionQuestionId,
 								true,
@@ -385,12 +387,14 @@
 							if (event.key === 'Enter' && !event.shiftKey) {
 								event.preventDefault();
 								// socketioComment.addEntity(myComment);
+								socketioComment.addPendingAccessPolicy(socketioComment.pendingEntities[0].id, {
+									public: true,
+									action: Action.READ
+								});
 								socketioComment.submitEntity(
 									socketioComment.pendingEntities[0],
 									commentsQuestionId,
-									true,
-									true,
-									Action.READ
+									true
 								);
 								socketioComment.createPending();
 							}

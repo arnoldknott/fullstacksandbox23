@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { AccessHandler, Action } from '$lib/accessHandler';
-	import type { AccessPolicy, AccessShareOption } from '$lib/types';
+	import { type SocketIO } from '$lib/socketio.svelte';
+	import type { AccessShareOption } from '$lib/types';
 	import { initDropdown } from '$lib/userInterface';
 	// import { enhance } from '$app/forms';
 	// import type { ActionResult } from '@sveltejs/kit';
@@ -8,14 +9,18 @@
 	let {
 		resourceId,
 		shareOption = $bindable(),
-		share,
+		shareFormActionEndpoint,
+		// share,
+		socketio,
 		closeShareMenu,
 		wide
 		// handleRightsChangeResponse
 	}: {
 		resourceId: string;
 		shareOption: AccessShareOption;
-		share?: (accessPolicy: AccessPolicy) => void;
+		shareFormActionEndpoint?: string;
+		// share?: (accessPolicy: AccessPolicy) => void;
+		socketio?: SocketIO;
 		// handleRightsChangeResponse?: (result: ActionResult, update: () => void) => void;
 		closeShareMenu?: () => void;
 		wide?: boolean;
@@ -82,22 +87,32 @@
 			name="id"
 			type="submit"
 			value={resourceId}
-			formaction={!share
-				? `?/share&identity-id=${shareOption.identity_id}&action=${desiredActions(selectedAction).action}&new-action=${desiredActions(selectedAction).new_action}`
+			formaction={shareFormActionEndpoint
+				? `?${shareFormActionEndpoint}&identity-id=${shareOption.identity_id}&action=${desiredActions(selectedAction).action}&new-action=${desiredActions(selectedAction).new_action}`
 				: undefined}
 			onclick={() => {
-				if (share) {
-					share({
-						resource_id: resourceId,
-						identity_id: shareOption.identity_id,
-						action: desiredActions(selectedAction).action,
-						new_action: desiredActions(selectedAction).new_action,
-						public: shareOption.public
-					});
-					shareOption.action = desiredActions(selectedAction).new_action;
-					if (closeShareMenu) {
-						closeShareMenu();
+				if (socketio) {
+					if (resourceId.startsWith('new_')) {
+						socketio.addPendingAccessPolicy(resourceId, {
+							resource_id: resourceId,
+							identity_id: shareOption.identity_id,
+							action: desiredActions(selectedAction).action,
+							new_action: desiredActions(selectedAction).new_action,
+							public: shareOption.public
+						});
+					} else {
+						socketio.shareEntity({
+							resource_id: resourceId,
+							identity_id: shareOption.identity_id,
+							action: desiredActions(selectedAction).action,
+							new_action: desiredActions(selectedAction).new_action,
+							public: shareOption.public
+						});
 					}
+					shareOption.action = desiredActions(selectedAction).new_action;
+				}
+				if (closeShareMenu) {
+					closeShareMenu();
 				}
 			}}
 			aria-label={String(selectedAction) || 'remove'}

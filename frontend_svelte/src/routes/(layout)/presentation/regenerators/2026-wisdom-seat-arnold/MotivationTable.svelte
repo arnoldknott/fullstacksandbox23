@@ -83,6 +83,7 @@
 			onclick={() => {
 				// sendMotvationNumerical(0);
 				// socketio?.addEntity({ id: motivationId, value: 0 });
+				// Note: this is an obsolete call signature! Use addPendingAccessPolicy and submitEntity instead.
 				// socketio?.submitEntity({ id: motivationId, value: 0 }, questionId, true, true, Action.READ);
 				// motivationId = 'new_' + Math.random().toString(36).substring(2, 9);
 			}}

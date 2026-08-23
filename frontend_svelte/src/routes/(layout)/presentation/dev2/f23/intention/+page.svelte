@@ -221,12 +221,14 @@
 							if (event.key === 'Enter' && !event.shiftKey) {
 								event.preventDefault();
 								// socketioIntention.addEntity(myIntention);
+								socketioIntention.addPendingAccessPolicy(socketioIntention.pendingEntities[0].id, {
+									public: true,
+									action: Action.READ
+								});
 								socketioIntention.submitEntity(
 									socketioIntention.pendingEntities[0],
 									intentionQuestionId,
-									true,
-									true,
-									Action.READ
+									true
 								);
 								socketioIntention.createPending();
 							}
@@ -385,12 +387,14 @@
 						onkeydown={(event) => {
 							if (event.key === 'Enter' && !event.shiftKey) {
 								event.preventDefault();
+								socketioComment.addPendingAccessPolicy(socketioComment.pendingEntities[0].id, {
+									public: true,
+									action: Action.READ
+								});
 								socketioComment.submitEntity(
 									socketioComment.pendingEntities[0],
 									commentsQuestionId,
-									true,
-									true,
-									Action.READ
+									true
 								);
 								socketioComment.createPending();
 							}

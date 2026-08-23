@@ -343,9 +343,10 @@ async def register_one_identity():
     """Registers a resource id and its type in the database."""
 
     async def _register_one_identity(
-        identity_id: UUID, model: type[BaseSQLModel] = Group
+        identity_id: UUID | None = None, model: type[BaseSQLModel] = Group
     ):
         """Registers a resource id and its type in the database."""
+        identity_id = identity_id or uuid4()
         await register_entity_to_identity_type_link_table(identity_id, model)
         return identity_id
 

@@ -25,7 +25,8 @@
 		// console.log('=== Sending motivation value ===');
 		// console.log(value);
 		// socketio?.addEntity({ id: motivationId, value: value });
-		socketio?.submitEntity({ id: motivationId, value: value }, questionId, true, true, Action.READ);
+		socketio?.addPendingAccessPolicy(motivationId, { public: true, action: Action.READ });
+		socketio?.submitEntity({ id: motivationId, value: value }, questionId, true);
 		motivationId = 'new_' + Math.random().toString(36).substring(2, 9);
 	};
 

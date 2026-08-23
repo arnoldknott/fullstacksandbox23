@@ -33,6 +33,7 @@
 	// 	// console.log('=== Sending motivation value ===');
 	// 	// console.log(value);
 	// 	// socketio?.addEntity({ id: motivationId, value: value });
+	// Note: this is an obsolete call signature! Use addPendingAccessPolicy and submitEntity instead.
 	// 	socketio?.submitEntity({ id: motivationId, value: value }, questionId, true, true, Action.READ);
 	// 	motivationId = 'new_' + Math.random().toString(36).substring(2, 9);
 	// };
