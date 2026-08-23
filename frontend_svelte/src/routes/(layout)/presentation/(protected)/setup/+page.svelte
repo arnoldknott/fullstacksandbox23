@@ -21,7 +21,8 @@
 
 	let { data }: { data: PageData } = $props();
 
-	// uses the one, that gets set in sidebar and communicated through the serach params of the url
+	// uses the one, that gets set in sidebar and communicated
+	// through the search params of the url
 	let debug = $derived(page.url.searchParams.get('debug') === 'true' ? true : false);
 
 	$effect(() => {
