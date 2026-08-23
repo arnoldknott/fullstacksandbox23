@@ -1,12 +1,51 @@
 <script lang="ts">
+	import { onDestroy, onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
 
 	// import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import Card from '$components/Card.svelte';
+	import JsonData from '$components/JsonData.svelte';
+	import { SocketIO } from '$lib/socketio.svelte';
+	import type { Identity, Question } from '$lib/types';
 	import { initTabs } from '$lib/userInterface';
 
 	import FormElement from '../FormElement.svelte';
+
+	let {
+		parentId,
+		questions = [],
+		identities = []
+	}: { parentId?: string; questions: Question[]; identities: Identity[] } = $props();
+
+	// uses the one, that gets set in sidebar and communicated
+	// through the search params of the url
+	let debug = $derived(page.url.searchParams.get('debug') === 'true' ? true : false);
+
+	$effect(() => {
+		debug = page.url.searchParams.get('debug') === 'true';
+	});
+
+	let socketioQuestions: SocketIO<Question> = $state()!;
+
+	onMount(() => {
+		socketioQuestions = new SocketIO<Question>({
+			namespace: '/question',
+			sessionId: page.data?.session?.sessionId || '',
+			parentId: parentId,
+			queryParams: { 'request-access-data': true }
+		});
+		socketioQuestions.identities = identities;
+		socketioQuestions.createLinkedSelection('linkedToPresentation');
+		socketioQuestions.createLinkedSelection('notLinkedToPresentation', true);
+	});
+
+	$effect(() => {
+		socketioQuestions.entities = questions ?? [];
+	});
+	onDestroy(() => {
+		socketioQuestions?.client.disconnect();
+	});
 
 	let hideNewQuestionCard: boolean = $state(
 		!(page.url.searchParams.get('add-question') === 'true')
@@ -167,9 +206,45 @@ https://svelte.dev/e/transition_slide_display
 </Card>
 
 <Card id="linked-questions" title="Linked Questions" extraClasses="label-large">
+	{#each socketioQuestions?.getSelectedEntities('linkedToPresentation') || [] as linkedQuestion, idx (idx)}
+		<div class="linked-question">
+			<p>{linkedQuestion.question}</p>
+		</div>
+	{/each}
 	<p>
 		Potentially as an accordion with the answers in the panel? Adding a question and opening sidebar
 		to select existing questions - for mode copy (don't keep the original answers and don't keep in
 		sync) or link (keeps answers in sync)
 	</p>
 </Card>
+
+{#if debug}
+	<Card
+		id="debugQuestions"
+		title="Debug Questions"
+		extraClasses="label-large bg-warning-container/30 text-warning-container-content/80 border-warning-container"
+	>
+		<div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+			<div>
+				<p class="label-prominent">Entities</p>
+				<JsonData data={socketioQuestions?.entities ?? []} />
+			</div>
+			<div>
+				<p class="label-prominent">Pending Entities</p>
+				<JsonData data={socketioQuestions?.pendingEntities ?? []} />
+				<p class="label-prominent">Linked Entities</p>
+				<JsonData data={socketioQuestions?.getSelectedEntities('linkedToPresentation') ?? []} />
+				<p class="label-prominent">Not Linked Entities</p>
+				<JsonData data={socketioQuestions?.getSelectedEntities('notLinkedToPresentation') ?? []} />
+			</div>
+			<div>
+				<p class="label-prominent">Access Policies</p>
+				<JsonData data={socketioQuestions?.accessPolicies ?? []} />
+				<p class="label-prominent">Access Rights</p>
+				<JsonData data={socketioQuestions?.accessRights ?? []} />
+				<p class="label-prominent">Identities</p>
+				<JsonData data={socketioQuestions?.identities ?? []} />
+			</div>
+		</div>
+	</Card>
+{/if}
