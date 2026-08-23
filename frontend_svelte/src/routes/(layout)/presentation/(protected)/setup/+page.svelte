@@ -9,7 +9,6 @@
 	import Display from '$components/Display.svelte';
 	import JsonData from '$components/JsonData.svelte';
 	import Title from '$components/Title.svelte';
-	// import JsonData from '$components/JsonData.svelte';
 	import { AccessHandler, Action } from '$lib/accessHandler';
 	import { SocketIO } from '$lib/socketio.svelte';
 	import type { AccessShareOption, PresentationExtended } from '$lib/types';
@@ -22,6 +21,7 @@
 
 	let { data }: { data: PageData } = $props();
 
+	// uses the one, that gets set in sidebar and communicated through the serach params of the url
 	let debug = $derived(page.url.searchParams.get('debug') === 'true' ? true : false);
 
 	$effect(() => {
@@ -50,23 +50,6 @@
 		);
 
 		socketioPresentations.identities = data.payload.identities;
-
-		// TBD: remove this, that's a workaround
-		// and use the share option emit with all possible options.
-		// socketioPresentations.client.on('status', (data: SocketioStatus) => {
-		// 	if ('success' in data && data.success === 'created') {
-		// 		const publicShare = shareOptions?.filter(
-		// 			(shareOption) => shareOption.identity_type === IdentityType.PUBLIC
-		// 		);
-		// 		if (publicShare?.[0]?.action) {
-		// 			socketioPresentations?.shareEntity({
-		// 				resource_id: data.id,
-		// 				action: publicShare?.[0]?.action,
-		// 				public: true
-		// 			});
-		// 		}
-		// 	}
-		// });
 	});
 
 	$effect(() => {
@@ -87,39 +70,6 @@
 		hideNewPresentationCard = true;
 	};
 
-	// const shareOptions: AccessShareOption[] = $state([
-	// 	{
-	// 		identity_id: undefined,
-	// 		identity_name: 'Public',
-	// 		identity_type: IdentityType.PUBLIC,
-	// 		action: Action.READ,
-	// 		public: true
-	// 	},
-	// 	{
-	// 		identity_id: 'some-group-id',
-	// 		identity_name: 'Some Group Name',
-	// 		identity_type: IdentityType.GROUP,
-	// 		action: Action.WRITE
-	// 	},
-	// 	{
-	// 		identity_id: 'some-teams-id',
-	// 		identity_name: 'A Microsoft Team',
-	// 		identity_type: IdentityType.MICROSOFT_TEAM
-	// 	},
-	// 	{
-	// 		identity_id: 'Ueber Group 1',
-	// 		identity_name: 'Some complete University',
-	// 		identity_type: IdentityType.UEBER_GROUP
-	// 	},
-	// 	{
-	// 		identity_id: 'Ueber Group 2',
-	// 		identity_name: 'A big School',
-	// 		identity_type: IdentityType.UEBER_GROUP
-	// 	}
-	// ]);
-	// let shareOptions: AccessShareOption[] | undefined = $derived(
-	// 	AccessHandler.createShareOptions(data.payload.identities, [])
-	// );
 	let shareOptionsForNewPresentation: AccessShareOption[] = $derived(
 		AccessHandler.createShareOptions(
 			socketioPresentations.identities,
@@ -238,7 +188,6 @@
 			<FormElement title="Access" description={accessDescription} extraClasses="max-w-100">
 				{@render warning()} Only the public access gets currently submitted with the presentation!
 				<ul class="bg-base-150 shadow-base-shadow overflow-y-auto rounded-lg p-2 shadow-inner">
-					<!-- {#if shareOptions} -->
 					{#each shareOptionsForNewPresentation, i (i)}
 						<ShareItem
 							resourceId={socketioPresentations.pendingEntities[0].id}
@@ -249,7 +198,6 @@
 							wide
 						/>
 					{/each}
-					<!-- {/if} -->
 				</ul>
 			</FormElement>
 		</div>
