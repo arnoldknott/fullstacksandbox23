@@ -87,6 +87,7 @@ export class AccessHandler {
 				const isPublic = identity.type === IdentityType.PUBLIC;
 				return {
 					// the public identity has no backend identity_id: it maps to the `public` flag
+					// TBD: refactor to use PUBLIC_IDENTITY_ID
 					identity_id: isPublic ? undefined : identity.id,
 					identity_name: identity.name,
 					identity_type: identity.type,
