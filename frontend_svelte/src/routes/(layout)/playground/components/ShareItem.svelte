@@ -9,7 +9,7 @@
 	let {
 		resourceId,
 		shareOption = $bindable(),
-		shareFromActionEndpoint,
+		shareFormActionEndpoint,
 		// share,
 		socketio,
 		closeShareMenu,
@@ -18,7 +18,7 @@
 	}: {
 		resourceId: string;
 		shareOption: AccessShareOption;
-		shareFromActionEndpoint?: string;
+		shareFormActionEndpoint?: string;
 		// share?: (accessPolicy: AccessPolicy) => void;
 		socketio?: SocketIO;
 		// handleRightsChangeResponse?: (result: ActionResult, update: () => void) => void;
@@ -87,8 +87,8 @@
 			name="id"
 			type="submit"
 			value={resourceId}
-			formaction={shareFromActionEndpoint
-				? `?${shareFromActionEndpoint}&identity-id=${shareOption.identity_id}&action=${desiredActions(selectedAction).action}&new-action=${desiredActions(selectedAction).new_action}`
+			formaction={shareFormActionEndpoint
+				? `?${shareFormActionEndpoint}&identity-id=${shareOption.identity_id}&action=${desiredActions(selectedAction).action}&new-action=${desiredActions(selectedAction).new_action}`
 				: undefined}
 			onclick={() => {
 				if (socketio) {

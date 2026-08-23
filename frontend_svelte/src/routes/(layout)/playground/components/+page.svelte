@@ -839,7 +839,7 @@
 								<ShareItem
 									resourceId="actionButtonShareResourceId"
 									{shareOption}
-									shareFromActionEndpoint="/share"
+									shareFormActionEndpoint="/share"
 									{handleRightsChangeResponse}
 								/>
 							{/each} -->
@@ -857,7 +857,7 @@
 									<ShareItem
 										resourceId="actionButtonShareResourceId"
 										{shareOption}
-										shareFromActionEndpoint="/share"
+										shareFormActionEndpoint="/share"
 									/>
 								{/each}
 							</form>
@@ -981,7 +981,7 @@
 								<ShareItem
 									resourceId="dropdownShareDropdownResourceId"
 									{shareOption}
-									shareFromActionEndpoint="/share"
+									shareFormActionEndpoint="/share"
 									{handleRightsChangeResponse}
 								/>
 							{/each} -->
@@ -1000,7 +1000,7 @@
 									<ShareItem
 										resourceId="dropdownShareDropdownResourceId"
 										{shareOption}
-										shareFromActionEndpoint="/share"
+										shareFormActionEndpoint="/share"
 									/>
 								{/each}
 							</form>
@@ -1048,7 +1048,7 @@
 						<!-- <ShareItem
 							resourceId="dropdownShareResourceId"
 							shareOption={shareOptions[0]}
-							shareFromActionEndpoint="/share"
+							shareFormActionEndpoint="/share"
 							{handleRightsChangeResponse}
 						/> -->
 						<form
@@ -1064,7 +1064,7 @@
 							<ShareItem
 								resourceId="dropdownShareResourceId"
 								shareOption={shareOptions[0]}
-								shareFromActionEndpoint="/share"
+								shareFormActionEndpoint="/share"
 							/>
 						</form>
 					</ul>
