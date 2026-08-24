@@ -5,16 +5,23 @@
 
 	let {
 		title,
+		mandatory = false,
 		children,
 		description,
 		extraClasses
-	}: { title: string; children: Snippet; description?: Snippet; extraClasses?: string } = $props();
+	}: {
+		title: string;
+		mandatory?: boolean;
+		children: Snippet;
+		description?: Snippet;
+		extraClasses?: string;
+	} = $props();
 </script>
 
 <dl class={extraClasses}>
 	<dt>
 		<div class="title text-base-content">
-			{title}
+			{title}{#if mandatory}<span class="text-error ml-1">*</span>{/if}
 			{#if description}
 				<HelpTooltip text={description} />
 			{/if}
