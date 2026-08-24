@@ -357,7 +357,7 @@ https://svelte.dev/e/transition_slide_display
 					<span class="icon-[fa6-solid--plus] size-5"></span>
 					<!-- <span class="hidden ">Add</span> -->
 					<span class="hidden sm:inline">Add new</span>
-					<span class="hidden md:inline">presentation</span>
+					<span class="hidden md:inline">question</span>
 				</button>
 			{/if}
 			<div class="join shadow-outline rounded-full shadow-sm">
