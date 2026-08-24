@@ -142,6 +142,11 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 		entity?: T,
 		parent_id?: string,
 		inherit?: boolean
+		// TBD: consider whether to assign a default from the pendingSubmitOptions here
+		// or in constructor or below in the emit('submit')?
+		// inherit: boolean = this.pendingSubmitOptions?.inherit || false
+		// Also for 'parent_id', publicAccess and publicAction -
+		// or use the pending AccessPolicies and pendingHierarchies for that?
 		// publicAccess?: boolean,
 		// publicAction?: Action
 	): void {
@@ -155,6 +160,7 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 			payload: target,
 			...(parent_id ? { parent_id } : {}),
 			...(inherit ? { inherit } : {}),
+			// ...(inherit ? { inherit } : { inherit: this.pendingSubmitOptions?.inherit || false }),
 			...(access_policies ? { access_policies: access_policies } : {}),
 			...(hierarchies ? { hierarchies: hierarchies } : {})
 			// ...(publicAccess ? { public: publicAccess } : {}),

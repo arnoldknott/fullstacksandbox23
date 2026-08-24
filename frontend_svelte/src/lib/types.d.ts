@@ -170,6 +170,7 @@ export interface Presentation {
 	id: string;
 	source: string;
 	path?: string;
+	questions?: Question[];
 }
 
 export interface Question {
