@@ -2,7 +2,6 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { fade, slide } from 'svelte/transition';
 
-	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import Card from '$components/Card.svelte';
@@ -12,11 +11,11 @@
 	import { AccessHandler, Action } from '$lib/accessHandler';
 	import { SocketIO } from '$lib/socketio.svelte';
 	import type { AccessShareOption, PresentationExtended } from '$lib/types';
-	import { initDropdown } from '$lib/userInterface';
 
 	import IdBadge from '../../../(protected)/IdBadge.svelte';
 	import ShareItem from '../../../playground/components/ShareItem.svelte';
 	import type { PageData } from './$types';
+	import ActionButtons from './ActionButtons.svelte';
 	import FormElement from './FormElement.svelte';
 
 	let { data }: { data: PageData } = $props();
@@ -81,8 +80,6 @@
 
 	// For showing existing presentations:
 	let viewMode = $state<'preview' | 'grid' | 'list'>('list');
-
-	let actionButtonShareMenu: HTMLElement | null = $state(null);
 </script>
 
 <Display id="overview-presentations">Presentations</Display>
@@ -263,89 +260,6 @@
 	</div>
 {/snippet}
 
-{#snippet actionButtons(resourceId: string, accessRight: Action | undefined)}
-	<div class="join inline-flex flex-row">
-		<!-- <a
-			href={resolve('/(layout)/presentation/(protected)/setup/[id]', {
-				id: path || resourceId
-			})}
-			aria-label={`Setup presentation ${path || resourceId}`}
-			class=""
-		> -->
-		<!-- TBD: hide the buttons, where the access_right for the logged in user are not enough to execute the action -->
-		{#if accessRight === Action.OWN || accessRight === Action.WRITE}
-			<button
-				class="btn btn-secondary-container btn-gradient btn-sm text-secondary-container-content join-item shadow-outline {accessRight ===
-				Action.OWN
-					? 'rounded-l-full'
-					: 'rounded-full'} shadow-sm"
-				aria-label="Edit Button"
-				onclick={() =>
-					goto(resolve('/(layout)/presentation/(protected)/setup/[id]', { id: resourceId }))}
-			>
-				<span class="icon-[tabler--settings] size-4"></span>
-				<!-- <span
-					class="hidden 2xl:block">Edit</span
-				> -->
-			</button>
-
-			<!-- </a> -->
-			{#if accessRight === Action.OWN}
-				<div
-					class="dropdown join-item relative inline-flex [--auto-close:inside] [--placement:top]"
-					bind:this={actionButtonShareMenu}
-					{@attach initDropdown}
-				>
-					<button
-						id="action-share"
-						class="dropdown-toggle btn btn-secondary-container btn-gradient btn-sm text-secondary-container-content shadow-outline w-full rounded-none shadow-sm"
-						aria-haspopup="menu"
-						aria-expanded="false"
-						aria-label="Share with"
-					>
-						<span class="icon-[tabler--share-2] size-4"></span>
-						<!-- <span class="hidden 2xl:block"
-					>Share</span
-				> -->
-						<span class="icon-[tabler--chevron-up] dropdown-open:rotate-180 size-3"></span>
-					</button>
-					<ul
-						class="dropdown-menu bg-base-300 shadow-outline dropdown-open:opacity-100 hidden min-w-[15rem] shadow-xs"
-						role="menu"
-						aria-orientation="vertical"
-						aria-labelledby="action-share"
-					>
-						{#each AccessHandler.createShareOptions(socketioPresentations.identities, socketioPresentations.accessPolicies[resourceId]) as shareOption, i (i)}
-							<ShareItem
-								{resourceId}
-								{shareOption}
-								socketio={socketioPresentations}
-								// share={socketioPresentations?.shareEntity.bind(socketioPresentations)}
-								closeShareMenu={() => window.HSDropdown.close(actionButtonShareMenu)}
-							/>
-						{/each}
-						<!-- <li class="dropdown-footer gap-2">
-								<button
-									class="btn dropdown-item btn-text text-secondary content-center justify-start"
-									>... more options</button
-								>
-							</li> -->
-					</ul>
-				</div>
-				<button
-					class="btn btn-error-container btn-gradient btn-sm bg-error-container/70 hover:bg-error-container/50 focus:bg-error-container/50 text-error-container-content join-item shadow-outline rounded-r-full border-0 shadow-sm"
-					aria-label="Delete Button"
-					name="id"
-					onclick={() => !resourceId || socketioPresentations?.deleteEntity(resourceId)}
-				>
-					<span class="icon-[tabler--trash] size-4"></span>
-					<!-- <span class="hidden 2xl:block">Delete</span> -->
-				</button>
-			{/if}
-		{/if}
-	</div>
-{/snippet}
-
 <Card id="existing-presentations" header={existingPresentationsHeader} extraClasses="mt-6">
 	<div class="w-full overflow-x-auto {viewMode !== 'preview' ? 'hidden' : ''}">
 		<p class="bg-warning text-warning-content rounded-lg p-4">Preview mode is not developed yet</p>
@@ -425,12 +339,13 @@
 							<td>[Num]</td>
 							<td>[Num]</td>
 							<td>[Size]</td>
-							<td class="w-px px-0 py-1 text-left align-middle whitespace-nowrap"
-								>{@render actionButtons(
-									presentation.id,
-									socketioPresentations?.accessRights[presentation.id]
-								)}</td
-							>
+							<td class="w-px px-0 py-1 text-left align-middle whitespace-nowrap">
+								<ActionButtons
+									resourceId={presentation.id}
+									accessRight={socketioPresentations?.accessRights[presentation.id]}
+									socketio={socketioPresentations}
+								/>
+							</td>
 						</tr>
 					{/each}
 				{/if}
