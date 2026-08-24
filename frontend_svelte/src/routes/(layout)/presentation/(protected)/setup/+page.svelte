@@ -114,14 +114,14 @@
 {#snippet newPresentationFooter()}
 	<div class="ml-5 flex flex-row justify-end gap-4">
 		<button
-			class="btn btn-secondary btn-gradient shadow-outline rounded-lg shadow"
+			class="btn btn-secondary-container btn-gradient shadow-outline rounded-full shadow"
 			aria-label="Cancel"
 			onclick={() => {
 				hideNewPresentationCard = true;
 			}}><span class="icon-[tabler--x] size-5"></span>Cancel</button
 		>
 		<button
-			class="btn btn-primary btn-gradient shadow-outline rounded-lg shadow"
+			class="btn btn-primary-container btn-gradient shadow-outline rounded-full shadow"
 			aria-label="Save new presentation"
 			onclick={() => submitPresentation()}
 			><span class="icon-[tabler--send-2] size-5"></span>Save</button
