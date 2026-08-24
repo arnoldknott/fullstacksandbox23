@@ -159,7 +159,7 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 		this.client.emit('submit', {
 			payload: target,
 			...(parent_id ? { parent_id } : {}),
-			...(inherit ? { inherit } : { }),
+			...(inherit ? { inherit } : {}),
 			// ...(inherit ? { inherit } : { inherit: this.pendingSubmitOptions?.inherit || false }),
 			...(access_policies ? { access_policies: access_policies } : {}),
 			...(hierarchies ? { hierarchies: hierarchies } : {})
