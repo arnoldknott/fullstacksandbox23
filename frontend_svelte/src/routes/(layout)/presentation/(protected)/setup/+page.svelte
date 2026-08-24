@@ -71,6 +71,7 @@
 		hideNewPresentationCard = true;
 	};
 
+	// TBD: move this calculation to EntityContainer (or AccessHandler) class!
 	let shareOptionsForNewPresentation: AccessShareOption[] = $derived(
 		AccessHandler.createShareOptions(
 			socketioPresentations.identities,
@@ -187,7 +188,6 @@
 			</div>
 
 			<FormElement title="Access" description={accessDescription} extraClasses="max-w-100">
-				{@render warning()} Only the public access gets currently submitted with the presentation!
 				<ul class="bg-base-150 shadow-base-shadow overflow-y-auto rounded-lg p-2 shadow-inner">
 					{#each shareOptionsForNewPresentation, i (i)}
 						<ShareItem
@@ -421,7 +421,7 @@
 							<td><IdBadge id="intern" /></td>
 							<!-- <td>{presentation.source}</td> -->
 							<td>[Access]</td>
-							<td>[Num]</td>
+							<td>{presentation.questions?.length ?? 0}</td>
 							<td>[Num]</td>
 							<td>[Num]</td>
 							<td>[Size]</td>
