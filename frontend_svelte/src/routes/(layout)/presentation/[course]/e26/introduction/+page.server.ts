@@ -1,5 +1,3 @@
-
-
 import { backendAPI } from '$lib/server/apis/backendApi';
 import type { Presentation, Question } from '$lib/types';
 
@@ -10,13 +8,13 @@ export const load: PageServerLoad = async ({ url }) => {
 	const presentationResponse = await backendAPI.get(null, '/presentation/path/' + presentationPath);
 	// let questionMotivationId: string = '';
 	// let questionCommentsId: string = '';
-    const payload = {
-        presentation: {} as Presentation,
-        questions: [] as Question[]
-    };
+	const payload = {
+		presentation: {} as Presentation,
+		questions: [] as Question[]
+	};
 	if (presentationResponse.status === 200) {
 		const presentationData = await presentationResponse.json();
-        payload.presentation = presentationData
+		payload.presentation = presentationData;
 		// console.log('=== 🧦 presentation - [course] - e26 ===');
 		// console.log(presentationData);
 		// questionMotivationId =
