@@ -13,8 +13,6 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		identities: [] as Identity[]
 	};
 	const presentationId = url.pathname.split('/presentation/setup/')[1];
-	console.log('=== 🧦 presentation - setup - presentationId ===');
-	console.log(presentationId);
 	const presentationResponse = await backendAPI.get(sessionId, '/presentation/' + presentationId);
 	if (presentationResponse.status === 200) {
 		const presentationData = await presentationResponse.json();
