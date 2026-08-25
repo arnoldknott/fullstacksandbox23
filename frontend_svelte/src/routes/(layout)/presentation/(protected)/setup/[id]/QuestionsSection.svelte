@@ -68,7 +68,10 @@
 				namespace: '/question',
 				sessionId: page.data.session.sessionId,
 				parentId: parentId,
-				queryParams: { 'request-access-data': true }
+				queryParams: {
+					'identity-ids': identities.map((identity) => identity.id).join(','),
+					'request-access-data': true
+				}
 			},
 			{
 				inherit: inheritPending,
@@ -272,6 +275,7 @@ https://svelte.dev/e/transition_slide_display
 									// No need to bind, as it is anyways handled through the entityContainer's methods and the socketio's submitEntity method.
 									shareOption={shareOptionsForNewQuestion[i]}
 									socketio={socketioQuestions}
+									actions={[Action.OWN, Action.WRITE, Action.CONNECT, Action.READ, undefined]}
 									// share={socketioQuestions?.shareEntity.bind(socketioQuestions)}
 									wide
 								/>
@@ -459,6 +463,7 @@ https://svelte.dev/e/transition_slide_display
 									resourceId={question.id}
 									accessRight={socketioQuestions?.accessRights[question.id]}
 									socketio={socketioQuestions}
+									actions={[Action.OWN, Action.WRITE, Action.CONNECT, Action.READ, undefined]}
 								/>
 							</td>
 						</tr>

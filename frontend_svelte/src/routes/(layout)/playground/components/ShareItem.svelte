@@ -13,6 +13,7 @@
 		// share,
 		socketio,
 		closeShareMenu,
+		actions = [Action.OWN, Action.WRITE, Action.READ, undefined],
 		wide
 		// handleRightsChangeResponse
 	}: {
@@ -24,6 +25,7 @@
 		// handleRightsChangeResponse?: (result: ActionResult, update: () => void) => void;
 		closeShareMenu?: () => void;
 		wide?: boolean;
+		actions?: (Action | undefined)[];
 	} = $props();
 
 	let truncate = $derived(wide === true ? 24 : 12);
@@ -195,10 +197,13 @@
 				aria-orientation="vertical"
 				aria-labelledby="rights-{shareOption.identity_id}"
 			>
-				{@render shareButton(Action.OWN)}
+				{#each actions as action (action)}
+					{@render shareButton(action)}
+				{/each}
+				<!-- {@render shareButton(Action.OWN)}
 				{@render shareButton(Action.WRITE)}
 				{@render shareButton(Action.READ)}
-				{@render shareButton()}
+				{@render shareButton()} -->
 			</ul>
 		</div>
 		<!-- <div class="relative flex flex-row">
