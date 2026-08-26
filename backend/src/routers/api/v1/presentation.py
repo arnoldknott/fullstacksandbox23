@@ -85,7 +85,6 @@ async def get_presentation_by_path(
         by_path = await crud.read(
             current_user=current_user,
             filters=[presentation_path == validated_path],
-            limit=1,
         )
         if not by_path:
             raise HTTPException(status_code=404, detail="Presentation not found.")
