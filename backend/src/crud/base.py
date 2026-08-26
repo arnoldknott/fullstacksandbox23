@@ -427,6 +427,7 @@ class BaseCRUD(
     # to avoid calling orchestrator from services
     # otherwise it creates a loop!
     # TBD: add skip and limit
+    # limit is already implemented, but also limits the children!
     # use with pagination:
     # Model = await model_crud.read(order_by=[Model.name], limit=10)
     # Model = await model_crud.read(order_by=[Model.name], limit=10, offset=10)
