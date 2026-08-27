@@ -38,6 +38,7 @@
 				? 'rounded-l-full'
 				: 'rounded-full'} shadow-sm"
 			aria-label="Edit Button"
+			// TBD: pass setup page as a parameter to the component, so that it can be used here
 			onclick={() =>
 				goto(resolve('/(layout)/presentation/(protected)/setup/[id]', { id: resourceId }))}
 		>
