@@ -10,8 +10,14 @@
 	let {
 		resourceId,
 		accessRight,
-		socketio
-	}: { resourceId: string; accessRight: Action | undefined; socketio: SocketIO } = $props();
+		socketio,
+		actions = [Action.OWN, Action.WRITE, Action.READ, undefined]
+	}: {
+		resourceId: string;
+		accessRight: Action | undefined;
+		socketio: SocketIO;
+		actions?: (Action | undefined)[];
+	} = $props();
 
 	let actionButtonShareMenu: HTMLElement | null = $state(null);
 </script>
@@ -72,6 +78,7 @@
 							{resourceId}
 							{shareOption}
 							{socketio}
+							{actions}
 							closeShareMenu={() => window.HSDropdown.close(actionButtonShareMenu)}
 						/>
 					{/each}
