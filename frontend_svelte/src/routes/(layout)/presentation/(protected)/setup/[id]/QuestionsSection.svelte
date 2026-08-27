@@ -445,8 +445,8 @@ https://svelte.dev/e/transition_slide_display
 							<td class="max-w-0">
 								<IdBadge id={question.id} />
 								<a
-									href={resolve('/(layout)/presentation/[slug]', {
-										slug: question?.question?.substring(1) || question.id
+									href={resolve('/(layout)/question/(protected)/setup/[id]', {
+										id: question.id
 									})}
 									aria-label={`Setup presentation ${question.question || question.id}`}
 									class="link link-primary link-animated block truncate"
