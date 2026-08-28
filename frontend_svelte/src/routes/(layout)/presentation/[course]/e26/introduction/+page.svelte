@@ -24,13 +24,13 @@
 
 	let preview = $derived(page.url.searchParams.get('preview') === 'true' ? true : false);
 
+	let revealInstance = $state<RevealApi | undefined>(undefined);
+
 	let returnToSlide = $state<string | undefined>(undefined);
 
 	$effect(() => {
 		preview = page.url.searchParams.get('preview') === 'true';
 	});
-
-	let revealInstance = $state<RevealApi | undefined>(undefined);
 
 	$effect(() => {
 		const handleSlideChanged = (event: Event) => {
