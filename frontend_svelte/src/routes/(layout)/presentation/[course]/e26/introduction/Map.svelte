@@ -8,6 +8,7 @@
 	import { Action } from '$lib/accessHandler';
 	import { type SocketIO } from '$lib/socketio.svelte';
 	import type { MessageExtended } from '$lib/types';
+	import { initTooltip } from '$lib/userInterface';
 
 	let {
 		revealInstance,
@@ -179,6 +180,7 @@
 	<div
 		bind:this={emojiPickerTooltip}
 		class="tooltip col-span-1 [--interaction:true] [--placement:right-start] [--trigger:click]"
+		{@attach initTooltip}
 	>
 		<div class="tooltip-toggle">
 			<button class="btn btn-text w-[40px] text-3xl" aria-label="Emoji Picker"
@@ -278,8 +280,11 @@
 			{/each}
 		</dl>
 	</div>
-	<div class="col-span-12 text-right text-xl">
-		By entering your name and connection to this place, you agree to the terms and conditions.
+	<div class="col-span-12 mr-20 text-right text-xl">
+		By entering your name and connection to this place, you agree to the <a
+			href="#terms-and-conditions"
+			class="link link-animated">terms and conditions</a
+		>.
 	</div>
 </div>
 

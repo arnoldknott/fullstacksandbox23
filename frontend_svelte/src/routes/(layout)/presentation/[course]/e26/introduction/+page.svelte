@@ -2,6 +2,7 @@
 	import type { RevealApi } from 'reveal.js';
 	import { onDestroy, onMount } from 'svelte';
 	import { flip } from 'svelte/animate';
+	import type { Attachment } from 'svelte/attachments';
 
 	import { page } from '$app/state';
 	import Card from '$components/Card.svelte';
@@ -13,15 +14,17 @@
 
 	import type { PageData } from './$types';
 	import Badge from './Badge.svelte';
+	import CardOverlay from './CardOverlay.svelte';
 	import FramedSlide from './FramedSlide.svelte';
 	import Map from './Map.svelte';
 	import MotivationTable from './MotivationTable.svelte';
-	import NodeOverlay from './NodeOverlay.svelte';
 	import Team from './Team.svelte';
 
 	let { data }: { data: PageData } = $props();
 
 	let preview = $derived(page.url.searchParams.get('preview') === 'true' ? true : false);
+
+	let returnToSlide = $state<string | undefined>(undefined);
 
 	$effect(() => {
 		preview = page.url.searchParams.get('preview') === 'true';
@@ -29,10 +32,103 @@
 
 	let revealInstance = $state<RevealApi | undefined>(undefined);
 
+	$effect(() => {
+		const handleSlideChanged = (event: Event) => {
+			const { currentSlide, previousSlide } = event as Event & {
+				currentSlide?: HTMLElement;
+				previousSlide?: HTMLElement;
+			};
+			if (currentSlide?.id === 'terms-and-conditions' && previousSlide?.id) {
+				returnToSlide = previousSlide.id;
+			}
+		};
+		revealInstance?.on('slidechanged', (event: Event) => handleSlideChanged(event));
+		return () => revealInstance?.off('slidechanged', handleSlideChanged);
+	});
+
 	interface RevealFragmentEvent extends Event {
 		fragment: HTMLElement;
 		fragments: HTMLElement[];
 	}
+
+	/** Reveal.js adds `.fragment` and `.fragments` to the `fragmentshown` / `fragmenthidden` events. */
+	type FragmentEvent = Event & { fragment?: HTMLElement; fragments?: HTMLElement[] };
+
+	// TBD: move the logic into $lib/userInterface.svelte.ts
+	// and import it here, so that it can be reused in other presentations
+	/**
+	 * Attachment for a Reveal.js fragment (the trigger). While that fragment is
+	 * shown the given classes are added to the target element; when it is hidden
+	 * they are removed again. The target is resolved from a CSS selector, so no
+	 * `bind:this` on the target is required.
+	 *
+	 * Usage:
+	 * ```svelte
+	 * <div id="goal" class="transition-all duration-1000">Some Text</div>
+	 * <div class="fragment fade-in" {@attach toggleOnFragment(reveal, '#goal', 'text-error', 'mr-100')}>
+	 *   Some more Text
+	 * </div>
+	 * ```
+	 */
+	const toggleOnFragment = (
+		targetElement: HTMLElement,
+		classes: string,
+		invert = false
+	): Attachment<HTMLElement> => {
+		return (node) => {
+			const show = (event: FragmentEvent) => {
+				if (event.fragment === node) targetElement?.classList.add(...classes.split(' '));
+			};
+			const hide = (event: FragmentEvent) => {
+				if (event.fragment === node) targetElement?.classList.remove(...classes.split(' '));
+			};
+
+			revealInstance?.on(
+				'fragmentshown',
+				!invert ? (show as EventListener) : (hide as EventListener)
+			);
+			revealInstance?.on(
+				'fragmenthidden',
+				!invert ? (hide as EventListener) : (show as EventListener)
+			);
+
+			return () => {
+				revealInstance?.off(
+					'fragmentshown',
+					!invert ? (show as EventListener) : (hide as EventListener)
+				);
+				revealInstance?.off(
+					'fragmenthidden',
+					!invert ? (hide as EventListener) : (show as EventListener)
+				);
+			};
+		};
+	};
+
+	// const hideAllModulesOnFramework = (): Attachment<HTMLElement> => {
+	// 	return (node) => {
+	// 		const currentHiddenModules = hideModules;
+	// 		revealInstance?.on('fragmentshown', (event: FragmentEvent) => {
+	// 			if (event.fragment === node) {
+	// 				hideModules = {
+	// 					passives: true,
+	// 					emc: true,
+	// 					pcb: true,
+	// 					environment: true
+	// 				};
+	// 			}
+	// 		});
+	// 		revealInstance?.on('fragmenthidden', (event: FragmentEvent) => {
+	// 			if (event.fragment === node) {
+	// 				hideModules = currentHiddenModules;
+	// 			}
+	// 		});
+
+	// 		return () => {
+	// 			hideModules = currentHiddenModules;
+	// 		};
+	// 	};
+	// };
 
 	// hard coding the selection of a specific question here
 	// it needs to exist in the payload.questions array
@@ -152,6 +248,29 @@
 		}
 	});
 
+	let modulesContentColumn: HTMLDivElement | undefined = $state();
+	let frameworkColumn: HTMLDivElement | undefined = $state();
+	let roomColumn: HTMLDivElement | undefined = $state();
+	let roomImageFlipped = $state(false);
+
+	let hideModules = $state({
+		passives: true,
+		emc: true,
+		pcb: true,
+		environment: true
+	});
+
+	const hideAllToggleOne = (toggleKey: string) => {
+		Object.keys(hideModules).forEach((key) => {
+			if (key !== toggleKey) {
+				hideModules[key as keyof typeof hideModules] = true;
+			} else {
+				hideModules[key as keyof typeof hideModules] =
+					!hideModules[key as keyof typeof hideModules];
+			}
+		});
+	};
+
 	let commentsAnswersSorted = $derived(
 		socketioComments?.getSelectedEntities('sortedCommentsAnswers') ?? []
 	);
@@ -231,7 +350,7 @@
 						background: `rgb(${averageMotivationColors.background})`,
 						text: `rgb(${averageMotivationColors.text})`
 					}
-				: { background: '', text: '' }}
+				: { background: '', text: 'var(--color-base-content)' }}
 		>
 			{#if motivationQuestion}
 				<MotivationTable
@@ -256,18 +375,70 @@
 			{/snippet}
 		</FramedSlide>
 		<FramedSlide part="diversity" color="primary">
-			Diversity content here: stating how we are diverse in the course;
+			<div class="absolute top-40 left-30">
+				<ChatBubble variant="secondary" tailAngle={50} shadow={true}>
+					<div class="heading-large">12 different study lines</div>
+				</ChatBubble>
+			</div>
+			<div class="absolute top-60 right-5">
+				<ChatBubble variant="secondary" tailAngle={120} shadow={true}>
+					<div class="heading-large">Various different universities</div>
+				</ChatBubble>
+			</div>
+			<div class="absolute top-120 left-0">
+				<ChatBubble variant="secondary" tailAngle={30} shadow={true}>
+					<div class="heading-large">With and without Printed Circuit Board (PCB) experience</div>
+				</ChatBubble>
+			</div>
+			<div class="absolute top-170 right-0 w-200">
+				<ChatBubble variant="secondary" tailAngle={280} shadow={true}>
+					<div class="heading-large">All of you are welcome! 🫶</div>
+				</ChatBubble>
+			</div>
 		</FramedSlide>
 		<FramedSlide part="diversity" section="map" color="primary">
 			<Map {revealInstance} socketio={socketioPlaces} />
 		</FramedSlide>
 		<FramedSlide part="overview" color="primary">
+			<Team />
+		</FramedSlide>
+		<FramedSlide part="overview" section="content" color="primary">
 			<div class="grid grid-cols-2 gap-10">
 				<div class="flex flex-col gap-10">
 					<div class="text-secondary absolute top-2/12 left-70 -mt-10 text-7xl font-bold">
 						Modules
 					</div>
-					<NodeOverlay
+					<button
+						class="btn btn-xl btn-gradient btn-secondary absolute top-3/12 left-30 h-30 w-150 justify-center rounded-full p-10 text-5xl font-semibold shadow-inner"
+						onclick={() => hideAllToggleOne('passives')}
+					>
+						Passives
+					</button>
+					<button
+						class="btn btn-xl btn-gradient btn-secondary absolute top-5/12 left-30 h-30 w-150 justify-center rounded-full p-10 text-5xl font-semibold shadow-inner"
+						onclick={() => hideAllToggleOne('emc')}
+					>
+						Electromagnetic Compatibility
+					</button>
+					<button
+						class="btn btn-xl btn-gradient btn-secondary absolute top-7/12 left-30 h-30 w-150 justify-center rounded-full p-10 text-5xl font-semibold shadow-inner"
+						onclick={() => hideAllToggleOne('pcb')}
+					>
+						Printed Circuit Boards
+					</button>
+					<button
+						class="btn btn-xl btn-gradient btn-secondary absolute top-9/12 left-30 h-30 w-150 justify-center rounded-full p-10 text-5xl font-semibold shadow-inner"
+						onclick={() => hideAllToggleOne('environment')}
+					>
+						Environment
+					</button>
+					<!-- <NodeButton
+						class="btn-secondary top-3/12 left-30 h-30 w-150 rounded-full"
+						bind:toggleVariable={hideModules.passives}
+						aria-label="Modules"
+						>Passives
+					</NodeButton> -->
+					<!-- <NodeOverlay
 						buttonExtraClasses="btn-secondary rounded-full top-3/12 left-30 w-150 h-30"
 						cardExtraClasses="bg-secondary-container text-secondary-container-content text-4xl"
 					>
@@ -281,8 +452,8 @@
 							<li>Resisters, Capacitors, and Inductors</li>
 							<li>Simulation & hands-on</li>
 						</ul>
-					</NodeOverlay>
-					<NodeOverlay
+					</NodeOverlay> -->
+					<!-- <NodeOverlay
 						buttonExtraClasses="btn-secondary  rounded-full top-5/12 left-30 w-150 h-30"
 						cardExtraClasses="bg-secondary-container text-secondary-container-content text-4xl"
 					>
@@ -298,8 +469,8 @@
 							<li>Industrial examples</li>
 							<li>Standardization</li>
 						</ul>
-					</NodeOverlay>
-					<NodeOverlay
+					</NodeOverlay> -->
+					<!-- <NodeOverlay
 						buttonExtraClasses="btn-secondary rounded-full top-7/12 left-30 w-150 h-30"
 						cardExtraClasses="bg-secondary-container text-secondary-container-content text-4xl"
 					>
@@ -331,61 +502,287 @@
 							<li>Thermal impact</li>
 							<li>Radiation from space</li>
 						</ul>
-					</NodeOverlay>
+					</NodeOverlay> -->
 				</div>
-				<!-- fragment fade-in -->
-				<div class=" flex flex-col gap-10">
-					<div class="text-secondary absolute top-2/12 right-70 -mt-10 text-7xl font-bold">
-						Framework
+				<div>
+					<div class="flex flex-col items-center gap-10" bind:this={modulesContentColumn}>
+						<CardOverlay
+							class="bg-secondary-container text-secondary-container-content z-50 pt-6 text-4xl"
+							bind:hidden={hideModules.passives}
+						>
+							{#snippet header()}
+								<div class="text-5xl font-bold">Passives</div>
+							{/snippet}
+							<dl>
+								<dt>Content</dt>
+								<dd>Resisters, Capacitors, and Inductors</dd>
+							</dl>
+							<div class="grid grid-cols-6 gap-2">
+								<div class="col-span-3 text-left">
+									<dl class="pt-5">
+										<dt>Activities</dt>
+										<dd>Lecture</dd>
+										<dd>Simulation <br />& hands-on</dd>
+									</dl>
+									<dl class="pt-5">
+										<dt>Timeframe</dt>
+										<dd>Week 1 & 2</dd>
+									</dl>
+								</div>
+								<img
+									src="/flower.jpg"
+									alt="flower"
+									class="col-span-3 self-center mask-y-from-75% mask-y-to-100% mask-x-from-85% mask-x-to-100% object-cover opacity-70"
+								/>
+							</div>
+						</CardOverlay>
+						<CardOverlay
+							class="bg-secondary-container text-secondary-container-content z-50 pt-6 text-4xl"
+							bind:hidden={hideModules.emc}
+						>
+							{#snippet header()}
+								<div class="text-5xl font-bold">Electromagnetic Compatibility</div>
+							{/snippet}
+							<dl>
+								<dt>Content</dt>
+								<dd>Introduction & test setups</dd>
+								<dd>Physical phenomena & examples</dd>
+								<dd>Industrial examples</dd>
+								<dd>Standardization</dd>
+							</dl>
+							<div class="grid grid-cols-6 gap-2">
+								<div class="col-span-3 text-left">
+									<dl class="pt-5">
+										<dt>Activities</dt>
+										<dd>Flipped classroom</dd>
+										<dd>Guest lectures</dd>
+										<dd>Analysis, design, implementation, and experimental verification</dd>
+									</dl>
+									<dl class="pt-5">
+										<dt>Timeframe</dt>
+										<dd>Week 3 - 6</dd>
+									</dl>
+								</div>
+								<img
+									src="/snow-lake.jpg"
+									alt="snow lake"
+									class="col-span-3 self-end mask-y-from-75% mask-y-to-100% mask-x-from-85% mask-x-to-100% object-cover opacity-70"
+								/>
+							</div>
+						</CardOverlay>
+						<CardOverlay
+							class="bg-secondary-container text-secondary-container-content z-50 pt-6 text-4xl"
+							bind:hidden={hideModules.pcb}
+						>
+							{#snippet header()}
+								<div class="text-5xl font-bold">Printed Circuit Boards</div>
+							{/snippet}
+							<div class="grid grid-cols-6 gap-2">
+								<div class="col-span-3 text-left">
+									<dl>
+										<dt>Content</dt>
+										<dd>Design workflow</dd>
+										<dd>Computer Aided Design</dd>
+										<dd>Implementation</dd>
+										<dd>Design review</dd>
+										<dd>Finish design</dd>
+									</dl>
+								</div>
+								<img
+									src="/besseggen.jpg"
+									alt="Besseggen"
+									class="col-span-3 self-end mask-y-from-75% mask-y-to-100% mask-x-from-85% mask-x-to-100% object-cover opacity-70"
+								/>
+							</div>
+							<dl class="pt-5">
+								<dt>Activities</dt>
+								<dd>Lecture & Guest lecture</dd>
+								<dd>Design, implementation, and-over, design review, and finalization</dd>
+							</dl>
+							<dl class="pt-5">
+								<dt>Timeframe</dt>
+								<dd>Week 7 - 11</dd>
+							</dl>
+						</CardOverlay>
+						<CardOverlay
+							class="bg-secondary-container text-secondary-container-content z-50 pt-6 text-4xl"
+							bind:hidden={hideModules.environment}
+						>
+							{#snippet header()}
+								<div class="text-5xl font-bold">Environment</div>
+							{/snippet}
+							<dl>
+								<dt>Content</dt>
+								<dd>Thermal impact</dd>
+								<dd>Radiation from space</dd>
+							</dl>
+							<div class="grid grid-cols-6 gap-2">
+								<div class="col-span-2 text-left">
+									<dl class="pt-5">
+										<dt>Activities</dt>
+										<dd>Lecture</dd>
+										<dd>Guest lecture</dd>
+										<dd>Hands-on</dd>
+									</dl>
+									<dl class="pt-5">
+										<dt>Timeframe</dt>
+										<dd>Week 12 & 13</dd>
+									</dl>
+								</div>
+								<img
+									src="/sunset-vejlesoen.jpg"
+									alt="Sunset Vejlesøen"
+									class="col-span-4 self-end mask-y-from-75% mask-y-to-100% mask-x-from-85% mask-x-to-100% object-cover opacity-70"
+								/>
+							</div>
+						</CardOverlay>
 					</div>
-					<Card
-						id="activities"
-						extraClasses="bg-secondary-container text-secondary-container-content text-4xl mt-10"
+					<div
+						bind:this={frameworkColumn}
+						class="fragment fade-in flex hidden flex-col gap-10"
+						{@attach toggleOnFragment(modulesContentColumn, 'hidden')}
+						{@attach toggleOnFragment(frameworkColumn!, 'hidden', true)}
 					>
-						{#snippet header()}
-							<div class="text-5xl font-bold">Activities</div>
-						{/snippet}
-						<ul>
-							<li>Lectures</li>
-							<li>Flipped classroom</li>
-							<li>Laboratory Exercises</li>
-							<li>Group work</li>
-						</ul>
-					</Card>
-					<Card
-						id="activities"
-						extraClasses="bg-secondary-container text-secondary-container-content text-4xl mt-10"
-					>
-						{#snippet header()}
-							<div class="text-5xl font-bold">Assessment</div>
-						{/snippet}
-						<ul>
-							<li>Pass/Fail</li>
-							<li>One individual learning reflection per module</li>
-							<li>Hand in the first question in 3 out of 4 learning reflections to pass</li>
-						</ul>
-					</Card>
-					<dl>
-						<!-- <dt>Activities</dt>
+						<div class="text-secondary absolute top-2/12 right-70 -mt-10 text-7xl font-bold">
+							Assessment
+						</div>
+						<!-- <Card
+							id="activities"
+							extraClasses="bg-secondary-container bg- text-secondary-container-content text-4xl mt-10"
+						>
+							{#snippet header()}
+								<div class="text-5xl font-bold">Activities</div>
+							{/snippet}
+							<ul>
+								<li>Lectures</li>
+								<li>Flipped classroom</li>
+								<li>Laboratory Exercises</li>
+								<li>Group work</li>
+							</ul>
+						</Card> -->
+						<Card
+							id="assessment"
+							extraClasses="bg-secondary-container text-secondary-container-content text-4xl mt-10"
+						>
+							<div class="grid grid-cols-6 gap-2">
+								<div class="col-span-4 text-left">
+									<dl>
+										<dt>Grading</dt>
+										<dd>Pass / Fail</dd>
+									</dl>
+									<dl class="pt-5">
+										<dt>Learning Reflections</dt>
+										<dd>
+											Per module, we ask you <b>one</b> mandatory question via Microsoft Forms:
+											<i>"What have you learned ...?"</i>
+										</dd>
+										<dd>
+											Hand in 3 out of those 4 learning reflections to pass. As long as your answer
+											is addressing the module, we accept it.
+										</dd>
+									</dl>
+								</div>
+								<img
+									src="/bonfire.jpg"
+									alt="bonfire"
+									class="col-span-2 h-fit self-center mask-y-from-75% mask-y-to-100% mask-x-from-85% mask-x-to-100% object-cover opacity-70"
+								/>
+							</div>
+						</Card>
+						<dl>
+							<!-- <dt>Activities</dt>
 					<ul>
 						<li>Lectures</li>
 						<li>Flipped classroom</li>
 						<li>Laboratory Exercises</li>
 						<li>Group work</li>
 					</ul> -->
-						<!-- <dt>Assessment</dt>
+							<!-- <dt>Assessment</dt>
 					<ul>
 						<li>Pass/Fail</li>
 						<li>One individual learning reflection per module</li>
 						<li>Hand in the first question in 3 out of 4 learning reflections to pass</li>
 					</ul> -->
-					</dl>
+						</dl>
+					</div>
+					<div
+						bind:this={roomColumn}
+						class="fragment fade-in flex hidden flex-col gap-10"
+						{@attach toggleOnFragment(frameworkColumn, 'hidden')}
+						{@attach toggleOnFragment(roomColumn!, 'hidden', true)}
+					>
+						<div class="text-secondary absolute top-2/12 right-70 -mt-10 text-7xl font-bold">
+							Room
+						</div>
+						<!-- <Card
+							id="activities"
+							extraClasses="bg-secondary-container bg- text-secondary-container-content text-4xl mt-10"
+						>
+							{#snippet header()}
+								<div class="text-5xl font-bold">Activities</div>
+							{/snippet}
+							<ul>
+								<li>Lectures</li>
+								<li>Flipped classroom</li>
+								<li>Laboratory Exercises</li>
+								<li>Group work</li>
+							</ul>
+						</Card> -->
+						<Card
+							id="room"
+							extraClasses="bg-secondary-container text-secondary-container-content text-4xl mt-10"
+						>
+							<div class="text-5xl font-semibold">building 329A, room 020</div>
+							<div class="relative h-[500px] w-[730px]" style="perspective: 1800px;">
+								<button
+									type="button"
+									class="absolute inset-0 block cursor-pointer rounded-4xl"
+									onclick={() => {
+										roomImageFlipped = !roomImageFlipped;
+									}}
+									aria-pressed={roomImageFlipped}
+									aria-label={roomImageFlipped
+										? 'Show room teaching image'
+										: 'Show room experimental image'}
+								>
+									<div
+										class="relative h-full w-full rounded-4xl text-center transition-transform duration-700 ease-in-out [transform-style:preserve-3d]"
+										class:[transform:rotateY(180deg)]={roomImageFlipped}
+									>
+										<img
+											src="/room-teaching.jpg"
+											alt="Room Teaching"
+											class="shadow-secondary absolute inset-0 h-full w-full rounded-4xl object-cover shadow-lg [backface-visibility:hidden]"
+										/>
+										<img
+											src="/room-experimental.jpg"
+											alt="Room Experimental"
+											class="shadow-secondary absolute inset-0 h-full w-full [transform:rotateY(180deg)] rounded-4xl object-cover shadow-lg [backface-visibility:hidden]"
+										/>
+									</div>
+								</button>
+							</div>
+						</Card>
+						<dl>
+							<!-- <dt>Activities</dt>
+					<ul>
+						<li>Lectures</li>
+						<li>Flipped classroom</li>
+						<li>Laboratory Exercises</li>
+						<li>Group work</li>
+					</ul> -->
+							<!-- <dt>Assessment</dt>
+					<ul>
+						<li>Pass/Fail</li>
+						<li>One individual learning reflection per module</li>
+						<li>Hand in the first question in 3 out of 4 learning reflections to pass</li>
+					</ul> -->
+						</dl>
+					</div>
 				</div>
-			</div></FramedSlide
-		>
-		<FramedSlide part="overview" section="team" color="primary">
-			<Team />
+			</div>
 		</FramedSlide>
+
 		<FramedSlide part="overview" section="bubbles" color="success">
 			<div class="absolute top-30 left-0">
 				<ChatBubble variant="success" tailAngle={150} shadow={true}>
@@ -416,7 +813,7 @@
 				</ChatBubble>
 			</div>
 		</FramedSlide>
-		<section>
+		<section id="comments-and-questions">
 			<div class="r-stretch mx-10 mt-10">
 				<div class="text-left">
 					{#if socketioComments?.pendingEntities[0]}
@@ -479,10 +876,45 @@
 					</div>
 				</div>
 			</div>
+			<div class="col-span-12 mr-20 text-right text-xl">
+				By entering your text here, you agree to the <a
+					href="#terms-and-conditions"
+					class="link link-animated">terms and conditions</a
+				>.
+			</div>
 		</section>
 
 		<section>
 			<div class="text-[200px] font-bold">Thank you! 🙏</div>
 		</section>
+		<FramedSlide part="terms-and-conditions" color="secondary">
+			<div class="text-5xl font-bold">Terms & Conditions</div>
+			<dl>
+				<dt>Data storage</dt>
+				<dd>
+					By entering your data, you acknowledge, that your data is stored in a database on the
+					Technical University of Denmark's tenant in Microsoft Azure.
+				</dd>
+			</dl>
+			<dl>
+				<dt>Visibility of data</dt>
+				<dd>
+					Currently these slides are under development, there is no login and hence everyone on the
+					internet with the link to the presentation can see what you have entered.
+				</dd>
+			</dl>
+			<dl>
+				<dt>Deletion of data</dt>
+				<dd>
+					In case you want any of your data deleted, please send a screenshot of you want to have
+					deleted to Arnold.
+				</dd>
+			</dl>
+			<div>
+				Back to <a href="#{returnToSlide}" class="link link-animated"
+					>{returnToSlide?.replace('-', ' ')}</a
+				>
+			</div>
+		</FramedSlide>
 	{/if}
 </RevealJs>
