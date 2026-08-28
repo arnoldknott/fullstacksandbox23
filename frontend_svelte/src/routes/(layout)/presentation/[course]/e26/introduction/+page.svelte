@@ -658,23 +658,9 @@
 						{@attach toggleOnFragment(modulesContentColumn, 'hidden')}
 						{@attach toggleOnFragment(frameworkColumn!, 'hidden', true)}
 					>
-						<div class="text-secondary absolute top-2/12 right-70 -mt-10 text-7xl font-bold">
+						<div class="text-secondary absolute top-2/12 right-50 -mt-10 text-7xl font-bold">
 							Assessment
 						</div>
-						<!-- <Card
-							id="activities"
-							extraClasses="bg-secondary-container bg- text-secondary-container-content text-4xl mt-10"
-						>
-							{#snippet header()}
-								<div class="text-5xl font-bold">Activities</div>
-							{/snippet}
-							<ul>
-								<li>Lectures</li>
-								<li>Flipped classroom</li>
-								<li>Laboratory Exercises</li>
-								<li>Group work</li>
-							</ul>
-						</Card> -->
 						<Card
 							id="assessment"
 							extraClasses="bg-secondary-container text-secondary-container-content text-4xl mt-10"
@@ -704,21 +690,6 @@
 								/>
 							</div>
 						</Card>
-						<dl>
-							<!-- <dt>Activities</dt>
-					<ul>
-						<li>Lectures</li>
-						<li>Flipped classroom</li>
-						<li>Laboratory Exercises</li>
-						<li>Group work</li>
-					</ul> -->
-							<!-- <dt>Assessment</dt>
-					<ul>
-						<li>Pass/Fail</li>
-						<li>One individual learning reflection per module</li>
-						<li>Hand in the first question in 3 out of 4 learning reflections to pass</li>
-					</ul> -->
-						</dl>
 					</div>
 					<div
 						bind:this={roomColumn}
@@ -729,20 +700,6 @@
 						<div class="text-secondary absolute top-2/12 right-70 -mt-10 text-7xl font-bold">
 							Room
 						</div>
-						<!-- <Card
-							id="activities"
-							extraClasses="bg-secondary-container bg- text-secondary-container-content text-4xl mt-10"
-						>
-							{#snippet header()}
-								<div class="text-5xl font-bold">Activities</div>
-							{/snippet}
-							<ul>
-								<li>Lectures</li>
-								<li>Flipped classroom</li>
-								<li>Laboratory Exercises</li>
-								<li>Group work</li>
-							</ul>
-						</Card> -->
 						<Card
 							id="room"
 							extraClasses="bg-secondary-container text-secondary-container-content text-4xl mt-10"
@@ -778,21 +735,6 @@
 								</button>
 							</div>
 						</Card>
-						<dl>
-							<!-- <dt>Activities</dt>
-					<ul>
-						<li>Lectures</li>
-						<li>Flipped classroom</li>
-						<li>Laboratory Exercises</li>
-						<li>Group work</li>
-					</ul> -->
-							<!-- <dt>Assessment</dt>
-					<ul>
-						<li>Pass/Fail</li>
-						<li>One individual learning reflection per module</li>
-						<li>Hand in the first question in 3 out of 4 learning reflections to pass</li>
-					</ul> -->
-						</dl>
 					</div>
 				</div>
 			</div>
