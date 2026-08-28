@@ -240,11 +240,8 @@
 					public: true,
 					action: Action.READ
 				});
-				socketio.submitEntity(
-					{ ...pending, content: JSON.stringify(newPlace) },
-					socketio.parentId ?? undefined,
-					true
-				);
+				pending.content = JSON.stringify(newPlace);
+				socketio.submitEntity(pending, socketio.parentId ?? undefined, true);
 				socketio.createPending();
 				map?.closePopup();
 			}}
