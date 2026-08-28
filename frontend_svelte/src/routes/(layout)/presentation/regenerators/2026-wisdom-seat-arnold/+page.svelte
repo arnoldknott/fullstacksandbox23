@@ -286,12 +286,12 @@
 							class:[transform:rotateY(180deg)]={roomImageFlipped}
 						>
 							<img
-								src="/regenerators/2026-wisdom-seat-arnold/room-teaching.jpg"
+								src="/room-teaching.jpg"
 								alt="Room Teaching"
 								class="shadow-secondary absolute inset-0 h-full w-full rounded-4xl object-cover shadow-lg [backface-visibility:hidden]"
 							/>
 							<img
-								src="/regenerators/2026-wisdom-seat-arnold/room-experimental.jpg"
+								src="/room-experimental.jpg"
 								alt="Room Experimental"
 								class="shadow-secondary absolute inset-0 h-full w-full [transform:rotateY(180deg)] rounded-4xl object-cover shadow-lg [backface-visibility:hidden]"
 							/>
