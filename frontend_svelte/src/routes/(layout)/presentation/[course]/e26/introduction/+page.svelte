@@ -700,7 +700,7 @@
 								<img
 									src="/bonfire.jpg"
 									alt="bonfire"
-									class="col-span-2 h-fit self-center mask-y-from-75% mask-y-to-100% mask-x-from-85% mask-x-to-100% object-cover opacity-70"
+									class="col-span-2 h-[500px] self-center mask-y-from-75% mask-y-to-100% mask-x-from-85% mask-x-to-100% object-cover opacity-70"
 								/>
 							</div>
 						</Card>
