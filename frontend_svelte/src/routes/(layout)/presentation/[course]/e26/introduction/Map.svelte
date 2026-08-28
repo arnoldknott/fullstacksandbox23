@@ -117,10 +117,6 @@
 		// leafletModule = module;
 		map = leafletModule.map('diversityMap', { center: [55.803042, 12.466789], zoom: 3 });
 
-		// L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-		// 	maxZoom: 19,
-		// 	attribution: '© OpenStreetMap'
-		// }).addTo(map);
 		leafletModule
 			.tileLayer(
 				'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
@@ -265,20 +261,31 @@
 	<div class="col-span-9 h-full" id="diversityMap"></div>
 	<div class="col-span-3 overflow-y-scroll">
 		<div class="mb-3 text-4xl">Click on the map<br /> to add your place</div>
-		<dl>
-			{#each places as place, index (index)}
-				<dt class="text-3xl">
-					{place.emoji}
-					<span class="ml-1{!place.name ? 'font-normal opacity-60' : ''}"
-						>{place.name || 'Anonymous'}</span
-					>
-				</dt>
-				<dd class="text-2xl">{place.text}</dd>
-				{#if index < places.length - 1}
+
+		{#each places as place, index (index)}
+			<button
+				class="btn btn-soft btn-secondary mb-2 h-fit w-full justify-start p-2 text-left"
+				onclick={() => {
+					if (place.marker && map) {
+						map.flyTo(place.coords, 3);
+						place.marker.openPopup();
+					}
+				}}
+			>
+				<dl>
+					<dt class="text-3xl">
+						{place.emoji}
+						<span class="ml-1{!place.name ? 'font-normal opacity-60' : ''}"
+							>{place.name || 'Anonymous'}</span
+						>
+					</dt>
+					<dd class="text-2xl">{place.text}</dd>
+					<!-- {#if index < places.length - 1}
 					<div class="divider bg-base-content/20 my-2 h-px"></div>
-				{/if}
-			{/each}
-		</dl>
+				{/if} -->
+				</dl>
+			</button>
+		{/each}
 	</div>
 	<div class="col-span-12 mr-20 text-right text-xl">
 		By entering your name and connection to this place, you agree to the <a
@@ -304,6 +311,12 @@
 	:global(.leaflet-popup.place-popup .leaflet-popup-tip) {
 		background-color: var(--secondary-container);
 		color: var(--secondary-container-content);
+	}
+	:global(.leaflet-popup.place-popup .leaflet-popup-close-button) {
+		font-size: 1.5rem;
+		width: 1.75rem;
+		height: 1.75rem;
+		padding: 0.25rem 0.25rem 0 0;
 	}
 	:global(emoji-picker) {
 		/* --emoji-picker-background-color: var(--base-100);
