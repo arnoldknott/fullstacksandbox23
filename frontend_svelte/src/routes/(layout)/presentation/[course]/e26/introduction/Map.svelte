@@ -255,7 +255,7 @@
 	<div class="col-span-12 h-fit text-center text-5xl">
 		What places do you have a special relation to?
 	</div>
-	<div class="col-span-9 h-full" id="diversityMap"></div>
+	<div class="col-span-9 h-full" id="diversityMap" data-prevent-swipe></div>
 	<div class="col-span-3 overflow-y-scroll">
 		<div class="mb-3 text-4xl">Click on the map<br /> to add your place</div>
 
