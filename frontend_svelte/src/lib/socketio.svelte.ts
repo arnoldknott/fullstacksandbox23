@@ -72,6 +72,12 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 		const socketioServerUrl = backendFqdn.startsWith('localhost')
 			? `http://${backendFqdn}`
 			: `https://${backendFqdn}`;
+		// TBD: match the backend scheme to the page scheme, so a LAN-IP dev host (plain http)
+		// and a deployed https host both work without assuming https for every non-localhost host.
+		// Requires BACKEND_FQDN to point at a LAN-reachable host (not localhost) when testing from other devices.
+		// const scheme =
+		// 	typeof window !== 'undefined' && window.location.protocol === 'http:' ? 'http' : 'https';
+		// const socketioServerUrl = `${scheme}://${backendFqdn}`;
 
 		const queryParams: QueryParameters = { ...(connection.queryParams ?? {}) };
 		if (queryParams['identity-ids']) {
