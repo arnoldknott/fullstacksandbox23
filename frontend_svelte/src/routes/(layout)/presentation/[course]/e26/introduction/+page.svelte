@@ -24,13 +24,13 @@
 
 	let preview = $derived(page.url.searchParams.get('preview') === 'true' ? true : false);
 
+	let revealInstance = $state<RevealApi | undefined>(undefined);
+
 	let returnToSlide = $state<string | undefined>(undefined);
 
 	$effect(() => {
 		preview = page.url.searchParams.get('preview') === 'true';
 	});
-
-	let revealInstance = $state<RevealApi | undefined>(undefined);
 
 	$effect(() => {
 		const handleSlideChanged = (event: Event) => {
@@ -157,8 +157,6 @@
 			},
 			{}
 		);
-		console.log('=== 🧦 Map.svelte - onMount - placesQuestion.id ===');
-		console.log(placesQuestion?.id);
 		socketioPlaces = new SocketIO<MessageExtended>(
 			{
 				namespace: '/message',
@@ -276,9 +274,20 @@
 	);
 </script>
 
+{#snippet interactiveElementNotAvailable(elementName: string)}
+	<div class="flex h-full w-full flex-col items-center justify-center gap-5 text-center">
+		<div class="text-6xl font-bold">⚠️</div>
+		<div class="text-2xl font-semibold">Interactive {elementName} is not available.</div>
+		<div class="text-base-content/70 text-lg">
+			This interactive element is not available in the current context.<br />
+			Please inform the presenter about it.
+		</div>
+	</div>
+{/snippet}
+
 <RevealJs bind:reveal={revealInstance}>
 	<section>
-		<div class="text-[200px] font-bold">Welcome</div>
+		<div class="text-base-content-variant text-[200px] font-bold">Welcome</div>
 	</section>
 	{#if preview}
 		<section>
@@ -359,6 +368,8 @@
 					averageMotivation={motivationAnswersAverage}
 					bind:averageColors={averageMotivationColors}
 				/>
+			{:else}
+				{@render interactiveElementNotAvailable('motivation table')}
 			{/if}
 			{#snippet footer()}
 				<div class="relative mt-5">
@@ -397,7 +408,11 @@
 			</div>
 		</FramedSlide>
 		<FramedSlide part="diversity" section="map" color="primary">
-			<Map {revealInstance} socketio={socketioPlaces} />
+			{#if placesQuestion}
+				<Map {revealInstance} socketio={socketioPlaces} />
+			{:else}
+				{@render interactiveElementNotAvailable('map')}
+			{/if}
 		</FramedSlide>
 		<FramedSlide part="overview" color="primary">
 			<Team />
@@ -814,78 +829,85 @@
 			</div>
 		</FramedSlide>
 		<section id="comments-and-questions">
-			<div class="r-stretch mx-10 mt-10">
-				<div class="text-left">
-					{#if socketioComments?.pendingEntities[0]}
-						<label class="heading text-6xl" for="sharing">
-							Do you have comments or questions? 🤔
-						</label>
-						<textarea
-							class="heading placeholder:title-large w-[90%] border border-2 p-2 shadow-inner placeholder:italic"
-							placeholder="These questions and comments are publically available on the internet for everyone, who has a link to this presentation. Sharing is caring 🫶 Press Enter to send."
-							id="sharing"
-							bind:value={socketioComments.pendingEntities[0].content}
-							onkeydown={(event) => {
-								if (event.key === 'Enter' && !event.shiftKey) {
-									event.preventDefault();
-									socketioComments.addPendingAccessPolicy(socketioComments.pendingEntities[0].id, {
-										public: true,
-										action: Action.READ
-									});
-									socketioComments.submitEntity(
-										socketioComments.pendingEntities[0],
-										commentsQuestion?.id,
-										true
-									);
-									socketioComments.createPending();
-								}
-							}}></textarea>
-					{:else}
-						<div class="label text-error">
-							<span class="icon-[svg-spinners--12-dots-scale-rotate] size-6"></span>connecting ...
-						</div>
-					{/if}
-				</div>
+			{#if commentsQuestion}
+				<div class="r-stretch mx-10 mt-10">
+					<div class="text-left">
+						{#if socketioComments?.pendingEntities[0]}
+							<label class="heading text-6xl" for="sharing">
+								Do you have comments or questions? 🤔
+							</label>
+							<textarea
+								class="heading placeholder:title-large w-[90%] border border-2 p-2 shadow-inner placeholder:italic"
+								placeholder="These questions and comments are publically available on the internet for everyone, who has a link to this presentation. Sharing is caring 🫶 Press Enter to send."
+								id="sharing"
+								bind:value={socketioComments.pendingEntities[0].content}
+								onkeydown={(event) => {
+									if (event.key === 'Enter' && !event.shiftKey) {
+										event.preventDefault();
+										socketioComments.addPendingAccessPolicy(
+											socketioComments.pendingEntities[0].id,
+											{
+												public: true,
+												action: Action.READ
+											}
+										);
+										socketioComments.submitEntity(
+											socketioComments.pendingEntities[0],
+											commentsQuestion?.id,
+											true
+										);
+										socketioComments.createPending();
+									}
+								}}></textarea>
+						{:else}
+							<div class="label text-error">
+								<span class="icon-[svg-spinners--12-dots-scale-rotate] size-6"></span>connecting ...
+							</div>
+						{/if}
+					</div>
 
-				{#snippet messageAnswer(text: string, date: Date | undefined, index: number)}
-					<div class="chat chat-receiver">
-						<div
-							class="chat-bubble text-left text-wrap break-words {index % 2
-								? 'chat-bubble-accent'
-								: 'chat-bubble-primary'}"
-						>
-							{text}
-							<div class="label text-right">
-								{date
-									? new Date(date).toLocaleString(undefined, {
-											dateStyle: 'short',
-											timeStyle: 'short'
-										})
-									: 'Thanks for your contribution 🙏'}
+					{#snippet messageAnswer(text: string, date: Date | undefined, index: number)}
+						<div class="chat chat-receiver">
+							<div
+								class="chat-bubble text-left text-wrap break-words {index % 2
+									? 'chat-bubble-accent'
+									: 'chat-bubble-primary'}"
+							>
+								{text}
+								<div class="label text-right">
+									{date
+										? new Date(date).toLocaleString(undefined, {
+												dateStyle: 'short',
+												timeStyle: 'short'
+											})
+										: 'Thanks for your contribution 🙏'}
+								</div>
 							</div>
 						</div>
-					</div>
-				{/snippet}
-				<div class="heading mt-8">
-					<div class="mx-5 grid max-h-[600px] grid-cols-3 gap-6 overflow-y-auto">
-						{#each commentsAnswersSorted as answer, index (answer.id)}
-							<div animate:flip={{ duration: 300 }}>
-								{@render messageAnswer(answer.content, answer.creation_date, index)}
-							</div>
-						{/each}
+					{/snippet}
+					<div class="heading mt-8">
+						<div class="mx-5 grid max-h-[600px] grid-cols-3 gap-6 overflow-y-auto">
+							{#each commentsAnswersSorted as answer, index (answer.id)}
+								<div animate:flip={{ duration: 300 }}>
+									{@render messageAnswer(answer.content, answer.creation_date, index)}
+								</div>
+							{/each}
+						</div>
 					</div>
 				</div>
-			</div>
-			<div class="col-span-12 mr-20 text-right text-xl">
-				By entering your text here, you agree to the <a
-					href="#terms-and-conditions"
-					class="link link-animated">terms and conditions</a
-				>.
-			</div>
+				<div class="col-span-12 mr-20 text-right text-xl">
+					By entering your text here, you agree to the <a
+						href="#terms-and-conditions"
+						class="link link-animated">terms and conditions</a
+					>.
+				</div>
+			{:else}
+				{@render interactiveElementNotAvailable('comments and questions dialog')}
+			{/if}
 		</section>
 
 		<section>
-			<div class="text-[200px] font-bold">Thank you! 🙏</div>
+			<div class="text-base-content-variant text-[200px] font-bold">Thank you! 🙏</div>
 		</section>
 		<FramedSlide part="terms-and-conditions" color="secondary">
 			<div class="text-5xl font-bold">Terms & Conditions</div>
@@ -910,11 +932,13 @@
 					deleted to Arnold.
 				</dd>
 			</dl>
-			<div>
-				Back to <a href="#{returnToSlide}" class="link link-animated"
-					>{returnToSlide?.replace('-', ' ')}</a
-				>
-			</div>
+			{#if returnToSlide}
+				<div>
+					<span class="icon-[fa-regular--hand-point-right] mr-4 size-7"></span>Back to
+					<a href="#{returnToSlide}" class="link link-animated">{returnToSlide.replace('-', ' ')}</a
+					>.
+				</div>
+			{/if}
 		</FramedSlide>
 	{/if}
 </RevealJs>

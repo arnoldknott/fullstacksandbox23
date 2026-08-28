@@ -73,16 +73,14 @@
 						? 'border-4 border-blue-800'
 						: ''} p-1"
 				>
-					<div class="text-{color} font-bold">
+					<div class="text-{color} text-left font-bold">
 						{content.find((item) => item.part === part)?.title}
 					</div>
 				</div>
 			{/if}
 
 			<div
-				class="flex min-h-0 grow flex-col items-center justify-center {debug
-					? 'border-4 border-green-400'
-					: ''}"
+				class="flex min-h-0 grow flex-col justify-center {debug ? 'border-4 border-green-400' : ''}"
 			>
 				<!-- consider also class: content-center -->
 				{@render children?.()}

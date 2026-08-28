@@ -1,15 +1,76 @@
 <script lang="ts">
 	import type { RevealApi } from 'reveal.js';
+	import { onDestroy, onMount } from 'svelte';
 	import type { Attachment } from 'svelte/attachments';
 
 	import ChatBubble from '$components/ChatBubble.svelte';
 	import RevealJs from '$components/RevealJS.svelte';
+	import { SocketIO } from '$lib/socketio.svelte';
+	import type { MessageExtended } from '$lib/types';
 
+	import type { PageData } from './$types';
 	import Badge from './Badge.svelte';
 	import FramedSlide from './FramedSlide.svelte';
+	import Map from './Map.svelte';
 	import Question from './Question.svelte';
 
+	let { data }: { data: PageData } = $props();
+
 	let revealInstance = $state<RevealApi | undefined>(undefined);
+
+	let returnToSlide = $state<string | undefined>(undefined);
+
+	$effect(() => {
+		const handleSlideChanged = (event: Event) => {
+			const { currentSlide, previousSlide } = event as Event & {
+				currentSlide?: HTMLElement;
+				previousSlide?: HTMLElement;
+			};
+			if (currentSlide?.id === 'terms-and-conditions' && previousSlide?.id) {
+				returnToSlide = previousSlide.id;
+			}
+		};
+		revealInstance?.on('slidechanged', (event: Event) => handleSlideChanged(event));
+		return () => revealInstance?.off('slidechanged', handleSlideChanged);
+	});
+
+	let mapQuestion = $derived(
+		data.payload.questions.find((question) => question.question.includes('map'))
+	);
+	let socketioMap: SocketIO<MessageExtended> = $state()!;
+
+	onMount(() => {
+		socketioMap = new SocketIO<MessageExtended>(
+			{
+				namespace: '/message',
+				parentId: mapQuestion?.id,
+				queryParams: { 'request-access-data': true }
+			},
+			{
+				template: {
+					content: JSON.stringify({
+						emoji: '📍',
+						name: '',
+						text: '',
+						coords: { lat: 0, lng: 0 },
+						marker: undefined
+					}),
+					language: 'en'
+				}
+			}
+		);
+		socketioMap.createSortedSelection('sortedPlacesAnswers', 'creation_date', false);
+	});
+
+	$effect(() => {
+		// Preseed data:
+		// TBD: update to preseed with numbers coming from server-side via REST-API
+		socketioMap.entities = mapQuestion?.messages ?? [];
+	});
+
+	onDestroy(() => {
+		socketioMap?.client.disconnect();
+	});
 
 	/** Reveal.js adds `.fragment` and `.fragments` to the `fragmentshown` / `fragmenthidden` events. */
 	type FragmentEvent = Event & { fragment?: HTMLElement; fragments?: HTMLElement[] };
@@ -84,9 +145,20 @@
 	let fifthTextElement: HTMLElement | null = $state(null);
 </script>
 
+{#snippet interactiveElementNotAvailable(elementName: string)}
+	<div class="flex h-full w-full flex-col items-center justify-center gap-5 text-center">
+		<div class="text-6xl font-bold">⚠️</div>
+		<div class="text-2xl font-semibold">Interactive {elementName} is not available.</div>
+		<div class="text-base-content/70 text-lg">
+			This interactive element is not available in the current context.<br />
+			Please inform the presenter about it.
+		</div>
+	</div>
+{/snippet}
+
 <RevealJs bind:reveal={revealInstance}>
 	<section>
-		<div class="text-[200px] font-bold">Welcome</div>
+		<div class="base-content-variant text-[200px] font-bold">Welcome</div>
 	</section>
 	<!-- <section>
 		<div class="display text-primary pb-20 text-9xl font-bold">
@@ -180,6 +252,13 @@
 		</div>
 		<div class="fragment fade-in">7th fragment</div>
 	</FramedSlide>
+	<FramedSlide part="main" section="map" color="primary">
+		{#if mapQuestion}
+			<Map {revealInstance} socketio={socketioMap} />
+		{:else}
+			{@render interactiveElementNotAvailable('map')}
+		{/if}
+	</FramedSlide>
 	<FramedSlide part="conclusion" color="primary">
 		<div class="h-full">Content Conclusion</div>
 	</FramedSlide>
@@ -202,4 +281,37 @@
 			<span class="icon-[ic--round-question-mark]"></span>
 		</div>
 	</section>
+	<section>
+		<div class="text-base-content-variant text-[200px] font-bold">Thank you! 🙏</div>
+	</section>
+	<FramedSlide part="terms-and-conditions" color="secondary">
+		<div class="text-5xl font-bold">Terms & Conditions</div>
+		<dl>
+			<dt>Data storage</dt>
+			<dd>
+				By entering your data, you acknowledge, that your data is stored in a database on the
+				Technical University of Denmark's tenant in Microsoft Azure.
+			</dd>
+		</dl>
+		<dl>
+			<dt>Visibility of data</dt>
+			<dd>
+				Currently these slides are under development, there is no login and hence everyone on the
+				internet with the link to the presentation can see what you have entered.
+			</dd>
+		</dl>
+		<dl>
+			<dt>Deletion of data</dt>
+			<dd>
+				In case you want any of your data deleted, please send a screenshot of you want to have
+				deleted to Arnold.
+			</dd>
+		</dl>
+		{#if returnToSlide}
+			<div>
+				<span class="icon-[fa-regular--hand-point-right] mr-4 size-7"></span>Back to
+				<a href="#{returnToSlide}" class="link link-animated">{returnToSlide.replace('-', ' ')}</a>.
+			</div>
+		{/if}
+	</FramedSlide>
 </RevealJs>
