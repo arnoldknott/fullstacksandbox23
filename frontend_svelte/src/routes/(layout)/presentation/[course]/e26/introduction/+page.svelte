@@ -13,7 +13,6 @@
 	import type { MessageExtended, NumericalExtended } from '$lib/types';
 
 	import type { PageData } from './$types';
-	import Badge from './Badge.svelte';
 	import CardOverlay from './CardOverlay.svelte';
 	import FramedSlide from './FramedSlide.svelte';
 	import Map from './Map.svelte';
@@ -321,10 +320,67 @@
 			</div>
 		</section>
 		<FramedSlide part="motivation" color="primary">
-			{#snippet footer()}
-				<div>📖 Ib Ravn: Selvbestemmelsesteorien</div>
-			{/snippet}
 			<div class="mx-5 grid grid-cols-3 gap-10">
+				<div>
+					<div class="mb-10 text-7xl font-bold">Relatedness</div>
+					<div class="mb-6 pl-4 text-left text-5xl">Sense of belonging</div>
+					<div class="mb-6 pl-4 text-left text-5xl">Community</div>
+					<div class="mb-6 pl-4 text-left text-5xl">Connection</div>
+					<div class="mb-6 pl-4 text-left text-5xl">Feeling cared for</div>
+					<div class="mb-6 pl-4 text-left text-5xl">Ability to care for others</div>
+				</div>
+				<div class="fragment fade-in">
+					<div class="mb-10 text-7xl font-bold">Autonomy</div>
+					<div class="mb-6 pl-4 text-left text-5xl">Making your own decisions</div>
+					<div class="mb-6 pl-4 text-left text-5xl">Be in the driver seat of your life</div>
+					<div class="mb-6 pl-4 text-left text-5xl">Reflection</div>
+				</div>
+				<div class="fragment fade-in">
+					<div class="mb-10 text-7xl font-bold">Competence</div>
+					<div class="mb-6 pl-4 text-left text-5xl">Gaining mastery</div>
+					<div class="mb-6 pl-4 text-left text-5xl">Being in flow</div>
+					<div class="mb-6 pl-4 text-left text-5xl">Making an impact</div>
+					<div class="mb-6 pl-4 text-left text-5xl">Build self-esteem</div>
+				</div>
+			</div>
+			<!-- <table class="text-5xl">
+				<thead>
+					<tr>
+						<th class="align-center font-semibold">Relatedness</th>
+						<th class="align-center font-semibold">Autonomy</th>
+						<th class="align-center font-semibold">Competence</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>
+							<dl class=" pl-5">
+								<dt>Sense of belonging</dt>
+								<dt>Community</dt>
+								<dt>Connection</dt>
+								<dt>Feeling cared for</dt>
+								<dt>Ability to care for others</dt>
+							</dl>
+						</td>
+						<td>
+							<ul class=" pl-5">
+								<li>Making your own decisions</li>
+								<li>Be in the driver seat of your life</li>
+								<li>Reflection</li>
+							</ul>
+						</td>
+						<td>
+							<ul class=" pl-5">
+								<li>Gaining mastery</li>
+								<li>Being in flow</li>
+								<li>Making an impact</li>
+								<li>Build self-esteem</li>
+							</ul>
+						</td>
+					</tr>
+				</tbody>
+			</table> -->
+			<!-- <div class="mx-5 grid grid-cols-3 gap-10">
 				<div
 					class="text-secondary-content bg-secondary shadow-base-shadow shadow-large rounded-4xl p-7 font-semibold shadow-inner"
 				>
@@ -358,7 +414,10 @@
 						<li>Build self-esteem</li>
 					</ul>
 				</div>
-			</div>
+			</div> -->
+			{#snippet footer()}
+				<div>📖 Ib Ravn: Selvbestemmelsesteorien</div>
+			{/snippet}
 		</FramedSlide>
 		<FramedSlide
 			part="motivation"
