@@ -4,7 +4,7 @@
 	import { flip } from 'svelte/animate';
 	import type { Attachment } from 'svelte/attachments';
 
-	import { page } from '$app/state';
+	// import { page } from '$app/state';
 	import Card from '$components/Card.svelte';
 	import ChatBubble from '$components/ChatBubble.svelte';
 	import RevealJs from '$components/RevealJS.svelte';
@@ -21,15 +21,15 @@
 
 	let { data }: { data: PageData } = $props();
 
-	let preview = $derived(page.url.searchParams.get('preview') === 'true' ? true : false);
+	// let preview = $derived(page.url.searchParams.get('preview') === 'true' ? true : false);
 
 	let revealInstance = $state<RevealApi | undefined>(undefined);
 
 	let returnToSlide = $state<string | undefined>(undefined);
 
-	$effect(() => {
-		preview = page.url.searchParams.get('preview') === 'true';
-	});
+	// $effect(() => {
+	// 	preview = page.url.searchParams.get('preview') === 'true';
+	// });
 
 	$effect(() => {
 		const handleSlideChanged = (event: Event) => {
@@ -290,165 +290,165 @@
 	<section>
 		<div class="text-base-content-variant text-[200px] font-bold">Welcome</div>
 	</section>
-	{#if preview}
-		<section>
-			<div
-				class="r-stretch my-50 grid grid-cols-[1fr_max-content_1fr] items-center justify-between justify-items-start gap-12 text-7xl"
-				// class="r-stretch mx-auto my-20 grid w-fit grid-cols-[auto_max-content_auto] items-center gap-12 text-7xl"
-			>
-				<a href="#motivation" class="justify-self-end" aria-label="Motivation"
-					><span class="icon-[vaadin--thumbs-up-o] bg-primary"></span></a
-				>
-				<a href="#motivation" aria-label="Motivation"
-					><div class="text-primary font-bold">Motivation</div></a
-				>
-				<div></div>
-				<a href="#diversity" aria-label="Diversity" class="justify-self-end"
-					><span class="icon-[material-symbols--diversity-1-rounded] bg-primary"></span></a
-				>
-				<a href="#diversity" aria-label="Diversity"
-					><div class="text-primary font-bold">Diversity</div></a
-				>
-				<div></div>
-				<a href="#overview" aria-label="Overview" class="justify-self-end"
-					><span class="icon-[grommet-icons--overview] bg-primary"></span></a
-				>
-				<a href="#overview" aria-label="Overview"
-					><div class="text-primary font-bold">Overview</div></a
-				>
-				<div></div>
-			</div>
-		</section>
-		<FramedSlide part="motivation" color="primary">
-			<div class="mx-5 grid grid-cols-3 gap-10">
-				<div>
-					<div class="mb-10 text-7xl font-bold">Relatedness</div>
-					<div class="mb-6 pl-4 text-left text-5xl">Sense of belonging</div>
-					<div class="mb-6 pl-4 text-left text-5xl">Community</div>
-					<div class="mb-6 pl-4 text-left text-5xl">Connection</div>
-					<div class="mb-6 pl-4 text-left text-5xl">Feeling cared for</div>
-					<div class="mb-6 pl-4 text-left text-5xl">Ability to care for others</div>
-				</div>
-				<div class="fragment fade-in">
-					<div class="mb-10 text-7xl font-bold">Autonomy</div>
-					<div class="mb-6 pl-4 text-left text-5xl">Making your own decisions</div>
-					<div class="mb-6 pl-4 text-left text-5xl">Be in the driver seat of your life</div>
-					<div class="mb-6 pl-4 text-left text-5xl">Reflection</div>
-				</div>
-				<div class="fragment fade-in">
-					<div class="mb-10 text-7xl font-bold">Competence</div>
-					<div class="mb-6 pl-4 text-left text-5xl">Gaining mastery</div>
-					<div class="mb-6 pl-4 text-left text-5xl">Being in flow</div>
-					<div class="mb-6 pl-4 text-left text-5xl">Making an impact</div>
-					<div class="mb-6 pl-4 text-left text-5xl">Build self-esteem</div>
-				</div>
-			</div>
-			{#snippet footer()}
-				<div>📖 Ib Ravn: Selvbestemmelsesteorien</div>
-			{/snippet}
-		</FramedSlide>
-		<FramedSlide
-			part="motivation"
-			section="table"
-			color={addColorToMotivationTable ? 'neutral-container' : 'primary'}
-			coloring={addColorToMotivationTable
-				? {
-						background: `rgb(${averageMotivationColors.background})`,
-						text: `rgb(${averageMotivationColors.text})`
-					}
-				: { background: '', text: 'var(--color-base-content)' }}
+	<!-- {#if preview} -->
+	<section>
+		<div
+			class="r-stretch my-50 grid grid-cols-[1fr_max-content_1fr] items-center justify-between justify-items-start gap-12 text-7xl"
+			// class="r-stretch mx-auto my-20 grid w-fit grid-cols-[auto_max-content_auto] items-center gap-12 text-7xl"
 		>
-			{#if motivationQuestion}
-				<MotivationTable
-					questionId={motivationQuestion?.id}
-					socketio={socketioMotivation}
-					averageMotivation={motivationAnswersAverage}
-					bind:averageColors={averageMotivationColors}
-				/>
-			{:else}
-				{@render interactiveElementNotAvailable('motivation table')}
-			{/if}
-			{#snippet footer()}
-				<div class="relative mt-5">
-					<div class="absolute top-0 right-0 mt-20 flex flex-row gap-2">
-						<span class="badge badge-lg badge-secondary shadow-outline shadow">
-							{motivationAnswersAverage}
-						</span>
-						<span class="badge badge-lg badge-info shadow-outline shadow">
-							{motivationAnswers.length}
-						</span>
-						<span class="text-base-300 text-lg"> {addColorToMotivationTable}</span>
-					</div>
+			<a href="#motivation" class="justify-self-end" aria-label="Motivation"
+				><span class="icon-[vaadin--thumbs-up-o] bg-primary"></span></a
+			>
+			<a href="#motivation" aria-label="Motivation"
+				><div class="text-primary font-bold">Motivation</div></a
+			>
+			<div></div>
+			<a href="#diversity" aria-label="Diversity" class="justify-self-end"
+				><span class="icon-[material-symbols--diversity-1-rounded] bg-primary"></span></a
+			>
+			<a href="#diversity" aria-label="Diversity"
+				><div class="text-primary font-bold">Diversity</div></a
+			>
+			<div></div>
+			<a href="#overview" aria-label="Overview" class="justify-self-end"
+				><span class="icon-[grommet-icons--overview] bg-primary"></span></a
+			>
+			<a href="#overview" aria-label="Overview"
+				><div class="text-primary font-bold">Overview</div></a
+			>
+			<div></div>
+		</div>
+	</section>
+	<FramedSlide part="motivation" color="primary">
+		<div class="mx-5 grid grid-cols-3 gap-10">
+			<div>
+				<div class="mb-10 text-7xl font-bold">Relatedness</div>
+				<div class="mb-6 pl-4 text-left text-5xl">Sense of belonging</div>
+				<div class="mb-6 pl-4 text-left text-5xl">Community</div>
+				<div class="mb-6 pl-4 text-left text-5xl">Connection</div>
+				<div class="mb-6 pl-4 text-left text-5xl">Feeling cared for</div>
+				<div class="mb-6 pl-4 text-left text-5xl">Ability to care for others</div>
+			</div>
+			<div class="fragment fade-in">
+				<div class="mb-10 text-7xl font-bold">Autonomy</div>
+				<div class="mb-6 pl-4 text-left text-5xl">Making your own decisions</div>
+				<div class="mb-6 pl-4 text-left text-5xl">Be in the driver seat of your life</div>
+				<div class="mb-6 pl-4 text-left text-5xl">Reflection</div>
+			</div>
+			<div class="fragment fade-in">
+				<div class="mb-10 text-7xl font-bold">Competence</div>
+				<div class="mb-6 pl-4 text-left text-5xl">Gaining mastery</div>
+				<div class="mb-6 pl-4 text-left text-5xl">Being in flow</div>
+				<div class="mb-6 pl-4 text-left text-5xl">Making an impact</div>
+				<div class="mb-6 pl-4 text-left text-5xl">Build self-esteem</div>
+			</div>
+		</div>
+		{#snippet footer()}
+			<div>📖 Ib Ravn: Selvbestemmelsesteorien</div>
+		{/snippet}
+	</FramedSlide>
+	<FramedSlide
+		part="motivation"
+		section="table"
+		color={addColorToMotivationTable ? 'neutral-container' : 'primary'}
+		coloring={addColorToMotivationTable
+			? {
+					background: `rgb(${averageMotivationColors.background})`,
+					text: `rgb(${averageMotivationColors.text})`
+				}
+			: { background: '', text: 'var(--color-base-content)' }}
+	>
+		{#if motivationQuestion}
+			<MotivationTable
+				questionId={motivationQuestion?.id}
+				socketio={socketioMotivation}
+				averageMotivation={motivationAnswersAverage}
+				bind:averageColors={averageMotivationColors}
+			/>
+		{:else}
+			{@render interactiveElementNotAvailable('motivation table')}
+		{/if}
+		{#snippet footer()}
+			<div class="relative mt-5">
+				<div class="absolute top-0 right-0 mt-20 flex flex-row gap-2">
+					<span class="badge badge-lg badge-secondary shadow-outline shadow">
+						{motivationAnswersAverage}
+					</span>
+					<span class="badge badge-lg badge-info shadow-outline shadow">
+						{motivationAnswers.length}
+					</span>
+					<span class="text-base-300 text-lg"> {addColorToMotivationTable}</span>
 				</div>
-			{/snippet}
-		</FramedSlide>
-		<FramedSlide part="diversity" color="primary">
-			<div class="absolute top-40 left-30">
-				<ChatBubble variant="secondary" tailAngle={50} shadow={true}>
-					<div class="heading-large">12 different study lines</div>
-				</ChatBubble>
 			</div>
-			<div class="absolute top-60 right-5">
-				<ChatBubble variant="secondary" tailAngle={120} shadow={true}>
-					<div class="heading-large">Various different universities</div>
-				</ChatBubble>
-			</div>
-			<div class="absolute top-120 left-0">
-				<ChatBubble variant="secondary" tailAngle={30} shadow={true}>
-					<div class="heading-large">With and without Printed Circuit Board (PCB) experience</div>
-				</ChatBubble>
-			</div>
-			<div class="absolute top-170 right-0 w-200">
-				<ChatBubble variant="secondary" tailAngle={280} shadow={true}>
-					<div class="heading-large">All of you are welcome! 🫶</div>
-				</ChatBubble>
-			</div>
-		</FramedSlide>
-		<FramedSlide part="diversity" section="map" color="primary">
-			{#if placesQuestion}
-				<Map {revealInstance} socketio={socketioPlaces} />
-			{:else}
-				{@render interactiveElementNotAvailable('map')}
-			{/if}
-		</FramedSlide>
+		{/snippet}
+	</FramedSlide>
+	<FramedSlide part="diversity" color="primary">
+		<div class="absolute top-40 left-30">
+			<ChatBubble variant="secondary" tailAngle={50} shadow={true}>
+				<div class="heading-large">12 different study lines</div>
+			</ChatBubble>
+		</div>
+		<div class="absolute top-60 right-5">
+			<ChatBubble variant="secondary" tailAngle={120} shadow={true}>
+				<div class="heading-large">Various different universities</div>
+			</ChatBubble>
+		</div>
+		<div class="absolute top-120 left-0">
+			<ChatBubble variant="secondary" tailAngle={30} shadow={true}>
+				<div class="heading-large">With and without Printed Circuit Board (PCB) experience</div>
+			</ChatBubble>
+		</div>
+		<div class="absolute top-170 right-0 w-200">
+			<ChatBubble variant="secondary" tailAngle={280} shadow={true}>
+				<div class="heading-large">All of you are welcome! 🫶</div>
+			</ChatBubble>
+		</div>
+	</FramedSlide>
+	<FramedSlide part="diversity" section="map" color="primary">
+		{#if placesQuestion}
+			<Map {revealInstance} socketio={socketioPlaces} />
+		{:else}
+			{@render interactiveElementNotAvailable('map')}
+		{/if}
+	</FramedSlide>
 
-		<FramedSlide part="overview" color="primary">
-			<div class="grid grid-cols-2 gap-10">
-				<div class="flex flex-col gap-10">
-					<div class="text-secondary absolute top-2/12 left-70 -mt-10 text-7xl font-bold">
-						Modules
-					</div>
-					<button
-						class="btn btn-xl btn-gradient btn-secondary absolute top-3/12 left-30 h-30 w-150 justify-center rounded-full p-10 text-5xl font-semibold shadow-inner"
-						onclick={() => hideAllToggleOne('passives')}
-					>
-						Passives
-					</button>
-					<button
-						class="btn btn-xl btn-gradient btn-secondary absolute top-5/12 left-30 h-30 w-150 justify-center rounded-full p-10 text-5xl font-semibold shadow-inner"
-						onclick={() => hideAllToggleOne('emc')}
-					>
-						Electromagnetic Compatibility
-					</button>
-					<button
-						class="btn btn-xl btn-gradient btn-secondary absolute top-7/12 left-30 h-30 w-150 justify-center rounded-full p-10 text-5xl font-semibold shadow-inner"
-						onclick={() => hideAllToggleOne('pcb')}
-					>
-						Printed Circuit Boards
-					</button>
-					<button
-						class="btn btn-xl btn-gradient btn-secondary absolute top-9/12 left-30 h-30 w-150 justify-center rounded-full p-10 text-5xl font-semibold shadow-inner"
-						onclick={() => hideAllToggleOne('environment')}
-					>
-						Environment
-					</button>
-					<!-- <NodeButton
+	<FramedSlide part="overview" color="primary">
+		<div class="grid grid-cols-2 gap-10">
+			<div class="flex flex-col gap-10">
+				<div class="text-secondary absolute top-2/12 left-70 -mt-10 text-7xl font-bold">
+					Modules
+				</div>
+				<button
+					class="btn btn-xl btn-gradient btn-secondary absolute top-3/12 left-30 h-30 w-150 justify-center rounded-full p-10 text-5xl font-semibold shadow-inner"
+					onclick={() => hideAllToggleOne('passives')}
+				>
+					Passives
+				</button>
+				<button
+					class="btn btn-xl btn-gradient btn-secondary absolute top-5/12 left-30 h-30 w-150 justify-center rounded-full p-10 text-5xl font-semibold shadow-inner"
+					onclick={() => hideAllToggleOne('emc')}
+				>
+					Electromagnetic Compatibility
+				</button>
+				<button
+					class="btn btn-xl btn-gradient btn-secondary absolute top-7/12 left-30 h-30 w-150 justify-center rounded-full p-10 text-5xl font-semibold shadow-inner"
+					onclick={() => hideAllToggleOne('pcb')}
+				>
+					Printed Circuit Boards
+				</button>
+				<button
+					class="btn btn-xl btn-gradient btn-secondary absolute top-9/12 left-30 h-30 w-150 justify-center rounded-full p-10 text-5xl font-semibold shadow-inner"
+					onclick={() => hideAllToggleOne('environment')}
+				>
+					Environment
+				</button>
+				<!-- <NodeButton
 						class="btn-secondary top-3/12 left-30 h-30 w-150 rounded-full"
 						bind:toggleVariable={hideModules.passives}
 						aria-label="Modules"
 						>Passives
 					</NodeButton> -->
-					<!-- <NodeOverlay
+				<!-- <NodeOverlay
 						buttonExtraClasses="btn-secondary rounded-full top-3/12 left-30 w-150 h-30"
 						cardExtraClasses="bg-secondary-container text-secondary-container-content text-4xl"
 					>
@@ -463,7 +463,7 @@
 							<li>Simulation & hands-on</li>
 						</ul>
 					</NodeOverlay> -->
-					<!-- <NodeOverlay
+				<!-- <NodeOverlay
 						buttonExtraClasses="btn-secondary  rounded-full top-5/12 left-30 w-150 h-30"
 						cardExtraClasses="bg-secondary-container text-secondary-container-content text-4xl"
 					>
@@ -480,7 +480,7 @@
 							<li>Standardization</li>
 						</ul>
 					</NodeOverlay> -->
-					<!-- <NodeOverlay
+				<!-- <NodeOverlay
 						buttonExtraClasses="btn-secondary rounded-full top-7/12 left-30 w-150 h-30"
 						cardExtraClasses="bg-secondary-container text-secondary-container-content text-4xl"
 					>
@@ -513,378 +513,374 @@
 							<li>Radiation from space</li>
 						</ul>
 					</NodeOverlay> -->
-				</div>
-				<div>
-					<div class="flex flex-col items-center gap-10" bind:this={modulesContentColumn}>
-						<CardOverlay
-							class="bg-secondary-container text-secondary-container-content z-50 pt-6 text-4xl"
-							bind:hidden={hideModules.passives}
-						>
-							{#snippet header()}
-								<div class="text-5xl font-bold">Passives</div>
-							{/snippet}
-							<dl>
-								<dt>Content</dt>
-								<dd>Resisters, Capacitors, and Inductors</dd>
-							</dl>
-							<div class="grid grid-cols-6 gap-2">
-								<div class="col-span-3 text-left">
-									<dl class="pt-5">
-										<dt>Activities</dt>
-										<dd>Lecture</dd>
-										<dd>Simulation <br />& hands-on</dd>
-									</dl>
-									<dl class="pt-5">
-										<dt>Timeframe</dt>
-										<dd>Week 1 & 2</dd>
-									</dl>
-								</div>
-								<img
-									src="/flower.jpg"
-									alt="flower"
-									class="col-span-3 self-center mask-y-from-75% mask-y-to-100% mask-x-from-85% mask-x-to-100% object-cover opacity-70"
-								/>
-							</div>
-						</CardOverlay>
-						<CardOverlay
-							class="bg-secondary-container text-secondary-container-content z-50 pt-6 text-4xl"
-							bind:hidden={hideModules.emc}
-						>
-							{#snippet header()}
-								<div class="text-5xl font-bold">Electromagnetic Compatibility</div>
-							{/snippet}
-							<dl>
-								<dt>Content</dt>
-								<dd>Introduction & test setups</dd>
-								<dd>Physical phenomena & examples</dd>
-								<dd>Industrial examples</dd>
-								<dd>Standardization</dd>
-							</dl>
-							<div class="grid grid-cols-6 gap-2">
-								<div class="col-span-3 text-left">
-									<dl class="pt-5">
-										<dt>Activities</dt>
-										<dd>Flipped classroom</dd>
-										<dd>Guest lectures</dd>
-										<dd>Analysis, design, implementation, and experimental verification</dd>
-									</dl>
-									<dl class="pt-5">
-										<dt>Timeframe</dt>
-										<dd>Week 3 - 6</dd>
-									</dl>
-								</div>
-								<img
-									src="/snow-lake.jpg"
-									alt="snow lake"
-									class="col-span-3 self-end mask-y-from-75% mask-y-to-100% mask-x-from-85% mask-x-to-100% object-cover opacity-70"
-								/>
-							</div>
-						</CardOverlay>
-						<CardOverlay
-							class="bg-secondary-container text-secondary-container-content z-50 pt-6 text-4xl"
-							bind:hidden={hideModules.pcb}
-						>
-							{#snippet header()}
-								<div class="text-5xl font-bold">Printed Circuit Boards</div>
-							{/snippet}
-							<div class="grid grid-cols-6 gap-2">
-								<div class="col-span-3 text-left">
-									<dl>
-										<dt>Content</dt>
-										<dd>Design workflow</dd>
-										<dd>Computer Aided Design</dd>
-										<dd>Implementation</dd>
-										<dd>Design review</dd>
-										<dd>Finish design</dd>
-									</dl>
-								</div>
-								<img
-									src="/besseggen.jpg"
-									alt="Besseggen"
-									class="col-span-3 self-end mask-y-from-75% mask-y-to-100% mask-x-from-85% mask-x-to-100% object-cover opacity-70"
-								/>
-							</div>
-							<dl class="pt-5">
-								<dt>Activities</dt>
-								<dd>Lecture & Guest lecture</dd>
-								<dd>Design, implementation, and-over, design review, and finalization</dd>
-							</dl>
-							<dl class="pt-5">
-								<dt>Timeframe</dt>
-								<dd>Week 7 - 11</dd>
-							</dl>
-						</CardOverlay>
-						<CardOverlay
-							class="bg-secondary-container text-secondary-container-content z-50 pt-6 text-4xl"
-							bind:hidden={hideModules.environment}
-						>
-							{#snippet header()}
-								<div class="text-5xl font-bold">Environment</div>
-							{/snippet}
-							<dl>
-								<dt>Content</dt>
-								<dd>Thermal impact</dd>
-								<dd>Radiation from space</dd>
-							</dl>
-							<div class="grid grid-cols-6 gap-2">
-								<div class="col-span-2 text-left">
-									<dl class="pt-5">
-										<dt>Activities</dt>
-										<dd>Lecture</dd>
-										<dd>Guest lecture</dd>
-										<dd>Hands-on</dd>
-									</dl>
-									<dl class="pt-5">
-										<dt>Timeframe</dt>
-										<dd>Week 12 & 13</dd>
-									</dl>
-								</div>
-								<img
-									src="/sunset-vejlesoen.jpg"
-									alt="Sunset Vejlesøen"
-									class="col-span-4 self-end mask-y-from-75% mask-y-to-100% mask-x-from-85% mask-x-to-100% object-cover opacity-70"
-								/>
-							</div>
-						</CardOverlay>
-					</div>
-				</div>
 			</div>
-		</FramedSlide>
-		<FramedSlide part="overview" section="assessment-and-room" color="primary">
-			<div class="grid grid-cols-2 gap-10">
-				<div
-					bind:this={frameworkColumn}
-					class=" col-span-2 flex flex-col gap-10 transition-all duration-3000"
-					// {@attach toggleOnFragment(modulesContentColumn, 'hidden')}
-					// {@attach toggleOnFragment(frameworkColumn!, 'hidden', true)}
-				>
-					<div class="text-secondary text-7xl font-bold">Assessment</div>
-					<!-- absolute top-2/12 right-50 -mt-10 -->
-					<Card
-						id="assessment"
-						extraClasses="bg-secondary-container text-secondary-container-content text-4xl"
+			<div>
+				<div class="flex flex-col items-center gap-10" bind:this={modulesContentColumn}>
+					<CardOverlay
+						class="bg-secondary-container text-secondary-container-content z-50 pt-6 text-4xl"
+						bind:hidden={hideModules.passives}
 					>
-						<div class="grid grid-cols-12 gap-2">
-							<div class="col-span-8 text-left">
-								<dl>
-									<dt>Grading</dt>
-									<dd>Pass / Fail</dd>
+						{#snippet header()}
+							<div class="text-5xl font-bold">Passives</div>
+						{/snippet}
+						<dl>
+							<dt>Content</dt>
+							<dd>Resisters, Capacitors, and Inductors</dd>
+						</dl>
+						<div class="grid grid-cols-6 gap-2">
+							<div class="col-span-3 text-left">
+								<dl class="pt-5">
+									<dt>Activities</dt>
+									<dd>Lecture</dd>
+									<dd>Simulation <br />& hands-on</dd>
 								</dl>
-								<dl bind:this={learningReflections} class="pt-5">
-									<dt>Learning Reflections</dt>
-									<dd>
-										Per module, we ask you <b>one</b> mandatory question via Microsoft Forms:
-										<i>"What have you learned about ...?"</i>
-									</dd>
-								</dl>
-								<dl bind:this={handIn} class="pt-5">
-									<dt>Hand-in</dt>
-									<dd>
-										Hand in 3 out of 4 learning reflections to pass. As long as your answer is
-										addressing the module, we accept it.
-									</dd>
+								<dl class="pt-5">
+									<dt>Timeframe</dt>
+									<dd>Week 1 & 2</dd>
 								</dl>
 							</div>
 							<img
-								src="/bonfire.jpg"
-								alt="bonfire"
-								class="col-span-4 h-[500px] justify-self-center mask-y-from-75% mask-y-to-100% mask-x-from-85% mask-x-to-100% object-cover opacity-70"
+								src="/flower.jpg"
+								alt="flower"
+								class="col-span-3 self-center mask-y-from-75% mask-y-to-100% mask-x-from-85% mask-x-to-100% object-cover opacity-70"
 							/>
 						</div>
-					</Card>
-				</div>
-				<div
-					bind:this={roomColumn}
-					class="fragment fade-in flex hidden flex-col gap-10"
-					{@attach toggleOnFragment(frameworkColumn, 'col-span-2', true)}
-					{@attach toggleOnFragment(learningReflections, 'pt-5', true)}
-					{@attach toggleOnFragment(handIn, 'pt-5', true)}
-					{@attach toggleOnFragment(roomColumn!, 'hidden', true)}
-				>
-					<div class="text-secondary text-7xl font-bold">Room</div>
-					<!-- absolute top-2/12 right-70 -mt-10 -->
-					<Card
-						id="room"
-						extraClasses="bg-secondary-container text-secondary-container-content text-4xl"
+					</CardOverlay>
+					<CardOverlay
+						class="bg-secondary-container text-secondary-container-content z-50 pt-6 text-4xl"
+						bind:hidden={hideModules.emc}
 					>
-						<div class="text-5xl font-semibold">building 329A, room 020</div>
-						<div class="relative h-[500px] w-[730px]" style="perspective: 1800px;">
-							<button
-								type="button"
-								class="absolute inset-0 block cursor-pointer rounded-4xl"
-								onclick={() => {
-									roomImageFlipped = !roomImageFlipped;
-								}}
-								aria-pressed={roomImageFlipped}
-								aria-label={roomImageFlipped
-									? 'Show room teaching image'
-									: 'Show room experimental image'}
-							>
-								<div
-									class="relative h-full w-full rounded-4xl text-center transition-transform duration-700 ease-in-out [transform-style:preserve-3d]"
-									class:[transform:rotateY(180deg)]={roomImageFlipped}
-								>
-									<img
-										src="/room-teaching.jpg"
-										alt="Room Teaching"
-										class="shadow-secondary absolute inset-0 h-full w-full rounded-4xl object-cover shadow-lg [backface-visibility:hidden]"
-									/>
-									<img
-										src="/room-experimental.jpg"
-										alt="Room Experimental"
-										class="shadow-secondary absolute inset-0 h-full w-full [transform:rotateY(180deg)] rounded-4xl object-cover shadow-lg [backface-visibility:hidden]"
-									/>
-								</div>
-							</button>
+						{#snippet header()}
+							<div class="text-5xl font-bold">Electromagnetic Compatibility</div>
+						{/snippet}
+						<dl>
+							<dt>Content</dt>
+							<dd>Introduction & test setups</dd>
+							<dd>Physical phenomena & examples</dd>
+							<dd>Industrial examples</dd>
+							<dd>Standardization</dd>
+						</dl>
+						<div class="grid grid-cols-6 gap-2">
+							<div class="col-span-3 text-left">
+								<dl class="pt-5">
+									<dt>Activities</dt>
+									<dd>Flipped classroom</dd>
+									<dd>Guest lectures</dd>
+									<dd>Analysis, design, implementation, and experimental verification</dd>
+								</dl>
+								<dl class="pt-5">
+									<dt>Timeframe</dt>
+									<dd>Week 3 - 6</dd>
+								</dl>
+							</div>
+							<img
+								src="/snow-lake.jpg"
+								alt="snow lake"
+								class="col-span-3 self-end mask-y-from-75% mask-y-to-100% mask-x-from-85% mask-x-to-100% object-cover opacity-70"
+							/>
 						</div>
-					</Card>
+					</CardOverlay>
+					<CardOverlay
+						class="bg-secondary-container text-secondary-container-content z-50 pt-6 text-4xl"
+						bind:hidden={hideModules.pcb}
+					>
+						{#snippet header()}
+							<div class="text-5xl font-bold">Printed Circuit Boards</div>
+						{/snippet}
+						<div class="grid grid-cols-6 gap-2">
+							<div class="col-span-3 text-left">
+								<dl>
+									<dt>Content</dt>
+									<dd>Design workflow</dd>
+									<dd>Computer Aided Design</dd>
+									<dd>Implementation</dd>
+									<dd>Design review</dd>
+									<dd>Finish design</dd>
+								</dl>
+							</div>
+							<img
+								src="/besseggen.jpg"
+								alt="Besseggen"
+								class="col-span-3 self-end mask-y-from-75% mask-y-to-100% mask-x-from-85% mask-x-to-100% object-cover opacity-70"
+							/>
+						</div>
+						<dl class="pt-5">
+							<dt>Activities</dt>
+							<dd>Lecture & Guest lecture</dd>
+							<dd>Design, implementation, and-over, design review, and finalization</dd>
+						</dl>
+						<dl class="pt-5">
+							<dt>Timeframe</dt>
+							<dd>Week 7 - 11</dd>
+						</dl>
+					</CardOverlay>
+					<CardOverlay
+						class="bg-secondary-container text-secondary-container-content z-50 pt-6 text-4xl"
+						bind:hidden={hideModules.environment}
+					>
+						{#snippet header()}
+							<div class="text-5xl font-bold">Environment</div>
+						{/snippet}
+						<dl>
+							<dt>Content</dt>
+							<dd>Thermal impact</dd>
+							<dd>Radiation from space</dd>
+						</dl>
+						<div class="grid grid-cols-6 gap-2">
+							<div class="col-span-2 text-left">
+								<dl class="pt-5">
+									<dt>Activities</dt>
+									<dd>Lecture</dd>
+									<dd>Guest lecture</dd>
+									<dd>Hands-on</dd>
+								</dl>
+								<dl class="pt-5">
+									<dt>Timeframe</dt>
+									<dd>Week 12 & 13</dd>
+								</dl>
+							</div>
+							<img
+								src="/sunset-vejlesoen.jpg"
+								alt="Sunset Vejlesøen"
+								class="col-span-4 self-end mask-y-from-75% mask-y-to-100% mask-x-from-85% mask-x-to-100% object-cover opacity-70"
+							/>
+						</div>
+					</CardOverlay>
 				</div>
 			</div>
-		</FramedSlide>
-		<FramedSlide part="overview" section="team" color="primary">
-			<Team />
-		</FramedSlide>
-		<FramedSlide part="overview" section="bubbles" color="primary">
-			<div class="absolute top-30 left-0">
-				<ChatBubble variant="success" tailAngle={150} shadow={true}>
-					<div class="heading-large">Everything in the course is an invitation.</div>
-				</ChatBubble>
-			</div>
-			<div class="fragment fade-in absolute top-60 right-5">
-				<ChatBubble variant="success" tailAngle={50} shadow={true}>
-					<div class="heading-large">You never disturb, you always contribute.</div>
-				</ChatBubble>
-			</div>
-			<div class="fragment fade-in absolute top-90 left-0">
-				<ChatBubble variant="success" tailAngle={30} shadow={true}>
-					<div class="heading-large">There's no cheating: use what's available.</div>
-				</ChatBubble>
-			</div>
-			<div class="fragment fade-in absolute top-130 right-15">
-				<ChatBubble variant="success" tailAngle={190} shadow={true}>
-					<div class="heading-large">No 'deadlines' ☠️ only 'living lines' 🌱.</div>
-				</ChatBubble>
-			</div>
-			<div class="fragment fade-in absolute top-150 left-20 w-200">
-				<ChatBubble variant="success" tailAngle={310} shadow={true}>
-					<div class="heading-large">
-						No ambitions on other peoples behalf. <br />
-						Only support intrinsic motivation.
+		</div>
+	</FramedSlide>
+	<FramedSlide part="overview" section="assessment-and-room" color="primary">
+		<div class="grid grid-cols-2 gap-10">
+			<div
+				bind:this={frameworkColumn}
+				class=" col-span-2 flex flex-col gap-10 transition-all duration-3000"
+				// {@attach toggleOnFragment(modulesContentColumn, 'hidden')}
+				// {@attach toggleOnFragment(frameworkColumn!, 'hidden', true)}
+			>
+				<div class="text-secondary text-7xl font-bold">Assessment</div>
+				<!-- absolute top-2/12 right-50 -mt-10 -->
+				<Card
+					id="assessment"
+					extraClasses="bg-secondary-container text-secondary-container-content text-4xl"
+				>
+					<div class="grid grid-cols-12 gap-2">
+						<div class="col-span-8 text-left">
+							<dl>
+								<dt>Grading</dt>
+								<dd>Pass / Fail</dd>
+							</dl>
+							<dl bind:this={learningReflections} class="pt-5">
+								<dt>Learning Reflections</dt>
+								<dd>
+									Per module, we ask you <b>one</b> mandatory question via Microsoft Forms:
+									<i>"What have you learned about ...?"</i>
+								</dd>
+							</dl>
+							<dl bind:this={handIn} class="pt-5">
+								<dt>Hand-in</dt>
+								<dd>
+									Hand in 3 out of 4 learning reflections to pass. As long as your answer is
+									addressing the module, we accept it.
+								</dd>
+							</dl>
+						</div>
+						<img
+							src="/bonfire.jpg"
+							alt="bonfire"
+							class="col-span-4 h-[500px] justify-self-center mask-y-from-75% mask-y-to-100% mask-x-from-85% mask-x-to-100% object-cover opacity-70"
+						/>
 					</div>
-				</ChatBubble>
+				</Card>
 			</div>
-		</FramedSlide>
-		<section id="comments-and-questions">
-			{#if commentsQuestion}
-				<div class="r-stretch mx-10 mt-10">
-					<div class="text-left">
-						{#if socketioComments?.pendingEntities[0]}
-							<label class="heading text-6xl" for="sharing">
-								Do you have comments or questions? 🤔
-							</label>
-							<textarea
-								class="heading placeholder:title-large w-[90%] resize-none border border-2 p-2 shadow-inner placeholder:italic"
-								placeholder="Please type here - sharing is caring 🫶 - Press Enter to send."
-								id="sharing"
-								bind:value={socketioComments.pendingEntities[0].content}
-								onkeydown={(event) => {
-									if (event.key === 'Enter' && !event.shiftKey) {
-										event.preventDefault();
-										socketioComments.addPendingAccessPolicy(
-											socketioComments.pendingEntities[0].id,
-											{
-												public: true,
-												action: Action.READ
-											}
-										);
-										socketioComments.submitEntity(
-											socketioComments.pendingEntities[0],
-											commentsQuestion?.id,
-											true
-										);
-										socketioComments.createPending();
-									}
-								}}></textarea>
-						{:else}
-							<div class="label text-error">
-								<span class="icon-[svg-spinners--12-dots-scale-rotate] size-6"></span>connecting ...
-							</div>
-						{/if}
-					</div>
-
-					{#snippet messageAnswer(text: string, date: Date | undefined, index: number)}
-						<div class="chat chat-receiver">
+			<div
+				bind:this={roomColumn}
+				class="fragment fade-in flex hidden flex-col gap-10"
+				{@attach toggleOnFragment(frameworkColumn, 'col-span-2', true)}
+				{@attach toggleOnFragment(learningReflections, 'pt-5', true)}
+				{@attach toggleOnFragment(handIn, 'pt-5', true)}
+				{@attach toggleOnFragment(roomColumn!, 'hidden', true)}
+			>
+				<div class="text-secondary text-7xl font-bold">Room</div>
+				<!-- absolute top-2/12 right-70 -mt-10 -->
+				<Card
+					id="room"
+					extraClasses="bg-secondary-container text-secondary-container-content text-4xl"
+				>
+					<div class="text-5xl font-semibold">building 329A, room 020</div>
+					<div class="relative h-[500px] w-[730px]" style="perspective: 1800px;">
+						<button
+							type="button"
+							class="absolute inset-0 block cursor-pointer rounded-4xl"
+							onclick={() => {
+								roomImageFlipped = !roomImageFlipped;
+							}}
+							aria-pressed={roomImageFlipped}
+							aria-label={roomImageFlipped
+								? 'Show room teaching image'
+								: 'Show room experimental image'}
+						>
 							<div
-								class="chat-bubble text-left text-wrap break-words {index % 2
-									? 'chat-bubble-accent'
-									: 'chat-bubble-primary'}"
+								class="relative h-full w-full rounded-4xl text-center transition-transform duration-700 ease-in-out [transform-style:preserve-3d]"
+								class:[transform:rotateY(180deg)]={roomImageFlipped}
 							>
-								{text}
-								<div class="label text-right">
-									{date
-										? new Date(date).toLocaleString(undefined, {
-												dateStyle: 'short',
-												timeStyle: 'short'
-											})
-										: 'Thanks for your contribution 🙏'}
-								</div>
+								<img
+									src="/room-teaching.jpg"
+									alt="Room Teaching"
+									class="shadow-secondary absolute inset-0 h-full w-full rounded-4xl object-cover shadow-lg [backface-visibility:hidden]"
+								/>
+								<img
+									src="/room-experimental.jpg"
+									alt="Room Experimental"
+									class="shadow-secondary absolute inset-0 h-full w-full [transform:rotateY(180deg)] rounded-4xl object-cover shadow-lg [backface-visibility:hidden]"
+								/>
+							</div>
+						</button>
+					</div>
+				</Card>
+			</div>
+		</div>
+	</FramedSlide>
+	<FramedSlide part="overview" section="team" color="primary">
+		<Team />
+	</FramedSlide>
+	<FramedSlide part="overview" section="bubbles" color="primary">
+		<div class="absolute top-30 left-0">
+			<ChatBubble variant="success" tailAngle={150} shadow={true}>
+				<div class="heading-large">Everything in the course is an invitation.</div>
+			</ChatBubble>
+		</div>
+		<div class="fragment fade-in absolute top-60 right-5">
+			<ChatBubble variant="success" tailAngle={50} shadow={true}>
+				<div class="heading-large">You never disturb, you always contribute.</div>
+			</ChatBubble>
+		</div>
+		<div class="fragment fade-in absolute top-90 left-0">
+			<ChatBubble variant="success" tailAngle={30} shadow={true}>
+				<div class="heading-large">There's no cheating: use what's available.</div>
+			</ChatBubble>
+		</div>
+		<div class="fragment fade-in absolute top-130 right-15">
+			<ChatBubble variant="success" tailAngle={190} shadow={true}>
+				<div class="heading-large">No 'deadlines' ☠️ only 'living lines' 🌱.</div>
+			</ChatBubble>
+		</div>
+		<div class="fragment fade-in absolute top-150 left-20 w-200">
+			<ChatBubble variant="success" tailAngle={310} shadow={true}>
+				<div class="heading-large">
+					No ambitions on other peoples behalf. <br />
+					Only support intrinsic motivation.
+				</div>
+			</ChatBubble>
+		</div>
+	</FramedSlide>
+	<section id="comments-and-questions">
+		{#if commentsQuestion}
+			<div class="r-stretch mx-10 mt-10">
+				<div class="text-left">
+					{#if socketioComments?.pendingEntities[0]}
+						<label class="heading text-6xl" for="sharing">
+							Do you have comments or questions? 🤔
+						</label>
+						<textarea
+							class="heading placeholder:title-large w-[90%] resize-none border border-2 p-2 shadow-inner placeholder:italic"
+							placeholder="Please type here - sharing is caring 🫶 - Press Enter to send."
+							id="sharing"
+							bind:value={socketioComments.pendingEntities[0].content}
+							onkeydown={(event) => {
+								if (event.key === 'Enter' && !event.shiftKey) {
+									event.preventDefault();
+									socketioComments.addPendingAccessPolicy(socketioComments.pendingEntities[0].id, {
+										public: true,
+										action: Action.READ
+									});
+									socketioComments.submitEntity(
+										socketioComments.pendingEntities[0],
+										commentsQuestion?.id,
+										true
+									);
+									socketioComments.createPending();
+								}
+							}}></textarea>
+					{:else}
+						<div class="label text-error">
+							<span class="icon-[svg-spinners--12-dots-scale-rotate] size-6"></span>connecting ...
+						</div>
+					{/if}
+				</div>
+
+				{#snippet messageAnswer(text: string, date: Date | undefined, index: number)}
+					<div class="chat chat-receiver">
+						<div
+							class="chat-bubble text-left text-wrap break-words {index % 2
+								? 'chat-bubble-accent'
+								: 'chat-bubble-primary'}"
+						>
+							{text}
+							<div class="label text-right">
+								{date
+									? new Date(date).toLocaleString(undefined, {
+											dateStyle: 'short',
+											timeStyle: 'short'
+										})
+									: 'Thanks for your contribution 🙏'}
 							</div>
 						</div>
-					{/snippet}
-					<div class="heading mt-8">
-						<div class="mx-5 grid max-h-[600px] grid-cols-3 gap-6 overflow-y-auto">
-							{#each commentsAnswersSorted as answer, index (answer.id)}
-								<div animate:flip={{ duration: 300 }}>
-									{@render messageAnswer(answer.content, answer.creation_date, index)}
-								</div>
-							{/each}
-						</div>
+					</div>
+				{/snippet}
+				<div class="heading mt-8">
+					<div class="mx-5 grid max-h-[600px] grid-cols-3 gap-6 overflow-y-auto">
+						{#each commentsAnswersSorted as answer, index (answer.id)}
+							<div animate:flip={{ duration: 300 }}>
+								{@render messageAnswer(answer.content, answer.creation_date, index)}
+							</div>
+						{/each}
 					</div>
 				</div>
-				<div class="col-span-12 mr-20 text-right text-xl">
-					By entering your text here, you agree to the <a
-						href="#terms-and-conditions"
-						class="link link-animated">terms and conditions</a
-					>.
-				</div>
-			{:else}
-				{@render interactiveElementNotAvailable('comments and questions dialog')}
-			{/if}
-		</section>
+			</div>
+			<div class="col-span-12 mr-20 text-right text-xl">
+				By entering your text here, you agree to the <a
+					href="#terms-and-conditions"
+					class="link link-animated">terms and conditions</a
+				>.
+			</div>
+		{:else}
+			{@render interactiveElementNotAvailable('comments and questions dialog')}
+		{/if}
+	</section>
 
-		<section>
-			<div class="text-base-content-variant text-[200px] font-bold">Thank you! 🙏</div>
-		</section>
-		<FramedSlide part="terms-and-conditions" color="secondary">
-			<div class="text-5xl font-bold">Terms & Conditions</div>
-			<dl>
-				<dt>Data storage</dt>
-				<dd>
-					By entering your data, you acknowledge, that your data is stored in a database on the
-					Technical University of Denmark's tenant in Microsoft Azure.
-				</dd>
-			</dl>
-			<dl>
-				<dt>Visibility of data</dt>
-				<dd>
-					Currently these slides are under development, there is no login and hence everyone on the
-					internet with the link to the presentation can see what you have entered.
-				</dd>
-			</dl>
-			<dl>
-				<dt>Deletion of data</dt>
-				<dd>
-					In case you want any of your data deleted, please send a screenshot of what you want to
-					have deleted to Arnold.
-				</dd>
-			</dl>
-			{#if returnToSlide}
-				<div>
-					<span class="icon-[fa-regular--hand-point-right] mr-4 size-7"></span>Back to
-					<a href="#{returnToSlide}" class="link link-animated">{returnToSlide.replace('-', ' ')}</a
-					>.
-				</div>
-			{/if}
-		</FramedSlide>
-	{/if}
+	<section>
+		<div class="text-base-content-variant text-[200px] font-bold">Thank you! 🙏</div>
+	</section>
+	<FramedSlide part="terms-and-conditions" color="secondary">
+		<div class="text-5xl font-bold">Terms & Conditions</div>
+		<dl>
+			<dt>Data storage</dt>
+			<dd>
+				By entering your data, you acknowledge, that your data is stored in a database on the
+				Technical University of Denmark's tenant in Microsoft Azure.
+			</dd>
+		</dl>
+		<dl>
+			<dt>Visibility of data</dt>
+			<dd>
+				Currently these slides are under development, there is no login and hence everyone on the
+				internet with the link to the presentation can see what you have entered.
+			</dd>
+		</dl>
+		<dl>
+			<dt>Deletion of data</dt>
+			<dd>
+				In case you want any of your data deleted, please send a screenshot of what you want to have
+				deleted to Arnold.
+			</dd>
+		</dl>
+		{#if returnToSlide}
+			<div>
+				<span class="icon-[fa-regular--hand-point-right] mr-4 size-7"></span>Back to
+				<a href="#{returnToSlide}" class="link link-animated">{returnToSlide.replace('-', ' ')}</a>.
+			</div>
+		{/if}
+	</FramedSlide>
+	<!-- {/if} -->
 </RevealJs>
