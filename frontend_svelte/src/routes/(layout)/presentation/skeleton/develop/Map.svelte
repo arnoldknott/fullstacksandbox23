@@ -252,9 +252,10 @@
 </div>
 
 <div class="grid h-full grid-cols-12 grid-rows-[auto_1fr_auto] gap-2">
-	<div class="col-span-12 h-fit text-center text-5xl">
+	<div class="col-span-9 h-fit text-center text-5xl">
 		What places do you have a special relation to?
 	</div>
+	<div class="col-span-3"></div>
 	<div class="col-span-9 h-full" id="diversityMap" data-prevent-swipe></div>
 	<div class="col-span-3 overflow-y-scroll">
 		<div class="mb-3 text-4xl">Click on the map<br /> to add your place</div>
