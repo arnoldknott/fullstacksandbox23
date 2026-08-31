@@ -249,6 +249,8 @@
 	let modulesContentColumn: HTMLDivElement | undefined = $state();
 	let frameworkColumn: HTMLDivElement | undefined = $state();
 	let roomColumn: HTMLDivElement | undefined = $state();
+	let learningReflections: HTMLElement | undefined = $state();
+	let handIn: HTMLElement | undefined = $state();
 	let roomImageFlipped = $state(false);
 
 	let hideModules = $state({
@@ -658,97 +660,104 @@
 							</div>
 						</CardOverlay>
 					</div>
-					<div
-						bind:this={frameworkColumn}
-						class="fragment fade-in flex hidden flex-col gap-10"
-						{@attach toggleOnFragment(modulesContentColumn, 'hidden')}
-						{@attach toggleOnFragment(frameworkColumn!, 'hidden', true)}
+				</div>
+			</div>
+		</FramedSlide>
+		<FramedSlide part="overview" section="assessment-and-room" color="primary">
+			<div class="grid grid-cols-2 gap-10">
+				<div
+					bind:this={frameworkColumn}
+					class=" col-span-2 flex flex-col gap-10 transition-all duration-3000"
+					// {@attach toggleOnFragment(modulesContentColumn, 'hidden')}
+					// {@attach toggleOnFragment(frameworkColumn!, 'hidden', true)}
+				>
+					<div class="text-secondary text-7xl font-bold">Assessment</div>
+					<!-- absolute top-2/12 right-50 -mt-10 -->
+					<Card
+						id="assessment"
+						extraClasses="bg-secondary-container text-secondary-container-content text-4xl"
 					>
-						<div class="text-secondary absolute top-2/12 right-50 -mt-10 text-7xl font-bold">
-							Assessment
-						</div>
-						<Card
-							id="assessment"
-							extraClasses="bg-secondary-container text-secondary-container-content text-4xl mt-10"
-						>
-							<div class="grid grid-cols-6 gap-2">
-								<div class="col-span-4 text-left">
-									<dl>
-										<dt>Grading</dt>
-										<dd>Pass / Fail</dd>
-									</dl>
-									<dl class="pt-5">
-										<dt>Learning Reflections</dt>
-										<dd>
-											Per module, we ask you <b>one</b> mandatory question via Microsoft Forms:
-											<i>"What have you learned about ...?"</i>
-										</dd>
-										<dd>
-											Hand in 3 out of those 4 learning reflections to pass. As long as your answer
-											is addressing the module, we accept it.
-										</dd>
-									</dl>
-								</div>
-								<img
-									src="/bonfire.jpg"
-									alt="bonfire"
-									class="col-span-2 h-[500px] self-center mask-y-from-75% mask-y-to-100% mask-x-from-85% mask-x-to-100% object-cover opacity-70"
-								/>
+						<div class="grid grid-cols-12 gap-2">
+							<div class="col-span-8 text-left">
+								<dl>
+									<dt>Grading</dt>
+									<dd>Pass / Fail</dd>
+								</dl>
+								<dl bind:this={learningReflections} class="pt-5">
+									<dt>Learning Reflections</dt>
+									<dd>
+										Per module, we ask you <b>one</b> mandatory question via Microsoft Forms:
+										<i>"What have you learned about ...?"</i>
+									</dd>
+								</dl>
+								<dl bind:this={handIn} class="pt-5">
+									<dt>Hand-in</dt>
+									<dd>
+										Hand in 3 out of 4 learning reflections to pass. As long as your answer is
+										addressing the module, we accept it.
+									</dd>
+								</dl>
 							</div>
-						</Card>
-					</div>
-					<div
-						bind:this={roomColumn}
-						class="fragment fade-in flex hidden flex-col gap-10"
-						{@attach toggleOnFragment(frameworkColumn, 'hidden')}
-						{@attach toggleOnFragment(roomColumn!, 'hidden', true)}
-					>
-						<div class="text-secondary absolute top-2/12 right-70 -mt-10 text-7xl font-bold">
-							Room
+							<img
+								src="/bonfire.jpg"
+								alt="bonfire"
+								class="col-span-4 h-[500px] justify-self-center mask-y-from-75% mask-y-to-100% mask-x-from-85% mask-x-to-100% object-cover opacity-70"
+							/>
 						</div>
-						<Card
-							id="room"
-							extraClasses="bg-secondary-container text-secondary-container-content text-4xl mt-10"
-						>
-							<div class="text-5xl font-semibold">building 329A, room 020</div>
-							<div class="relative h-[500px] w-[730px]" style="perspective: 1800px;">
-								<button
-									type="button"
-									class="absolute inset-0 block cursor-pointer rounded-4xl"
-									onclick={() => {
-										roomImageFlipped = !roomImageFlipped;
-									}}
-									aria-pressed={roomImageFlipped}
-									aria-label={roomImageFlipped
-										? 'Show room teaching image'
-										: 'Show room experimental image'}
+					</Card>
+				</div>
+				<div
+					bind:this={roomColumn}
+					class="fragment fade-in flex hidden flex-col gap-10"
+					{@attach toggleOnFragment(frameworkColumn, 'col-span-2', true)}
+					{@attach toggleOnFragment(learningReflections, 'pt-5', true)}
+					{@attach toggleOnFragment(handIn, 'pt-5', true)}
+					{@attach toggleOnFragment(roomColumn!, 'hidden', true)}
+				>
+					<div class="text-secondary text-7xl font-bold">Room</div>
+					<!-- absolute top-2/12 right-70 -mt-10 -->
+					<Card
+						id="room"
+						extraClasses="bg-secondary-container text-secondary-container-content text-4xl"
+					>
+						<div class="text-5xl font-semibold">building 329A, room 020</div>
+						<div class="relative h-[500px] w-[730px]" style="perspective: 1800px;">
+							<button
+								type="button"
+								class="absolute inset-0 block cursor-pointer rounded-4xl"
+								onclick={() => {
+									roomImageFlipped = !roomImageFlipped;
+								}}
+								aria-pressed={roomImageFlipped}
+								aria-label={roomImageFlipped
+									? 'Show room teaching image'
+									: 'Show room experimental image'}
+							>
+								<div
+									class="relative h-full w-full rounded-4xl text-center transition-transform duration-700 ease-in-out [transform-style:preserve-3d]"
+									class:[transform:rotateY(180deg)]={roomImageFlipped}
 								>
-									<div
-										class="relative h-full w-full rounded-4xl text-center transition-transform duration-700 ease-in-out [transform-style:preserve-3d]"
-										class:[transform:rotateY(180deg)]={roomImageFlipped}
-									>
-										<img
-											src="/room-teaching.jpg"
-											alt="Room Teaching"
-											class="shadow-secondary absolute inset-0 h-full w-full rounded-4xl object-cover shadow-lg [backface-visibility:hidden]"
-										/>
-										<img
-											src="/room-experimental.jpg"
-											alt="Room Experimental"
-											class="shadow-secondary absolute inset-0 h-full w-full [transform:rotateY(180deg)] rounded-4xl object-cover shadow-lg [backface-visibility:hidden]"
-										/>
-									</div>
-								</button>
-							</div>
-						</Card>
-					</div>
+									<img
+										src="/room-teaching.jpg"
+										alt="Room Teaching"
+										class="shadow-secondary absolute inset-0 h-full w-full rounded-4xl object-cover shadow-lg [backface-visibility:hidden]"
+									/>
+									<img
+										src="/room-experimental.jpg"
+										alt="Room Experimental"
+										class="shadow-secondary absolute inset-0 h-full w-full [transform:rotateY(180deg)] rounded-4xl object-cover shadow-lg [backface-visibility:hidden]"
+									/>
+								</div>
+							</button>
+						</div>
+					</Card>
 				</div>
 			</div>
 		</FramedSlide>
 		<FramedSlide part="overview" section="team" color="primary">
 			<Team />
 		</FramedSlide>
-		<FramedSlide part="overview" section="bubbles" color="success">
+		<FramedSlide part="overview" section="bubbles" color="primary">
 			<div class="absolute top-30 left-0">
 				<ChatBubble variant="success" tailAngle={150} shadow={true}>
 					<div class="heading-large">Everything in the course is an invitation.</div>
