@@ -86,7 +86,7 @@
 						});
 						place.marker = leafletModule?.marker(place.coords, { icon: emojiIcon }).addTo(map);
 						place.marker?.bindPopup(
-							`<div class="bg-secondary-container text-secondary-container-content rounded-lg p-4">
+							`<div class="bg-secondary-container text-secondary-container-content rounded-lg p-4 pr-8">
                                 <dt class="text-3xl">${place.emoji}<span class="ml-3 ${!place.name ? 'font-normal opacity-60' : ''}">${place.name || 'Anonymous'}</span></dt>
                                 ${place.text ? `<dd class="text-2xl ">${place.text}</dd>` : ''}
                             </div>`,
@@ -136,7 +136,7 @@
 				popupNewPlace.classList.remove('hidden');
 				leafletModule
 					?.popup({
-						minWidth: 300,
+						minWidth: 350,
 						className: 'place-popup'
 					})
 					.setLatLng(event.latlng)
@@ -171,7 +171,7 @@
 
 <div
 	bind:this={popupNewPlace}
-	class="bg-secondary-container text-secondary-container-content grid hidden w-full grid-cols-6 gap-2 rounded-lg p-4"
+	class="bg-secondary-container text-secondary-container-content grid hidden w-full grid-cols-6 gap-2 rounded-lg p-4 pr-8"
 >
 	<div
 		bind:this={emojiPickerTooltip}
@@ -213,11 +213,13 @@
 	<div class="textarea-filled textarea-base-content col-span-6 w-full">
 		<textarea
 			class="textarea"
-			placeholder="What connects you to this place?"
+			placeholder="your connection to this place"
 			id="newPlaceText"
 			bind:value={newPlaceText}
 			name="text"></textarea>
-		<label class="textarea-filled-label" for="newPlaceText">your connection to this place</label>
+		<label class="textarea-filled-label text-lg" for="newPlaceText">
+			What connects you to this place?
+		</label>
 	</div>
 	<div class="col-span-6 text-right">
 		<button
@@ -252,9 +254,10 @@
 </div>
 
 <div class="grid h-full grid-cols-12 grid-rows-[auto_1fr_auto] gap-2">
-	<div class="col-span-12 h-fit text-center text-5xl">
+	<div class="col-span-9 h-fit text-center text-5xl">
 		What places do you have a special relation to?
 	</div>
+	<div class="col-span-3 h-fit text-center text-5xl"></div>
 	<div class="col-span-9 h-full" id="diversityMap" data-prevent-swipe></div>
 	<div class="col-span-3 overflow-y-scroll">
 		<div class="mb-3 text-4xl">Click on the map<br /> to add your place</div>

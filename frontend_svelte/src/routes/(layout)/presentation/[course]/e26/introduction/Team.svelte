@@ -47,7 +47,11 @@
 			<dl class="p-4">
 				<dt>Module</dt>
 				<dd class="mb-5">Printed Circuit Boards</dd>
-				<dt><a href="https://orbit.dtu.dk/en/persons/ahmed-ammar/">Contact</a></dt>
+				<dt>
+					<a class="link link-animated" href="https://orbit.dtu.dk/en/persons/ahmed-ammar/"
+						>Contact</a
+					>
+				</dt>
 			</dl>
 		</Person>
 		<Person
@@ -60,10 +64,14 @@
 			)}
 		>
 			<dl class="p-4">
-				<dt>Course responsible</dt>
+				<dt class="mb-5">Course responsible</dt>
 				<dt>Module</dt>
 				<dd class="mb-5">Electromagentic Compatibility</dd>
-				<dt><a href="https://orbit.dtu.dk/en/persons/arnold-knott/">Contact</a></dt>
+				<dt>
+					<a class="link link-animated" href="https://orbit.dtu.dk/en/persons/arnold-knott/"
+						>Contact</a
+					>
+				</dt>
 			</dl>
 		</Person>
 		<Person
@@ -76,10 +84,14 @@
 			)}
 		>
 			<dl class="p-4">
-				<dt>Course responsible</dt>
+				<dt class="mb-5">Course responsible</dt>
 				<dt>Module</dt>
 				<dd class="mb-5">Printed Circuit Boards</dd>
-				<dt><a href="https://orbit.dtu.dk/en/persons/gabriel-zsurzsan/">Contact</a></dt>
+				<dt>
+					<a class="link link-animated" href="https://orbit.dtu.dk/en/persons/gabriel-zsurzsan/"
+						>Contact</a
+					>
+				</dt>
 			</dl>
 		</Person>
 
@@ -94,9 +106,14 @@
 		>
 			<dl class="p-4">
 				<dt>Modules</dt>
-				<dd class="mb-5">Passive Components</dd>
-				<dd class="mb-5">environment</dd>
-				<dt><a href="https://orbit.dtu.dk/en/persons/muhammad-farasat-abbas/">Contact</a></dt>
+				<dd>Passive Components</dd>
+				<dd class="mb-5">Environment</dd>
+				<dt>
+					<a
+						class="link link-animated"
+						href="https://orbit.dtu.dk/en/persons/muhammad-farasat-abbas/">Contact</a
+					>
+				</dt>
 			</dl>
 		</Person>
 		<Person
