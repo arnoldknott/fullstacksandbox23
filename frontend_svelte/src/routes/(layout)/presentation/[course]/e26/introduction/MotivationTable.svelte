@@ -62,9 +62,9 @@
 {/snippet } -->
 
 <div class="grid h-fit grid-cols-6 gap-3">
-	<div>Amotivation</div>
-	<div class="col-span-4">Extrinsic</div>
-	<div>Intrinsic</div>
+	<div class="font-semibold">Amotivation</div>
+	<div class="col-span-4 font-semibold">Extrinsic</div>
+	<div class="font-semibold">Intrinsic</div>
 
 	<div class="heading fragment flex flex-col">
 		<div class="invisible">dummy</div>
