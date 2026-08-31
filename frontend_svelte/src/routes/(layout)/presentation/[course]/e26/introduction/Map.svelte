@@ -86,7 +86,7 @@
 						});
 						place.marker = leafletModule?.marker(place.coords, { icon: emojiIcon }).addTo(map);
 						place.marker?.bindPopup(
-							`<div class="bg-secondary-container text-secondary-container-content rounded-lg p-4">
+							`<div class="bg-secondary-container text-secondary-container-content rounded-lg p-4 pr-8">
                                 <dt class="text-3xl">${place.emoji}<span class="ml-3 ${!place.name ? 'font-normal opacity-60' : ''}">${place.name || 'Anonymous'}</span></dt>
                                 ${place.text ? `<dd class="text-2xl ">${place.text}</dd>` : ''}
                             </div>`,
