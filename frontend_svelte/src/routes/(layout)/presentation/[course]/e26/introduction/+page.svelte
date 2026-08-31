@@ -878,7 +878,9 @@
 		{#if returnToSlide}
 			<div>
 				<span class="icon-[fa-regular--hand-point-right] mr-4 size-7"></span>Back to
-				<a href="#{returnToSlide}" class="link link-animated">{returnToSlide.replace('-', ' ')}</a>.
+				<a href="#{returnToSlide}" class="link link-animated"
+					>{returnToSlide.replaceAll('-', ' ')}</a
+				>.
 			</div>
 		{/if}
 	</FramedSlide>
