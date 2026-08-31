@@ -29,9 +29,10 @@
 			{name}
 		{/snippet}
 		{#snippet header()}
-			<div class="text-5xl font-bold">{cardHeader}</div>
+			<div class="text-left text-5xl font-bold">{cardHeader}</div>
 		{/snippet}
 		<div class="flex flex-row gap-4">
+			{@render children()}
 			{#if pictureLink}
 				<img
 					src={pictureLink.toString()}
@@ -39,8 +40,6 @@
 					class="h-auto w-40 mask-y-from-85% mask-y-to-100% mask-x-from-75% mask-x-to-100% object-contain opacity-70"
 				/>
 			{/if}
-
-			{@render children()}
 		</div>
 	</NodeOverlay>
 </div>

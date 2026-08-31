@@ -292,25 +292,25 @@
 	{#if preview}
 		<section>
 			<div
-				class="r-stretch my-20 grid grid-cols-[1fr_max-content_1fr] items-center justify-between justify-items-start gap-12 text-7xl"
+				class="r-stretch my-50 grid grid-cols-[1fr_max-content_1fr] items-center justify-between justify-items-start gap-12 text-7xl"
 				// class="r-stretch mx-auto my-20 grid w-fit grid-cols-[auto_max-content_auto] items-center gap-12 text-7xl"
 			>
 				<a href="#motivation" class="justify-self-end" aria-label="Motivation"
-					><span class="icon-[stash--circle-dot] bg-primary"></span></a
+					><span class="icon-[vaadin--thumbs-up-o] bg-primary"></span></a
 				>
 				<a href="#motivation" aria-label="Motivation"
 					><div class="text-primary font-bold">Motivation</div></a
 				>
 				<div></div>
 				<a href="#diversity" aria-label="Diversity" class="justify-self-end"
-					><span class="icon-[mingcute--lightning-fill] bg-primary"></span></a
+					><span class="icon-[material-symbols--diversity-1-rounded] bg-primary"></span></a
 				>
 				<a href="#diversity" aria-label="Diversity"
 					><div class="text-primary font-bold">Diversity</div></a
 				>
 				<div></div>
 				<a href="#overview" aria-label="Overview" class="justify-self-end"
-					><span class="icon-[f7--chat-bubble-2-fill] bg-primary"></span></a
+					><span class="icon-[grommet-icons--overview] bg-primary"></span></a
 				>
 				<a href="#overview" aria-label="Overview"
 					><div class="text-primary font-bold">Overview</div></a
@@ -327,26 +327,34 @@
 					class="text-secondary-content bg-secondary shadow-base-shadow shadow-large rounded-4xl p-7 font-semibold shadow-inner"
 				>
 					<Badge title="Relatedness" color="secondary" />
-					<div class="mt-4">
-						Your sense of belonging to a community and connection with other people to care for and
-						feeling cared for.
-					</div>
+					<ul class="mt-4">
+						<li>Sense of belonging</li>
+						<li>Community</li>
+						<li>Connection</li>
+						<li>Feeling cared for</li>
+						<li>Ability to care for others</li>
+					</ul>
 				</div>
 				<div
 					class="text-secondary-content bg-secondary shadow-base-shadow shadow-large rounded-4xl p-7 font-semibold shadow-inner"
 				>
 					<Badge title="Autonomy" color="secondary" />
-					<div class="mt-4">
-						Making your own decisions about your own life behaviours and goals.
-					</div>
+					<ul class="mt-4">
+						<li>Making your own decisions</li>
+						<li>Be in the driver seat of your life</li>
+						<li>Reflection</li>
+					</ul>
 				</div>
 				<div
 					class="text-secondary-content bg-secondary shadow-base-shadow shadow-large rounded-4xl p-7 font-semibold shadow-inner"
 				>
 					<Badge title="Competence" color="secondary" />
-					<div class="mt-4">
-						Gaining mastery of your own life and environment to build self-esteem.
-					</div>
+					<ul class="mt-4">
+						<li>Gaining mastery</li>
+						<li>Being in flow</li>
+						<li>Making an impact</li>
+						<li>Build self-esteem</li>
+					</ul>
 				</div>
 			</div>
 		</FramedSlide>
@@ -414,10 +422,8 @@
 				{@render interactiveElementNotAvailable('map')}
 			{/if}
 		</FramedSlide>
+
 		<FramedSlide part="overview" color="primary">
-			<Team />
-		</FramedSlide>
-		<FramedSlide part="overview" section="content" color="primary">
 			<div class="grid grid-cols-2 gap-10">
 				<div class="flex flex-col gap-10">
 					<div class="text-secondary absolute top-2/12 left-70 -mt-10 text-7xl font-bold">
@@ -675,7 +681,7 @@
 										<dt>Learning Reflections</dt>
 										<dd>
 											Per module, we ask you <b>one</b> mandatory question via Microsoft Forms:
-											<i>"What have you learned ...?"</i>
+											<i>"What have you learned about ...?"</i>
 										</dd>
 										<dd>
 											Hand in 3 out of those 4 learning reflections to pass. As long as your answer
@@ -739,7 +745,9 @@
 				</div>
 			</div>
 		</FramedSlide>
-
+		<FramedSlide part="overview" section="team" color="primary">
+			<Team />
+		</FramedSlide>
 		<FramedSlide part="overview" section="bubbles" color="success">
 			<div class="absolute top-30 left-0">
 				<ChatBubble variant="success" tailAngle={150} shadow={true}>
@@ -758,7 +766,7 @@
 			</div>
 			<div class="fragment fade-in absolute top-130 right-15">
 				<ChatBubble variant="success" tailAngle={190} shadow={true}>
-					<div class="heading-large">No "deadlines" ☠️ only "life lines" 🌱.</div>
+					<div class="heading-large">No 'deadlines' ☠️ only 'living lines' 🌱.</div>
 				</ChatBubble>
 			</div>
 			<div class="fragment fade-in absolute top-150 left-20 w-200">
@@ -779,8 +787,8 @@
 								Do you have comments or questions? 🤔
 							</label>
 							<textarea
-								class="heading placeholder:title-large w-[90%] border border-2 p-2 shadow-inner placeholder:italic"
-								placeholder="These questions and comments are publically available on the internet for everyone, who has a link to this presentation. Sharing is caring 🫶 Press Enter to send."
+								class="heading placeholder:title-large w-[90%] resize-none border border-2 p-2 shadow-inner placeholder:italic"
+								placeholder="Please type here - sharing is caring 🫶 - Press Enter to send."
 								id="sharing"
 								bind:value={socketioComments.pendingEntities[0].content}
 								onkeydown={(event) => {
@@ -870,8 +878,8 @@
 			<dl>
 				<dt>Deletion of data</dt>
 				<dd>
-					In case you want any of your data deleted, please send a screenshot of you want to have
-					deleted to Arnold.
+					In case you want any of your data deleted, please send a screenshot of what you want to
+					have deleted to Arnold.
 				</dd>
 			</dl>
 			{#if returnToSlide}
