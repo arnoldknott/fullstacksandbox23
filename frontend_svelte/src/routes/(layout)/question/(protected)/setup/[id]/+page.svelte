@@ -236,4 +236,17 @@
 
 <Heading id="json-data">JSONdata:</Heading>
 
-<JsonData data={data.questionsData} />
+<div class="grid grid-cols-3">
+	<div>
+		<Title id="debug-server-data">Server Data</Title>
+		<JsonData data={data.questionsData} />
+	</div>
+	<div>
+		<Title id="debug-socketio-messages">SocketIO Messages</Title>
+		<JsonData data={messageSocketio?.entities} />
+	</div>
+	<div>
+		<Title id="debug-socketio-numericals">SocketIO Numericals</Title>
+		<JsonData data={numericalSocketio?.entities} />
+	</div>
+</div>
