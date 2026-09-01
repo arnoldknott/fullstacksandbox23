@@ -584,40 +584,39 @@ class BaseCRUD(
 
             return results
         except Exception as err:
-            try:
-                access_log = AccessLogCreate(
-                    resource_id=result.id,  # type: ignore[possibly-undefined]
-                    action=read,
-                    identity_id=current_user.user_id if current_user else None,
-                    status_code=404,
-                )
-                await self.logging_crud.create(access_log)
-            except Exception as log_error:
-                logger.error(
-                    (
-                        f"Error in BaseCRUD.read with parameters:"
-                        f"select_args: {select_args},"
-                        f"filters: {filters},"
-                        f"joins: {joins},"
-                        f"order_by: {order_by},"
-                        f"group_by: {group_by},"
-                        f"having: {having},"
-                        f"limit: {limit},"
-                        f"offset: {offset},"
-                        f"action: {read},"
-                        f"current_user: {current_user},"
-                        f"status_code: {404}"
-                        f"results in {log_error}"
+            if "result" in locals():
+                try:
+                    access_log = AccessLogCreate(
+                        resource_id=result.id,
+                        action=read,
+                        identity_id=current_user.user_id if current_user else None,
+                        status_code=404,
                     )
+                    await self.logging_crud.create(access_log)
+                except Exception as log_error:
+                    logger.error(
+                        f"Unable to log failed {self.model.__name__} read: {log_error}"
+                    )
+            logger.error(
+                (
+                    f"Error in BaseCRUD.read for model {self.model.__name__} with "
+                    f"select_args: {select_args},"
+                    f"filters: {filters},"
+                    f"joins: {joins},"
+                    f"order_by: {order_by},"
+                    f"group_by: {group_by},"
+                    f"having: {having}, "
+                    f"limit: {limit},"
+                    f"offset: {offset},"
+                    f"action: {read},"
+                    f"current_user: {current_user},"
+                    f"status_code: {404}"
+                    f"results in {err}"
                 )
-                logger.error(
-                    f"Error in BaseCRUD.read for model {self.model.__name__}: {err}"
-                )
-
-                raise HTTPException(
-                    status_code=404, detail=f"{self.model.__name__} not found."
-                )
-            return []  # type: ignore[unreachable]
+            )
+            raise HTTPException(
+                status_code=404, detail=f"{self.model.__name__} not found."
+            ) from err
 
     async def read_by_id(
         self,
