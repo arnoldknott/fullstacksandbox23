@@ -444,6 +444,7 @@ class BaseCRUD(
         offset: Optional[int] = None,
     ) -> list[BaseSchemaTypeRead]:
         """Generic read method with optional parameters for select_args, filters, joins, order_by, group_by, limit and offset."""
+        failed_result: Optional[BaseModelType] = None
         try:
             # TBD: select_args are not compatible with the return type of the method!
             statement = select(*select_args) if select_args else select(self.model)
@@ -573,6 +574,7 @@ class BaseCRUD(
                 return []
 
             for result in results:
+                failed_result = result
                 # TBD: add logging to accessed children!
                 access_log = AccessLogCreate(
                     resource_id=result.id,  # result might not be available here?
@@ -584,10 +586,11 @@ class BaseCRUD(
 
             return results
         except Exception as err:
-            if "result" in locals():
+            failed_resource_id = failed_result.id if failed_result is not None else None
+            if failed_resource_id is not None:
                 try:
                     access_log = AccessLogCreate(
-                        resource_id=result.id,
+                        resource_id=failed_resource_id,
                         action=read,
                         identity_id=current_user.user_id if current_user else None,
                         status_code=404,
