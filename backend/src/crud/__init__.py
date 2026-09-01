@@ -7,9 +7,10 @@ from /model and database configuration dependencies/databases.py."""
 registry_CRUDs = {}
 
 
-def register_crud(crud_instance):
+def register_crud(crud_class):
+    crud_instance = crud_class()
     if (
         hasattr(crud_instance, "model")
         and crud_instance.model.__name__ not in registry_CRUDs
     ):
-        registry_CRUDs[crud_instance.model.__name__] = crud_instance
+        registry_CRUDs[crud_instance.model.__name__] = crud_class

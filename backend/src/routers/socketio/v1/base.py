@@ -108,8 +108,8 @@ class BaseNamespace(
         self.event_guards = event_guards
         self.crud = crud
         if crud is not None:
-            register_crud(crud())
-            register_namespace(crud(), namespace)
+            register_crud(crud)
+            register_namespace(crud, namespace)
         self.create_model = create_model
         self.read_model = read_model
         self.read_extended_model = read_extended_model

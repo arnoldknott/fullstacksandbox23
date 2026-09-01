@@ -129,6 +129,13 @@ class BaseCRUD(
             self.session = cast(AsyncSession, None)
             self._owns_session = False
 
+    def bind_session(self, session: AsyncSession) -> None:
+        """Use a caller-owned session for this CRUD operation."""
+        self.session = session
+        self.policy_crud = AccessPolicyCRUD(session=session)
+        self.logging_crud = AccessLoggingCRUD(session=session)
+        self._owns_session = False
+
     # async def _write_policy(
     #     self,
     #     resource_id: uuid.UUID,
@@ -804,22 +811,16 @@ class BaseCRUD(
             children_typelinks = await get_types_from_ids(self.session, children_ids)
             for child_id, idx in zip(children_ids, range(len(children_ids))):
                 # TBD: refactor to auto recreation, of CRUD instane, when session changes.
-                crud = registry_CRUDs.get(children_typelinks[idx])
-                if crud:
-                    crud.session = self.session
-                    if crud.policy_crud:
-                        crud.policy_crud.session = self.session
-                    if crud.logging_crud:
-                        crud.logging_crud.session = self.session
-                    if not crud.allow_standalone:
+                crud_class = registry_CRUDs.get(children_typelinks[idx])
+                if crud_class:
+                    child_crud = crud_class()
+                    child_crud.bind_session(self.session)
+                    if not child_crud.allow_standalone:
                         all_parents = await hierarchy_CRUD.read(
                             current_user=current_user, child_id=child_id
                         )
                         if len(all_parents) == 1:
-                            # async with crud as child_crud:
-                            # child_crud = crud()
-                            crud.session = self.session
-                            await crud.delete(
+                            await child_crud.delete(
                                 current_user=current_user, object_id=child_id
                             )
 
