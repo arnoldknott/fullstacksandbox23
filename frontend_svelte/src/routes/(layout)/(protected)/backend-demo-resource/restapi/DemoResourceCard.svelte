@@ -35,7 +35,7 @@
 	});
 	let formattedCreationDate = $derived(
 		creationDate?.toLocaleString('da-DK', {
-			timeZone: 'CET',
+			timeZone: 'Europe/Copenhagen',
 			dateStyle: 'short',
 			timeStyle: 'short'
 		})
