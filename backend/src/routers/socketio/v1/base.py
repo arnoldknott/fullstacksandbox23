@@ -17,6 +17,7 @@ from uuid import UUID
 
 import socketio
 from sqlmodel import SQLModel
+from sqlmodel.ext.asyncio.session import AsyncSession
 
 from core.config import config
 from core.security import (
@@ -107,8 +108,8 @@ class BaseNamespace(
         self.event_guards = event_guards
         self.crud = crud
         if crud is not None:
-            register_crud(crud())
-            register_namespace(crud(), namespace)
+            register_crud(crud)
+            register_namespace(crud, namespace)
         self.create_model = create_model
         self.read_model = read_model
         self.read_extended_model = read_extended_model
@@ -269,23 +270,25 @@ class BaseNamespace(
                     for idx, item in enumerate(data):
                         data[idx] = self.read_model.model_validate(item)
 
-            for item in data:
-                # Skip if parent_id filter is active and item is not a child
-                if parent_id and item.id not in (allowed_child_ids or set()):
-                    continue
+                for item in data:
+                    # Skip if parent_id filter is active and item is not a child
+                    if parent_id and item.id not in (allowed_child_ids or set()):
+                        continue
 
-                if request_access_data:
-                    item = await self._attach_access_data(sid, item, current_user)
-                if item.id not in self.server.rooms(sid, self.namespace or "/"):
-                    await self.server.enter_room(
-                        sid, f"resource:{str(item.id)}", namespace=self.namespace
+                    if request_access_data:
+                        item = await self._attach_access_data(
+                            sid, item, current_user, crud.session
+                        )
+                    if item.id not in self.server.rooms(sid, self.namespace or "/"):
+                        await self.server.enter_room(
+                            sid, f"resource:{str(item.id)}", namespace=self.namespace
+                        )
+                    await self.server.emit(
+                        "transferred",
+                        item.model_dump(mode="json"),
+                        namespace=self.namespace,
+                        to=sid,
                     )
-                await self.server.emit(
-                    "transferred",
-                    item.model_dump(mode="json"),
-                    namespace=self.namespace,
-                    to=sid,
-                )
         except Exception as error:
             logger.error(f"Failed to get all data for client {sid}.")
             print(error)
@@ -296,6 +299,7 @@ class BaseNamespace(
         sid: str,
         resource: BaseSchemaTypeExtended,
         current_user: Optional[CurrentUserData],
+        session: AsyncSession,
     ) -> BaseSchemaTypeExtended:
         """Get access data from the socketio session."""
         logger.info(f"🧦 Get access data for resource {resource.id} for client {sid}.")
@@ -303,7 +307,7 @@ class BaseNamespace(
         try:
             assert self.read_extended_model is not None
             resource = self.read_extended_model.model_validate(resource)
-            async with AccessPolicyCRUD() as policy_crud:
+            async with AccessPolicyCRUD(session=session) as policy_crud:
                 access_right = await policy_crud.check_access(
                     resource_id=resource.id, current_user=current_user
                 )
@@ -320,7 +324,7 @@ class BaseNamespace(
                         )
                 except Exception:
                     access_policies = []
-            async with AccessLoggingCRUD() as logging_crud:
+            async with AccessLoggingCRUD(session=session) as logging_crud:
                 creation_date = await logging_crud.read_resource_created_at(
                     resource_id=resource.id, current_user=current_user
                 )
@@ -333,21 +337,20 @@ class BaseNamespace(
                 )
             parent_id = await self._get_session_query_string(sid, "parent_id")
             if self.crud is not None:
-                async with self.crud() as crud:
-                    hierarchy_crud = crud.hierarchy_CRUD(session=crud.session)
-                    resource_as_parent = await hierarchy_crud.read(
-                        current_user=current_user, parent_id=resource.id
+                hierarchy_crud = self.crud().hierarchy_CRUD(session=session)
+                resource_as_parent = await hierarchy_crud.read(
+                    current_user=current_user, parent_id=resource.id
+                )
+                resource.hierarchies = resource_as_parent
+                if parent_id is not None:
+                    resource_as_child = await hierarchy_crud.read(
+                        current_user=current_user, child_id=resource.id
                     )
-                    resource.hierarchies = resource_as_parent
-                    if parent_id is not None:
-                        resource_as_child = await hierarchy_crud.read(
-                            current_user=current_user, child_id=resource.id
-                        )
-                        resource.hierarchies = (
-                            [*resource.hierarchies, *resource_as_child]
-                            if resource.hierarchies
-                            else resource_as_child
-                        )
+                    resource.hierarchies = (
+                        [*resource.hierarchies, *resource_as_child]
+                        if resource.hierarchies
+                        else resource_as_child
+                    )
         except Exception:
             logger.info(f"🧦 No access data found for {resource.id}.")
         return resource
@@ -538,37 +541,35 @@ class BaseNamespace(
             current_user = await self._get_current_user_and_check_guard(sid, "connect")
             if self.crud is None:
                 return
+            request_access_data = await self._get_session_query_string(
+                sid, "request_access_data"
+            )
+            if resource_id is None:
+                await self._get_all(sid, current_user, request_access_data)
+                return
             async with self.crud() as crud:
-                request_access_data = await self._get_session_query_string(
-                    sid, "request_access_data"
-                )
-                if resource_id is None:
-                    await self._get_all(sid, current_user, request_access_data)
-                else:
-                    database_object = await crud.read_by_id(resource_id, current_user)
-                    if self.read_model is not None:
-                        database_object = self.read_model.model_validate(
-                            database_object
-                        )
-                    if request_access_data and self.read_extended_model is not None:
-                        database_object = self.read_extended_model.model_validate(
-                            database_object
-                        )
-                        database_object = await self._attach_access_data(
-                            sid, database_object, current_user
-                        )
-                    if database_object.id not in self.server.rooms(sid, self.namespace or "/"):  # type: ignore[attr-defined]
-                        await self.server.enter_room(
-                            sid,
-                            f"resource:{str(database_object.id)}",  # type: ignore[attr-defined]
-                            namespace=self.namespace,
-                        )
-                    await self.server.emit(
-                        "transferred",
-                        database_object.model_dump(mode="json"),
-                        namespace=self.namespace,
-                        to=sid,
+                database_object = await crud.read_by_id(resource_id, current_user)
+                if self.read_model is not None:
+                    database_object = self.read_model.model_validate(database_object)
+                if request_access_data and self.read_extended_model is not None:
+                    database_object = self.read_extended_model.model_validate(
+                        database_object
                     )
+                    database_object = await self._attach_access_data(
+                        sid, database_object, current_user, crud.session
+                    )
+                if database_object.id not in self.server.rooms(sid, self.namespace or "/"):  # type: ignore[attr-defined]
+                    await self.server.enter_room(
+                        sid,
+                        f"resource:{str(database_object.id)}",  # type: ignore[attr-defined]
+                        namespace=self.namespace,
+                    )
+                await self.server.emit(
+                    "transferred",
+                    database_object.model_dump(mode="json"),
+                    namespace=self.namespace,
+                    to=sid,
+                )
         except Exception as error:
             logger.error(f"🧦 Failed to read data from client {sid}.")
             print(error)

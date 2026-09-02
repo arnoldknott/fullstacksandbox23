@@ -9,7 +9,8 @@ in general each endpoint shall get its own tests."""
 registry_namespaces = {}
 
 
-def register_namespace(crud_instance, namespace):
+def register_namespace(crud_class, namespace):
+    crud_instance = crud_class()
     if (
         hasattr(crud_instance, "model")
         and crud_instance.model.__name__ not in registry_namespaces

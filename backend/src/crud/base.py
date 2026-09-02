@@ -129,6 +129,13 @@ class BaseCRUD(
             self.session = cast(AsyncSession, None)
             self._owns_session = False
 
+    def bind_session(self, session: AsyncSession) -> None:
+        """Use a caller-owned session for this CRUD operation."""
+        self.session = session
+        self.policy_crud = AccessPolicyCRUD(session=session)
+        self.logging_crud = AccessLoggingCRUD(session=session)
+        self._owns_session = False
+
     # async def _write_policy(
     #     self,
     #     resource_id: uuid.UUID,
@@ -444,6 +451,7 @@ class BaseCRUD(
         offset: Optional[int] = None,
     ) -> list[BaseSchemaTypeRead]:
         """Generic read method with optional parameters for select_args, filters, joins, order_by, group_by, limit and offset."""
+        failed_result: Optional[BaseModelType] = None
         try:
             # TBD: select_args are not compatible with the return type of the method!
             statement = select(*select_args) if select_args else select(self.model)
@@ -573,6 +581,7 @@ class BaseCRUD(
                 return []
 
             for result in results:
+                failed_result = result
                 # TBD: add logging to accessed children!
                 access_log = AccessLogCreate(
                     resource_id=result.id,  # result might not be available here?
@@ -584,40 +593,40 @@ class BaseCRUD(
 
             return results
         except Exception as err:
-            try:
-                access_log = AccessLogCreate(
-                    resource_id=result.id,  # type: ignore[possibly-undefined]
-                    action=read,
-                    identity_id=current_user.user_id if current_user else None,
-                    status_code=404,
-                )
-                await self.logging_crud.create(access_log)
-            except Exception as log_error:
-                logger.error(
-                    (
-                        f"Error in BaseCRUD.read with parameters:"
-                        f"select_args: {select_args},"
-                        f"filters: {filters},"
-                        f"joins: {joins},"
-                        f"order_by: {order_by},"
-                        f"group_by: {group_by},"
-                        f"having: {having},"
-                        f"limit: {limit},"
-                        f"offset: {offset},"
-                        f"action: {read},"
-                        f"current_user: {current_user},"
-                        f"status_code: {404}"
-                        f"results in {log_error}"
+            failed_resource_id = failed_result.id if failed_result is not None else None
+            if failed_resource_id is not None:
+                try:
+                    access_log = AccessLogCreate(
+                        resource_id=failed_resource_id,
+                        action=read,
+                        identity_id=current_user.user_id if current_user else None,
+                        status_code=404,
                     )
+                    await self.logging_crud.create(access_log)
+                except Exception as log_error:
+                    logger.error(
+                        f"Unable to log failed {self.model.__name__} read: {log_error}"
+                    )
+            logger.error(
+                (
+                    f"Error in BaseCRUD.read for model {self.model.__name__} with "
+                    f"select_args: {select_args},"
+                    f"filters: {filters},"
+                    f"joins: {joins},"
+                    f"order_by: {order_by},"
+                    f"group_by: {group_by},"
+                    f"having: {having}, "
+                    f"limit: {limit},"
+                    f"offset: {offset},"
+                    f"action: {read},"
+                    f"current_user: {current_user},"
+                    f"status_code: {404}"
+                    f"results in {err}"
                 )
-                logger.error(
-                    f"Error in BaseCRUD.read for model {self.model.__name__}: {err}"
-                )
-
-                raise HTTPException(
-                    status_code=404, detail=f"{self.model.__name__} not found."
-                )
-            return []  # type: ignore[unreachable]
+            )
+            raise HTTPException(
+                status_code=404, detail=f"{self.model.__name__} not found."
+            ) from err
 
     async def read_by_id(
         self,
@@ -802,22 +811,16 @@ class BaseCRUD(
             children_typelinks = await get_types_from_ids(self.session, children_ids)
             for child_id, idx in zip(children_ids, range(len(children_ids))):
                 # TBD: refactor to auto recreation, of CRUD instane, when session changes.
-                crud = registry_CRUDs.get(children_typelinks[idx])
-                if crud:
-                    crud.session = self.session
-                    if crud.policy_crud:
-                        crud.policy_crud.session = self.session
-                    if crud.logging_crud:
-                        crud.logging_crud.session = self.session
-                    if not crud.allow_standalone:
+                crud_class = registry_CRUDs.get(children_typelinks[idx])
+                if crud_class:
+                    child_crud = crud_class()
+                    child_crud.bind_session(self.session)
+                    if not child_crud.allow_standalone:
                         all_parents = await hierarchy_CRUD.read(
                             current_user=current_user, child_id=child_id
                         )
                         if len(all_parents) == 1:
-                            # async with crud as child_crud:
-                            # child_crud = crud()
-                            crud.session = self.session
-                            await crud.delete(
+                            await child_crud.delete(
                                 current_user=current_user, object_id=child_id
                             )
 
