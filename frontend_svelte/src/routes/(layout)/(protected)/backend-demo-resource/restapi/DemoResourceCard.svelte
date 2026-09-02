@@ -25,14 +25,6 @@
 	let categoryId = $derived(demoResource.category_id || undefined);
 	let tags = $derived(demoResource.tags || []);
 	let creationDate = $derived(demoResource.creation_date);
-	console.log('=== DemoResourceCard.svelte - 1st-render  - creationDate ===');
-	console.log(creationDate);
-	$effect(() => {
-		if (creationDate) {
-			console.log('=== DemoResourceCard.svelte - creationDate ===');
-			console.log(creationDate);
-		}
-	});
 	let formattedCreationDate = $derived(
 		creationDate?.toLocaleString('da-DK', {
 			timeZone: 'Europe/Copenhagen',
