@@ -256,6 +256,9 @@ class BaseNamespace(
         if self.crud is None:
             return
         try:
+            # Do all database work first and serialize while the session is alive,
+            # then release the connection before emitting over the network.
+            payloads_to_transfer = []
             async with self.crud() as crud:
                 data = await crud.read(current_user)
 
@@ -280,16 +283,20 @@ class BaseNamespace(
                         item = await self._attach_access_data(
                             sid, item, current_user, crud.session
                         )
-                    if item.id not in self.server.rooms(sid, self.namespace or "/"):
-                        await self.server.enter_room(
-                            sid, f"resource:{str(item.id)}", namespace=self.namespace
-                        )
-                    await self.server.emit(
-                        "transferred",
-                        item.model_dump(mode="json"),
-                        namespace=self.namespace,
-                        to=sid,
+                    payloads_to_transfer.append((item.id, item.model_dump(mode="json")))
+
+            # Connection is back in the pool; emit without holding it.
+            for item_id, payload in payloads_to_transfer:
+                if item_id not in self.server.rooms(sid, self.namespace or "/"):
+                    await self.server.enter_room(
+                        sid, f"resource:{str(item_id)}", namespace=self.namespace
                     )
+                await self.server.emit(
+                    "transferred",
+                    payload,
+                    namespace=self.namespace,
+                    to=sid,
+                )
         except Exception as error:
             logger.error(f"Failed to get all data for client {sid}.")
             print(error)
@@ -571,18 +578,21 @@ class BaseNamespace(
                     database_object = await self._attach_access_data(
                         sid, database_object, current_user, crud.session
                     )
-                if database_object.id not in self.server.rooms(sid, self.namespace or "/"):  # type: ignore[attr-defined]
-                    await self.server.enter_room(
-                        sid,
-                        f"resource:{str(database_object.id)}",  # type: ignore[attr-defined]
-                        namespace=self.namespace,
-                    )
-                await self.server.emit(
-                    "transferred",
-                    database_object.model_dump(mode="json"),
+                # Serialize while the session is alive, emit after it is released.
+                object_id = database_object.id  # type: ignore[attr-defined]
+                transferred_payload = database_object.model_dump(mode="json")
+            if object_id not in self.server.rooms(sid, self.namespace or "/"):
+                await self.server.enter_room(
+                    sid,
+                    f"resource:{str(object_id)}",
                     namespace=self.namespace,
-                    to=sid,
                 )
+            await self.server.emit(
+                "transferred",
+                transferred_payload,
+                namespace=self.namespace,
+                to=sid,
+            )
         except Exception as error:
             logger.error(f"🧦 Failed to read data from client {sid}.")
             print(error)
