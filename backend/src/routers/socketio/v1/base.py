@@ -20,6 +20,7 @@ from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from core.config import config
+from core.databases import get_async_session
 from core.security import (
     check_token_against_guards,
     get_token_payload_from_cache,
@@ -507,18 +508,30 @@ class BaseNamespace(
             if not auth_rejected:
                 if parent_id:
                     if self.crud is not None:
-                        async with AccessPolicyCRUD() as crud:
-                            access_request = AccessRequest(
-                                resource_id=UUID(parent_id),
-                                current_user=current_user,
-                                action=Action.read,
-                            )
-                            parent_access_granted = await crud.allows(access_request)
-                            if parent_access_granted:
-                                session_query_strings["parent_id"] = parent_id
-                                await self.server.enter_room(
-                                    sid, f"parent:{parent_id}", namespace=self.namespace
+                        # 🧦 One caller-owned session for the parent-access
+                        # check and close it promptly to return the connection.
+                        postgres_session = await get_async_session()
+                        try:
+                            async with AccessPolicyCRUD(
+                                session=postgres_session
+                            ) as crud:
+                                access_request = AccessRequest(
+                                    resource_id=UUID(parent_id),
+                                    current_user=current_user,
+                                    action=Action.read,
                                 )
+                                parent_access_granted = await crud.allows(
+                                    access_request
+                                )
+                                if parent_access_granted:
+                                    session_query_strings["parent_id"] = parent_id
+                                    await self.server.enter_room(
+                                        sid,
+                                        f"parent:{parent_id}",
+                                        namespace=self.namespace,
+                                    )
+                        finally:
+                            await postgres_session.close()
                 await self.server.save_session(
                     sid, session_data, namespace=self.namespace
                 )
@@ -962,51 +975,60 @@ class BaseNamespace(
         try:
             current_user = await self._get_current_user_and_check_guard(sid, "share")
             public = access_policy.get("public", False)
-            if "action" not in access_policy:
-                access_policy_delete = AccessPolicyDelete(**access_policy)
-                async with AccessPolicyCRUD() as crud:
-                    await crud.delete(current_user, access_policy_delete)
+            # 🧦 One caller-owned session for the whole share event.
+            postgres_session = await get_async_session()
+            try:
+                if "action" not in access_policy:
+                    access_policy_delete = AccessPolicyDelete(**access_policy)
+                    async with AccessPolicyCRUD(session=postgres_session) as crud:
+                        await crud.delete(current_user, access_policy_delete)
+                        await self._emit_status(
+                            sid,
+                            {
+                                "success": "unshared",
+                                "id": str(access_policy_delete.resource_id),
+                            },
+                            rooms=(
+                                "public"
+                                if public
+                                else [
+                                    f"identity:{str(access_policy_delete.identity_id)}"
+                                ]
+                            ),
+                        )
+                elif (
+                    "new_action" not in access_policy
+                    or access_policy["action"] != access_policy["new_action"]
+                ):
+                    # elif "new_action" not in access_policy:
+                    resource_id_value: Any = access_policy.get("resource_id")
+                    identity_id_value: Any = access_policy.get("identity_id")
+                    if "new_action" not in access_policy:
+                        access_policy_create = AccessPolicyCreate(**access_policy)
+                        async with AccessPolicyCRUD(session=postgres_session) as crud:
+                            await crud.create(access_policy_create, current_user)
+                        resource_id_value = access_policy_create.resource_id
+                        identity_id_value = access_policy_create.identity_id
+                    elif access_policy["action"] != access_policy["new_action"]:
+                        access_policy_update = AccessPolicyUpdate(**access_policy)
+                        async with AccessPolicyCRUD(session=postgres_session) as crud:
+                            await crud.update(current_user, access_policy_update)
+                        resource_id_value = access_policy_update.resource_id
+                        identity_id_value = access_policy_update.identity_id
                     await self._emit_status(
                         sid,
                         {
-                            "success": "unshared",
-                            "id": str(access_policy_delete.resource_id),
+                            "success": "shared",
+                            "id": str(resource_id_value),
                         },
                         rooms=(
                             "public"
                             if public
-                            else [f"identity:{str(access_policy_delete.identity_id)}"]
+                            else [f"identity:{str(identity_id_value)}"]
                         ),
                     )
-            elif (
-                "new_action" not in access_policy
-                or access_policy["action"] != access_policy["new_action"]
-            ):
-                # elif "new_action" not in access_policy:
-                resource_id_value: Any = access_policy.get("resource_id")
-                identity_id_value: Any = access_policy.get("identity_id")
-                if "new_action" not in access_policy:
-                    access_policy_create = AccessPolicyCreate(**access_policy)
-                    async with AccessPolicyCRUD() as crud:
-                        await crud.create(access_policy_create, current_user)
-                    resource_id_value = access_policy_create.resource_id
-                    identity_id_value = access_policy_create.identity_id
-                elif access_policy["action"] != access_policy["new_action"]:
-                    access_policy_update = AccessPolicyUpdate(**access_policy)
-                    async with AccessPolicyCRUD() as crud:
-                        await crud.update(current_user, access_policy_update)
-                    resource_id_value = access_policy_update.resource_id
-                    identity_id_value = access_policy_update.identity_id
-                await self._emit_status(
-                    sid,
-                    {
-                        "success": "shared",
-                        "id": str(resource_id_value),
-                    },
-                    rooms=(
-                        "public" if public else [f"identity:{str(identity_id_value)}"]
-                    ),
-                )
+            finally:
+                await postgres_session.close()
             # elif access_policy["action"] != access_policy["new_action"]:
             #     access_policy = AccessPolicyUpdate(**access_policy)
             #     async with AccessPolicyCRUD() as crud:
