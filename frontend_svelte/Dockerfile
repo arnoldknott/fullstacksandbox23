@@ -12,6 +12,7 @@ FROM setup AS dev
 RUN apk add --no-cache docker-cli git
 
 FROM dev AS test
+RUN apk add --no-cache chromium
 COPY package.json bun.lock svelte.config.js ./
 RUN bun install --frozen-lockfile
 
