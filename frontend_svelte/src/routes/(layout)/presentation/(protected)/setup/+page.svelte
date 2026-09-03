@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
+	import { flip } from 'svelte/animate';
 	import { fade, slide } from 'svelte/transition';
 
 	import { resolve } from '$app/paths';
@@ -338,6 +339,7 @@
 						{/if}
 						{#each socketioPresentations.entities as presentation (presentation.id)}
 							<tr
+								animate:flip={{ duration: 300 }}
 								transition:slide={{ duration: 300 }}
 								class="hover:bg-base-300 last:hover:rounded-b-xl"
 							>
