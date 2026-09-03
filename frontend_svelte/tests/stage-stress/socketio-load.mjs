@@ -66,13 +66,13 @@ const openSocket = ({ namespace, parentId, requestAccessData }, userIndex) => {
 		errors.push(`user ${userIndex} ${namespace} connect_error: ${error.message}`)
 	);
 	return socket;
-}
+};
 
 const oneUser = async (userIndex) => {
 	const sockets = connections.map((connection) => openSocket(connection, userIndex));
 	await new Promise((resolve) => setTimeout(resolve, holdMs));
 	sockets.forEach((socket) => socket.disconnect());
-}
+};
 
 const expected = users * connections.length;
 console.log(

@@ -17,7 +17,7 @@
 	@apply to-primary m-1 bg-linear-to-b from-transparent;
 
 	& > button {
-		@apply bg-primary-container rounded-t-lg first:rounded-bl-none last:rounded-br-none text-primary-container-content border-outline border-b-primary border-1 border-b-2 opacity-80;
+		@apply bg-primary-container text-primary-container-content border-outline border-b-primary rounded-t-lg border-1 border-b-2 opacity-80 first:rounded-bl-none last:rounded-br-none;
 		&:hover {
 			@apply opacity-100;
 		}
@@ -36,7 +36,7 @@
 	@apply to-secondary m-1 bg-linear-to-b from-transparent;
 
 	& > button {
-		@apply bg-secondary-container rounded-t-lg first:rounded-bl-none last:rounded-br-none text-secondary-container-content border-outline border-b-secondary border-1 border-b-2 opacity-80;
+		@apply bg-secondary-container text-secondary-container-content border-outline border-b-secondary rounded-t-lg border-1 border-b-2 opacity-80 first:rounded-bl-none last:rounded-br-none;
 		&:hover {
 			@apply opacity-100;
 		}
@@ -55,7 +55,7 @@
 	@apply to-accent m-1 bg-linear-to-b from-transparent;
 
 	& > button {
-		@apply bg-accent-container rounded-t-lg first:rounded-bl-none last:rounded-br-none text-accent-container-content border-outline border-b-accent border-1 border-b-2 opacity-80;
+		@apply bg-accent-container text-accent-container-content border-outline border-b-accent rounded-t-lg border-1 border-b-2 opacity-80 first:rounded-bl-none last:rounded-br-none;
 		&:hover {
 			@apply opacity-100;
 		}
@@ -74,7 +74,7 @@
 	@apply to-neutral m-1 bg-linear-to-b from-transparent;
 
 	& > button {
-		@apply bg-neutral-container rounded-t-lg first:rounded-bl-none last:rounded-br-none text-neutral-container-content border-outline border-b-neutral border-1 border-b-2 opacity-80;
+		@apply bg-neutral-container text-neutral-container-content border-outline border-b-neutral rounded-t-lg border-1 border-b-2 opacity-80 first:rounded-bl-none last:rounded-br-none;
 		&:hover {
 			@apply opacity-100;
 		}
@@ -101,7 +101,7 @@
 	@apply to-info m-1 bg-linear-to-b from-transparent;
 
 	& > button {
-		@apply bg-info-container rounded-t-lg first:rounded-bl-none last:rounded-br-none text-info-container-content border-outline border-b-info border-1 border-b-2 opacity-80;
+		@apply bg-info-container text-info-container-content border-outline border-b-info rounded-t-lg border-1 border-b-2 opacity-80 first:rounded-bl-none last:rounded-br-none;
 		&:hover {
 			@apply opacity-100;
 		}
@@ -128,7 +128,7 @@
 	@apply to-success m-1 bg-linear-to-b from-transparent;
 
 	& > button {
-		@apply bg-success-container rounded-t-lg first:rounded-bl-none last:rounded-br-none text-success-container-content border-outline border-b-success border-1 border-b-2 opacity-80;
+		@apply bg-success-container text-success-container-content border-outline border-b-success rounded-t-lg border-1 border-b-2 opacity-80 first:rounded-bl-none last:rounded-br-none;
 		&:hover {
 			@apply opacity-100;
 		}
@@ -147,7 +147,7 @@
 	@apply to-warning m-1 bg-linear-to-b from-transparent;
 
 	& > button {
-		@apply bg-warning-container rounded-t-lg first:rounded-bl-none last:rounded-br-none text-warning-container-content border-outline border-b-warning border-1 border-b-2 opacity-80;
+		@apply bg-warning-container text-warning-container-content border-outline border-b-warning rounded-t-lg border-1 border-b-2 opacity-80 first:rounded-bl-none last:rounded-br-none;
 		&:hover {
 			@apply opacity-100;
 		}
@@ -166,7 +166,7 @@
 	@apply to-error m-1 bg-linear-to-b from-transparent;
 
 	& > button {
-		@apply bg-error-container rounded-t-lg first:rounded-bl-none last:rounded-br-none text-error-container-content border-outline border-b-error border-1 border-b-2 opacity-80;
+		@apply bg-error-container text-error-container-content border-outline border-b-error rounded-t-lg border-1 border-b-2 opacity-80 first:rounded-bl-none last:rounded-br-none;
 		&:hover {
 			@apply opacity-100;
 		}
