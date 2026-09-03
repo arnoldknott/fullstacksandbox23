@@ -75,6 +75,13 @@ resource "azurerm_postgresql_flexible_server" "postgresServer" {
 # TBD: consider setting azurerm_postgresql_flexible_server_active_directory_administrator
 # TBD: consider adding the empty database resource azurerm_postgresql_flexible_server_database
 
+resource "azurerm_postgresql_flexible_server_configuration" "maxConnections" {
+  name      = "max_connections"
+  server_id = azurerm_postgresql_flexible_server.postgresServer.id
+  value     = "100"
+}
+
+
 resource "azurerm_postgresql_flexible_server_database" "postgresDatabase" {
   name      = "${terraform.workspace}_db" # needs to match the github environment variable POSTGRES_DB
   server_id = azurerm_postgresql_flexible_server.postgresServer.id
