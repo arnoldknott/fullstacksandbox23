@@ -218,7 +218,7 @@
 
 <div class="mx-2 grid w-full grid-cols-5 gap-2">
 	{#each messageAnswersSorted as answer, index (answer.id)}
-		<div animate:flip>
+		<div animate:flip={{ duration: 300 }}>
 			{@render answerBubble(answer.content, answer.id, index)}
 		</div>
 	{/each}
@@ -228,7 +228,7 @@
 
 <div class="mx-2 grid w-full grid-cols-5 gap-2">
 	{#each numericalAnswersSorted as answer, index (answer.id)}
-		<div animate:flip>
+		<div animate:flip={{ duration: 300 }}>
 			{@render answerBubble(answer.value, answer.id, index)}
 		</div>
 	{/each}
