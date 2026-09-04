@@ -89,10 +89,6 @@
 	});
 </script>
 
-<!-- {#snippet countIconHeader(icon: string)}
-	# <span class="{icon} size-4"></span>
-{/snippet} -->
-
 <div class="overflow-x-auto">
 	<table class="table w-full overflow-hidden rounded-2xl">
 		<thead>
@@ -137,25 +133,6 @@
 						{/if}
 					</th>
 				{/each}
-				<!-- <th class="title text-base-content w-3/5 font-medium normal-case">Id / Slug</th>
-				<th class="title text-base-content text-center font-medium normal-case">Source</th>
-				<th class="title text-base-content text-center font-medium normal-case">Access</th>
-				<th class="title text-base-content text-center font-medium normal-case"
-					># <span class="icon-[codicon--question] size-4"></span></th
-				>
-				<th class="title text-base-content text-center font-medium normal-case"
-					># <span class="icon-[line-md--link] size-4"></span></th
-				>
-				<th class="title text-base-content text-center font-medium normal-case"
-					># <span class="icon-[tabler--file] size-4"></span></th
-				>
-				<th class="title text-base-content text-center font-medium normal-case"
-					><span class="icon-[fluent-mdl2--offline-storage] size-4 text-center"></span></th
-				>
-				<th
-					class="title text-base-content w-px text-center font-medium whitespace-nowrap normal-case"
-					>Actions</th
-				> -->
 			</tr>
 			{#if entityContainer?.selections['selected']?.length > 1}
 				<tr
@@ -213,31 +190,6 @@
 								{/if}
 							</td>
 						{/each}
-						<!-- <td class="max-w-0">
-							<IdBadge id={presentation.id} />
-							<a
-								href={resolve('/(layout)/presentation/[slug]', {
-									slug: presentation?.path?.substring(1) || presentation.id
-								})}
-								aria-label={`Setup presentation ${presentation.path || presentation.id}`}
-								class="link link-primary link-animated block truncate"
-							>
-								{presentation.path || presentation.id}
-							</a>
-						</td>
-						<td class="text-center"><IdBadge id="intern" /></td>
-						<td class="text-center">[Access]</td>
-						<td class="text-center">{presentation.questions?.length ?? 0}</td>
-						<td class="text-center">[Num]</td>
-						<td class="text-center">[Num]</td>
-						<td class="text-center">[Size]</td>
-						<td class="w-px py-1 text-center align-middle whitespace-nowrap">
-							<ActionButtons
-								resourceId={presentation.id}
-								accessRight={socketioPresentations?.accessRights[presentation.id]}
-								socketio={socketioPresentations}
-							/>
-						</td> -->
 					</tr>
 				{/each}
 			{/if}
