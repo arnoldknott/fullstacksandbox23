@@ -327,7 +327,7 @@
 				},
 				{
 					header: text('Access'),
-					cell: value<PresentationExtended>(() => '[Access]'),
+					cell: value(() => '[Access]'),
 					headerClass: 'text-center',
 					cellClass: 'text-center'
 				},
