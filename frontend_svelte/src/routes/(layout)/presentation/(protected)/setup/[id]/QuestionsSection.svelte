@@ -6,10 +6,11 @@
 	import { page } from '$app/state';
 	import Card from '$components/Card.svelte';
 	import JsonData from '$components/JsonData.svelte';
+	import Table, { countIcon, icon, snippet, text, value } from '$components/Table.svelte';
 	import Title from '$components/Title.svelte';
 	import { AccessHandler, Action } from '$lib/accessHandler';
 	import { SocketIO } from '$lib/socketio.svelte';
-	import type { AccessShareOption, Identity, Question } from '$lib/types';
+	import type { AccessShareOption, Identity, Question, QuestionExtended } from '$lib/types';
 	import { initTabs } from '$lib/userInterface';
 
 	import IdBadge from '../../../../(protected)/IdBadge.svelte';
@@ -96,7 +97,7 @@
 		socketioQuestions?.client.disconnect();
 	});
 
-	let viewMode = $state<'grid' | 'list'>('list');
+	let viewMode = $state<'grid' | 'list' | 'table'>('table');
 </script>
 
 <!-- TBD: potentially move into existing questions Card, same way as the add new presentation, then no slide transition is necessary any more. -->
@@ -378,13 +379,23 @@ https://svelte.dev/e/transition_slide_display
 					</button>
 					<button
 						aria-label="List"
-						class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline rounded-r-full py-4 shadow {viewMode !==
+						class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline py-4 shadow {viewMode !==
 						'list'
 							? 'opacity-60'
 							: ''}"
 						onclick={() => (viewMode = 'list')}
 					>
-						<span class="icon-[material-symbols-light--table-outline] size-5"></span>
+						<span class="icon-[material-symbols--view-list-outline] size-5"></span>
+					</button>
+					<button
+						aria-label="Table"
+						class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline rounded-r-full py-4 shadow {viewMode !==
+						'table'
+							? 'opacity-60'
+							: ''}"
+						onclick={() => (viewMode = 'table')}
+					>
+						<span class="icon-[material-symbols--table-outline] size-5"></span>
 					</button>
 				</div>
 			</div>
@@ -406,6 +417,77 @@ https://svelte.dev/e/transition_slide_display
 		</p>
 	</div>
 	<div class="w-full overflow-x-auto {viewMode !== 'list' ? 'hidden' : ''}">
+		<p class="bg-warning text-warning-content rounded-lg p-4">
+			List view mode is not developed yet
+		</p>
+	</div>
+	<div class="w-full overflow-x-auto {viewMode !== 'table' ? 'hidden' : ''}">
+		{#snippet questionIdCell(question: Question)}
+			<IdBadge id={question.id} />
+			<a
+				href={resolve('/(layout)/question/(protected)/setup/[id]', {
+					id: question.id
+				})}
+				aria-label={`Setup presentation ${question.question || question.id}`}
+				class="link link-primary link-animated block truncate"
+			>
+				{question.question || question.id}
+			</a>
+		{/snippet}
+		{#snippet questionActionsCell(question: QuestionExtended)}
+			<ActionButtons
+				resourceId={question.id}
+				accessRight={socketioQuestions?.accessRights[question.id]}
+				socketio={socketioQuestions}
+			/>
+		{/snippet}
+		<Table
+			columns={[
+				{
+					header: text('Id / Label'),
+					cell: snippet(questionIdCell),
+					headerClass: 'w-3/5',
+					cellClass: 'max-w-0'
+				},
+				{
+					header: text('Access'),
+					cell: value(() => '[Access]'),
+					headerClass: 'text-center',
+					cellClass: 'text-center'
+				},
+				{
+					header: countIcon('mdi:text'),
+					cell: value<Question>((entity) => entity.messages?.length ?? 0),
+					headerClass: 'text-center',
+					cellClass: 'text-center'
+				},
+				{
+					header: countIcon('tabler:number'),
+					cell: value<Question>((entity) => entity.numericals?.length ?? 0),
+					headerClass: 'text-center',
+					cellClass: 'text-center'
+				},
+				{
+					header: icon('fluent-mdl2:offline-storage'),
+					cell: value(() => '[Size]'),
+					headerClass: 'text-center',
+					cellClass: 'text-center'
+				},
+				{
+					header: text('Actions'),
+					cell: snippet(questionActionsCell),
+					headerClass: 'w-px text-center whitespace-nowrap',
+					cellClass: 'w-px py-1 text-center align-middle whitespace-nowrap'
+				}
+			]}
+			entityContainer={socketioQuestions}
+			displaySelection="linkedToPresentation"
+		/>
+		<div
+			class="divider divider-warning label-large text-warning my-10 before:border-t-5 after:border-t-5"
+		>
+			implemented from component Table above and hard-coded below
+		</div>
 		<table class="table w-full">
 			<thead>
 				<tr>
@@ -415,7 +497,7 @@ https://svelte.dev/e/transition_slide_display
 						# <span class="icon-[mdi--text] size-4"></span>
 					</th>
 					<th class="title text-base-content font-medium normal-case">
-						# <span class="icon-[tabler-number] size-4"></span>
+						# <span class="icon-[tabler--number] size-4"></span>
 					</th>
 					<th class="title text-base-content font-medium normal-case">
 						<span class="icon-[fluent-mdl2--offline-storage] size-4"></span>
@@ -482,6 +564,8 @@ https://svelte.dev/e/transition_slide_display
 			<div>
 				<p class="label-prominent">Pending Entities</p>
 				<JsonData data={socketioQuestions?.pendingEntities ?? []} />
+				<p class="label-prominent">Selected Entities</p>
+				<JsonData data={socketioQuestions?.selections?.['selected'] ?? []} />
 				<p class="label-prominent">Linked Entities</p>
 				<JsonData data={linkedQuestions} />
 				<p class="label-prominent">Not Linked Entities</p>
