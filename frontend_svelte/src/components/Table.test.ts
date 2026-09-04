@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/svelte';
 import { type Component, createRawSnippet } from 'svelte';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { EntityContainerInterface } from '$lib/entityContainer.svelte';
 import type { PresentationExtended } from '$lib/types';
@@ -22,14 +22,22 @@ const presentation: PresentationExtended = {
 	questions: []
 };
 
-const entityContainer = {
-	entities: [presentation],
-	selections: {}
-} as EntityContainerInterface<PresentationExtended>;
+const createEntityContainer = (
+	overrides: Partial<EntityContainerInterface<PresentationExtended>> = {}
+) =>
+	({
+		entities: [presentation],
+		selections: {},
+		addSelection: vi.fn(),
+		removeSelection: vi.fn(),
+		getSelectedEntities: vi.fn((name?: string) => (name ? [] : [presentation])),
+		...overrides
+	}) as EntityContainerInterface<PresentationExtended>;
 
 const PresentationTable = Table as Component<{
 	columns: TableColumn<PresentationExtended>[];
 	entityContainer: EntityContainerInterface<PresentationExtended>;
+	displaySelection?: string;
 	selectionBoxes?: boolean;
 }>;
 
@@ -56,7 +64,7 @@ describe('Table', () => {
 
 		render(PresentationTable, {
 			columns,
-			entityContainer,
+			entityContainer: createEntityContainer(),
 			selectionBoxes: false
 		});
 
@@ -68,5 +76,44 @@ describe('Table', () => {
 		expect(screen.getByText('0')).toBeTruthy();
 		expect(screen.getByText('File value')).toBeTruthy();
 		expect(screen.getByText('#')).toBeTruthy();
+		expect(screen.queryByRole('checkbox')).toBeNull();
+	});
+
+	it('registers selection controls when selectionBoxes is enabled', () => {
+		const entityContainer = createEntityContainer();
+		const { unmount } = render(PresentationTable, {
+			columns: [{ header: text('Path'), cell: field<PresentationExtended>('path') }],
+			entityContainer
+		});
+
+		expect(screen.getAllByRole('checkbox')).toHaveLength(2);
+		expect(entityContainer.addSelection).toHaveBeenCalledWith('selected');
+
+		unmount();
+		expect(entityContainer.removeSelection).toHaveBeenCalledWith('selected');
+	});
+
+	it('renders the entities from displaySelection', () => {
+		const selectedPresentation: PresentationExtended = {
+			...presentation,
+			id: 'presentation-2',
+			path: '/selected'
+		};
+		const entityContainer = createEntityContainer({
+			getSelectedEntities: vi.fn((name?: string) =>
+				name === 'visible' ? [selectedPresentation] : [presentation]
+			)
+		});
+
+		render(PresentationTable, {
+			columns: [{ header: text('Path'), cell: field<PresentationExtended>('path') }],
+			entityContainer,
+			displaySelection: 'visible',
+			selectionBoxes: false
+		});
+
+		expect(screen.getByText('/selected')).toBeTruthy();
+		expect(screen.queryByText('/welcome')).toBeNull();
+		expect(entityContainer.getSelectedEntities).toHaveBeenCalledWith('visible');
 	});
 });
