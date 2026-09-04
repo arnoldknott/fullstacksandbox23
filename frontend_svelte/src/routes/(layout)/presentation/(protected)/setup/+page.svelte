@@ -1,7 +1,5 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import { onDestroy, onMount } from 'svelte';
-	import { flip } from 'svelte/animate';
 	import { fade, slide } from 'svelte/transition';
 
 	import { resolve } from '$app/paths';
@@ -84,9 +82,6 @@
 
 	// For showing existing presentations:
 	let viewMode = $state<'preview' | 'grid' | 'list' | 'table'>('table');
-
-	// Selectors:
-	let selectAllPresentations = $state(false);
 </script>
 
 <Display id="overview-presentations">Presentations</Display>
@@ -373,153 +368,7 @@
 				}
 			]}
 			entityContainer={socketioPresentations}
-		></Table>
-		<div
-			class="divider divider-warning label-large text-warning my-10 before:border-t-5 after:border-t-5"
-		>
-			implemented from component Table above and hard-coded below
-		</div>
-		<div class="overflow-x-auto">
-			<table class="table w-full overflow-hidden rounded-2xl">
-				<thead>
-					<tr
-						class="shadow-base-shadow bg-base-300 inset-ring-outline-variant rounded-t-2xl shadow inset-ring *:first:rounded-tl-2xl *:last:rounded-tr-2xl"
-					>
-						<th>
-							<input
-								id="select-all-presentations"
-								type="checkbox"
-								class="checkbox checkbox-sm checkbox-secondary"
-								bind:checked={selectAllPresentations}
-								onchange={(event) => {
-									if ((event.target as HTMLInputElement).checked) {
-										selectAllPresentations = true;
-										socketioPresentations?.entities?.forEach((presentation) => {
-											socketioPresentations?.selections['selected']?.push(presentation.id);
-										});
-									} else {
-										selectAllPresentations = false;
-										socketioPresentations?.selections['selected']?.splice(0);
-									}
-								}}
-							/>
-						</th>
-						<th class="title text-base-content w-3/5 font-medium normal-case">Id / Slug</th>
-						<th class="title text-base-content text-center font-medium normal-case">Source</th>
-						<th class="title text-base-content text-center font-medium normal-case">Access</th>
-						<th class="title text-base-content text-center font-medium normal-case"
-							><span class="inline-flex items-center gap-2 whitespace-nowrap"
-								># <Icon icon="codicon:question" class="size-5" inline={true} /></span
-							></th
-						>
-						<th class="title text-base-content text-center font-medium normal-case"
-							># <span class="icon-[line-md--link] size-5"></span></th
-						>
-						<th class="title text-base-content text-center font-medium normal-case"
-							># <span class="icon-[tabler--file] size-5"></span></th
-						>
-						<th class="title text-base-content text-center font-medium normal-case"
-							><span class="icon-[fluent-mdl2--offline-storage] size-5 text-center"></span></th
-						>
-						<th
-							class="title text-base-content text-center font-medium whitespace-nowrap normal-case"
-							>Actions</th
-						>
-					</tr>
-					{#if socketioPresentations?.selections['selected']?.length > 1}
-						<tr
-							// transition:slide={{ duration: 300 }}
-							class="label bg-base-300 inset-ring-outline-variant font-medium normal-case inset-ring"
-						>
-							<th></th>
-							<th colspan={8}>
-								add sort, search, filter, actions for multiple selected presentations</th
-							>
-						</tr>
-					{/if}
-				</thead>
-				<tbody class="bg-base-150 shadow-base-shadow rounded-b-2xl shadow shadow-inner">
-					{#if (socketioPresentations?.entities?.length ?? 0) === 0}
-						<tr>
-							<td colspan={9} class="text-center">
-								No presentations yet. Create one by sending a POST request to the /presentation
-								endpoint.
-							</td>
-						</tr>
-					{:else}
-						{#each socketioPresentations.entities as presentation (presentation.id)}
-							<tr
-								animate:flip={{ duration: 300 }}
-								transition:fade={{ duration: 300 }}
-								class="hover:bg-base-250 last:hover:rounded-b-2xl"
-							>
-								<!-- <td>
-								<a
-									href={resolve('/(layout)/presentation/(protected)/setup/[id]', {
-										id: presentation?.path?.substring(1) || presentation.id
-									})}
-									aria-label={`Setup presentation ${presentation.path || presentation.id}`}
-								>
-									<button
-										type="button"
-										class="btn btn-info-container btn-gradient shadow-outline btn-circle shadow-sm"
-										aria-label={`Setup presentation ${presentation.path || presentation.id}`}
-									>
-										<span class="icon-[mingcute--arrow-right-fill] size-4"></span>
-									</button>
-								</a>
-							</td> -->
-								<td>
-									<input
-										id="select-all-presentations"
-										type="checkbox"
-										class="checkbox checkbox-sm checkbox-secondary"
-										onchange={(event) => {
-											if ((event.target as HTMLInputElement).checked) {
-												socketioPresentations?.addToSelection('selected', [presentation.id]);
-											} else {
-												selectAllPresentations = false;
-												socketioPresentations?.removeFromSelection('selected', [presentation.id]);
-											}
-										}}
-										checked={socketioPresentations?.selections['selected']?.includes(
-											presentation.id
-										) ?? false}
-										// bind:checked={addThisOneToSelection(presentation.id) - not a bind, but an onChange?}
-									/>
-								</td>
-								<td class="max-w-0">
-									<IdBadge id={presentation.id} />
-									<a
-										href={resolve('/(layout)/presentation/[slug]', {
-											slug: presentation?.path?.substring(1) || presentation.id
-										})}
-										aria-label={`Setup presentation ${presentation.path || presentation.id}`}
-										class="link link-primary link-animated block truncate"
-									>
-										{presentation.path || presentation.id}
-									</a>
-								</td>
-								<td class="text-center"><IdBadge id="intern" /></td>
-								<!-- <td>{presentation.source}</td> -->
-								<td class="text-center">[Access]</td>
-								<td class="text-center">{presentation.questions?.length ?? 0}</td>
-								<td class="text-center">[Num]</td>
-								<td class="text-center">[Num]</td>
-								<td class="text-center">[Size]</td>
-								<td class="w-px py-1 text-center align-middle whitespace-nowrap">
-									<ActionButtons
-										resourceId={presentation.id}
-										accessRight={socketioPresentations?.accessRights[presentation.id]}
-										socketio={socketioPresentations}
-									/>
-								</td>
-							</tr>
-						{/each}
-					{/if}
-				</tbody>
-			</table>
-		</div>
+		/>
 	</div>
 </Card>
 
