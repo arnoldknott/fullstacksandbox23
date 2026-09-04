@@ -72,20 +72,26 @@
 	let {
 		columns,
 		entityContainer,
+		displaySelection,
 		selectionBoxes = true
 	}: {
 		columns: TableColumn<T>[];
 		entityContainer: EntityContainerInterface<T>;
+		displaySelection?: string;
 		selectionBoxes?: boolean;
 	} = $props();
 
 	let selectAll = $state(false);
+	let ownsSelectedSelection = false;
 
 	onMount(() => {
-		if (selectionBoxes) entityContainer?.addSelection('selected');
+		if (selectionBoxes && entityContainer) {
+			entityContainer.addSelection('selected');
+			ownsSelectedSelection = true;
+		}
 	});
 	onDestroy(() => {
-		if (selectionBoxes) entityContainer?.removeSelection('selected');
+		if (ownsSelectedSelection) entityContainer?.removeSelection('selected');
 	});
 </script>
 
@@ -157,7 +163,7 @@
 					</td>
 				</tr>
 			{:else}
-				{#each entityContainer.entities as entity (entity.id)}
+				{#each entityContainer.getSelectedEntities(displaySelection) || entityContainer.entities as entity (entity.id)}
 					<tr
 						animate:flip={{ duration: 300 }}
 						transition:fade={{ duration: 300 }}
