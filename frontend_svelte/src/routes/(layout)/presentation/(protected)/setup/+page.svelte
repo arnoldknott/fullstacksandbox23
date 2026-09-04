@@ -81,7 +81,7 @@
 	);
 
 	// For showing existing presentations:
-	let viewMode = $state<'preview' | 'grid' | 'list'>('list');
+	let viewMode = $state<'preview' | 'grid' | 'list' | 'table'>('table');
 
 	// Selectors:
 	let selectAllPresentations = $state(false);
@@ -238,7 +238,7 @@
 						: ''}"
 					onclick={() => (viewMode = 'preview')}
 				>
-					<span class="icon-[material-symbols-light--preview-outline] size-5"></span>
+					<span class="icon-[material-symbols--preview-outline] size-5"></span>
 				</button>
 				<button
 					aria-label="Grid"
@@ -252,13 +252,23 @@
 				</button>
 				<button
 					aria-label="List"
-					class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline rounded-r-full py-4 shadow {viewMode !==
+					class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline py-4 shadow {viewMode !==
 					'list'
 						? 'opacity-60'
 						: ''}"
 					onclick={() => (viewMode = 'list')}
 				>
-					<span class="icon-[material-symbols-light--table-outline] size-5"></span>
+					<span class="icon-[material-symbols--view-list-outline] size-5"></span>
+				</button>
+				<button
+					aria-label="Table"
+					class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline rounded-r-full py-4 shadow {viewMode !==
+					'table'
+						? 'opacity-60'
+						: ''}"
+					onclick={() => (viewMode = 'table')}
+				>
+					<span class="icon-[material-symbols--table-outline] size-5"></span>
 				</button>
 			</div>
 		</div>
@@ -274,7 +284,12 @@
 			Grid view mode is not developed yet
 		</p>
 	</div>
-	<div class="w-full {viewMode !== 'list' ? 'hidden' : ''}">
+	<div class="w-full overflow-x-auto {viewMode !== 'list' ? 'hidden' : ''}">
+		<p class="bg-warning text-warning-content rounded-lg p-4">
+			List view mode is not developed yet
+		</p>
+	</div>
+	<div class="w-full {viewMode !== 'table' ? 'hidden' : ''}">
 		<div class="overflow-x-auto">
 			<table class="table w-full overflow-hidden rounded-2xl">
 				<thead>
