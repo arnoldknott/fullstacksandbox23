@@ -51,14 +51,14 @@
 	 * Creates a cell configuration that displays a direct entity field.
 	 * @param field Key of the entity to display, for example `field<PresentationExtended>('path')`.
 	 */
-	export const field = <T extends AnyEntityExtended>(field: keyof T): TableCell<T> => ({ field });
+	export const field = <T extends AnyEntityExtended>(field: keyof T) => ({ field });
 	/**
 	 * Creates a cell configuration from a value-producing callback.
 	 * @param value Receives the current entity and returns the text or number to display.
 	 */
 	export const value = <T extends AnyEntityExtended>(
 		value: (entity: T) => string | number | null | undefined
-	): TableCell<T> => ({ value });
+	) => ({ value });
 </script>
 
 <script lang="ts" generics="T extends AnyEntityExtended">
