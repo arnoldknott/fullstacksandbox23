@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Icon from '@iconify/svelte';
 	import { onDestroy, onMount } from 'svelte';
 	import { flip } from 'svelte/animate';
 	import { fade, slide } from 'svelte/transition';
@@ -8,6 +9,7 @@
 	import Card from '$components/Card.svelte';
 	import Display from '$components/Display.svelte';
 	import JsonData from '$components/JsonData.svelte';
+	import Table, { countIcon, snippet, text, value } from '$components/Table.svelte';
 	import Title from '$components/Title.svelte';
 	import { AccessHandler, Action } from '$lib/accessHandler';
 	import { SocketIO } from '$lib/socketio.svelte';
@@ -290,6 +292,93 @@
 		</p>
 	</div>
 	<div class="w-full {viewMode !== 'table' ? 'hidden' : ''}">
+		{#snippet presentationIdCell(presentation: PresentationExtended)}
+			<IdBadge id={presentation.id} />
+			<a
+				href={resolve('/(layout)/presentation/[slug]', {
+					slug: presentation.path?.substring(1) || presentation.id
+				})}
+				aria-label={`Setup presentation ${presentation.path || presentation.id}`}
+				class="link link-primary link-animated block truncate"
+			>
+				{presentation.path || presentation.id}
+			</a>
+		{/snippet}
+
+		{#snippet sourceCell()}
+			<IdBadge id="intern" />
+		{/snippet}
+
+		{#snippet accessCell()}
+			[Access]
+		{/snippet}
+
+		{#snippet presentationActionsCell(presentation: PresentationExtended)}
+			<ActionButtons
+				resourceId={presentation.id}
+				accessRight={socketioPresentations?.accessRights[presentation.id]}
+				socketio={socketioPresentations}
+			/>
+		{/snippet}
+		<Table
+			columns={[
+				{
+					header: text('Id / Slug'),
+					cell: snippet(presentationIdCell),
+					headerClass: 'w-3/5',
+					cellClass: 'max-w-0'
+				},
+				{
+					header: text('Source'),
+					cell: snippet(sourceCell),
+					// cell: field('source')
+					headerClass: 'text-center',
+					cellClass: 'text-center'
+				},
+				{
+					header: text('Access'),
+					cell: snippet(accessCell),
+					headerClass: 'text-center',
+					cellClass: 'text-center'
+				},
+				{
+					header: countIcon('codicon:question'),
+					cell: value<PresentationExtended>((presentation) => presentation.questions?.length ?? 0),
+					headerClass: 'text-center',
+					cellClass: 'text-center'
+				},
+				{
+					header: countIcon('line-md:link'),
+					cell: value(() => '[Num]'),
+					headerClass: 'text-center',
+					cellClass: 'text-center'
+				},
+				{
+					header: countIcon('tabler:file'),
+					cell: value(() => '[Num]'),
+					headerClass: 'text-center',
+					cellClass: 'text-center'
+				},
+				{
+					header: countIcon('fluent-mdl2:offline-storage'),
+					cell: value(() => '[Size]'),
+					headerClass: 'text-center',
+					cellClass: 'text-center'
+				},
+				{
+					header: text('Actions'),
+					cell: snippet(presentationActionsCell),
+					headerClass: 'w-px text-center whitespace-nowrap',
+					cellClass: 'w-px py-1 text-center align-middle whitespace-nowrap'
+				}
+			]}
+			entityContainer={socketioPresentations}
+		></Table>
+		<div
+			class="divider divider-warning label-large text-warning my-10 before:border-t-5 after:border-t-5"
+		>
+			implemented from component Table above and hard-coded below
+		</div>
 		<div class="overflow-x-auto">
 			<table class="table w-full overflow-hidden rounded-2xl">
 				<thead>
@@ -319,25 +408,27 @@
 						<th class="title text-base-content text-center font-medium normal-case">Source</th>
 						<th class="title text-base-content text-center font-medium normal-case">Access</th>
 						<th class="title text-base-content text-center font-medium normal-case"
-							># <span class="icon-[codicon--question] size-4"></span></th
+							><span class="inline-flex items-center gap-2 whitespace-nowrap"
+								># <Icon icon="codicon:question" class="size-5" inline={true} /></span
+							></th
 						>
 						<th class="title text-base-content text-center font-medium normal-case"
-							># <span class="icon-[line-md--link] size-4"></span></th
+							># <span class="icon-[line-md--link] size-5"></span></th
 						>
 						<th class="title text-base-content text-center font-medium normal-case"
-							># <span class="icon-[tabler--file] size-4"></span></th
+							># <span class="icon-[tabler--file] size-5"></span></th
 						>
 						<th class="title text-base-content text-center font-medium normal-case"
-							><span class="icon-[fluent-mdl2--offline-storage] size-4 text-center"></span></th
+							><span class="icon-[fluent-mdl2--offline-storage] size-5 text-center"></span></th
 						>
 						<th
-							class="title text-base-content w-px text-center font-medium whitespace-nowrap normal-case"
+							class="title text-base-content text-center font-medium whitespace-nowrap normal-case"
 							>Actions</th
 						>
 					</tr>
 					{#if socketioPresentations?.selections['selected']?.length > 1}
 						<tr
-							transition:slide={{ duration: 300 }}
+							// transition:slide={{ duration: 300 }}
 							class="label bg-base-300 inset-ring-outline-variant font-medium normal-case inset-ring"
 						>
 							<th></th>
@@ -359,7 +450,7 @@
 						{#each socketioPresentations.entities as presentation (presentation.id)}
 							<tr
 								animate:flip={{ duration: 300 }}
-								transition:slide={{ duration: 300 }}
+								transition:fade={{ duration: 300 }}
 								class="hover:bg-base-250 last:hover:rounded-b-2xl"
 							>
 								<!-- <td>
