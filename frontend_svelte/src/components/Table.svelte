@@ -138,6 +138,9 @@
 				<tr class="label bg-base-300 inset-ring-outline-variant font-medium normal-case inset-ring">
 					<th></th>
 					<th colspan={columns.length - 1 + (selectionBoxes ? 1 : 0)}>
+						<!-- Workaround for Svelte warning:
+					 	transition_slide_displayThe `slide` transition does not work correctly
+					 	for elements with `display: table-row` -->
 						<div transition:slide={{ duration: 300 }}>
 							add sort, search, filter, actions for multiple selected presentations
 						</div>
