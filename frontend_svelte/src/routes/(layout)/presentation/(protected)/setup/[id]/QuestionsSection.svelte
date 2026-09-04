@@ -345,57 +345,51 @@ https://svelte.dev/e/transition_slide_display
 	</div>
 {/if}
 
-<!-- TBD: consider turning into a component, as it is very similar to the existing presentations section. -->
-{#snippet existingQuestionsHeader()}
-	<div class="flex justify-between">
-		<Title id="existingQuestions" class="grow">Overview</Title>
-		<div class="flex flex-row items-center justify-center">
-			{#if hideNewQuestionCard || !socketioQuestions?.pendingEntities[0]}
-				<button
-					transition:fade={{ duration: 600 }}
-					class="btn btn-primary-container btn-gradient label btn shadow-outline mx-4 rounded-full shadow-sm"
-					aria-label="Add new question"
-					onclick={() => (hideNewQuestionCard = false)}
-				>
-					<!-- onclick={() => goto(resolve('/(layout)/presentation/(protected)/setup/new'))} -->
-					<span class="icon-[fa6-solid--plus] size-5"></span>
-					<!-- <span class="hidden ">Add</span> -->
-					<span class="hidden sm:inline">Add new</span>
-					<span class="hidden md:inline">question</span>
-				</button>
-			{/if}
-			<div class="join shadow-outline rounded-full shadow-sm">
-				<button
-					aria-label="Grid"
-					class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline rounded-l-full py-4 shadow {viewMode !==
-					'grid'
-						? 'opacity-60'
-						: ''}"
-					onclick={() => (viewMode = 'grid')}
-				>
-					<span class="icon-[gridicons--grid] size-5"></span>
-				</button>
-				<button
-					aria-label="List"
-					class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline rounded-r-full py-4 shadow {viewMode !==
-					'list'
-						? 'opacity-60'
-						: ''}"
-					onclick={() => (viewMode = 'list')}
-				>
-					<span class="icon-[material-symbols-light--table-outline] size-5"></span>
-				</button>
+<Card id="linked-questions" title="Linked Questions" extraClasses="label-large">
+	<!-- TBD: consider turning into a component, as it is very similar to the existing presentations section. -->
+	{#snippet header()}
+		<div class="flex justify-between">
+			<Title id="existingQuestions" class="grow">Overview</Title>
+			<div class="flex flex-row items-center justify-center">
+				{#if hideNewQuestionCard || !socketioQuestions?.pendingEntities[0]}
+					<button
+						transition:fade={{ duration: 600 }}
+						class="btn btn-primary-container btn-gradient label btn shadow-outline mx-4 rounded-full shadow-sm"
+						aria-label="Add new question"
+						onclick={() => (hideNewQuestionCard = false)}
+					>
+						<!-- onclick={() => goto(resolve('/(layout)/presentation/(protected)/setup/new'))} -->
+						<span class="icon-[fa6-solid--plus] size-5"></span>
+						<!-- <span class="hidden ">Add</span> -->
+						<span class="hidden sm:inline">Add new</span>
+						<span class="hidden md:inline">question</span>
+					</button>
+				{/if}
+				<div class="join shadow-outline rounded-full shadow-sm">
+					<button
+						aria-label="Grid"
+						class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline rounded-l-full py-4 shadow {viewMode !==
+						'grid'
+							? 'opacity-60'
+							: ''}"
+						onclick={() => (viewMode = 'grid')}
+					>
+						<span class="icon-[gridicons--grid] size-5"></span>
+					</button>
+					<button
+						aria-label="List"
+						class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline rounded-r-full py-4 shadow {viewMode !==
+						'list'
+							? 'opacity-60'
+							: ''}"
+						onclick={() => (viewMode = 'list')}
+					>
+						<span class="icon-[material-symbols-light--table-outline] size-5"></span>
+					</button>
+				</div>
 			</div>
 		</div>
-	</div>
-{/snippet}
-
-<Card
-	id="linked-questions"
-	title="Linked Questions"
-	header={existingQuestionsHeader}
-	extraClasses="label-large"
->
+	{/snippet}
 	<!-- {#each linkedQuestions as linkedQuestion, idx (idx)}
 		<div class="linked-question">
 			<p>Q: {linkedQuestion.question}</p>
