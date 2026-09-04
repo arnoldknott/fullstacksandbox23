@@ -63,7 +63,7 @@
 
 <script lang="ts" generics="T extends AnyEntityExtended">
 	import Icon from '@iconify/svelte';
-	import { onDestroy, onMount } from 'svelte';
+	import { onDestroy } from 'svelte';
 	import { flip } from 'svelte/animate';
 	import { fade, slide } from 'svelte/transition';
 
@@ -84,8 +84,8 @@
 	let selectAll = $state(false);
 	let ownsSelectedSelection = false;
 
-	onMount(() => {
-		if (selectionBoxes && entityContainer) {
+	$effect(() => {
+		if (selectionBoxes && entityContainer && !entityContainer.selections['selected']) {
 			entityContainer.addSelection('selected');
 			ownsSelectedSelection = true;
 		}
