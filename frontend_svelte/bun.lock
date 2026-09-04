@@ -8,12 +8,14 @@
         "@azure/identity": "^4.13.1",
         "@azure/keyvault-secrets": "^4.11.2",
         "@azure/msal-node": "^5.4.3",
+        "@iconify/svelte": "^5.2.2",
         "@material/material-color-utilities": "0.3.0",
         "colorjs.io": "^0.7.1",
         "dompurify": "^3.4.12",
         "dotenv": "^17.4.2",
         "emoji-picker-element": "^1.29.1",
         "flyonui": "^2.4.1",
+        "install": "^0.13.0",
         "leaflet": "^1.9.4",
         "marked": "^18.0.7",
         "redis": "^6.2.0",
@@ -229,6 +231,8 @@
     "@humanwhocodes/retry": ["@humanwhocodes/retry@0.4.3", "", {}, "sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ=="],
 
     "@iconify/json": ["@iconify/json@2.2.509", "", { "dependencies": { "@iconify/types": "*", "pathe": "^2.0.3" } }, "sha512-gW8y0Jq5U25BIgtyRxyVnLonosWw3n3tCBW1rB7hAJqsCCzUep0ph3TAniwFaqs/YsKaVTgU8KyqSyOeMJMAGA=="],
+
+    "@iconify/svelte": ["@iconify/svelte@5.2.2", "", { "dependencies": { "@iconify/types": "^2.0.0" }, "peerDependencies": { "svelte": ">5.0.0" } }, "sha512-XMXxD3nzH7yB68C3K4sNwzrJ1TBscODR0ZqCeNf0KGuEMCTSuCo0jHNDZ0o0iRXTylO41NSz/DWam/4atLG1yw=="],
 
     "@iconify/tailwind4": ["@iconify/tailwind4@1.2.3", "", { "dependencies": { "@iconify/tools": "^5.0.5", "@iconify/types": "^2.0.0", "@iconify/utils": "^3.1.0" }, "peerDependencies": { "tailwindcss": ">= 4.0.0" } }, "sha512-z8SKiMHRASJKF/IY//87MF88lcB7ulxh8vlhQXXLWsBkNtOh6ese9R41MyGpQeqXdRvQVt+/fX2glQtHFjQ+MA=="],
 
@@ -743,6 +747,8 @@
     "indent-string": ["indent-string@4.0.0", "", {}, "sha512-EdDDZu4A2OyIK7Lr/2zG+w5jmbuk1DVBnEwREQvBzspBJkCEbRa8GxU1lghYcaGJCnRWibjDXlq779X1/y5xwg=="],
 
     "inline-style-parser": ["inline-style-parser@0.2.7", "", {}, "sha512-Nb2ctOyNR8DqQoR0OwRG95uNWIC0C1lCgf5Naz5H6Ji72KZ8OcFZLz2P5sNgwlyoJ8Yif11oMuYs5pBQa86csA=="],
+
+    "install": ["install@0.13.0", "", {}, "sha512-zDml/jzr2PKU9I8J/xyZBQn8rPCAY//UOYNmR01XwNwyfhEWObo2SWfSl1+0tm1u6PhxLwDnfsT/6jB7OUxqFA=="],
 
     "is-core-module": ["is-core-module@2.16.1", "", { "dependencies": { "hasown": "^2.0.2" } }, "sha512-UfoeMA6fIJ8wTYFEUjelnaGI67v6+N7qXJEvQuIGa99l4xsCruSYOVSQ0uPANn4dAzm8lkYPaKLrrijLq7x23w=="],
 
