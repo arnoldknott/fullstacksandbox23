@@ -65,7 +65,7 @@
 	import Icon from '@iconify/svelte';
 	import { onDestroy, onMount } from 'svelte';
 	import { flip } from 'svelte/animate';
-	import { fade } from 'svelte/transition';
+	import { fade, slide } from 'svelte/transition';
 
 	import type { EntityContainerInterface } from '$lib/entityContainer.svelte';
 
@@ -135,21 +135,20 @@
 				{/each}
 			</tr>
 			{#if entityContainer?.selections['selected']?.length > 1}
-				<tr
-					// transition:slide={{ duration: 300 }}
-					class="label bg-base-300 inset-ring-outline-variant font-medium normal-case inset-ring"
-				>
+				<tr class="label bg-base-300 inset-ring-outline-variant font-medium normal-case inset-ring">
 					<th></th>
-					<th colspan={8}>
-						add sort, search, filter, actions for multiple selected presentations</th
-					>
+					<th colspan={columns.length - 1 + (selectionBoxes ? 1 : 0)}>
+						<div transition:slide={{ duration: 300 }}>
+							add sort, search, filter, actions for multiple selected presentations
+						</div>
+					</th>
 				</tr>
 			{/if}
 		</thead>
 		<tbody class="bg-base-150 shadow-base-shadow rounded-b-2xl shadow shadow-inner">
 			{#if (entityContainer?.entities?.length ?? 0) === 0}
 				<tr>
-					<td colspan={9} class="text-center">
+					<td colspan={columns.length + (selectionBoxes ? 1 : 0)} class="text-center">
 						No presentations yet. Create one by sending a POST request to the /presentation
 						endpoint.
 					</td>
