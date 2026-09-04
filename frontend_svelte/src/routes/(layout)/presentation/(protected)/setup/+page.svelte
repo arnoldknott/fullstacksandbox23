@@ -287,7 +287,6 @@
 								type="checkbox"
 								class="checkbox checkbox-sm checkbox-secondary"
 								bind:checked={selectAllPresentations}
-								// onchange={() => (selectAllPresentations = !selectAllPresentations)}
 								onchange={(event) => {
 									if ((event.target as HTMLInputElement).checked) {
 										selectAllPresentations = true;
@@ -321,6 +320,17 @@
 							>Actions</th
 						>
 					</tr>
+					{#if socketioPresentations?.selections['selected']?.length > 1}
+						<tr
+							transition:slide={{ duration: 300 }}
+							class="label bg-base-300 inset-ring-outline-variant font-medium normal-case inset-ring"
+						>
+							<th></th>
+							<th colspan={8}>
+								add sort, search, filter, actions for multiple selected presentations</th
+							>
+						</tr>
+					{/if}
 				</thead>
 				<tbody class="bg-base-150 shadow-base-shadow rounded-b-2xl shadow shadow-inner">
 					{#if (socketioPresentations?.entities?.length ?? 0) === 0}
@@ -331,17 +341,6 @@
 							</td>
 						</tr>
 					{:else}
-						{#if socketioPresentations?.selections['selected']?.length > 1}
-							<tr
-								transition:slide={{ duration: 300 }}
-								class="bg-base-300 inset-ring-outline-variant inset-ring"
-							>
-								<th></th>
-								<th colspan={8}>
-									add sort, search, filter, actions for multiple selected presentations</th
-								>
-							</tr>
-						{/if}
 						{#each socketioPresentations.entities as presentation (presentation.id)}
 							<tr
 								animate:flip={{ duration: 300 }}
