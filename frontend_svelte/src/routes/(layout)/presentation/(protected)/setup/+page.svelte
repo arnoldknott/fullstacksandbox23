@@ -51,7 +51,6 @@
 		);
 
 		socketioPresentations.identities = data.payload.identities;
-		socketioPresentations.addSelection('selected');
 	});
 
 	$effect(() => {
@@ -304,10 +303,6 @@
 			<IdBadge id="intern" />
 		{/snippet}
 
-		{#snippet accessCell()}
-			[Access]
-		{/snippet}
-
 		{#snippet presentationActionsCell(presentation: PresentationExtended)}
 			<ActionButtons
 				resourceId={presentation.id}
@@ -332,7 +327,7 @@
 				},
 				{
 					header: text('Access'),
-					cell: snippet(accessCell),
+					cell: value<PresentationExtended>(() => '[Access]'),
 					headerClass: 'text-center',
 					cellClass: 'text-center'
 				},
