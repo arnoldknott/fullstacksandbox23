@@ -276,16 +276,16 @@
 	</div>
 	<div class="w-full {viewMode !== 'list' ? 'hidden' : ''}">
 		<div class="overflow-x-auto">
-			<table class="table w-full overflow-hidden">
-				<thead class="">
+			<table class="table w-full overflow-hidden rounded-2xl">
+				<thead>
 					<tr
-						class="shadow-base-shadow bg-base-250 rounded-t-xl shadow *:first:rounded-tl-xl *:last:rounded-tr-xl"
+						class="shadow-base-shadow bg-base-300 inset-ring-outline-variant rounded-t-2xl shadow inset-ring *:first:rounded-tl-2xl *:last:rounded-tr-2xl"
 					>
 						<th>
 							<input
 								id="select-all-presentations"
 								type="checkbox"
-								class="checkbox checkbox-sm checkbox-primary"
+								class="checkbox checkbox-sm checkbox-secondary"
 								bind:checked={selectAllPresentations}
 								// onchange={() => (selectAllPresentations = !selectAllPresentations)}
 								onchange={(event) => {
@@ -322,7 +322,7 @@
 						>
 					</tr>
 				</thead>
-				<tbody class="bg-base-150 shadow-base-shadow rounded-b-xl shadow shadow-inner">
+				<tbody class="bg-base-150 shadow-base-shadow rounded-b-2xl shadow shadow-inner">
 					{#if (socketioPresentations?.entities?.length ?? 0) === 0}
 						<tr>
 							<td colspan={9} class="text-center">
@@ -332,16 +332,21 @@
 						</tr>
 					{:else}
 						{#if socketioPresentations?.selections['selected']?.length > 1}
-							<tr transition:slide={{ duration: 300 }} class="bg-base-250">
+							<tr
+								transition:slide={{ duration: 300 }}
+								class="bg-base-300 inset-ring-outline-variant inset-ring"
+							>
 								<th></th>
-								<th colspan={8}> add actions for multiple selected presentations</th>
+								<th colspan={8}>
+									add sort, search, filter, actions for multiple selected presentations</th
+								>
 							</tr>
 						{/if}
 						{#each socketioPresentations.entities as presentation (presentation.id)}
 							<tr
 								animate:flip={{ duration: 300 }}
 								transition:slide={{ duration: 300 }}
-								class="hover:bg-base-300 last:hover:rounded-b-xl"
+								class="hover:bg-base-250 last:hover:rounded-b-2xl"
 							>
 								<!-- <td>
 								<a
@@ -363,7 +368,7 @@
 									<input
 										id="select-all-presentations"
 										type="checkbox"
-										class="checkbox checkbox-sm checkbox-primary"
+										class="checkbox checkbox-sm checkbox-secondary"
 										onchange={(event) => {
 											if ((event.target as HTMLInputElement).checked) {
 												socketioPresentations?.addToSelection('selected', [presentation.id]);
