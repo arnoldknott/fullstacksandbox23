@@ -562,7 +562,7 @@ class BaseNamespace(
                 sid,
                 current_user=current_user,
                 request_access_data=request_access_data,
-                entity_ids=resource_ids,
+                resource_ids=resource_ids,
                 parent_id=parent_id,
             )
 
@@ -682,11 +682,10 @@ class BaseNamespace(
             )
 
         session_data = await self._get_session_data(sid)
-        snapshot_entity_ids = list(
-            dict.fromkeys(
-                [*session_data.get("snapshot_entity_ids", []), *map(str, entity_ids)]
-            )
-        )
+        snapshot_entity_ids = list(session_data.get("snapshot_entity_ids", []))
+        for entity_id in map(str, entity_ids):
+            if entity_id not in snapshot_entity_ids:
+                snapshot_entity_ids.append(entity_id)
         session_data["snapshot_entity_ids"] = snapshot_entity_ids
         await self.server.save_session(sid, session_data, namespace=self.namespace)
 

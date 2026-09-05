@@ -145,7 +145,7 @@ async def socketio_test_server(
             )
             server = uvicorn.Server(config)
 
-            asyncio.create_task(server.serve())
+            server_task = asyncio.create_task(server.serve())
             sio.register_namespace(PublicNamespace(server=sio))
             sio.register_namespace(DemoNamespace(server=sio))
             sio.register_namespace(DemoResourceNamespace(server=sio))
@@ -159,9 +159,15 @@ async def socketio_test_server(
             sio.register_namespace(QuestionNamespace(server=sio))
             sio.register_namespace(MessageNamespace(server=sio))
             sio.register_namespace(NumericalNamespace(server=sio))
-            await asyncio.sleep(1)
-            yield sio
-            await server.shutdown()
+            while not server.started:
+                if server_task.done():
+                    await server_task
+                await asyncio.sleep(0.01)
+            try:
+                yield sio
+            finally:
+                server.should_exit = True
+                await server_task
 
 
 # Setting up socketio client side for testing:
@@ -261,6 +267,12 @@ class SocketIOTestConnection:
     async def client(self):
         """Returns the socket.io client instance."""
         return self.client
+
+    async def read_collection(self, namespace: str | None = None):
+        """Explicitly request the authorized collection for legacy event tests."""
+        target_namespace = namespace or self.client_config[0]["namespace"]  # type: ignore[index]
+        await self.client.emit("read", namespace=target_namespace)  # type: ignore[attr-defined]
+        await self.client.sleep(0.3)  # type: ignore[attr-defined]
 
     def responses(self, event: str | None = None, namespace: str | None = None):
         """Returns the responses for a specific namespace and event."""

@@ -844,17 +844,19 @@ class AccessLoggingCRUD:
             mutation_action,
             mutation_status,
         ) in response.all():
+            mutation_kind: Literal["created", "updated", "deleted"]
             if mutation_action == Action.own and mutation_status == 201:
-                kind = "created"
+                mutation_kind = "created"
             elif mutation_action == Action.write:
-                kind = "updated"
+                mutation_kind = "updated"
             else:
-                kind = "deleted"
-            latest_mutations[entity_id] = {
-                "cursor": mutation_cursor,
-                "entity_id": entity_id,
-                "kind": kind,
+                mutation_kind = "deleted"
+            mutation: EntityMutation = {
+                "cursor": cast(int, mutation_cursor),
+                "entity_id": cast(UUID, entity_id),
+                "kind": mutation_kind,
             }
+            latest_mutations[mutation["entity_id"]] = mutation
         return sorted(
             latest_mutations.values(), key=lambda mutation: mutation["cursor"]
         )

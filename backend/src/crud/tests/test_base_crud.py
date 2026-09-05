@@ -93,7 +93,9 @@ async def test_read_entity_snapshot_filters_by_authorized_parent_children():
     await crud.read_entity_snapshot(parent_id=parent_id)
 
     hierarchy_crud.read.assert_awaited_once_with(current_user=None, parent_id=parent_id)
-    filters = crud.read.await_args.kwargs["filters"]
+    read_arguments = crud.read.await_args
+    assert read_arguments is not None
+    filters = read_arguments.kwargs["filters"]
     assert len(filters) == 1
     assert child_id.hex in str(
         filters[0].compile(compile_kwargs={"literal_binds": True})

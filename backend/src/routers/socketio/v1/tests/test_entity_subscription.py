@@ -1,5 +1,6 @@
 from datetime import datetime
 from types import SimpleNamespace
+from typing import Any, cast
 from unittest.mock import AsyncMock, Mock, call
 from uuid import uuid4
 
@@ -37,19 +38,22 @@ class FakeCRUD:
         return None
 
 
-def test_demo_resource_namespace_has_no_connect_time_collection_replay():
+@pytest.mark.anyio
+async def test_demo_resource_namespace_has_no_connect_time_collection_replay():
     namespace = DemoResourceNamespace(server=SimpleNamespace())
 
     assert namespace.callback_on_connect is None
 
 
-def test_presentation_namespace_has_no_connect_time_collection_replay():
+@pytest.mark.anyio
+async def test_presentation_namespace_has_no_connect_time_collection_replay():
     namespace = PresentationNamespace(server=SimpleNamespace())
 
     assert namespace.callback_on_connect is None
 
 
-def test_question_namespace_has_no_connect_time_collection_replay():
+@pytest.mark.anyio
+async def test_question_namespace_has_no_connect_time_collection_replay():
     namespace = QuestionNamespace(server=SimpleNamespace())
 
     assert namespace.callback_on_connect is None
@@ -60,7 +64,7 @@ async def test_subscribe_enters_only_access_controlled_entity_rooms():
     authorized_id = uuid4()
     rejected_id = uuid4()
     FakeCRUD.authorized_ids = [authorized_id]
-    server = SimpleNamespace(
+    server: Any = SimpleNamespace(
         enter_room=AsyncMock(),
         get_session=AsyncMock(return_value={}),
         save_session=AsyncMock(),
@@ -88,7 +92,7 @@ async def test_subscribe_enters_only_access_controlled_entity_rooms():
 
 @pytest.mark.anyio
 async def test_subscribe_rejects_oversized_batch_before_authorization():
-    server = SimpleNamespace(enter_room=AsyncMock())
+    server: Any = SimpleNamespace(enter_room=AsyncMock())
     namespace = BaseNamespace(server=server, namespace="/test")
     namespace.crud = FakeCRUD
     namespace._get_current_user_and_check_guard = AsyncMock(return_value=None)
@@ -108,7 +112,7 @@ async def test_subscribe_replays_cursor_after_accumulating_snapshot_batches():
     first_id = uuid4()
     final_id = uuid4()
     FakeCRUD.authorized_ids = [final_id]
-    server = SimpleNamespace(
+    server: Any = SimpleNamespace(
         enter_room=AsyncMock(),
         get_session=AsyncMock(return_value={"snapshot_entity_ids": [str(first_id)]}),
         save_session=AsyncMock(),
@@ -171,11 +175,11 @@ async def test_replay_emits_extended_upserts_and_snapshot_deletes():
         async def __aexit__(self, exc_type, exc_val, exc_tb):
             return None
 
-    server = SimpleNamespace(enter_room=AsyncMock(), emit=AsyncMock())
+    server: Any = SimpleNamespace(enter_room=AsyncMock(), emit=AsyncMock())
     namespace = BaseNamespace(
         server=server,
         namespace="/test",
-        read_extended_model=DemoResourceExtended,
+        read_extended_model=cast(Any, DemoResourceExtended),
     )
     namespace.crud = CRUDContext
 

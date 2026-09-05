@@ -14,7 +14,8 @@ from core.types import CollectionInclude, CollectionSort, SortDirection
         (SortDirection, "desc"),
     ],
 )
-def test_collection_options_accept_supported_values(enum_type, value):
+@pytest.mark.anyio
+async def test_collection_options_accept_supported_values(enum_type, value):
     assert enum_type(value).value == value
 
 
@@ -26,6 +27,7 @@ def test_collection_options_accept_supported_values(enum_type, value):
         (SortDirection, "newest"),
     ],
 )
-def test_collection_options_reject_unsupported_values(enum_type, value):
+@pytest.mark.anyio
+async def test_collection_options_reject_unsupported_values(enum_type, value):
     with pytest.raises(ValueError):
         enum_type(value)
