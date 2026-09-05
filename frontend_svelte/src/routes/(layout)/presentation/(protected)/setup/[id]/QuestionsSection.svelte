@@ -98,6 +98,8 @@
 		socketioQuestions?.client.disconnect();
 	});
 
+	let viewMode = $state<'grid' | 'list' | 'table'>('table');
+
 	const flag = (language: string) =>
 		language === 'en-US'
 			? 'flagpack:us'
@@ -106,8 +108,6 @@
 				: language === 'de-DE'
 					? 'flagpack:de'
 					: 'flagpack:gb-ukm';
-
-	let viewMode = $state<'grid' | 'list' | 'table'>('table');
 </script>
 
 <!-- TBD: potentially move into existing questions Card, same way as the add new presentation, then no slide transition is necessary any more. -->
@@ -443,10 +443,7 @@ https://svelte.dev/e/transition_slide_display
 			</a>
 		{/snippet}
 		{#snippet languageCell(question: QuestionExtended)}
-			<!-- <div class="inline-flex items-center whitespace-nowrap"> -->
-			<!-- <Icon icon="twemoji:flag-united-states" class="size-5" inline /> -->
 			<Icon icon={flag(question.language)} class="size-5" inline />
-			<!-- </div> -->
 		{/snippet}
 		{#snippet questionActionsCell(question: QuestionExtended)}
 			<ActionButtons
