@@ -25,4 +25,9 @@ do
     fi
 done
 
+mkdir -p "$WORKTREE/backend/src/migrations/dev/versions"
+
+cp -a "$PRIMARY_ROOT/backend/src/migrations/dev/versions/." \
+  "$WORKTREE/backend/src/migrations/dev/versions/"
+
 code --new-window "$WORKTREE"
