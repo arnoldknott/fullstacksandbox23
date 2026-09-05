@@ -158,8 +158,7 @@
 			{#if (entityContainer?.entities?.length ?? 0) === 0}
 				<tr>
 					<td colspan={columns.length + (selectionBoxes ? 1 : 0)} class="text-center">
-						No presentations yet. Create one by sending a POST request to the /presentation
-						endpoint.
+						No data yet. Create one first.
 					</td>
 				</tr>
 			{:else}
