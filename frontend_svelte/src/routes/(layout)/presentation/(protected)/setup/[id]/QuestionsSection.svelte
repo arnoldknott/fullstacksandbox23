@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Icon from '@iconify/svelte';
 	import { onDestroy, onMount } from 'svelte';
 	import { fade, slide } from 'svelte/transition';
 
@@ -96,6 +97,15 @@
 	onDestroy(() => {
 		socketioQuestions?.client.disconnect();
 	});
+
+	const flag = (language: string) =>
+		language === 'en-US'
+			? 'flagpack:us'
+			: language === 'da-DK'
+				? 'flagpack:dk'
+				: language === 'de-DE'
+					? 'flagpack:de'
+					: 'flagpack:gb-ukm';
 
 	let viewMode = $state<'grid' | 'list' | 'table'>('table');
 </script>
@@ -432,6 +442,12 @@ https://svelte.dev/e/transition_slide_display
 				{question.question || question.id}
 			</a>
 		{/snippet}
+		{#snippet languageCell(question: QuestionExtended)}
+			<!-- <div class="inline-flex items-center whitespace-nowrap"> -->
+			<!-- <Icon icon="twemoji:flag-united-states" class="size-5" inline /> -->
+			<Icon icon={flag(question.language)} class="size-5" inline />
+			<!-- </div> -->
+		{/snippet}
 		{#snippet questionActionsCell(question: QuestionExtended)}
 			<ActionButtons
 				resourceId={question.id}
@@ -446,6 +462,12 @@ https://svelte.dev/e/transition_slide_display
 					cell: snippet(questionIdCell),
 					headerClass: 'w-3/5',
 					cellClass: 'max-w-0'
+				},
+				{
+					header: icon('tabler:language'),
+					cell: snippet(languageCell),
+					headerClass: 'text-center',
+					cellClass: 'text-center'
 				},
 				{
 					header: text('Access'),
