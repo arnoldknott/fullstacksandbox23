@@ -31,7 +31,7 @@
 
 	let socketioPresentations: SocketIO<PresentationExtended> = $state()!;
 	onMount(() => {
-		socketioPresentations = new SocketIO(
+		socketioPresentations = new SocketIO<PresentationExtended>(
 			{
 				namespace: '/presentation',
 				sessionId: data?.session?.sessionId || '',
@@ -41,6 +41,10 @@
 				}
 			},
 			{
+				snapshot: {
+					entities: data.payload.presentations,
+					cursor: data.payload.cursor
+				},
 				template: {
 					source: 'intern:',
 					path: '',
@@ -51,10 +55,6 @@
 		);
 
 		socketioPresentations.identities = data.payload.identities;
-	});
-
-	$effect(() => {
-		socketioPresentations.entities = data.payload.presentations || [];
 	});
 
 	onDestroy(() => {

@@ -150,6 +150,21 @@ class AccessLog(AccessLogCreate, table=True):
     time: datetime = Field(default_factory=datetime.now, index=True)
     status_code: int = Field()
 
+    __table_args__ = (
+        Index(
+            "ix_accesslog_created_resource_time",
+            "resource_id",
+            "time",
+            postgresql_where=text("action = 'own' AND status_code = 201"),
+        ),
+        Index(
+            "ix_accesslog_modified_resource_time",
+            "resource_id",
+            "time",
+            postgresql_where=text("action = 'write' AND status_code = 200"),
+        ),
+    )
+
 
 class AccessLogRead(AccessLogCreate):
     """Read model access attempt logs"""

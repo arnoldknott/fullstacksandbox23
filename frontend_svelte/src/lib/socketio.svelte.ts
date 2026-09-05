@@ -22,6 +22,7 @@ type QueryParameters = {
 	'identity-ids'?: string;
 	'resource-ids'?: string;
 	'parent-id'?: string;
+	'snapshot-subscription'?: 'true';
 	'join-admin-room'?: boolean;
 };
 
@@ -32,7 +33,7 @@ export type SocketioConnection = {
 	namespace?: string;
 	sessionId?: string;
 	parentId?: string;
-	queryParams?: Omit<QueryParameters, 'parent-id'>; // parent-id is handled in the connection!
+	queryParams?: Omit<QueryParameters, 'parent-id' | 'snapshot-subscription'>;
 	overrides?: Partial<ManagerOptions & SocketOptions>;
 };
 
@@ -55,18 +56,27 @@ type SocketioHandlers<T> = {
 	status?: boolean | ((status: SocketioStatus) => void);
 };
 
+export type EntitySnapshot<T extends AnyEntityExtended = AnyEntityExtended> = {
+	entities: T[];
+	cursor: number;
+};
+
 export type SocketioConfiguration<T extends AnyEntityExtended = AnyEntityExtended> = Partial<
 	Omit<EntityContainerConfiguration<T>, 'parentId'> & SocketioHandlers<T>
->;
+> & {
+	snapshot?: EntitySnapshot<T>;
+};
 
 export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 	extends EntityContainer<T>
 	implements EntityContainerInterface<T>
 {
+	private static readonly subscriptionBatchLimit = 500;
 	public client: Socket;
 
 	constructor(connection: SocketioConnection, configuration: SocketioConfiguration<T> = {}) {
 		super({ parentId: connection.parentId, ...configuration });
+		if (configuration.snapshot) this.seedSnapshot(configuration.snapshot);
 		const backendAPIConfiguration: BackendAPIConfiguration = getContext('backendAPIConfiguration');
 		const backendFqdn = backendAPIConfiguration.backendFqdn;
 		const socketioServerUrl = backendFqdn.startsWith('localhost')
@@ -90,6 +100,9 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 		if (connection.parentId) {
 			queryParams['parent-id'] = connection.parentId;
 		}
+		if (configuration.snapshot) {
+			queryParams['snapshot-subscription'] = 'true';
+		}
 
 		this.client = io(socketioServerUrl + connection.namespace, {
 			path: backendAPIConfiguration.socketIOPath,
@@ -98,6 +111,9 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 			forceNew: true,
 			...connection.overrides
 		});
+		if (configuration.snapshot) {
+			this.client.on('connect', () => this.subscribeToSnapshot(configuration.snapshot!));
+		}
 
 		if (this.pendingTemplate) this.createPending();
 		// simulate delay for testing UI elements like forms to create a new entity, that depend on the pendingEntity
@@ -133,6 +149,31 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 				} else {
 					this.handleStatus(status);
 				}
+			});
+		}
+	}
+
+	private seedSnapshot(snapshot: EntitySnapshot<T>): void {
+		this.entities = snapshot.entities;
+		for (const entity of snapshot.entities) {
+			this.accessPolicies[entity.id] = entity.access_policies ?? [];
+			this.accessRights[entity.id] = entity.access_right ?? Action.READ;
+			this.hierarchies[entity.id] = entity.hierarchies ?? [];
+		}
+	}
+
+	private subscribeToSnapshot(snapshot: EntitySnapshot<T>): void {
+		const entityIds = snapshot.entities.map((entity) => entity.id);
+		if (entityIds.length === 0) {
+			this.client.emit('subscribe', { entity_ids: [], cursor: snapshot.cursor });
+			return;
+		}
+		for (let offset = 0; offset < entityIds.length; offset += SocketIO.subscriptionBatchLimit) {
+			const entity_ids = entityIds.slice(offset, offset + SocketIO.subscriptionBatchLimit);
+			const isFinalBatch = offset + SocketIO.subscriptionBatchLimit >= entityIds.length;
+			this.client.emit('subscribe', {
+				entity_ids,
+				...(isFinalBatch ? { cursor: snapshot.cursor } : {})
 			});
 		}
 	}

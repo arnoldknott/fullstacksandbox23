@@ -1,6 +1,17 @@
 import logging
 from datetime import datetime
-from typing import Any, Generic, List, Optional, Self, Type, TypeVar, cast
+from typing import (
+    Any,
+    Generic,
+    List,
+    Literal,
+    Optional,
+    Self,
+    Type,
+    TypedDict,
+    TypeVar,
+    cast,
+)
 from uuid import UUID
 
 # from pprint import pprint
@@ -45,6 +56,17 @@ read = Action.read
 connect = Action.connect
 write = Action.write
 own = Action.own
+
+
+class EntityLogMetadata(TypedDict):
+    creation_date: Optional[datetime]
+    last_modified_date: Optional[datetime]
+
+
+class EntityMutation(TypedDict):
+    cursor: int
+    entity_id: UUID
+    kind: Literal["created", "updated", "deleted"]
 
 
 async def get_types_from_ids(
@@ -283,6 +305,36 @@ class AccessPolicyCRUD:
             )
 
         return statement
+
+    async def read_access_rights(
+        self,
+        entity_ids: List[UUID],
+        model: Type[SQLModel],
+        current_user: Optional[CurrentUserData] = None,
+    ) -> dict[UUID, Action]:
+        """Reads the highest effective access right for each requested entity."""
+        remaining_ids = set(entity_ids)
+        access_rights: dict[UUID, Action] = {}
+        model_columns = cast(Any, model)
+
+        for action in (Action.own, Action.write, Action.connect, Action.read):
+            if not remaining_ids:
+                break
+            statement = select(model_columns.id).where(
+                model_columns.id.in_(remaining_ids)
+            )
+            statement = self.filters_allowed(
+                statement=statement,
+                action=action,
+                model=model,
+                current_user=current_user,
+            )
+            response = await self._session().exec(statement)
+            allowed_ids = set(response.all())
+            access_rights.update({entity_id: action for entity_id in allowed_ids})
+            remaining_ids.difference_update(allowed_ids)
+
+        return access_rights
 
     async def allows(
         self,
@@ -734,6 +786,117 @@ class AccessLoggingCRUD:
     def _session(self) -> AsyncSession:
         return cast(AsyncSession, self.session)
 
+    @staticmethod
+    def creation_date_expression(entity_id_column: Any) -> Any:
+        """Returns a scalar expression for an entity's creation date."""
+        return (
+            select(func.min(AccessLog.time))
+            .where(
+                AccessLog.resource_id == entity_id_column,
+                AccessLog.action == Action.own,
+                AccessLog.status_code == 201,
+            )
+            .correlate_except(AccessLog)
+            .scalar_subquery()
+        )
+
+    async def read_cursor(self) -> int:
+        """Returns the latest access-log identifier for snapshot handoff."""
+        response = await self._session().exec(select(func.max(AccessLog.id)))
+        return response.one() or 0
+
+    async def read_entity_mutations_after(
+        self,
+        cursor: int,
+        entity_type: ResourceType | IdentityType,
+    ) -> List[EntityMutation]:
+        """Returns each entity's latest successful mutation after a cursor."""
+        log_id = cast(Any, AccessLog.id)
+        action = cast(Any, AccessLog.action)
+        status_code = cast(Any, AccessLog.status_code)
+        statement = (
+            select(
+                AccessLog.id,
+                AccessLog.resource_id,
+                AccessLog.action,
+                AccessLog.status_code,
+            )
+            .join(
+                IdentifierTypeLink,
+                col(IdentifierTypeLink.id) == col(AccessLog.resource_id),
+            )
+            .where(
+                log_id > cursor,
+                IdentifierTypeLink.type == entity_type.value,
+                or_(
+                    and_(action == Action.own, status_code == 201),
+                    and_(action == Action.write, status_code == 200),
+                    and_(action == Action.own, status_code == 200),
+                ),
+            )
+            .order_by(log_id.asc())
+        )
+        response = await self._session().exec(statement)
+        latest_mutations: dict[UUID, EntityMutation] = {}
+        for (
+            mutation_cursor,
+            entity_id,
+            mutation_action,
+            mutation_status,
+        ) in response.all():
+            if mutation_action == Action.own and mutation_status == 201:
+                kind = "created"
+            elif mutation_action == Action.write:
+                kind = "updated"
+            else:
+                kind = "deleted"
+            latest_mutations[entity_id] = {
+                "cursor": mutation_cursor,
+                "entity_id": entity_id,
+                "kind": kind,
+            }
+        return sorted(
+            latest_mutations.values(), key=lambda mutation: mutation["cursor"]
+        )
+
+    async def read_entity_metadata(
+        self, entity_ids: List[UUID]
+    ) -> dict[UUID, EntityLogMetadata]:
+        """Reads creation and last-modified dates for entities in one query."""
+        if not entity_ids:
+            return {}
+
+        resource_id_column = cast(Any, AccessLog.resource_id)
+        action_column = cast(Any, AccessLog.action)
+        status_code_column = cast(Any, AccessLog.status_code)
+        creation_date = func.min(AccessLog.time).filter(
+            action_column == Action.own,
+            status_code_column == 201,
+        )
+        last_write_date = func.max(AccessLog.time).filter(
+            action_column == Action.write,
+            status_code_column == 200,
+        )
+        statement = (
+            select(
+                AccessLog.resource_id,
+                creation_date.label("creation_date"),
+                func.coalesce(last_write_date, creation_date).label(
+                    "last_modified_date"
+                ),
+            )
+            .where(resource_id_column.in_(entity_ids))
+            .group_by(resource_id_column)
+        )
+        response = await self._session().exec(statement)
+        return {
+            entity_id: {
+                "creation_date": entity_creation_date,
+                "last_modified_date": last_modified_date,
+            }
+            for entity_id, entity_creation_date, last_modified_date in response.all()
+        }
+
     async def create(self, access_log: AccessLogCreate) -> AccessLog:
         """Creates an access log entry."""
         try:
@@ -757,6 +920,25 @@ class AccessLoggingCRUD:
             await session.rollback()
             logger.error(f"Error in creating log: {e}")
             raise HTTPException(status_code=400, detail="Bad request: logging failed.")
+
+    async def create_many(self, access_logs: List[AccessLogCreate]) -> List[AccessLog]:
+        """Creates multiple access log entries in one transaction."""
+        if access_logs:
+            try:
+                session = self._session()
+                database_logs = [AccessLog.model_validate(log) for log in access_logs]
+                session.add_all(database_logs)
+                await session.commit()
+                return database_logs
+            except Exception as e:
+                session = self._session()
+                await session.rollback()
+                logger.error(f"Error in creating logs: {e}")
+                raise HTTPException(
+                    status_code=400, detail="Bad request: logging failed."
+                )
+        else:
+            return []
 
     async def read(
         self,

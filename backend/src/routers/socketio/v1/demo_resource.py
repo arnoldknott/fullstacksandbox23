@@ -50,16 +50,7 @@ class DemoResourceNamespace(BaseNamespace):
             read_model=DemoResourceRead,
             read_extended_model=DemoResourceExtended,
             update_model=DemoResourceUpdate,
-            callback_on_connect=self.callback_on_connect,
             *args,
             **kwargs,
         )
         # self.namespace = namespace
-
-    async def callback_on_connect(self, sid, *args, **kwargs):
-        """Callback on connect for socket.io namespaces."""
-        # trigger the read all event to fetch all demo resources:
-        current_user = kwargs.get("current_user")
-        request_access_data = bool(kwargs.get("request_access_data"))
-        parent_id = kwargs.get("parent_id")
-        await self._get_all(sid, current_user, request_access_data, parent_id=parent_id)

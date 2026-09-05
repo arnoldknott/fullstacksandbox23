@@ -7,6 +7,7 @@ from core.types import CurrentUserData
 from models.demo_resource import (
     DemoResource,
     DemoResourceCreate,
+    DemoResourceExtended,
     DemoResourceRead,
     DemoResourceUpdate,
 )
@@ -21,7 +22,11 @@ class DemoResourceCRUD(
     BaseCRUD[DemoResource, DemoResourceCreate, DemoResourceRead, DemoResourceUpdate]
 ):
     def __init__(self):
-        super().__init__(DemoResource, allow_standalone=True)
+        super().__init__(
+            DemoResource,
+            allow_standalone=True,
+            extended_model=DemoResourceExtended,
+        )
 
     # TBD: turn into list of tag-Ids, to allow multiple tags
     # TBD: refactor into access control - this might include the hierarchy of the resources!

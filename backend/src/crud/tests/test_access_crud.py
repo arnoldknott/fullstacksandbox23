@@ -1,9 +1,12 @@
 import uuid
+from datetime import datetime
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 from fastapi import HTTPException
+from sqlmodel.ext.asyncio.session import AsyncSession
 
-from core.types import Action, CurrentUserData
+from core.types import Action, CurrentUserData, ResourceType
 from crud.access import (
     AccessLoggingCRUD,
     AccessPolicyCRUD,
@@ -1398,6 +1401,150 @@ async def test_create_access_log(register_many_current_users, register_many_reso
     assert created_log.resource_id == access_log.resource_id
     assert created_log.action == access_log.action
     assert created_log.status_code == access_log.status_code
+
+
+@pytest.mark.anyio
+async def test_create_many_access_logs_commits_once():
+    """Test creating multiple access logs in one transaction."""
+    session = Mock(spec=AsyncSession)
+    session.commit = AsyncMock()
+    session.rollback = AsyncMock()
+    access_logs = [
+        AccessLogCreate(
+            identity_id=uuid.uuid4(),
+            resource_id=uuid.uuid4(),
+            action=Action.read,
+            status_code=200,
+        )
+        for _ in range(3)
+    ]
+
+    created_logs = await AccessLoggingCRUD(session=session).create_many(access_logs)
+
+    assert len(created_logs) == len(access_logs)
+    session.add_all.assert_called_once_with(created_logs)
+    session.commit.assert_awaited_once_with()
+    session.rollback.assert_not_awaited()
+
+
+@pytest.mark.anyio
+async def test_create_many_access_logs_with_empty_batch_skips_session():
+    """Test that an empty access-log batch does not open a transaction."""
+    session = Mock(spec=AsyncSession)
+    session.commit = AsyncMock()
+    session.rollback = AsyncMock()
+
+    created_logs = await AccessLoggingCRUD(session=session).create_many([])
+
+    assert created_logs == []
+    session.add_all.assert_not_called()
+    session.commit.assert_not_awaited()
+    session.rollback.assert_not_awaited()
+
+
+@pytest.mark.anyio
+async def test_read_entity_metadata_maps_grouped_dates():
+    """Test mapping one grouped query to metadata by resource ID."""
+    session = Mock(spec=AsyncSession)
+    response = Mock()
+    resource_id = uuid.uuid4()
+    creation_date = datetime(2026, 9, 1, 10, 0)
+    last_modified_date = datetime(2026, 9, 2, 11, 0)
+    response.all.return_value = [(resource_id, creation_date, last_modified_date)]
+    session.exec = AsyncMock(return_value=response)
+
+    metadata = await AccessLoggingCRUD(session=session).read_entity_metadata(
+        [resource_id]
+    )
+
+    assert metadata == {
+        resource_id: {
+            "creation_date": creation_date,
+            "last_modified_date": last_modified_date,
+        }
+    }
+    session.exec.assert_awaited_once()
+
+
+@pytest.mark.anyio
+async def test_read_entity_metadata_with_empty_ids_skips_query():
+    """Test that empty metadata reads do not query the database."""
+    session = Mock(spec=AsyncSession)
+    session.exec = AsyncMock()
+
+    metadata = await AccessLoggingCRUD(session=session).read_entity_metadata([])
+
+    assert metadata == {}
+    session.exec.assert_not_awaited()
+
+
+@pytest.mark.anyio
+async def test_read_cursor_returns_latest_log_id():
+    """Test reading the monotonic access-log cursor."""
+    session = Mock(spec=AsyncSession)
+    response = Mock()
+    response.one.return_value = 42
+    session.exec = AsyncMock(return_value=response)
+
+    cursor = await AccessLoggingCRUD(session=session).read_cursor()
+
+    assert cursor == 42
+    session.exec.assert_awaited_once()
+
+
+@pytest.mark.anyio
+async def test_read_entity_mutations_after_returns_latest_mutation_per_entity():
+    """Test mutation classification and latest-event compaction."""
+    session = Mock(spec=AsyncSession)
+    response = Mock()
+    created_then_updated_id = uuid.uuid4()
+    deleted_id = uuid.uuid4()
+    response.all.return_value = [
+        (11, created_then_updated_id, Action.own, 201),
+        (12, deleted_id, Action.own, 200),
+        (13, created_then_updated_id, Action.write, 200),
+    ]
+    session.exec = AsyncMock(return_value=response)
+
+    mutations = await AccessLoggingCRUD(session=session).read_entity_mutations_after(
+        cursor=10,
+        entity_type=ResourceType.demo_resource,
+    )
+
+    assert mutations == [
+        {"cursor": 12, "entity_id": deleted_id, "kind": "deleted"},
+        {
+            "cursor": 13,
+            "entity_id": created_then_updated_id,
+            "kind": "updated",
+        },
+    ]
+    session.exec.assert_awaited_once()
+
+
+@pytest.mark.anyio
+async def test_read_access_rights_uses_highest_allowed_action():
+    """Test that action checks stop after the highest matching permission."""
+    session = Mock(spec=AsyncSession)
+    own_response = Mock()
+    own_response.all.return_value = []
+    write_response = Mock()
+    resource_id = uuid.uuid4()
+    write_response.all.return_value = [resource_id]
+    session.exec = AsyncMock(side_effect=[own_response, write_response])
+    crud = AccessPolicyCRUD(session=session)
+    crud.filters_allowed = Mock(side_effect=lambda statement, **_kwargs: statement)
+
+    access_rights = await crud.read_access_rights(
+        entity_ids=[resource_id],
+        model=ProtectedResource,
+        current_user=CurrentUserData.model_validate(current_user_data_user1),
+    )
+
+    assert access_rights == {resource_id: Action.write}
+    assert session.exec.await_count == 2
+    assert crud.filters_allowed.call_args_list[0].kwargs["action"] == Action.own
+    assert crud.filters_allowed.call_args_list[1].kwargs["action"] == Action.write
 
 
 # TBD: check if the rest is covered through test_access.py!

@@ -54,6 +54,27 @@ class Action(str, Enum):
     own = "own"
 
 
+class CollectionInclude(str, Enum):
+    """Optional metadata fields for collection reads."""
+
+    creation_date = "creation_date"
+    last_modified_date = "last_modified_date"
+    access_right = "access_right"
+
+
+class CollectionSort(str, Enum):
+    """Supported sort fields for collection reads."""
+
+    creation_date = "creation_date"
+
+
+class SortDirection(str, Enum):
+    """Sort direction for collection reads."""
+
+    ascending = "asc"
+    descending = "desc"
+
+
 # Types identify resources in the identifier type table - used for registering resources and identities.
 class EntityType(str, Enum):
     """Base enum for types of entities in the database"""

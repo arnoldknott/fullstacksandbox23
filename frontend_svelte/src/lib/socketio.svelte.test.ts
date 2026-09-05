@@ -158,6 +158,56 @@ describe('SocketIO for DemoResources', () => {
 		expect(serverSocket.connected).toBe(true);
 	});
 
+	test('preseeds entities and subscribes in bounded batches with the snapshot cursor', async () => {
+		const entities = Array.from({ length: 510 }, (_, index) => ({
+			id: `00000000-0000-4000-8000-${index.toString().padStart(12, '0')}`,
+			name: `resource-${index}`,
+			access_right: index === 0 ? Action.OWN : Action.READ
+		})) as DemoResource[];
+		const clientHandler = await SocketioClientHandler.create<DemoResource>(
+			{
+				namespace: '/demo-resource',
+				sessionId: 'session-123'
+			},
+			{ snapshot: { entities, cursor: 42 } }
+		);
+
+		expect(clientHandler.socketioClient.entities).toEqual(entities);
+		expect(clientHandler.socketioClient.accessRights[entities[0].id]).toBe(Action.OWN);
+		await vi.waitFor(() => {
+			const subscriptions = serverMessages.filter((message) => message.event === 'subscribe');
+			expect(subscriptions).toHaveLength(2);
+			expect(subscriptions[0].data[0]).toEqual({
+				entity_ids: entities.slice(0, 500).map((entity) => entity.id)
+			});
+			expect(subscriptions[1].data[0]).toEqual({
+				entity_ids: entities.slice(500).map((entity) => entity.id),
+				cursor: 42
+			});
+		});
+
+		clientHandler.disconnect();
+	});
+
+	test('subscribes with the cursor when the snapshot is empty', async () => {
+		const clientHandler = await SocketioClientHandler.create<DemoResource>(
+			{
+				namespace: '/demo-resource',
+				sessionId: 'session-123'
+			},
+			{ snapshot: { entities: [], cursor: 42 } }
+		);
+
+		await vi.waitFor(() => {
+			expect(serverMessages.find((message) => message.event === 'subscribe')?.data[0]).toEqual({
+				entity_ids: [],
+				cursor: 42
+			});
+		});
+
+		clientHandler.disconnect();
+	});
+
 	test('uses default handlers when no overrides are provided', async () => {
 		const emitSpy = vi.spyOn(testSocketio.client, 'emit');
 

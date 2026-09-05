@@ -60,17 +60,21 @@
 	});
 	onMount(() => {
 		messageSocketio = new SocketIO<MessageExtended>(messageConnection, {
+			snapshot: {
+				entities: data.questionsData.messages,
+				cursor: data.questionsData.messageCursor
+			},
 			template: { content: '', language: 'en' }
 		});
 		messageSocketio.createSortedSelection('sortedMessageAnswers', 'creation_date', false);
-		numericalSocketio = new SocketIO<NumericalExtended>(numericalConnection);
+		numericalSocketio = new SocketIO<NumericalExtended>(numericalConnection, {
+			snapshot: {
+				entities: data.questionsData.numericals,
+				cursor: data.questionsData.numericalCursor
+			}
+		});
 		numericalSocketio.createSortedSelection('sortedNumericalAnswers', 'creation_date', false);
 		// messageSocketio.createPending();
-	});
-
-	$effect(() => {
-		messageSocketio.entities = data.questionsData?.questions.messages || [];
-		numericalSocketio.entities = data.questionsData?.questions.numericals || [];
 	});
 
 	onDestroy(() => {

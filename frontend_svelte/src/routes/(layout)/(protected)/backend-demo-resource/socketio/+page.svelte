@@ -79,6 +79,10 @@
 		};
 
 		socketio = new SocketIO<DemoResourceExtended>(connection, {
+			snapshot: {
+				entities: data.payload.entities,
+				cursor: data.payload.cursor
+			},
 			template: {
 				name: '',
 				description: '',

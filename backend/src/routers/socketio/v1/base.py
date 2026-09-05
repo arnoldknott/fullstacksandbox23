@@ -16,7 +16,7 @@ from urllib.parse import parse_qs
 from uuid import UUID
 
 import socketio
-from sqlmodel import SQLModel
+from sqlmodel import SQLModel, col, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from core.config import config
@@ -64,6 +64,7 @@ BaseSchemaTypeExtended = TypeVar("BaseSchemaTypeExtended", bound=BaseExtendedSQL
 
 class QueryStrings(TypedDict, total=False):
     request_access_data: bool
+    snapshot_subscription: bool
     identity_ids: Optional[List[str]]
     resource_ids: Optional[List[str]]
     parent_id: Optional[str]
@@ -78,6 +79,13 @@ class SocketIoSessionData(TypedDict, total=False):
     # session_id below is the Redis session-id, not the socket.io session-id (sid)
     session_id: Optional[str]
     query_strings: Optional[QueryStrings]
+    snapshot_entity_ids: List[str]
+
+
+class SubscriptionResult(TypedDict, total=False):
+    subscribed: List[str]
+    rejected: List[str]
+    error: str
 
 
 class BaseNamespace(
@@ -90,6 +98,8 @@ class BaseNamespace(
     ],
 ):
     """Base class for socket.io namespaces."""
+
+    subscription_batch_limit = 500
 
     def __init__(
         self,
@@ -406,6 +416,10 @@ class BaseNamespace(
             or request_access_data
             else False
         )
+        snapshot_subscription = (
+            parse_qs(query_strings).get("snapshot-subscription", [""])[0].lower()
+            == "true"
+        )
         identity_ids = (
             parse_qs(query_strings).get("identity-ids", [""])[0].split(",")
             if "identity-ids" in query_strings
@@ -434,6 +448,7 @@ class BaseNamespace(
         )
         session_query_strings: QueryStrings = {
             "request_access_data": request_access_data,
+            "snapshot_subscription": snapshot_subscription,
             "identity_ids": identity_ids,
             "resource_ids": resource_ids,
             "join_admin_room": join_admin_room,
@@ -542,12 +557,12 @@ class BaseNamespace(
                 await self.server.save_session(
                     sid, session_data, namespace=self.namespace
                 )
-        if self.callback_on_connect is not None:
+        if self.callback_on_connect is not None and not snapshot_subscription:
             await self.callback_on_connect(
                 sid,
                 current_user=current_user,
                 request_access_data=request_access_data,
-                resource_ids=resource_ids,
+                entity_ids=resource_ids,
                 parent_id=parent_id,
             )
 
@@ -610,6 +625,143 @@ class BaseNamespace(
                 sid, {"error": f"Resource {str(resource_id)} not found."}
             )
             # await self._emit_status(sid, {"error": str(error)})
+
+    async def on_subscribe(self, sid: str, data: Dict[str, Any]) -> SubscriptionResult:
+        """Subscribes a client to rooms for access-controlled entities."""
+        raw_entity_ids = data.get("entity_ids")
+        if not isinstance(raw_entity_ids, list):
+            return {"error": "entity_ids must be a list."}
+        if len(raw_entity_ids) > self.subscription_batch_limit:
+            return {
+                "error": (
+                    "entity_ids exceeds the maximum batch size of "
+                    f"{self.subscription_batch_limit}."
+                )
+            }
+        cursor = data.get("cursor")
+        if cursor is not None and (
+            isinstance(cursor, bool) or not isinstance(cursor, int) or cursor < 0
+        ):
+            return {"error": "cursor must be a non-negative integer."}
+        if self.crud is None:
+            return {"error": "No CRUD configured."}
+
+        try:
+            entity_ids = list(
+                dict.fromkeys(UUID(str(value)) for value in raw_entity_ids)
+            )
+        except TypeError, ValueError:
+            return {"error": "entity_ids must contain valid UUIDs."}
+
+        current_user = await self._get_current_user_and_check_guard(sid, "connect")
+        async with self.crud() as crud:
+            model_columns = cast(Any, crud.model)
+            statement = select(model_columns.id).where(
+                col(model_columns.id).in_(entity_ids)
+            )
+            statement = crud.policy_crud.filters_allowed(
+                statement=statement,
+                action=Action.read,
+                model=crud.model,
+                current_user=current_user,
+            )
+            response = await crud.session.exec(statement)
+            authorized_ids = set(response.all())
+
+        subscribed = [
+            str(entity_id) for entity_id in entity_ids if entity_id in authorized_ids
+        ]
+        rejected = [
+            str(entity_id)
+            for entity_id in entity_ids
+            if entity_id not in authorized_ids
+        ]
+        for entity_id in subscribed:
+            await self.server.enter_room(
+                sid, f"resource:{entity_id}", namespace=self.namespace
+            )
+
+        session_data = await self._get_session_data(sid)
+        snapshot_entity_ids = list(
+            dict.fromkeys(
+                [*session_data.get("snapshot_entity_ids", []), *map(str, entity_ids)]
+            )
+        )
+        session_data["snapshot_entity_ids"] = snapshot_entity_ids
+        await self.server.save_session(sid, session_data, namespace=self.namespace)
+
+        if cursor is not None:
+            await self._replay_entity_mutations(
+                sid=sid,
+                current_user=current_user,
+                cursor=cursor,
+                snapshot_entity_ids=set(snapshot_entity_ids),
+            )
+        return {"subscribed": subscribed, "rejected": rejected}
+
+    async def _replay_entity_mutations(
+        self,
+        sid: str,
+        current_user: Optional[CurrentUserData],
+        cursor: int,
+        snapshot_entity_ids: set[str],
+    ) -> None:
+        """Replays authorized entity mutations after a snapshot cursor."""
+        if self.crud is None:
+            return
+
+        payloads: dict[UUID, dict] = {}
+        mutations = []
+        async with self.crud() as crud:
+            mutations = await crud.logging_crud.read_entity_mutations_after(
+                cursor=cursor,
+                entity_type=crud.entity_type,
+            )
+            active_ids = [
+                mutation["entity_id"]
+                for mutation in mutations
+                if mutation["kind"] != "deleted"
+            ]
+            if active_ids:
+                model_columns = cast(Any, crud.model)
+                entities = await crud.read(
+                    current_user=current_user,
+                    filters=[col(model_columns.id).in_(active_ids)],
+                )
+                entity_ids = [cast(Any, entity).id for entity in entities]
+                metadata = await crud.logging_crud.read_entity_metadata(entity_ids)
+                access_rights = await crud.policy_crud.read_access_rights(
+                    entity_ids=entity_ids,
+                    model=crud.model,
+                    current_user=current_user,
+                )
+                assert self.read_extended_model is not None
+                for entity in entities:
+                    entity_id = cast(Any, entity).id
+                    extended = self.read_extended_model.model_validate(entity)
+                    extended.creation_date = metadata.get(entity_id, {}).get(
+                        "creation_date"
+                    )
+                    extended.last_modified_date = metadata.get(entity_id, {}).get(
+                        "last_modified_date"
+                    )
+                    extended.access_right = access_rights.get(entity_id)
+                    payloads[entity_id] = extended.model_dump(mode="json")
+
+        for mutation in mutations:
+            entity_id = mutation["entity_id"]
+            payload = payloads.get(entity_id)
+            if mutation["kind"] != "deleted" and payload is not None:
+                await self.server.enter_room(
+                    sid, f"resource:{entity_id}", namespace=self.namespace
+                )
+                await self.server.emit(
+                    "transferred", payload, namespace=self.namespace, to=sid
+                )
+            elif str(entity_id) in snapshot_entity_ids:
+                await self.server.emit(
+                    "deleted", str(entity_id), namespace=self.namespace, to=sid
+                )
 
     # "submit" is communication from client to server
     async def on_submit(self, sid, data):  # noqa: C901

@@ -1,11 +1,11 @@
 import logging
-from typing import Annotated
+from typing import Annotated, cast
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Response
 
 from core.security import Guards, get_http_access_token_payload
-from core.types import GuardTypes
+from core.types import CollectionInclude, CollectionSort, GuardTypes, SortDirection
 from crud.protected_resource import (
     ProtectedChildCRUD,
     ProtectedGrandChildCRUD,
@@ -14,14 +14,17 @@ from crud.protected_resource import (
 from models.protected_resource import (
     ProtectedChild,
     ProtectedChildCreate,
+    ProtectedChildExtended,
     ProtectedChildRead,
     ProtectedChildUpdate,
     ProtectedGrandChild,
     ProtectedGrandChildCreate,
+    ProtectedGrandChildExtended,
     ProtectedGrandChildRead,
     ProtectedGrandChildUpdate,
     ProtectedResource,
     ProtectedResourceCreate,
+    ProtectedResourceExtended,
     ProtectedResourceRead,
     ProtectedResourceUpdate,
 )
@@ -59,6 +62,23 @@ async def get_protected_resources(
 ) -> list[ProtectedResourceRead]:
     """Returns all protected resources."""
     return await protected_resource_view.get(token_payload, guards)
+
+
+@router.get("/resource/snapshot", status_code=200)
+async def get_protected_resource_entity_snapshot(
+    response: Response,
+    include: Annotated[list[CollectionInclude] | None, Query()] = None,
+    sort: Annotated[CollectionSort | None, Query()] = None,
+    direction: Annotated[SortDirection, Query()] = SortDirection.ascending,
+    token_payload=Depends(get_http_access_token_payload),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
+) -> list[ProtectedResourceExtended]:  # pyright: ignore[reportInvalidTypeForm]
+    """Returns an optionally enriched protected-resource entity snapshot."""
+    snapshot = await protected_resource_view.get_entity_snapshot(
+        token_payload, guards, include, sort, direction
+    )
+    response.headers["X-Entity-Cursor"] = str(snapshot.cursor)
+    return cast(list[ProtectedResourceExtended], snapshot.items)
 
 
 @router.get("/resource/{resource_id}", status_code=200)
@@ -125,6 +145,23 @@ async def get_protected_child(
     return await protected_child_view.get(token_payload, guards)
 
 
+@router.get("/child/snapshot", status_code=200)
+async def get_protected_child_entity_snapshot(
+    response: Response,
+    include: Annotated[list[CollectionInclude] | None, Query()] = None,
+    sort: Annotated[CollectionSort | None, Query()] = None,
+    direction: Annotated[SortDirection, Query()] = SortDirection.ascending,
+    token_payload=Depends(get_http_access_token_payload),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
+) -> list[ProtectedChildExtended]:  # pyright: ignore[reportInvalidTypeForm]
+    """Returns an optionally enriched protected-child entity snapshot."""
+    snapshot = await protected_child_view.get_entity_snapshot(
+        token_payload, guards, include, sort, direction
+    )
+    response.headers["X-Entity-Cursor"] = str(snapshot.cursor)
+    return cast(list[ProtectedChildExtended], snapshot.items)
+
+
 @router.get("/child/{resource_id}", status_code=200)
 async def get_protected_child_by_id(
     resource_id: UUID,
@@ -187,6 +224,23 @@ async def get_protected_grandchild(
 ) -> list[ProtectedGrandChildRead]:
     """Returns all protected grandchild resources."""
     return await protected_grand_child_view.get(token_payload, guards)
+
+
+@router.get("/grandchild/snapshot", status_code=200)
+async def get_protected_grandchild_entity_snapshot(
+    response: Response,
+    include: Annotated[list[CollectionInclude] | None, Query()] = None,
+    sort: Annotated[CollectionSort | None, Query()] = None,
+    direction: Annotated[SortDirection, Query()] = SortDirection.ascending,
+    token_payload=Depends(get_http_access_token_payload),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
+) -> list[ProtectedGrandChildExtended]:  # pyright: ignore[reportInvalidTypeForm]
+    """Returns an optionally enriched protected-grandchild entity snapshot."""
+    snapshot = await protected_grand_child_view.get_entity_snapshot(
+        token_payload, guards, include, sort, direction
+    )
+    response.headers["X-Entity-Cursor"] = str(snapshot.cursor)
+    return cast(list[ProtectedGrandChildExtended], snapshot.items)
 
 
 @router.get("/grandchild/{resource_id}", status_code=200)

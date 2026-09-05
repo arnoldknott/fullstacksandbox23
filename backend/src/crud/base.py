@@ -1,5 +1,6 @@
 import logging
 import uuid
+from dataclasses import dataclass
 from os import makedirs, path, remove, rename
 from typing import (
     TYPE_CHECKING,
@@ -17,7 +18,7 @@ from fastapi import HTTPException, UploadFile
 from fastapi.responses import FileResponse
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import aliased, class_mapper, contains_eager, foreign, noload
-from sqlmodel import SQLModel, asc, col, delete, func, or_, select
+from sqlmodel import SQLModel, asc, col, delete, desc, func, or_, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from core.databases import get_async_session
@@ -38,11 +39,19 @@ from models.access import (
     IdentityHierarchy,
     ResourceHierarchy,
 )
-from models.base import BaseSQLModel
+from models.base import BaseExtendedSQLModel, BaseSQLModel
 
 if TYPE_CHECKING:
     pass
-from core.types import Action, CurrentUserData, IdentityType, ResourceType
+from core.types import (
+    Action,
+    CollectionInclude,
+    CollectionSort,
+    CurrentUserData,
+    IdentityType,
+    ResourceType,
+    SortDirection,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +63,12 @@ BaseModelType = TypeVar("BaseModelType", bound=BaseSQLModel)
 BaseSchemaTypeCreate = TypeVar("BaseSchemaTypeCreate", bound=SQLModel)
 BaseSchemaTypeRead = TypeVar("BaseSchemaTypeRead", bound=SQLModel)
 BaseSchemaTypeUpdate = TypeVar("BaseSchemaTypeUpdate", bound=SQLModel)
+
+
+@dataclass(frozen=True)
+class EntityCollectionSnapshot:
+    items: list[BaseExtendedSQLModel]
+    cursor: int
 
 
 class BaseCRUD(
@@ -73,6 +88,7 @@ class BaseCRUD(
         allow_standalone: Optional[bool] = False,
         allow_public_create: Optional[bool] = False,
         session: Optional[AsyncSession] = None,
+        extended_model: Optional[Type[SQLModel]] = None,
     ):
         """Provides a database session for CRUD operations.
 
@@ -89,6 +105,7 @@ class BaseCRUD(
         self.data_directory = directory
         self.allow_standalone = allow_standalone
         self.allow_public_create = allow_public_create
+        self.extended_model = extended_model or getattr(base_model, "Extended", None)
         if base_model.__name__ in ResourceType.list():
             self.entity_type = ResourceType(self.model.__name__)
             self.type = ResourceType
@@ -438,6 +455,78 @@ class BaseCRUD(
     # use with pagination:
     # Model = await model_crud.read(order_by=[Model.name], limit=10)
     # Model = await model_crud.read(order_by=[Model.name], limit=10, offset=10)
+    async def read_entity_snapshot(
+        self,
+        current_user: Optional["CurrentUserData"] = None,
+        includes: Optional[set[CollectionInclude]] = None,
+        sort: Optional[CollectionSort] = None,
+        direction: SortDirection = SortDirection.ascending,
+        parent_id: Optional[uuid.UUID] = None,
+    ) -> EntityCollectionSnapshot:
+        """Reads an optionally enriched entity collection and mutation cursor."""
+        requested_includes = includes or set()
+        cursor = await self.logging_crud.read_cursor()
+        order_by = None
+        if sort == CollectionSort.creation_date:
+            creation_date = self.logging_crud.creation_date_expression(
+                col(self.model.id)
+            )
+            date_order = (
+                desc(creation_date).nullslast()
+                if direction == SortDirection.descending
+                else asc(creation_date).nullslast()
+            )
+            order_by = [date_order, asc(col(self.model.id))]
+
+        filters = None
+        if parent_id is not None:
+            hierarchy_crud = self.hierarchy_CRUD(session=self.session)
+            hierarchies = await hierarchy_crud.read(
+                current_user=current_user, parent_id=parent_id
+            )
+            child_ids = [hierarchy.child_id for hierarchy in hierarchies]
+            filters = [col(self.model.id).in_(child_ids)]
+
+        entities = await self.read(
+            current_user=current_user, filters=filters, order_by=order_by
+        )
+        entity_ids = [cast(Any, entity).id for entity in entities]
+        date_includes = {
+            CollectionInclude.creation_date,
+            CollectionInclude.last_modified_date,
+        }
+        metadata = (
+            await self.logging_crud.read_entity_metadata(entity_ids)
+            if requested_includes & date_includes
+            else {}
+        )
+        access_rights = (
+            await self.policy_crud.read_access_rights(
+                entity_ids=entity_ids,
+                model=self.model,
+                current_user=current_user,
+            )
+            if CollectionInclude.access_right in requested_includes
+            else {}
+        )
+
+        if self.extended_model is None:
+            raise ValueError(f"{self.model.__name__} has no Extended schema")
+        items = []
+        for entity in entities:
+            item = self.extended_model.model_validate(entity)
+            entity_id = cast(Any, entity).id
+            entity_metadata = metadata.get(entity_id, {})
+            if CollectionInclude.creation_date in requested_includes:
+                item.creation_date = entity_metadata.get("creation_date")
+            if CollectionInclude.last_modified_date in requested_includes:
+                item.last_modified_date = entity_metadata.get("last_modified_date")
+            if CollectionInclude.access_right in requested_includes:
+                item.access_right = access_rights.get(entity_id)
+            items.append(item)
+
+        return EntityCollectionSnapshot(items=items, cursor=cursor)
+
     async def read(  # noqa: C901
         self,
         current_user: Optional["CurrentUserData"] = None,
@@ -580,16 +669,18 @@ class BaseCRUD(
                 logger.info(f"No objects found for {self.model.__name__}")
                 return []
 
-            for result in results:
-                failed_result = result
-                # TBD: add logging to accessed children!
-                access_log = AccessLogCreate(
+            failed_result = results[-1]
+            # TBD: add logging to accessed children!
+            access_logs = [
+                AccessLogCreate(
                     resource_id=result.id,  # result might not be available here?
                     action=read,
                     identity_id=current_user.user_id if current_user else None,
                     status_code=200,
                 )
-                await self.logging_crud.create(access_log)
+                for result in results
+            ]
+            await self.logging_crud.create_many(access_logs)
 
             return results
         except Exception as err:

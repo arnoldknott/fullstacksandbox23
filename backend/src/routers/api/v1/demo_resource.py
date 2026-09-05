@@ -1,20 +1,21 @@
 import logging
-from typing import Annotated, List
+from typing import Annotated, List, cast
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Response
 
 from core.security import (
     Guards,
     check_token_against_guards,
     get_http_access_token_payload,
 )
-from core.types import GuardTypes
+from core.types import CollectionInclude, CollectionSort, GuardTypes, SortDirection
 from crud.demo_resource import DemoResourceCRUD
 from crud.tag import TagCRUD
 from models.demo_resource import (
     DemoResource,
     DemoResourceCreate,
+    DemoResourceExtended,
     DemoResourceRead,
     DemoResourceUpdate,
 )
@@ -47,6 +48,25 @@ async def get_all_demo_resources(
 ) -> list[DemoResourceRead]:
     """Returns all demo resources resources."""
     return await demo_resource_view.get(token_payload)
+
+
+@router.get("/snapshot", status_code=200)
+async def get_demo_resource_entity_snapshot(
+    response: Response,
+    include: Annotated[list[CollectionInclude] | None, Query()] = None,
+    sort: Annotated[CollectionSort | None, Query()] = None,
+    direction: Annotated[SortDirection, Query()] = SortDirection.ascending,
+    token_payload=Depends(get_http_access_token_payload),
+) -> list[DemoResourceExtended]:
+    """Returns an optionally enriched demo-resource entity snapshot."""
+    snapshot = await demo_resource_view.get_entity_snapshot(
+        token_payload=token_payload,
+        includes=include,
+        sort=sort,
+        direction=direction,
+    )
+    response.headers["X-Entity-Cursor"] = str(snapshot.cursor)
+    return cast(list[DemoResourceExtended], snapshot.items)
 
 
 @router.get("/{demo_resource_id}", status_code=200)

@@ -21,8 +21,14 @@
 	let {
 		parentId,
 		questions = [],
+		cursor,
 		identities = []
-	}: { parentId?: string; questions: Question[]; identities: Identity[] } = $props();
+	}: {
+		parentId?: string;
+		questions: QuestionExtended[];
+		cursor: number;
+		identities: Identity[];
+	} = $props();
 
 	// uses the one, that gets set in sidebar and communicated
 	// through the search params of the url
@@ -36,7 +42,7 @@
 		hideNewQuestionCard = page.url.searchParams.get('add-question') !== 'true';
 	});
 
-	let socketioQuestions: SocketIO<Question> = $state()!;
+	let socketioQuestions: SocketIO<QuestionExtended> = $state()!;
 	let linkedQuestions = $derived<Question[]>(
 		socketioQuestions?.getSelectedEntities('linkedToPresentation') || []
 	);
@@ -64,7 +70,7 @@
 	});
 
 	onMount(() => {
-		socketioQuestions = new SocketIO<Question>(
+		socketioQuestions = new SocketIO<QuestionExtended>(
 			{
 				namespace: '/question',
 				sessionId: page.data.session.sessionId,
@@ -75,6 +81,7 @@
 				}
 			},
 			{
+				snapshot: { entities: questions, cursor },
 				inherit: inheritPending,
 				template: {
 					question: '',
@@ -85,13 +92,6 @@
 		socketioQuestions.identities = identities;
 		socketioQuestions.createLinkedSelection('linkedToPresentation');
 		socketioQuestions.createLinkedSelection('notLinkedToPresentation', true);
-		// emiting a "read" to trigger a "get_all on the server,
-		// which transmits all data also for the unlinked questions.
-		socketioQuestions.client.emit('read');
-	});
-
-	$effect(() => {
-		socketioQuestions.entities = questions ?? [];
 	});
 	onDestroy(() => {
 		socketioQuestions?.client.disconnect();
