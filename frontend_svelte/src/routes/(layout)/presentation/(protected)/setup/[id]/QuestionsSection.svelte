@@ -123,29 +123,6 @@ https://svelte.dev/e/transition_slide_display
 	<span class="icon-[fluent-color--warning-24] size-4"></span>
 {/snippet}
 
-<!-- Very similar to the new presentation footer - consider putting into component -->
-{#snippet cancelSaveFooter()}
-	<div class="ml-5 flex flex-row justify-end gap-4">
-		<button
-			class="btn btn-secondary-container btn-gradient shadow-outline rounded-full shadow"
-			aria-label="Cancel"
-			onclick={() => {
-				hideNewQuestionCard = true;
-			}}><span class="icon-[tabler--x] size-5"></span>Cancel</button
-		>
-		<button
-			class="btn btn-primary-container btn-gradient shadow-outline rounded-full shadow"
-			aria-label="Save new presentation"
-			onclick={() => {
-				socketioQuestions.submitBulk(parentId, inheritPending);
-				hideNewQuestionCard = true;
-				// For buld submit the new pending needs manual creation:
-				socketioQuestions.createPending();
-			}}><span class="icon-[tabler--send-2] size-5"></span>Save</button
-		>
-	</div>
-{/snippet}
-
 {#if socketioQuestions?.pendingEntities[0]}
 	<Card
 		id="add-questions"
@@ -153,7 +130,6 @@ https://svelte.dev/e/transition_slide_display
 		closeButton
 		extraClasses="label-large"
 		bind:hidden={hideNewQuestionCard}
-		footer={cancelSaveFooter}
 	>
 		<!-- <p class="label">
 		{@render warning()} Add questions with tabs for new and existing, where the existing questions get
@@ -339,6 +315,28 @@ https://svelte.dev/e/transition_slide_display
 				</div>
 			</div>
 		</div>
+		<!-- Very similar to the new presentation footer - consider putting into component -->
+		{#snippet footer()}
+			<div class="ml-5 flex flex-row justify-end gap-4">
+				<button
+					class="btn btn-secondary-container btn-gradient shadow-outline rounded-full shadow"
+					aria-label="Cancel"
+					onclick={() => {
+						hideNewQuestionCard = true;
+					}}><span class="icon-[tabler--x] size-5"></span>Cancel</button
+				>
+				<button
+					class="btn btn-primary-container btn-gradient shadow-outline rounded-full shadow"
+					aria-label="Save new presentation"
+					onclick={() => {
+						socketioQuestions.submitBulk(parentId, inheritPending);
+						hideNewQuestionCard = true;
+						// For buld submit the new pending needs manual creation:
+						socketioQuestions.createPending();
+					}}><span class="icon-[tabler--send-2] size-5"></span>Save</button
+				>
+			</div>
+		{/snippet}
 	</Card>
 {:else if !socketioQuestions?.pendingEntities[0] && !hideNewQuestionCard}
 	<div class="label text-error" transition:slide={{ duration: 600 }}>
