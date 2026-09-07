@@ -45,6 +45,7 @@ Keep edits focused, preserve existing patterns, and prefer small changes over br
 - Keep frontend and backend auth/session behavior aligned. The frontend depends on backend session-backed auth flows and the `/api/v1`, `/socketio/v1`, and `/ws/v1` contracts.
 - When you change a shared API, auth, websocket, or session contract, check both sides of the integration instead of treating either app in isolation.
 - Containerized development and CI flows are driven from the repository root with `compose.yml` plus override files such as `compose.override.yml` and `compose.override.test.yml`.
+- Use kebab-case for first-party URL query parameter names and values (for example, `parent-id` and `creation-date`). Keep idiomatic identifiers internally by declaring explicit framework aliases or separate serialized enum values. Do not alter externally defined protocol parameters.
 
 ## Architecture Patterns
 
