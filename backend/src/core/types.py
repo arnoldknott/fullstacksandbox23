@@ -57,15 +57,15 @@ class Action(str, Enum):
 class CollectionInclude(str, Enum):
     """Optional metadata fields for collection reads."""
 
-    creation_date = "creation_date"
-    last_modified_date = "last_modified_date"
-    access_right = "access_right"
+    creation_date = "creation-date"
+    last_modified_date = "last-modified-date"
+    access_right = "access-right"
 
 
 class CollectionSort(str, Enum):
     """Supported sort fields for collection reads."""
 
-    creation_date = "creation_date"
+    creation_date = "creation-date"
 
 
 class SortDirection(str, Enum):

@@ -49,13 +49,13 @@
 	let socketio: SocketIO<UeberGroupExtended> = $state()!;
 	onMount(() => {
 		socketio = new SocketIO<UeberGroupExtended>(connection, {
+			snapshot: {
+				entities: data.ueberGroups,
+				cursor: data.ueberGroupCursor
+			},
 			template: { name: '', description: '' }
 		});
 		socketio.createPending();
-	});
-	$effect(() => {
-		// Preseeding the data from RestAPI:
-		socketio.entities = data.ueberGroups;
 	});
 
 	let ueberGroups = $derived(socketio?.entities ?? []);

@@ -171,15 +171,24 @@ async def get_questions(
 @router.get("/question/snapshot", status_code=200)
 async def get_question_entity_snapshot(
     response: Response,
+    parent_id: Annotated[UUID | None, Query(alias="parent-id")] = None,
     include: Annotated[list[CollectionInclude] | None, Query()] = None,
     sort: Annotated[CollectionSort | None, Query()] = None,
     direction: Annotated[SortDirection, Query()] = SortDirection.ascending,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
+    token_payload: Annotated[
+        Optional[dict], Depends(provide_http_token_payload_optional)
+    ] = None,
+    # guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
 ) -> list[QuestionExtended]:
     """Returns an optionally enriched question snapshot."""
     snapshot = await question_view.get_entity_snapshot(
-        token_payload, guards, include, sort, direction
+        # token_payload, guards, include, sort, direction
+        token_payload,
+        None,
+        include,
+        sort,
+        direction,
+        parent_id,
     )
     response.headers["X-Entity-Cursor"] = str(snapshot.cursor)
     return snapshot.items
@@ -250,16 +259,24 @@ async def get_messages(
 @router.get("/message/snapshot", status_code=200)
 async def get_message_entity_snapshot(
     response: Response,
-    parent_id: Annotated[UUID | None, Query()] = None,
+    parent_id: Annotated[UUID | None, Query(alias="parent-id")] = None,
     include: Annotated[list[CollectionInclude] | None, Query()] = None,
     sort: Annotated[CollectionSort | None, Query()] = None,
     direction: Annotated[SortDirection, Query()] = SortDirection.ascending,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
+    token_payload: Annotated[
+        Optional[dict], Depends(provide_http_token_payload_optional)
+    ] = None,
+    # guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
 ) -> list[MessageExtended]:
     """Returns an optionally enriched message snapshot."""
     snapshot = await message_view.get_entity_snapshot(
-        token_payload, guards, include, sort, direction, parent_id
+        # token_payload, guards, include, sort, direction, parent_id
+        token_payload,
+        None,
+        include,
+        sort,
+        direction,
+        parent_id,
     )
     response.headers["X-Entity-Cursor"] = str(snapshot.cursor)
     return snapshot.items
@@ -330,16 +347,24 @@ async def get_numericals(
 @router.get("/numerical/snapshot", status_code=200)
 async def get_numerical_entity_snapshot(
     response: Response,
-    parent_id: Annotated[UUID | None, Query()] = None,
+    parent_id: Annotated[UUID | None, Query(alias="parent-id")] = None,
     include: Annotated[list[CollectionInclude] | None, Query()] = None,
     sort: Annotated[CollectionSort | None, Query()] = None,
     direction: Annotated[SortDirection, Query()] = SortDirection.ascending,
-    token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
+    token_payload: Annotated[
+        Optional[dict], Depends(provide_http_token_payload_optional)
+    ] = None,
+    # guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
 ) -> list[NumericalExtended]:
     """Returns an optionally enriched numerical snapshot."""
     snapshot = await numerical_view.get_entity_snapshot(
-        token_payload, guards, include, sort, direction, parent_id
+        # token_payload, guards, include, sort, direction, parent_id
+        token_payload,
+        None,
+        include,
+        sort,
+        direction,
+        parent_id,
     )
     response.headers["X-Entity-Cursor"] = str(snapshot.cursor)
     return snapshot.items

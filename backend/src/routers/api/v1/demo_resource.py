@@ -104,7 +104,7 @@ async def delete_demo_resource(
 @router.post("/{resource_id}/tag/")
 async def add_tag_to_demo_resource(
     resource_id: UUID,
-    tag_ids: Annotated[List[UUID], Query()],
+    tag_ids: Annotated[List[UUID], Query(alias="tag-ids")],
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> DemoResourceRead:

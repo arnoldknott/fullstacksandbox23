@@ -174,8 +174,8 @@ async def put_access_policy(
 @router.delete("/policy", status_code=200)
 async def delete_access_policy(
     # access_policy: AccessPolicyDelete,
-    resource_id: Annotated[UUID | None, Query()] = None,
-    identity_id: Annotated[UUID | None, Query()] = None,
+    resource_id: Annotated[UUID | None, Query(alias="resource-id")] = None,
+    identity_id: Annotated[UUID | None, Query(alias="identity-id")] = None,
     action: Annotated[Action | None, Query()] = None,
     public: Annotated[bool | None, Query()] = None,
     token_payload=Depends(get_http_access_token_payload),
@@ -264,10 +264,10 @@ access_log_view = BaseView(AccessLoggingCRUD)
 
 @router.get("/logs", status_code=200)
 async def get_access_logs(
-    resource_id: Annotated[UUID | None, Query()] = None,
-    identity_id: Annotated[UUID | None, Query()] = None,
+    resource_id: Annotated[UUID | None, Query(alias="resource-id")] = None,
+    identity_id: Annotated[UUID | None, Query(alias="identity-id")] = None,
     action: Annotated[Action | None, Query()] = None,
-    status_code: Annotated[int | None, Query()] = None,
+    status_code: Annotated[int | None, Query(alias="status-code")] = None,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> list[AccessLogRead]:
@@ -283,7 +283,7 @@ async def get_access_logs(
 @router.get("/log/{resource_id}", status_code=200)
 async def get_access_logs_for_resource(
     resource_id: UUID,
-    identity_id: Annotated[UUID | None, Query()] = None,
+    identity_id: Annotated[UUID | None, Query(alias="identity-id")] = None,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(roles=["User"])),
 ) -> list[AccessLogRead]:
@@ -553,8 +553,8 @@ async def post_relationships(
 
 @router.get("/hierarchies", status_code=200)
 async def get_relationships(
-    parent_id: Annotated[UUID | None, Query()] = None,
-    child_id: Annotated[UUID | None, Query()] = None,
+    parent_id: Annotated[UUID | None, Query(alias="parent-id")] = None,
+    child_id: Annotated[UUID | None, Query(alias="child-id")] = None,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ) -> List[ResourceHierarchyRead] | List[IdentityHierarchyRead]:
@@ -581,7 +581,7 @@ async def post_reorder_children(
     parent_id: UUID,
     child_id: UUID,
     position: str,
-    other_child_id: Annotated[UUID | None, Query()] = None,
+    other_child_id: Annotated[UUID | None, Query(alias="other-child-id")] = None,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
 ):

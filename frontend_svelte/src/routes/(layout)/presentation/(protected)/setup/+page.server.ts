@@ -1,5 +1,3 @@
-import { error } from '@sveltejs/kit';
-
 import { IdentityType, PUBLIC_IDENTITY_ID } from '$lib/accessHandler';
 import { backendAPI } from '$lib/server/apis/backendApi';
 import { microsoftGraph } from '$lib/server/apis/msgraph';
@@ -14,28 +12,21 @@ export const load: PageServerLoad = async ({ locals }) => {
 		cursor: 0,
 		identities: [] as Identity[]
 	};
-	const [snapshotResponse, policiesResponse] = await Promise.all([
-		backendAPI.get(
+	const [snapshot, policiesResponse] = await Promise.all([
+		backendAPI.getSnapshot<PresentationExtended>(
 			sessionId,
-			'/presentation/snapshot?include=creation_date&include=last_modified_date&include=access_right&sort=creation_date&direction=desc'
+			'/presentation/snapshot?include=creation-date&include=last-modified-date&include=access-right&sort=creation-date&direction=desc'
 		),
 		backendAPI.get(sessionId, '/access/policy/resource/type/Presentation')
 	]);
-	if (!snapshotResponse.ok) {
-		error(snapshotResponse.status, 'Presentations could not be loaded');
-	}
-	const cursor = snapshotResponse.headers.get('X-Entity-Cursor');
-	if (cursor === null) {
-		error(502, 'Presentation snapshot did not include a cursor');
-	}
-	const presentations: PresentationExtended[] = await snapshotResponse.json();
+	const presentations = snapshot.entities;
 	const policies: AccessPolicy[] = policiesResponse.ok ? await policiesResponse.json() : [];
 	const policiesByEntity = Object.groupBy(policies, (policy) => policy.resource_id);
 	for (const presentation of presentations) {
 		presentation.access_policies = policiesByEntity[presentation.id] ?? [];
 	}
 	payload.presentations = presentations;
-	payload.cursor = Number.parseInt(cursor, 10);
+	payload.cursor = snapshot.cursor;
 	// add all linked Microsoft Teams identities:
 	const myTeamsIdentities = await microsoftGraph.getAttachedTeamsAsIdentities(
 		sessionId,

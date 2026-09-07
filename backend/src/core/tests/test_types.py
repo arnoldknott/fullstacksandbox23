@@ -6,10 +6,10 @@ from core.types import CollectionInclude, CollectionSort, SortDirection
 @pytest.mark.parametrize(
     ("enum_type", "value"),
     [
-        (CollectionInclude, "creation_date"),
-        (CollectionInclude, "last_modified_date"),
-        (CollectionInclude, "access_right"),
-        (CollectionSort, "creation_date"),
+        (CollectionInclude, "creation-date"),
+        (CollectionInclude, "last-modified-date"),
+        (CollectionInclude, "access-right"),
+        (CollectionSort, "creation-date"),
         (SortDirection, "asc"),
         (SortDirection, "desc"),
     ],
@@ -22,8 +22,8 @@ async def test_collection_options_accept_supported_values(enum_type, value):
 @pytest.mark.parametrize(
     ("enum_type", "value"),
     [
-        (CollectionInclude, "access_policies"),
-        (CollectionSort, "last_accessed_date"),
+        (CollectionInclude, "access-policies"),
+        (CollectionSort, "last-accessed-date"),
         (SortDirection, "newest"),
     ],
 )

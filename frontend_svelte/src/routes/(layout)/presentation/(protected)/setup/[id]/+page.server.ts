@@ -16,15 +16,16 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		identities: [] as Identity[]
 	};
 	const presentationId = url.pathname.split('/presentation/setup/')[1];
-	const [presentationResponse, questionsResponse, policiesResponse, hierarchiesResponse] =
+	const [presentationResponse, questionSnapshot, policiesResponse, hierarchiesResponse] =
 		await Promise.all([
 			backendAPI.get(sessionId, '/presentation/' + presentationId),
-			backendAPI.get(
+			backendAPI.getSnapshot<QuestionExtended>(
 				sessionId,
-				'/quiz/question/snapshot?include=creation_date&include=last_modified_date&include=access_right&sort=creation_date&direction=desc'
+				'/quiz/question/snapshot?include=creation-date&include=last-modified-date&include=access-right&sort=creation-date&direction=desc&parent-id=' +
+					presentationId
 			),
 			backendAPI.get(sessionId, '/access/policy/resource/type/Question'),
-			backendAPI.get(sessionId, '/access/hierarchies?parent_id=' + presentationId)
+			backendAPI.get(sessionId, '/access/hierarchies?parent-id=' + presentationId)
 		]);
 	if (presentationResponse.status === 200) {
 		const presentationData = await presentationResponse.json();
@@ -32,20 +33,13 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 	} else {
 		console.error(404, 'presentationData could not be loaded');
 	}
-	if (!questionsResponse.ok) {
-		error(questionsResponse.status, 'Questions could not be loaded');
-	}
 	if (!policiesResponse.ok) {
 		error(policiesResponse.status, 'Question access policies could not be loaded');
 	}
 	if (!hierarchiesResponse.ok) {
 		error(hierarchiesResponse.status, 'Question hierarchies could not be loaded');
 	}
-	const cursor = questionsResponse.headers.get('X-Entity-Cursor');
-	if (cursor === null) {
-		error(502, 'Question snapshot did not include a cursor');
-	}
-	const questions: QuestionExtended[] = await questionsResponse.json();
+	const questions = questionSnapshot.entities;
 	const policies: AccessPolicy[] = await policiesResponse.json();
 	const hierarchies: Hierarchy[] = await hierarchiesResponse.json();
 	const policiesByEntity = Object.groupBy(policies, (policy) => policy.resource_id);
@@ -55,7 +49,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		question.hierarchies = hierarchiesByEntity[question.id] ?? [];
 	}
 	payload.questions = questions;
-	payload.cursor = Number.parseInt(cursor, 10);
+	payload.cursor = questionSnapshot.cursor;
 	// add all linked Microsoft Teams identities:
 	const myTeamsIdentities = await microsoftGraph.getAttachedTeamsAsIdentities(
 		sessionId,

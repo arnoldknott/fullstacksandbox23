@@ -1,5 +1,3 @@
-import { error } from '@sveltejs/kit';
-
 import { IdentityType, PUBLIC_IDENTITY_ID } from '$lib/accessHandler';
 import { backendAPI } from '$lib/server/apis/backendApi';
 import { microsoftGraph } from '$lib/server/apis/msgraph';
@@ -15,19 +13,12 @@ export const load: PageServerLoad = async ({ locals }) => {
 		entities: [] as DemoResourceExtended[],
 		cursor: 0
 	};
-	const snapshotResponse = await backendAPI.get(
+	const snapshot = await backendAPI.getSnapshot<DemoResourceExtended>(
 		sessionId,
-		'/demoresource/snapshot?include=creation_date&include=last_modified_date&include=access_right&sort=creation_date&direction=desc'
+		'/demoresource/snapshot?include=creation-date&include=last-modified-date&include=access-right&sort=creation-date&direction=desc'
 	);
-	if (!snapshotResponse.ok) {
-		error(snapshotResponse.status, 'Demo resources could not be loaded');
-	}
-	const cursor = snapshotResponse.headers.get('X-Entity-Cursor');
-	if (cursor === null) {
-		error(502, 'Demo resource snapshot did not include a cursor');
-	}
-	payload.entities = await snapshotResponse.json();
-	payload.cursor = Number.parseInt(cursor, 10);
+	payload.entities = snapshot.entities;
+	payload.cursor = snapshot.cursor;
 
 	const myTeamsIdentities = await microsoftGraph.getAttachedTeamsAsIdentities(
 		sessionId,

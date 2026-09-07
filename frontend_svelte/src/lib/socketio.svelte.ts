@@ -61,6 +61,8 @@ export type EntitySnapshot<T extends AnyEntityExtended = AnyEntityExtended> = {
 	cursor: number;
 };
 
+type SubscriptionResult = { subscribed: string[]; rejected: string[] } | { error: string };
+
 export type SocketioConfiguration<T extends AnyEntityExtended = AnyEntityExtended> = Partial<
 	Omit<EntityContainerConfiguration<T>, 'parentId'> & SocketioHandlers<T>
 > & {
@@ -112,7 +114,9 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 			...connection.overrides
 		});
 		if (configuration.snapshot) {
-			this.client.on('connect', () => this.subscribeToSnapshot(configuration.snapshot!));
+			this.client.on('connect', () => {
+				void this.subscribeToSnapshot(configuration.snapshot!, configuration.status);
+			});
 		}
 
 		if (this.pendingTemplate) this.createPending();
@@ -162,20 +166,50 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 		}
 	}
 
-	private subscribeToSnapshot(snapshot: EntitySnapshot<T>): void {
+	private async subscribeToSnapshot(
+		snapshot: EntitySnapshot<T>,
+		statusHandler: SocketioHandlers<T>['status']
+	): Promise<void> {
 		const entityIds = snapshot.entities.map((entity) => entity.id);
-		if (entityIds.length === 0) {
-			this.client.emit('subscribe', { entity_ids: [], cursor: snapshot.cursor });
-			return;
+		const batches = entityIds.length
+			? Array.from(
+					{ length: Math.ceil(entityIds.length / SocketIO.subscriptionBatchLimit) },
+					(_, index) =>
+						entityIds.slice(
+							index * SocketIO.subscriptionBatchLimit,
+							(index + 1) * SocketIO.subscriptionBatchLimit
+						)
+				)
+			: [[]];
+
+		for (const [index, entity_ids] of batches.entries()) {
+			try {
+				const result = (await this.client.timeout(10_000).emitWithAck('subscribe', {
+					entity_ids,
+					...(index === batches.length - 1 ? { cursor: snapshot.cursor } : {})
+				})) as SubscriptionResult;
+				if ('error' in result) {
+					this.reportSubscriptionError(result.error, statusHandler);
+					return;
+				}
+				if (result.rejected.length > 0) {
+					this.reportSubscriptionError(
+						`Subscription rejected for entity ids: ${result.rejected.join(', ')}`,
+						statusHandler
+					);
+				}
+			} catch {
+				this.reportSubscriptionError('Subscription acknowledgement timed out.', statusHandler);
+				return;
+			}
 		}
-		for (let offset = 0; offset < entityIds.length; offset += SocketIO.subscriptionBatchLimit) {
-			const entity_ids = entityIds.slice(offset, offset + SocketIO.subscriptionBatchLimit);
-			const isFinalBatch = offset + SocketIO.subscriptionBatchLimit >= entityIds.length;
-			this.client.emit('subscribe', {
-				entity_ids,
-				...(isFinalBatch ? { cursor: snapshot.cursor } : {})
-			});
-		}
+	}
+
+	private reportSubscriptionError(
+		error: string,
+		statusHandler: SocketioHandlers<T>['status']
+	): void {
+		if (typeof statusHandler === 'function') statusHandler({ error });
 	}
 
 	/**

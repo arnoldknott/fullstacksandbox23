@@ -1,5 +1,5 @@
 import logging
-from typing import Annotated, Optional
+from typing import Annotated, Optional, cast
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
@@ -10,7 +10,7 @@ from core.security import (
     check_token_against_guards,
     get_http_access_token_payload,
 )
-from core.types import GuardTypes
+from core.types import CollectionInclude, CollectionSort, GuardTypes, SortDirection
 from crud.identity import (
     GroupCRUD,
     SubGroupCRUD,
@@ -21,15 +21,19 @@ from crud.identity import (
 from models.identity import (
     Group,
     GroupCreate,
+    GroupExtended,
     GroupRead,
     Me,
     SubGroup,
     SubGroupCreate,
+    SubGroupExtended,
     SubGroupRead,
     SubGroupUpdate,
     SubSubGroupCreate,
+    SubSubGroupExtended,
     UeberGroup,
     UeberGroupCreate,
+    UeberGroupExtended,
     UeberGroupRead,
     UeberGroupUpdate,
     User,
@@ -73,7 +77,7 @@ async def post_user(
 async def post_invite_azure_user(
     azure_user_id: str,  # The Azure user ID to invite as path parameter
     azure_tenant_id: Annotated[
-        Optional[UUID], Query()
+        Optional[UUID], Query(alias="azure-tenant-id")
     ] = None,  # The Azure tenant ID as optional query parameter
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
@@ -233,6 +237,23 @@ async def get_all_ueber_groups(
     return await ueber_group_view.get(token_payload, guards)
 
 
+@ueber_group_router.get("/snapshot", status_code=200)
+async def get_ueber_group_entity_snapshot(
+    response: Response,
+    include: Annotated[list[CollectionInclude] | None, Query()] = None,
+    sort: Annotated[CollectionSort | None, Query()] = None,
+    direction: Annotated[SortDirection, Query()] = SortDirection.ascending,
+    token_payload=Depends(get_http_access_token_payload),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
+) -> list[UeberGroupExtended]:  # type: ignore[valid-type]
+    """Returns an optionally enriched ueber-group snapshot."""
+    snapshot = await ueber_group_view.get_entity_snapshot(
+        token_payload, guards, include, sort, direction
+    )
+    response.headers["X-Entity-Cursor"] = str(snapshot.cursor)
+    return cast(list[UeberGroupExtended], snapshot.items)
+
+
 @ueber_group_router.get("/{ueber_group_id}", status_code=200)
 async def get_ueber_group_by_id(
     ueber_group_id: UUID,
@@ -319,6 +340,23 @@ async def get_all_groups(
 ) -> list[GroupRead]:
     """Returns all groups."""
     return await group_view.get(token_payload, guards)
+
+
+@group_router.get("/snapshot", status_code=200)
+async def get_group_entity_snapshot(
+    response: Response,
+    include: Annotated[list[CollectionInclude] | None, Query()] = None,
+    sort: Annotated[CollectionSort | None, Query()] = None,
+    direction: Annotated[SortDirection, Query()] = SortDirection.ascending,
+    token_payload=Depends(get_http_access_token_payload),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
+) -> list[GroupExtended]:  # type: ignore[valid-type]
+    """Returns an optionally enriched group snapshot."""
+    snapshot = await group_view.get_entity_snapshot(
+        token_payload, guards, include, sort, direction
+    )
+    response.headers["X-Entity-Cursor"] = str(snapshot.cursor)
+    return cast(list[GroupExtended], snapshot.items)
 
 
 @group_router.get("/{group_id}", status_code=200)
@@ -411,6 +449,23 @@ async def get_all_sub_groups(
     return await sub_group_view.get(token_payload, guards)
 
 
+@sub_group_router.get("/snapshot", status_code=200)
+async def get_sub_group_entity_snapshot(
+    response: Response,
+    include: Annotated[list[CollectionInclude] | None, Query()] = None,
+    sort: Annotated[CollectionSort | None, Query()] = None,
+    direction: Annotated[SortDirection, Query()] = SortDirection.ascending,
+    token_payload=Depends(get_http_access_token_payload),
+    guards: GuardTypes = Depends(Guards(roles=["User"])),
+) -> list[SubGroupExtended]:  # type: ignore[valid-type]
+    """Returns an optionally enriched sub-group snapshot."""
+    snapshot = await sub_group_view.get_entity_snapshot(
+        token_payload, guards, include, sort, direction
+    )
+    response.headers["X-Entity-Cursor"] = str(snapshot.cursor)
+    return cast(list[SubGroupExtended], snapshot.items)
+
+
 @sub_group_router.get("/{sub_group_id}", status_code=200)
 async def get_sub_group_by_id(
     sub_group_id: UUID,
@@ -484,6 +539,23 @@ async def get_all_sub_sub_groups(
 ) -> list[SubGroupRead]:
     """Returns all sub_sub_groups."""
     return await sub_sub_group_view.get(token_payload, guards)
+
+
+@sub_sub_group_router.get("/snapshot", status_code=200)
+async def get_sub_sub_group_entity_snapshot(
+    response: Response,
+    include: Annotated[list[CollectionInclude] | None, Query()] = None,
+    sort: Annotated[CollectionSort | None, Query()] = None,
+    direction: Annotated[SortDirection, Query()] = SortDirection.ascending,
+    token_payload=Depends(get_http_access_token_payload),
+    guards: GuardTypes = Depends(Guards(roles=["Admin"])),
+) -> list[SubSubGroupExtended]:  # type: ignore[valid-type]
+    """Returns an optionally enriched sub-sub-group snapshot."""
+    snapshot = await sub_sub_group_view.get_entity_snapshot(
+        token_payload, guards, include, sort, direction
+    )
+    response.headers["X-Entity-Cursor"] = str(snapshot.cursor)
+    return cast(list[SubSubGroupExtended], snapshot.items)
 
 
 @sub_sub_group_router.get("/{sub_sub_group_id}", status_code=200)
