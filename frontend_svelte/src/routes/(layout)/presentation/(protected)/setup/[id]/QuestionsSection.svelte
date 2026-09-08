@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Icon from '@iconify/svelte';
 	import { onDestroy, onMount } from 'svelte';
 	import { fade, slide } from 'svelte/transition';
 
@@ -6,10 +7,11 @@
 	import { page } from '$app/state';
 	import Card from '$components/Card.svelte';
 	import JsonData from '$components/JsonData.svelte';
+	import Table, { countIcon, icon, snippet, text, value } from '$components/Table.svelte';
 	import Title from '$components/Title.svelte';
 	import { AccessHandler, Action } from '$lib/accessHandler';
 	import { SocketIO } from '$lib/socketio.svelte';
-	import type { AccessShareOption, Identity, Question } from '$lib/types';
+	import type { AccessShareOption, Identity, Question, QuestionExtended } from '$lib/types';
 	import { initTabs } from '$lib/userInterface';
 
 	import IdBadge from '../../../../(protected)/IdBadge.svelte';
@@ -96,7 +98,16 @@
 		socketioQuestions?.client.disconnect();
 	});
 
-	let viewMode = $state<'grid' | 'list'>('list');
+	let viewMode = $state<'grid' | 'list' | 'table'>('table');
+
+	const flag = (language: string) =>
+		language === 'en-US'
+			? 'flagpack:us'
+			: language === 'da-DK'
+				? 'flagpack:dk'
+				: language === 'de-DE'
+					? 'flagpack:de'
+					: 'flagpack:gb-ukm';
 </script>
 
 <!-- TBD: potentially move into existing questions Card, same way as the add new presentation, then no slide transition is necessary any more. -->
@@ -122,29 +133,6 @@ https://svelte.dev/e/transition_slide_display
 	<span class="icon-[fluent-color--warning-24] size-4"></span>
 {/snippet}
 
-<!-- Very similar to the new presentation footer - consider putting into component -->
-{#snippet cancelSaveFooter()}
-	<div class="ml-5 flex flex-row justify-end gap-4">
-		<button
-			class="btn btn-secondary-container btn-gradient shadow-outline rounded-full shadow"
-			aria-label="Cancel"
-			onclick={() => {
-				hideNewQuestionCard = true;
-			}}><span class="icon-[tabler--x] size-5"></span>Cancel</button
-		>
-		<button
-			class="btn btn-primary-container btn-gradient shadow-outline rounded-full shadow"
-			aria-label="Save new presentation"
-			onclick={() => {
-				socketioQuestions.submitBulk(parentId, inheritPending);
-				hideNewQuestionCard = true;
-				// For buld submit the new pending needs manual creation:
-				socketioQuestions.createPending();
-			}}><span class="icon-[tabler--send-2] size-5"></span>Save</button
-		>
-	</div>
-{/snippet}
-
 {#if socketioQuestions?.pendingEntities[0]}
 	<Card
 		id="add-questions"
@@ -152,7 +140,6 @@ https://svelte.dev/e/transition_slide_display
 		closeButton
 		extraClasses="label-large"
 		bind:hidden={hideNewQuestionCard}
-		footer={cancelSaveFooter}
 	>
 		<!-- <p class="label">
 		{@render warning()} Add questions with tabs for new and existing, where the existing questions get
@@ -338,6 +325,28 @@ https://svelte.dev/e/transition_slide_display
 				</div>
 			</div>
 		</div>
+		<!-- Very similar to the new presentation footer - consider putting into component -->
+		{#snippet footer()}
+			<div class="ml-5 flex flex-row justify-end gap-4">
+				<button
+					class="btn btn-secondary-container btn-gradient shadow-outline rounded-full shadow"
+					aria-label="Cancel"
+					onclick={() => {
+						hideNewQuestionCard = true;
+					}}><span class="icon-[tabler--x] size-5"></span>Cancel</button
+				>
+				<button
+					class="btn btn-primary-container btn-gradient shadow-outline rounded-full shadow"
+					aria-label="Save new presentation"
+					onclick={() => {
+						socketioQuestions.submitBulk(parentId, inheritPending);
+						hideNewQuestionCard = true;
+						// For buld submit the new pending needs manual creation:
+						socketioQuestions.createPending();
+					}}><span class="icon-[tabler--send-2] size-5"></span>Save</button
+				>
+			</div>
+		{/snippet}
 	</Card>
 {:else if !socketioQuestions?.pendingEntities[0] && !hideNewQuestionCard}
 	<div class="label text-error" transition:slide={{ duration: 600 }}>
@@ -345,57 +354,61 @@ https://svelte.dev/e/transition_slide_display
 	</div>
 {/if}
 
-<!-- TBD: consider turning into a component, as it is very similar to the existing presentations section. -->
-{#snippet existingQuestionsHeader()}
-	<div class="flex justify-between">
-		<Title id="existingQuestions" class="grow">Overview</Title>
-		<div class="flex flex-row items-center justify-center">
-			{#if hideNewQuestionCard || !socketioQuestions?.pendingEntities[0]}
-				<button
-					transition:fade={{ duration: 600 }}
-					class="btn btn-primary-container btn-gradient label btn shadow-outline mx-4 rounded-full shadow-sm"
-					aria-label="Add new question"
-					onclick={() => (hideNewQuestionCard = false)}
-				>
-					<!-- onclick={() => goto(resolve('/(layout)/presentation/(protected)/setup/new'))} -->
-					<span class="icon-[fa6-solid--plus] size-5"></span>
-					<!-- <span class="hidden ">Add</span> -->
-					<span class="hidden sm:inline">Add new</span>
-					<span class="hidden md:inline">question</span>
-				</button>
-			{/if}
-			<div class="join shadow-outline rounded-full shadow-sm">
-				<button
-					aria-label="Grid"
-					class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline rounded-l-full py-4 shadow {viewMode !==
-					'grid'
-						? 'opacity-60'
-						: ''}"
-					onclick={() => (viewMode = 'grid')}
-				>
-					<span class="icon-[gridicons--grid] size-5"></span>
-				</button>
-				<button
-					aria-label="List"
-					class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline rounded-r-full py-4 shadow {viewMode !==
-					'list'
-						? 'opacity-60'
-						: ''}"
-					onclick={() => (viewMode = 'list')}
-				>
-					<span class="icon-[material-symbols-light--table-outline] size-5"></span>
-				</button>
+<Card id="linked-questions" title="Linked Questions" extraClasses="label-large">
+	<!-- TBD: consider turning into a component, as it is very similar to the existing presentations section. -->
+	{#snippet header()}
+		<div class="flex justify-between">
+			<Title id="existingQuestions" class="grow">Overview</Title>
+			<div class="flex flex-row items-center justify-center">
+				{#if hideNewQuestionCard || !socketioQuestions?.pendingEntities[0]}
+					<button
+						transition:fade={{ duration: 600 }}
+						class="btn btn-primary-container btn-gradient label btn shadow-outline mx-4 rounded-full shadow-sm"
+						aria-label="Add new question"
+						onclick={() => (hideNewQuestionCard = false)}
+					>
+						<!-- onclick={() => goto(resolve('/(layout)/presentation/(protected)/setup/new'))} -->
+						<span class="icon-[fa6-solid--plus] size-5"></span>
+						<!-- <span class="hidden ">Add</span> -->
+						<span class="hidden sm:inline">Add new</span>
+						<span class="hidden md:inline">question</span>
+					</button>
+				{/if}
+				<div class="join shadow-outline rounded-full shadow-sm">
+					<button
+						aria-label="Grid"
+						class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline rounded-l-full py-4 shadow {viewMode !==
+						'grid'
+							? 'opacity-60'
+							: ''}"
+						onclick={() => (viewMode = 'grid')}
+					>
+						<span class="icon-[gridicons--grid] size-5"></span>
+					</button>
+					<button
+						aria-label="List"
+						class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline py-4 shadow {viewMode !==
+						'list'
+							? 'opacity-60'
+							: ''}"
+						onclick={() => (viewMode = 'list')}
+					>
+						<span class="icon-[material-symbols--view-list-outline] size-5"></span>
+					</button>
+					<button
+						aria-label="Table"
+						class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline rounded-r-full py-4 shadow {viewMode !==
+						'table'
+							? 'opacity-60'
+							: ''}"
+						onclick={() => (viewMode = 'table')}
+					>
+						<span class="icon-[material-symbols--table-outline] size-5"></span>
+					</button>
+				</div>
 			</div>
 		</div>
-	</div>
-{/snippet}
-
-<Card
-	id="linked-questions"
-	title="Linked Questions"
-	header={existingQuestionsHeader}
-	extraClasses="label-large"
->
+	{/snippet}
 	<!-- {#each linkedQuestions as linkedQuestion, idx (idx)}
 		<div class="linked-question">
 			<p>Q: {linkedQuestion.question}</p>
@@ -412,6 +425,86 @@ https://svelte.dev/e/transition_slide_display
 		</p>
 	</div>
 	<div class="w-full overflow-x-auto {viewMode !== 'list' ? 'hidden' : ''}">
+		<p class="bg-warning text-warning-content rounded-lg p-4">
+			List view mode is not developed yet
+		</p>
+	</div>
+	<div class="w-full overflow-x-auto {viewMode !== 'table' ? 'hidden' : ''}">
+		{#snippet questionIdCell(question: Question)}
+			<IdBadge id={question.id} />
+			<a
+				href={resolve('/(layout)/question/(protected)/setup/[id]', {
+					id: question.id
+				})}
+				aria-label={`Setup presentation ${question.question || question.id}`}
+				class="link link-primary link-animated block truncate"
+			>
+				{question.question || question.id}
+			</a>
+		{/snippet}
+		{#snippet languageCell(question: QuestionExtended)}
+			<Icon icon={flag(question.language)} class="size-5" inline />
+		{/snippet}
+		{#snippet questionActionsCell(question: QuestionExtended)}
+			<ActionButtons
+				resourceId={question.id}
+				accessRight={socketioQuestions?.accessRights[question.id]}
+				socketio={socketioQuestions}
+			/>
+		{/snippet}
+		<Table
+			columns={[
+				{
+					header: text('Id / Label'),
+					cell: snippet(questionIdCell),
+					headerClass: 'w-3/5',
+					cellClass: 'max-w-0'
+				},
+				{
+					header: icon('tabler:language'),
+					cell: snippet(languageCell),
+					headerClass: 'text-center',
+					cellClass: 'text-center'
+				},
+				{
+					header: text('Access'),
+					cell: value(() => '[Access]'),
+					headerClass: 'text-center',
+					cellClass: 'text-center'
+				},
+				{
+					header: countIcon('mdi:text'),
+					cell: value<Question>((entity) => entity.messages?.length ?? 0),
+					headerClass: 'text-center',
+					cellClass: 'text-center'
+				},
+				{
+					header: countIcon('tabler:number'),
+					cell: value<Question>((entity) => entity.numericals?.length ?? 0),
+					headerClass: 'text-center',
+					cellClass: 'text-center'
+				},
+				{
+					header: icon('fluent-mdl2:offline-storage'),
+					cell: value(() => '[Size]'),
+					headerClass: 'text-center',
+					cellClass: 'text-center'
+				},
+				{
+					header: text('Actions'),
+					cell: snippet(questionActionsCell),
+					headerClass: 'w-px text-center whitespace-nowrap',
+					cellClass: 'w-px py-1 text-center align-middle whitespace-nowrap'
+				}
+			]}
+			entityContainer={socketioQuestions}
+			displaySelection="linkedToPresentation"
+		/>
+		<div
+			class="divider divider-warning label-large text-warning my-10 before:border-t-5 after:border-t-5"
+		>
+			implemented from component Table above and hard-coded below
+		</div>
 		<table class="table w-full">
 			<thead>
 				<tr>
@@ -421,7 +514,7 @@ https://svelte.dev/e/transition_slide_display
 						# <span class="icon-[mdi--text] size-4"></span>
 					</th>
 					<th class="title text-base-content font-medium normal-case">
-						# <span class="icon-[tabler-number] size-4"></span>
+						# <span class="icon-[tabler--number] size-4"></span>
 					</th>
 					<th class="title text-base-content font-medium normal-case">
 						<span class="icon-[fluent-mdl2--offline-storage] size-4"></span>
@@ -488,6 +581,8 @@ https://svelte.dev/e/transition_slide_display
 			<div>
 				<p class="label-prominent">Pending Entities</p>
 				<JsonData data={socketioQuestions?.pendingEntities ?? []} />
+				<p class="label-prominent">Selected Entities</p>
+				<JsonData data={socketioQuestions?.selections?.['selected'] ?? []} />
 				<p class="label-prominent">Linked Entities</p>
 				<JsonData data={linkedQuestions} />
 				<p class="label-prominent">Not Linked Entities</p>

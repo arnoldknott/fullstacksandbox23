@@ -41,7 +41,7 @@ export interface EntityContainerInterface<T extends AnyEntityExtended = AnyEntit
 	// Pending handling:
 	createPending(overrides?: Partial<T>): T;
 	// Selection handling:
-	addSelection(name: string, entityIds: string[]): string[];
+	addSelection(name: string, entityIds?: string[]): string[];
 	removeSelection(name: string): void;
 	addToSelection(name: string, entityIds: string[]): string[];
 	removeFromSelection(name: string, entityIds: string[]): string[];
