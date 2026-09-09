@@ -56,5 +56,8 @@
       "envManager": "ms-python.python:system",
       "packageManager": "ms-python.python:pip"
     }
-  ]
+  ],
+  "chat.tools.terminal.autoApprove": {
+    "docker compose": true
+  }
 }

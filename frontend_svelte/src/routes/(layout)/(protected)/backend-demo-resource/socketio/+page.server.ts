@@ -1,14 +1,38 @@
+import { error } from '@sveltejs/kit';
+
 import { IdentityType, PUBLIC_IDENTITY_ID } from '$lib/accessHandler';
 import { backendAPI } from '$lib/server/apis/backendApi';
 import { microsoftGraph } from '$lib/server/apis/msgraph';
-import type { Identity } from '$lib/types';
+import type { AccessPolicy, DemoResourceExtended, Identity } from '$lib/types';
 
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const sessionId = locals.sessionData.sessionId;
 
-	const payload = { identities: [] as Identity[] };
+	const payload = {
+		identities: [] as Identity[],
+		entities: [] as DemoResourceExtended[],
+		cursor: 0
+	};
+	const [snapshot, policiesResponse] = await Promise.all([
+		backendAPI.getSnapshot<DemoResourceExtended>(
+			sessionId,
+			'/demoresource/snapshot?include=creation-date&include=last-modified-date&include=access-right&sort=creation-date&direction=desc'
+		),
+		backendAPI.get(sessionId, '/access/policy/resource/type/DemoResource')
+	]);
+	if (!policiesResponse.ok) {
+		error(policiesResponse.status, 'DemoResource access policies could not be loaded');
+	}
+	const policies: AccessPolicy[] = await policiesResponse.json();
+	const policiesByEntity = Object.groupBy(policies, (policy) => policy.resource_id);
+	for (const entity of snapshot.entities) {
+		entity.access_policies = policiesByEntity[entity.id] ?? [];
+	}
+	payload.entities = snapshot.entities;
+	payload.cursor = snapshot.cursor;
+
 	const myTeamsIdentities = await microsoftGraph.getAttachedTeamsAsIdentities(
 		sessionId,
 		locals.sessionData.currentUser?.azure_token_groups

@@ -2,7 +2,7 @@ import logging
 from typing import Annotated, Any, Optional, cast
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 
 from core.security import (
     Guards,
@@ -10,11 +10,12 @@ from core.security import (
     get_http_access_token_payload,
     provide_http_token_payload_optional,
 )
-from core.types import GuardTypes
+from core.types import CollectionInclude, CollectionSort, GuardTypes, SortDirection
 from crud.presentation import PresentationCRUD
 from models.presentation import (
     Presentation,
     PresentationCreate,
+    PresentationExtended,
     PresentationRead,
     PresentationUpdate,
     validate_endpoint_path,
@@ -51,6 +52,27 @@ async def get_presentations(
 ) -> list[PresentationRead]:
     """Returns all presentations."""
     return await presentation_view.get(token_payload, guards)
+
+
+@router.get("/snapshot", status_code=200)
+async def get_presentation_entity_snapshot(
+    response: Response,
+    include: Annotated[list[CollectionInclude] | None, Query()] = None,
+    sort: Annotated[CollectionSort | None, Query()] = None,
+    direction: Annotated[SortDirection, Query()] = SortDirection.ascending,
+    token_payload=Depends(get_http_access_token_payload),
+    guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
+) -> list[PresentationExtended]:
+    """Returns an optionally enriched presentation snapshot."""
+    snapshot = await presentation_view.get_entity_snapshot(
+        token_payload=token_payload,
+        guards=guards,
+        includes=include,
+        sort=sort,
+        direction=direction,
+    )
+    response.headers["X-Entity-Cursor"] = str(snapshot.cursor)
+    return cast(list[PresentationExtended], snapshot.items)
 
 
 @router.get("/{resource_id}", status_code=200)

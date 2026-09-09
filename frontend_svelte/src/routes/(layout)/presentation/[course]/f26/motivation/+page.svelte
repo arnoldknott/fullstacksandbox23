@@ -52,7 +52,12 @@
 			namespace: '/numerical',
 			parentId: motivationQuestionId
 		};
-		socketioMotivation = new SocketIO<NumericalExtended>(connectionMotivation);
+		socketioMotivation = new SocketIO<NumericalExtended>(connectionMotivation, {
+			snapshot: {
+				entities: data.questionsData.motivation.numericals,
+				cursor: data.questionsData.motivation.cursor
+			}
+		});
 
 		const commentConnection: SocketioConnection = {
 			namespace: '/message',
@@ -60,16 +65,14 @@
 			queryParams: { 'request-access-data': true }
 		};
 		socketioComment = new SocketIO<MessageExtended>(commentConnection, {
+			snapshot: {
+				entities: data.questionsData.comments.messages,
+				cursor: data.questionsData.comments.cursor
+			},
 			template: { content: '', language: 'en' }
 		});
 		socketioComment.createSortedSelection('sortedCommentsAnswers', 'creation_date', false);
 		// socketioComment.createPending();
-	});
-
-	$effect(() => {
-		// Preseed data:
-		socketioMotivation.entities = data.questionsData?.motivation?.numericals ?? [];
-		socketioComment.entities = data.questionsData?.comments?.messages ?? [];
 	});
 
 	// let myIntention: MessageExtended = $state({

@@ -1,7 +1,7 @@
 import logging
 
 from core.security import check_token_against_guards  # CurrentAccessToken
-from core.types import GuardTypes
+from core.types import CollectionSort, GuardTypes, SortDirection
 from crud import register_crud
 
 logger = logging.getLogger(__name__)
@@ -97,6 +97,30 @@ class BaseView:
             objects = await crud.read(current_user)
 
         return objects
+
+    async def get_entity_snapshot(
+        self,
+        token_payload=None,
+        guards=None,
+        includes=None,
+        sort: CollectionSort | None = None,
+        direction: SortDirection = SortDirection.ascending,
+        parent_id=None,
+    ):
+        """Returns an enriched entity collection and its mutation cursor."""
+        current_user = None
+        if guards:
+            current_user = await check_token_against_guards(token_payload, guards)
+        elif token_payload:
+            current_user = await check_token_against_guards(token_payload, None)
+        async with self.crud() as crud:
+            return await crud.read_entity_snapshot(
+                current_user=current_user,
+                includes=set(includes or []),
+                sort=sort,
+                direction=direction,
+                parent_id=parent_id,
+            )
 
     async def get_by_id(
         self,

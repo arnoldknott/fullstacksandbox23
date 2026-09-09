@@ -28,14 +28,19 @@
 		socketioPresentation?.entities.filter((entity) => entity.id === page.params.id)[0]
 	);
 	onMount(() => {
-		socketioPresentation = new SocketIO<Presentation>({
-			namespace: '/presentation',
-			sessionId: page.data?.session?.sessionId || '',
-			queryParams: { 'request-access-data': true }
-		});
-	});
-	$effect(() => {
-		socketioPresentation.entities = [data.payload.presentation];
+		socketioPresentation = new SocketIO<Presentation>(
+			{
+				namespace: '/presentation',
+				sessionId: page.data?.session?.sessionId || '',
+				queryParams: { 'request-access-data': true }
+			},
+			{
+				snapshot: {
+					entities: [data.payload.presentation],
+					cursor: data.payload.cursor
+				}
+			}
+		);
 	});
 	onDestroy(() => {
 		socketioPresentation?.client.disconnect();
@@ -68,6 +73,14 @@
 		Pretty much the same as all the parameters when adding a new presentation in the all
 		presentations setup view. Here all fields are pre-filled with this presentation's parameters.
 	</p>
+	<p>
+		Add a little accordion/dropdown (by default hidden) copy-and-paste-able command for testing the
+		loading of this presentation, is user is Admin, for example:
+		<code
+			>bun run test:stage:load -- --users=200 --hold=30 /numerical,(uuid) /message,(uuid),data
+			/message,(uuid),data</code
+		>
+	</p>
 </Card>
 
 <Heading id="source" sideBarEntry="Source">Source</Heading>
@@ -98,6 +111,7 @@
 <QuestionSection
 	parentId={page.params.id}
 	questions={data.payload.questions}
+	cursor={data.payload.cursor}
 	identities={data.payload.identities}
 />
 

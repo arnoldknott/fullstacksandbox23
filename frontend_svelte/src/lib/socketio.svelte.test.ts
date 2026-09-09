@@ -38,6 +38,7 @@ let httpServer: HttpServer;
 let socketioServer: Server;
 let serverSocket: ServerSocket;
 let serverMessages: Array<{ event: string; data: unknown[] }> = [];
+let rejectedSubscriptionIds: string[] = [];
 
 beforeAll(async () => {
 	httpServer = createServer();
@@ -66,6 +67,18 @@ beforeAll(async () => {
 			resolve(socket);
 		});
 		serverSocket.emit('connection_ack', 'Connection established with test server');
+		socket.on(
+			'subscribe',
+			(
+				data: { entity_ids: string[] },
+				acknowledge: (result: { subscribed: string[]; rejected: string[] }) => void
+			) => {
+				acknowledge({
+					subscribed: data.entity_ids.filter((id) => !rejectedSubscriptionIds.includes(id)),
+					rejected: data.entity_ids.filter((id) => rejectedSubscriptionIds.includes(id))
+				});
+			}
+		);
 		socket.onAny((event: string, ...data: unknown[]) => {
 			// For debugging - server side logging of the received data:
 			// console.log('Server received event:', event, 'with data:', data);
@@ -137,6 +150,7 @@ describe('SocketIO for DemoResources', () => {
 	const parentId = 'parent-from-describe';
 
 	beforeEach(async () => {
+		rejectedSubscriptionIds = [];
 		socketioClientHandler = await SocketioClientHandler.create<DemoResource>({
 			namespace: '/demo-resource',
 			sessionId: 'session-123',
@@ -156,6 +170,80 @@ describe('SocketIO for DemoResources', () => {
 
 	test('establishes a connection to the test server', async () => {
 		expect(serverSocket.connected).toBe(true);
+	});
+
+	test('preseeds entities and subscribes in bounded batches with the snapshot cursor', async () => {
+		const entities = Array.from({ length: 510 }, (_, index) => ({
+			id: `00000000-0000-4000-8000-${index.toString().padStart(12, '0')}`,
+			name: `resource-${index}`,
+			access_right: index === 0 ? Action.OWN : Action.READ
+		})) as DemoResource[];
+		const clientHandler = await SocketioClientHandler.create<DemoResource>(
+			{
+				namespace: '/demo-resource',
+				sessionId: 'session-123'
+			},
+			{ snapshot: { entities, cursor: 42 } }
+		);
+
+		expect(clientHandler.socketioClient.entities).toEqual(entities);
+		expect(clientHandler.socketioClient.accessRights[entities[0].id]).toBe(Action.OWN);
+		await vi.waitFor(() => {
+			const subscriptions = serverMessages.filter((message) => message.event === 'subscribe');
+			expect(subscriptions).toHaveLength(2);
+			expect(subscriptions[0].data[0]).toEqual({
+				entity_ids: entities.slice(0, 500).map((entity) => entity.id)
+			});
+			expect(subscriptions[1].data[0]).toEqual({
+				entity_ids: entities.slice(500).map((entity) => entity.id),
+				cursor: 42
+			});
+		});
+
+		clientHandler.disconnect();
+	});
+
+	test('reports entity ids rejected by the subscription acknowledgement', async () => {
+		const rejectedId = '00000000-0000-4000-8000-000000000001';
+		rejectedSubscriptionIds = [rejectedId];
+		const status = vi.fn();
+		const clientHandler = await SocketioClientHandler.create<DemoResource>(
+			{
+				namespace: '/demo-resource',
+				sessionId: 'session-123'
+			},
+			{
+				snapshot: { entities: [{ id: rejectedId, name: 'rejected' }], cursor: 42 },
+				status
+			}
+		);
+
+		await vi.waitFor(() => {
+			expect(status).toHaveBeenCalledWith({
+				error: `Subscription rejected for entity ids: ${rejectedId}`
+			});
+		});
+
+		clientHandler.disconnect();
+	});
+
+	test('subscribes with the cursor when the snapshot is empty', async () => {
+		const clientHandler = await SocketioClientHandler.create<DemoResource>(
+			{
+				namespace: '/demo-resource',
+				sessionId: 'session-123'
+			},
+			{ snapshot: { entities: [], cursor: 42 } }
+		);
+
+		await vi.waitFor(() => {
+			expect(serverMessages.find((message) => message.event === 'subscribe')?.data[0]).toEqual({
+				entity_ids: [],
+				cursor: 42
+			});
+		});
+
+		clientHandler.disconnect();
 	});
 
 	test('uses default handlers when no overrides are provided', async () => {

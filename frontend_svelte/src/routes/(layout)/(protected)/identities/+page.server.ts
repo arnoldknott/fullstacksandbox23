@@ -1,9 +1,9 @@
-// import type { MicrosoftTeamBasic } from '$lib/types';
 import type { Team as MicrosoftTeam } from '@microsoft/microsoft-graph-types';
 
+// import type { MicrosoftTeamBasic } from '$lib/types';
 import { backendAPI } from '$lib/server/apis/backendApi';
 import { microsoftGraph } from '$lib/server/apis/msgraph';
-import type { UeberGroup } from '$lib/types';
+import type { UeberGroupExtended } from '$lib/types';
 
 import type { PageServerLoad } from './$types';
 // const getAllMicrosoftTeams = async (sessionId: string, azureGroups: string[]) => {
@@ -56,14 +56,15 @@ export const load: PageServerLoad = async ({ locals }) => {
 		// const response = await microsoftGraph.get(sessionId, `/me/memberOf/?$filter=id in ('${locals.sessionData.currentUser.azure_token_groups.join("','")}')`, ['User.Read']);
 		// mySecurityGroups = await response.json();
 	}
-	let ueberGroups: UeberGroup[] = [];
+	let ueberGroups: UeberGroupExtended[] = [];
+	let ueberGroupCursor = 0;
 	if (locals.sessionData.currentUser) {
-		const response = await backendAPI.get(sessionId, `/uebergroup/`);
-		if (response.status === 200) {
-			ueberGroups = await response.json();
-		} else {
-			console.error('Failed to fetch ueber groups. Status:', response.status);
-		}
+		const snapshot = await backendAPI.getSnapshot<UeberGroupExtended>(
+			sessionId,
+			'/uebergroup/snapshot?include=creation-date&sort=creation-date&direction=desc'
+		);
+		ueberGroups = snapshot.entities;
+		ueberGroupCursor = snapshot.cursor;
 	}
 
 	// This is only updating when a session is getting refreshed - that might take weeks: not good!
@@ -74,6 +75,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	return {
 		microsoftTeams: myTeams,
-		ueberGroups: ueberGroups
+		ueberGroups,
+		ueberGroupCursor
 	};
 };

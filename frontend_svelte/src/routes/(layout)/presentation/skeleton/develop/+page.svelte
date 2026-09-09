@@ -47,6 +47,7 @@
 				queryParams: { 'request-access-data': true }
 			},
 			{
+				snapshot: data.payload.mapSnapshot,
 				template: {
 					content: JSON.stringify({
 						emoji: '📍',
@@ -60,12 +61,6 @@
 			}
 		);
 		socketioMap.createSortedSelection('sortedPlacesAnswers', 'creation_date', false);
-	});
-
-	$effect(() => {
-		// Preseed data:
-		// TBD: update to preseed with numbers coming from server-side via REST-API
-		socketioMap.entities = mapQuestion?.messages ?? [];
 	});
 
 	onDestroy(() => {

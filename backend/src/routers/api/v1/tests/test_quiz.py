@@ -3,6 +3,7 @@
 import pytest
 
 from crud.quiz import MessageCRUD, NumericalCRUD, QuestionCRUD
+from models.presentation import Presentation
 from models.quiz import Message, Numerical, Question
 from routers.api.v1.tests.base import BaseTest
 from tests.utils import (
@@ -101,6 +102,43 @@ class TestQuestion(BaseTest):
         await super().run_get_all_success(
             added_resources, mocked_provide_http_token_payload
         )
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "mocked_provide_http_token_payload",
+        [token_admin_read_write],
+        indirect=True,
+    )
+    async def test_snapshot_filters_by_parent(
+        self,
+        added_resources,
+        access_to_one_parent,
+        mocked_provide_http_token_payload,
+    ):
+        """Test Question snapshots include only children of the requested parent."""
+        parent_id = await access_to_one_parent(
+            Presentation, mocked_provide_http_token_payload
+        )
+        expected_questions = await added_resources(parent_id)
+        await added_resources()
+
+        response = await self.async_client.get(
+            "/api/v1/quiz/question/snapshot",
+            params=[
+                ("parent-id", str(parent_id)),
+                ("include", "creation-date"),
+                ("include", "last-modified-date"),
+                ("include", "access-right"),
+                ("sort", "creation-date"),
+                ("direction", "desc"),
+            ],
+        )
+
+        assert response.status_code == 200
+        assert response.headers["X-Entity-Cursor"].isdigit()
+        assert {question["id"] for question in response.json()} == {
+            str(question.id) for question in expected_questions
+        }
 
     @pytest.mark.anyio
     async def test_get_all_missing_auth(self, added_resources):

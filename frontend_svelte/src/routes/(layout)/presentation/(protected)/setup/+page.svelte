@@ -7,6 +7,7 @@
 	import Card from '$components/Card.svelte';
 	import Display from '$components/Display.svelte';
 	import JsonData from '$components/JsonData.svelte';
+	import Table, { countIcon, snippet, text, value } from '$components/Table.svelte';
 	import Title from '$components/Title.svelte';
 	import { AccessHandler, Action } from '$lib/accessHandler';
 	import { SocketIO } from '$lib/socketio.svelte';
@@ -30,7 +31,7 @@
 
 	let socketioPresentations: SocketIO<PresentationExtended> = $state()!;
 	onMount(() => {
-		socketioPresentations = new SocketIO(
+		socketioPresentations = new SocketIO<PresentationExtended>(
 			{
 				namespace: '/presentation',
 				sessionId: data?.session?.sessionId || '',
@@ -40,6 +41,10 @@
 				}
 			},
 			{
+				snapshot: {
+					entities: data.payload.presentations,
+					cursor: data.payload.cursor
+				},
 				template: {
 					source: 'intern:',
 					path: '',
@@ -50,10 +55,6 @@
 		);
 
 		socketioPresentations.identities = data.payload.identities;
-	});
-
-	$effect(() => {
-		socketioPresentations.entities = data.payload.presentations || [];
 	});
 
 	onDestroy(() => {
@@ -79,7 +80,7 @@
 	);
 
 	// For showing existing presentations:
-	let viewMode = $state<'preview' | 'grid' | 'list'>('list');
+	let viewMode = $state<'preview' | 'grid' | 'list' | 'table'>('table');
 </script>
 
 <Display id="overview-presentations">Presentations</Display>
@@ -233,7 +234,7 @@
 						: ''}"
 					onclick={() => (viewMode = 'preview')}
 				>
-					<span class="icon-[material-symbols-light--preview-outline] size-5"></span>
+					<span class="icon-[material-symbols--preview-outline] size-5"></span>
 				</button>
 				<button
 					aria-label="Grid"
@@ -247,13 +248,23 @@
 				</button>
 				<button
 					aria-label="List"
-					class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline rounded-r-full py-4 shadow {viewMode !==
+					class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline py-4 shadow {viewMode !==
 					'list'
 						? 'opacity-60'
 						: ''}"
 					onclick={() => (viewMode = 'list')}
 				>
-					<span class="icon-[material-symbols-light--table-outline] size-5"></span>
+					<span class="icon-[material-symbols--view-list-outline] size-5"></span>
+				</button>
+				<button
+					aria-label="Table"
+					class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline rounded-r-full py-4 shadow {viewMode !==
+					'table'
+						? 'opacity-60'
+						: ''}"
+					onclick={() => (viewMode = 'table')}
+				>
+					<span class="icon-[material-symbols--table-outline] size-5"></span>
 				</button>
 			</div>
 		</div>
@@ -270,87 +281,89 @@
 		</p>
 	</div>
 	<div class="w-full overflow-x-auto {viewMode !== 'list' ? 'hidden' : ''}">
-		<table class="table w-full">
-			<thead>
-				<tr>
-					<th class="title text-base-content w-3/5 font-medium normal-case">Id / Slug</th>
-					<th class="title text-base-content font-medium normal-case">Source</th>
-					<th class="title text-base-content font-medium normal-case">Access</th>
-					<th class="title text-base-content font-medium normal-case"
-						># <span class="icon-[codicon--question] size-4"></span></th
-					>
-					<th class="title text-base-content font-medium normal-case"
-						># <span class="icon-[line-md--link] size-4"></span></th
-					>
-					<th class="title text-base-content font-medium normal-case"
-						># <span class="icon-[tabler--file] size-4"></span></th
-					>
-					<th class="title text-base-content font-medium normal-case"
-						><span class="icon-[fluent-mdl2--offline-storage] size-4"></span></th
-					>
-					<th class="title text-base-content w-px pr-0 font-medium whitespace-nowrap normal-case"
-						>Actions</th
-					>
-				</tr>
-			</thead>
-			<tbody>
-				{#if (socketioPresentations?.entities?.length ?? 0) === 0}
-					<tr>
-						<td colspan={8} class="text-center">
-							No presentations yet. Create one by sending a POST request to the /presentation
-							endpoint.
-						</td>
-					</tr>
-				{:else}
-					{#each socketioPresentations.entities as presentation (presentation.id)}
-						<tr class="hover:bg-base-300">
-							<!-- <td>
-								<a
-									href={resolve('/(layout)/presentation/(protected)/setup/[id]', {
-										id: presentation?.path?.substring(1) || presentation.id
-									})}
-									aria-label={`Setup presentation ${presentation.path || presentation.id}`}
-								>
-									<button
-										type="button"
-										class="btn btn-info-container btn-gradient shadow-outline btn-circle shadow-sm"
-										aria-label={`Setup presentation ${presentation.path || presentation.id}`}
-									>
-										<span class="icon-[mingcute--arrow-right-fill] size-4"></span>
-									</button>
-								</a>
-							</td> -->
-							<td class="max-w-0">
-								<IdBadge id={presentation.id} />
-								<a
-									href={resolve('/(layout)/presentation/[slug]', {
-										slug: presentation?.path?.substring(1) || presentation.id
-									})}
-									aria-label={`Setup presentation ${presentation.path || presentation.id}`}
-									class="link link-primary link-animated block truncate"
-								>
-									{presentation.path || presentation.id}
-								</a>
-							</td>
-							<td><IdBadge id="intern" /></td>
-							<!-- <td>{presentation.source}</td> -->
-							<td>[Access]</td>
-							<td>{presentation.questions?.length ?? 0}</td>
-							<td>[Num]</td>
-							<td>[Num]</td>
-							<td>[Size]</td>
-							<td class="w-px px-0 py-1 text-left align-middle whitespace-nowrap">
-								<ActionButtons
-									resourceId={presentation.id}
-									accessRight={socketioPresentations?.accessRights[presentation.id]}
-									socketio={socketioPresentations}
-								/>
-							</td>
-						</tr>
-					{/each}
-				{/if}
-			</tbody>
-		</table>
+		<p class="bg-warning text-warning-content rounded-lg p-4">
+			List view mode is not developed yet
+		</p>
+	</div>
+	<div class="w-full {viewMode !== 'table' ? 'hidden' : ''}">
+		{#snippet presentationIdCell(presentation: PresentationExtended)}
+			<IdBadge id={presentation.id} />
+			<a
+				href={resolve('/(layout)/presentation/[slug]', {
+					slug: presentation.path?.substring(1) || presentation.id
+				})}
+				aria-label={`Setup presentation ${presentation.path || presentation.id}`}
+				class="link link-primary link-animated block truncate"
+			>
+				{presentation.path || presentation.id}
+			</a>
+		{/snippet}
+
+		{#snippet sourceCell()}
+			<IdBadge id="intern" />
+		{/snippet}
+
+		{#snippet presentationActionsCell(presentation: PresentationExtended)}
+			<ActionButtons
+				resourceId={presentation.id}
+				accessRight={socketioPresentations?.accessRights[presentation.id]}
+				socketio={socketioPresentations}
+			/>
+		{/snippet}
+		<Table
+			columns={[
+				{
+					header: text('Id / Slug'),
+					cell: snippet(presentationIdCell),
+					headerClass: 'w-3/5',
+					cellClass: 'max-w-0'
+				},
+				{
+					header: text('Source'),
+					cell: snippet(sourceCell),
+					// cell: field('source')
+					headerClass: 'text-center',
+					cellClass: 'text-center'
+				},
+				{
+					header: text('Access'),
+					cell: value(() => '[Access]'),
+					headerClass: 'text-center',
+					cellClass: 'text-center'
+				},
+				{
+					header: countIcon('codicon:question'),
+					cell: value<PresentationExtended>((presentation) => presentation.questions?.length ?? 0),
+					headerClass: 'text-center',
+					cellClass: 'text-center'
+				},
+				{
+					header: countIcon('line-md:link'),
+					cell: value(() => '[Num]'),
+					headerClass: 'text-center',
+					cellClass: 'text-center'
+				},
+				{
+					header: countIcon('tabler:file'),
+					cell: value(() => '[Num]'),
+					headerClass: 'text-center',
+					cellClass: 'text-center'
+				},
+				{
+					header: countIcon('fluent-mdl2:offline-storage'),
+					cell: value(() => '[Size]'),
+					headerClass: 'text-center',
+					cellClass: 'text-center'
+				},
+				{
+					header: text('Actions'),
+					cell: snippet(presentationActionsCell),
+					headerClass: 'w-px text-center whitespace-nowrap',
+					cellClass: 'w-px py-1 text-center align-middle whitespace-nowrap'
+				}
+			]}
+			entityContainer={socketioPresentations}
+		/>
 	</div>
 </Card>
 
@@ -363,8 +376,10 @@
 			<JsonData data={socketioPresentations?.entities ?? []} />
 		</div>
 		<div>
+			<Title id="identities">Selected</Title>
+			<JsonData data={socketioPresentations?.selections['selected'] ?? []} />
 			<Title id="identities">Identities</Title>
-			<JsonData data={socketioPresentations?.accessRights ?? []} />
+			<JsonData data={socketioPresentations?.identities ?? []} />
 		</div>
 		<div>
 			<Title id="accessRights">Access Rights</Title>
