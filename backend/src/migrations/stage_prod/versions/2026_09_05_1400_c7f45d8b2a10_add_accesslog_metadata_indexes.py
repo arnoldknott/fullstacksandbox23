@@ -4,7 +4,7 @@
 """add_accesslog_metadata_indexes
 
 Revision ID: c7f45d8b2a10
-Revises: 79fcc94dd0a4
+Revises: 3bd3ed7aa6d2
 Create Date: 2026-09-05 14:00:00.000000+00:00
 
 """
@@ -16,7 +16,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision: str = "c7f45d8b2a10"
-down_revision: Union[str, None] = "79fcc94dd0a4"
+down_revision: Union[str, None] = "3bd3ed7aa6d2"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
