@@ -49,18 +49,9 @@ class QuestionNamespace(BaseNamespace):
             read_model=Question.Read,
             read_extended_model=Question.Extended,
             update_model=Question.Update,
-            callback_on_connect=self.callback_on_connect,
             *args,
             **kwargs,
         )
-
-    async def callback_on_connect(self, sid, *args, **kwargs):
-        """Callback on connect for socket.io namespaces."""
-        # trigger the read all event to fetch all demo resources:
-        current_user = kwargs.get("current_user")
-        request_access_data = bool(kwargs.get("request_access_data"))
-        parent_id = kwargs.get("parent_id")
-        await self._get_all(sid, current_user, request_access_data, parent_id=parent_id)
 
 
 message_guards = [

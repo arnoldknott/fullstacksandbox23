@@ -1,9 +1,9 @@
 import type { User as MicrosoftUser } from '@microsoft/microsoft-graph-types';
+import { error } from '@sveltejs/kit';
 
 import { backendAPI } from '$lib/server/apis/backendApi';
 import { MicrosoftAccountLinking } from '$lib/server/apis/integrations';
-// import type { Group, UeberGroup, User } from '$lib/types';
-import type { Group, UeberGroup } from '$lib/types';
+import type { GroupExtended, Hierarchy, UeberGroupExtended } from '$lib/types';
 
 import type { PageServerLoad } from './$types';
 
@@ -12,33 +12,39 @@ export const load: PageServerLoad = async ({ parent, locals, params }) => {
 	const parentData = await parent();
 
 	const responsePayload = {
-		thisUeberGroup: {} as UeberGroup,
+		thisUeberGroup: {} as UeberGroupExtended,
+		ueberGroupCursor: 0,
 		linkedMicrosoftUsers: [] as MicrosoftUser[],
 		// allOtherGroups: [] as Group[],
-		allGroups: [] as Group[],
+		allGroups: [] as GroupExtended[],
+		groupCursor: 0,
 		allMicrosoftUsers: [] as MicrosoftUser[]
 		// allOtherMicrosoftUsers: [] as MicrosoftUser[]
 	};
 
-	const responseUeberGroup = await backendAPI.get(sessionId, `/uebergroup/${params.ueberGroupId}`);
-	if (responseUeberGroup.status === 200) {
-		responsePayload.thisUeberGroup = await responseUeberGroup.json();
-	} else {
-		console.error('Error fetching Ueber Group:', responseUeberGroup.status);
+	const snapshotQuery =
+		'?include=creation-date&include=access-right&sort=creation-date&direction=desc';
+	const [ueberGroupSnapshot, groupSnapshot, hierarchiesResponse] = await Promise.all([
+		backendAPI.getSnapshot<UeberGroupExtended>(sessionId, '/uebergroup/snapshot' + snapshotQuery),
+		backendAPI.getSnapshot<GroupExtended>(sessionId, '/group/snapshot' + snapshotQuery),
+		backendAPI.get(sessionId, '/access/hierarchies?parent-id=' + params.ueberGroupId)
+	]);
+	if (!hierarchiesResponse.ok) {
+		error(502, 'Identity snapshots could not be loaded');
 	}
-
-	const responseAllGroups = await backendAPI.get(sessionId, `/group/`);
-	if (responseAllGroups.status === 200) {
-		responsePayload.allGroups = await responseAllGroups.json();
-		// const allGroups = await responseAllGroups.json();
-		// const groupsInUeberGroupIds =
-		// 	responsePayload.thisUeberGroup.groups?.map((group: Group) => group.id) ?? [];
-		// responsePayload.allOtherGroups = allGroups.filter(
-		// 	(group: Group) => !groupsInUeberGroupIds.includes(group.id)
-		// );
-	} else {
-		console.error('Error fetching all Groups:', responseAllGroups.status);
+	const thisUeberGroup = ueberGroupSnapshot.entities.find(
+		(group) => group.id === params.ueberGroupId
+	);
+	if (!thisUeberGroup) error(404, 'Ueber group could not be loaded');
+	const hierarchies = (await hierarchiesResponse.json()) as Hierarchy[];
+	const hierarchiesByGroup = Object.groupBy(hierarchies, (hierarchy) => hierarchy.child_id);
+	for (const group of groupSnapshot.entities) {
+		group.hierarchies = hierarchiesByGroup[group.id] ?? [];
 	}
+	responsePayload.thisUeberGroup = thisUeberGroup;
+	responsePayload.ueberGroupCursor = ueberGroupSnapshot.cursor;
+	responsePayload.allGroups = groupSnapshot.entities;
+	responsePayload.groupCursor = groupSnapshot.cursor;
 
 	if (parentData.session?.currentUser?.azure_token_roles?.includes('Admin')) {
 		const responseUsers = await backendAPI.get(sessionId, `/user/`);

@@ -1,30 +1,45 @@
 import { backendAPI } from '$lib/server/apis/backendApi';
-import type { Presentation, Question } from '$lib/types';
+import type { MessageExtended, NumericalExtended, Presentation, Question } from '$lib/types';
 
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ url }) => {
+	const getAnswerSnapshot = <T>(resource: 'message' | 'numerical', parentId?: string) =>
+		parentId
+			? backendAPI.getSnapshot<T>(
+					null,
+					`/quiz/${resource}/snapshot?parent-id=${encodeURIComponent(parentId)}&include=creation-date&sort=creation-date&direction=desc`
+				)
+			: Promise.resolve({ entities: [] as T[], cursor: 0 });
+
 	const presentationPath = url.pathname.split('/presentation/')[1];
 	const presentationResponse = await backendAPI.get(null, '/presentation/path/' + presentationPath);
 	const payload = {
 		presentation: {} as Presentation,
-		questions: [] as Question[]
+		questions: [] as Question[],
+		motivationSnapshot: { entities: [] as NumericalExtended[], cursor: 0 },
+		placesSnapshot: { entities: [] as MessageExtended[], cursor: 0 },
+		commentsSnapshot: { entities: [] as MessageExtended[], cursor: 0 }
 	};
 	if (presentationResponse.status === 200) {
-		const presentationData = await presentationResponse.json();
+		const presentationData = (await presentationResponse.json()) as Presentation;
 		payload.presentation = presentationData;
-		for (const question of presentationData.questions) {
-			const questionResponse = await backendAPI.get(null, '/quiz/question/' + question.id);
-			if (questionResponse.status === 200) {
-				const questionData = await questionResponse.json();
-				payload.questions.push(questionData);
-			} else {
-				console.warn(
-					questionResponse.status,
-					'questionData could not be loaded for question id: ' + question.id
-				);
-			}
-		}
+		payload.questions = presentationData.questions ?? [];
+		const motivationQuestion = payload.questions.find((question) =>
+			question.question.includes('motivation')
+		);
+		const placesQuestion = payload.questions.find((question) =>
+			question.question.includes('places')
+		);
+		const commentsQuestion = payload.questions.find((question) =>
+			question.question.includes('comments')
+		);
+		[payload.motivationSnapshot, payload.placesSnapshot, payload.commentsSnapshot] =
+			await Promise.all([
+				getAnswerSnapshot<NumericalExtended>('numerical', motivationQuestion?.id),
+				getAnswerSnapshot<MessageExtended>('message', placesQuestion?.id),
+				getAnswerSnapshot<MessageExtended>('message', commentsQuestion?.id)
+			]);
 	} else {
 		// TBD: consider rising an error herem,
 		// so client side can react accordingly and not show the relevant elements

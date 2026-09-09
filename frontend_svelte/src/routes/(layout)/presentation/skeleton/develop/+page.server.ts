@@ -1,5 +1,5 @@
 import { backendAPI } from '$lib/server/apis/backendApi';
-import type { Presentation, Question } from '$lib/types';
+import type { MessageExtended, Presentation, Question } from '$lib/types';
 
 import type { PageServerLoad } from './$types';
 
@@ -8,22 +8,23 @@ export const load: PageServerLoad = async ({ url }) => {
 	const presentationResponse = await backendAPI.get(null, '/presentation/path/' + presentationPath);
 	const payload = {
 		presentation: {} as Presentation,
-		questions: [] as Question[]
+		questions: [] as Question[],
+		mapSnapshot: { entities: [] as MessageExtended[], cursor: 0 }
 	};
 	if (presentationResponse.status === 200) {
-		const presentationData = await presentationResponse.json();
+		const presentationData = (await presentationResponse.json()) as Presentation;
 		payload.presentation = presentationData;
-		for (const question of presentationData.questions) {
-			const questionResponse = await backendAPI.get(null, '/quiz/question/' + question.id);
-			if (questionResponse.status === 200) {
-				const questionData = await questionResponse.json();
-				payload.questions.push(questionData);
-			} else {
-				console.warn(
-					questionResponse.status,
-					'questionData could not be loaded for question id: ' + question.id
-				);
-			}
+		payload.questions = presentationData.questions ?? [];
+		const mapQuestion = payload.questions.find((question) => question.question.includes('map'));
+		if (mapQuestion) {
+			const query =
+				'?parent-id=' +
+				encodeURIComponent(mapQuestion.id) +
+				'&include=creation-date&sort=creation-date&direction=desc';
+			payload.mapSnapshot = await backendAPI.getSnapshot<MessageExtended>(
+				null,
+				'/quiz/message/snapshot' + query
+			);
 		}
 	} else {
 		// TBD: consider rising an error herem,

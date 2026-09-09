@@ -181,6 +181,9 @@ class BaseSocketIOTest:
 
         await connection.connect()
         await connection.client.sleep(0.2)
+        initial_transfer_count = len(
+            connection.responses("transferred", self.namespace_path)
+        )
 
         # Submit update
         update_data = {**self._test_data_update, "id": str(resource.id)}  # type: ignore[misc]
@@ -191,22 +194,14 @@ class BaseSocketIOTest:
         )
         await connection.client.sleep(0.5)
 
-        # TBD: refactor to accept an argument if the callback on connect is configured to return all or not.
-        # Check transferred event
         transfer_data = connection.responses("transferred", self.namespace_path)
-        assert (
-            len(transfer_data) == 2
-        )  # one for connect (get_all on connect), one for update
-        assert transfer_data[0]["id"] == str(resource.id)
-
-        # Verify original fields
-        for key, value in self._test_data_single.items():  # type: ignore[attr-defined]
-            assert transfer_data[0][key] == value
+        assert len(transfer_data) == initial_transfer_count + 1
 
         # Verify updated fields
-        assert transfer_data[1]["id"] == str(resource.id)
+        updated_transfer = transfer_data[-1]
+        assert updated_transfer["id"] == str(resource.id)
         for key, value in self._test_data_update.items():  # type: ignore[attr-defined]
-            assert transfer_data[1][key] == value
+            assert updated_transfer[key] == value
 
         await connection.client.disconnect()
 

@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
 
 import { backendAPI } from '$lib/server/apis/backendApi';
-import type { Question } from '$lib/types';
+import type { MessageExtended, NumericalExtended } from '$lib/types';
 
 import type { PageServerLoad } from './$types';
 
@@ -25,54 +25,44 @@ export const load: PageServerLoad = async ({ url }) => {
 	const questionIntentionId = url.searchParams.get('q-intention');
 	const questionMotivationId = url.searchParams.get('q-motivation');
 	const questionCommentsId = url.searchParams.get('q-comments');
-	const responseIntention = await backendAPI.get(null, '/quiz/question/' + questionIntentionId);
-	const responseMotivation = await backendAPI.get(null, '/quiz/question/' + questionMotivationId);
-	const responseComments = await backendAPI.get(null, '/quiz/question/' + questionCommentsId);
-	type QuestionData = {
-		intention?: Question;
-		motivation?: Question;
-		comments?: Question;
-	};
-	let questionsData: QuestionData = {
-		intention: undefined,
-		motivation: undefined,
-		comments: undefined
-	};
-	if (responseIntention.status === 200) {
-		const intentionData = await responseIntention.json();
-		questionsData = { intention: intentionData };
-		// console.log('=== 🧦 presentation - devF23 - INTENTION - pre-loaded intentionData ===');
-		// console.log(intentionData);
-	} else {
-		// TBD: consider rising an error herem,
-		// so client side can react accordingly and not show the relevant elements
-		error(404, 'questionsData.intention could not be loaded');
+	if (!questionIntentionId || !questionMotivationId || !questionCommentsId) {
+		error(404, 'Required question ids were not provided');
 	}
-	if (responseMotivation.status === 200) {
-		const motivationData = await responseMotivation.json();
-		if (questionsData) {
-			questionsData.motivation = motivationData;
-		} else {
-			questionsData = { motivation: motivationData };
+	const snapshotQuery = (parentId: string) =>
+		'?parent-id=' +
+		encodeURIComponent(parentId) +
+		'&include=creation-date&sort=creation-date&direction=desc';
+	const [intentionSnapshot, motivationSnapshot, commentsSnapshot] = await Promise.all([
+		backendAPI.getSnapshot<MessageExtended>(
+			null,
+			'/quiz/message/snapshot' + snapshotQuery(questionIntentionId)
+		),
+		backendAPI.getSnapshot<NumericalExtended>(
+			null,
+			'/quiz/numerical/snapshot' + snapshotQuery(questionMotivationId)
+		),
+		backendAPI.getSnapshot<MessageExtended>(
+			null,
+			'/quiz/message/snapshot' + snapshotQuery(questionCommentsId)
+		)
+	]);
+	return {
+		questionsData: {
+			intention: {
+				id: questionIntentionId,
+				messages: intentionSnapshot.entities,
+				cursor: intentionSnapshot.cursor
+			},
+			motivation: {
+				id: questionMotivationId,
+				numericals: motivationSnapshot.entities,
+				cursor: motivationSnapshot.cursor
+			},
+			comments: {
+				id: questionCommentsId,
+				messages: commentsSnapshot.entities,
+				cursor: commentsSnapshot.cursor
+			}
 		}
-	} else {
-		// TBD: consider rising an error herem,
-		// so client side can react accordingly and not show the relevant elements
-		error(404, 'questionsData.motivation could not be loaded');
-	}
-	if (responseComments.status === 200) {
-		const commentsData = await responseComments.json();
-		// console.log('=== 🧦 presentation - devF23 - COMMENTS - pre-loaded commentsData ===');
-		// console.log(commentsData);
-		if (questionsData) {
-			questionsData.comments = commentsData;
-		} else {
-			questionsData = { comments: commentsData };
-		}
-	} else {
-		// TBD: consider rising an error herem,
-		// so client side can react accordingly and not show the relevant elements
-		error(404, 'questionsData.comments could not be loaded');
-	}
-	return { questionsData };
+	};
 };
