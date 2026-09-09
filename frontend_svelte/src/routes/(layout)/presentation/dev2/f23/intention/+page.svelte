@@ -53,6 +53,10 @@
 			queryParams: { 'request-access-data': true }
 		};
 		socketioIntention = new SocketIO<MessageExtended>(intentionConnection, {
+			snapshot: {
+				entities: data.questionsData.intention.messages,
+				cursor: data.questionsData.intention.cursor
+			},
 			template: { content: '', language: 'en' }
 		});
 		socketioIntention.createSortedSelection('sortedIntentionAnswers', 'creation_date', false);
@@ -61,7 +65,12 @@
 			namespace: '/numerical',
 			parentId: motivationQuestionId
 		};
-		socketioMotivation = new SocketIO<NumericalExtended>(connectionMotivation, {});
+		socketioMotivation = new SocketIO<NumericalExtended>(connectionMotivation, {
+			snapshot: {
+				entities: data.questionsData.motivation.numericals,
+				cursor: data.questionsData.motivation.cursor
+			}
+		});
 
 		const commentConnection: SocketioConnection = {
 			namespace: '/message',
@@ -69,16 +78,13 @@
 			queryParams: { 'request-access-data': true }
 		};
 		socketioComment = new SocketIO<MessageExtended>(commentConnection, {
+			snapshot: {
+				entities: data.questionsData.comments.messages,
+				cursor: data.questionsData.comments.cursor
+			},
 			template: { content: '', language: 'en' }
 		});
 		socketioComment.createSortedSelection('sortedCommentsAnswers', 'creation_date', false);
-	});
-
-	$effect(() => {
-		// Preseed data:
-		socketioIntention.entities = data.questionsData?.intention?.messages ?? [];
-		socketioMotivation.entities = data.questionsData?.motivation?.numericals ?? [];
-		socketioComment.entities = data.questionsData?.comments?.messages ?? [];
 	});
 
 	let motivationAnswersAverage: number = $derived.by(() => {

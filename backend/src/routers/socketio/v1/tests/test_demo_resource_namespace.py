@@ -95,16 +95,17 @@ async def test_demo_resource_namespace_fails_to_connect_when_socketio_scope_is_m
     ],
     indirect=True,
 )
-async def test_owner_connects_to_demo_resource_namespace_and_gets_all_demoresources(
+async def test_owner_explicitly_reads_all_demo_resources_after_connecting(
     socketio_test_client_demo_resource_namespace,
     add_test_demo_resources: list[DemoResource],
 ):
-    """Test the demo resource connect event."""
+    """Test an explicit collection read after connecting."""
 
     transfer_data = []
     connection = await socketio_test_client_demo_resource_namespace()
     resources = await add_test_demo_resources(connection.token_payload())  # type: ignore[call-arg]
     await connection.connect()
+    await connection.read_collection()
 
     await connection.client.sleep(0.3)
     transfer_data = connection.responses("transferred")
@@ -122,12 +123,12 @@ async def test_owner_connects_to_demo_resource_namespace_and_gets_all_demoresour
     [[session_id_user1_read_write_socketio], [session_id_user1_read_socketio]],
     indirect=True,
 )
-async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demoresources(
+async def test_user_explicitly_reads_allowed_demo_resources_after_connecting(
     socketio_test_client_demo_resource_namespace,
     add_test_demo_resources: list[DemoResource],
     add_test_policy_for_resource: AccessPolicy,
 ):
-    """Test the demo resource connect event."""
+    """Test an authorized explicit collection read after connecting."""
     connection = await socketio_test_client_demo_resource_namespace()
     resources = await add_test_demo_resources(token_admin_read_write_socketio)  # type: ignore[call-arg]
     current_user = await connection.current_user()
@@ -148,6 +149,7 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
         await add_test_policy_for_resource(policy)  # type: ignore[call-arg]
 
     await connection.connect()
+    await connection.read_collection()
     transfer_data = []
 
     await connection.client.sleep(0.3)
@@ -175,7 +177,7 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
     [[session_id_user1_read_write_socketio]],
     indirect=True,
 )
-async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demoresources_with_access_data(
+async def test_user_explicitly_reads_allowed_demo_resources_with_access_data(
     socketio_test_client_demo_resource_namespace,
     add_test_demo_resources: list[DemoResource],
     add_test_policy_for_resource: AccessPolicy,
@@ -204,6 +206,7 @@ async def test_user_connects_to_demo_resource_namespace_and_gets_allowed_demores
         await add_test_policy_for_resource(policy)  # type: ignore[call-arg]
 
     await connection.connect(query_parameters={"request-access-data": "true"})
+    await connection.read_collection()
 
     await connection.client.sleep(1)
     transfer_data = connection.responses("transferred")
@@ -259,6 +262,7 @@ async def test_user_gets_error_on_status_event_due_to_database_error(
 
         connection = await socketio_test_client_demo_resource_namespace()
         await connection.connect()
+        await connection.read_collection()
 
         # Wait for the response to be set
         # await client.sleep(0.3)
@@ -409,6 +413,7 @@ async def test_user_submits_resource_without_id_for_creation_missing_write_scope
             await add_test_policy_for_resource(policy)  # type: ignore[call-arg]
 
     await connection.connect()
+    await connection.read_collection()
 
     await connection.client.emit(
         "submit", {"payload": many_test_demo_resources[1]}, namespace="/demo-resource"
@@ -1058,6 +1063,9 @@ async def test_user_shares_owned_resource_with_groups_in_azure_token(
     await connection1.connect(query_parameters=query_parameters_user1)
     await connection2.connect(query_parameters=query_parameters_user2)
     await connection3.connect(query_parameters=query_parameters_user3)
+    await connection1.read_collection()
+    await connection2.read_collection()
+    await connection3.read_collection()
 
     # First user shares the resources with a group, that first and second user are member of:
     await connection1.client.emit(
@@ -1145,6 +1153,9 @@ async def test_user_shares_owned_resource_publically(
     await connection1.connect()
     await connection2.connect()
     await connection3.connect()
+    await connection1.read_collection()
+    await connection2.read_collection()
+    await connection3.read_collection()
 
     # First user shares the resources with a group, that first and second user are member of:
     await connection2.client.emit(
@@ -1273,6 +1284,9 @@ async def test_user_updates_access_to_owned_resource_for_a_group_identity(
     await connection1.connect(query_parameters=query_parameters_user1)
     await connection2.connect(query_parameters=query_parameters_user2)
     await connection3.connect()
+    await connection1.read_collection()
+    await connection2.read_collection()
+    await connection3.read_collection()
 
     # First user shares the resources with a group, that first and second user are member of:
     await connection1.client.emit(
@@ -1377,6 +1391,9 @@ async def test_user_updates_access_to_owned_resource_for_a_group_identity_to_sam
     await connection1.connect(query_parameters=query_parameters_user1)
     await connection2.connect(query_parameters=query_parameters_user2)
     await connection3.connect()
+    await connection1.read_collection()
+    await connection2.read_collection()
+    await connection3.read_collection()
 
     # First user shares the resources with a group, that first and second user are member of:
     await connection1.client.emit(
@@ -1483,6 +1500,9 @@ async def test_user_removes_share_with_group(
     await connection1.connect(query_parameters=query_parameters_user1)
     await connection2.connect(query_parameters=query_parameters_user2)
     await connection3.connect()
+    await connection1.read_collection()
+    await connection2.read_collection()
+    await connection3.read_collection()
 
     # First user shares the resources with a group, that first and second user are member of:
     await connection1.client.emit(
@@ -1636,6 +1656,7 @@ async def test_user_downgrades_last_inherited_owner_access(
         }
     )
     await connection.connect(query_parameters={"request-access-data": True})
+    await connection.read_collection()
 
     # Wait for the response to be set
     await connection.client.sleep(0.3)
@@ -1731,6 +1752,7 @@ async def test_user_removes_last_inherited_owner_access_and_reread_fails(
         }
     )
     await connection.connect(query_parameters={"request-access-data": True})
+    await connection.read_collection()
 
     # Wait for the response to be set
     await connection.client.sleep(0.3)

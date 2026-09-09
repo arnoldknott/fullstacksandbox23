@@ -1460,8 +1460,12 @@ class TestMessage(BaseSocketIOTest):
         await connection2.connect(
             query_parameters={
                 "request-access-data": True,
-                "resource-ids": str(question.id),
             }
+        )
+        await connection2.client.emit(
+            "subscribe",
+            {"entity_ids": [str(question.id)]},
+            namespace="/question",
         )
         await connection1.client.sleep(0.2)
 

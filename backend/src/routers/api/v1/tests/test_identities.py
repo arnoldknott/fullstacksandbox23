@@ -444,7 +444,7 @@ async def test_post_user_invites_azure_user_from_another_tenant(
 
     # Make a POST request to invite an azure user
     response = await async_client.post(
-        f"/api/v1/user/azure/invite/{many_test_azure_users[1]['azure_user_id']}?azure_tenant_id={many_test_azure_users[1]['azure_tenant_id']}",
+        f"/api/v1/user/azure/invite/{many_test_azure_users[1]['azure_user_id']}?azure-tenant-id={many_test_azure_users[1]['azure_tenant_id']}",
     )
 
     assert response.status_code == 201
@@ -2493,6 +2493,13 @@ async def test_all_ueber_group_endpoints(
         assert modelled_ueber_group.name == expected_child.name  # type: ignore[attr-defined]
         assert modelled_ueber_group.description == expected_child.description  # type: ignore[attr-defined]
 
+    snapshot_response = await async_client.get("/api/v1/uebergroup/snapshot")
+    assert snapshot_response.status_code == 200
+    assert snapshot_response.headers["X-Entity-Cursor"].isdigit()
+    assert {item["id"] for item in snapshot_response.json()} == {
+        str(group.id) for group in expected_ueber_groups
+    }
+
     # Make a GET request to get one ueber-group by id
     response = await async_client.get(
         f"/api/v1/uebergroup/{str(mocked_ueber_groups[2].id)}",
@@ -2601,6 +2608,13 @@ async def test_all_group_endpoints(
         assert modelled_group.name == expected_child.name  # type: ignore[attr-defined]
         assert modelled_group.description == expected_child.description  # type: ignore[attr-defined]
 
+    snapshot_response = await async_client.get("/api/v1/group/snapshot")
+    assert snapshot_response.status_code == 200
+    assert snapshot_response.headers["X-Entity-Cursor"].isdigit()
+    assert {item["id"] for item in snapshot_response.json()} == {
+        str(group.id) for group in expected_groups
+    }
+
     # Make a GET request to get one group by id
     response = await async_client.get(
         f"/api/v1/group/{str(mocked_groups[2].id)}",
@@ -2701,6 +2715,13 @@ async def test_all_sub_group_endpoints(
         assert modelled_sub_group.id == expected_child.id  # type: ignore[attr-defined]
         assert modelled_sub_group.name == expected_child.name  # type: ignore[attr-defined]
         assert modelled_sub_group.description == expected_child.description  # type: ignore[attr-defined]
+
+    snapshot_response = await async_client.get("/api/v1/subgroup/snapshot")
+    assert snapshot_response.status_code == 200
+    assert snapshot_response.headers["X-Entity-Cursor"].isdigit()
+    assert {item["id"] for item in snapshot_response.json()} == {
+        str(group.id) for group in expected_sub_groups
+    }
 
     # Make a GET request to get one sub-group by id
     response = await async_client.get(
@@ -2805,6 +2826,13 @@ async def test_all_sub_sub_group_endpoints(
         assert modelled_sub_sub_group.id == expected_child.id  # type: ignore[attr-defined]
         assert modelled_sub_sub_group.name == expected_child.name  # type: ignore[attr-defined]
         assert modelled_sub_sub_group.description == expected_child.description  # type: ignore[attr-defined]
+
+    snapshot_response = await async_client.get("/api/v1/subsubgroup/snapshot")
+    assert snapshot_response.status_code == 200
+    assert snapshot_response.headers["X-Entity-Cursor"].isdigit()
+    assert {item["id"] for item in snapshot_response.json()} == {
+        str(group.id) for group in expected_sub_sub_groups
+    }
 
     # Make a GET request to get one sub-sub-group by id
     response = await async_client.get(

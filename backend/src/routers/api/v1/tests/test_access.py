@@ -2140,7 +2140,7 @@ async def test_admin_deletes_access_policy(
 
     # should delete policies 0
     response = await async_client.delete(
-        f"/api/v1/access/policy?resource_id={resource_id1}&identity_id={identity_id_user2}"
+        f"/api/v1/access/policy?resource-id={resource_id1}&identity-id={identity_id_user2}"
     )
 
     assert response.status_code == 200
@@ -2274,7 +2274,7 @@ async def test_user_deletes_access_policy(
 
     # should delete policy 3
     response = await async_client.delete(
-        f"/api/v1/access/policy?resource_id={resource_id2}&identity_id={identity_id_user3}"
+        f"/api/v1/access/policy?resource-id={resource_id2}&identity-id={identity_id_user3}"
     )
 
     assert response.status_code == 200
@@ -2812,7 +2812,7 @@ async def test_admin_gets_access_all_logs_with_non_existing_status_code_in_datab
     # No logs in the database
     # other than the ones created when the user logs in
     # But those have status_code 201!
-    response = await async_client.get("/api/v1/access/logs?status_code=200")
+    response = await async_client.get("/api/v1/access/logs?status-code=200")
     payload = response.json()
 
     assert response.status_code == 200
@@ -2893,7 +2893,7 @@ async def test_admin_gets_all_logs_with_status_code(
 
     # getting the one, that's created due to admin accessing the endpoint
     before_time = datetime.now()
-    response = await async_client.get("/api/v1/access/logs?status_code=201")
+    response = await async_client.get("/api/v1/access/logs?status-code=201")
     after_time = datetime.now()
     payload = response.json()
 
@@ -2990,7 +2990,7 @@ async def test_get_logs_for_resource_and_identity(
     database_logs = add_many_test_access_logs
 
     response = await async_client.get(
-        f"/api/v1/access/log/{resource_id2}?identity_id={str(identity_id_user1)}"
+        f"/api/v1/access/log/{resource_id2}?identity-id={str(identity_id_user1)}"
     )
     payload = response.json()
 
@@ -4492,8 +4492,8 @@ async def test_user_adds_resource_hierarchy_and_gets_it(
     read_response = await async_client.get(
         "/api/v1/access/hierarchies",
         params={
-            "parent_id": mocked_protected_resources[0].id,
-            "child_id": new_child_id,
+            "parent-id": mocked_protected_resources[0].id,
+            "child-id": new_child_id,
         },
     )
 
@@ -4994,8 +4994,8 @@ async def test_bulk_add_identity_hierarchies_get_bulk_and_bulk_remove(
     specific_user_response = await async_client.get(
         "/api/v1/access/hierarchies",
         params={
-            "parent_id": str(mocked_ueber_groups[1].id),
-            "child_id": str(existing_users[0].id),
+            "parent-id": str(mocked_ueber_groups[1].id),
+            "child-id": str(existing_users[0].id),
         },
     )
     assert specific_user_response.status_code == 200
@@ -5008,7 +5008,7 @@ async def test_bulk_add_identity_hierarchies_get_bulk_and_bulk_remove(
     # read all users in ueber group before deletion
     ueber_group_response = await async_client.get(
         "/api/v1/access/hierarchies",
-        params={"parent_id": str(mocked_ueber_groups[1].id)},
+        params={"parent-id": str(mocked_ueber_groups[1].id)},
     )
     assert ueber_group_response.status_code == 200
     ueber_group_children = ueber_group_response.json()
@@ -5034,7 +5034,7 @@ async def test_bulk_add_identity_hierarchies_get_bulk_and_bulk_remove(
     user_membership_response = await async_client.get(
         "/api/v1/access/hierarchies",
         params={
-            "child_id": str(user_id_without_azure_groups)
+            "child-id": str(user_id_without_azure_groups)
         },  # existing_users[3] is not member of any azure groups.
     )
 
@@ -5764,7 +5764,7 @@ async def test_user_moves_child_order_down_insert_before(
 
     # Move the order of a protected child forward:
     response_moving = await async_client.post(
-        f"/api/v1/access/hierarchy/{str(parent_resource_id)}/move/{str(mocked_protected_children[1].id)}/before?other_child_id={str(mocked_protected_children[4].id)}"
+        f"/api/v1/access/hierarchy/{str(parent_resource_id)}/move/{str(mocked_protected_children[1].id)}/before?other-child-id={str(mocked_protected_children[4].id)}"
     )
     payload_moving = response_moving.json()
 
@@ -5849,7 +5849,7 @@ async def test_user_moves_child_order_up_insert_before(
 
     # Move the order of a protected child forward:
     response_moving = await async_client.post(
-        f"/api/v1/access/hierarchy/{str(parent_resource_id)}/move/{str(mocked_protected_children[5].id)}/before?other_child_id={str(mocked_protected_children[2].id)}"
+        f"/api/v1/access/hierarchy/{str(parent_resource_id)}/move/{str(mocked_protected_children[5].id)}/before?other-child-id={str(mocked_protected_children[2].id)}"
     )
     payload_moving = response_moving.json()
 
@@ -5934,7 +5934,7 @@ async def test_user_moves_child_order_down_insert_after(
 
     # Move the order of a protected child forward:
     response_moving = await async_client.post(
-        f"/api/v1/access/hierarchy/{str(parent_resource_id)}/move/{str(mocked_protected_children[1].id)}/after?other_child_id={str(mocked_protected_children[4].id)}"
+        f"/api/v1/access/hierarchy/{str(parent_resource_id)}/move/{str(mocked_protected_children[1].id)}/after?other-child-id={str(mocked_protected_children[4].id)}"
     )
     payload_moving = response_moving.json()
 
@@ -6019,7 +6019,7 @@ async def test_user_moves_child_order_up_insert_after(
 
     # Move the order of a protected child forward:
     response_moving = await async_client.post(
-        f"/api/v1/access/hierarchy/{str(parent_resource_id)}/move/{str(mocked_protected_children[5].id)}/after?other_child_id={str(mocked_protected_children[2].id)}"
+        f"/api/v1/access/hierarchy/{str(parent_resource_id)}/move/{str(mocked_protected_children[5].id)}/after?other-child-id={str(mocked_protected_children[2].id)}"
     )
     payload_moving = response_moving.json()
 
@@ -6246,7 +6246,7 @@ async def test_user_moves_child_missing_access_to_children(
 
     # Move the order of a protected child forward:
     response_moving_before = await async_client.post(
-        f"/api/v1/access/hierarchy/{str(parent_resource_id)}/move/{str(mocked_protected_children[1].id)}/before?other_child_id={str(mocked_protected_children[4].id)}"
+        f"/api/v1/access/hierarchy/{str(parent_resource_id)}/move/{str(mocked_protected_children[1].id)}/before?other-child-id={str(mocked_protected_children[4].id)}"
     )
     payload_moving_before = response_moving_before.json()
 
@@ -6255,7 +6255,7 @@ async def test_user_moves_child_missing_access_to_children(
 
     # Move the order of a protected child forward:
     response_moving_after = await async_client.post(
-        f"/api/v1/access/hierarchy/{str(parent_resource_id)}/move/{str(mocked_protected_children[1].id)}/after?other_child_id={str(mocked_protected_children[4].id)}"
+        f"/api/v1/access/hierarchy/{str(parent_resource_id)}/move/{str(mocked_protected_children[1].id)}/after?other-child-id={str(mocked_protected_children[4].id)}"
     )
     payload_moving_after = response_moving_after.json()
 
@@ -6309,7 +6309,7 @@ async def test_user_moves_child_missing_access_to_parent(
 
     # Move the order of a protected child forward:
     response_moving_before = await async_client.post(
-        f"/api/v1/access/hierarchy/{str(parent_resource_id)}/move/{str(mocked_protected_children[1].id)}/before?other_child_id={str(mocked_protected_children[4].id)}"
+        f"/api/v1/access/hierarchy/{str(parent_resource_id)}/move/{str(mocked_protected_children[1].id)}/before?other-child-id={str(mocked_protected_children[4].id)}"
     )
     payload_moving_before = response_moving_before.json()
 
@@ -6318,7 +6318,7 @@ async def test_user_moves_child_missing_access_to_parent(
 
     # Move the order of a protected child forward:
     response_moving_after = await async_client.post(
-        f"/api/v1/access/hierarchy/{str(parent_resource_id)}/move/{str(mocked_protected_children[1].id)}/after?other_child_id={str(mocked_protected_children[4].id)}"
+        f"/api/v1/access/hierarchy/{str(parent_resource_id)}/move/{str(mocked_protected_children[1].id)}/after?other-child-id={str(mocked_protected_children[4].id)}"
     )
     payload_moving_after = response_moving_after.json()
 

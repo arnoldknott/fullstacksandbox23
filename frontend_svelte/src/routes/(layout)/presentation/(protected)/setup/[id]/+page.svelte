@@ -28,14 +28,19 @@
 		socketioPresentation?.entities.filter((entity) => entity.id === page.params.id)[0]
 	);
 	onMount(() => {
-		socketioPresentation = new SocketIO<Presentation>({
-			namespace: '/presentation',
-			sessionId: page.data?.session?.sessionId || '',
-			queryParams: { 'request-access-data': true }
-		});
-	});
-	$effect(() => {
-		socketioPresentation.entities = [data.payload.presentation];
+		socketioPresentation = new SocketIO<Presentation>(
+			{
+				namespace: '/presentation',
+				sessionId: page.data?.session?.sessionId || '',
+				queryParams: { 'request-access-data': true }
+			},
+			{
+				snapshot: {
+					entities: [data.payload.presentation],
+					cursor: data.payload.cursor
+				}
+			}
+		);
 	});
 	onDestroy(() => {
 		socketioPresentation?.client.disconnect();
@@ -106,6 +111,7 @@
 <QuestionSection
 	parentId={page.params.id}
 	questions={data.payload.questions}
+	cursor={data.payload.cursor}
 	identities={data.payload.identities}
 />
 

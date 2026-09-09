@@ -572,7 +572,7 @@ async def test_attach_tag_to_demo_resource(
     resources = await add_test_demo_resources(mocked_provide_http_token_payload)  # type: ignore[call-arg]
     tags = await add_test_tags(mocked_provide_http_token_payload)  # type: ignore[call-arg]
     response = await async_client.post(
-        f"/api/v1/demoresource/{str(resources[1].id)}/tag/?tag_ids={str(tags[0].id)}&tag_ids={str(tags[2].id)}"
+        f"/api/v1/demoresource/{str(resources[1].id)}/tag/?tag-ids={str(tags[0].id)}&tag-ids={str(tags[2].id)}"
     )
     # for tag_id in tag_ids:
     #     response = await async_client.post(
@@ -714,13 +714,13 @@ async def test_get_all_demo_resources_by_tag_id(
     #     )
 
     await async_client.post(
-        f"/api/v1/demoresource/{str(resources[0].id)}/tag/?&tag_ids={str(tags[1].id)}"
+        f"/api/v1/demoresource/{str(resources[0].id)}/tag/?&tag-ids={str(tags[1].id)}"
     )
     await async_client.post(
-        f"/api/v1/demoresource/{str(resources[1].id)}/tag/?tag_ids={str(tags[0].id)}&tag_ids={str(tags[2].id)}"
+        f"/api/v1/demoresource/{str(resources[1].id)}/tag/?tag-ids={str(tags[0].id)}&tag-ids={str(tags[2].id)}"
     )
     await async_client.post(
-        f"/api/v1/demoresource/{str(resources[3].id)}/tag/?&tag_ids={str(tags[2].id)}"
+        f"/api/v1/demoresource/{str(resources[3].id)}/tag/?&tag-ids={str(tags[2].id)}"
     )
 
     response = await async_client.get(f"/api/v1/demoresource/tag/{str(tags[2].id)}")

@@ -526,6 +526,15 @@ async def test_get_user_account_from_session_cache_nonexistent():
 # region: Non-mocked dependency behavior
 
 
+@pytest.fixture(autouse=True)
+def restore_fastapi_routes_after_test():
+    routes = list(fastapi_app.router.routes)
+    openapi_schema = fastapi_app.openapi_schema
+    yield
+    fastapi_app.router.routes[:] = routes
+    fastapi_app.openapi_schema = openapi_schema
+
+
 @pytest.mark.anyio
 async def test_optional_token_dependency_missing_authorization_header_returns_none(
     async_client: AsyncClient,

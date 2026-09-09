@@ -1054,7 +1054,7 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
 
     # Make a POST request to create the protected child as a child of a protected resource
     response_child = await async_client.post(
-        f"/api/v1/protected/child/?parent_id={created_protected_resource.id}&inherit=True",
+        f"/api/v1/protected/child/?parent-id={created_protected_resource.id}&inherit=True",
         json=many_test_protected_child_resources[0],
     )
     assert response.status_code == 201
@@ -1062,7 +1062,7 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
 
     # Make a POST request to create the protected grandchild as a child of a protected child resource
     response_grandchild = await async_client.post(
-        f"/api/v1/protected/grandchild/?parent_id={created_protected_child.id}&inherit=True",
+        f"/api/v1/protected/grandchild/?parent-id={created_protected_child.id}&inherit=True",
         json=many_test_protected_grandchild_resources[0],
     )
     assert response.status_code == 201
@@ -1116,7 +1116,7 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
 
     # Make a POST request to create the protected child as a child of a protected resource
     response_child = await async_client.post(
-        f"/api/v1/protected/child/?parent_id={created_protected_resource.id}&inherit=False",
+        f"/api/v1/protected/child/?parent-id={created_protected_resource.id}&inherit=False",
         json=many_test_protected_child_resources[0],
     )
     assert response.status_code == 201
@@ -1124,7 +1124,7 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
 
     # Make a POST request to create the protected grandchild as a child of a protected child resource
     response_grandchild = await async_client.post(
-        f"/api/v1/protected/grandchild/?parent_id={created_protected_child.id}&inherit=True",
+        f"/api/v1/protected/grandchild/?parent-id={created_protected_child.id}&inherit=True",
         json=many_test_protected_grandchild_resources[0],
     )
     assert response.status_code == 201
@@ -1185,7 +1185,7 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
 
     # Make a POST request to create the protected child as a child of a protected resource
     response_child = await async_client.post(
-        f"/api/v1/protected/child/?parent_id={created_protected_resource.id}&inherit=True",
+        f"/api/v1/protected/child/?parent-id={created_protected_resource.id}&inherit=True",
         json=many_test_protected_child_resources[0],
     )
     assert response.status_code == 201
@@ -1193,7 +1193,7 @@ async def test_get_protected_grand_child_resource_through_inheritance_via_child_
 
     # Make a POST request to create the protected grandchild as a child of a protected child resource
     response_grandchild = await async_client.post(
-        f"/api/v1/protected/grandchild/?parent_id={created_protected_child.id}&inherit=False",
+        f"/api/v1/protected/grandchild/?parent-id={created_protected_child.id}&inherit=False",
         json=many_test_protected_grandchild_resources[0],
     )
     assert response.status_code == 201

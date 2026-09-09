@@ -73,7 +73,7 @@ ProtectedResource = create_model(
 ProtectedResourceCreate = ProtectedResource.Create
 ProtectedResourceRead = ProtectedResource.Read
 ProtectedResourceUpdate = ProtectedResource.Update
-# ProtectedResourceExtended = ProtectedResource.Extended
+ProtectedResourceExtended = ProtectedResource.Extended
 
 
 # endregion ProtectedResource
@@ -135,7 +135,7 @@ ProtectedChild = create_model(
 ProtectedChildCreate = ProtectedChild.Create
 ProtectedChildRead = ProtectedChild.Read
 ProtectedChildUpdate = ProtectedChild.Update
-# ProtectedChildExtended = ProtectedChild.Extended
+ProtectedChildExtended = ProtectedChild.Extended
 
 
 class ProtectedChildReadNoParents(ProtectedChildCreate):
@@ -178,7 +178,7 @@ ProtectedGrandChild = create_model(
 ProtectedGrandChildCreate = ProtectedGrandChild.Create
 ProtectedGrandChildRead = ProtectedGrandChild.Read
 ProtectedGrandChildUpdate = ProtectedGrandChild.Update
-# ProtectedGrandChildExtended = ProtectedGrandChild.Extended
+ProtectedGrandChildExtended = ProtectedGrandChild.Extended
 
 
 # endregion ProtectedGrandChild

@@ -13,7 +13,7 @@
 	import Title from '$components/Title.svelte';
 	import { IdentityType } from '$lib/accessHandler';
 	import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
-	import type { Group, UeberGroup } from '$lib/types';
+	import type { GroupExtended, UeberGroupExtended } from '$lib/types';
 
 	import IdBadge from '../../../IdBadge.svelte';
 	import IdentityListItem from '../../IdentityListItem.svelte';
@@ -32,7 +32,6 @@
 	});
 
 	// Data variables for Ueber-Groups and Groups:
-	let ueberGroup = $derived(data.thisUeberGroup);
 	let editUeberGroup = $state(false);
 
 	// const shortUeberGroupName = () => {
@@ -43,13 +42,14 @@
 	// 	return shortName;
 	// };
 
-	let socketioUeberGroup: SocketIO<UeberGroup> = $state()!;
-	let socketioGroup: SocketIO<Group> = $state()!;
+	let socketioUeberGroup: SocketIO<UeberGroupExtended> = $state()!;
+	let socketioGroup: SocketIO<GroupExtended> = $state()!;
+	let ueberGroup = $derived(socketioUeberGroup?.entities[0] ?? data.thisUeberGroup);
 	// let groupsRelation: Relation = $state()!;
-	let linkedGroups = $derived<Group[]>(
+	let linkedGroups = $derived<GroupExtended[]>(
 		socketioGroup?.getSelectedEntities('linkedToUeberGroup') || []
 	);
-	let unlinkedGroups = $derived<Group[]>(
+	let unlinkedGroups = $derived<GroupExtended[]>(
 		socketioGroup?.getSelectedEntities('notLinkedToUeberGroup') || []
 	);
 	const [sendGroupCrossfade, receiveGroupCrossfade] = crossfade({ duration: 400 });
@@ -90,27 +90,23 @@
 		}
 	};
 	onMount(() => {
-		socketioUeberGroup = new SocketIO<UeberGroup>(ueberGroupConnection, {
-			transferred: false,
-			deleted: false
-		});
-
-		socketioUeberGroup.client.on('deleted', (resource_id: string) => {
-			if (ueberGroup && ueberGroup.id === resource_id) {
-				goto('../');
+		socketioUeberGroup = new SocketIO<UeberGroupExtended>(ueberGroupConnection, {
+			snapshot: {
+				entities: [data.thisUeberGroup],
+				cursor: data.ueberGroupCursor
+			},
+			deleted: (resourceId) => {
+				if (resourceId === data.thisUeberGroup.id) goto('../');
 			}
 		});
 
-		socketioUeberGroup.client.on('transferred', (data: UeberGroup) => {
-			if (ueberGroup && ueberGroup.id === data.id) {
-				ueberGroup = data;
-			}
-		});
-
-		socketioGroup = new SocketIO<Group>(groupConnection, {
+		socketioGroup = new SocketIO<GroupExtended>(groupConnection, {
+			snapshot: {
+				entities: data.allGroups,
+				cursor: data.groupCursor
+			},
 			template: { name: '', description: '' }
 		});
-		socketioGroup.client.emit('read');
 		// socketioGroup.createPending();
 
 		socketioGroup.createLinkedSelection('linkedToUeberGroup');
@@ -124,11 +120,6 @@
 		// 	true
 		// );
 	});
-	$effect(() => {
-		// Seed from Rest-API data on initial load, then keep in sync via SocketIO.
-		socketioGroup.entities = data.allGroups;
-	});
-
 	onDestroy(() => {
 		socketioUeberGroup?.client.disconnect();
 		socketioGroup?.client.disconnect();
@@ -140,7 +131,7 @@
 		const basePendingGroup = socketioGroup?.pendingEntities[0];
 		if (!parentId || !basePendingGroup) return;
 
-		const submitGroup = (overrides: Partial<Group>, inherit: boolean) => {
+		const submitGroup = (overrides: Partial<GroupExtended>, inherit: boolean) => {
 			const pendingGroup = socketioGroup.createPending(overrides);
 			socketioGroup.submitEntity(pendingGroup, parentId, inherit);
 		};
@@ -181,7 +172,7 @@
 	// that are closely related to apis and make these transforamtions happen server-side!
 	// => no unnecessary data from other sources (like Microdoft Graph) reaches client side.
 	let linkedIdentities = $derived.by(() => {
-		const identities = new SvelteMap<Group | LocalMicrosoftUser, IdentityType>();
+		const identities = new SvelteMap<GroupExtended | LocalMicrosoftUser, IdentityType>();
 		for (const group of linkedGroups) {
 			identities.set(group, IdentityType.GROUP);
 		}

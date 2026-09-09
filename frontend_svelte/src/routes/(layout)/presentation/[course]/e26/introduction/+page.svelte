@@ -154,7 +154,9 @@
 				namespace: '/numerical',
 				parentId: motivationQuestion?.id
 			},
-			{}
+			{
+				snapshot: data.payload.motivationSnapshot
+			}
 		);
 		socketioPlaces = new SocketIO<MessageExtended>(
 			{
@@ -163,6 +165,7 @@
 				queryParams: { 'request-access-data': true }
 			},
 			{
+				snapshot: data.payload.placesSnapshot,
 				template: {
 					content: JSON.stringify({
 						emoji: '📍',
@@ -182,17 +185,12 @@
 				parentId: commentsQuestion?.id,
 				queryParams: { 'request-access-data': true }
 			},
-			{ template: { content: '', language: 'en' } }
+			{
+				snapshot: data.payload.commentsSnapshot,
+				template: { content: '', language: 'en' }
+			}
 		);
 		socketioComments.createSortedSelection('sortedCommentsAnswers', 'creation_date', false);
-	});
-
-	$effect(() => {
-		// Preseed data:
-		// TBD: update to preseed with numbers coming from server-side via REST-API
-		socketioMotivation.entities = motivationQuestion?.numericals ?? [];
-		socketioPlaces.entities = placesQuestion?.messages ?? [];
-		socketioComments.entities = commentsQuestion?.messages ?? [];
 	});
 
 	onDestroy(() => {

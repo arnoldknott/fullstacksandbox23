@@ -1,4 +1,4 @@
-import { fail } from '@sveltejs/kit';
+import { error, fail } from '@sveltejs/kit';
 
 import { Action, IdentityType } from '$lib/accessHandler';
 import AppConfig from '$lib/server/config';
@@ -16,6 +16,11 @@ import type {
 import { BaseAPI, type RequestBody } from './base';
 
 const appConfig = await AppConfig.getInstance();
+
+export type BackendEntitySnapshot<T> = {
+	entities: T[];
+	cursor: number;
+};
 
 class BackendAPI extends BaseAPI {
 	appConfig: AppConfig;
@@ -45,6 +50,22 @@ class BackendAPI extends BaseAPI {
 		headers: HeadersInit = {}
 	) {
 		return await super.get(sessionId, path, scopes, options, headers);
+	}
+
+	async getSnapshot<T>(sessionId: string | null, path: string): Promise<BackendEntitySnapshot<T>> {
+		const response = await this.get(sessionId, path);
+		if (!response.ok) error(response.status, 'Entity snapshot could not be loaded');
+
+		const rawCursor = response.headers.get('X-Entity-Cursor');
+		if (rawCursor === null) error(502, 'Entity snapshot did not include a cursor');
+		const cursor = Number.parseInt(rawCursor);
+		if (!Number.isSafeInteger(cursor) || cursor < 0) {
+			error(502, 'Entity snapshot included an invalid cursor');
+		}
+		return {
+			entities: (await response.json()) as T[],
+			cursor
+		};
 	}
 
 	async put(
@@ -106,7 +127,7 @@ class BackendAPI extends BaseAPI {
 		else if (!action) {
 			const response = await this.delete(
 				sessionId,
-				`/access/policy?resource_id=${resourceId}&identity_id=${identityId}`
+				`/access/policy?resource-id=${resourceId}&identity-id=${identityId}`
 			);
 			if (response.status !== 200) {
 				return fail(response.status, { error: response.statusText });
