@@ -102,7 +102,7 @@
 			<tr
 				class="shadow-base-shadow bg-base-300 inset-ring-outline-variant rounded-t-2xl shadow inset-ring *:first:rounded-tl-2xl *:last:rounded-tr-2xl"
 			>
-				<th class="min-w-18text-center">
+				<th class="min-w-18 text-center">
 					{#if entityContainer?.selections['selected']?.length <= 1}
 						<button
 							transition:fade={{ duration: 300 }}
