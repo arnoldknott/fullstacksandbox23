@@ -10,7 +10,7 @@ import { io } from 'socket.io-client';
 //
 // Usage:
 //   STAGE_FRONTEND_URL=https://<frontend> STAGE_BACKEND_URL=https://<backend> \
-//     bun run test:stage:load -- --users=50 --hold=30 --timeout=120
+//     bun run test:stage:load -- --users=50 --ramp=30 --hold=30 --timeout=120
 
 const frontendRoute = '/presentation/34654/e26/introduction';
 const presentationPath = '34654/e26/introduction';
@@ -20,7 +20,14 @@ const socketioPath = '/socketio/v1';
 const subscriptionBatchLimit = 500;
 
 const flags = {};
-const supportedFlags = new Set(['users', 'hold', 'timeout', 'frontend-only', 'backend-only']);
+const supportedFlags = new Set([
+	'users',
+	'ramp',
+	'hold',
+	'timeout',
+	'frontend-only',
+	'backend-only'
+]);
 for (const arg of process.argv.slice(2)) {
 	if (!arg.startsWith('--')) {
 		throw new Error(`Unknown positional argument: ${arg}`);
@@ -34,6 +41,7 @@ for (const arg of process.argv.slice(2)) {
 }
 
 const users = Number(flags.users ?? 50);
+const rampMs = Number(flags.ramp ?? 0) * 1000;
 const holdMs = Number(flags.hold ?? 30) * 1000;
 const timeoutMs = Number(flags.timeout ?? 120) * 1000;
 const frontendOnly = flags['frontend-only'] === 'true';
@@ -52,6 +60,9 @@ if (runBackend && !backendUrl) {
 }
 if (!Number.isSafeInteger(users) || users < 1) {
 	throw new Error('--users must be a positive integer.');
+}
+if (!Number.isFinite(rampMs) || rampMs < 0) {
+	throw new Error('--ramp must be a non-negative number of seconds.');
 }
 if (!Number.isFinite(holdMs) || holdMs < 0) {
 	throw new Error('--hold must be a non-negative number of seconds.');
@@ -239,6 +250,9 @@ const openSocket = ({ namespace, parentId, requestAccessData }, snapshot, userIn
 };
 
 const oneUser = async (userIndex) => {
+	if (rampMs > 0 && users > 1) {
+		await new Promise((resolve) => setTimeout(resolve, (userIndex * rampMs) / (users - 1)));
+	}
 	let snapshots = [];
 	const preloadStartedAt = performance.now();
 	try {
@@ -269,7 +283,7 @@ const expectedSockets = runBackend ? users * connections.length : 0;
 const targetUrl = runBackend ? backendUrl : frontendUrl;
 const mode = frontendOnly ? 'frontend-only' : 'backend snapshot + subscription';
 console.log(
-	`stage load (${mode}): ${users} users × ${expectedSockets} sockets against ${targetUrl}`
+	`stage load (${mode}): ${users} users × ${expectedSockets} sockets, ramp=${rampMs / 1000}s against ${targetUrl}`
 );
 if (runFrontend) {
 	console.log(`stage load: each user preloads ${new URL(frontendRoute, frontendUrl)}`);
