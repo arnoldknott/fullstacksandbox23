@@ -14,7 +14,6 @@
 	/** Defines one table column, including its header, cell content, and optional Tailwind CSS classes. */
 	export type TableColumn<T extends AnyEntityExtended> = {
 		header: TableHeader;
-		menu?: Snippet;
 		cell: TableCell<T>;
 		headerClass?: string;
 		cellClass?: string;
@@ -72,11 +71,13 @@
 
 	let {
 		columns,
+		menu,
 		entityContainer,
 		displaySelection,
 		selectionBoxes = true
 	}: {
 		columns: TableColumn<T>[];
+		menu?: Snippet;
 		entityContainer: EntityContainerInterface<T>;
 		displaySelection?: string;
 		selectionBoxes?: boolean;
@@ -174,12 +175,13 @@
 							/>
 						</th>
 					{/if}
-					<th colspan={columns.length - 1 + (selectionBoxes ? 1 : 0)}>
-						<!-- Workaround for Svelte warning:
-					 	transition_slide_displayThe `slide` transition does not work correctly
-					 	for elements with `display: table-row` -->
-						<div>add sort, search, filter, actions for multiple selected entities</div>
-					</th>
+					{#if menu}
+						{@render menu?.()}
+					{:else}
+						<th colspan={columns.length - 1 + (selectionBoxes ? 1 : 0)}>
+							add sort, search, filter, actions for multiple selected entities
+						</th>
+					{/if}
 				</tr>
 			{/if}
 		</thead>

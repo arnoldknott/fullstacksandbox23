@@ -18,6 +18,7 @@
 	import ShareItem from '../../../../playground/components/ShareItem.svelte';
 	import ActionButtons from '../ActionButtons.svelte';
 	import FormElement from '../FormElement.svelte';
+	import SelectionActionButtons from '../SelectionActionButtons.svelte';
 
 	let {
 		parentId,
@@ -499,7 +500,12 @@ https://svelte.dev/e/transition_slide_display
 			]}
 			entityContainer={socketioQuestions}
 			displaySelection="linkedToPresentation"
-		/>
+		>
+			{#snippet menu()}
+				<th colspan={6}></th>
+				<th class="text-end"><SelectionActionButtons socketio={socketioQuestions} /></th>
+			{/snippet}
+		</Table>
 		<div
 			class="divider divider-warning label-large text-warning my-10 before:border-t-5 after:border-t-5"
 		>
