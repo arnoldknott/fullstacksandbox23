@@ -14,6 +14,7 @@
 	/** Defines one table column, including its header, cell content, and optional Tailwind CSS classes. */
 	export type TableColumn<T extends AnyEntityExtended> = {
 		header: TableHeader;
+		menu?: Snippet;
 		cell: TableCell<T>;
 		headerClass?: string;
 		cellClass?: string;
@@ -65,7 +66,7 @@
 	import Icon from '@iconify/svelte';
 	import { onDestroy } from 'svelte';
 	import { flip } from 'svelte/animate';
-	import { fade, slide } from 'svelte/transition';
+	import { fade } from 'svelte/transition';
 
 	import type { EntityContainerInterface } from '$lib/entityContainer.svelte';
 
@@ -148,7 +149,10 @@
 				{/each}
 			</tr>
 			{#if showHeaderMenu || entityContainer?.selections['selected']?.length > 1}
-				<tr class="label bg-base-300 inset-ring-outline-variant font-medium normal-case inset-ring">
+				<tr
+					class="label bg-base-300 inset-ring-outline-variant font-medium normal-case inset-ring"
+					transition:fade={{ duration: 300 }}
+				>
 					{#if selectionBoxes}
 						<th class="min-w-18 text-center">
 							<input
@@ -174,9 +178,7 @@
 						<!-- Workaround for Svelte warning:
 					 	transition_slide_displayThe `slide` transition does not work correctly
 					 	for elements with `display: table-row` -->
-						<div transition:slide={{ duration: 300 }}>
-							add sort, search, filter, actions for multiple selected entities
-						</div>
+						<div>add sort, search, filter, actions for multiple selected entities</div>
 					</th>
 				</tr>
 			{/if}
