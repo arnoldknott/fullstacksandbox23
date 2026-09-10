@@ -125,13 +125,13 @@ describe('Table', () => {
 		await fireEvent.click(dropdownChevron);
 		expect(screen.getAllByRole('checkbox')).toHaveLength(2);
 		expect(
-			screen.getByText('add sort, search, filter, actions for multiple selected presentations')
+			screen.getByText('add sort, search, filter, actions for multiple selected entities')
 		).toBeTruthy();
 		await fireEvent.click(dropdownChevron);
 		await waitFor(() => expect(screen.getAllByRole('checkbox')).toHaveLength(1));
 		await waitFor(() =>
 			expect(
-				screen.queryByText('add sort, search, filter, actions for multiple selected presentations')
+				screen.queryByText('add sort, search, filter, actions for multiple selected entities')
 			).toBeNull()
 		);
 	});
