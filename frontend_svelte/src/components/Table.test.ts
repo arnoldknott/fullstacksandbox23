@@ -1,6 +1,26 @@
-import { render, screen } from '@testing-library/svelte';
+import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import { type Component, createRawSnippet } from 'svelte';
 import { describe, expect, it, vi } from 'vitest';
+Object.defineProperty(Element.prototype, 'animate', {
+	configurable: true,
+	value: vi.fn(() => {
+		const animation = {
+			cancel: vi.fn(),
+			currentTime: 0,
+			effect: null,
+			onfinish: null,
+			playState: 'finished'
+		} as Partial<Animation> & {
+			onfinish: ((event?: AnimationPlaybackEvent) => void) | null;
+		};
+		queueMicrotask(() => {
+			if (typeof animation.onfinish === 'function') {
+				animation.onfinish.call(animation as Animation);
+			}
+		});
+		return animation as unknown as Animation;
+	})
+});
 
 import type { EntityContainerInterface } from '$lib/entityContainer.svelte';
 import type { PresentationExtended } from '$lib/types';
@@ -86,13 +106,35 @@ describe('Table', () => {
 			entityContainer
 		});
 
-		expect(screen.getAllByRole('checkbox')).toHaveLength(2);
+		expect(screen.getAllByRole('checkbox')).toHaveLength(1);
 		expect(entityContainer.addSelection).toHaveBeenCalledWith('selected');
 
 		unmount();
 		expect(entityContainer.removeSelection).toHaveBeenCalledWith('selected');
 	});
 
+	it('toggles the header menu with the dropdown chevron', async () => {
+		render(PresentationTable, {
+			columns: [{ header: text('Path'), cell: field<PresentationExtended>('path') }],
+			entityContainer: createEntityContainer({ selections: { selected: [] } })
+		});
+		const dropdownChevron = screen.getByRole('button', {
+			name: 'Toggle Menu in table header with more options'
+		});
+		await waitFor(() => expect(screen.getAllByRole('checkbox')).toHaveLength(1));
+		await fireEvent.click(dropdownChevron);
+		expect(screen.getAllByRole('checkbox')).toHaveLength(2);
+		expect(
+			screen.getByText('add sort, search, filter, actions for multiple selected presentations')
+		).toBeTruthy();
+		await fireEvent.click(dropdownChevron);
+		await waitFor(() => expect(screen.getAllByRole('checkbox')).toHaveLength(1));
+		await waitFor(() =>
+			expect(
+				screen.queryByText('add sort, search, filter, actions for multiple selected presentations')
+			).toBeNull()
+		);
+	});
 	it('renders the entities from displaySelection', () => {
 		const selectedPresentation: PresentationExtended = {
 			...presentation,

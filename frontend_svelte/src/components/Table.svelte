@@ -175,7 +175,7 @@
 					 	transition_slide_displayThe `slide` transition does not work correctly
 					 	for elements with `display: table-row` -->
 						<div transition:slide={{ duration: 300 }}>
-							add sort, search, filter, actions for multiple selected presentations
+							add sort, search, filter, actions for multiple selected entities
 						</div>
 					</th>
 				</tr>
