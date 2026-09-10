@@ -102,31 +102,33 @@
 			<tr
 				class="shadow-base-shadow bg-base-300 inset-ring-outline-variant rounded-t-2xl shadow inset-ring *:first:rounded-tl-2xl *:last:rounded-tr-2xl"
 			>
-				<th class="min-w-18 text-center">
-					{#if entityContainer?.selections['selected']?.length <= 1}
-						<button
-							transition:fade={{ duration: 300 }}
-							type="button"
-							class="btn btn-circle btn-sm btn-gradient btn-base-300 collapse-toggle"
-							aria-label="Toggle Menu in table header with more options"
-							onclick={() => (showHeaderMenu = !showHeaderMenu)}
-							onkeydown={() => (showHeaderMenu = !showHeaderMenu)}
-						>
-							<span
-								class="icon-[tabler--chevron-down] {showHeaderMenu
-									? 'rotate-180'
-									: ''} size-4 transition-all duration-300"
-							></span>
-							<span
-								class="icon-[tabler--chevron-down] {!showHeaderMenu
-									? 'rotate-180'
-									: ''} hidden size-4 transition-all duration-300"
-								role="button"
-								tabindex="0"
-							></span>
-						</button>
-					{/if}
-				</th>
+				{#if selectionBoxes}
+					<th class="min-w-18 text-center">
+						{#if entityContainer?.selections['selected']?.length <= 1}
+							<button
+								transition:fade={{ duration: 300 }}
+								type="button"
+								class="btn btn-circle btn-sm btn-gradient btn-base-300 collapse-toggle"
+								aria-label="Toggle Menu in table header with more options"
+								onclick={() => (showHeaderMenu = !showHeaderMenu)}
+								onkeydown={() => (showHeaderMenu = !showHeaderMenu)}
+							>
+								<span
+									class="icon-[tabler--chevron-down] {showHeaderMenu
+										? 'rotate-180'
+										: ''} size-4 transition-all duration-300"
+								></span>
+								<span
+									class="icon-[tabler--chevron-down] {!showHeaderMenu
+										? 'rotate-180'
+										: ''} hidden size-4 transition-all duration-300"
+									role="button"
+									tabindex="0"
+								></span>
+							</button>
+						{/if}
+					</th>
+				{/if}
 				{#each columns as column (column.header)}
 					<th class={`title text-base-content font-medium normal-case ${column.headerClass ?? ''}`}>
 						{#if 'snippet' in column.header}
