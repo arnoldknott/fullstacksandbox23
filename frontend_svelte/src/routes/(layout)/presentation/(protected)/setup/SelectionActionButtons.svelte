@@ -42,7 +42,8 @@
 		name="id"
 		onclick={() =>
 			// TBD: should it exclude the ones, where the user does not have owner rights, or just let the bakend reject the deletion?
-			socketio.selections?.['selected'].forEach((entityId) => socketio.deleteEntity(entityId))}
+			// socketio.selections?.['selected'].forEach((entityId) => socketio.deleteEntity(entityId))}
+			socketio.bulkDelete([...socketio.selections.selected])}
 	>
 		<span class="icon-[tabler--trash] size-4"></span>
 	</button>

@@ -285,6 +285,16 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 		}
 	}
 
+	bulkDelete(entityIds: string[]): void {
+		const unsubmittedEntityIds = entityIds.filter((entityId) => entityId.slice(0, 4) === 'new_');
+		unsubmittedEntityIds.forEach((entityId) => {
+			const index = this.pendingEntities.findIndex((entity) => entity.id === entityId);
+			if (index > -1) this.pendingEntities.splice(index, 1);
+		});
+		const existingEntityIds = entityIds.filter((entityId) => entityId.slice(0, 4) !== 'new_');
+		if (existingEntityIds.length > 0) this.client.emit('delete', existingEntityIds);
+	}
+
 	/**
 	 * Creates a hierarchy link between a child and a parent entity.
 	 * If no parentId is provided, it defaults to the current `parentId` of this SocketIO instance (if any).

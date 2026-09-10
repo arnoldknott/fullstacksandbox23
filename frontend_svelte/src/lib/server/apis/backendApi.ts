@@ -54,18 +54,19 @@ class BackendAPI extends BaseAPI {
 
 	async getSnapshot<T>(sessionId: string | null, path: string): Promise<BackendEntitySnapshot<T>> {
 		const response = await this.get(sessionId, path);
-		if (!response.ok) error(response.status, 'Entity snapshot could not be loaded');
-
-		const rawCursor = response.headers.get('X-Entity-Cursor');
-		if (rawCursor === null) error(502, 'Entity snapshot did not include a cursor');
-		const cursor = Number.parseInt(rawCursor);
-		if (!Number.isSafeInteger(cursor) || cursor < 0) {
-			error(502, 'Entity snapshot included an invalid cursor');
+		// if (!response.ok) error(response.status, 'Entity snapshot could not be loaded');
+		if (response.ok) {
+			const rawCursor = response.headers.get('X-Entity-Cursor');
+			if (rawCursor === null) error(502, 'Entity snapshot did not include a cursor');
+			const cursor = Number.parseInt(rawCursor);
+			if (!Number.isSafeInteger(cursor) || cursor < 0) {
+				error(502, 'Entity snapshot included an invalid cursor');
+			}
+			return {
+				entities: (await response.json()) as T[],
+				cursor
+			};
 		}
-		return {
-			entities: (await response.json()) as T[],
-			cursor
-		};
 	}
 
 	async put(
