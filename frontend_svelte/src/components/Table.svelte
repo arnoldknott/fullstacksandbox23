@@ -65,22 +65,25 @@
 	import Icon from '@iconify/svelte';
 	import { onDestroy } from 'svelte';
 	import { flip } from 'svelte/animate';
-	import { fade, slide } from 'svelte/transition';
+	import { fade } from 'svelte/transition';
 
 	import type { EntityContainerInterface } from '$lib/entityContainer.svelte';
 
 	let {
 		columns,
+		menu,
 		entityContainer,
 		displaySelection,
 		selectionBoxes = true
 	}: {
 		columns: TableColumn<T>[];
+		menu?: Snippet;
 		entityContainer: EntityContainerInterface<T>;
 		displaySelection?: string;
 		selectionBoxes?: boolean;
 	} = $props();
 
+	let showHeaderMenu = $state(false);
 	let selectAll = $state(false);
 	let ownsSelectedSelection = false;
 
@@ -102,24 +105,30 @@
 				class="shadow-base-shadow bg-base-300 inset-ring-outline-variant rounded-t-2xl shadow inset-ring *:first:rounded-tl-2xl *:last:rounded-tr-2xl"
 			>
 				{#if selectionBoxes}
-					<th>
-						<input
-							id="select-all-presentations"
-							type="checkbox"
-							class="checkbox checkbox-sm checkbox-secondary"
-							bind:checked={selectAll}
-							onchange={(event) => {
-								if ((event.target as HTMLInputElement).checked) {
-									selectAll = true;
-									entityContainer?.entities?.forEach((presentation) => {
-										entityContainer?.selections['selected']?.push(presentation.id);
-									});
-								} else {
-									selectAll = false;
-									entityContainer?.selections['selected']?.splice(0);
-								}
-							}}
-						/>
+					<th class="min-w-18 text-center">
+						{#if entityContainer?.selections['selected']?.length <= 1}
+							<button
+								transition:fade={{ duration: 300 }}
+								type="button"
+								class="btn btn-circle btn-sm btn-gradient btn-base-300 collapse-toggle"
+								aria-label="Toggle Menu in table header with more options"
+								onclick={() => (showHeaderMenu = !showHeaderMenu)}
+								onkeydown={() => (showHeaderMenu = !showHeaderMenu)}
+							>
+								<span
+									class="icon-[tabler--chevron-down] {showHeaderMenu
+										? 'rotate-180'
+										: ''} size-4 transition-all duration-300"
+								></span>
+								<span
+									class="icon-[tabler--chevron-down] {!showHeaderMenu
+										? 'rotate-180'
+										: ''} hidden size-4 transition-all duration-300"
+									role="button"
+									tabindex="0"
+								></span>
+							</button>
+						{/if}
 					</th>
 				{/if}
 				{#each columns as column (column.header)}
@@ -140,17 +149,39 @@
 					</th>
 				{/each}
 			</tr>
-			{#if entityContainer?.selections['selected']?.length > 1}
-				<tr class="label bg-base-300 inset-ring-outline-variant font-medium normal-case inset-ring">
-					<th></th>
-					<th colspan={columns.length - 1 + (selectionBoxes ? 1 : 0)}>
-						<!-- Workaround for Svelte warning:
-					 	transition_slide_displayThe `slide` transition does not work correctly
-					 	for elements with `display: table-row` -->
-						<div transition:slide={{ duration: 300 }}>
-							add sort, search, filter, actions for multiple selected presentations
-						</div>
-					</th>
+			{#if showHeaderMenu || entityContainer?.selections['selected']?.length > 1}
+				<tr
+					class="label bg-base-300 inset-ring-outline-variant font-medium normal-case inset-ring"
+					transition:fade={{ duration: 300 }}
+				>
+					{#if selectionBoxes}
+						<th class="min-w-18 text-center">
+							<input
+								id="select-all-presentations"
+								type="checkbox"
+								class="checkbox checkbox-sm checkbox-secondary"
+								bind:checked={selectAll}
+								onchange={(event) => {
+									if ((event.target as HTMLInputElement).checked) {
+										selectAll = true;
+										entityContainer?.entities?.forEach((presentation) => {
+											entityContainer?.selections['selected']?.push(presentation.id);
+										});
+									} else {
+										selectAll = false;
+										entityContainer?.selections['selected']?.splice(0);
+									}
+								}}
+							/>
+						</th>
+					{/if}
+					{#if menu}
+						{@render menu?.()}
+					{:else}
+						<th colspan={columns.length - 1 + (selectionBoxes ? 1 : 0)}>
+							add sort, search, filter, actions for multiple selected entities
+						</th>
+					{/if}
 				</tr>
 			{/if}
 		</thead>
@@ -169,7 +200,7 @@
 						class="hover:bg-base-250 last:hover:rounded-b-2xl"
 					>
 						{#if selectionBoxes}
-							<td>
+							<td class="min-w-18 text-center">
 								<input
 									id="select-all-presentations"
 									type="checkbox"
