@@ -4,14 +4,6 @@ import type { MessageExtended, NumericalExtended, Presentation, Question } from 
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ url }) => {
-	const getAnswerSnapshot = <T>(resource: 'message' | 'numerical', parentId?: string) =>
-		parentId
-			? backendAPI.getSnapshot<T>(
-					null,
-					`/quiz/${resource}/snapshot?parent-id=${encodeURIComponent(parentId)}&include=creation-date&sort=creation-date&direction=desc`
-				)
-			: Promise.resolve({ entities: [] as T[], cursor: 0 });
-
 	const presentationPath = url.pathname.split('/presentation/')[1];
 	const presentationResponse = await backendAPI.get(null, '/presentation/path/' + presentationPath);
 	const payload = {
@@ -36,9 +28,24 @@ export const load: PageServerLoad = async ({ url }) => {
 		);
 		[payload.motivationSnapshot, payload.placesSnapshot, payload.commentsSnapshot] =
 			await Promise.all([
-				getAnswerSnapshot<NumericalExtended>('numerical', motivationQuestion?.id),
-				getAnswerSnapshot<MessageExtended>('message', placesQuestion?.id),
-				getAnswerSnapshot<MessageExtended>('message', commentsQuestion?.id)
+				motivationQuestion?.id
+					? backendAPI.getSnapshot<NumericalExtended>(
+							null,
+							`/quiz/numerical/snapshot?parent-id=${encodeURIComponent(motivationQuestion?.id)}`
+						)
+					: Promise.resolve({ entities: [] as NumericalExtended[], cursor: 0 }),
+				placesQuestion?.id
+					? backendAPI.getSnapshot<MessageExtended>(
+							null,
+							`/quiz/message/snapshot?parent-id=${encodeURIComponent(placesQuestion?.id)}&include=creation-date&sort=creation-date&direction=desc`
+						)
+					: Promise.resolve({ entities: [] as MessageExtended[], cursor: 0 }),
+				commentsQuestion?.id
+					? backendAPI.getSnapshot<MessageExtended>(
+							null,
+							`/quiz/message/snapshot?parent-id=${encodeURIComponent(commentsQuestion?.id)}&include=creation-date&sort=creation-date&direction=desc`
+						)
+					: Promise.resolve({ entities: [] as MessageExtended[], cursor: 0 })
 			]);
 	} else {
 		// TBD: consider rising an error herem,
