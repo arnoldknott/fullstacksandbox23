@@ -1804,3 +1804,37 @@ async def test_user_removes_last_inherited_owner_access_and_reread_fails(
         "error": f"Resource {str(resources[0].id)} not found."
     }
     assert len(connection.responses("transferred")) == 1
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "session_ids",
+    [[session_id_user1_read_write_socketio]],
+    indirect=True,
+)
+async def test_client_bulk_deletes_demo_resources(
+    add_test_demo_resources: list[DemoResource],
+    socketio_test_client_demo_resource_namespace,
+):
+    """Test that every resource in a bulk delete is deleted and acknowledged."""
+    connection = await socketio_test_client_demo_resource_namespace()
+    resources = await add_test_demo_resources(connection.token_payload())  # type: ignore[call-arg]
+    deleted_ids = [str(resources[1].id), str(resources[2].id)]
+
+    await connection.connect()
+    await connection.client.emit(
+        "delete",
+        deleted_ids,
+        namespace="/demo-resource",
+    )
+    await connection.client.sleep(0.3)
+
+    assert connection.responses("deleted") == deleted_ids
+    assert connection.responses("status") == [
+        {"success": "deleted", "id": entity_id} for entity_id in deleted_ids
+    ]
+
+    async with DemoResourceCRUD() as crud:
+        remaining_resources = await crud.read(await connection.current_user())
+
+    assert not set(deleted_ids) & {str(resource.id) for resource in remaining_resources}

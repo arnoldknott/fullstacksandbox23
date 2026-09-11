@@ -55,7 +55,6 @@ class BackendAPI extends BaseAPI {
 	async getSnapshot<T>(sessionId: string | null, path: string): Promise<BackendEntitySnapshot<T>> {
 		const response = await this.get(sessionId, path);
 		if (!response.ok) error(response.status, 'Entity snapshot could not be loaded');
-
 		const rawCursor = response.headers.get('X-Entity-Cursor');
 		if (rawCursor === null) error(502, 'Entity snapshot did not include a cursor');
 		const cursor = Number.parseInt(rawCursor);
