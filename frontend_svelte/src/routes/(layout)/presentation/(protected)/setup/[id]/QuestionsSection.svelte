@@ -506,7 +506,7 @@ https://svelte.dev/e/transition_slide_display
 				<th class="text-end"><SelectionActionButtons socketio={socketioQuestions} /></th>
 			{/snippet}
 		</Table>
-		<div
+		<!-- <div
 			class="divider divider-warning label-large text-warning my-10 before:border-t-5 after:border-t-5"
 		>
 			implemented from component Table above and hard-coded below
@@ -569,7 +569,7 @@ https://svelte.dev/e/transition_slide_display
 					{/each}
 				{/if}
 			</tbody>
-		</table>
+		</table> -->
 	</div>
 </Card>
 
