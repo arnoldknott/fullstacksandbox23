@@ -59,11 +59,8 @@ export const load: PageServerLoad = async ({ url }) => {
 		const timeAfterAnswerSnapshots = new Date();
 		console.log('=== presentation - introduction - timeAfterAnswerSnapshots ===');
 		console.log(timeAfterAnswerSnapshots);
-		const timeAfterPresentation = new Date();
-		console.log("=== presentation - introduction - timeAfterPresentation ===");
-		console.log(timeAfterPresentation);
 		console.log("=== presentation - introduction - timeTaken ===");
-		console.log(timeBeforePresentation.getTime() - timeBeforeAnswerSnapshots.getTime());
+		console.log(timeAfterAnswerSnapshots.getTime() - timeBeforePresentation.getTime());
 	} else {
 		// TBD: consider rising an error herem,
 		// so client side can react accordingly and not show the relevant elements
