@@ -1100,7 +1100,7 @@ class BaseNamespace(
             logger.error(f"🧦 Failed to write data from client {sid}.")
             await self._emit_status(sid, {"error": str(error)})
 
-    async def on_delete(self, sid, entity_id: UUID):
+    async def on_delete(self, sid, entity_ids: UUID | List[UUID]):
         """Delete event for socket.io namespaces."""
         logger.info(f"🧦 Delete request from client {sid}.")
         if self.crud is None:
@@ -1108,22 +1108,25 @@ class BaseNamespace(
             return
         try:
             current_user = await self._get_current_user_and_check_guard(sid, "delete")
+            entity_ids = entity_ids if isinstance(entity_ids, list) else [entity_ids]
             async with self.crud() as crud:
-                await crud.delete(current_user, entity_id)
-                if crud.model.__name__ in ResourceType.list():
-                    await self.server.close_room(
-                        f"resource:{str(entity_id)}", namespace=self.namespace
-                    )
-                elif crud.model.__name__ in IdentityType.list():
-                    await self.server.close_room(
-                        f"identity:{str(entity_id)}", namespace=self.namespace
-                    )
-            await self.server.emit(
-                "deleted",
-                entity_id,
-                namespace=self.namespace,
-            )
-            await self._emit_status(sid, {"success": "deleted", "id": entity_id})
+                for entity_id in entity_ids:
+                    await crud.delete(current_user, entity_id)
+                    if crud.model.__name__ in ResourceType.list():
+                        await self.server.close_room(
+                            f"resource:{str(entity_id)}", namespace=self.namespace
+                        )
+                    elif crud.model.__name__ in IdentityType.list():
+                        await self.server.close_room(
+                            f"identity:{str(entity_id)}", namespace=self.namespace
+                        )
+            for entity_id in entity_ids:
+                await self.server.emit(
+                    "deleted",
+                    entity_id,
+                    namespace=self.namespace,
+                )
+                await self._emit_status(sid, {"success": "deleted", "id": entity_id})
         except Exception as error:
             logger.error(f"🧦 Failed to delete item for client {sid}.")
             print(error)

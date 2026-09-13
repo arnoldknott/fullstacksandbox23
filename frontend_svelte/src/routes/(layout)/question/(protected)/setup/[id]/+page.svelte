@@ -23,6 +23,7 @@
 	import { initTabs } from '$lib/userInterface';
 
 	import ActionButtons from '../../../../presentation/(protected)/setup/ActionButtons.svelte';
+	import SelectionActionButtons from '../../../../presentation/(protected)/setup/SelectionActionButtons.svelte';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -575,7 +576,12 @@
 			] satisfies TableColumn<MessageExtended>[]}
 			entityContainer={messageSocketio}
 			displaySelection="sortedMessageAnswers"
-		/>
+		>
+			{#snippet menu()}
+				<th colspan={3}></th>
+				<th class="text-end"><SelectionActionButtons socketio={messageSocketio} /></th>
+			{/snippet}
+		</Table>
 	</div>
 </Card>
 
@@ -913,7 +919,12 @@
 			] satisfies TableColumn<NumericalExtended>[]}
 			entityContainer={numericalSocketio}
 			displaySelection="sortedNumericalAnswers"
-		/>
+		>
+			{#snippet menu()}
+				<th colspan={3}></th>
+				<th class="text-end"><SelectionActionButtons socketio={numericalSocketio} /></th>
+			{/snippet}
+		</Table>
 	</div>
 </Card>
 

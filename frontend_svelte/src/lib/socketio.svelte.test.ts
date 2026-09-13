@@ -514,6 +514,39 @@ describe('SocketIO for DemoResources', () => {
 		});
 	});
 
+	test('bulkDelete removes unsubmitted entities locally and emits existing ids in one event', async () => {
+		testSocketio.pendingEntities = [
+			{ id: 'new_delete-me', name: 'delete me' } as DemoResource,
+			{ id: 'new_keep-me', name: 'keep me' } as DemoResource
+		];
+
+		testSocketio.bulkDelete(['new_delete-me', 'existing-1', 'existing-2']);
+
+		await vi.waitFor(() => {
+			expect(serverMessages.length).toBe(1);
+		});
+
+		expect(testSocketio.pendingEntities.map((entity) => entity.id)).toEqual(['new_keep-me']);
+		expect(serverMessages).toEqual([
+			{
+				event: 'delete',
+				data: [['existing-1', 'existing-2']]
+			}
+		]);
+	});
+
+	test('bulkDelete does not emit when all entities are unsubmitted', () => {
+		testSocketio.pendingEntities = [
+			{ id: 'new_first', name: 'first' } as DemoResource,
+			{ id: 'new_second', name: 'second' } as DemoResource
+		];
+
+		testSocketio.bulkDelete(['new_first', 'new_second']);
+
+		expect(testSocketio.pendingEntities).toEqual([]);
+		expect(serverMessages).toEqual([]);
+	});
+
 	test('link emits "link" event with correct payload', async () => {
 		testSocketio.link('child-1', 'parent-1', true);
 

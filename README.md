@@ -8,6 +8,10 @@ Sandbox to experiment with a full stack applications using
 - docker compose for containerization
 - github actions for CI/CD
 
+# Documentation
+
+See the [repository documentation](docs/README.md) for component and architecture references.
+
 # License
 
 see [license file](LICENSE)
