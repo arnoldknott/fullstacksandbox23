@@ -438,19 +438,19 @@ resource "azurerm_key_vault_secret" "developer-clients-secret" {
 ################
 # TBD: comment after switching to OAuth2 login only
 resource "azurerm_key_vault_secret" "pgadminDefaultEmail" {
-  count        = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  count        = terraform.workspace == "dev" || terraform.workspace == "stage" || terraform.workspace == "prod" ? 1 : 0
   name         = "pgadmin-default-email"
   value        = var.pgadmin_default_email
   key_vault_id = azurerm_key_vault.keyVault.id
 }
 
 resource "random_password" "pgadminDefaultPassword" {
-  count   = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  count   = terraform.workspace == "dev" || terraform.workspace == "stage" || terraform.workspace == "prod" ? 1 : 0
   length  = 24
   special = false
 }
 resource "azurerm_key_vault_secret" "pgadminDefaultPassword" {
-  count        = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  count        = terraform.workspace == "dev" || terraform.workspace == "stage" || terraform.workspace == "prod" ? 1 : 0
   name         = "pgadmin-default-password"
   value        = random_password.pgadminDefaultPassword[0].result
   key_vault_id = azurerm_key_vault.keyVault.id
@@ -458,18 +458,18 @@ resource "azurerm_key_vault_secret" "pgadminDefaultPassword" {
 ################
 
 # resource "random_string" "pgadminDatabaseUser" {
-#   count  = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+#   count  = terraform.workspace == "dev" || terraform.workspace == "stage" || terraform.workspace == "prod" ? 1 : 0
 #   length  = 12
 #   special = false
 # }
 
 # resource "random_password" "pgadminDatabasePassword" {
-#   count  = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+#   count  = terraform.workspace == "dev" || terraform.workspace == "stage" || terraform.workspace == "prod" ? 1 : 0
 #   length  = 24
 #   special = false
 # }
 resource "azurerm_key_vault_secret" "pgadminDatabaseURI" {
-  count = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  count = terraform.workspace == "dev" || terraform.workspace == "stage" || terraform.workspace == "prod" ? 1 : 0
   name  = "pgadmin-database-uri"
   # value = "postgresql+psycopg://${random_string.postgresUser.result}:${urlencode(random_password.postgresPassword.result)}@${urlencode(azurerm_postgresql_flexible_server.postgresServer.fqdn)}:5432/${urlencode(azurerm_postgresql_flexible_server_database.pgadminDatabase[0].name)}"
   # value = "\"postgresql+psycopg://${random_string.postgresUser.result}:${urlencode(random_password.postgresPassword.result)}@${urlencode(azurerm_postgresql_flexible_server.postgresServer.fqdn)}:5432/${urlencode(azurerm_postgresql_flexible_server_database.pgadminDatabase[0].name)}\""
@@ -479,13 +479,13 @@ resource "azurerm_key_vault_secret" "pgadminDatabaseURI" {
 }
 
 resource "random_password" "pgadminMasterPassword" {
-  count   = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  count   = terraform.workspace == "dev" || terraform.workspace == "stage" || terraform.workspace == "prod" ? 1 : 0
   length  = 24
   special = false
 }
 
 resource "azurerm_key_vault_secret" "pgadminMasterPassword" {
-  count        = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  count        = terraform.workspace == "dev" || terraform.workspace == "stage" || terraform.workspace == "prod" ? 1 : 0
   name         = "pgadmin-master-password"
   value        = random_password.pgadminMasterPassword[0].result
   key_vault_id = azurerm_key_vault.keyVault.id
@@ -522,7 +522,7 @@ EOT
 
 
 resource "azurerm_key_vault_secret" "pgadminOauth2Config" {
-  count        = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  count        = terraform.workspace == "dev" || terraform.workspace == "stage" || terraform.workspace == "prod" ? 1 : 0
   name         = "pgadmin-oauth2-config"
   value        = local.pgadmin_oauth2_config
   key_vault_id = azurerm_key_vault.keyVault.id
