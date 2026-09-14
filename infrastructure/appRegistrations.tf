@@ -4,7 +4,7 @@ resource "random_uuid" "ScopeSocketio" {}
 resource "random_uuid" "RoleAdmin" {}       # Used for admins in backend
 resource "random_uuid" "RoleUser" {}        # Used for users in backend
 resource "random_uuid" "pgAdminRoleAdmin" { # Used for admins in pgAdmin
-  count = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  count = terraform.workspace == "dev" || terraform.workspace == "stage" || terraform.workspace == "prod" ? 1 : 0
 }
 
 # # get the application ids for the well known applications to configure ms graph access:
