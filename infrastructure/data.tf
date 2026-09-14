@@ -90,7 +90,7 @@ resource "azurerm_postgresql_flexible_server_database" "postgresDatabase" {
 }
 
 resource "azurerm_postgresql_flexible_server_database" "pgadminDatabase" {
-  count     = terraform.workspace == "dev" || terraform.workspace == "stage" || terraform.workspace == "main" ? 1 : 0
+  count     = terraform.workspace == "dev" || terraform.workspace == "stage" || terraform.workspace == "prod" ? 1 : 0
   name      = "${terraform.workspace}_pgadmin"
   server_id = azurerm_postgresql_flexible_server.postgresServer.id
   charset   = "UTF8"
