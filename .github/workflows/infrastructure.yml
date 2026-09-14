@@ -158,7 +158,6 @@ jobs:
         uses: opentofu/setup-opentofu@v2
         with:
           tofu_version: ${{ env.TOFU_VERSION }}
-          tofu_wrapper: false
 
       - name: tofu version & workspace
         run: |
@@ -214,10 +213,6 @@ jobs:
             -var "redis_insight_port=${REDIS_INSIGHT_PORT}" \
             -var "dtu_campusai_api_key=${DTU_CAMPUSAI_API_KEY}" | tee ${WORKSPACE}_${COMMIT_SHA}.log
             cat ${WORKSPACE}_${COMMIT_SHA}.log
-          statuses=("${PIPESTATUS[@]}")
-          echo "tofu exit code: ${statuses[0]}"
-          echo "tee exit code: ${statuses[1]}"
-          exit "${statuses[0]}"
             
       # -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}" | tee ${WORKSPACE}_${COMMIT_SHA}.log
       # - name: Monitor the output file from tofu plan
