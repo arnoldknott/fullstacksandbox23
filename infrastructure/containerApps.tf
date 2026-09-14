@@ -56,7 +56,7 @@ resource "azurerm_container_app_environment_storage" "applicationDataConnect" {
 }
 
 resource "azurerm_container_app_environment_storage" "adminDataConnect" {
-  count                        = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  count                        = terraform.workspace == "dev" || terraform.workspace == "stage" || terraform.workspace == "prod" ? 1 : 0
   name                         = "${var.project_short_name}-admindataconnect-${terraform.workspace}"
   container_app_environment_id = azurerm_container_app_environment.ContainerEnvironment.id
   account_name                 = azurerm_storage_account.storage.name
@@ -596,7 +596,7 @@ resource "azurerm_container_app" "redisContainer" {
 # sudo: If sudo is running in a container, you may need to adjust the container configuration to disable the flag.
 # TBD: configure OAuth for pgadmin container in config.py, config_local.py or config_system.py
 resource "azurerm_container_app" "postgresAdmin" {
-  count                        = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  count                        = terraform.workspace == "dev" || terraform.workspace == "stage" || terraform.workspace == "prod" ? 1 : 0
   name                         = "${var.project_short_name}-pgadmin-${terraform.workspace}"
   container_app_environment_id = azurerm_container_app_environment.ContainerEnvironment.id
   resource_group_name          = azurerm_resource_group.resourceGroup.name

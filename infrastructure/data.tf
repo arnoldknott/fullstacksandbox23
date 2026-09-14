@@ -203,20 +203,20 @@ resource "azurerm_storage_share" "applicationData" {
 }
 
 resource "azurerm_storage_share" "adminData" {
-  count              = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  count              = terraform.workspace == "dev" || terraform.workspace == "stage" || terraform.workspace == "prod" ? 1 : 0
   name               = "${var.project_short_name}-admindata-${terraform.workspace}"
   storage_account_id = azurerm_storage_account.storage.id
   quota              = 1
 }
 
 resource "azurerm_storage_share_directory" "pgAdminDirectory" {
-  count             = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  count             = terraform.workspace == "dev" || terraform.workspace == "stage" || terraform.workspace == "prod" ? 1 : 0
   name              = "pgadmin"
   storage_share_url = azurerm_storage_share.adminData[0].url
 }
 
 resource "azurerm_storage_share_directory" "pgAdminScriptsDirectory" {
-  count             = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  count             = terraform.workspace == "dev" || terraform.workspace == "stage" || terraform.workspace == "prod" ? 1 : 0
   name              = "pgadmin/scripts"
   storage_share_url = azurerm_storage_share.adminData[0].url
 
@@ -226,7 +226,7 @@ resource "azurerm_storage_share_directory" "pgAdminScriptsDirectory" {
 }
 
 resource "azurerm_storage_share_directory" "pgAdminStorageDirectory" {
-  count             = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  count             = terraform.workspace == "dev" || terraform.workspace == "stage" || terraform.workspace == "prod" ? 1 : 0
   name              = "pgadmin/storage"
   storage_share_url = azurerm_storage_share.adminData[0].url
 
