@@ -308,7 +308,7 @@ resource "azurerm_storage_share_directory" "pgAdminStorageDirectory" {
 # }
 
 resource "azurerm_storage_share_file" "pgAdminSetMasterPasswordScript" {
-  count             = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  count             = terraform.workspace == "dev" || terraform.workspace == "stage" || terraform.workspace == "prod" ? 1 : 0
   name              = "set_master_password.sh"
   path              = "pgadmin/scripts"
   storage_share_url = azurerm_storage_share.adminData[0].url
