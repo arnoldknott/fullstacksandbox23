@@ -362,7 +362,7 @@ resource "azuread_application_password" "developerClientsSecret" {
 }
 
 resource "azuread_application" "postgresAdmin" {
-  count                   = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  count                   = terraform.workspace == "dev" || terraform.workspace == "stage" || terraform.workspace == "prod" ? 1 : 0
   display_name            = "${var.project_name}-pgAdmin-${terraform.workspace}"
   description             = "Postgres Admin (pgAdmin) for admin access to ${var.project_name} database"
   owners                  = [var.owner_object_id, var.developer_localhost_object_id, var.managed_identity_github_actions_object_id]
@@ -401,7 +401,7 @@ resource "azuread_application" "postgresAdmin" {
 }
 
 resource "azuread_application_redirect_uris" "postgresAdminOAuthRedirectURI" {
-  count          = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  count          = terraform.workspace == "dev" || terraform.workspace == "stage" || terraform.workspace == "prod" ? 1 : 0
   application_id = azuread_application.postgresAdmin[0].id
   type           = "Web"
 
@@ -419,13 +419,13 @@ resource "azuread_application_redirect_uris" "postgresAdminOAuthRedirectURI" {
 }
 
 resource "azuread_application_password" "postgresAdminSecret" {
-  count          = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  count          = terraform.workspace == "dev" || terraform.workspace == "stage" || terraform.workspace == "prod" ? 1 : 0
   application_id = azuread_application.postgresAdmin[0].id
   end_date       = "2046-01-31T23:59:59Z"
 }
 
 resource "azuread_service_principal" "postgresAdmin" {
-  count       = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  count       = terraform.workspace == "dev" || terraform.workspace == "stage" || terraform.workspace == "prod" ? 1 : 0
   client_id   = azuread_application.postgresAdmin[0].client_id
   description = "Service principal for pgAdmin access to ${var.project_name} database"
   owners      = [var.owner_object_id, var.developer_localhost_object_id, var.managed_identity_github_actions_object_id]
@@ -441,7 +441,7 @@ resource "azuread_service_principal" "postgresAdmin" {
 # Here's how to assign these roles to users and groups:
 # https://learn.microsoft.com/en-us/entra/identity-platform/howto-add-app-roles-in-apps#assign-users-and-groups-to-microsoft-entra-roles
 resource "azuread_application_app_role" "postgresAdminAppRoleAdmin" {
-  count                = terraform.workspace == "dev" || terraform.workspace == "stage" ? 1 : 0
+  count                = terraform.workspace == "dev" || terraform.workspace == "stage" || terraform.workspace == "prod" ? 1 : 0
   application_id       = azuread_application.postgresAdmin[0].id
   allowed_member_types = ["User"] # can also be ["User", "Application"], meaning 'User' or 'Application' on the Azure Tenant.
   description          = "Database Admins can manage the database via pgAdmin"
