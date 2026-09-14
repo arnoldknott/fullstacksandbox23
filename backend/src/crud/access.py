@@ -887,7 +887,19 @@ class AccessLoggingCRUD:
                     "last_modified_date"
                 ),
             )
-            .where(resource_id_column.in_(entity_ids))
+            .where(
+                resource_id_column.in_(entity_ids),
+                or_(
+                    and_(
+                        action_column == Action.own,
+                        status_code_column == 201,
+                    ),
+                    and_(
+                        action_column == Action.write,
+                        status_code_column == 200,
+                    ),
+                ),
+            )
             .group_by(resource_id_column)
         )
         response = await self._session().exec(statement)
