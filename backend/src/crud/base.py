@@ -1,7 +1,6 @@
 import logging
 import uuid
 from dataclasses import dataclass
-from datetime import datetime
 from os import makedirs, path, remove, rename
 from typing import (
     TYPE_CHECKING,
@@ -466,13 +465,7 @@ class BaseCRUD(
     ) -> EntityCollectionSnapshot:
         """Reads an optionally enriched entity collection and mutation cursor."""
         requested_includes = includes or set()
-        time_before_cursor = datetime.now()
-        # logger.info is silently dropped: root logger defaults to WARNING, see main.py TBD.
-        logger.warning("=== base - read_entity_snapshot - timeBeforeCursor ===")
-        logger.warning(time_before_cursor)
         cursor = await self.logging_crud.read_cursor()
-        logger.warning("=== base - read_entity_snapshot - timeAfterCursor ===")
-        logger.warning(datetime.now())
         order_by = None
         if sort == CollectionSort.creation_date:
             creation_date = self.logging_crud.creation_date_expression(
@@ -494,13 +487,9 @@ class BaseCRUD(
             child_ids = [hierarchy.child_id for hierarchy in hierarchies]
             filters = [col(self.model.id).in_(child_ids)]
 
-        logger.warning("=== base - read_entity_snapshot - timeBeforeEntities ===")
-        logger.warning(datetime.now())
         entities = await self.read(
             current_user=current_user, filters=filters, order_by=order_by
         )
-        logger.warning("=== base - read_entity_snapshot - timeAfterEntities ===")
-        logger.warning(datetime.now())
         entity_ids = [cast(Any, entity).id for entity in entities]
         date_includes = {
             CollectionInclude.creation_date,
@@ -511,8 +500,6 @@ class BaseCRUD(
             if requested_includes & date_includes
             else {}
         )
-        logger.warning("=== base - read_entity_snapshot - timeBeforeAccessRights ===")
-        logger.warning(datetime.now())
         access_rights = (
             await self.policy_crud.read_access_rights(
                 entity_ids=entity_ids,
@@ -522,8 +509,6 @@ class BaseCRUD(
             if CollectionInclude.access_right in requested_includes
             else {}
         )
-        logger.warning("=== base - read_entity_snapshot - timeAfterAccessRights ===")
-        logger.warning(datetime.now())
 
         if self.extended_model is None:
             raise ValueError(f"{self.model.__name__} has no Extended schema")
