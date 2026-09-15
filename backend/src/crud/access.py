@@ -903,13 +903,16 @@ class AccessLoggingCRUD:
             .group_by(resource_id_column)
         )
         time_before_metadata_query = datetime.now()
-        logger.info("=== access - read_entity_metadata - timeBeforeMetadataQuery ===")
-        logger.info(time_before_metadata_query)
+        # logger.info is silently dropped: root logger defaults to WARNING, see main.py TBD.
+        logger.warning(
+            "=== access - read_entity_metadata - timeBeforeMetadataQuery ==="
+        )
+        logger.warning(time_before_metadata_query)
         response = await self._session().exec(statement)
         results = response.all()
         time_after_metadata_query = datetime.now()
-        logger.info("=== access - read_entity_metadata - timeAfterMetadataQuery ===")
-        logger.info(time_after_metadata_query)
+        logger.warning("=== access - read_entity_metadata - timeAfterMetadataQuery ===")
+        logger.warning(time_after_metadata_query)
         return {
             entity_id: {
                 "creation_date": entity_creation_date,
