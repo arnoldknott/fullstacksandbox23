@@ -15,9 +15,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 		entities: [] as DemoResourceExtended[],
 		cursor: 0
 	};
-	const timeBeforeSnapshotAndPolicies = new Date();
-	console.log('=== demo-resource - socketio - timeBeforeSnapshotAndPolicies ===');
-	console.log(timeBeforeSnapshotAndPolicies);
 	const [snapshot, policiesResponse] = await Promise.all([
 		backendAPI.getSnapshot<DemoResourceExtended>(
 			sessionId,
@@ -25,9 +22,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 		),
 		backendAPI.get(sessionId, '/access/policy/resource/type/DemoResource')
 	]);
-	const timeAfterSnapshotAndPolicies = new Date();
-	console.log('=== demo-resource - socketio - timeAfterSnapshotAndPolicies ===');
-	console.log(timeAfterSnapshotAndPolicies);
 	if (!policiesResponse.ok) {
 		error(policiesResponse.status, 'DemoResource access policies could not be loaded');
 	}
@@ -39,28 +33,14 @@ export const load: PageServerLoad = async ({ locals }) => {
 	payload.entities = snapshot.entities;
 	payload.cursor = snapshot.cursor;
 
-	const timeBeforeMicrosoftTeams = new Date();
-	console.log('=== demo-resource - socketio - timeBeforeMicrosoftTeams ===');
-	console.log(timeBeforeMicrosoftTeams);
 	const myTeamsIdentities = await microsoftGraph.getAttachedTeamsAsIdentities(
 		sessionId,
 		locals.sessionData.currentUser?.azure_token_groups
 	);
-	const timeAfterMicrosoftTeams = new Date();
-	console.log('=== demo-resource - socketio - timeAfterMicrosoftTeams ===');
-	console.log(timeAfterMicrosoftTeams);
 	// all linked teams identities:
 	payload.identities.push(...myTeamsIdentities);
 	// all app internal identities (users, ueber-groups, groups, sub-groups, sub-sub-groups):
-	const timeBeforeAllIdentities = new Date();
-	console.log('=== demo-resource - socketio - timeBeforeAllIdentities ===');
-	console.log(timeBeforeAllIdentities);
 	const allIdentities = await backendAPI.getAllIdentities(sessionId);
-	const timeAfterAllIdentities = new Date();
-	console.log('=== demo-resource - socketio - timeAfterAllIdentities ===');
-	console.log(timeAfterAllIdentities);
-	console.log('=== demo-resource - socketio - timeTaken ===');
-	console.log(timeAfterAllIdentities.getTime() - timeBeforeSnapshotAndPolicies.getTime());
 	payload.identities.push(...allIdentities);
 	// one public identity:
 	payload.identities.push({
