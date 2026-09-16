@@ -183,24 +183,7 @@ async def provide_http_token_payload(
 ) -> Optional[dict]:
     """General function to get the access token payload"""
     try:
-        time_before_token_validation = datetime.now()
-        print(
-            "=== security - provide_http_token_payload - timeBeforeTokenValidation ==="
-        )
-        print(time_before_token_validation, flush=True)
-        payload = await get_azure_token_payload(token)
-        time_after_token_validation = datetime.now()
-        print(
-            "=== security - provide_http_token_payload - timeAfterTokenValidation ==="
-        )
-        print(time_after_token_validation, flush=True)
-        print("=== security - provide_http_token_payload - timeTaken ===")
-        print(
-            (time_after_token_validation - time_before_token_validation).total_seconds()
-            * 1000,
-            flush=True,
-        )
-        return payload
+        return await get_azure_token_payload(token)
     except Exception as err:
         logger.error(f"🔑 Token validation failed: ${err}")
         return None
@@ -502,24 +485,8 @@ class CurrentAccessToken:
             # if the user information stored in this class is not valid: get or sign-up the user.
             async with UserCRUD() as crud:
                 # TBD: this variable is misleading. The current_user here is not CurrentUserData, but a UserRead object!
-                time_before_user_sync = datetime.now()
-                print(
-                    "=== security - gets_or_signs_up_current_user - timeBeforeUserSync ==="
-                )
-                print(time_before_user_sync, flush=True)
                 current_user, status_code = await crud.azure_user_self_sign_up(
                     user_id, tenant_id, groups
-                )
-                time_after_user_sync = datetime.now()
-                print(
-                    "=== security - gets_or_signs_up_current_user - timeAfterUserSync ==="
-                )
-                print(time_after_user_sync, flush=True)
-                print("=== security - gets_or_signs_up_current_user - timeTaken ===")
-                print(
-                    (time_after_user_sync - time_before_user_sync).total_seconds()
-                    * 1000,
-                    flush=True,
                 )
                 if current_user:
                     # TBD: more important than returning: store the user in the class instance: attribute self.current_user
@@ -674,19 +641,7 @@ async def check_token_against_guards(
         if guards.groups is not None:
             for group in guards.groups:
                 await token.has_group(str(group))
-    time_before_current_user = datetime.now()
-    print("=== security - check_token_against_guards - timeBeforeCurrentUser ===")
-    print(time_before_current_user, flush=True)
-    current_user = await token.provides_current_user()
-    time_after_current_user = datetime.now()
-    print("=== security - check_token_against_guards - timeAfterCurrentUser ===")
-    print(time_after_current_user, flush=True)
-    print("=== security - check_token_against_guards - timeTaken ===")
-    print(
-        (time_after_current_user - time_before_current_user).total_seconds() * 1000,
-        flush=True,
-    )
-    return current_user
+    return await token.provides_current_user()
 
 
 # endregion: Specific checks
