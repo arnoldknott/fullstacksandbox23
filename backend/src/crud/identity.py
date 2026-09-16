@@ -1,5 +1,4 @@
 import logging
-from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
 
@@ -119,20 +118,8 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         try:
             # Note: current_user is not available here during self-sign-up! So no access control here!
             statement = select(User).where(User.azure_user_id == azure_user_id)
-            time_before_user_lookup = datetime.now()
-            print("=== identity - azure_user_self_sign_up - timeBeforeUserLookup ===")
-            print(time_before_user_lookup, flush=True)
             results = await session.exec(statement)
             current_user = results.first()
-            time_after_user_lookup = datetime.now()
-            print("=== identity - azure_user_self_sign_up - timeAfterUserLookup ===")
-            print(time_after_user_lookup, flush=True)
-            print("=== identity - azure_user_self_sign_up - userLookupTimeTaken ===")
-            print(
-                (time_after_user_lookup - time_before_user_lookup).total_seconds()
-                * 1000,
-                flush=True,
-            )
             if current_user is None or not current_user.is_active:
                 database_user: Optional[User] = None
                 user_account: Optional[UserAccount] = None
@@ -233,21 +220,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                     identity_id=current_user.id,
                     status_code=200,
                 )
-                time_before_access_log = datetime.now()
-                print(
-                    "=== identity - azure_user_self_sign_up - timeBeforeAccessLog ==="
-                )
-                print(time_before_access_log, flush=True)
                 await self.logging_crud.create(access_log)
-                time_after_access_log = datetime.now()
-                print("=== identity - azure_user_self_sign_up - timeAfterAccessLog ===")
-                print(time_after_access_log, flush=True)
-                print("=== identity - azure_user_self_sign_up - accessLogTimeTaken ===")
-                print(
-                    (time_after_access_log - time_before_access_log).total_seconds()
-                    * 1000,
-                    flush=True,
-                )
                 current_user_data = CurrentUserData(
                     user_id=current_user.id,
                     azure_token_roles=[],  # Roles are coming from the token - but this information is not available here!
@@ -285,19 +258,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             # TBD: add access control:
             # members of groups need to have read access to the group -
             # even if it exists already!
-            time_before_group_lookup = datetime.now()
-            print("=== identity - azure_user_self_sign_up - timeBeforeGroupLookup ===")
-            print(time_before_group_lookup, flush=True)
             await group_crud.create_if_not_exists(azure_group_id, azure_tenant_id)
-            time_after_group_lookup = datetime.now()
-            print("=== identity - azure_user_self_sign_up - timeAfterGroupLookup ===")
-            print(time_after_group_lookup, flush=True)
-            print("=== identity - azure_user_self_sign_up - groupLookupTimeTaken ===")
-            print(
-                (time_after_group_lookup - time_before_group_lookup).total_seconds()
-                * 1000,
-                flush=True,
-            )
             # try:
             #     group_crud.read_by_id(azure_group_id)
             # except HTTPException as err:
@@ -333,24 +294,10 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             user_group_link = []
             # async with self.hierarchy_CRUD as hierarchy_CRUD:
             hierarchy_CRUD = IdentityHierarchyCRUD(session=session)
-            time_before_hierarchy_read = datetime.now()
-            print(
-                "=== identity - azure_user_self_sign_up - timeBeforeHierarchyRead ==="
-            )
-            print(time_before_hierarchy_read, flush=True)
             user_group_link = await hierarchy_CRUD.read_for_self_sync(
                 parent_id=azure_group_id,
                 child_id=current_user_data.user_id,
                 current_user=current_user_data,
-            )
-            time_after_hierarchy_read = datetime.now()
-            print("=== identity - azure_user_self_sign_up - timeAfterHierarchyRead ===")
-            print(time_after_hierarchy_read, flush=True)
-            print("=== identity - azure_user_self_sign_up - hierarchyReadTimeTaken ===")
-            print(
-                (time_after_hierarchy_read - time_before_hierarchy_read).total_seconds()
-                * 1000,
-                flush=True,
             )
             if not user_group_link:
                 access_policy = AccessPolicyCreate(
@@ -369,11 +316,6 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                 logger.info("User got linked to group in database.")
 
         # # remove hierarchy links for groups, that are no longer in the token:
-        time_before_stale_group_cleanup = datetime.now()
-        print(
-            "=== identity - azure_user_self_sign_up - timeBeforeStaleGroupCleanup ==="
-        )
-        print(time_before_stale_group_cleanup, flush=True)
         for linked_group in current_user.azure_groups or []:
             if linked_group.id is not None and linked_group.id not in group_uuids:
                 hierarchy_CRUD = self.hierarchy_CRUD(session=session)
@@ -382,37 +324,13 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                     child_id=current_user_data.user_id,
                     current_user=current_user_data,
                 )
-        time_after_stale_group_cleanup = datetime.now()
-        print("=== identity - azure_user_self_sign_up - timeAfterStaleGroupCleanup ===")
-        print(time_after_stale_group_cleanup, flush=True)
-        print("=== identity - azure_user_self_sign_up - staleGroupCleanupTimeTaken ===")
-        print(
-            (
-                time_after_stale_group_cleanup - time_before_stale_group_cleanup
-            ).total_seconds()
-            * 1000,
-            flush=True,
-        )
 
         # read again after the relationship to the groups is created:
         # TBD: put this one back in - but now with the current_user parameter!
         # current_user = await self.read_by_azure_user_id(
         #     azure_user_id  # , update_last_access
         # )
-        time_before_model_validation = datetime.now()
-        print("=== identity - azure_user_self_sign_up - timeBeforeModelValidation ===")
-        print(time_before_model_validation, flush=True)
-        result = UserRead.model_validate(current_user), response_status_code
-        time_after_model_validation = datetime.now()
-        print("=== identity - azure_user_self_sign_up - timeAfterModelValidation ===")
-        print(time_after_model_validation, flush=True)
-        print("=== identity - azure_user_self_sign_up - modelValidationTimeTaken ===")
-        print(
-            (time_after_model_validation - time_before_model_validation).total_seconds()
-            * 1000,
-            flush=True,
-        )
-        return result
+        return UserRead.model_validate(current_user), response_status_code
 
     async def create_invited_azure_user(
         self,
