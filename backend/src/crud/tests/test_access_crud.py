@@ -19,6 +19,7 @@ from models.access import (
     AccessPolicyCreate,
     AccessPolicyDelete,
     AccessPolicyUpdate,
+    IdentityHierarchy,
 )
 from models.demo_resource import DemoResource
 from models.identity import SubGroup, SubSubGroup, User
@@ -2545,6 +2546,46 @@ async def test_user_deletes_resource_hierarchy_child_without_owner_rights(
 # endregion ResourceHierarchy CRUD tests
 
 # region IdentityHierarchy CRUD tests
+
+
+@pytest.mark.anyio
+async def test_read_identity_hierarchy_for_self_sync_uses_exact_link():
+    session = Mock(spec=AsyncSession)
+    response = Mock()
+    parent_id = uuid.uuid4()
+    child_id = uuid.uuid4()
+    relation = IdentityHierarchy(parent_id=parent_id, child_id=child_id, inherit=True)
+    response.all.return_value = [relation]
+    session.exec = AsyncMock(return_value=response)
+    current_user = CurrentUserData(
+        user_id=child_id,
+        azure_token_groups=[parent_id],
+    )
+
+    relations = await IdentityHierarchyCRUD(session=session).read_for_self_sync(
+        current_user, parent_id, child_id
+    )
+
+    assert len(relations) == 1
+    assert relations[0].parent_id == parent_id
+    assert relations[0].child_id == child_id
+    session.exec.assert_awaited_once()
+
+
+@pytest.mark.anyio
+async def test_read_identity_hierarchy_for_self_sync_rejects_unclaimed_parent():
+    session = Mock(spec=AsyncSession)
+    session.exec = AsyncMock()
+    parent_id = uuid.uuid4()
+    child_id = uuid.uuid4()
+    current_user = CurrentUserData(user_id=child_id, azure_token_groups=[])
+
+    relations = await IdentityHierarchyCRUD(session=session).read_for_self_sync(
+        current_user, parent_id, child_id
+    )
+
+    assert relations == []
+    session.exec.assert_not_awaited()
 
 
 @pytest.mark.anyio
