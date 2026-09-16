@@ -1605,3 +1605,23 @@ class IdentityHierarchyCRUD(
         super().__init__(
             IdentityHierarchy, IdentityHierarchy, IdentityHierarchyRead, session=session
         )
+
+    async def read_for_self_sync(
+        self,
+        current_user: CurrentUserData,
+        parent_id: UUID,
+        child_id: UUID,
+    ) -> List[IdentityHierarchyRead]:
+        """Reads the exact Azure-group membership link for token-backed self-sync."""
+        if child_id != current_user.user_id:
+            return []
+        if parent_id not in (current_user.azure_token_groups or []):
+            return []
+
+        response = await self._session().exec(
+            select(IdentityHierarchy).where(
+                IdentityHierarchy.parent_id == parent_id,
+                IdentityHierarchy.child_id == child_id,
+            )
+        )
+        return [self.read_model.model_validate(relation) for relation in response.all()]
