@@ -178,9 +178,15 @@ class BackendAPI extends BaseAPI {
 
 	async getAllIdentities(sessionId: string): Promise<Identity[]> {
 		const allIdentities: Identity[] = [];
+		const timeBeforeAllIdentities = new Date();
+		console.log('=== backendAPI - getAllIdentities - timeBeforeAllIdentities ===');
+		console.log(timeBeforeAllIdentities);
 		// const allLinkedUsers: User[] = [];
 
 		const addAnyGroupType = async (endpoint: string) => {
+			const timeBeforeEndpoint = new Date();
+			console.log(`=== backendAPI - getAllIdentities - timeBefore ${endpoint} ===`);
+			console.log(timeBeforeEndpoint);
 			const anyGroupResponse = await this.get(sessionId, endpoint);
 			if (anyGroupResponse.status === 200) {
 				const allAnyGroups: UeberGroup[] = await anyGroupResponse.json();
@@ -217,11 +223,19 @@ class BackendAPI extends BaseAPI {
 					)
 				);
 			}
+			const timeAfterEndpoint = new Date();
+			console.log(`=== backendAPI - getAllIdentities - timeAfter ${endpoint} ===`);
+			console.log(timeAfterEndpoint);
 		};
 		await addAnyGroupType('/uebergroup/');
 		await addAnyGroupType('/group/');
 		await addAnyGroupType('/subgroup/');
 		await addAnyGroupType('/subsubgroup/');
+		const timeAfterAllIdentities = new Date();
+		console.log('=== backendAPI - getAllIdentities - timeAfterAllIdentities ===');
+		console.log(timeAfterAllIdentities);
+		console.log('=== backendAPI - getAllIdentities - timeTaken ===');
+		console.log(timeAfterAllIdentities.getTime() - timeBeforeAllIdentities.getTime());
 
 		return allIdentities;
 	}
