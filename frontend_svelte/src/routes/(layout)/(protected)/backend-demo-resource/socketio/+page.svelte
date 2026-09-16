@@ -68,6 +68,9 @@
 	);
 
 	onMount(() => {
+		const timeBeforeSocketIOSetup = new Date();
+		console.log('=== demo-resource - socketio - client timeBeforeSocketIOSetup ===');
+		console.log(timeBeforeSocketIOSetup);
 		const connection: SocketioConnection = {
 			namespace: '/demo-resource',
 			sessionId: page.data.session.sessionId,
@@ -98,6 +101,11 @@
 		socketio.createUserHasSpecificAccessRightSelection('owner', Action.OWN, 'sortedDate');
 		socketio.createUserHasSpecificAccessRightSelection('write', Action.WRITE, 'sortedDate');
 		socketio.createUserHasSpecificAccessRightSelection('read', Action.READ, 'sortedDate');
+		const timeAfterSocketIOSetup = new Date();
+		console.log('=== demo-resource - socketio - client timeAfterSocketIOSetup ===');
+		console.log(timeAfterSocketIOSetup);
+		console.log('=== demo-resource - socketio - client timeTaken ===');
+		console.log(timeAfterSocketIOSetup.getTime() - timeBeforeSocketIOSetup.getTime());
 		// socketio.sortSelection('owner', 'creation_date', false);
 		// socketio.sortSelection('write', 'creation_date', false);
 		// socketio.sortSelection('read', 'creation_date', false);
