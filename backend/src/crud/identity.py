@@ -38,6 +38,7 @@ from models.identity import (  # AzureGroupUserLink,
 )
 
 # from .azure_group import AzureGroupCRUD
+from .access import IdentityHierarchyCRUD
 from .base import BaseCRUD
 
 logger = logging.getLogger(__name__)
@@ -292,8 +293,8 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             # User needs write access to the group to be able to add itself to the group:
             user_group_link = []
             # async with self.hierarchy_CRUD as hierarchy_CRUD:
-            hierarchy_CRUD = self.hierarchy_CRUD(session=session)
-            user_group_link = await hierarchy_CRUD.read(
+            hierarchy_CRUD = IdentityHierarchyCRUD(session=session)
+            user_group_link = await hierarchy_CRUD.read_for_self_sync(
                 parent_id=azure_group_id,
                 child_id=current_user_data.user_id,
                 current_user=current_user_data,
