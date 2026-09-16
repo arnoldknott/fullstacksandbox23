@@ -902,14 +902,8 @@ class AccessLoggingCRUD:
             )
             .group_by(resource_id_column)
         )
-        time_before_metadata_query = datetime.now()
-        logger.info("=== access - read_entity_metadata - timeBeforeMetadataQuery ===")
-        logger.info(time_before_metadata_query)
         response = await self._session().exec(statement)
         results = response.all()
-        time_after_metadata_query = datetime.now()
-        logger.info("=== access - read_entity_metadata - timeAfterMetadataQuery ===")
-        logger.info(time_after_metadata_query)
         return {
             entity_id: {
                 "creation_date": entity_creation_date,
