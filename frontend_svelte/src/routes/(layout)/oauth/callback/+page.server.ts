@@ -7,7 +7,7 @@ import { backendAPI } from '$lib/server/apis/backendApi';
 import { microsoftGraph } from '$lib/server/apis/msgraph';
 import { redisCache } from '$lib/server/cache';
 import AppConfig from '$lib/server/config';
-import { msalAuthProvider } from '$lib/server/oauth';
+import { msalAuthProvider } from '$lib/server/oauth/microsoft';
 import { SessionStatus } from '$lib/session';
 
 import type { PageServerLoad } from './$types';

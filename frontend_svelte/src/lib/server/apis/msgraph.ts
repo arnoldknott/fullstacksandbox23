@@ -3,7 +3,7 @@ import type { Team } from '@microsoft/microsoft-graph-types';
 
 import { IdentityType } from '$lib/accessHandler';
 import AppConfig from '$lib/server/config';
-import { msalAuthProvider } from '$lib/server/oauth';
+import { msalAuthProvider } from '$lib/server/oauth/microsoft';
 import type { Identity } from '$lib/types';
 
 import { BaseAPI, type RequestBody } from './base';

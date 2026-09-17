@@ -1,4 +1,4 @@
-import { type BaseOauthProvider } from '$lib/server/oauth';
+import { type BaseOauthProvider } from '$lib/server/oauth/microsoft';
 
 export type RequestBody =
 	| string
