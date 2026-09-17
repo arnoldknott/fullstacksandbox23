@@ -5,7 +5,7 @@ import { backendAPI } from '$lib/server/apis/backendApi';
 import { microsoftGraph } from '$lib/server/apis/msgraph';
 import type { UeberGroupExtended } from '$lib/types';
 
-import type { PageServerLoad } from '../$types';
+import type { PageServerLoad } from './$types';
 // const getAllMicrosoftTeams = async (sessionId: string, azureGroups: string[]) => {
 
 // }
