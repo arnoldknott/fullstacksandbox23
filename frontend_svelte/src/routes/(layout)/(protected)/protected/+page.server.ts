@@ -1,5 +1,5 @@
 import AppConfig from '$lib/server/config';
-import { msalAuthProvider } from '$lib/server/oauth';
+import { msalAuthProvider } from '$lib/server/oauth/microsoft';
 
 import type { PageServerLoad } from './$types';
 

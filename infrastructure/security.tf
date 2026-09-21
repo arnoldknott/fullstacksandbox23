@@ -163,8 +163,9 @@ resource "azurerm_key_vault" "keyVault" {
       "Get"
     ]
 
+    # Discover current/previous authentication-cache secret versions at startup.
     secret_permissions = [
-      "Get"
+      "Get", "List"
     ]
   }
 
@@ -180,8 +181,9 @@ resource "azurerm_key_vault" "keyVault" {
       "Get"
     ]
 
+    # Discover current/previous authentication-cache secret versions at startup.
     secret_permissions = [
-      "Get"
+      "Get", "List"
     ]
   }
 

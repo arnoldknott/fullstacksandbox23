@@ -16,8 +16,8 @@ import type { RedisClientType } from 'redis';
 
 import { building } from '$app/environment';
 
-import { redisCache } from './cache';
-import AppConfig from './config';
+import { redisCache } from '../cache';
+import AppConfig from '../config';
 
 const appConfig = await AppConfig.getInstance();
 const scopesBackend = [

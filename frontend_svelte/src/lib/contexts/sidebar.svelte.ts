@@ -186,19 +186,19 @@ export const initialProtectedSidebarLinks: SidebarItemContent[] = $state([
 			},
 			{
 				name: 'Identities',
-				// pathname: resolve('/(layout)/(protected)/dashboard/identities'),
+				pathname: resolve('/(layout)/(protected)/identities'),
 				icon: 'icon-[material-symbols--identity-platform-outline-rounded]',
 				id: 'identities',
 				items: [
 					{
 						name: 'All identities',
-						pathname: resolve('/(layout)/(protected)/identities'),
+						pathname: resolve('/(layout)/(protected)/identities/all'),
 						icon: 'icon-[mdi--account-multiple-outline]',
 						id: 'identities-all'
 					},
 					{
 						name: 'Microsoft',
-						pathname: resolve('/(layout)/(protected)/msgraph'),
+						pathname: resolve('/(layout)/(protected)/identities/msgraph'),
 						icon: 'icon-[fluent--person-20-filled]',
 						id: 'identities-microsoft'
 					}

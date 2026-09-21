@@ -1,6 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 
-// import { signOut } from '$lib/server/oauth';
+// import { signOut } from '$lib/server/oauth/microsoft';
 import { redisCache } from '$lib/server/cache';
 // import {redirect} from '@sveltejs/kit';
 import AppConfig from '$lib/server/config';
