@@ -2,7 +2,7 @@ import { v4 } from 'uuid';
 
 import { redisCache } from '$lib/server/cache';
 import AppConfig from '$lib/server/config';
-import { msalAuthProvider } from '$lib/server/oauth';
+import { msalAuthProvider } from '$lib/server/oauth/microsoft';
 import { SessionStatus } from '$lib/session';
 // import { redirect } from '@sveltejs/kit';
 import type { Session } from '$lib/types';

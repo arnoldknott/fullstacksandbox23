@@ -1,5 +1,10 @@
 {
   "servers": {
+    "flyonui-mcp": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "flyonui-mcp"]
+    },
     "SvelteMCP": {
       "url": "https://mcp.svelte.dev/mcp",
       "type": "http",

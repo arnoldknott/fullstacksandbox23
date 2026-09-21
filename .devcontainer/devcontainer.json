@@ -39,6 +39,15 @@
   },
   "customizations": {
     "vscode": {
+      "mcp": {
+        "servers": {
+          "flyonui-mcp": {
+            "type": "stdio",
+            "command": "npx",
+            "args": ["-y", "flyonui-mcp"]
+          }
+        }
+      },
       "settings": {
         "task.allowAutomaticTasks": "on"
       },

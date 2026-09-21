@@ -26,12 +26,12 @@
 			name: 'All Identities',
 			description:
 				'Identities: various kinds of groups and relationship to users from the backend API',
-			url: '/identities'
+			url: '/identities/all'
 		},
 		{
 			name: 'Microsoft Graph',
 			description: 'The Microsoft Graph API endpoint, all data in json',
-			url: '/msgraph'
+			url: '/identities/msgraph'
 		}
 	];
 	const services = [

@@ -1,4 +1,4 @@
-// import { msalAuthProvider } from '$lib/server/oauth';
+// import { msalAuthProvider } from '$lib/server/oauth/microsoft';
 // import AppConfig from '$lib/server/config';
 // import { error } from '@sveltejs/kit';
 import { backendAPI } from '$lib/server/apis/backendApi';
