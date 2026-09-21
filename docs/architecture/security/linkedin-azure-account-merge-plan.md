@@ -4,7 +4,7 @@ Status: implementation plan; application changes are not implemented by this doc
 
 This is the follow-up to the [LinkedIn authentication and encryption plan](./linkedin-account-linking-plan.md). It was extracted so that login, access, and encryption (Stages A–D and F of the main plan) can ship first. It specifies first-time attachment and existing-user merge across identity providers.
 
-Write this provider-generically: Microsoft and LinkedIn are the first two providers, but the same merge operation must serve additional providers without rework. This is the only work that touches the inner authorization layer (identity-reference reassignment).
+Write this provider-generically: Microsoft and LinkedIn are the first two providers, but the same merge operation must serve additional providers without rework. This is the account-merge exception defined by the [security change boundary](../../../AGENTS.md#security-layers-and-change-boundaries).
 
 ## Dependencies
 
