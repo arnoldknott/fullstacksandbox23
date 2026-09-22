@@ -22,10 +22,10 @@ from core.databases import postgres_async_engine  # should be SQLite here only!
 from core.security import (
     CurrentAccessToken,
     Guards,
+    MicrosoftGuard,
     provide_http_token_payload,
-    provide_http_token_payload_optional,
 )
-from core.types import Action, CurrentUserData, IdentityType, ResourceType
+from core.types import Action, CurrentUserData, GuardTypes, IdentityType, ResourceType
 from crud.access import (
     AccessLoggingCRUD,
     AccessPolicyCRUD,
@@ -151,9 +151,6 @@ def app_override_provide_http_token_payload(
     fastapi_app.dependency_overrides[provide_http_token_payload] = (
         lambda: mocked_provide_http_token_payload
     )
-    fastapi_app.dependency_overrides[provide_http_token_payload_optional] = (
-        lambda: mocked_provide_http_token_payload
-    )
     yield fastapi_app
     fastapi_app.dependency_overrides = {}
 
@@ -169,7 +166,7 @@ async def current_test_user(
 
 @pytest.fixture(scope="function")
 def mock_guards() -> Generator[
-    Callable[[List[str], List[str], List[UUID]], Guards],
+    Callable[[List[str], List[str], List[UUID]], GuardTypes],
     None,
     None,
 ]:
@@ -180,7 +177,7 @@ def mock_guards() -> Generator[
         roles: List[str] = [],
         groups: List[UUID] = [],
     ):
-        return Guards(scopes=scopes, roles=roles, groups=groups)
+        return Guards(MicrosoftGuard(scopes=scopes, roles=roles, groups=groups))()
 
     yield _mock_guards
 

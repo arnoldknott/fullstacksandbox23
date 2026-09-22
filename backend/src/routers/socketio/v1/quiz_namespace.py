@@ -1,6 +1,7 @@
 import logging
 
-from core.types import EventGuard, GuardTypes
+from core.security import AllowAnonymous, Guards, MicrosoftGuard
+from core.types import EventGuard
 from crud.quiz import (
     MessageCRUD,
     NumericalCRUD,
@@ -17,22 +18,30 @@ from .base import BaseNamespace
 logger = logging.getLogger(__name__)
 
 question_guards = [
-    EventGuard(event="connect", guards=None),  # GuardTypes(),  # allow public access
+    EventGuard(event="connect", guards=Guards(MicrosoftGuard(), AllowAnonymous())()),
     EventGuard(
         event="submit:create",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="submit:update",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="delete",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="share",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
 ]
 
@@ -55,21 +64,27 @@ class QuestionNamespace(BaseNamespace):
 
 
 message_guards = [
-    EventGuard(event="connect", guards=None),  # GuardTypes(),  # allow public access
+    EventGuard(event="connect", guards=Guards(MicrosoftGuard(), AllowAnonymous())()),
     EventGuard(
-        event="submit:create", guards=None  # GuardTypes(),  # allow public access
+        event="submit:create", guards=Guards(MicrosoftGuard(), AllowAnonymous())()
     ),
     EventGuard(
         event="submit:update",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="delete",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="share",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
 ]
 
@@ -101,21 +116,27 @@ class MessageNamespace(BaseNamespace):
 
 
 numerical_guards = [
-    EventGuard(event="connect", guards=None),  # GuardTypes(),  # allow public access
+    EventGuard(event="connect", guards=Guards(MicrosoftGuard(), AllowAnonymous())()),
     EventGuard(
-        event="submit:create", guards=None  # GuardTypes(),  # allow public access
+        event="submit:create", guards=Guards(MicrosoftGuard(), AllowAnonymous())()
     ),
     EventGuard(
         event="submit:update",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="delete",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="share",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
 ]
 

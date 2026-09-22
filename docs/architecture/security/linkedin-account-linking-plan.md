@@ -1,6 +1,6 @@
 # LinkedIn authentication, account linking, and credential encryption
 
-Status: implementation plan; application changes are not implemented by this document.
+Status: Stage A guard migration is implemented and validated. LinkedIn login/signup, account linking/merge, and cache encryption remain subsequent stages.
 
 Agreed scope recorded on 2026-09-20; encryption and rotation decisions updated on 2026-09-21. This is the shared implementation handoff for frontend, backend, database, and Redis changes. Keep shared login/encryption decisions here and account-merge decisions in the linked merge plan, rather than maintaining separate plans in each application.
 
@@ -133,16 +133,25 @@ Preserve the [snapshot and incremental Socket.IO contract](../data-transfer/inte
 
 ## 5. Implementation stages
 
-### A. Policy types, provider dispatch, and compatibility tests
+### A. Policy types, provider dispatch, and guard migration
 
 Files: `core/types.py`, `core/security.py`, request `BaseView`, socket `BaseNamespace`.
 
 - Implement provider alternatives, callable `Guards`, and shared evaluation with a minimal verified-provider/claims context.
-- Keep existing declarations working through a small migration adapter or migrate all call sites together. Old constructors or missing event declarations must not silently become public.
+- Migrate all application guard declarations together. Do not retain old keyword constructors or implicit `guards=None` policies. Empty policies and missing event declarations fail closed; anonymous admission requires `AllowAnonymous()` explicitly.
 - Separate policy configuration from validation and user lookup; keep current endpoint layering.
 - Add mocked tests before enabling LinkedIn: provider selection, wrong issuer/audience/signature, expiry, exact scope membership, roles/groups, anonymous compatibility and socket cache lookup.
 
 Completion: existing Microsoft/anonymous tests pass and both transports evaluate the new representation. LinkedIn database signup is not yet required.
+
+Implementation notes:
+- The `authentication/` package contains identity-provider token validation helpers in `azure.py` and `linkedin.py`, with shared issuer dispatch and public-key caching in `base.py`. `security.py` owns provider requirement checks, guard evaluation, and internal user resolution. Guard evaluation returns `GuardOutcome.AUTHENTICATED` or `GuardOutcome.ANONYMOUS` on admission and raises on rejection; it never uses `False` to mean successful anonymous admission.
+- Endpoint dependencies inline single-alternative policies, for example `Depends(Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"])))`. Multiple-alternative policies may use named declarations. Both return `GuardTypes` configuration. Router-wide dependencies use the same policy's `check_http` method to enforce admission without database user resolution.
+- Socket event declarations use `Guards(...)()` for the same configuration. Read, subscribe, and replay reuse the connect policy; link/unlink retain the documented submit aliases.
+- Missing/invalid credentials require an explicit anonymous alternative. Verified identities failing provider requirements never fall back to anonymous.
+- Provider dispatch and LinkedIn signature/claim validation have synthetic signed-token tests. Runtime extraction still uses Microsoft until Stages B–C connect provider signup and frontend acquisition; no live endpoint enables LinkedIn yet.
+- Validation in the test Docker Compose stack: the combined security, REST, and Socket.IO run recorded `894 passed, 4 failed, 2 deselected`; the four failures were corrected and the targeted rerun recorded `4 passed`. Two live Microsoft key-fetch tests were excluded. Ruff and production-code Pyright checks passed. Missing/invalid bearer credentials now consistently use the `Invalid token.` error detail with status 401 on protected routes.
+
 
 ### B. Minimal user identity and signup
 
@@ -182,7 +191,7 @@ Completion: a real LinkedIn login reaches an authorized request and socket conne
 Files: matrix endpoints/namespaces, `core/fastapi.py`.
 
 - Verify existing ownership and filtering behavior against the matrix under the [inner-layer change boundary](../../../AGENTS.md#security-layers-and-change-boundaries).
-- Apply named guard configurations and remove Azure-specific optional extraction only from the migrated endpoints; leave router-level Microsoft guards in place for Microsoft-only routers.
+- Extend the named guard configurations with LinkedIn according to the matrix; retain router-level Microsoft guards on Microsoft-only routers. Stage A already replaces optional-token admission with explicit `AllowAnonymous()` policies.
 - Ensure authenticated creation assigns `Action.own` to the internal user, including creation under a publicly writable question. The public-creation branch must not discard valid caller identity.
 - Preserve anonymous creation without a shared owner grant; update/delete remain blocked at the outer layer.
 - Permit ownership-based sharing/hierarchy operations through existing access checks; retain checks on parent and child resources.

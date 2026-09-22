@@ -143,15 +143,12 @@ class BaseNamespace(
             raise ConnectionRefusedError("Authorization failed.")
         return token_payload
 
-    def _get_event_guards(self, event: str) -> Optional[GuardTypes]:
-        """Get the guards for the event."""
-        if self.event_guards:
-            guard = next(
-                (guard.guards for guard in self.event_guards if guard.event == event),
-                None,
-            )
-            return guard
-        return None
+    def _get_event_guards(self, event: str) -> GuardTypes:
+        """Every admitted event must have a declared policy."""
+        for declaration in self.event_guards:
+            if declaration.event == event:
+                return declaration.guards
+        raise ConnectionRefusedError("Event has no admission policy.")
 
     async def _get_session_data(self, sid: str) -> SocketIoSessionData:
         """Get socketio session data from the socketio server."""
@@ -213,46 +210,17 @@ class BaseNamespace(
     ) -> Optional[CurrentUserData]:
         """Check the auth token against the event guards."""
 
-        current_user = None
-
         guards = self._get_event_guards(guard_name)
-        ### This solution works for none-protected events, but a user is logged in anyways:
-        # try:
-        #     token_payload = await self._get_token_payload_if_authenticated(
-        #         session["session_id"]
-        #     )
-        #     current_user = await check_token_against_guards(token_payload, guards)
-        # except Exception as _error:
-        #     logger.info(f"🧦 Client with session id {sid} authenticated.")
-
-        # if guards is not None and current_user is None:
-        #     logger.error(
-        #         f"🧦 Client with session id {sid} is missing current_user data."
-        #     )
-        #     self._emit_status(sid, {"error": "No Current User found."})
-        # return current_user
-
         try:
             session_id = await self._get_session_id(sid)
             if session_id is None:
                 raise ConnectionRefusedError("No session id.")
             token_payload = await self._get_token_payload_if_authenticated(session_id)
-            current_user = await check_token_against_guards(token_payload, guards)
-        except Exception as error:
-            if guards is not None:
-                if current_user is None:
-                    logger.error(
-                        # f"🧦 Client with session id {sid} is missing current_user data."
-                        f"🧦 Failed to authenticate client {sid}."
-                    )
-                    # self._emit_status(sid, {"error": "No Current User found."})
-                    # await self._emit_status(sid, {"error": str(error)})
-                raise error
-            else:
-                logger.info(
-                    f"🧦 Client {sid} accessing namespace {self.namespace} publically."
-                )
-        return current_user
+        except Exception:
+            if not guards.allows_anonymous:
+                raise
+            token_payload = None
+        return await check_token_against_guards(token_payload, guards)
 
     async def _get_all(  # noqa: C901
         self,
@@ -489,6 +457,7 @@ class BaseNamespace(
             "query_strings": session_query_strings,
         }
         auth_rejected = False
+        token_verified = False
         try:
             # TBD: catch and handle an expired token gracefully and return something to the client on a different message channel,
             # so it can initiate the authentication process and come back with a new session id
@@ -498,6 +467,7 @@ class BaseNamespace(
             token_payload = await self._get_token_payload_if_authenticated(
                 auth_session_id
             )
+            token_verified = True
             current_user = await check_token_against_guards(token_payload, guards)
             session_data["user_name"] = (token_payload or {}).get("name", "")
             session_data["session_id"] = auth_session_id
@@ -516,7 +486,7 @@ class BaseNamespace(
                 f"🧦 Client authenticated to access protected namespace {self.namespace}."
             )
         except Exception:
-            if guards is not None:
+            if token_verified or not guards.allows_anonymous:
                 auth_rejected = True
                 logger.error(f"🧦 Client with session id {sid} failed to authenticate.")
                 raise ConnectionRefusedError("Authorization failed.")
@@ -776,23 +746,9 @@ class BaseNamespace(
                 else:
                     event_name = "submit:create"
 
-                # Get guards for this event
-                guards = self._get_event_guards(event_name)
-
-                # Try to authenticate
-                current_user = None
-                try:
-                    current_user = await self._get_current_user_and_check_guard(
-                        sid, event_name
-                    )
-                except Exception as error:
-                    # If guards exist, authentication is required - fail
-                    if guards is not None:
-                        logger.error(f"🧦 Failed authenticating {sid}.")
-                        # await self._emit_status(sid, {"error": str(error)})
-                        raise error
-                    # If guards=None, continue without authentication
-                    logger.info(f"Public access (no authentication) for {event_name}")
+                current_user = await self._get_current_user_and_check_guard(
+                    sid, event_name
+                )
 
                 try:
                     database_object = None

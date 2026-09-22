@@ -4,6 +4,12 @@ Redis supports cached sessions and tokens, Socket.IO coordination, and Celery tr
 
 This document owns the agreed encryption contract and operational requirements. Encryption/key-loading work is planned, not implemented by this documentation. Follow the [data-storage policy](../architecture/security/README.md#data-storage-policy) to decide what may be retained; encryption never makes prohibited third-party resource data eligible for storage. Implementation stages and tests are tracked in [Stage F](../architecture/security/linkedin-account-linking-plan.md#f-compatible-encrypted-cache-persistence).
 
+## Public signing-key caching
+
+The backend caches JSON Web Key Sets (JWKS), used to verify provider signatures, as Redis JSON documents at `jwks:microsoft` and `jwks:linkedin`. These public verification keys contain no user tokens or profile data and remain unencrypted. They are separate from the user credential partitions described below.
+
+`core/authentication/base.py` implements cache-first retrieval; each provider supplies its trusted discovery/key endpoint and partition. A cache miss fetches and stores the keys. `no_cache=True` explicitly fetches a replacement; malformed responses or failed requests do not overwrite existing keys. Both providers retry token validation once with fresh keys after a validation failure. There is no added expiry policy: this preserves Microsoft's existing on-demand refresh behavior. Microsoft retains its existing broader retry on retrieval/validation exceptions; LinkedIn's retry is limited to token-validation errors.
+
 ## Encryption scope
 
 | Data | Treatment |

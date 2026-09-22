@@ -1,8 +1,9 @@
+from collections.abc import Sequence
 from enum import Enum
-from typing import List, Optional
+from typing import Annotated, List, Literal, Optional
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
 from sqlmodel import SQLModel
 
 
@@ -16,13 +17,70 @@ def get_all_models(SQLModel=SQLModel):
     return all_models
 
 
-# TBD: consider moving this to src/models/access.py?
-class GuardTypes(BaseModel):
-    """Protectors for the routes"""
+class IdentityProvider(str, Enum):
+    """Provider verified by the outer authentication layer."""
 
-    scopes: Optional[List[str]] = []
-    roles: Optional[List[str]] = []
-    groups: Optional[List[UUID]] = []
+    microsoft = "microsoft"
+    linkedin = "linkedin"
+
+
+class GuardOutcome(str, Enum):
+    """Successful outer admission; rejection raises instead of returning a value."""
+
+    AUTHENTICATED = "authenticated"
+    ANONYMOUS = "anonymous"
+
+
+class MicrosoftGuard(BaseModel):
+    """All configured Microsoft requirements must be satisfied."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    provider: Literal["microsoft"] = "microsoft"
+    scopes: tuple[str, ...] = ()
+    roles: tuple[str, ...] = ()
+    groups: tuple[UUID, ...] = ()
+
+    def __init__(
+        self,
+        *,
+        scopes: Sequence[str] = (),
+        roles: Sequence[str] = (),
+        groups: Sequence[UUID] = (),
+        **data,
+    ):
+        super().__init__(
+            scopes=tuple(scopes), roles=tuple(roles), groups=tuple(groups), **data
+        )
+
+
+class LinkedInGuard(BaseModel):
+    """Admit a verified LinkedIn identity; no Microsoft claims apply."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    provider: Literal["linkedin"] = "linkedin"
+
+
+class AllowAnonymous(BaseModel):
+    """Explicit admission without a verified identity."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    provider: Literal["anonymous"] = "anonymous"
+
+
+ProviderGuard = Annotated[
+    MicrosoftGuard | LinkedInGuard | AllowAnonymous, Field(discriminator="provider")
+]
+
+
+class GuardTypes(BaseModel):
+    """Explicit, nonempty alternatives for outer admission."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    alternatives: tuple[ProviderGuard, ...] = Field(min_length=1)
+
+    @property
+    def allows_anonymous(self) -> bool:
+        return any(isinstance(item, AllowAnonymous) for item in self.alternatives)
 
 
 # For guarding events in socketio namespaces.
@@ -30,7 +88,7 @@ class EventGuard(BaseModel):
     """Guards for the events in socket.io namespaces"""
 
     event: str
-    guards: GuardTypes | None
+    guards: GuardTypes
 
 
 # TBD: consider moving this to src/models/access.py or src/core/security.py?

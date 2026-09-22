@@ -1,6 +1,7 @@
 import logging
 
-from core.types import EventGuard, GuardTypes
+from core.security import Guards, MicrosoftGuard
+from core.types import EventGuard
 from crud.identity import (
     GroupCRUD,
     SubGroupCRUD,
@@ -39,23 +40,33 @@ logger = logging.getLogger(__name__)
 user_guards = [
     EventGuard(
         event="connect",
-        guards=GuardTypes(scopes=["socketio", "api.read"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.read"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="submit:create",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["Admin"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["Admin"])
+        )(),
     ),
     EventGuard(
         event="submit:update",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="delete",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["Admin"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["Admin"])
+        )(),
     ),
     EventGuard(
         event="share",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
 ]
 
@@ -146,23 +157,33 @@ class UserNamespace(BaseNamespace):
 ueber_group_guards = [
     EventGuard(
         event="connect",
-        guards=GuardTypes(scopes=["socketio", "api.read"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.read"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="submit:create",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["Admin"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["Admin"])
+        )(),
     ),
     EventGuard(
         event="submit:update",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="delete",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["Admin"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["Admin"])
+        )(),
     ),
     EventGuard(
         event="share",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
 ]
 
@@ -196,23 +217,33 @@ class UeberGroupNamespace(BaseNamespace):
 group_guards = [
     EventGuard(
         event="connect",
-        guards=GuardTypes(scopes=["socketio", "api.read"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.read"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="submit:create",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="submit:update",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="delete",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="share",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
 ]
 
@@ -245,23 +276,33 @@ class GroupNamespace(BaseNamespace):
 sub_group_guards = [
     EventGuard(
         event="connect",
-        guards=GuardTypes(scopes=["socketio", "api.read"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.read"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="submit:create",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="submit:update",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="delete",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="share",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
 ]
 
@@ -294,23 +335,33 @@ class SubGroupNamespace(BaseNamespace):
 sub_sub_group_guards = [
     EventGuard(
         event="connect",
-        guards=GuardTypes(scopes=["socketio", "api.read"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.read"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="submit:create",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="submit:update",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="delete",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="share",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
 ]
 

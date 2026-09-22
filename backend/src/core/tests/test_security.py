@@ -6,18 +6,16 @@ import pytest
 from fastapi import Depends, FastAPI
 from httpx2 import AsyncClient
 
+from core.authentication.azure import get_azure_jwks
 from core.security import (
-    CurrentAccessTokenHasRole,
-    CurrentAccessTokenHasScope,
-    CurrentAccessTokenIsValid,
     CurrentAzureUserInDatabase,
-    get_azure_jwks,
+    Guards,
+    MicrosoftGuard,
     get_http_access_token_payload,
     get_user_account_from_session_cache,
     provide_http_token_payload,
-    provide_http_token_payload_optional,
 )
-from core.types import Action, CurrentUserData
+from core.types import Action, CurrentUserData, GuardOutcome
 from crud.access import AccessLoggingCRUD
 from main import fastapi_app
 from models.access import AccessLogRead
@@ -543,9 +541,7 @@ async def test_optional_token_dependency_missing_authorization_header_returns_no
 
     @fastapi_app.get("/test_optional_dependency_without_authorization")
     def temp_endpoint(
-        payload: Annotated[
-            Optional[dict], Depends(provide_http_token_payload_optional)
-        ],
+        payload: Annotated[Optional[dict], Depends(provide_http_token_payload)],
     ) -> dict[str, Any]:
         return {"is_none": payload is None}
 
@@ -563,9 +559,7 @@ async def test_optional_token_dependency_with_invalid_bearer_token_returns_none(
 
     @fastapi_app.get("/test_optional_dependency_with_invalid_bearer")
     def temp_endpoint(
-        payload: Annotated[
-            Optional[dict], Depends(provide_http_token_payload_optional)
-        ],
+        payload: Annotated[Optional[dict], Depends(provide_http_token_payload)],
     ) -> dict[str, Any]:
         return {"is_none": payload is None}
 
@@ -586,14 +580,14 @@ async def test_strict_token_dependency_missing_authorization_header_returns_401(
 
     @fastapi_app.get("/test_strict_dependency_without_authorization")
     def temp_endpoint(
-        payload: Annotated[Optional[dict], Depends(provide_http_token_payload)],
+        payload: Annotated[GuardOutcome, Depends(Guards(MicrosoftGuard()).check_http)],
     ) -> dict[str, Any]:
         return {"is_none": payload is None}
 
     response = await async_client.get("/test_strict_dependency_without_authorization")
 
     assert response.status_code == 401
-    assert response.json() == {"detail": "Not authenticated"}
+    assert response.json() == {"detail": "Invalid token."}
 
 
 @pytest.mark.anyio
@@ -611,7 +605,7 @@ async def test_strict_access_token_payload_missing_authorization_header_returns_
     response = await async_client.get("/test_strict_access_token_without_authorization")
 
     assert response.status_code == 401
-    assert response.json() == {"detail": "Not authenticated"}
+    assert response.json() == {"detail": "Invalid token."}
 
 
 @pytest.mark.anyio
@@ -622,9 +616,7 @@ async def test_optional_token_dependency_with_non_bearer_authorization_returns_n
 
     @fastapi_app.get("/test_optional_dependency_with_non_bearer_authorization")
     def temp_endpoint(
-        payload: Annotated[
-            Optional[dict], Depends(provide_http_token_payload_optional)
-        ],
+        payload: Annotated[Optional[dict], Depends(provide_http_token_payload)],
     ) -> dict[str, Any]:
         return {"is_none": payload is None}
 
@@ -711,7 +703,7 @@ async def test_valid_azure_token(
     # create a temporary route that uses the guard:
     @app.get("/test_valid_azure_token")
     def temp_endpoint(
-        current_user: bool = Depends(CurrentAccessTokenIsValid()),
+        current_user: GuardOutcome = Depends(Guards(MicrosoftGuard()).check_http),
     ):
         """Returns the result of the guard."""
         return current_user
@@ -723,7 +715,7 @@ async def test_valid_azure_token(
 
     assert response.status_code == 200
     token_is_valid = response.json()
-    assert token_is_valid is True
+    assert token_is_valid == GuardOutcome.AUTHENTICATED.value
 
 
 @pytest.mark.anyio
@@ -739,7 +731,7 @@ async def test_invalid_azure_token(
     # create a temporary route that uses the guard:
     @app.get("/test_invalid_azure_token")
     def temp_endpoint(
-        current_user: bool = Depends(CurrentAccessTokenIsValid()),
+        current_user: GuardOutcome = Depends(Guards(MicrosoftGuard()).check_http),
     ):
         """Returns the result of the guard."""
         return current_user
@@ -756,30 +748,30 @@ async def test_invalid_azure_token(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("mocked_provide_http_token_payload", [{}])
-async def test_invalid_azure_token_return_false(
+async def test_invalid_azure_token_rejects_at_admission(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
 ):
-    """Tests if an invalid token returns False."""
+    """Tests that an invalid token is rejected by admission."""
 
     app = app_override_provide_http_token_payload
 
     # create a temporary route that uses the guard:
-    @app.get("/test_invalid_azure_token_return_false")
+    @app.get("/test_invalid_azure_token_rejects_at_admission")
     def temp_endpoint(
-        current_user: bool = Depends(CurrentAccessTokenIsValid(require=False)),
+        current_user: GuardOutcome = Depends(Guards(MicrosoftGuard()).check_http),
     ):
         """Returns the result of the guard."""
         return current_user
 
     # call that temporary route:
     response = await async_client.get(
-        "/test_invalid_azure_token_return_false",
+        "/test_invalid_azure_token_rejects_at_admission",
     )
 
-    assert response.status_code == 200
+    assert response.status_code == 401
     token_is_valid = response.json()
-    assert token_is_valid is False
+    assert token_is_valid == {"detail": "Invalid token."}
 
 
 # endregion
@@ -811,7 +803,9 @@ async def test_current_azure_token_has_scope_api_read(
     # create a temporary route that uses the guard:
     @app.get("/test_current_azure_token_has_scope_api_read")
     def temp_endpoint(
-        current_user: bool = Depends(CurrentAccessTokenHasScope("api.read")),
+        current_user: GuardOutcome = Depends(
+            Guards(MicrosoftGuard(scopes=["api.read"])).check_http
+        ),
     ):
         """Returns the result of the guard."""
         return current_user
@@ -823,7 +817,7 @@ async def test_current_azure_token_has_scope_api_read(
 
     assert response.status_code == 200
     token_contains_scope_api_read = response.json()
-    assert token_contains_scope_api_read is True
+    assert token_contains_scope_api_read == GuardOutcome.AUTHENTICATED.value
 
 
 @pytest.mark.anyio
@@ -848,7 +842,9 @@ async def test_current_azure_token_missing_scope_api_read(
     # create a temporary route that uses the guard:
     @app.get("/test_current_azure_token_missing_scope_api_read")
     def temp_endpoint(
-        current_user: bool = Depends(CurrentAccessTokenHasScope("api.read")),
+        current_user: GuardOutcome = Depends(
+            Guards(MicrosoftGuard(scopes=["api.read"])).check_http
+        ),
     ):
         """Returns the result of the guard."""
         return current_user
@@ -873,7 +869,7 @@ async def test_current_azure_token_missing_scope_api_read(
     ],
     indirect=True,
 )
-async def test_current_azure_token_missing_scope_api_read_return_false(
+async def test_current_azure_token_missing_scope_api_read_rejects_at_admission(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
 ):
@@ -882,10 +878,10 @@ async def test_current_azure_token_missing_scope_api_read_return_false(
     app = app_override_provide_http_token_payload
 
     # create a temporary route that uses the guard:
-    @app.get("/test_current_azure_token_missing_scope_api_read_return_false")
+    @app.get("/test_current_azure_token_missing_scope_api_read_rejects_at_admission")
     def temp_endpoint(
-        current_user: bool = Depends(
-            CurrentAccessTokenHasScope("api.read", require=False)
+        current_user: GuardOutcome = Depends(
+            Guards(MicrosoftGuard(scopes=["api.read"])).check_http
         ),
     ):
         """Returns the result of the guard."""
@@ -893,12 +889,12 @@ async def test_current_azure_token_missing_scope_api_read_return_false(
 
     # call that temporary route:
     response = await async_client.get(
-        "/test_current_azure_token_missing_scope_api_read_return_false",
+        "/test_current_azure_token_missing_scope_api_read_rejects_at_admission",
     )
 
-    assert response.status_code == 200
+    assert response.status_code == 401
     token_contains_scope_api_read = response.json()
-    assert token_contains_scope_api_read is False
+    assert token_contains_scope_api_read == {"detail": "Invalid token."}
 
 
 # endregion
@@ -932,7 +928,11 @@ async def test_admin_guard_with_admin_role_in_azure_mocked_token_payload(
 
     # create a temporary route that uses the guard:
     @app.get("/test_admin_guard_with_admin_role_in_azure_mocked_token_payload")
-    def temp_endpoint(current_user: bool = Depends(CurrentAccessTokenHasRole("Admin"))):
+    def temp_endpoint(
+        current_user: GuardOutcome = Depends(
+            Guards(MicrosoftGuard(roles=["Admin"])).check_http
+        ),
+    ):
         """Returns the result of the guard."""
         return current_user
 
@@ -943,7 +943,7 @@ async def test_admin_guard_with_admin_role_in_azure_mocked_token_payload(
 
     assert response.status_code == 200
     token_contains_role_admin = response.json()
-    assert token_contains_role_admin is True
+    assert token_contains_role_admin == GuardOutcome.AUTHENTICATED.value
 
 
 @pytest.mark.anyio
@@ -967,7 +967,11 @@ async def test_admin_guard_without_admin_role_in_azure_mocked_token_payload(
 
     # create a temporary route that uses the guard:
     @app.get("/test_admin_guard_without_admin_role_in_azure_mocked_token_payload")
-    def temp_endpoint(current_user: bool = Depends(CurrentAccessTokenHasRole("Admin"))):
+    def temp_endpoint(
+        current_user: GuardOutcome = Depends(
+            Guards(MicrosoftGuard(roles=["Admin"])).check_http
+        ),
+    ):
         """Returns the result of the guard."""
         return current_user
 
@@ -991,7 +995,7 @@ async def test_admin_guard_without_admin_role_in_azure_mocked_token_payload(
     ],
     indirect=True,
 )
-async def test_admin_guard_without_admin_role_in_azure_mocked_token_payload_return_false(
+async def test_admin_guard_without_admin_role_in_azure_mocked_token_payload_rejects_at_admission(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
 ):
@@ -1001,22 +1005,24 @@ async def test_admin_guard_without_admin_role_in_azure_mocked_token_payload_retu
 
     # create a temporary route that uses the guard:
     @app.get(
-        "/test_admin_guard_without_admin_role_in_azure_mocked_token_payload_return_false"
+        "/test_admin_guard_without_admin_role_in_azure_mocked_token_payload_rejects_at_admission"
     )
     def temp_endpoint(
-        current_user: bool = Depends(CurrentAccessTokenHasRole("Admin", require=False)),
+        current_user: GuardOutcome = Depends(
+            Guards(MicrosoftGuard(roles=["Admin"])).check_http
+        ),
     ):
         """Returns the result of the guard."""
         return current_user
 
     # call that temporary route:
     response = await async_client.get(
-        "/test_admin_guard_without_admin_role_in_azure_mocked_token_payload_return_false",
+        "/test_admin_guard_without_admin_role_in_azure_mocked_token_payload_rejects_at_admission",
     )
 
-    assert response.status_code == 200
+    assert response.status_code == 401
     token_contains_role_admin = response.json()
-    assert token_contains_role_admin is False
+    assert token_contains_role_admin == {"detail": "Invalid token."}
 
 
 # endregion

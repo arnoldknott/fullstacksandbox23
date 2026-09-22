@@ -4,9 +4,24 @@
 
 The definitions of the inner and outer security layers and the consultation requirement are in [AGENTS.md](../../../AGENTS.md#security-layers-and-change-boundaries).
 
-[Backend security](../../../backend/src/core/security.py) validates provider credentials and evaluates the alternatives configured by endpoint and Socket.IO guards. Endpoints retain `guards: GuardTypes = Depends(...)`; shared security resolves the internal user for the existing CRUD boundary. [Access enforcement](../../../backend/src/crud/access.py), including `filters_allowed()`, then applies resource permissions. Outer admission never replaces those checks. Preserve existing Microsoft administrator/group exceptions.
+[Backend security](../../../backend/src/core/security.py) delegates provider-token validation to [authentication helpers](../../../backend/src/core/authentication/) and evaluates the alternatives configured by endpoint and Socket.IO guards. Endpoints retain `guards: GuardTypes = Depends(...)`; shared security resolves the internal user for the existing CRUD boundary. [Access enforcement](../../../backend/src/crud/access.py), including `filters_allowed()`, then applies resource permissions. Outer admission never replaces those checks. Preserve existing Microsoft administrator/group exceptions.
 
 If tests reveal a necessary inner-layer change outside the agreed merge scope, report the concrete issue and proposed change to the user before implementing it; continue unaffected work. Ordinary resource/group operations under existing policies do not constitute a change to the security architecture.
+
+## Authentication modules
+
+Provider mechanics are separate from application admission policy:
+
+| Module | Responsibility |
+| --- | --- |
+| `core/authentication/base.py` | Verified identity context, allowlisted issuer dispatch, and shared public signing-key retrieval/cache |
+| `core/authentication/azure.py` | Microsoft discovery, signing-key retrieval, access-token validation, and existing refresh/retry behavior |
+| `core/authentication/linkedin.py` | LinkedIn signing-key retrieval and identity-token validation, including one fresh-key retry after token validation fails |
+| `core/security.py` | Guard requirements/evaluation, transport credential extraction, and internal-user resolution |
+
+The LinkedIn provider uses its [published signing-key endpoint](https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin-v2). Issuer/audience expectations come from trusted application configuration; token claims never select an arbitrary network endpoint. `get_linkedin_token_payload(token, issuer=..., client_id=...)` wraps the pure validator with cached key retrieval. This helper does not enable LinkedIn login or signup by itself.
+
+See [public signing-key caching](../../redis/README.md#public-signing-key-caching) for partitions and refresh behavior. Provider modules do not evaluate application scopes/roles or access policies.
 
 ## Data-storage policy
 

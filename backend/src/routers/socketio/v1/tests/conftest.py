@@ -128,7 +128,9 @@ async def socketio_test_server(
 
     with patch("core.security.get_azure_token_from_cache") as mocked_user_account:
         mocked_user_account.side_effect = return_input
-        with patch("core.security.get_azure_token_payload") as mocked_decode_token:
+        with patch(
+            "core.authentication.azure.get_azure_token_payload"
+        ) as mocked_decode_token:
             mocked_decode_token.side_effect = return_input
 
             sio = socketio.AsyncServer(

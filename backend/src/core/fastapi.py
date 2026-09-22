@@ -2,7 +2,7 @@ from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from core.config import config
-from core.security import CurrentAccessTokenHasRole, CurrentAccessTokenHasScope
+from core.security import Guards, MicrosoftGuard
 from routers.api.v1.access import router as access_router
 from routers.api.v1.category import router as category_router
 from routers.api.v1.core import router as core_router
@@ -64,42 +64,42 @@ def mount_rest_api_routes(app: FastAPI, api_prefix: str, ws_prefix: str):
         user_router,
         prefix=f"{api_prefix}/user",
         tags=["User"],
-        dependencies=[Depends(CurrentAccessTokenHasScope("api.read"))],
+        dependencies=[Depends(Guards(MicrosoftGuard(scopes=["api.read"])).check_http)],
     )
 
     app.include_router(
         ueber_group_router,
         prefix=f"{api_prefix}/uebergroup",
         tags=["Ueber Group"],
-        dependencies=[Depends(CurrentAccessTokenHasScope("api.read"))],
+        dependencies=[Depends(Guards(MicrosoftGuard(scopes=["api.read"])).check_http)],
     )
 
     app.include_router(
         group_router,
         prefix=f"{api_prefix}/group",
         tags=["Group"],
-        dependencies=[Depends(CurrentAccessTokenHasScope("api.read"))],
+        dependencies=[Depends(Guards(MicrosoftGuard(scopes=["api.read"])).check_http)],
     )
 
     app.include_router(
         sub_group_router,
         prefix=f"{api_prefix}/subgroup",
         tags=["Sub Group"],
-        dependencies=[Depends(CurrentAccessTokenHasScope("api.read"))],
+        dependencies=[Depends(Guards(MicrosoftGuard(scopes=["api.read"])).check_http)],
     )
 
     app.include_router(
         sub_sub_group_router,
         prefix=f"{api_prefix}/subsubgroup",
         tags=["Sub-sub Group"],
-        dependencies=[Depends(CurrentAccessTokenHasScope("api.read"))],
+        dependencies=[Depends(Guards(MicrosoftGuard(scopes=["api.read"])).check_http)],
     )
 
     app.include_router(
         access_router,
         prefix=f"{api_prefix}/access",
         tags=["Access"],
-        dependencies=[Depends(CurrentAccessTokenHasScope("api.read"))],
+        dependencies=[Depends(Guards(MicrosoftGuard(scopes=["api.read"])).check_http)],
     )
     app.include_router(
         public_resource_router,
@@ -117,7 +117,7 @@ def mount_rest_api_routes(app: FastAPI, api_prefix: str, ws_prefix: str):
         demo_file_router,
         prefix=f"{api_prefix}/demo",
         tags=["Demo File"],
-        dependencies=[Depends(CurrentAccessTokenHasRole("User"))],
+        dependencies=[Depends(Guards(MicrosoftGuard(roles=["User"])).check_http)],
     )
 
     app.include_router(
@@ -136,7 +136,7 @@ def mount_rest_api_routes(app: FastAPI, api_prefix: str, ws_prefix: str):
         protected_resource_router,
         prefix=f"{api_prefix}/protected",
         tags=["Protected Resource"],
-        dependencies=[Depends(CurrentAccessTokenHasScope("api.read"))],
+        dependencies=[Depends(Guards(MicrosoftGuard(scopes=["api.read"])).check_http)],
         # TBD: This is not ready to use - requires the redirect URI to be passed through Swagger UI
         # dependencies=[Depends(oauth2_scheme)],
     )

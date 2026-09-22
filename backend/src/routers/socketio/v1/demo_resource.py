@@ -1,6 +1,7 @@
-# import logging
+from core.security import Guards, MicrosoftGuard
 
-from core.types import EventGuard, GuardTypes
+# import logging
+from core.types import EventGuard
 from crud.demo_resource import DemoResourceCRUD
 from models.demo_resource import (
     DemoResourceCreate,
@@ -17,23 +18,33 @@ from .base import BaseNamespace
 event_guards = [
     EventGuard(
         event="connect",
-        guards=GuardTypes(scopes=["socketio", "api.read"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.read"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="submit:create",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="submit:update",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="delete",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="share",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
 ]
 

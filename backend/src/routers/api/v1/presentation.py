@@ -5,10 +5,12 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 
 from core.security import (
+    AllowAnonymous,
     Guards,
+    MicrosoftGuard,
     check_token_against_guards,
     get_http_access_token_payload,
-    provide_http_token_payload_optional,
+    provide_http_token_payload,
 )
 from core.types import CollectionInclude, CollectionSort, GuardTypes, SortDirection
 from crud.presentation import PresentationCRUD
@@ -38,7 +40,7 @@ async def post_presentation(
     presentation: PresentationCreate,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(
-        Guards(scopes=["api.read", "api.write"], roles=["User"])
+        Guards(MicrosoftGuard(scopes=["api.read", "api.write"], roles=["User"]))
     ),
 ) -> PresentationRead:
     """Creates a new presentation."""
@@ -48,7 +50,9 @@ async def post_presentation(
 @router.get("/", status_code=200)
 async def get_presentations(
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
+    guards: GuardTypes = Depends(
+        Guards(MicrosoftGuard(scopes=["api.read"], roles=["User"]))
+    ),
 ) -> list[PresentationRead]:
     """Returns all presentations."""
     return await presentation_view.get(token_payload, guards)
@@ -61,7 +65,9 @@ async def get_presentation_entity_snapshot(
     sort: Annotated[CollectionSort | None, Query()] = None,
     direction: Annotated[SortDirection, Query()] = SortDirection.ascending,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
+    guards: GuardTypes = Depends(
+        Guards(MicrosoftGuard(scopes=["api.read"], roles=["User"]))
+    ),
 ) -> list[PresentationExtended]:
     """Returns an optionally enriched presentation snapshot."""
     snapshot = await presentation_view.get_entity_snapshot(
@@ -75,28 +81,34 @@ async def get_presentation_entity_snapshot(
     return cast(list[PresentationExtended], snapshot.items)
 
 
+get_presentation_by_id_guards = Guards(MicrosoftGuard(), AllowAnonymous())
+
+
 @router.get("/{resource_id}", status_code=200)
 async def get_presentation_by_id(
     resource_id: UUID,
     token_payload: Annotated[
-        Optional[dict], Depends(provide_http_token_payload_optional)
+        Optional[dict], Depends(provide_http_token_payload)
     ] = None,
+    guards: GuardTypes = Depends(get_presentation_by_id_guards),
 ) -> PresentationRead:
     """Returns a presentation by resource_id."""
-    return await presentation_view.get_by_id(resource_id, token_payload, guards=None)
+    return await presentation_view.get_by_id(resource_id, token_payload, guards=guards)
+
+
+get_presentation_by_path_guards = Guards(MicrosoftGuard(), AllowAnonymous())
 
 
 @router.get("/path/{path:path}", status_code=200)
 async def get_presentation_by_path(
     path: str,
     token_payload: Annotated[
-        Optional[dict], Depends(provide_http_token_payload_optional)
+        Optional[dict], Depends(provide_http_token_payload)
     ] = None,
+    guards: GuardTypes = Depends(get_presentation_by_path_guards),
 ) -> PresentationRead:
     """Returns a presentation by path."""
-    current_user = None
-    if token_payload:
-        current_user = await check_token_against_guards(token_payload, guards=None)
+    current_user = await check_token_against_guards(token_payload, guards)
 
     # Normalize to leading slash so "/a/b" and "a/b" resolve consistently.
     normalized_path = path if path.startswith("/") else f"/{path}"
@@ -119,7 +131,7 @@ async def put_presentation(
     presentation: PresentationUpdate,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(
-        Guards(scopes=["api.read", "api.write"], roles=["User"])
+        Guards(MicrosoftGuard(scopes=["api.read", "api.write"], roles=["User"]))
     ),
 ) -> PresentationRead:
     """Updates a presentation."""
@@ -131,7 +143,7 @@ async def delete_presentation(
     resource_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(
-        Guards(scopes=["api.read", "api.write"], roles=["User"])
+        Guards(MicrosoftGuard(scopes=["api.read", "api.write"], roles=["User"]))
     ),
 ) -> None:
     """Deletes a presentation."""

@@ -8,6 +8,7 @@ from msal import ConfidentialClientApplication
 from core.config import config
 from core.security import (
     Guards,
+    MicrosoftGuard,
     check_token_against_guards,
     get_http_access_token_payload,
 )
@@ -103,7 +104,9 @@ async def run_demo_task_in_celery(
 
 async def get_token_payload(
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
+    guards: GuardTypes = Depends(
+        Guards(MicrosoftGuard(scopes=["api.read"], roles=["User"]))
+    ),
 ):
     """Decodes the token from the request."""
     logger.info("Getting token payload")
@@ -123,7 +126,9 @@ async def read_token_payload(
 @router.get("/onbehalfof")
 async def get_onbehalfof(
     token_payload: Annotated[dict, Depends(get_token_payload)],
-    guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
+    guards: GuardTypes = Depends(
+        Guards(MicrosoftGuard(scopes=["api.read"], roles=["User"]))
+    ),
     authorization: Annotated[str | None, Header()] = None,
 ):
     """Access Microsoft Graph as downstream API on behalf of the user."""
