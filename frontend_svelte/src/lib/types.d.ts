@@ -20,6 +20,7 @@ export type BackendAPIConfiguration = {
 export type Session = {
 	loggedIn: boolean;
 	status?: SessionStatus;
+	welcomePending?: boolean;
 	microsoftAccount?: AccountInfo;
 	microsoftProfile?: MicrosoftProfile;
 	userAgent?: string;
@@ -219,8 +220,9 @@ export type Identity = {
 
 export type User = {
 	id: string;
-	azure_user_id: string;
-	azure_tenant_id: string;
+	azure_user_id: string | null;
+	azure_tenant_id: string | null;
+	linkedin_user_id: string | null;
 	is_active: boolean;
 	azure_groups: AzureGroup[];
 	ueber_groups?: UeberGroup[]; // TBD: fix

@@ -25,6 +25,7 @@ from models.identity import (
     GroupExtended,
     GroupRead,
     Me,
+    MeUpdate,
     SubGroup,
     SubGroupCreate,
     SubGroupExtended,
@@ -159,7 +160,7 @@ async def get_user_by_id(
 
 @user_router.put("/me", status_code=200)
 async def put_me(
-    user: Me,
+    user: MeUpdate,
     token_payload=Depends(get_http_access_token_payload),
     guards=Depends(Guards(MicrosoftGuard(roles=["User"]))),
 ) -> Me:

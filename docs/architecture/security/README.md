@@ -23,6 +23,12 @@ The LinkedIn provider uses its [published signing-key endpoint](https://learn.mi
 
 See [public signing-key caching](../../redis/README.md#public-signing-key-caching) for partitions and refresh behavior. Provider modules do not evaluate application scopes/roles or access policies.
 
+## Registration session state
+
+The OAuth callback sets `SessionStatus.REGISTRATION_PENDING` when the backend creates a user during login. This status is durable: it remains pending until the user submits the welcome profile form. The form submission is the registration-completion boundary and is intended to include acceptance of terms and conditions later; terms handling is not implemented yet.
+
+The one-time welcome display is tracked separately with the session-only `welcomePending` flag. The first authenticated layout consumes that flag without changing the registration status, so reloading a page does not repeatedly open the modal while an incomplete registration remains pending. For development, the callback retains a commented switch that marks an existing user as registration-pending and sets the corresponding welcome flag through the same status-derived logic.
+
 ## Data-storage policy
 
 This is the repository-wide policy for integrations, independent of where data would be stored:

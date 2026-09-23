@@ -2,6 +2,8 @@
 
 from uuid import uuid4
 
+from core.config import config
+
 user_id = "12345678-1234-1234-1234-123456789012"
 user_id_nonexistent = "87654321-4321-4321-4321-210987654321"
 # one_test_user = {
@@ -13,7 +15,7 @@ user_id_nonexistent = "87654321-4321-4321-4321-210987654321"
 #     "azure_tenant_id": "12345678-1234-1234-1234-123456789012",
 # }
 
-azure_home_tenant = str(uuid4())
+azure_home_tenant = config.AZURE_TENANT_ID
 
 azure_group1 = str(uuid4())
 azure_group2 = str(uuid4())
@@ -28,12 +30,12 @@ three_test_azure_groups = [
 many_test_azure_users = [
     {
         "azure_user_id": "12345678-1234-1234-1234-123456789012",
-        "azure_tenant_id": "12a34b56-12ab-34cd-56ef-78ab90cd12ef",
+        "azure_tenant_id": azure_home_tenant,
         "groups": three_test_azure_groups,
     },
     {
         "azure_user_id": "1b2b3c4d-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
-        "azure_tenant_id": "12a34b56-12ab-34cd-56ef-78ab90cd12ef",
+        "azure_tenant_id": azure_home_tenant,
         "groups": [
             azure_group1,
             str(uuid4()),  # different random group

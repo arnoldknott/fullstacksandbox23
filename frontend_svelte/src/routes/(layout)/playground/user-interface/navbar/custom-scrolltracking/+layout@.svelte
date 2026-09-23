@@ -10,7 +10,6 @@
 	import { page } from '$app/state';
 	import Guard from '$components/Guard.svelte';
 	import { type ArtificialIntelligenceConfig, Model } from '$lib/artificialIntelligence';
-	import { SessionStatus } from '$lib/session';
 	import theme from '$lib/stores/theme';
 	import { FSSB23_THEME_KEY, type ThemeRuntimeContext, Theming } from '$lib/theming';
 	import type { SidebarItemContent } from '$lib/types';
@@ -45,22 +44,6 @@
 				noScroll: true,
 				keepFocus: true
 			});
-		}
-	});
-
-	let userUnregistered = $derived(
-		!data.session?.loggedIn
-			? false
-			: data.session?.status === SessionStatus.REGISTERED
-				? false
-				: true
-	);
-
-	let welcomeModal: HTMLDivElement | null = $state(null);
-
-	onMount(() => {
-		if (userUnregistered) {
-			window.HSOverlay.open(welcomeModal);
 		}
 	});
 

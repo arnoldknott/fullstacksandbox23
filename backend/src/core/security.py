@@ -3,6 +3,7 @@ import logging
 from collections.abc import Mapping
 from datetime import datetime, timedelta
 from typing import Annotated, Any, Dict, List, Optional, cast
+from uuid import UUID
 
 # from enum import Enum
 # import asyncio
@@ -397,7 +398,9 @@ class CurrentAccessToken:
             if "groups" in self.payload:
                 groups = self.payload["groups"]
             user_id = self.payload["oid"]  # this is the azure_user_id!
-            tenant_id = self.payload["tid"]
+            tenant_id = UUID(str(self.payload["tid"]))
+            if tenant_id != UUID(config.AZURE_TENANT_ID):
+                raise HTTPException(status_code=401, detail="Invalid Microsoft tenant.")
             # TBD move the crud operations to the base view class, which should have an instance of the checks class.
             # if the user information stored in this class is already valid - no need to make another database call
             # if the user information stored in this class is not valid: get or sign-up the user.
@@ -483,11 +486,19 @@ async def check_token_against_guards(
     if admission is GuardOutcome.ANONYMOUS:
         return None
     assert identity is not None
-    if identity.provider != IdentityProvider.microsoft:
-        # Stage B supplies provider-specific signup. Until then no route enables
-        # LinkedIn; fail closed if a premature caller declares it.
-        raise HTTPException(status_code=503, detail="Provider signup is not enabled.")
-    return await CurrentAccessToken(identity.claims).provides_current_user()
+    if identity.provider == IdentityProvider.linkedin:
+        subject = identity.claims.get("sub")
+        if not isinstance(subject, str) or not subject:
+            raise HTTPException(status_code=401, detail="Invalid LinkedIn subject.")
+        async with UserCRUD() as crud:
+            user, _ = await crud.linkedin_user_self_sign_up(subject)
+        return CurrentUserData(
+            user_id=user.id, azure_token_roles=[], azure_token_groups=[]
+        )
+    elif identity.provider == IdentityProvider.microsoft:
+        return await CurrentAccessToken(identity.claims).provides_current_user()
+    else:
+        raise HTTPException(status_code=401, detail="Unsupported identity provider.")
 
 
 # endregion: Specific checks

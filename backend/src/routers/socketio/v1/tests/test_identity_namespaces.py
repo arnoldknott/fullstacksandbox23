@@ -258,7 +258,7 @@ async def test_update_me(
 
     # Update user profile:
     updated_me = {
-        **me,
+        "id": me["id"],
         "user_profile": {
             "contrast": 0.4,
             "theme_color": "#FF5733",
@@ -1372,3 +1372,50 @@ async def test_connect_create_read_update_delete_sub_group(
         connection_user2.responses("status")[6]["error"]
         == f"Resource {shared_sub_group_id} not found."
     )
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "session_ids", [[session_id_admin_read_write_socketio]], indirect=True
+)
+async def test_socket_admin_creates_provider_user_but_updates_cannot_reassign_identity(
+    socketio_test_client_user_namespace,
+):
+    connection = await socketio_test_client_user_namespace()
+    current = await connection.current_user()
+    await connection.connect()
+    await connection.client.emit(
+        "submit",
+        {"payload": {"linkedin_user_id": "admin-created-sub"}},
+        namespace="/user",
+    )
+    await connection.client.sleep(0.5)
+    assert connection.responses("status")[0]["success"] == "created"
+    await connection.client.emit("read", str(current.user_id), namespace="/user")
+    await connection.client.sleep(0.5)
+    original_azure_user_id = connection.responses("transferred")[-1]["azure_user_id"]
+    await connection.client.emit(
+        "submit",
+        {
+            "payload": {
+                "id": str(current.user_id),
+                "azure_user_id": str(uuid4()),
+                "is_active": True,
+            }
+        },
+        namespace="/user",
+    )
+    await connection.client.sleep(0.5)
+    assert connection.responses("status")[-1]["success"] == "updated"
+    assert (
+        connection.responses("transferred")[-1]["azure_user_id"]
+        == original_azure_user_id
+    )
+    await connection.client.emit(
+        "update_me",
+        {"id": str(current.user_id), "linkedin_user_id": "unverified-sub"},
+        namespace="/user",
+    )
+    await connection.client.sleep(0.5)
+    assert "linkedin_user_id" in connection.responses("status")[-1]["error"]
+    assert len(connection.responses("transferred")) == 2

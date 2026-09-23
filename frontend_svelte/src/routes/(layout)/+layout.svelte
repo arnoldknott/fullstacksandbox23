@@ -18,7 +18,6 @@
 		setProtectedSidebarLinks,
 		setSidebarLinks
 	} from '$lib/contexts/sidebar.svelte';
-	import { SessionStatus } from '$lib/session';
 	import theme from '$lib/stores/theme';
 	import { FSSB23_THEME_KEY, type ThemeRuntimeContext, Theming } from '$lib/theming';
 	import type { SidebarItemContent } from '$lib/types';
@@ -53,14 +52,6 @@
 			});
 		}
 	});
-
-	let userUnregistered = $derived(
-		!data.session?.loggedIn
-			? false
-			: data.session?.status === SessionStatus.REGISTERED
-				? false
-				: true
-	);
 
 	// put potenitally in onMount to avoid SSR issues
 	let parentUrl = $derived(page.url.searchParams.get('parentURL') || undefined);
@@ -156,14 +147,6 @@
 		return () => {
 			if (avatarUrl) URL.revokeObjectURL(avatarUrl);
 		};
-	});
-
-	let welcomeModal: HTMLDivElement | null = $state(null);
-
-	onMount(() => {
-		if (userUnregistered) {
-			window.HSOverlay.open(welcomeModal);
-		}
 	});
 
 	let artificialIntelligenceConfiguration: ArtificialIntelligenceConfig = $state({
@@ -478,6 +461,7 @@
 		</div>
 	{/if}
 	<WelcomeModal
+		showWelcome={data.showWelcome}
 		session={data.session}
 		bind:artificialIntelligenceConfiguration
 		bind:themeConfiguration={themeRuntime.themeConfiguration}

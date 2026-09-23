@@ -63,20 +63,21 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 			// show the modal dialog for updating profile and account.
 			// The put -me endpoint will set is_active to True
 			// No - leave as is: make the app less annoying for first time users!
+			let sessionStatus: SessionStatus | undefined;
 			if (responseMe.status === 200) {
-				await redisCache.setSession(
-					sessionId,
-					'$.status',
-					JSON.stringify(SessionStatus.REGISTERED)
-					// TBD: for devloping registration flow, set to registration pending:
-					// change back to registered when registration flow is done:
-					// JSON.stringify(SessionStatus.REGISTRATION_PENDING)
-				);
+				sessionStatus = SessionStatus.REGISTERED;
+				// TBD: To develop the first-login registration flow with an existing user,
+				// assign REGISTRATION_PENDING here. Change it back when finished:
+				// sessionStatus = SessionStatus.REGISTRATION_PENDING;
 			} else if (responseMe.status === 201) {
+				sessionStatus = SessionStatus.REGISTRATION_PENDING;
+			}
+			if (sessionStatus) {
+				await redisCache.setSession(sessionId, '$.status', JSON.stringify(sessionStatus));
 				await redisCache.setSession(
 					sessionId,
-					'$.status',
-					JSON.stringify(SessionStatus.REGISTRATION_PENDING)
+					'$.welcomePending',
+					JSON.stringify(sessionStatus === SessionStatus.REGISTRATION_PENDING)
 				);
 			}
 			const currentUser = await responseMe.json();

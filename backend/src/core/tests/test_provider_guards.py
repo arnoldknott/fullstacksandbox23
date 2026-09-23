@@ -1,6 +1,7 @@
 """Outer policy and signed-token tests; no live identity provider is needed."""
 
 import time
+from typing import cast
 from unittest.mock import AsyncMock
 from uuid import uuid4
 
@@ -422,15 +423,19 @@ async def test_valid_microsoft_socket_policy_resolves_user(monkeypatch):
     )
 
 
-async def test_unconfigured_linkedin_signup_never_uses_microsoft_signup(monkeypatch):
+async def test_linkedin_signup_never_uses_microsoft_signup(monkeypatch):
     resolver = AsyncMock()
     monkeypatch.setattr(CurrentAccessToken, "provides_current_user", resolver)
-    with pytest.raises(HTTPException) as error:
-        await check_token_against_guards(
-            VerifiedIdentity(IdentityProvider.linkedin, {"sub": "subject"}),
-            Guards(LinkedInGuard())(),
-        )
-    assert error.value.status_code == 503
+    user = await check_token_against_guards(
+        VerifiedIdentity(
+            IdentityProvider.linkedin,
+            {"sub": "subject", "roles": ["Admin"], "groups": []},
+        ),
+        Guards(LinkedInGuard())(),
+    )
+    assert user is not None
+    assert user.azure_token_roles == []
+    assert user.azure_token_groups == []
     resolver.assert_not_awaited()
 
 
@@ -439,3 +444,21 @@ async def test_guard_typo_is_not_ignored():
         GuardTypes.model_validate(
             {"alternatives": (MicrosoftGuard(),), "role": ["Admin"]}
         )
+
+
+async def test_unsupported_provider_never_falls_back_to_microsoft(monkeypatch):
+    resolver = AsyncMock()
+    monkeypatch.setattr(CurrentAccessToken, "provides_current_user", resolver)
+    # Simulate a future provider admitted by a guard before its resolver exists.
+    monkeypatch.setattr(
+        "core.security.evaluate_guards",
+        lambda identity, guards: GuardOutcome.AUTHENTICATED,
+    )
+    with pytest.raises(HTTPException) as error:
+        await check_token_against_guards(
+            VerifiedIdentity(cast(IdentityProvider, "future-provider"), {}),
+            Guards(MicrosoftGuard())(),
+        )
+    assert error.value.status_code == 401
+    assert error.value.detail == "Unsupported identity provider."
+    resolver.assert_not_awaited()

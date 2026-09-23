@@ -1,6 +1,6 @@
 # LinkedIn authentication, account linking, and credential encryption
 
-Status: Stage A guard migration is implemented and validated. LinkedIn login/signup, account linking/merge, and cache encryption remain subsequent stages.
+Status: Stages A (guards) and B (minimal identity/signup) are implemented. Frontend LinkedIn login, transport credential dispatch, endpoint activation, account linking/merge, and cache encryption remain subsequent stages.
 
 Agreed scope recorded on 2026-09-20; encryption and rotation decisions updated on 2026-09-21. This is the shared implementation handoff for frontend, backend, database, and Redis changes. Keep shared login/encryption decisions here and account-merge decisions in the linked merge plan, rather than maintaining separate plans in each application.
 
@@ -145,6 +145,7 @@ Files: `core/types.py`, `core/security.py`, request `BaseView`, socket `BaseName
 Completion: existing Microsoft/anonymous tests pass and both transports evaluate the new representation. LinkedIn database signup is not yet required.
 
 Implementation notes:
+
 - The `authentication/` package contains identity-provider token validation helpers in `azure.py` and `linkedin.py`, with shared issuer dispatch and public-key caching in `base.py`. `security.py` owns provider requirement checks, guard evaluation, and internal user resolution. Guard evaluation returns `GuardOutcome.AUTHENTICATED` or `GuardOutcome.ANONYMOUS` on admission and raises on rejection; it never uses `False` to mean successful anonymous admission.
 - Endpoint dependencies inline single-alternative policies, for example `Depends(Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"])))`. Multiple-alternative policies may use named declarations. Both return `GuardTypes` configuration. Router-wide dependencies use the same policy's `check_http` method to enforce admission without database user resolution.
 - Socket event declarations use `Guards(...)()` for the same configuration. Read, subscribe, and replay reuse the connect policy; link/unlink retain the documented submit aliases.
@@ -161,11 +162,20 @@ Files: `models/identity.py`, `crud/identity.py`, frontend identity types, [devel
 - Ensure LinkedIn-only users do not acquire an Azure tenant solely through `UserCreate`'s current default. Existing Microsoft users remain unchanged.
 - Implement `linkedin_user_self_sign_up`; reuse internal user/account/profile/identifier creation where appropriate. Never invoke Azure group synchronization for LinkedIn.
 - Resolve Microsoft identities against the validated configured tenant and object identifier; do not reinterpret its object identifier as an OpenID subject.
-- Exclude provider-identifier assignment from ordinary profile/create/update inputs; permit only verified signup/linking paths.
+- Allow administrators to assign provider identifiers when creating users through guarded REST or Socket.IO interfaces. Exclude provider-identifier reassignment from ordinary user/profile updates; verified signup and linking remain the other permitted identity paths.
 - Handle concurrent signup and unique conflicts without duplicates or orphan settings records. Preserve deliberate disabled-user semantics.
 - Follow each migration tree's actual current head and existing environment workflow, rather than assuming one revision can attach to both histories.
 
 Completion: both providers resolve internal users, signup creates expected settings/self-ownership, and Microsoft data migrates unchanged.
+
+Implementation notes:
+
+- `User.linkedin_user_id` has a unique index with PostgreSQL `C` collation. No provider profile data is stored. Admin create schemas accept provider identifiers. User/profile update schemas exclude provider identifiers from database updates; `UserUpdate.id` remains a REST/Socket.IO resource selector excluded from database updates.
+- `UserCRUD._provider_sign_up()` serializes signup for each provider identifier with a transaction-scoped PostgreSQL advisory lock. Helpers run in a savepoint-bound session, so their internal commits cannot leave partial users, settings, policies, or logs if signup fails. Existing inner access-control helpers are unchanged.
+- Microsoft signup still synchronizes Azure groups; LinkedIn signup never does. `check_token_against_guards()` resolves a verified LinkedIn subject with empty Azure roles/groups. Runtime transport extraction remains Microsoft-only until Stage C.
+- Inactive initialized users stay disabled. An inactive Microsoft invitation with neither account nor profile settings is initialized on its first verified login; a legacy invitation with no tenant adopts the verified tenant. A conflicting stored tenant is rejected.
+- Local development revision `b19e08c4f126` follows this workspace's `e2c3b40e9e73`; development revisions remain gitignored. The pipeline generates the stage/production revision from model metadata; no manual stage/production revision is needed for this column/index addition. Follow the [PostgreSQL migration workflow](../../postgres/README.md#schema-migration-workflow). Fresh checkouts generate their own development revisions from model metadata.
+- Regression coverage includes provider isolation, concurrent signup, rollback after helper commits, disabled users, invitation activation, HTTP/Socket.IO input boundaries, and database identifier constraints. Migration validation follows the existing PostgreSQL workflow without a dedicated test for each generated revision. The frontend skips Microsoft Graph lookup for users without an Azure identifier.
 
 ### C. Frontend login, credential selection, and expiry
 
@@ -247,7 +257,7 @@ Keep authentication, guards and socket integration together: they share `securit
 No additional design decision is required to begin. The identifier-storage decision is recorded in the [Redis contract](../../redis/README.md#encryption-scope). Live verification needs provider application configuration, encryption needs startup key configuration, and actual identity-token lifetime must be measured before accepting the login experience. Do not paste real tokens or secrets into documentation or chat.
 
 - [ ] A: policy and validation contract
-- [ ] B: minimal identity/signup and migrations
+- [x] B: minimal identity/signup and migrations
 - [ ] C: login, cache lookup, request integration and expiry
 - [ ] D: endpoint/event matrix and ownership
 - [ ] E: linking, merge preview, atomic reassignment and cleanup — see [account merge plan](./linkedin-azure-account-merge-plan.md)

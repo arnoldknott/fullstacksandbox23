@@ -14,7 +14,7 @@ from models.identity import (
     GroupExtended,
     GroupRead,
     GroupUpdate,
-    Me,
+    MeUpdate,
     SubGroupCreate,
     SubGroupExtended,
     SubGroupRead,
@@ -137,7 +137,7 @@ class UserNamespace(BaseNamespace):
             current_user = await self._get_current_user_and_check_guard(
                 sid, "submit:update"
             )
-            new_me = Me(**data)
+            new_me = MeUpdate.model_validate(data)
             updated_me = None
             assert self.crud is not None
             async with self.crud() as crud:

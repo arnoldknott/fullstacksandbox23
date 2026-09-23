@@ -5,7 +5,6 @@
 	import { enhance } from '$app/forms';
 	import { page } from '$app/state';
 	import { type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
-	import { SessionStatus } from '$lib/session';
 	import { type ColorConfig } from '$lib/theming';
 	import type { Session } from '$lib/types';
 	import { initOverlay } from '$lib/userInterface';
@@ -14,6 +13,7 @@
 	import ThemePicker from './playground/components/ThemePicker.svelte';
 	let {
 		session,
+		showWelcome = false,
 		artificialIntelligenceConfiguration = $bindable(),
 		themeConfiguration = $bindable(),
 		mode = $bindable(),
@@ -21,6 +21,7 @@
 		saveProfileAccount
 	}: {
 		session: Session | undefined;
+		showWelcome?: boolean;
 		artificialIntelligenceConfiguration: ArtificialIntelligenceConfig;
 		themeConfiguration: ColorConfig;
 		mode: 'light' | 'dark';
@@ -30,12 +31,8 @@
 
 	let welcomeModal: HTMLDivElement | null = $state(null);
 
-	let userUnregistered = $derived(
-		!session?.loggedIn ? false : session.status === SessionStatus.REGISTERED ? false : true
-	);
-
 	onMount(() => {
-		if (userUnregistered) {
+		if (showWelcome) {
 			window.HSOverlay.open(welcomeModal);
 		}
 	});
@@ -65,7 +62,7 @@
 	{@attach initOverlay}
 >
 	<div class="modal-dialog modal-dialog-md">
-		<div class="modal-content bg-base-300 shadow-outline ring-outline-variant shadow-lg ring">
+		<div class="modal-content bg-base-300 shadow-base-shadow ring-outline-variant ring">
 			<div class="modal-header">
 				<span class="icon-[ph--smiley] size-6"></span>
 				<h3 class="modal-title grow pl-2">Welcome</h3>
@@ -232,7 +229,6 @@
 				>
 					<button
 						type="submit"
-						onclick={() => (userUnregistered = false)}
 						data-overlay="#welcome-modal"
 						aria-label="Save profile"
 						class="btn btn-primary-container btn-gradient shadow-outline rounded-full shadow-sm"

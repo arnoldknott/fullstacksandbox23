@@ -11,6 +11,7 @@ from core.config import config
 from core.databases import get_async_session
 from core.types import Action, CurrentUserData, IdentityType
 from crud.access import AccessLoggingCRUD
+from crud.identity import UserCRUD
 from models.identity import (
     Group,
     GroupRead,
@@ -1605,9 +1606,9 @@ async def test_user_puts_user_profile_with_missing_hashtag_in_color(
             },
         },
     )
-    assert response.status_code == 404
+    assert response.status_code == 422
     payload = response.json()
-    assert payload["detail"] == "User not updated."
+    assert payload["detail"][0]["loc"][:2] == ["body", "user_profile"]
 
 
 @pytest.mark.anyio
@@ -1640,9 +1641,9 @@ async def test_user_puts_user_profile_with_short_color(
             },
         },
     )
-    assert response.status_code == 404
+    assert response.status_code == 422
     payload = response.json()
-    assert payload["detail"] == "User not updated."
+    assert payload["detail"][0]["loc"][:2] == ["body", "user_profile"]
 
 
 @pytest.mark.anyio
@@ -1675,9 +1676,9 @@ async def test_user_puts_user_profile_with_wrong_color(
             },
         },
     )
-    assert response.status_code == 404
+    assert response.status_code == 422
     payload = response.json()
-    assert payload["detail"] == "User not updated."
+    assert payload["detail"][0]["loc"][:2] == ["body", "user_profile"]
 
 
 @pytest.mark.anyio
@@ -1710,9 +1711,9 @@ async def test_user_puts_user_profile_with_wrong_theme(
             },
         },
     )
-    assert response.status_code == 404
+    assert response.status_code == 422
     payload = response.json()
-    assert payload["detail"] == "User not updated."
+    assert payload["detail"][0]["loc"][:2] == ["body", "user_profile"]
 
 
 @pytest.mark.anyio
@@ -1744,9 +1745,9 @@ async def test_user_puts_user_profile_contrast_too_low(
             },
         },
     )
-    assert response.status_code == 404
+    assert response.status_code == 422
     payload = response.json()
-    assert payload["detail"] == "User not updated."
+    assert payload["detail"][0]["loc"][:2] == ["body", "user_profile"]
 
 
 @pytest.mark.anyio
@@ -1778,9 +1779,9 @@ async def test_user_puts_user_profile_contrast_too_high(
             },
         },
     )
-    assert response.status_code == 404
+    assert response.status_code == 422
     payload = response.json()
-    assert payload["detail"] == "User not updated."
+    assert payload["detail"][0]["loc"][:2] == ["body", "user_profile"]
 
 
 @pytest.mark.anyio
@@ -1839,7 +1840,7 @@ async def test_user_puts_other_users_user_profile(
         "/api/v1/user/me",
         json={
             "id": str(other_user.id),
-            "user_profile": {"ai_enabled": True},
+            "user_profile": {"contrast": 0.5},
         },
     )
     assert response.status_code == 403
@@ -1888,7 +1889,7 @@ async def test_user_puts_other_users_user_profile(
     [token_user1_read_write],
     indirect=True,
 )
-async def test_user_reactives_and_keeps_old_profile(
+async def test_disabled_user_cannot_reactivate_and_keeps_old_profile(
     async_client: AsyncClient,
     app_override_provide_http_token_payload: FastAPI,
     add_one_azure_test_user: List[User],
@@ -1933,20 +1934,17 @@ async def test_user_reactives_and_keeps_old_profile(
     deactivated_user = User(**response_deactivate.json())
     assert deactivated_user.is_active is False
 
-    # reactivate self
+    # Signing in cannot reactivate an initialized disabled account.
     response_reactivate = await async_client.get("/api/v1/user/me")
-    assert response_reactivate.status_code == 201
-    reactivated_user = Me(**response_reactivate.json())
-    assert reactivated_user is not None
-    assert reactivated_user.id == current_user.id
-    assert reactivated_user.azure_user_id == current_user.azure_user_id
-    assert reactivated_user.azure_tenant_id == current_user.azure_tenant_id
-    assert reactivated_user.azure_token_roles == current_user.azure_token_roles
-    assert reactivated_user.is_active is True
-    assert reactivated_user.user_account.ai_enabled is True  # type: ignore[union-attr]
-    assert reactivated_user.user_profile.theme_color == "#B0FA22"  # type: ignore[union-attr]
-    assert reactivated_user.user_profile.theme_variant == ThemeVariants.tonal_spot  # type: ignore[union-attr]
-    assert reactivated_user.user_profile.contrast == 0.0  # type: ignore[union-attr]
+    assert response_reactivate.status_code == 401
+    async with UserCRUD() as crud:
+        stored = await crud.session.get(User, current_user.id)
+        assert stored is not None
+        assert stored.is_active is False
+        assert stored.user_account is not None
+        assert stored.user_profile is not None
+        assert stored.user_account.ai_enabled is True
+        assert stored.user_profile.theme_color == "#B0FA22"
 
 
 @pytest.mark.anyio
@@ -3429,3 +3427,35 @@ async def test_admin_deletes_parent_and_nonstandalone_child_with_other_parent_st
 
 
 # endregion identity hierarchy tests
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload", [token_admin_read_write], indirect=True
+)
+@pytest.mark.parametrize(
+    "field", ["azure_user_id", "azure_tenant_id", "linkedin_user_id"]
+)
+async def test_admin_can_assign_provider_identity_on_create_but_not_update(
+    async_client, app_override_provide_http_token_payload, current_test_user, field
+):
+    identifier = str(uuid.uuid4())
+    created = await async_client.post("/api/v1/user/", json={field: identifier})
+    assert created.status_code == 201
+    assert created.json()[field] == identifier
+
+    before = await async_client.get(f"/api/v1/user/{current_test_user.user_id}")
+    assert before.status_code == 200
+    original_identifier = before.json()[field]
+    updated = await async_client.put(
+        f"/api/v1/user/{current_test_user.user_id}",
+        json={field: identifier, "is_active": False},
+    )
+    assert updated.status_code == 200
+    assert updated.json()[field] == original_identifier
+
+    profile = await async_client.put(
+        "/api/v1/user/me",
+        json={"id": str(current_test_user.user_id), field: identifier},
+    )
+    assert profile.status_code == 422
