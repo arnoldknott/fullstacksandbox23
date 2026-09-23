@@ -79,7 +79,7 @@
 {/snippet}
 
 <nav
-	class="navbar rounded-box shadow-shadow border-outline-variant bg-base-250 start-0 top-0 z-1 flex justify-between border-1 border-b px-3 shadow-md transition-all duration-300 max-sm:h-14 md:items-center"
+	class="navbar rounded-box shadow-base-shadow border-outline-variant bg-base-250 start-0 top-0 z-1 flex justify-between border-1 border-b px-3 shadow-md transition-all duration-300 max-sm:h-14 md:items-center"
 	bind:this={navBar}
 >
 	<!-- {@attach updateNavbarBottom} -->
@@ -162,7 +162,7 @@
 				{/if}
 			</span>
 			<ul
-				class="dropdown-menu bg-base-200 text-secondary shadow-outline dropdown-open:opacity-100 hidden shadow-md"
+				class="dropdown-menu bg-base-200 text-secondary shadow-base-shadow dropdown-open:opacity-100 hidden"
 				role="menu"
 				aria-orientation="vertical"
 				aria-labelledby="dropdown-menu-icon-user"
