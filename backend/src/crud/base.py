@@ -292,7 +292,9 @@ class BaseCRUD(
                     )
                     # if not await self.policy_crud.allows(parent_access_request):
                     if not await self.policy_crud.allows(parent_access_request):
-                        logger.error(f"Parent {parent_id} does not allow write access.")
+                        logger.error(
+                            f"Parent {parent_id} does not allow connect access."
+                        )
                         raise HTTPException(status_code=403, detail="Forbidden.")
                     # check if requested parent exists:
                     query = select(IdentifierTypeLink).where(
