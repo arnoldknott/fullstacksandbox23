@@ -283,31 +283,26 @@ class BaseCRUD(
                 )
                 current_user = CurrentUserData(user_id=public_user_id)
 
-            if parent_id or self.allow_standalone:
-                if not self.allow_standalone:
-                    parent_access_request = AccessRequest(
-                        resource_id=parent_id,
-                        action=Action.connect,
-                        current_user=current_user,
+            if parent_id:
+                parent_access_request = AccessRequest(
+                    resource_id=parent_id,
+                    action=Action.connect,
+                    current_user=current_user,
+                )
+                if not await self.policy_crud.allows(parent_access_request):
+                    logger.error(f"Parent {parent_id} does not allow connect access.")
+                    raise HTTPException(status_code=403, detail="Forbidden.")
+                # check if requested parent exists:
+                query = select(IdentifierTypeLink).where(
+                    IdentifierTypeLink.id == parent_id
+                )
+                parent_response = await self.session.exec(query)
+                parent_result = parent_response.one_or_none()
+                if parent_result is None:
+                    raise HTTPException(
+                        status_code=404, detail="Parent resource does not exist."
                     )
-                    # if not await self.policy_crud.allows(parent_access_request):
-                    if not await self.policy_crud.allows(parent_access_request):
-                        logger.error(
-                            f"Parent {parent_id} does not allow connect access."
-                        )
-                        raise HTTPException(status_code=403, detail="Forbidden.")
-                    # check if requested parent exists:
-                    query = select(IdentifierTypeLink).where(
-                        IdentifierTypeLink.id == parent_id
-                    )
-                    parent_response = await self.session.exec(query)
-                    parent_results = parent_response.one()
-                    if not parent_results:
-                        raise HTTPException(
-                            status_code=404, detail="Parent resource does not exist."
-                        )
-                # async with self.policy_CRUD as policy_CRUD:
-            else:
+            elif not self.allow_standalone:
                 # TBD: is it only admin that can create stand-alone resources?
                 logger.error(
                     "Parent not provided and standalone creation is not allowed."
