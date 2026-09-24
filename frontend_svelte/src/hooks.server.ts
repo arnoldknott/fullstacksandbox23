@@ -47,7 +47,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	// 	event.locals.sessionData = { sessionId } as any;
 	// }
 
-	let redirectTarget = `/login?targetURL=${event.url.href}`;
+	let redirectTarget = `/login?target-url=${encodeURIComponent(event.url.href)}`;
 	try {
 		if (event.route.id?.includes('(protected)')) {
 			if (event.locals.sessionData.loggedIn !== true) {

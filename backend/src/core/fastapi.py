@@ -2,7 +2,7 @@ from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from core.config import config
-from core.security import Guards, MicrosoftGuard
+from core.security import Guards, LinkedInGuard, MicrosoftGuard
 from routers.api.v1.access import router as access_router
 from routers.api.v1.category import router as category_router
 from routers.api.v1.core import router as core_router
@@ -64,7 +64,11 @@ def mount_rest_api_routes(app: FastAPI, api_prefix: str, ws_prefix: str):
         user_router,
         prefix=f"{api_prefix}/user",
         tags=["User"],
-        dependencies=[Depends(Guards(MicrosoftGuard(scopes=["api.read"])).check_http)],
+        dependencies=[
+            Depends(
+                Guards(MicrosoftGuard(scopes=["api.read"]), LinkedInGuard()).check_http
+            )
+        ],
     )
 
     app.include_router(

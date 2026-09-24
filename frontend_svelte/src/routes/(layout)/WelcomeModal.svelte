@@ -67,7 +67,8 @@
 				<span class="icon-[ph--smiley] size-6"></span>
 				<h3 class="modal-title grow pl-2">Welcome</h3>
 				<div class="align-center flex grow flex-row justify-center">
-					{page.data.session?.microsoftProfile.displayName}
+					{page.data.session?.microsoftProfile?.displayName ??
+						page.data.session?.linkedinProfile?.name}
 				</div>
 
 				<button

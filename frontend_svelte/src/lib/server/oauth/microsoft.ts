@@ -11,13 +11,14 @@ import {
 	type ICacheClient,
 	type IPartitionManager
 } from '@azure/msal-node';
-import { redirect } from '@sveltejs/kit';
 import type { RedisClientType } from 'redis';
 
 import { building } from '$app/environment';
+import { IdentityProvider } from '$lib/identityProvider';
 
 import { redisCache } from '../cache';
 import AppConfig from '../config';
+import { type OAuthProvider, redirectToReauthentication } from './base';
 
 const appConfig = await AppConfig.getInstance();
 const scopesBackend = [
@@ -35,17 +36,6 @@ const scopesMsGraph = [
 	'Team.ReadBasic.All'
 ];
 const scopesAzure = ['https://management.azure.com/user_impersonation']; // for onbehalfof workflow
-
-// Note: this is only exporting the BaseOauthProvider type, not the class itself!
-class BaseOauthProvider {
-	constructor() {}
-
-	async getAccessToken(_sessionId: string, _scopes: string[]): Promise<string> {
-		throw new Error('Method not implemented.');
-	}
-}
-
-export type { BaseOauthProvider };
 
 class RedisClientWrapper implements ICacheClient {
 	private redisClient: RedisClientType;
@@ -113,13 +103,12 @@ class RedisPartitionManager implements IPartitionManager {
 	}
 }
 
-class MicrosoftAuthenticationProvider extends BaseOauthProvider {
+class MicrosoftAuthenticationProvider implements OAuthProvider {
 	private msalCommonConfig;
 	private redisClientWrapper: RedisClientWrapper;
 	private cryptoProvider: CryptoProvider;
 
 	constructor(redisClient: RedisClientType) {
-		super();
 		// Common configuration for all users:
 		this.msalCommonConfig = {
 			auth: {
@@ -184,7 +173,12 @@ class MicrosoftAuthenticationProvider extends BaseOauthProvider {
 					parentURL: parentUrl
 				})
 			);
-			await redisCache.setSession(sessionId, '$.csrfToken', JSON.stringify(csrfToken), 60 * 10);
+			await redisCache.setSession(
+				sessionId,
+				'$.csrfToken',
+				JSON.stringify(csrfToken),
+				appConfig.authentication_timeout
+			);
 			const msalConfClient = this.createMsalConfClient(sessionId);
 			// pass the state here as well, so user can get redirected to the correct page after login:
 			// for example: https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/7a01aafc1af9aca6d51638204aa942700c0418ca/samples/msal-node-samples/auth-code-distributed-cache/src/AuthProvider.ts#L84
@@ -261,7 +255,7 @@ class MicrosoftAuthenticationProvider extends BaseOauthProvider {
 		} catch (error) {
 			if (error instanceof InteractionRequiredAuthError) {
 				console.warn('👎 🔑 oauth - GetAccessToken silent failed - sign in again!');
-				redirect(307, '/login');
+				redirectToReauthentication(IdentityProvider.MICROSOFT);
 			} else {
 				console.error('🔥 🔑 oauth - GetAccessToken failed');
 				console.error(error);

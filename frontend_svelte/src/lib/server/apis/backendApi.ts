@@ -1,7 +1,14 @@
 import { error, fail } from '@sveltejs/kit';
 
 import { Action, IdentityType } from '$lib/accessHandler';
+import { IdentityProvider, preferredIdentityProvider } from '$lib/identityProvider';
+import { redisCache } from '$lib/server/cache';
 import AppConfig from '$lib/server/config';
+import { type OAuthProvider, redirectToReauthentication } from '$lib/server/oauth/base';
+import {
+	linkedinAuthProvider,
+	LinkedInReauthenticationRequiredError
+} from '$lib/server/oauth/linkedin';
 import { msalAuthProvider } from '$lib/server/oauth/microsoft';
 import type {
 	AccessPolicy,
@@ -22,12 +29,41 @@ export type BackendEntitySnapshot<T> = {
 	cursor: number;
 };
 
+class BackendAuthenticationProvider implements OAuthProvider {
+	async getAccessToken(sessionId: string, scopes: string[] = []): Promise<string> {
+		const provider = await redisCache.getSession<IdentityProvider>(sessionId, '$.identityProvider');
+		switch (provider) {
+			case IdentityProvider.LINKEDIN:
+				try {
+					return await linkedinAuthProvider.getIdentityToken(sessionId);
+				} catch (error) {
+					if (error instanceof LinkedInReauthenticationRequiredError) {
+						const currentUser = await redisCache.getSession<{
+							azure_user_id?: string | null;
+							linkedin_user_id?: string | null;
+						}>(sessionId, '$.currentUser');
+						redirectToReauthentication(
+							preferredIdentityProvider(currentUser ?? {}, IdentityProvider.LINKEDIN)
+						);
+					}
+					throw error;
+				}
+			case IdentityProvider.MICROSOFT:
+				return msalAuthProvider.getAccessToken(sessionId, scopes);
+			default:
+				throw new Error('The session has no supported active identity provider.');
+		}
+	}
+}
+
+export const backendAuthProvider = new BackendAuthenticationProvider();
+
 class BackendAPI extends BaseAPI {
 	appConfig: AppConfig;
 	static pathPrefix = '/api/v1';
 
 	constructor() {
-		super(msalAuthProvider, `${appConfig.backend_origin}${BackendAPI.pathPrefix}`);
+		super(backendAuthProvider, `${appConfig.backend_origin}${BackendAPI.pathPrefix}`);
 		this.appConfig = appConfig;
 	}
 

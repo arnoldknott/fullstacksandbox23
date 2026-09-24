@@ -2,7 +2,7 @@
 
 import time
 from typing import cast
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
 
 import jwt
@@ -18,7 +18,10 @@ from core.authentication.base import (
     VerifiedIdentity,
     verify_provider_token,
 )
-from core.authentication.linkedin import validate_linkedin_identity_token
+from core.authentication.linkedin import (
+    LINKEDIN_ISSUER,
+    validate_linkedin_identity_token,
+)
 from core.security import (
     AllowAnonymous,
     CurrentAccessToken,
@@ -27,6 +30,8 @@ from core.security import (
     MicrosoftGuard,
     check_token_against_guards,
     evaluate_guards,
+    get_token_payload_from_cache,
+    provide_http_token_payload,
 )
 from core.types import (
     CurrentUserData,
@@ -39,7 +44,7 @@ from routers.socketio.v1.base import BaseNamespace
 
 pytestmark = pytest.mark.anyio
 
-ISSUER = "https://www.linkedin.com"
+ISSUER = LINKEDIN_ISSUER
 CLIENT_ID = "synthetic-client"
 
 
@@ -76,9 +81,7 @@ def signed_identity(signing_key):
 
 
 def validate(token, jwks):
-    return validate_linkedin_identity_token(
-        token, jwks, issuer=ISSUER, client_id=CLIENT_ID
-    )
+    return validate_linkedin_identity_token(token, jwks, client_id=CLIENT_ID)
 
 
 async def test_signed_linkedin_token_preserves_subject(signed_identity):
@@ -462,3 +465,43 @@ async def test_unsupported_provider_never_falls_back_to_microsoft(monkeypatch):
     assert error.value.status_code == 401
     assert error.value.detail == "Unsupported identity provider."
     resolver.assert_not_awaited()
+
+
+@pytest.mark.anyio
+async def test_http_extraction_preserves_verified_linkedin_provider(monkeypatch):
+    expected = VerifiedIdentity(IdentityProvider.linkedin, {"sub": "member-sub"})
+    verify = AsyncMock(return_value=expected)
+    monkeypatch.setattr("core.security.verify_provider_token", verify)
+
+    assert await provide_http_token_payload("signed-token") == expected
+    verify.assert_awaited_once()
+
+
+@pytest.mark.anyio
+async def test_socket_cache_selects_linkedin_identity_token(monkeypatch):
+    cache_json = Mock()
+    cache_json.get.side_effect = lambda key, path=None: {
+        ("session:session", "$.identityProvider"): ["linkedin"],
+        ("session:session", "$.linkedinSubject"): ["member-sub"],
+        ("linkedin:member-sub", None): {"idToken": "identity-token"},
+    }[(key, path)]
+    monkeypatch.setattr(
+        "core.security.redis_session_client.json", Mock(return_value=cache_json)
+    )
+    validate = AsyncMock(
+        return_value={
+            "iss": ISSUER,
+            "aud": CLIENT_ID,
+            "sub": "member-sub",
+            "iat": 1,
+            "exp": 2,
+        }
+    )
+    monkeypatch.setattr("core.security.linkedin.get_linkedin_token_payload", validate)
+    monkeypatch.setattr("core.security.config.LINKEDIN_CLIENT_ID", CLIENT_ID)
+
+    identity = await get_token_payload_from_cache("session")
+
+    assert identity.provider == IdentityProvider.linkedin
+    assert identity.claims["sub"] == "member-sub"
+    validate.assert_awaited_once_with("identity-token", client_id=CLIENT_ID)

@@ -19,6 +19,10 @@ export default class AppConfig {
 	public backend_fqdn: string;
 	public keyvault_health?: string;
 	public ms_graph_base_uri: string;
+	public linkedin_client_id: string;
+	public linkedin_client_secret: string;
+	public linkedin_issuer: string;
+	public linkedin_api_base_uri: string;
 	public redis_host: string;
 	public redis_port: string;
 	public redis_session_db: string;
@@ -40,13 +44,17 @@ export default class AppConfig {
 		this.backend_fqdn = '';
 		this.keyvault_health = '';
 		this.ms_graph_base_uri = 'https://graph.microsoft.com/v1.0';
+		this.linkedin_client_id = '';
+		this.linkedin_client_secret = '';
+		this.linkedin_issuer = 'https://www.linkedin.com/oauth';
+		this.linkedin_api_base_uri = 'https://api.linkedin.com/v2';
 		this.redis_host = process.env.REDIS_HOST || '';
 		this.redis_port = process.env.REDIS_PORT || '';
 		this.redis_session_db = process.env.REDIS_SESSION_DB || '';
 		this.redis_session_password = '';
 		this.authentication_timeout = 60 * 10; // 10 minutes to authenticate
 		// this.authentication_cookie_options = {};
-		this.session_timeout = 60 * 60; // 1 hour
+		this.session_timeout = 60 * 120; // 2 hours
 		this.session_cookie_options = {};
 	}
 
@@ -117,6 +125,8 @@ export default class AppConfig {
 				const apiScope = await client?.getSecret('api-scope');
 				const azTenantId = await client?.getSecret('azure-tenant-id');
 				const redisSessionPassword = await client?.getSecret('redis-session-password');
+				const linkedinClientId = await client?.getSecret('linkedin-client-id');
+				const linkedinClientSecret = await client?.getSecret('linkedin-client-secret');
 				this.keyvault_health = keyvaultHealth?.value;
 				this.backend_host = backend_host?.value || '';
 				this.backend_origin = `http://${this.backend_host}:80`;
@@ -133,6 +143,8 @@ export default class AppConfig {
 				this.az_authority = `https://login.microsoftonline.com/${azTenantId?.value}`;
 				this.az_logout_uri = `https://login.microsoftonline.com/${azTenantId?.value}/oauth2/v2.0/logout`;
 				this.redis_session_password = redisSessionPassword?.value || '';
+				this.linkedin_client_id = linkedinClientId?.value || '';
+				this.linkedin_client_secret = linkedinClientSecret?.value || '';
 				// TBD: remove authentication_cookie_options - the session-id is now transferred inside state of OAuth-flow?
 				// this.authentication_cookie_options = {
 				// 	httpOnly: true,
@@ -164,6 +176,8 @@ export default class AppConfig {
 			this.az_authority = `https://login.microsoftonline.com/${process.env.AZURE_TENANT_ID}`;
 			this.az_logout_uri = `https://login.microsoftonline.com/${process.env.AZURE_TENANT_ID}/oauth2/v2.0/logout`;
 			this.redis_session_password = process.env.REDIS_SESSION_PASSWORD || '';
+			this.linkedin_client_id = process.env.LINKEDIN_CLIENT_ID || '';
+			this.linkedin_client_secret = process.env.LINKEDIN_CLIENT_SECRET || '';
 			// TBD: remove authentication_cookie_options - the session-id is now transferred inside state of OAuth-flow!
 			// this.authentication_cookie_options = {
 			// 	httpOnly: true,

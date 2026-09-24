@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { type SubmitFunction } from '@sveltejs/kit';
-	import { onMount } from 'svelte';
 
 	import Guard from '$components/Guard.svelte';
 	import { type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
@@ -15,6 +14,7 @@
 
 	let {
 		loggedIn,
+		avatarUrl,
 		updateProfileAccount,
 		saveProfileAccount,
 		artificialIntelligenceConfiguration = $bindable(),
@@ -24,6 +24,7 @@
 		parentUrl
 	}: {
 		loggedIn: boolean;
+		avatarUrl: string | null;
 		updateProfileAccount: SubmitFunction;
 		saveProfileAccount: () => Promise<void>;
 		artificialIntelligenceConfiguration: ArtificialIntelligenceConfig;
@@ -34,37 +35,6 @@
 	} = $props();
 
 	let navBar: HTMLElement | null = $state(null);
-
-	let avatarUrl: string | null = $state(null);
-
-	async function loadAvatar() {
-		try {
-			const sessionId = localStorage.getItem('session_id');
-
-			const response = await fetch('/apiproxies/msgraph?endpoint=/me/photo/$value', {
-				method: 'GET',
-				headers: sessionId ? { Authorization: `Bearer ${sessionId}` } : {}
-			});
-
-			if (!response.ok) {
-				throw new Error(`Avatar request failed: ${response.status}`);
-			}
-
-			const blob = await response.blob();
-			avatarUrl = URL.createObjectURL(blob);
-		} catch (err) {
-			console.error('Avatar load failed', err);
-			avatarUrl = null;
-		}
-	}
-
-	onMount(() => {
-		loadAvatar();
-
-		return () => {
-			if (avatarUrl) URL.revokeObjectURL(avatarUrl);
-		};
-	});
 
 	let artificialIntelligenceForm = $state<HTMLFormElement | null>(null);
 </script>
@@ -149,16 +119,15 @@
 				aria-label="User Menu"
 			>
 				{#if loggedIn}
-					<!-- {#if avatarUrl} -->
-					<img
-						src={avatarUrl ?? ''}
-						alt="your profile"
-						class="not-hover:mask-radial-t-0% h-10 min-w-10 rounded-full not-hover:mask-radial-from-40%"
-					/>
-					<!-- {:else}
-							<span class="icon-[fa6-solid--user] bg-secondary size-5 h-10 w-10 rounded-full"
-							></span>
-						{/if} -->
+					{#if avatarUrl}
+						<img
+							src={avatarUrl}
+							alt="your profile"
+							class="not-hover:mask-radial-t-0% h-10 min-w-10 rounded-full object-cover not-hover:mask-radial-from-40%"
+						/>
+					{:else}
+						<span class="icon-[fa6-solid--user] bg-secondary size-5 h-10 w-10 rounded-full"></span>
+					{/if}
 				{/if}
 			</span>
 			<ul

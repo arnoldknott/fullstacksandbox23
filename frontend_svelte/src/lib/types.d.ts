@@ -5,6 +5,7 @@ import type {
 } from '@microsoft/microsoft-graph-types';
 
 import type { Action, IdentityType } from '$lib/accessHandler';
+import type { IdentityProvider } from '$lib/identityProvider';
 import type { SessionStatus } from '$lib/session';
 import type { Variant } from '$lib/theming';
 
@@ -21,8 +22,9 @@ export type Session = {
 	loggedIn: boolean;
 	status?: SessionStatus;
 	welcomePending?: boolean;
+	identityProvider?: IdentityProvider;
 	microsoftAccount?: AccountInfo;
-	microsoftProfile?: MicrosoftProfile;
+	linkedinSubject?: string;
 	userAgent?: string;
 	currentUser?: Me;
 	sessionId: string;
@@ -31,7 +33,19 @@ export type Session = {
 export type ClientSession = {
 	loggedIn: boolean;
 	sessionId: string;
-	microsoftProfile: MicrosoftProfile;
+	identityProvider?: IdentityProvider;
+	microsoftProfile?: MicrosoftProfile;
+	linkedinProfile?: LinkedInProfile;
+	currentUser?: Me;
+	status?: SessionStatus;
+};
+
+export type LinkedInProfile = {
+	sub: string;
+	name?: string;
+	given_name?: string;
+	family_name?: string;
+	picture?: string;
 };
 
 // Sidebar:

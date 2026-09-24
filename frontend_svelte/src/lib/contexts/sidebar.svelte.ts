@@ -201,6 +201,12 @@ export const initialProtectedSidebarLinks: SidebarItemContent[] = $state([
 						pathname: resolve('/(layout)/(protected)/identities/msgraph'),
 						icon: 'icon-[fluent--person-20-filled]',
 						id: 'identities-microsoft'
+					},
+					{
+						name: 'LinkedIn',
+						pathname: resolve('/(layout)/(protected)/identities/linkedin'),
+						icon: 'icon-[cib--linkedin-in]',
+						id: 'identities-linkedin'
 					}
 				]
 			},

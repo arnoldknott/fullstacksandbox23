@@ -77,6 +77,9 @@ class Config(BaseSettings):
     AZURE_AUTHORITY: Optional[str] = (
         f"https://login.microsoftonline.com/{AZURE_TENANT_ID}"
     )
+    # LinkedIn OpenID Connect configuration. Empty client configuration keeps the
+    # optional provider disabled without affecting Microsoft authentication.
+    LINKEDIN_CLIENT_ID: Optional[str] = get_variable("LINKEDIN_CLIENT_ID")
     # uses devleopert clients app registration for the integrated OpenAPI (former SwaggerUI):
     DEVELOPER_CLIENTS_CLIENT_ID: Optional[str] = get_variable(
         "DEVELOPER_CLIENTS_CLIENT_ID"

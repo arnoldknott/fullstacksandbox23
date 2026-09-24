@@ -10,7 +10,6 @@ const appConfig = await AppConfig.getInstance();
 // type AppRedisClient = ReturnType<typeof createClient>;
 
 const connectionString = `redis://session:${appConfig.redis_session_password}@${appConfig.redis_host}:${appConfig.redis_port}`;
-const sessionTimeOut = appConfig.session_timeout;
 
 class RedisCache {
 	redisClient: RedisClientType | null;
@@ -134,7 +133,7 @@ class RedisCache {
 		sessionId: string,
 		path: string,
 		data: string,
-		timeOut: number = sessionTimeOut
+		timeOut: number = appConfig.session_timeout
 	): Promise<boolean> {
 		try {
 			const client = await this.provideClient();
@@ -150,7 +149,10 @@ class RedisCache {
 		}
 	}
 
-	public async getSession(sessionId: string, path: string = '$'): Promise<object> {
+	public async getSession<T = object>(
+		sessionId: string,
+		path: string = '$'
+	): Promise<T | undefined> {
 		// TBD: should no longer be necessary, as the sessionId is always a string!
 		if (!sessionId) {
 			console.error('🔥 🥞 cache - server - getSession - sessionId is null');
@@ -158,13 +160,13 @@ class RedisCache {
 		}
 		try {
 			const client = await this.provideClient();
-			if (!client) return {};
+			if (!client) return undefined;
 
 			const result = await client.json.get(`session:${sessionId}`, { path: path });
 			if (Array.isArray(result) && result.length > 0) {
-				return result[0] as object;
+				return result[0] as T;
 			} else {
-				return {};
+				return undefined;
 			}
 		} catch (err) {
 			console.error('🔥 🥞 cache - server - getSession - failed');
@@ -175,7 +177,7 @@ class RedisCache {
 
 	public async updateSessionExpiry(
 		sessionId: string,
-		timeOut: number = sessionTimeOut
+		timeOut: number = appConfig.session_timeout
 	): Promise<void> {
 		// TBD: should no longer be necessary, as the sessionId is always a string!
 		if (!sessionId) {
@@ -189,6 +191,18 @@ class RedisCache {
 			await client.expire(`session:${sessionId}`, timeOut);
 		} catch (err) {
 			console.error('🔥 🥞 cache - server - updateSessionExpiry - failed');
+			console.error(err);
+		}
+	}
+
+	public async deleteSessionPath(sessionId: string, path: string): Promise<void> {
+		if (!sessionId) throw error(401, 'Session ID is null');
+		try {
+			const client = await this.provideClient();
+			if (!client) return;
+			await client.json.del(`session:${sessionId}`, { path });
+		} catch (err) {
+			console.error('🔥 🥞 cache - server - deleteSessionPath - failed');
 			console.error(err);
 		}
 	}
@@ -319,7 +333,7 @@ export const redisCache = new RedisCache();
 // 		}
 // 		const setStatus = await redisClient.json.set(sessionId, path, authDataString);
 // 		console.log('👍 🥞 cache - server - setSession - sessionId set');
-// 		await redisClient?.expire(sessionId, sessionTimeOut);
+// 		await redisClient?.expire(sessionId, appConfig.session_timeout);
 // 		console.log('👍 🥞 cache - server - setSession - sessionId expiry set');
 // 		return setStatus === 'OK' ? true : false;
 // 	} catch (err) {
@@ -367,7 +381,7 @@ export const redisCache = new RedisCache();
 // 		throw new Error('Session ID is null');
 // 	}
 // 	try {
-// 		await redisClient?.expire(sessionId, sessionTimeOut);
+// 		await redisClient?.expire(sessionId, appConfig.session_timeout);
 // 	} catch (err) {
 // 		console.error('🥞 cache - server - updateSessionExpiry - redisClient?.expire failed');
 // 		console.error(err);

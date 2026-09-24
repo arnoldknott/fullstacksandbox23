@@ -1,10 +1,9 @@
-import type { User as MicrosoftProfile } from '@microsoft/microsoft-graph-types';
 // import { v4 as uuidv4 } from 'uuid';
 import { redirect } from '@sveltejs/kit';
 
 // import type { AuthenticationResult } from '@azure/msal-node';
+import { IdentityProvider } from '$lib/identityProvider';
 import { backendAPI } from '$lib/server/apis/backendApi';
-import { microsoftGraph } from '$lib/server/apis/msgraph';
 import { redisCache } from '$lib/server/cache';
 import AppConfig from '$lib/server/config';
 import { msalAuthProvider } from '$lib/server/oauth/microsoft';
@@ -13,6 +12,13 @@ import { SessionStatus } from '$lib/session';
 import type { PageServerLoad } from './$types';
 
 const appConfig = await AppConfig.getInstance();
+
+function safeTarget(target: string, origin: string): string {
+	const targetUrl = new URL(target, origin);
+	return targetUrl.origin === origin
+		? `${targetUrl.pathname}${targetUrl.search}${targetUrl.hash}`
+		: '/';
+}
 
 export const load: PageServerLoad = async ({ url, cookies }) => {
 	let targetUrl = '/';
@@ -31,34 +37,24 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 			// but still needs to execute, as this sets the access token in cache!
 			// const _authenticationResult: AuthenticationResult =
 			await msalAuthProvider.authenticateWithCode(sessionId, code, url.origin);
-			await redisCache.setSession(sessionId, '$.loggedIn', JSON.stringify(true));
 			await redisCache.setSession(sessionId, '$.sessionId', JSON.stringify(sessionId));
 
 			const cookieOptions = appConfig.session_cookie_options as Record<string, unknown>;
-			// Check if targetURL is pointing to another origin - if yes, the page is embedded in an iframe
+			// Check if target URL is pointing to another origin - if yes, the page is embedded in an iframe
 			// if (targetUrl && new URL(targetUrl).origin !== url.origin) {
 			// This worked in Chrome embedded in parent-page:
 			// if (parentUrl) {
 			// 	cookieOptions.sameSite = 'none';
 			// }
-			cookies.set('session_id', sessionId, {
-				path: '/',
-				...cookieOptions
-			});
-			// const response = await fetch(`${appConfig.ms_graph_base_uri}/me`, {
-			// 	headers: {
-			// 		Authorization: `Bearer ${authenticationResult.accessToken}`
-			// 	}
-			// });
-			// const microsoftProfile = (await response.json()) as MicrosoftProfile;
-			const responseMicrosoftProfile = await microsoftGraph.get(sessionId, '/me');
-			const microsoftProfile = (await responseMicrosoftProfile.json()) as MicrosoftProfile;
 			await redisCache.setSession(
 				sessionId,
-				'$.microsoftProfile',
-				JSON.stringify(microsoftProfile)
+				'$.identityProvider',
+				JSON.stringify(IdentityProvider.MICROSOFT)
 			);
 			const responseMe = await backendAPI.get(sessionId, '/user/me');
+			if (responseMe.status !== 200 && responseMe.status !== 201) {
+				throw new Error(`Backend Microsoft signup failed with status ${responseMe.status}.`);
+			}
 			// TBD: consider leaving user.is_active at False after creatation and
 			// show the modal dialog for updating profile and account.
 			// The put -me endpoint will set is_active to True
@@ -82,6 +78,11 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 			}
 			const currentUser = await responseMe.json();
 			await redisCache.setSession(sessionId, '$.currentUser', JSON.stringify(currentUser));
+			await redisCache.setSession(sessionId, '$.loggedIn', JSON.stringify(true));
+			cookies.set('session_id', sessionId, {
+				path: '/',
+				...cookieOptions
+			});
 		} else {
 			console.error('🔥 🚪 oauth - callback - server - redirect failed');
 			redirect(302, '/');
@@ -96,6 +97,6 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 		// return { parentUrl: parentUrl, sessionId: sessionId };
 		return { parentUrl: parentUrl };
 	} else {
-		redirect(302, targetUrl);
+		redirect(302, safeTarget(targetUrl, url.origin));
 	}
 };

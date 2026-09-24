@@ -9,7 +9,7 @@ Write this provider-generically: Microsoft and LinkedIn are the first two provid
 ## Dependencies
 
 - Stage B of the main plan: the minimal per-provider identity columns on `User` and provider signup handlers.
-- Stage C of the main plan: the proof-of-identity interface (verified callback state/nonce bound to provider, intent, initiating user, and return destination).
+- Stage C of the main plan: the proof-of-identity interface (verified callback state and provider-supported nonce bound to provider, intent, initiating user, and return destination).
 
 ## Two distinct flows
 

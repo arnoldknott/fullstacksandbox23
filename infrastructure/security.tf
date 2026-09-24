@@ -396,6 +396,18 @@ resource "azurerm_key_vault_secret" "frontendSvelteClientSecret" {
   key_vault_id = azurerm_key_vault.keyVault.id
 }
 
+resource "azurerm_key_vault_secret" "linkedinClientId" {
+  name         = "linkedin-client-id"
+  value        = var.linkedin_client_id
+  key_vault_id = azurerm_key_vault.keyVault.id
+}
+
+resource "azurerm_key_vault_secret" "linkedinClientSecret" {
+  name         = "linkedin-client-secret"
+  value        = var.linkedin_client_secret
+  key_vault_id = azurerm_key_vault.keyVault.id
+}
+
 resource "azurerm_key_vault_secret" "developerClientsClientId" {
   name         = "developer-clients-client-id"
   value        = azuread_application.developerClients.client_id

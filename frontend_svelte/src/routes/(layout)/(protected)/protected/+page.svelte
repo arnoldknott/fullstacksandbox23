@@ -57,7 +57,9 @@
 </script>
 
 <Display>
-	{page.data.session.microsoftProfile.displayName}'s Dashboard
+	{page.data.session.microsoftProfile?.displayName ??
+		page.data.session.linkedinProfile?.name ??
+		'User'}'s Dashboard
 </Display>
 
 <Heading id="resources">Resources</Heading>

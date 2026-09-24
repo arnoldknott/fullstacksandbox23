@@ -5,10 +5,11 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 
 from core.security import (
-    CurrentAccessToken,
     Guards,
+    LinkedInGuard,
     MicrosoftGuard,
     check_token_against_guards,
+    check_token_against_guards_with_status,
     get_http_access_token_payload,
 )
 from core.types import CollectionInclude, CollectionSort, GuardTypes, SortDirection
@@ -104,13 +105,14 @@ async def post_invite_azure_user(
 async def get_me(
     response: Response,
     token_payload=Depends(get_http_access_token_payload),
-    guards=Depends(Guards(MicrosoftGuard(roles=["User"]))),
+    guards=Depends(Guards(MicrosoftGuard(roles=["User"]), LinkedInGuard())),
 ) -> Me:
     """Returns the current user with account and profile or creates through self-sign-up."""
-    _, response.status_code = await CurrentAccessToken(
-        token_payload
-    ).gets_or_signs_up_current_user()
-    current_user = await check_token_against_guards(token_payload, guards)
+    current_user, status_code = await check_token_against_guards_with_status(
+        token_payload, guards
+    )
+    if status_code is not None:
+        response.status_code = status_code
     if current_user is None:
         raise HTTPException(status_code=401, detail="Authentication required.")
     async with UserCRUD() as crud:
@@ -162,7 +164,7 @@ async def get_user_by_id(
 async def put_me(
     user: MeUpdate,
     token_payload=Depends(get_http_access_token_payload),
-    guards=Depends(Guards(MicrosoftGuard(roles=["User"]))),
+    guards=Depends(Guards(MicrosoftGuard(roles=["User"]), LinkedInGuard())),
 ) -> Me:
     """Updates the current user with account and profile."""
     current_user = await check_token_against_guards(token_payload, guards)

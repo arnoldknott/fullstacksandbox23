@@ -10,7 +10,8 @@ from jwt.algorithms import RSAAlgorithm
 from .base import get_cached_jwks
 
 # Public protocol endpoint published by LinkedIn; never derived from token claims.
-LINKEDIN_JWKS_URL = "https://www.linkedin.com/oauth/openid/jwks"
+LINKEDIN_ISSUER = "https://www.linkedin.com/oauth"
+LINKEDIN_JWKS_URL = f"{LINKEDIN_ISSUER}/openid/jwks"
 
 
 async def get_linkedin_jwks(no_cache: bool = False) -> dict[str, Any]:
@@ -21,10 +22,10 @@ async def get_linkedin_jwks(no_cache: bool = False) -> dict[str, Any]:
 
 
 def validate_linkedin_identity_token(
-    token: str, jwks: dict[str, Any], *, issuer: str, client_id: str
+    token: str, jwks: dict[str, Any], *, client_id: str
 ) -> dict[str, Any]:
     """Verify the identity token for the explicitly configured login application."""
-    if not issuer or not client_id:
+    if not client_id:
         raise HTTPException(
             status_code=503, detail="LinkedIn authentication is not configured."
         )
@@ -48,7 +49,7 @@ def validate_linkedin_identity_token(
         token,
         public_key,
         algorithms=["RS256"],
-        issuer=issuer,
+        issuer=LINKEDIN_ISSUER,
         audience=client_id,
         options={"require": ["iss", "aud", "sub", "iat", "exp"]},
     )
@@ -69,21 +70,15 @@ def validate_linkedin_identity_token(
     return claims
 
 
-async def get_linkedin_token_payload(
-    token: str, *, issuer: str, client_id: str
-) -> dict[str, Any]:
+async def get_linkedin_token_payload(token: str, *, client_id: str) -> dict[str, Any]:
     """Validate with cached keys and retry once with fresh keys on token failure."""
-    if not issuer or not client_id:
+    if not client_id:
         raise HTTPException(
             status_code=503, detail="LinkedIn authentication is not configured."
         )
     jwks = await get_linkedin_jwks()
     try:
-        return validate_linkedin_identity_token(
-            token, jwks, issuer=issuer, client_id=client_id
-        )
+        return validate_linkedin_identity_token(token, jwks, client_id=client_id)
     except jwt.PyJWTError:
         jwks = await get_linkedin_jwks(no_cache=True)
-        return validate_linkedin_identity_token(
-            token, jwks, issuer=issuer, client_id=client_id
-        )
+        return validate_linkedin_identity_token(token, jwks, client_id=client_id)

@@ -1,12 +1,17 @@
 import { io, type ManagerOptions, type Socket, type SocketOptions } from 'socket.io-client';
 import { getContext } from 'svelte';
 
+import { goto } from '$app/navigation';
+import { resolve } from '$app/paths';
+import { page } from '$app/state';
+
 import { Action, PUBLIC_IDENTITY_ID } from './accessHandler';
 import {
 	EntityContainer,
 	type EntityContainerConfiguration,
 	type EntityContainerInterface
 } from './entityContainer.svelte';
+import { IdentityProvider, preferredIdentityProvider } from './identityProvider';
 import type {
 	AccessPolicy,
 	AnyEntityExtended,
@@ -63,6 +68,10 @@ export type EntitySnapshot<T extends AnyEntityExtended = AnyEntityExtended> = {
 
 type SubscriptionResult = { subscribed: string[]; rejected: string[] } | { error: string };
 
+type SocketioConnectError = Error & {
+	data?: { code?: string };
+};
+
 export type SocketioConfiguration<T extends AnyEntityExtended = AnyEntityExtended> = Partial<
 	Omit<EntityContainerConfiguration<T>, 'parentId'> & SocketioHandlers<T>
 > & {
@@ -112,6 +121,27 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 			query: queryParams,
 			forceNew: true,
 			...connection.overrides
+		});
+		this.client.on('connect_error', (error: SocketioConnectError) => {
+			if (error.data?.code === 'reauthentication-required') {
+				const provider = preferredIdentityProvider(
+					page.data.session?.currentUser ?? {},
+					page.data.session?.identityProvider
+				);
+				const targetUrl = encodeURIComponent(window.location.href);
+				if (provider === IdentityProvider.MICROSOFT) {
+					// The route path is resolved; the query string is appended afterwards.
+					// eslint-disable-next-line svelte/no-navigation-without-resolve
+					void goto(`${resolve('/login/microsoft')}?target-url=${targetUrl}`);
+				} else if (provider === IdentityProvider.LINKEDIN) {
+					// The route path is resolved; the query string is appended afterwards.
+					// eslint-disable-next-line svelte/no-navigation-without-resolve
+					void goto(`${resolve('/login/linkedin')}?target-url=${targetUrl}`);
+				} else {
+					// Reauthentication cannot safely choose a provider without known identity information.
+					throw new Error('Reauthentication required, but no suitable identity provider found.');
+				}
+			}
 		});
 		if (configuration.snapshot) {
 			this.client.on('connect', () => {

@@ -18,6 +18,7 @@
 		setProtectedSidebarLinks,
 		setSidebarLinks
 	} from '$lib/contexts/sidebar.svelte';
+	import { IdentityProvider } from '$lib/identityProvider';
 	import theme from '$lib/stores/theme';
 	import { FSSB23_THEME_KEY, type ThemeRuntimeContext, Theming } from '$lib/theming';
 	import type { SidebarItemContent } from '$lib/types';
@@ -54,9 +55,9 @@
 	});
 
 	// put potenitally in onMount to avoid SSR issues
-	let parentUrl = $derived(page.url.searchParams.get('parentURL') || undefined);
+	let parentUrl = $derived(page.url.searchParams.get('parent-url') || undefined);
 	// $effect(() => {
-	// 	console.log('=== layout.svelte - parentURL ===');
+	// 	console.log('=== layout.svelte - parent-url ===');
 	// 	console.log(parentUrl);
 	// });
 	// onMount(() => {
@@ -142,12 +143,14 @@
 	}
 
 	onMount(() => {
-		loadAvatar();
+		if (data.session?.identityProvider === IdentityProvider.MICROSOFT) loadAvatar();
 
 		return () => {
 			if (avatarUrl) URL.revokeObjectURL(avatarUrl);
 		};
 	});
+
+	const navbarAvatarUrl = $derived(avatarUrl ?? data.session?.linkedinProfile?.picture ?? null);
 
 	let artificialIntelligenceConfiguration: ArtificialIntelligenceConfig = $state({
 		enabled: true,
@@ -436,6 +439,7 @@
 >
 	<Navbar
 		{loggedIn}
+		avatarUrl={navbarAvatarUrl}
 		{updateProfileAccount}
 		{saveProfileAccount}
 		bind:artificialIntelligenceConfiguration

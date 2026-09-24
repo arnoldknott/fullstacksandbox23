@@ -1,5 +1,8 @@
+from unittest.mock import AsyncMock
+
 import pytest
 import socketio
+from fastapi import HTTPException
 from socketio.exceptions import ConnectionError
 
 from core.socketio import socketio_server
@@ -42,7 +45,41 @@ async def test_on_connect_to_production_on_server_side_fails_unpatched_server():
         )
         raise Exception("This should have failed due unpatched server.")
     except ConnectionRefusedError as err:
-        assert str(err) == "Authorization failed."
+        assert err.args[0] == {
+            "message": "Authentication must be renewed.",
+            "code": "reauthentication-required",
+        }
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "backend_error",
+    [
+        RuntimeError("Redis is unavailable."),
+        HTTPException(status_code=503, detail="Identity provider is unavailable."),
+    ],
+)
+async def test_on_connect_does_not_request_reauthentication_for_backend_failures(
+    monkeypatch, backend_error
+):
+    namespace = DemoNamespace(server=socketio_server)
+    monkeypatch.setattr(
+        namespace,
+        "_get_token_payload_if_authenticated",
+        AsyncMock(side_effect=backend_error),
+    )
+
+    with pytest.raises(ConnectionRefusedError) as error:
+        await namespace.on_connect(
+            sid="123",
+            environ={},
+            auth={"session-id": "existing-session"},
+        )
+
+    assert error.value.args[0] == {
+        "message": "Connection could not be established.",
+        "code": "connection-failed",
+    }
 
 
 @pytest.mark.anyio

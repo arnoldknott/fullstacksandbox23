@@ -15,10 +15,13 @@ from typing import (
 from urllib.parse import parse_qs
 from uuid import UUID
 
+import jwt
 import socketio
+from fastapi import HTTPException
 from sqlmodel import SQLModel, col, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
+from core.authentication.base import VerifiedIdentity
 from core.config import config
 from core.databases import get_async_session
 from core.security import (
@@ -133,7 +136,7 @@ class BaseNamespace(
 
     async def _get_token_payload_if_authenticated(
         self, session_id: str
-    ) -> Optional[dict]:
+    ) -> VerifiedIdentity | dict:
         """Get the token payload from the cache if authenticated."""
         logger.info("🧦 Getting token payload from cache")
         token_payload = await get_token_payload_from_cache(
@@ -457,43 +460,142 @@ class BaseNamespace(
             "query_strings": session_query_strings,
         }
         auth_rejected = False
-        token_verified = False
+        token_payload: VerifiedIdentity | dict | None = None
+        auth_session_id = auth["session-id"] if auth else None
         try:
-            # TBD: catch and handle an expired token gracefully and return something to the client on a different message channel,
-            # so it can initiate the authentication process and come back with a new session id
-            auth_session_id = auth["session-id"] if auth else None
-            if auth_session_id is None:
-                raise ConnectionRefusedError("No session id provided.")
-            token_payload = await self._get_token_payload_if_authenticated(
-                auth_session_id
-            )
-            token_verified = True
-            current_user = await check_token_against_guards(token_payload, guards)
-            session_data["user_name"] = (token_payload or {}).get("name", "")
-            session_data["session_id"] = auth_session_id
-            # if "Admin" in current_user.azure_token_roles:
-            if (
-                current_user is not None
-                and "Admin" in (current_user.azure_token_roles or [])
-                and join_admin_room
-            ):
-                await self.server.enter_room(
-                    sid,
-                    "role:Admin",
-                    namespace=self.namespace,
-                )
-            logger.info(
-                f"🧦 Client authenticated to access protected namespace {self.namespace}."
-            )
-        except Exception:
-            if token_verified or not guards.allows_anonymous:
-                auth_rejected = True
-                logger.error(f"🧦 Client with session id {sid} failed to authenticate.")
-                raise ConnectionRefusedError("Authorization failed.")
-            else:
+            if auth_session_id is not None:
+                authentication_error: Exception | None = None
+                try:
+                    token_payload = await self._get_token_payload_if_authenticated(
+                        auth_session_id
+                    )
+                except HTTPException as err:
+                    if err.status_code == 401:
+                        authentication_error = err
+                    else:
+                        auth_rejected = True
+                        logger.exception(
+                            "🧦 Authentication service failed while connecting client %s.",
+                            sid,
+                        )
+                        raise ConnectionRefusedError(
+                            {
+                                "message": "Connection could not be established.",
+                                "code": "connection-failed",
+                            }
+                        ) from err
+                except (jwt.PyJWTError, ConnectionRefusedError) as err:
+                    authentication_error = err
+                except Exception as err:
+                    auth_rejected = True
+                    logger.exception(
+                        "🧦 Unexpected authentication failure while connecting client %s.",
+                        sid,
+                    )
+                    raise ConnectionRefusedError(
+                        {
+                            "message": "Connection could not be established.",
+                            "code": "connection-failed",
+                        }
+                    ) from err
+
+                if authentication_error is not None:
+                    if not guards.allows_anonymous:
+                        auth_rejected = True
+                        logger.info(
+                            "🧦 Client %s must renew authentication.",
+                            sid,
+                        )
+                        raise ConnectionRefusedError(
+                            {
+                                "message": "Authentication must be renewed.",
+                                "code": "reauthentication-required",
+                            }
+                        ) from authentication_error
+                    logger.info(
+                        "🧦 Client %s is using anonymous access after authentication failed.",
+                        sid,
+                    )
+
+            if token_payload is None:
+                if not guards.allows_anonymous:
+                    auth_rejected = True
+                    logger.info("🧦 Client %s did not provide authentication.", sid)
+                    raise ConnectionRefusedError(
+                        {
+                            "message": "Authentication must be renewed.",
+                            "code": "reauthentication-required",
+                        }
+                    )
                 logger.info(
-                    # f"🧦 Client authenticated to public namespace {self.namespace}."
-                    f"🧦 Client {sid} accessing namespace {self.namespace} publically."
+                    "🧦 Client %s accessing namespace %s anonymously.",
+                    sid,
+                    self.namespace,
+                )
+            else:
+                try:
+                    current_user = await check_token_against_guards(
+                        token_payload, guards
+                    )
+                except HTTPException as err:
+                    auth_rejected = True
+                    logger.info(
+                        "🧦 Client %s is not authorized for namespace %s.",
+                        sid,
+                        self.namespace,
+                    )
+                    raise ConnectionRefusedError(
+                        {
+                            "message": "Authorization failed.",
+                            "code": "authorization-failed",
+                        }
+                    ) from err
+                except Exception as err:
+                    auth_rejected = True
+                    logger.exception(
+                        "🧦 Authorization service failed while connecting client %s.",
+                        sid,
+                    )
+                    raise ConnectionRefusedError(
+                        {
+                            "message": "Connection could not be established.",
+                            "code": "connection-failed",
+                        }
+                    ) from err
+
+                try:
+                    claims = (
+                        token_payload.claims
+                        if isinstance(token_payload, VerifiedIdentity)
+                        else token_payload
+                    )
+                    session_data["user_name"] = claims.get("name", "")
+                    session_data["session_id"] = auth_session_id
+                    if (
+                        current_user is not None
+                        and "Admin" in (current_user.azure_token_roles or [])
+                        and join_admin_room
+                    ):
+                        await self.server.enter_room(
+                            sid,
+                            "role:Admin",
+                            namespace=self.namespace,
+                        )
+                except Exception as err:
+                    auth_rejected = True
+                    logger.exception(
+                        "🧦 Failed to complete the authenticated socket connection for client %s.",
+                        sid,
+                    )
+                    raise ConnectionRefusedError(
+                        {
+                            "message": "Connection could not be established.",
+                            "code": "connection-failed",
+                        }
+                    ) from err
+                logger.info(
+                    "🧦 Client authenticated to access protected namespace %s.",
+                    self.namespace,
                 )
         finally:
             # TBD: write tests for anonymous user access to parent resources

@@ -13,18 +13,22 @@ from msal import ConfidentialClientApplication
 from msal_extensions.persistence import BasePersistence
 from msal_extensions.token_cache import PersistedTokenCache
 
-from core.authentication import azure
-from core.authentication.base import VerifiedIdentity
+from core.authentication import azure, linkedin
+from core.authentication.base import (
+    ProviderValidator,
+    VerifiedIdentity,
+    verify_provider_token,
+)
 from core.cache import redis_session_client
 from core.config import config
+from core.types import AllowAnonymous  # noqa: F401 - public guard declaration interface
+from core.types import LinkedInGuard  # noqa: F401 - public guard declaration interface
+from core.types import MicrosoftGuard  # noqa: F401 - public guard declaration interface
 from core.types import (
-    AllowAnonymous,  # noqa: F401 - public guard declaration interface
     CurrentUserData,
     GuardOutcome,
     GuardTypes,
     IdentityProvider,
-    LinkedInGuard,  # noqa: F401 - public guard declaration interface
-    MicrosoftGuard,  # noqa: F401 - public guard declaration interface
     ProviderGuard,
 )
 from crud.identity import UserCRUD
@@ -81,22 +85,46 @@ oauth2_scheme_optional = OAuth2AuthorizationCodeBearer(
 )
 
 
+async def _validate_azure_token(token: str) -> dict[str, Any]:
+    payload = await azure.get_azure_token_payload(token)
+    if payload is None:
+        raise HTTPException(status_code=401, detail="Invalid Microsoft token.")
+    return cast(dict[str, Any], payload)
+
+
+async def _validate_linkedin_token(token: str) -> dict[str, Any]:
+    return await linkedin.get_linkedin_token_payload(
+        token, client_id=cast(str, config.LINKEDIN_CLIENT_ID)
+    )
+
+
+def _provider_validators() -> dict[str, ProviderValidator]:
+    return {
+        cast(str, config.AZURE_ISSUER_URL): ProviderValidator(
+            IdentityProvider.microsoft, _validate_azure_token
+        ),
+        linkedin.LINKEDIN_ISSUER: ProviderValidator(
+            IdentityProvider.linkedin, _validate_linkedin_token
+        ),
+    }
+
+
 async def provide_http_token_payload(
     token: Annotated[Optional[str], Depends(oauth2_scheme_optional)],
-) -> Optional[dict]:
-    """Extract validated claims; the endpoint policy determines anonymous admission."""
+) -> Optional[VerifiedIdentity]:
+    """Extract and validate a credential from an allowlisted identity provider."""
     if token is None:
         return None
     try:
-        return await azure.get_azure_token_payload(token)
+        return await verify_provider_token(token, _provider_validators())
     except Exception:
         logger.info("🔑 Token validation failed.")
         return None
 
 
 async def get_http_access_token_payload(
-    payload: dict = Depends(provide_http_token_payload),
-) -> dict:
+    payload: VerifiedIdentity | dict | None = Depends(provide_http_token_payload),
+) -> VerifiedIdentity | dict:
     """General function to get the access token payload"""
     # can later be used for customizing different identity service providers
     if payload is None:
@@ -204,19 +232,50 @@ async def get_azure_token_from_cache(
 
 async def get_token_payload_from_cache(
     session_id: str, scopes: List[str] | None = None
-) -> dict:
-    """Gets the azure token from the cache"""
+) -> VerifiedIdentity:
+    """Load and validate the active provider credential for a server session."""
     logger.info("🔑 Getting token from cache")
-    user_account = await get_user_account_from_session_cache(session_id)
-
-    # Can be extended to further identity service providers:
+    raw_provider = redis_session_client.json().get(
+        f"session:{session_id}", "$.identityProvider"
+    )
+    provider = (
+        raw_provider[0] if isinstance(raw_provider, list) and raw_provider else None
+    )
+    if provider == IdentityProvider.linkedin.value:
+        raw_subject = redis_session_client.json().get(
+            f"session:{session_id}", "$.linkedinSubject"
+        )
+        subject = (
+            raw_subject[0]
+            if isinstance(raw_subject, list) and raw_subject
+            else raw_subject
+        )
+        if not isinstance(subject, str) or not subject:
+            raise HTTPException(status_code=401, detail="LinkedIn session not found.")
+        cached = redis_session_client.json().get(f"linkedin:{subject}")
+        token = cached.get("idToken") if isinstance(cached, dict) else None
+        if not isinstance(token, str):
+            raise HTTPException(
+                status_code=401, detail="No cached LinkedIn identity token found."
+            )
+        claims = await linkedin.get_linkedin_token_payload(
+            token,
+            client_id=cast(str, config.LINKEDIN_CLIENT_ID),
+        )
+        return VerifiedIdentity(IdentityProvider.linkedin, claims)
+    if provider not in (None, IdentityProvider.microsoft.value):
+        raise HTTPException(status_code=401, detail="Unsupported identity provider.")
+    try:
+        user_account = await get_user_account_from_session_cache(session_id)
+    except ValueError as err:
+        raise HTTPException(status_code=401, detail=str(err)) from err
     token = await get_azure_token_from_cache(user_account, scopes)
     if not token:
         raise HTTPException(status_code=401, detail="No cached access token found.")
     payload = await azure.get_azure_token_payload(token)
     if payload is None:
         raise HTTPException(status_code=401, detail="Invalid token.")
-    return payload
+    return VerifiedIdentity(IdentityProvider.microsoft, payload)
 
     # # Create the PersistentTokenCache
     # cache = get_persistent_cache(user_account)
@@ -304,11 +363,18 @@ class Guards:
         return self.policy
 
     async def check_http(
-        self, payload: Optional[dict] = Depends(provide_http_token_payload)
+        self,
+        payload: VerifiedIdentity | dict | None = Depends(provide_http_token_payload),
     ) -> GuardOutcome:
         """Enforce router-wide admission without resolving a database user."""
         identity = (
-            VerifiedIdentity(IdentityProvider.microsoft, payload) if payload else None
+            payload
+            if isinstance(payload, VerifiedIdentity)
+            else (
+                VerifiedIdentity(IdentityProvider.microsoft, payload)
+                if payload
+                else None
+            )
         )
         return evaluate_guards(identity, self.policy)
 
@@ -462,11 +528,65 @@ class CurrentAzureUserInDatabase(CurrentAccessToken):
         pass
 
     async def __call__(
-        self, payload: dict = Depends(provide_http_token_payload)
+        self,
+        payload: VerifiedIdentity | dict | None = Depends(provide_http_token_payload),
     ) -> UserRead:
-        super().__init__(payload)
+        if isinstance(payload, VerifiedIdentity):
+            if payload.provider != IdentityProvider.microsoft:
+                raise HTTPException(
+                    status_code=401, detail="Microsoft identity required."
+                )
+            claims = payload.claims
+        elif isinstance(payload, dict):
+            claims = payload
+        else:
+            raise HTTPException(status_code=401, detail="Invalid token.")
+        super().__init__(claims)
         current_user, _ = await self.gets_or_signs_up_current_user()
         return current_user
+
+
+async def check_token_against_guards_with_status(
+    token_payload: Optional[dict] | VerifiedIdentity, guards: GuardTypes
+) -> tuple[Optional[CurrentUserData], Optional[int]]:
+    """Evaluate outer admission and resolve the user with signup status."""
+    if isinstance(token_payload, VerifiedIdentity):
+        identity = token_payload
+    elif token_payload:
+        identity = VerifiedIdentity(IdentityProvider.microsoft, token_payload)
+    else:
+        identity = None
+
+    admission = evaluate_guards(identity, guards)
+    if admission is GuardOutcome.ANONYMOUS:
+        return None, None
+    assert identity is not None
+    if identity.provider == IdentityProvider.linkedin:
+        subject = identity.claims.get("sub")
+        if not isinstance(subject, str) or not subject:
+            raise HTTPException(status_code=401, detail="Invalid LinkedIn subject.")
+        async with UserCRUD() as crud:
+            user, status_code = await crud.linkedin_user_self_sign_up(subject)
+        return (
+            CurrentUserData(
+                user_id=user.id, azure_token_roles=[], azure_token_groups=[]
+            ),
+            status_code,
+        )
+    if identity.provider == IdentityProvider.microsoft:
+        token = CurrentAccessToken(identity.claims)
+        user, status_code = await token.gets_or_signs_up_current_user()
+        roles = identity.claims.get("roles")
+        groups = identity.claims.get("groups")
+        return (
+            CurrentUserData(
+                user_id=user.id,
+                azure_token_roles=roles if isinstance(roles, list) else None,
+                azure_token_groups=groups if isinstance(groups, list) else None,
+            ),
+            status_code,
+        )
+    raise HTTPException(status_code=401, detail="Unsupported identity provider.")
 
 
 async def check_token_against_guards(
@@ -476,8 +596,6 @@ async def check_token_against_guards(
     if isinstance(token_payload, VerifiedIdentity):
         identity = token_payload
     elif token_payload:
-        # Existing extraction functions already validate Microsoft tokens. This
-        # adapter is for internal callers only; never pass undecoded request data.
         identity = VerifiedIdentity(IdentityProvider.microsoft, token_payload)
     else:
         identity = None
@@ -495,10 +613,9 @@ async def check_token_against_guards(
         return CurrentUserData(
             user_id=user.id, azure_token_roles=[], azure_token_groups=[]
         )
-    elif identity.provider == IdentityProvider.microsoft:
+    if identity.provider == IdentityProvider.microsoft:
         return await CurrentAccessToken(identity.claims).provides_current_user()
-    else:
-        raise HTTPException(status_code=401, detail="Unsupported identity provider.")
+    raise HTTPException(status_code=401, detail="Unsupported identity provider.")
 
 
 # endregion: Specific checks

@@ -5,6 +5,8 @@ import { Server, type Socket as ServerSocket } from 'socket.io';
 import { afterAll, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 import { WebSocketServer } from 'ws';
 
+import { goto } from '$app/navigation';
+
 import { Action } from './accessHandler';
 import {
 	SocketIO,
@@ -22,6 +24,21 @@ let backendConfig = vi.hoisted(() => ({
 	restApiPath: '/api/v1',
 	websocketPath: '/ws/v1',
 	socketIOPath: '/socketio/v1'
+}));
+
+vi.mock('$app/navigation', () => ({ goto: vi.fn() }));
+vi.mock('$app/state', () => ({
+	page: {
+		data: {
+			session: {
+				identityProvider: 'linkedin',
+				currentUser: {
+					azure_user_id: 'azure-id',
+					linkedin_user_id: 'linkedin-id'
+				}
+			}
+		}
+	}
 }));
 
 vi.mock('svelte', async (importOriginal) => {
@@ -88,6 +105,14 @@ beforeAll(async () => {
 		// socket.on('disconnect', () => {
 		// console.log('✅ Client disconnected'); // your "life sign"
 		// });
+	});
+
+	socketioServer.of('/reauthentication-required').use((_socket, next) => {
+		const error = new Error('Authentication must be renewed.') as Error & {
+			data?: { code: string };
+		};
+		error.data = { code: 'reauthentication-required' };
+		next(error);
 	});
 });
 
@@ -170,6 +195,24 @@ describe('SocketIO for DemoResources', () => {
 
 	test('establishes a connection to the test server', async () => {
 		expect(serverSocket.connected).toBe(true);
+	});
+
+	test('redirects through provider-aware login when socket authentication must be renewed', async () => {
+		let reauthenticationSocket!: SocketIO<DemoResource>;
+		const cleanup = $effect.root(() => {
+			reauthenticationSocket = new SocketIO({
+				namespace: '/reauthentication-required',
+				sessionId: 'expired-session'
+			});
+		});
+
+		await vi.waitFor(() =>
+			expect(goto).toHaveBeenCalledWith(
+				`/login/microsoft?target-url=${encodeURIComponent(window.location.href)}`
+			)
+		);
+		cleanup();
+		reauthenticationSocket.client.disconnect();
 	});
 
 	test('preseeds entities and subscribes in bounded batches with the snapshot cursor', async () => {

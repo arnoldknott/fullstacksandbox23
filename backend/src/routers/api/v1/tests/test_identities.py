@@ -7,9 +7,11 @@ from fastapi import FastAPI
 from httpx2 import AsyncClient
 from sqlmodel import select
 
+from core.authentication.base import VerifiedIdentity
 from core.config import config
 from core.databases import get_async_session
-from core.types import Action, CurrentUserData, IdentityType
+from core.security import provide_http_token_payload
+from core.types import Action, CurrentUserData, IdentityProvider, IdentityType
 from crud.access import AccessLoggingCRUD
 from crud.identity import UserCRUD
 from models.identity import (
@@ -3459,3 +3461,40 @@ async def test_admin_can_assign_provider_identity_on_create_but_not_update(
         json={"id": str(current_test_user.user_id), field: identifier},
     )
     assert profile.status_code == 422
+
+
+@pytest.mark.anyio
+async def test_linkedin_identity_self_signs_up_through_user_me(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+):
+    subject = f"linkedin-route-{uuid.uuid4()}"
+    identity = VerifiedIdentity(IdentityProvider.linkedin, {"sub": subject})
+    app_override_provide_http_token_payload.dependency_overrides[
+        provide_http_token_payload
+    ] = lambda: identity
+
+    created = await async_client.get("/api/v1/user/me")
+    existing = await async_client.get("/api/v1/user/me")
+
+    assert created.status_code == 201
+    assert existing.status_code == 200
+    created_user = created.json()
+    assert created_user["linkedin_user_id"] == subject
+    assert created_user["azure_user_id"] is None
+    assert created_user["azure_tenant_id"] is None
+
+    updated = await async_client.put(
+        "/api/v1/user/me",
+        json={
+            "id": created_user["id"],
+            "user_account": {"ai_enabled": True},
+            "user_profile": {"contrast": 0.5},
+        },
+    )
+
+    assert updated.status_code == 200
+    assert updated.json()["user_account"]["ai_enabled"] is True
+    assert updated.json()["user_profile"]["contrast"] == 0.5
+    assert updated.json()["azure_token_roles"] == []
+    assert updated.json()["azure_token_groups"] == []

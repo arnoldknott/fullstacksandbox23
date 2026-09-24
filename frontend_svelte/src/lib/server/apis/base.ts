@@ -1,4 +1,4 @@
-import { type BaseOauthProvider } from '$lib/server/oauth/microsoft';
+import type { OAuthProvider } from '$lib/server/oauth/base';
 
 export type RequestBody =
 	| string
@@ -13,10 +13,10 @@ export type RequestBody =
 export class BaseAPI {
 	// needs to have a method getAccessToken(session_id: string, scopes: string[]): Promise<string>;
 	// which returns an access Token for the given session_id and scopes for the specific API.
-	oauthProvider: BaseOauthProvider;
+	oauthProvider: OAuthProvider;
 	apiBaseURL: string;
 
-	constructor(oauthProvider: BaseOauthProvider, apiBaseURL: string) {
+	constructor(oauthProvider: OAuthProvider, apiBaseURL: string) {
 		this.oauthProvider = oauthProvider;
 		this.apiBaseURL = apiBaseURL;
 	}

@@ -21,7 +21,7 @@ def signing_keys():
     public_key = RSAAlgorithm.to_jwk(private_key.public_key(), as_dict=True)
     public_key.update(kid="new-key", use="sig", alg="RS256")
     claims = {
-        "iss": "https://www.linkedin.com",
+        "iss": linkedin.LINKEDIN_ISSUER,
         "aud": "synthetic-client",
         "sub": "subject",
         "iat": int(time.time()) - 5,
@@ -132,7 +132,7 @@ async def test_linkedin_key_rotation_refreshes_once(
     monkeypatch.setattr(base.httpx2, "get", fetch)
     for _ in range(2):
         claims = await linkedin.get_linkedin_token_payload(
-            token, issuer="https://www.linkedin.com", client_id="synthetic-client"
+            token, client_id="synthetic-client"
         )
         assert claims["sub"] == "subject"
     fetch.assert_called_once_with(linkedin.LINKEDIN_JWKS_URL)
@@ -153,9 +153,7 @@ async def test_linkedin_invalid_signature_still_rejected_after_refresh(
     fetch = Mock(return_value=response)
     monkeypatch.setattr(base.httpx2, "get", fetch)
     with pytest.raises(jwt.InvalidSignatureError):
-        await linkedin.get_linkedin_token_payload(
-            token, issuer="https://www.linkedin.com", client_id="synthetic-client"
-        )
+        await linkedin.get_linkedin_token_payload(token, client_id="synthetic-client")
     fetch.assert_called_once()
 
 
