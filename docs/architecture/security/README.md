@@ -49,6 +49,7 @@ This is the repository-wide policy for integrations, independent of where data w
 ## Implementation plans
 
 - [LinkedIn authentication and credential encryption](linkedin-account-linking-plan.md) — provider/guard contracts, endpoint matrix, code mappings, stages, and validation.
+- [Authentication session lifecycle and Socket.IO expiry recovery](authentication-session-lifecycle-plan.md) — sliding Redis/cookie renewal, one-session reauthentication, established-connection expiry enforcement, compact status events, and reconnect/replay.
 - [Account linking and merge](linkedin-azure-account-merge-plan.md) — verified attachment, settings choices, reference reconciliation, and transactional merging across providers.
 
 The [Redis README](../../redis/README.md) owns the cache/encryption contract and operational details. The plans describe implementation work; they do not imply that planned features are already deployed.
