@@ -123,7 +123,8 @@ class LinkedInAuthenticationProvider implements OAuthProvider {
 		origin: string,
 		targetUrl: string = '/',
 		parentUrl?: string,
-		intent: OAuthIntent = 'login'
+		intent: OAuthIntent = 'login',
+		initiator?: Pick<OAuthTransaction, 'initiatingProvider' | 'initiatingUserId'>
 	): Promise<string> {
 		const configuration = await this.getConfiguration();
 		const state = `${sessionId}.${client.randomState()}`;
@@ -131,7 +132,8 @@ class LinkedInAuthenticationProvider implements OAuthProvider {
 		const authorization = createOAuthTransaction(state, intent, appConfig.authentication_timeout, {
 			redirectUri,
 			targetUrl,
-			parentUrl
+			parentUrl,
+			...initiator
 		});
 		await redisCache.setSession(
 			sessionId,
@@ -150,6 +152,9 @@ class LinkedInAuthenticationProvider implements OAuthProvider {
 		sessionId: string;
 		targetUrl: string;
 		parentUrl?: string;
+		intent: OAuthIntent;
+		initiatingProvider?: IdentityProvider;
+		initiatingUserId?: string;
 	}> {
 		const state = currentUrl.searchParams.get('state');
 		const separator = state?.indexOf('.') ?? -1;
@@ -206,15 +211,13 @@ class LinkedInAuthenticationProvider implements OAuthProvider {
 		};
 		await this.saveTokens(tokens, response.expires_in);
 		await redisCache.setSession(sessionId, '$.linkedinSubject', JSON.stringify(claims.sub));
-		await redisCache.setSession(
-			sessionId,
-			'$.identityProvider',
-			JSON.stringify(IdentityProvider.LINKEDIN)
-		);
 		return {
 			sessionId,
 			targetUrl: authorization.targetUrl,
-			parentUrl: authorization.parentUrl
+			parentUrl: authorization.parentUrl,
+			intent: authorization.intent,
+			initiatingProvider: authorization.initiatingProvider,
+			initiatingUserId: authorization.initiatingUserId
 		};
 	}
 

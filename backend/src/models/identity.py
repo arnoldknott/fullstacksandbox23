@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 from enum import Enum
-from typing import Annotated, List, Optional
+from typing import Annotated, Any, List, Literal, Optional
 
 from pydantic import AfterValidator, ConfigDict, StringConstraints
 from sqlalchemy import Column, String
@@ -396,6 +396,35 @@ class Me(UserRead):
     azure_token_groups: Optional[list[uuid.UUID]] = None
     user_account: Optional["UserAccount"] = None
     user_profile: Optional["UserProfile"] = None
+
+
+class AccountMergePreview(SQLModel):
+    """Revalidated settings snapshot for an existing-user merge."""
+
+    result: Literal["merge-required"] = "merge-required"
+    preview_hash: str
+    settings: dict[str, dict[str, Any]]
+    defaults: dict[str, Literal["survivor", "source"]]
+
+
+class AccountLinkResult(SQLModel):
+    """Result of proving a second provider identity."""
+
+    result: Literal["linked", "already-linked"]
+
+
+class AccountMergeConfirm(SQLModel):
+    """Explicit settings choices for a previously previewed merge."""
+
+    model_config = ConfigDict(extra="forbid")  # type: ignore[assignment]
+    preview_hash: str
+    choices: dict[str, Literal["survivor", "source"]] = Field(default_factory=dict)
+
+
+class AccountMergeResult(SQLModel):
+    """Successful destructive merge result."""
+
+    result: Literal["merged"] = "merged"
 
 
 class UserUpdate(SQLModel):

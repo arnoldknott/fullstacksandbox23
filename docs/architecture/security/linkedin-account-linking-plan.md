@@ -1,6 +1,6 @@
 # LinkedIn authentication, account linking, and credential encryption
 
-Status: Stages A (guards), B (minimal identity/signup), and D (resource/event policies and answer ownership) are implemented. Stage C lifecycle code, focused automated coverage, deployment configuration, and the live LinkedIn expiry/reconnect sequence are verified; the measured LinkedIn identity-token lifetime is one hour. Equivalent Microsoft live acceptance remains tracked in the [authentication session lifecycle plan](authentication-session-lifecycle-plan.md). Account linking/merge and cache encryption remain subsequent stages.
+Status: Stages A (guards), B (minimal identity/signup), D (resource/event policies and answer ownership), and E (provider linking and confirmed account merge) are implemented. Stage C lifecycle code, focused automated coverage, deployment configuration, and the live LinkedIn expiry/reconnect sequence are verified; the measured LinkedIn identity-token lifetime is one hour. Equivalent Microsoft live acceptance remains tracked in the [authentication session lifecycle plan](authentication-session-lifecycle-plan.md). Cache encryption remains a subsequent stage.
 
 Agreed scope recorded on 2026-09-20; encryption and rotation decisions updated on 2026-09-21. This is the shared implementation handoff for frontend, backend, database, and Redis changes. Keep shared login/encryption decisions here and account-merge decisions in the linked merge plan, rather than maintaining separate plans in each application.
 
@@ -27,7 +27,7 @@ Paths are relative to this document.
 | Concern | Existing code | Planned responsibility |
 | --- | --- | --- |
 | User identifiers/settings | [identity model](../../../backend/src/models/identity.py) | LinkedIn subject, protected identifier updates, merge settings schemas |
-| Signup and account operations | [identity CRUD](../../../backend/src/crud/identity.py) | Provider lookup/signup and verified attachment; transactional merge in the separate merge plan |
+| Signup and account operations | [identity CRUD](../../../backend/src/crud/identity.py), [account merge CRUD](../../../backend/src/crud/account_merge.py) | Provider signup remains in `UserCRUD`; verified attachment and transactional merge use `AccountMergeCRUD` |
 | Authentication | [security.py](../../../backend/src/core/security.py) | Provider dispatch/validation, cached-token retrieval, guard evaluation and user resolution |
 | Shared contracts | [types.py](../../../backend/src/core/types.py) | Provider alternatives in guards; retain current-user interface |
 | Router-wide dependencies | [fastapi.py](../../../backend/src/core/fastapi.py) | Relax router-level Microsoft guards only on selected mixed-provider routes; keep them on Microsoft-only routers |
@@ -233,7 +233,7 @@ Completion: owner/non-owner/anonymous request and socket tests pass for creation
 
 ### E. Linking and merge (separate plan)
 
-First-time attachment and existing-user merge, including verified proof of control, settings-conflict resolution, atomic reassignment of identity references, and cache/socket reconciliation, are specified in the separate [account merge plan](./linkedin-azure-account-merge-plan.md). That plan is written provider-generically so further identity providers reuse the same merge operation. It depends on Stage B's identity model and Stage C's proof-of-identity interface, and is the only work that touches the inner authorization layer. Stages A–D and F do not require it.
+First-time attachment and existing-user merge, including verified proof of control, settings-conflict resolution, atomic reassignment of identity references, and retryable cache/socket reconciliation, are implemented as specified in the separate [account merge plan](./linkedin-azure-account-merge-plan.md). The provider-generic operation retains the initiating internal user and currently serves Microsoft and LinkedIn. It is the only implemented work that reassigns inner authorization references; general authorization semantics remain unchanged.
 
 ### F. Compatible encrypted cache persistence
 
@@ -266,7 +266,7 @@ Rollout:
 
 1. Add identity migration and compatible guard/cache readers; require LinkedIn configuration in every environment before deploying the provider integration.
 2. Enable LinkedIn login and selected endpoint/event alternatives after A–D pass; verify expiry recovery and Socket.IO reconnect/resubscribe behavior.
-3. Enable linking/confirmed merge after atomicity and stale-authorization tests pass; see the [account merge plan](./linkedin-azure-account-merge-plan.md).
+3. Linking/confirmed merge has passed atomicity and stale-authorization tests; complete the two live staging merge directions recorded in the [account merge plan](./linkedin-azure-account-merge-plan.md) before production rollout.
 4. Enable encrypted writes only after every reader is compatible; F can ship earlier if that condition is satisfied.
 5. Verify staging before production using existing branches/environments. Disabling LinkedIn admission is reversible. A completed merge is deliberately destructive and has no application merge history from which to undo it. A migration downgrade must not silently discard populated provider identifiers.
 
@@ -282,7 +282,7 @@ No additional design decision is required to continue. The identifier-storage de
 - [x] B: minimal identity/signup and migrations
 - [ ] C: login, cache lookup, request integration and expiry (code, focused automated coverage, and live LinkedIn expiry/reconnect verified; equivalent Microsoft live acceptance pending)
 - [x] D: endpoint/event matrix and ownership
-- [ ] E: linking, merge preview, atomic reassignment and cleanup — see [account merge plan](./linkedin-azure-account-merge-plan.md)
+- [x] E: linking, merge preview, atomic reassignment and cleanup — see [account merge plan](./linkedin-azure-account-merge-plan.md)
 - [ ] F: encrypted cache compatibility and rollout
 - [ ] Test-environment validation and staging verification
 

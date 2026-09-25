@@ -1,8 +1,10 @@
 import { redirect } from '@sveltejs/kit';
 
+import { IdentityProvider } from '$lib/identityProvider';
 import { backendAPI } from '$lib/server/apis/backendApi';
 import { redisCache } from '$lib/server/cache';
 import AppConfig from '$lib/server/config';
+import { completeAccountLink } from '$lib/server/oauth/accountLink';
 import { linkedinAuthProvider } from '$lib/server/oauth/linkedin';
 import { SessionStatus } from '$lib/session';
 
@@ -20,6 +22,20 @@ function safeTarget(target: string, origin: string): string {
 export const load: PageServerLoad = async ({ url, cookies }) => {
 	const result = await linkedinAuthProvider.authenticateWithCode(url);
 	const { sessionId } = result;
+	if (result.intent === 'link') {
+		const completion = await completeAccountLink(
+			sessionId,
+			result as Parameters<typeof completeAccountLink>[1],
+			IdentityProvider.LINKEDIN
+		);
+		if (completion === 'merge-required') redirect(302, '/account/merge');
+		redirect(302, safeTarget(result.targetUrl, url.origin));
+	}
+	await redisCache.setSession(
+		sessionId,
+		'$.identityProvider',
+		JSON.stringify(IdentityProvider.LINKEDIN)
+	);
 
 	const responseMe = await backendAPI.get(sessionId, '/user/me');
 	if (responseMe.status !== 200 && responseMe.status !== 201) {

@@ -122,6 +122,11 @@ async def provide_http_token_payload(
         return None
 
 
+async def verify_access_token(token: str) -> VerifiedIdentity:
+    """Validate an explicit bearer token through the configured provider allowlist."""
+    return await verify_provider_token(token, _provider_validators())
+
+
 async def get_http_access_token_payload(
     payload: VerifiedIdentity | dict | None = Depends(provide_http_token_payload),
 ) -> VerifiedIdentity | dict:

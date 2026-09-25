@@ -16,13 +16,16 @@ export type OAuthTransaction = {
 	redirectUri: string;
 	targetUrl: string;
 	parentUrl?: string;
+	initiatingProvider?: IdentityProvider;
+	initiatingUserId?: string;
 };
 
 export function createOAuthTransaction(
 	state: string,
 	intent: OAuthIntent,
 	timeoutSeconds: number,
-	routing: Pick<OAuthTransaction, 'redirectUri' | 'targetUrl' | 'parentUrl'>,
+	routing: Pick<OAuthTransaction, 'redirectUri' | 'targetUrl'> &
+		Partial<Pick<OAuthTransaction, 'parentUrl' | 'initiatingProvider' | 'initiatingUserId'>>,
 	now: number = Date.now()
 ): OAuthTransaction {
 	return { ...routing, state, intent, expiresAt: now + timeoutSeconds * 1000 };

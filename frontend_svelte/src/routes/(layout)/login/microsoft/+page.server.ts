@@ -18,6 +18,13 @@ export const load: PageServerLoad = async ({ url, request, cookies }) => {
 		? await redisCache.getSession<Session>(existingSessionId)
 		: undefined;
 	const sessionId = existingSession?.loggedIn ? existingSessionId! : v4();
+	const linkRequested = url.searchParams.get('intent') === 'link';
+	if (linkRequested && (!existingSession?.loggedIn || !existingSession.currentUser?.id)) {
+		throw new Error('Account linking requires an established session.');
+	}
+	if (linkRequested && existingSession?.identityProvider === IdentityProvider.MICROSOFT) {
+		throw new Error('Choose a different identity provider to link.');
+	}
 	try {
 		// Create a pending session only for an initial unauthenticated login.
 		if (!existingSession?.loggedIn) {
@@ -43,7 +50,13 @@ export const load: PageServerLoad = async ({ url, request, cookies }) => {
 			url.origin,
 			targetUrl,
 			parentUrl,
-			existingSession?.loggedIn ? 'reauthentication' : 'login'
+			linkRequested ? 'link' : existingSession?.loggedIn ? 'reauthentication' : 'login',
+			linkRequested
+				? {
+						initiatingProvider: existingSession!.identityProvider!,
+						initiatingUserId: existingSession!.currentUser!.id
+					}
+				: undefined
 		);
 	} catch (err) {
 		console.error('🔥 🚪 login - server - sign in redirect failed');

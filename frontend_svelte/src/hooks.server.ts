@@ -65,7 +65,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	let redirectTarget = `/login?target-url=${encodeURIComponent(event.url.href)}`;
 	try {
 		if (event.route.id?.includes('(protected)')) {
-			if (event.locals.sessionData.loggedIn !== true) {
+			if (event.locals.sessionData?.loggedIn !== true) {
 				console.error(
 					'🔥 🎣 hooks - server - access attempt to protected route with invalid session'
 				);
@@ -91,7 +91,9 @@ export const handle: Handle = async ({ event, resolve }) => {
 			'🔥 🎣 hooks - server - access to this protected route failed (potentially session expired):'
 		);
 		console.log(event.url.href);
-		redirect(307, redirectTarget);
+		// A 307 would preserve a rejected form action's POST method and repost it to
+		// /login, which has no form actions. A 303 always enters the login page via GET.
+		redirect(303, redirectTarget);
 	}
 	return await resolve(event);
 };

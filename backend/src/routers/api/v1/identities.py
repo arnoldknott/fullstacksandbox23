@@ -2,7 +2,7 @@ import logging
 from typing import Annotated, Optional, cast
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response
 
 from core.security import (
     Guards,
@@ -13,6 +13,7 @@ from core.security import (
     get_http_access_token_payload,
 )
 from core.types import CollectionInclude, CollectionSort, GuardTypes, SortDirection
+from crud.account_merge import AccountMergeCRUD
 from crud.identity import (
     GroupCRUD,
     SubGroupCRUD,
@@ -21,6 +22,10 @@ from crud.identity import (
     UserCRUD,
 )
 from models.identity import (
+    AccountLinkResult,
+    AccountMergeConfirm,
+    AccountMergePreview,
+    AccountMergeResult,
     Group,
     GroupCreate,
     GroupExtended,
@@ -45,6 +50,11 @@ from models.identity import (
     UserUpdate,
 )
 
+from .account_linking import (
+    _complete_merge_cleanup,
+    _invalidate_merged_user_sessions,
+    _link_identities,
+)
 from .base import BaseView
 
 logger = logging.getLogger(__name__)
@@ -119,6 +129,54 @@ async def get_me(
         me = await crud.read_me(current_user)
     me = Me.model_validate(me)
     return me
+
+
+@user_router.post("/me/link/preview", status_code=200)
+async def post_account_link_preview(
+    x_account_link_authorization: Annotated[str, Header()],
+    token_payload=Depends(get_http_access_token_payload),
+) -> AccountLinkResult | AccountMergePreview:
+    """Attach an unclaimed provider identity or return a confirmed-merge preview."""
+    survivor_identity, source_identity = await _link_identities(
+        token_payload, x_account_link_authorization
+    )
+    async with AccountMergeCRUD() as crud:
+        result = await crud.link_or_preview(
+            survivor_identity.provider,
+            survivor_identity.claims,
+            source_identity.provider,
+            source_identity.claims,
+        )
+    if isinstance(result, AccountMergePreview):
+        return result
+    return AccountLinkResult(result=result)
+
+
+@user_router.post("/me/link/confirm", status_code=200)
+async def post_account_merge_confirm(
+    confirmation: AccountMergeConfirm,
+    x_account_link_authorization: Annotated[str, Header()],
+    token_payload=Depends(get_http_access_token_payload),
+) -> AccountMergeResult:
+    """Revalidate both provider proofs and atomically merge their internal users."""
+    survivor_identity, source_identity = await _link_identities(
+        token_payload, x_account_link_authorization
+    )
+    if await _complete_merge_cleanup(confirmation.preview_hash):
+        return AccountMergeResult()
+    async with AccountMergeCRUD() as crud:
+        survivor_id, source_id = await crud.merge_provider_users(
+            survivor_identity.provider,
+            survivor_identity.claims,
+            source_identity.provider,
+            source_identity.claims,
+            confirmation.preview_hash,
+            confirmation.choices,
+        )
+    await _invalidate_merged_user_sessions(
+        {survivor_id, source_id}, confirmation.preview_hash
+    )
+    return AccountMergeResult()
 
 
 @user_router.get("/", status_code=200)

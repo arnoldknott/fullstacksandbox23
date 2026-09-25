@@ -44,7 +44,39 @@ describe('LinkedIn login route', () => {
 			'https://app.example',
 			'/question/setup',
 			undefined,
-			'reauthentication'
+			'reauthentication',
+			undefined
+		);
+	});
+
+	test('binds a link transaction to the established user and provider', async () => {
+		mocks.getSession.mockResolvedValue({
+			sessionId: 'existing-session',
+			loggedIn: true,
+			identityProvider: 'microsoft',
+			currentUser: { id: 'internal-user-id' }
+		});
+		mocks.signIn.mockResolvedValue('https://linkedin.example/authorize');
+
+		await load({
+			url: new URL(
+				'https://app.example/login/linkedin?intent=link&target-url=%2Fpresentation%2Fsetup'
+			),
+			request: new Request('https://app.example/login/linkedin'),
+			cookies: { get: () => 'existing-session' }
+		} as never);
+
+		expect(mocks.setSession).not.toHaveBeenCalled();
+		expect(mocks.signIn).toHaveBeenCalledWith(
+			'existing-session',
+			'https://app.example',
+			'/presentation/setup',
+			undefined,
+			'link',
+			{
+				initiatingProvider: 'microsoft',
+				initiatingUserId: 'internal-user-id'
+			}
 		);
 	});
 });

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { type SubmitFunction } from '@sveltejs/kit';
 
+	import { page } from '$app/state';
 	import Guard from '$components/Guard.svelte';
 	import { type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
 	import { type ThemeRuntimeContext } from '$lib/theming';
@@ -35,6 +36,7 @@
 	} = $props();
 
 	let navBar: HTMLElement | null = $state(null);
+	let accountLinkTarget = $derived(encodeURIComponent(`${page.url.pathname}${page.url.search}`));
 
 	let artificialIntelligenceForm = $state<HTMLFormElement | null>(null);
 </script>
@@ -155,6 +157,33 @@
 				<li>
 					<hr class="border-outline -mx-2 my-5" />
 				</li>
+				{#if loggedIn && !page.data.session?.currentUser?.linkedin_user_id}
+					<li>
+						<a
+							class="dropdown-item dropdown-close"
+							href="/login/linkedin?intent=link&target-url={accountLinkTarget}"
+						>
+							<span class="icon-[cib--linkedin-in] bg-secondary size-5"></span>
+							<span class="text-secondary grow">Link LinkedIn account</span>
+						</a>
+					</li>
+				{/if}
+				{#if loggedIn && !page.data.session?.currentUser?.azure_user_id}
+					<li>
+						<a
+							class="dropdown-item dropdown-close"
+							href="/login/microsoft?intent=link&target-url={accountLinkTarget}"
+						>
+							<span class="icon-[codicon--microsoft] size-5"></span>
+							<span class="text-secondary grow">Link Microsoft account</span>
+						</a>
+					</li>
+				{/if}
+				{#if loggedIn && (!page.data.session?.currentUser?.linkedin_user_id || !page.data.session?.currentUser?.azure_user_id)}
+					<li>
+						<hr class="border-outline -mx-2 my-5" />
+					</li>
+				{/if}
 				<li class="flex items-center gap-2">
 					<button
 						aria-label="show Modal"

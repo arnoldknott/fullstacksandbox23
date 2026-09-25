@@ -6,6 +6,8 @@ import { IdentityProvider } from '$lib/identityProvider';
 import { backendAPI } from '$lib/server/apis/backendApi';
 import { redisCache } from '$lib/server/cache';
 import AppConfig from '$lib/server/config';
+import { completeAccountLink } from '$lib/server/oauth/accountLink';
+import type { OAuthTransaction } from '$lib/server/oauth/base';
 import { msalAuthProvider } from '$lib/server/oauth/microsoft';
 import { SessionStatus } from '$lib/session';
 
@@ -24,12 +26,14 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 	let targetUrl = '/';
 	let parentUrl: string | undefined;
 	let sessionId: string | undefined;
+	let authorization: (OAuthTransaction & { sessionId: string }) | undefined;
 	try {
 		const code = url.searchParams.get('code');
 		// const sessionId = cookies.get('session_id');
 		const state = url.searchParams.get('state');
 		if (state) {
-			[sessionId, targetUrl, parentUrl] = await msalAuthProvider.decodeState(state);
+			authorization = await msalAuthProvider.decodeState(state);
+			({ sessionId, targetUrl, parentUrl } = authorization);
 		}
 		if (sessionId) {
 			// TBD CSRF protection check:
@@ -37,6 +41,15 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 			// but still needs to execute, as this sets the access token in cache!
 			// const _authenticationResult: AuthenticationResult =
 			await msalAuthProvider.authenticateWithCode(sessionId, code, url.origin);
+			if (authorization?.intent === 'link') {
+				const completion = await completeAccountLink(
+					sessionId,
+					authorization,
+					IdentityProvider.MICROSOFT
+				);
+				if (completion === 'merge-required') redirect(302, '/account/merge');
+				redirect(302, safeTarget(targetUrl, url.origin));
+			}
 			await redisCache.setSession(sessionId, '$.sessionId', JSON.stringify(sessionId));
 
 			const cookieOptions = appConfig.session_cookie_options as Record<string, unknown>;

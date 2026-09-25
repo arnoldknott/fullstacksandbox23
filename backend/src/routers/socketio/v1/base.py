@@ -745,6 +745,12 @@ class BaseNamespace(
                 await self.server.save_session(
                     sid, session_data, namespace=self.namespace
                 )
+                if auth_session_id is not None:
+                    await self.server.enter_room(
+                        sid,
+                        f"auth-session:{auth_session_id}",
+                        namespace=self.namespace,
+                    )
         if auth_session_id is not None and token_payload is not None:
             self._schedule_authentication_expiry(sid, auth_session_id, token_payload)
         if self.callback_on_connect is not None and not snapshot_subscription:

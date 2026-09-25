@@ -173,6 +173,7 @@ class MicrosoftAuthenticationProvider implements OAuthProvider {
 		targetUrl: string = '/',
 		parentUrl: string | undefined = undefined,
 		intent: OAuthIntent = 'login',
+		initiator?: Pick<OAuthTransaction, 'initiatingProvider' | 'initiatingUserId'>,
 		scopes: string[] = [...scopesBackend, ...scopesMsGraph, ...scopesAzure]
 	): Promise<string> {
 		try {
@@ -184,7 +185,8 @@ class MicrosoftAuthenticationProvider implements OAuthProvider {
 				...createOAuthTransaction(state, intent, appConfig.authentication_timeout, {
 					redirectUri,
 					targetUrl,
-					parentUrl
+					parentUrl,
+					...initiator
 				}),
 				sessionId
 			};
@@ -213,7 +215,7 @@ class MicrosoftAuthenticationProvider implements OAuthProvider {
 	public async decodeState(
 		// sessionId: string,
 		state: string
-	): Promise<[string, string, string | undefined]> {
+	): Promise<MicrosoftAuthorization> {
 		const stateJSON = JSON.parse(this.cryptoProvider.base64Decode(state)) as {
 			sessionId?: string;
 		};
@@ -227,7 +229,7 @@ class MicrosoftAuthenticationProvider implements OAuthProvider {
 		const session = await redisCache.getSession<{ loggedIn?: boolean }>(stateJSON.sessionId);
 		if (!session) throw new Error('Microsoft authorization session was not found.');
 		validateOAuthIntent(authorization.intent, session.loggedIn === true);
-		return [authorization.sessionId, authorization.targetUrl, authorization.parentUrl];
+		return authorization;
 	}
 
 	public async authenticateWithCode(

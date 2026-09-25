@@ -17,6 +17,13 @@ export const load: PageServerLoad = async ({ url, request, cookies }) => {
 		? await redisCache.getSession<Session>(existingSessionId)
 		: undefined;
 	const sessionId = existingSession?.loggedIn ? existingSessionId! : v4();
+	const linkRequested = url.searchParams.get('intent') === 'link';
+	if (linkRequested && (!existingSession?.loggedIn || !existingSession.currentUser?.id)) {
+		throw new Error('Account linking requires an established session.');
+	}
+	if (linkRequested && existingSession?.identityProvider === IdentityProvider.LINKEDIN) {
+		throw new Error('Choose a different identity provider to link.');
+	}
 	if (!existingSession?.loggedIn) {
 		const sessionData: Session = {
 			status: SessionStatus.AUTHENTICATION_PENDING,
@@ -37,7 +44,13 @@ export const load: PageServerLoad = async ({ url, request, cookies }) => {
 		url.origin,
 		url.searchParams.get('target-url') || undefined,
 		url.searchParams.get('parent-url') || undefined,
-		existingSession?.loggedIn ? 'reauthentication' : 'login'
+		linkRequested ? 'link' : existingSession?.loggedIn ? 'reauthentication' : 'login',
+		linkRequested
+			? {
+					initiatingProvider: existingSession!.identityProvider!,
+					initiatingUserId: existingSession!.currentUser!.id
+				}
+			: undefined
 	);
 	return { loginUrl, sessionId };
 };

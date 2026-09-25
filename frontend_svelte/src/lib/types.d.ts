@@ -6,6 +6,7 @@ import type {
 
 import type { Action, IdentityType } from '$lib/accessHandler';
 import type { IdentityProvider } from '$lib/identityProvider';
+import type { AccountMergeState } from '$lib/server/oauth/accountLink';
 import type { SessionStatus } from '$lib/session';
 import type { Variant } from '$lib/theming';
 
@@ -27,6 +28,7 @@ export type Session = {
 	linkedinSubject?: string;
 	userAgent?: string;
 	currentUser?: Me;
+	accountMerge?: AccountMergeState;
 	sessionId: string;
 };
 
