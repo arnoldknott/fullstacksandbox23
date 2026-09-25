@@ -1,6 +1,8 @@
 <script lang="ts">
 	let { items }: { items: { part: string; icon: string; title: string }[] } = $props();
-	console.log(items);
+	$effect(() => {
+		console.log(items);
+	});
 </script>
 
 <div
