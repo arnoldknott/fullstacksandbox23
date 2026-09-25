@@ -199,7 +199,7 @@ export const initialProtectedSidebarLinks: SidebarItemContent[] = $state([
 					{
 						name: 'Microsoft',
 						pathname: resolve('/(layout)/(protected)/identities/msgraph'),
-						icon: 'icon-[fluent--person-20-filled]',
+						icon: 'icon-[codicon--microsoft]',
 						id: 'identities-microsoft'
 					},
 					{
