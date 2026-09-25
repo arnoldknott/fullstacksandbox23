@@ -375,7 +375,7 @@ async def test_socket_explicit_anonymous_rejects_missing_cached_token():
     with pytest.raises(SocketAuthenticationExpiredError):
         await namespace._get_current_user_and_check_guard("socket", "read")
 
-    namespace._end_expired_socket.assert_awaited_once_with("socket")
+    namespace._end_expired_socket.assert_not_awaited()
 
 
 @pytest.mark.anyio
@@ -389,7 +389,7 @@ async def test_socket_protected_policy_rejects_missing_cached_token():
     with pytest.raises(SocketAuthenticationExpiredError):
         await namespace._get_current_user_and_check_guard("socket", "read")
 
-    namespace._end_expired_socket.assert_awaited_once_with("socket")
+    namespace._end_expired_socket.assert_not_awaited()
 
 
 @pytest.mark.anyio
@@ -405,8 +405,53 @@ async def test_socket_does_not_downgrade_failed_provider_requirements():
     with pytest.raises(SocketAuthorizationFailedError):
         await namespace._get_current_user_and_check_guard("socket", "read")
 
+    namespace._emit_status.assert_not_awaited()
+
+
+async def test_socket_event_error_handler_ends_expired_socket_once():
+    namespace = namespace_with(Guards(MicrosoftGuard())())
+    namespace._end_expired_socket = AsyncMock()
+    namespace._emit_status = AsyncMock()
+
+    await namespace._handle_event_error(
+        "socket",
+        SocketAuthenticationExpiredError("Authentication expired."),
+        context="Failed event",
+    )
+
+    namespace._end_expired_socket.assert_awaited_once_with("socket")
+    namespace._emit_status.assert_not_awaited()
+
+
+async def test_socket_event_error_handler_emits_authorization_failure_once():
+    namespace = namespace_with(Guards(MicrosoftGuard())())
+    namespace._end_expired_socket = AsyncMock()
+    namespace._emit_status = AsyncMock()
+
+    await namespace._handle_event_error(
+        "socket",
+        SocketAuthorizationFailedError("Authorization failed."),
+        context="Failed event",
+    )
+
+    namespace._end_expired_socket.assert_not_awaited()
     namespace._emit_status.assert_awaited_once_with(
         "socket", {"error": "access", "code": "authorization-failed"}
+    )
+
+
+async def test_socket_event_error_handler_emits_generic_detail_once():
+    namespace = namespace_with(Guards(MicrosoftGuard())())
+    namespace._end_expired_socket = AsyncMock()
+    namespace._emit_status = AsyncMock()
+
+    await namespace._handle_event_error(
+        "socket", ValueError("Invalid payload."), context="Failed event"
+    )
+
+    namespace._end_expired_socket.assert_not_awaited()
+    namespace._emit_status.assert_awaited_once_with(
+        "socket", {"error": "other", "detail": "Invalid payload."}
     )
 
 

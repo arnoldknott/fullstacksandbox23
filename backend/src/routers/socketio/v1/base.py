@@ -283,19 +283,14 @@ class BaseNamespace(
         if session_id is None:
             if guards.allows_anonymous:
                 return await check_token_against_guards(None, guards)
-            await self._end_expired_socket(sid)
             raise SocketAuthenticationExpiredError("No session id.")
         try:
             token_payload = await self._get_token_payload_if_authenticated(session_id)
         except Exception as error:
-            await self._end_expired_socket(sid)
             raise SocketAuthenticationExpiredError("Authentication expired.") from error
         try:
             return await check_token_against_guards(token_payload, guards)
         except HTTPException as error:
-            await self._emit_status(
-                sid, {"error": "access", "code": "authorization-failed"}
-            )
             raise SocketAuthorizationFailedError("Authorization failed.") from error
 
     async def _get_all(  # noqa: C901
@@ -352,13 +347,7 @@ class BaseNamespace(
                     to=sid,
                 )
         except Exception as error:
-            logger.error(f"Failed to get all data for client {sid}.")
-            print(error)
-            if not isinstance(
-                error,
-                (SocketAuthenticationExpiredError, SocketAuthorizationFailedError),
-            ):
-                await self._emit_status(sid, {"error": "other", "detail": str(error)})
+            await self._handle_event_error(sid, error, context="Failed to get all data")
 
     async def _attach_access_data(
         self,
@@ -440,6 +429,56 @@ class BaseNamespace(
             data,
             namespace=namespace,
             to=receivers if not public else None,
+        )
+
+    async def _handle_event_error(
+        self,
+        sid: str,
+        error: Exception,
+        *,
+        context: str,
+        generic_detail: Optional[str] = None,
+    ) -> None:
+        """Log and emit an event error exactly once where it is finally handled."""
+        logger.exception("🧦 %s for client %s.", context, sid)
+        if isinstance(error, SocketAuthenticationExpiredError):
+            await self._end_expired_socket(sid)
+            return
+        if isinstance(error, SocketAuthorizationFailedError):
+            await self._emit_status(
+                sid, {"error": "access", "code": "authorization-failed"}
+            )
+            return
+        await self._emit_status(
+            sid,
+            {
+                "error": "other",
+                "detail": generic_detail if generic_detail is not None else str(error),
+            },
+        )
+
+    async def _handle_read_error(
+        self, sid: str, resource_id: Optional[UUID], error: Exception
+    ) -> None:
+        """Handle read-specific recovery before delegating status ownership."""
+        if isinstance(
+            error,
+            (SocketAuthenticationExpiredError, SocketAuthorizationFailedError),
+        ):
+            await self._handle_event_error(sid, error, context="Failed to read data")
+            return
+        await self.server.emit(
+            "deleted",
+            resource_id,
+            namespace=self.namespace,
+            to=sid,
+        )
+        await self._emit_status(sid, {"success": "deleted", "id": str(resource_id)})
+        await self._handle_event_error(
+            sid,
+            error,
+            context="Failed to read data",
+            generic_detail=f"Resource {str(resource_id)} not found.",
         )
 
     async def on_connect(  # noqa: C901
@@ -760,28 +799,7 @@ class BaseNamespace(
                 to=sid,
             )
         except Exception as error:
-            if isinstance(
-                error,
-                (SocketAuthenticationExpiredError, SocketAuthorizationFailedError),
-            ):
-                return
-            logger.error(f"🧦 Failed to read data from client {sid}.")
-            print(error)
-            # In case user was accessing a resource after an unshare event:
-            await self.server.emit(
-                "deleted",
-                resource_id,
-                namespace=self.namespace,
-                to=sid,
-            )
-            # TBD: consider changing this - can be misleading:
-            # it's not necessarily deleted: might be the user's access has changed.
-            await self._emit_status(sid, {"success": "deleted", "id": str(resource_id)})
-            await self._emit_status(
-                sid,
-                {"error": "other", "detail": f"Resource {str(resource_id)} not found."},
-            )
-            # await self._emit_status(sid, {"error": "other", "detail": str(error)})
+            await self._handle_read_error(sid, resource_id, error)
 
     async def on_subscribe(  # noqa: C901
         self, sid: str, data: Dict[str, Any]
@@ -814,7 +832,13 @@ class BaseNamespace(
 
         try:
             current_user = await self._get_current_user_and_check_guard(sid, "connect")
-        except SocketAuthenticationExpiredError, SocketAuthorizationFailedError:
+        except (
+            SocketAuthenticationExpiredError,
+            SocketAuthorizationFailedError,
+        ) as error:
+            await self._handle_event_error(
+                sid, error, context="Failed to subscribe client"
+            )
             return {"subscribed": [], "rejected": []}
         async with self.crud() as crud:
             model_columns = cast(Any, crud.model)
@@ -1233,18 +1257,9 @@ class BaseNamespace(
                     #         to=sid,
                     #     )
                 except Exception as error:
-                    logger.error(f"🧦 Failed to write data from client {sid}.")
-                    print(error, flush=True)
-                    if not isinstance(
-                        error,
-                        (
-                            SocketAuthenticationExpiredError,
-                            SocketAuthorizationFailedError,
-                        ),
-                    ):
-                        await self._emit_status(
-                            sid, {"error": "other", "detail": str(error)}
-                        )
+                    await self._handle_event_error(
+                        sid, error, context="Failed to write data"
+                    )
             else:
                 # Distributes incoming data to all clients in the namespace
                 # "transferred" is communication from server to client
@@ -1254,12 +1269,7 @@ class BaseNamespace(
                     namespace=self.namespace,
                 )
         except Exception as error:
-            logger.error(f"🧦 Failed to write data from client {sid}.")
-            if not isinstance(
-                error,
-                (SocketAuthenticationExpiredError, SocketAuthorizationFailedError),
-            ):
-                await self._emit_status(sid, {"error": "other", "detail": str(error)})
+            await self._handle_event_error(sid, error, context="Failed to write data")
 
     async def on_delete(self, sid, entity_ids: UUID | List[UUID]):
         """Delete event for socket.io namespaces."""
@@ -1291,13 +1301,7 @@ class BaseNamespace(
                 )
                 await self._emit_status(sid, {"success": "deleted", "id": entity_id})
         except Exception as error:
-            logger.error(f"🧦 Failed to delete item for client {sid}.")
-            print(error)
-            if not isinstance(
-                error,
-                (SocketAuthenticationExpiredError, SocketAuthorizationFailedError),
-            ):
-                await self._emit_status(sid, {"error": "other", "detail": str(error)})
+            await self._handle_event_error(sid, error, context="Failed to delete item")
 
     async def on_share(self, sid, access_policy: Dict[str, Any]):
         """Share event for socket.io namespaces."""
@@ -1373,13 +1377,9 @@ class BaseNamespace(
             #         rooms=[f"identity:{str(access_policy.identity_id)}"],
             #     )
         except Exception as error:
-            logger.error(f"🧦 Failed update access attempted from client {sid}.")
-            print(error, flush=True)
-            if not isinstance(
-                error,
-                (SocketAuthenticationExpiredError, SocketAuthorizationFailedError),
-            ):
-                await self._emit_status(sid, {"error": "other", "detail": str(error)})
+            await self._handle_event_error(
+                sid, error, context="Failed to update access"
+            )
 
     #     try:
     #         async with self.crud() as crud:
@@ -1451,13 +1451,7 @@ class BaseNamespace(
                 namespace=parent_namespace,
             )
         except Exception as error:
-            logger.error(f"🧦 Failed to link item for client {sid}.")
-            print(error)
-            if not isinstance(
-                error,
-                (SocketAuthenticationExpiredError, SocketAuthorizationFailedError),
-            ):
-                await self._emit_status(sid, {"error": "other", "detail": str(error)})
+            await self._handle_event_error(sid, error, context="Failed to link item")
 
     # TBD: implement and write tests for this:
     # async def on_changelink(self, sid, hierarchy: Dict[str, Any]):
@@ -1510,13 +1504,7 @@ class BaseNamespace(
                 namespace=parent_namespace,
             )
         except Exception as error:
-            logger.error(f"🧦 Failed to unlink item for client {sid}.")
-            print(error)
-            if not isinstance(
-                error,
-                (SocketAuthenticationExpiredError, SocketAuthorizationFailedError),
-            ):
-                await self._emit_status(sid, {"error": "other", "detail": str(error)})
+            await self._handle_event_error(sid, error, context="Failed to unlink item")
 
     async def on_disconnect(self, sid):
         """Disconnect event for socket.io namespaces."""

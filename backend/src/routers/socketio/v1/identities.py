@@ -33,11 +33,7 @@ from models.identity import (
     UserUpdate,
 )
 
-from .base import (
-    BaseNamespace,
-    SocketAuthenticationExpiredError,
-    SocketAuthorizationFailedError,
-)
+from .base import BaseNamespace
 
 logger = logging.getLogger(__name__)
 
@@ -130,13 +126,9 @@ class UserNamespace(BaseNamespace):
                 to=sid,
             )
         except Exception as error:
-            logger.error(f"Failed to current user data for client {sid}.")
-            print(error)
-            if not isinstance(
-                error,
-                (SocketAuthenticationExpiredError, SocketAuthorizationFailedError),
-            ):
-                await self._emit_status(sid, {"error": "other", "detail": str(error)})
+            await self._handle_event_error(
+                sid, error, context="Failed to read current user data"
+            )
 
     async def on_update_me(self, sid, data):
         """Update Me event for socket.io namespaces."""
@@ -157,13 +149,9 @@ class UserNamespace(BaseNamespace):
                 to=sid,
             )
         except Exception as error:
-            logger.error(f"Failed to update Me for client {sid}.")
-            print(error)
-            if not isinstance(
-                error,
-                (SocketAuthenticationExpiredError, SocketAuthorizationFailedError),
-            ):
-                await self._emit_status(sid, {"error": "other", "detail": str(error)})
+            await self._handle_event_error(
+                sid, error, context="Failed to update current user data"
+            )
 
 
 ueber_group_guards = [
