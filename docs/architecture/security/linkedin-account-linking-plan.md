@@ -249,6 +249,20 @@ Files: `microsoft.ts`, frontend `cache.ts`, backend `RedisPersistence` in `secur
 
 Completion: the Redis contract is implemented and validated, including encrypted credentials and protected user data, the explicit plaintext-identifier exceptions, and absence of prohibited third-party resource data. Key generation and application changes remain planned until implemented.
 
+### G. Provider unlinking (after encryption)
+
+Implement removal of a linked authentication provider, not reversal of an account merge. A completed merge deletes the source user/settings records and reassigns their references without retaining provenance, so the application cannot safely reconstruct two former accounts. Account splitting remains unsupported.
+
+- Allow unlinking only when the internal user has at least two linked providers; never remove the final authentication method.
+- Allow a session to unlink only a provider other than its active provider. To remove the active provider, the user must first authenticate through another linked provider so the retained identity is freshly verified.
+- Clear the provider identifier from `User`; clearing Microsoft also clears its tenant identifier. Delete the corresponding cached provider credentials and authentication metadata, and revoke provider-side credentials where a supported revocation interface exists.
+- Invalidate and disconnect sessions authenticated through the removed provider. Preserve sessions authenticated through retained providers after revalidation.
+- Preserve the internal `User`, settings, first-party content, access policies, memberships, hierarchy relationships, and logs. Unlinking removes an authentication method; it does not attempt to identify or undo data and permissions that may once have arrived through a merged account.
+- Keep the operation provider-generic and expose it through a guarded self-service endpoint and account interface. Require explicit confirmation and recent authentication; do not accept an internal user identifier as proof.
+- Test last-provider rejection, active-provider rejection, identifier/cache cleanup, affected-session/socket invalidation, retained-provider access, concurrent unlink attempts, and rollback on cleanup failure. Verify Microsoft tenant cleanup and LinkedIn/Microsoft credential isolation independently.
+
+Completion: either linked provider can be removed safely while another verified provider remains, removed credentials and sessions cannot authenticate, retained-provider access continues, and no account-splitting behavior is implied.
+
 ## 6. Validation and rollout
 
 Use only the test environment for formatting, linting, type checks, tests and benchmarks. Follow [backend guidance](../../../backend/AGENTS.md), [frontend guidance](../../../frontend_svelte/AGENTS.md), and existing [backend](../../../.github/workflows/backendAPI.yml) / [frontend](../../../.github/workflows/frontend_svelte.yml) continuous-integration workflows. Do not introduce alternate scripts. Report validation summaries in the called tools' format and distinguish baseline failures.
@@ -268,11 +282,12 @@ Rollout:
 2. Enable LinkedIn login and selected endpoint/event alternatives after A–D pass; verify expiry recovery and Socket.IO reconnect/resubscribe behavior.
 3. Linking/confirmed merge has passed atomicity and stale-authorization tests; complete the two live staging merge directions recorded in the [account merge plan](./linkedin-azure-account-merge-plan.md) before production rollout.
 4. Enable encrypted writes only after every reader is compatible; F can ship earlier if that condition is satisfied.
-5. Verify staging before production using existing branches/environments. Disabling LinkedIn admission is reversible. A completed merge is deliberately destructive and has no application merge history from which to undo it. A migration downgrade must not silently discard populated provider identifiers.
+5. Implement provider unlinking only after Stage F so credential deletion and session cleanup operate on the final encrypted-cache representation.
+6. Verify staging before production using existing branches/environments. Disabling LinkedIn admission is reversible. A completed merge is deliberately destructive and has no application merge history from which to undo it. A migration downgrade must not silently discard populated provider identifiers.
 
 ## 7. Sequencing, handoffs, and tracking
 
-Main chain: **A → B → C → D**, with tests in each stage. **F** can run alongside B–D after agreeing on cache format, partitioning, configuration and transition. Linking and merge move to the separate [account merge plan](./linkedin-azure-account-merge-plan.md).
+Main chain: **A → B → C → D**, with tests in each stage. **F** can run alongside B–D after agreeing on cache format, partitioning, configuration and transition. Linking and merge move to the separate [account merge plan](./linkedin-azure-account-merge-plan.md). Provider unlinking is **G** and follows F so it targets only the encrypted-cache representation.
 
 Keep authentication, guards and socket integration together: they share `security.py`, `types.py`, and the namespace base. Encryption is a suitable separate task once its contract is fixed. Merge work (separate plan) can be handed off after B and C's proof-of-identity interface are stable. Separate work uses isolated branches/worktrees and coordinates shared-file edits; do not run independent chats concurrently in this checkout.
 
@@ -284,6 +299,7 @@ No additional design decision is required to continue. The identifier-storage de
 - [x] D: endpoint/event matrix and ownership
 - [x] E: linking, merge preview, atomic reassignment and cleanup — see [account merge plan](./linkedin-azure-account-merge-plan.md)
 - [ ] F: encrypted cache compatibility and rollout
+- [ ] G: unlink one provider while preserving a verified retained provider; account splitting remains unsupported
 - [ ] Test-environment validation and staging verification
 
 ## References

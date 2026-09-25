@@ -71,3 +71,5 @@ Reconcile cache and sockets with the committed result: fence/revalidate affected
 ## Rollout
 
 Enable linking and confirmed merge only after atomicity and stale-authorization tests pass, and after the main plan's Stages A–D are in place. A completed merge is deliberately destructive and has no application merge history from which to undo it.
+
+Provider unlinking is a separate post-encryption operation specified in [Stage G of the main plan](./linkedin-account-linking-plan.md#g-provider-unlinking-after-encryption). It removes an authentication method from the surviving user; it does not split or reverse a completed merge.
