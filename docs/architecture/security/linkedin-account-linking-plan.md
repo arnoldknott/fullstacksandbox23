@@ -1,6 +1,6 @@
 # LinkedIn authentication, account linking, and credential encryption
 
-Status: Stages A (guards), B (minimal identity/signup), and D (resource/event policies and answer ownership) are implemented. Stage C lifecycle code, focused automated coverage, and deployment configuration are implemented; live LinkedIn login and transient UserInfo display are verified, and the measured identity-token lifetime is one hour. Live end-to-end provider expiry/reconnect acceptance remains tracked in the [authentication session lifecycle plan](authentication-session-lifecycle-plan.md). Account linking/merge and cache encryption remain subsequent stages.
+Status: Stages A (guards), B (minimal identity/signup), and D (resource/event policies and answer ownership) are implemented. Stage C lifecycle code, focused automated coverage, deployment configuration, and the live LinkedIn expiry/reconnect sequence are verified; the measured LinkedIn identity-token lifetime is one hour. Equivalent Microsoft live acceptance remains tracked in the [authentication session lifecycle plan](authentication-session-lifecycle-plan.md). Account linking/merge and cache encryption remain subsequent stages.
 
 Agreed scope recorded on 2026-09-20; encryption and rotation decisions updated on 2026-09-21. This is the shared implementation handoff for frontend, backend, database, and Redis changes. Keep shared login/encryption decisions here and account-merge decisions in the linked merge plan, rather than maintaining separate plans in each application.
 
@@ -280,7 +280,7 @@ No additional design decision is required to continue. The identifier-storage de
 
 - [x] A: policy and validation contract
 - [x] B: minimal identity/signup and migrations
-- [ ] C: login, cache lookup, request integration and expiry (code and focused automated coverage implemented; live end-to-end provider expiry/reconnect acceptance pending)
+- [ ] C: login, cache lookup, request integration and expiry (code, focused automated coverage, and live LinkedIn expiry/reconnect verified; equivalent Microsoft live acceptance pending)
 - [x] D: endpoint/event matrix and ownership
 - [ ] E: linking, merge preview, atomic reassignment and cleanup — see [account merge plan](./linkedin-azure-account-merge-plan.md)
 - [ ] F: encrypted cache compatibility and rollout

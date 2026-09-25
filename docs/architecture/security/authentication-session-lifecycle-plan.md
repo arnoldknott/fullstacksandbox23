@@ -1,6 +1,6 @@
 # Authentication session lifecycle and Socket.IO expiry recovery
 
-Status: lifecycle code and focused automated coverage are implemented. Sliding renewal, same-session reauthentication, short-lived intent-bound OAuth transactions, compact Socket.IO statuses, shared client touch coordination in `session.ts`, established-socket expiry enforcement, and reconnect/resubscription coverage are in place. Live provider-expiry acceptance in a deployed environment remains.
+Status: lifecycle code and focused automated coverage are implemented. Sliding renewal, same-session reauthentication, short-lived intent-bound OAuth transactions, compact Socket.IO statuses, shared client touch coordination in `session.ts`, established-socket expiry enforcement, and reconnect/resubscription coverage are in place. The live LinkedIn expiry/reconnect sequence passed; equivalent Microsoft acceptance remains.
 
 This plan extracts the remaining authentication-lifecycle work from the [LinkedIn plan](linkedin-account-linking-plan.md). It applies to all identity providers; LinkedIn's measured one-hour identity-token lifetime merely makes the missing behavior visible.
 
@@ -119,12 +119,13 @@ After reauthentication, reconnect and follow the existing [REST snapshot and inc
 
 ### Remaining lifecycle work
 
-- Run the live acceptance sequence below for both providers in a deployed environment. These acceptance items remain tracked Stage C work but do not change the Stage D resource/event policy contract.
+- Run the live acceptance sequence below for Microsoft in a deployed environment. This acceptance item remains tracked Stage C work but does not change the Stage D resource/event policy contract.
 
 Implementation notes:
 
 - Microsoft and LinkedIn callback state now carries an explicit `login`, `reauthentication`, or `link` intent and an application-enforced deadline derived from `authentication_timeout`. Validation consumes the transaction before code exchange, rejects expired/mismatched state, and requires the intent to match whether the associated session is pending or established.
 - Focused tests cover atomic concurrent renewal without key recreation, shared touch throttling and cookie synchronization, same-session reauthentication, idle-socket expiry disconnection, and reconnect/resubscription with the snapshot cursor. Provider-hosted expiry and browser navigation still require the live sequence below.
+- On 2026-09-25, the live LinkedIn sequence retained the same session ID, reauthenticated after identity-token expiry, reconnected the presentation socket, acknowledged the authorized subscription, and transferred the mutation made by a second client while disconnected. The presentation was public, so this verified transport disconnection and recovery but did not exercise withholding of a private resource while expired.
 
 ## 8. Tests and acceptance
 
