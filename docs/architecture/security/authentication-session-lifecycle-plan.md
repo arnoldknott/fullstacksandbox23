@@ -1,6 +1,6 @@
 # Authentication session lifecycle and Socket.IO expiry recovery
 
-Status: planned. Provider login, server-side sessions, provider-token validation, Socket.IO connection rejection, snapshot subscription, and cursor replay are implemented. Sliding renewal, same-session reauthentication, established-socket expiry handling, and the compact status protocol below are not yet implemented.
+Status: implemented in code. Sliding renewal, same-session reauthentication, compact Socket.IO statuses, shared client touch coordination in `session.ts`, and established-socket expiry enforcement are implemented; live provider-expiry acceptance remains to be completed in a deployed environment.
 
 This plan extracts the remaining authentication-lifecycle work from the [LinkedIn plan](linkedin-account-linking-plan.md). It applies to all identity providers; LinkedIn's measured one-hour identity-token lifetime merely makes the missing behavior visible.
 

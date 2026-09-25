@@ -33,7 +33,11 @@ from models.identity import (
     UserUpdate,
 )
 
-from .base import BaseNamespace
+from .base import (
+    BaseNamespace,
+    SocketAuthenticationExpiredError,
+    SocketAuthorizationFailedError,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -107,7 +111,7 @@ class UserNamespace(BaseNamespace):
     #     except Exception as error:
     #         logger.error(f"Failed to current user data for client {sid}.")
     #         print(error)
-    #         await self._emit_status(sid, {"error": str(error)})
+    #         await self._emit_status(sid, {"error": "other", "detail": str(error)})
 
     async def on_read_me(self, sid):
         """Callback on connect for returns Me."""
@@ -128,7 +132,11 @@ class UserNamespace(BaseNamespace):
         except Exception as error:
             logger.error(f"Failed to current user data for client {sid}.")
             print(error)
-            await self._emit_status(sid, {"error": str(error)})
+            if not isinstance(
+                error,
+                (SocketAuthenticationExpiredError, SocketAuthorizationFailedError),
+            ):
+                await self._emit_status(sid, {"error": "other", "detail": str(error)})
 
     async def on_update_me(self, sid, data):
         """Update Me event for socket.io namespaces."""
@@ -151,7 +159,11 @@ class UserNamespace(BaseNamespace):
         except Exception as error:
             logger.error(f"Failed to update Me for client {sid}.")
             print(error)
-            await self._emit_status(sid, {"error": str(error)})
+            if not isinstance(
+                error,
+                (SocketAuthenticationExpiredError, SocketAuthorizationFailedError),
+            ):
+                await self._emit_status(sid, {"error": "other", "detail": str(error)})
 
 
 ueber_group_guards = [

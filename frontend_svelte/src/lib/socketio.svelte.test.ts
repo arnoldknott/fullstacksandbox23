@@ -46,7 +46,7 @@ vi.mock('svelte', async (importOriginal) => {
 	return {
 		...actual,
 		getContext: vi.fn((key: unknown) =>
-			key === 'backendAPIConfiguration' ? backendConfig : actual.getContext(key as never)
+			key === 'backendAPIConfiguration' ? backendConfig : undefined
 		)
 	};
 });
@@ -107,11 +107,11 @@ beforeAll(async () => {
 		// });
 	});
 
-	socketioServer.of('/reauthentication-required').use((_socket, next) => {
-		const error = new Error('Authentication must be renewed.') as Error & {
+	socketioServer.of('/authentication-expired').use((_socket, next) => {
+		const error = new Error('Authentication expired.') as Error & {
 			data?: { code: string };
 		};
-		error.data = { code: 'reauthentication-required' };
+		error.data = { code: 'authentication-expired' };
 		next(error);
 	});
 });
@@ -176,6 +176,7 @@ describe('SocketIO for DemoResources', () => {
 
 	beforeEach(async () => {
 		rejectedSubscriptionIds = [];
+		vi.mocked(goto).mockClear();
 		socketioClientHandler = await SocketioClientHandler.create<DemoResource>({
 			namespace: '/demo-resource',
 			sessionId: 'session-123',
@@ -201,7 +202,7 @@ describe('SocketIO for DemoResources', () => {
 		let reauthenticationSocket!: SocketIO<DemoResource>;
 		const cleanup = $effect.root(() => {
 			reauthenticationSocket = new SocketIO({
-				namespace: '/reauthentication-required',
+				namespace: '/authentication-expired',
 				sessionId: 'expired-session'
 			});
 		});
@@ -213,6 +214,17 @@ describe('SocketIO for DemoResources', () => {
 		);
 		cleanup();
 		reauthenticationSocket.client.disconnect();
+	});
+
+	test('disconnects and reauthenticates on an established-socket expiry status', async () => {
+		serverSocket.emit('status', { error: 'access', code: 'authentication-expired' });
+
+		await vi.waitFor(() =>
+			expect(goto).toHaveBeenCalledWith(
+				`/login/microsoft?target-url=${encodeURIComponent(window.location.href)}`
+			)
+		);
+		expect(testSocketio.client.connected).toBe(false);
 	});
 
 	test('preseeds entities and subscribes in bounded batches with the snapshot cursor', async () => {
@@ -263,7 +275,8 @@ describe('SocketIO for DemoResources', () => {
 
 		await vi.waitFor(() => {
 			expect(status).toHaveBeenCalledWith({
-				error: `Subscription rejected for entity ids: ${rejectedId}`
+				error: 'other',
+				detail: `Subscription rejected for entity ids: ${rejectedId}`
 			});
 		});
 
@@ -833,7 +846,7 @@ describe('SocketIO for DemoResources', () => {
 	test.todo('handleStatus for "error" logs the error message', async () => {
 		const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-		serverSocket.emit('status', { error: 'Something went wrong' });
+		serverSocket.emit('status', { error: 'other', detail: 'Something went wrong' });
 
 		await vi.waitFor(() => {
 			expect(consoleErrorSpy).toHaveBeenCalledWith(

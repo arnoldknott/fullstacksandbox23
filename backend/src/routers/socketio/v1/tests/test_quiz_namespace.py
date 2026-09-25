@@ -576,7 +576,7 @@ class TestMessage(BaseSocketIOTest):
 
         assert len(status_data) == 1
         assert (
-            status_data[0]["error"] == "409: Only one public access policy is allowed."
+            status_data[0]["detail"] == "409: Only one public access policy is allowed."
         )
 
     @pytest.mark.anyio

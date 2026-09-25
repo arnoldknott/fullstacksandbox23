@@ -1,17 +1,13 @@
 import { io, type ManagerOptions, type Socket, type SocketOptions } from 'socket.io-client';
 import { getContext } from 'svelte';
 
-import { goto } from '$app/navigation';
-import { resolve } from '$app/paths';
-import { page } from '$app/state';
-
 import { Action, PUBLIC_IDENTITY_ID } from './accessHandler';
 import {
 	EntityContainer,
 	type EntityContainerConfiguration,
 	type EntityContainerInterface
 } from './entityContainer.svelte';
-import { IdentityProvider, preferredIdentityProvider } from './identityProvider';
+import { getSessionLifecycleContext, type SessionLifecycle } from './session';
 import type {
 	AccessPolicy,
 	AnyEntityExtended,
@@ -50,7 +46,9 @@ export type SocketioStatus =
 	| { success: 'unshared'; id: string }
 	| { success: 'linked'; id: string; parent_id: string; inherit: boolean; order?: number }
 	| { success: 'unlinked'; id: string; parent_id: string }
-	| { error: string };
+	| { error: 'access'; code: 'authentication-expired' | 'authorization-failed' }
+	| { error: 'connection'; code: 'connection-failed' }
+	| { error: 'other'; detail: string };
 
 /**
  * Either disable via boolean or override via callback
@@ -84,9 +82,11 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 {
 	private static readonly subscriptionBatchLimit = 500;
 	public client: Socket;
+	private readonly sessionLifecycle: SessionLifecycle;
 
 	constructor(connection: SocketioConnection, configuration: SocketioConfiguration<T> = {}) {
 		super({ parentId: connection.parentId, ...configuration });
+		this.sessionLifecycle = getSessionLifecycleContext();
 		if (configuration.snapshot) this.seedSnapshot(configuration.snapshot);
 		const backendAPIConfiguration: BackendAPIConfiguration = getContext('backendAPIConfiguration');
 		const backendFqdn = backendAPIConfiguration.backendFqdn;
@@ -111,9 +111,8 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 		if (connection.parentId) {
 			queryParams['parent-id'] = connection.parentId;
 		}
-		if (configuration.snapshot) {
-			queryParams['snapshot-subscription'] = 'true';
-		}
+
+		if (configuration.snapshot) queryParams['snapshot-subscription'] = 'true';
 
 		this.client = io(socketioServerUrl + connection.namespace, {
 			path: backendAPIConfiguration.socketIOPath,
@@ -123,31 +122,19 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 			...connection.overrides
 		});
 		this.client.on('connect_error', (error: SocketioConnectError) => {
-			if (error.data?.code === 'reauthentication-required') {
-				const provider = preferredIdentityProvider(
-					page.data.session?.currentUser ?? {},
-					page.data.session?.identityProvider
-				);
-				const targetUrl = encodeURIComponent(window.location.href);
-				if (provider === IdentityProvider.MICROSOFT) {
-					// The route path is resolved; the query string is appended afterwards.
-					// eslint-disable-next-line svelte/no-navigation-without-resolve
-					void goto(`${resolve('/login/microsoft')}?target-url=${targetUrl}`);
-				} else if (provider === IdentityProvider.LINKEDIN) {
-					// The route path is resolved; the query string is appended afterwards.
-					// eslint-disable-next-line svelte/no-navigation-without-resolve
-					void goto(`${resolve('/login/linkedin')}?target-url=${targetUrl}`);
-				} else {
-					// Reauthentication cannot safely choose a provider without known identity information.
-					throw new Error('Reauthentication required, but no suitable identity provider found.');
-				}
+			if (
+				error.data?.code === 'authentication-expired' ||
+				error.data?.code === 'reauthentication-required'
+			) {
+				this.sessionLifecycle.reauthenticate(this.client);
 			}
 		});
-		if (configuration.snapshot) {
-			this.client.on('connect', () => {
-				void this.subscribeToSnapshot(configuration.snapshot!, configuration.status);
-			});
-		}
+		this.client.on('connect', () => {
+			void this.sessionLifecycle.touchIfDue(this.client);
+			if (configuration.snapshot) {
+				void this.subscribeToSnapshot(configuration.snapshot, configuration.status);
+			}
+		});
 
 		if (this.pendingTemplate) this.createPending();
 		// simulate delay for testing UI elements like forms to create a new entity, that depend on the pendingEntity
@@ -176,14 +163,25 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 				}
 			});
 		}
-		if (configuration.status !== false) {
-			this.client.on('status', (status: SocketioStatus) => {
-				if (typeof configuration.status === 'function') {
-					configuration.status(status);
-				} else {
-					this.handleStatus(status);
-				}
-			});
+		this.client.on('status', (status: SocketioStatus) => {
+			this.handleProtocolStatus(status);
+			if ('success' in status) void this.sessionLifecycle.touchIfDue(this.client);
+			if (configuration.status === false) return;
+			if (typeof configuration.status === 'function') {
+				configuration.status(status);
+			} else {
+				this.handleStatus(status);
+			}
+		});
+	}
+
+	private handleProtocolStatus(status: SocketioStatus): void {
+		if (
+			'error' in status &&
+			status.error === 'access' &&
+			status.code === 'authentication-expired'
+		) {
+			this.sessionLifecycle.reauthenticate(this.client);
 		}
 	}
 
@@ -233,13 +231,14 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 				return;
 			}
 		}
+		void this.sessionLifecycle.touchIfDue(this.client);
 	}
 
 	private reportSubscriptionError(
 		error: string,
 		statusHandler: SocketioHandlers<T>['status']
 	): void {
-		if (typeof statusHandler === 'function') statusHandler({ error });
+		if (typeof statusHandler === 'function') statusHandler({ error: 'other', detail: error });
 	}
 
 	/**

@@ -1,4 +1,7 @@
+import asyncio
 import logging
+import time
+
 from typing import (
     Any,
     Dict,
@@ -22,6 +25,7 @@ from sqlmodel import SQLModel, col, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from core.authentication.base import VerifiedIdentity
+from core.cache import redis_session_client
 from core.config import config
 from core.databases import get_async_session
 from core.security import (
@@ -57,6 +61,14 @@ from models.base import BaseExtendedSQLModel, BaseReadSQLModel
 from routers.socketio.v1 import register_namespace, registry_namespaces
 
 logger = logging.getLogger(__name__)
+
+
+class SocketAuthenticationExpiredError(Exception):
+    pass
+
+
+class SocketAuthorizationFailedError(Exception):
+    pass
 
 
 BaseSchemaTypeCreate = TypeVar("BaseSchemaTypeCreate", bound=SQLModel)
@@ -133,6 +145,59 @@ class BaseNamespace(
         self.room = room  # use in hierarchical resource system for parent resource id and/or identity (group) id? Can be assigned after authentication by using enter_room()
         self.callback_on_connect = callback_on_connect
         self.callback_on_disconnect = callback_on_disconnect
+        self._expiry_tasks: dict[str, asyncio.Task] = {}
+
+    @staticmethod
+    def _expiry_delay(session_id: str, token_payload: VerifiedIdentity | dict) -> float:
+        ttl = redis_session_client.ttl(f"session:{session_id}")
+        if not isinstance(ttl, int) or ttl < 0:
+            return 0
+        claims = (
+            token_payload.claims
+            if isinstance(token_payload, VerifiedIdentity)
+            else token_payload
+        )
+        expiration = claims.get("exp")
+        token_ttl = (
+            max(0, float(expiration) - time.time())
+            if isinstance(expiration, (int, float))
+            else float(ttl)
+        )
+        return min(float(ttl), token_ttl)
+
+    async def _end_expired_socket(self, sid: str) -> None:
+        await self._emit_status(
+            sid, {"error": "access", "code": "authentication-expired"}
+        )
+        await self.server.disconnect(sid, namespace=self.namespace)
+
+    async def _watch_authentication_expiry(
+        self, sid: str, session_id: str, token_payload: VerifiedIdentity | dict
+    ) -> None:
+        current_payload = token_payload
+        try:
+            while True:
+                delay = self._expiry_delay(session_id, current_payload)
+                await asyncio.sleep(max(delay, 0.25))
+                try:
+                    current_payload = await self._get_token_payload_if_authenticated(
+                        session_id
+                    )
+                except Exception:
+                    await self._end_expired_socket(sid)
+                    return
+        except asyncio.CancelledError:
+            return
+
+    def _schedule_authentication_expiry(
+        self, sid: str, session_id: str, token_payload: VerifiedIdentity | dict
+    ) -> None:
+        previous = self._expiry_tasks.pop(sid, None)
+        if previous is not None:
+            previous.cancel()
+        self._expiry_tasks[sid] = asyncio.create_task(
+            self._watch_authentication_expiry(sid, session_id, token_payload)
+        )
 
     async def _get_token_payload_if_authenticated(
         self, session_id: str
@@ -214,16 +279,24 @@ class BaseNamespace(
         """Check the auth token against the event guards."""
 
         guards = self._get_event_guards(guard_name)
+        session_id = await self._get_session_id(sid)
+        if session_id is None:
+            if guards.allows_anonymous:
+                return await check_token_against_guards(None, guards)
+            await self._end_expired_socket(sid)
+            raise SocketAuthenticationExpiredError("No session id.")
         try:
-            session_id = await self._get_session_id(sid)
-            if session_id is None:
-                raise ConnectionRefusedError("No session id.")
             token_payload = await self._get_token_payload_if_authenticated(session_id)
-        except Exception:
-            if not guards.allows_anonymous:
-                raise
-            token_payload = None
-        return await check_token_against_guards(token_payload, guards)
+        except Exception as error:
+            await self._end_expired_socket(sid)
+            raise SocketAuthenticationExpiredError("Authentication expired.") from error
+        try:
+            return await check_token_against_guards(token_payload, guards)
+        except HTTPException as error:
+            await self._emit_status(
+                sid, {"error": "access", "code": "authorization-failed"}
+            )
+            raise SocketAuthorizationFailedError("Authorization failed.") from error
 
     async def _get_all(  # noqa: C901
         self,
@@ -281,7 +354,11 @@ class BaseNamespace(
         except Exception as error:
             logger.error(f"Failed to get all data for client {sid}.")
             print(error)
-            await self._emit_status(sid, {"error": str(error)})
+            if not isinstance(
+                error,
+                (SocketAuthenticationExpiredError, SocketAuthorizationFailedError),
+            ):
+                await self._emit_status(sid, {"error": "other", "detail": str(error)})
 
     async def _attach_access_data(
         self,
@@ -480,7 +557,7 @@ class BaseNamespace(
                         )
                         raise ConnectionRefusedError(
                             {
-                                "message": "Connection could not be established.",
+                                "error": "connection",
                                 "code": "connection-failed",
                             }
                         ) from err
@@ -494,7 +571,7 @@ class BaseNamespace(
                     )
                     raise ConnectionRefusedError(
                         {
-                            "message": "Connection could not be established.",
+                            "error": "connection",
                             "code": "connection-failed",
                         }
                     ) from err
@@ -508,8 +585,8 @@ class BaseNamespace(
                         )
                         raise ConnectionRefusedError(
                             {
-                                "message": "Authentication must be renewed.",
-                                "code": "reauthentication-required",
+                                "error": "access",
+                                "code": "authentication-expired",
                             }
                         ) from authentication_error
                     logger.info(
@@ -523,8 +600,8 @@ class BaseNamespace(
                     logger.info("🧦 Client %s did not provide authentication.", sid)
                     raise ConnectionRefusedError(
                         {
-                            "message": "Authentication must be renewed.",
-                            "code": "reauthentication-required",
+                            "error": "access",
+                            "code": "authentication-expired",
                         }
                     )
                 logger.info(
@@ -546,7 +623,7 @@ class BaseNamespace(
                     )
                     raise ConnectionRefusedError(
                         {
-                            "message": "Authorization failed.",
+                            "error": "access",
                             "code": "authorization-failed",
                         }
                     ) from err
@@ -558,7 +635,7 @@ class BaseNamespace(
                     )
                     raise ConnectionRefusedError(
                         {
-                            "message": "Connection could not be established.",
+                            "error": "connection",
                             "code": "connection-failed",
                         }
                     ) from err
@@ -589,7 +666,7 @@ class BaseNamespace(
                     )
                     raise ConnectionRefusedError(
                         {
-                            "message": "Connection could not be established.",
+                            "error": "connection",
                             "code": "connection-failed",
                         }
                     ) from err
@@ -629,6 +706,8 @@ class BaseNamespace(
                 await self.server.save_session(
                     sid, session_data, namespace=self.namespace
                 )
+        if auth_session_id is not None and token_payload is not None:
+            self._schedule_authentication_expiry(sid, auth_session_id, token_payload)
         if self.callback_on_connect is not None and not snapshot_subscription:
             await self.callback_on_connect(
                 sid,
@@ -681,6 +760,11 @@ class BaseNamespace(
                 to=sid,
             )
         except Exception as error:
+            if isinstance(
+                error,
+                (SocketAuthenticationExpiredError, SocketAuthorizationFailedError),
+            ):
+                return
             logger.error(f"🧦 Failed to read data from client {sid}.")
             print(error)
             # In case user was accessing a resource after an unshare event:
@@ -694,11 +778,14 @@ class BaseNamespace(
             # it's not necessarily deleted: might be the user's access has changed.
             await self._emit_status(sid, {"success": "deleted", "id": str(resource_id)})
             await self._emit_status(
-                sid, {"error": f"Resource {str(resource_id)} not found."}
+                sid,
+                {"error": "other", "detail": f"Resource {str(resource_id)} not found."},
             )
-            # await self._emit_status(sid, {"error": str(error)})
+            # await self._emit_status(sid, {"error": "other", "detail": str(error)})
 
-    async def on_subscribe(self, sid: str, data: Dict[str, Any]) -> SubscriptionResult:
+    async def on_subscribe(  # noqa: C901
+        self, sid: str, data: Dict[str, Any]
+    ) -> SubscriptionResult:
         """Subscribes a client to rooms for access-controlled entities."""
         raw_entity_ids = data.get("entity_ids")
         if not isinstance(raw_entity_ids, list):
@@ -725,7 +812,10 @@ class BaseNamespace(
         except TypeError, ValueError:
             return {"error": "entity_ids must contain valid UUIDs."}
 
-        current_user = await self._get_current_user_and_check_guard(sid, "connect")
+        try:
+            current_user = await self._get_current_user_and_check_guard(sid, "connect")
+        except SocketAuthenticationExpiredError, SocketAuthorizationFailedError:
+            return {"subscribed": [], "rejected": []}
         async with self.crud() as crud:
             model_columns = cast(Any, crud.model)
             statement = select(model_columns.id).where(
@@ -1145,7 +1235,16 @@ class BaseNamespace(
                 except Exception as error:
                     logger.error(f"🧦 Failed to write data from client {sid}.")
                     print(error, flush=True)
-                    await self._emit_status(sid, {"error": str(error)})
+                    if not isinstance(
+                        error,
+                        (
+                            SocketAuthenticationExpiredError,
+                            SocketAuthorizationFailedError,
+                        ),
+                    ):
+                        await self._emit_status(
+                            sid, {"error": "other", "detail": str(error)}
+                        )
             else:
                 # Distributes incoming data to all clients in the namespace
                 # "transferred" is communication from server to client
@@ -1156,13 +1255,19 @@ class BaseNamespace(
                 )
         except Exception as error:
             logger.error(f"🧦 Failed to write data from client {sid}.")
-            await self._emit_status(sid, {"error": str(error)})
+            if not isinstance(
+                error,
+                (SocketAuthenticationExpiredError, SocketAuthorizationFailedError),
+            ):
+                await self._emit_status(sid, {"error": "other", "detail": str(error)})
 
     async def on_delete(self, sid, entity_ids: UUID | List[UUID]):
         """Delete event for socket.io namespaces."""
         logger.info(f"🧦 Delete request from client {sid}.")
         if self.crud is None:
-            await self._emit_status(sid, {"error": "No CRUD configured."})
+            await self._emit_status(
+                sid, {"error": "other", "detail": "No CRUD configured."}
+            )
             return
         try:
             current_user = await self._get_current_user_and_check_guard(sid, "delete")
@@ -1188,7 +1293,11 @@ class BaseNamespace(
         except Exception as error:
             logger.error(f"🧦 Failed to delete item for client {sid}.")
             print(error)
-            await self._emit_status(sid, {"error": str(error)})
+            if not isinstance(
+                error,
+                (SocketAuthenticationExpiredError, SocketAuthorizationFailedError),
+            ):
+                await self._emit_status(sid, {"error": "other", "detail": str(error)})
 
     async def on_share(self, sid, access_policy: Dict[str, Any]):
         """Share event for socket.io namespaces."""
@@ -1266,7 +1375,11 @@ class BaseNamespace(
         except Exception as error:
             logger.error(f"🧦 Failed update access attempted from client {sid}.")
             print(error, flush=True)
-            await self._emit_status(sid, {"error": str(error)})
+            if not isinstance(
+                error,
+                (SocketAuthenticationExpiredError, SocketAuthorizationFailedError),
+            ):
+                await self._emit_status(sid, {"error": "other", "detail": str(error)})
 
     #     try:
     #         async with self.crud() as crud:
@@ -1289,13 +1402,15 @@ class BaseNamespace(
     #     except Exception as error:
     #         logger.error(f"🧦 Failed to share item for client {sid}.")
     #         print(error)
-    #         await self._emit_status(sid, {"error": str(error)})
+    #         await self._emit_status(sid, {"error": "other", "detail": str(error)})
 
     async def on_link(self, sid, hierarchy: Dict[str, Any]):
         """Link event for socket.io namespaces."""
         logger.info(f"🧦 Link request from client {sid}.")
         if self.crud is None:
-            await self._emit_status(sid, {"error": "No CRUD configured."})
+            await self._emit_status(
+                sid, {"error": "other", "detail": "No CRUD configured."}
+            )
             return
         try:
             hierarchy_obj = BaseHierarchyCreate(**hierarchy)
@@ -1338,7 +1453,11 @@ class BaseNamespace(
         except Exception as error:
             logger.error(f"🧦 Failed to link item for client {sid}.")
             print(error)
-            await self._emit_status(sid, {"error": str(error)})
+            if not isinstance(
+                error,
+                (SocketAuthenticationExpiredError, SocketAuthorizationFailedError),
+            ):
+                await self._emit_status(sid, {"error": "other", "detail": str(error)})
 
     # TBD: implement and write tests for this:
     # async def on_changelink(self, sid, hierarchy: Dict[str, Any]):
@@ -1348,7 +1467,9 @@ class BaseNamespace(
         """Unlink event for socket.io namespaces."""
         logger.info(f"🧦 Unlink request from client {sid}.")
         if self.crud is None:
-            await self._emit_status(sid, {"error": "No CRUD configured."})
+            await self._emit_status(
+                sid, {"error": "other", "detail": "No CRUD configured."}
+            )
             return
         try:
             hierarchy_obj = BaseHierarchyCreate(**hierarchy)
@@ -1391,10 +1512,17 @@ class BaseNamespace(
         except Exception as error:
             logger.error(f"🧦 Failed to unlink item for client {sid}.")
             print(error)
-            await self._emit_status(sid, {"error": str(error)})
+            if not isinstance(
+                error,
+                (SocketAuthenticationExpiredError, SocketAuthorizationFailedError),
+            ):
+                await self._emit_status(sid, {"error": "other", "detail": str(error)})
 
     async def on_disconnect(self, sid):
         """Disconnect event for socket.io namespaces."""
+        expiry_task = self._expiry_tasks.pop(sid, None)
+        if expiry_task is not None and expiry_task is not asyncio.current_task():
+            expiry_task.cancel()
         logger.info(f"🧦 Client with session id {sid} disconnected.")
         if self.callback_on_disconnect is not None:
             await self.callback_on_disconnect(sid)

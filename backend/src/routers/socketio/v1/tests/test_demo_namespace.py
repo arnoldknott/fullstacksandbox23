@@ -46,8 +46,8 @@ async def test_on_connect_to_production_on_server_side_fails_unpatched_server():
         raise Exception("This should have failed due unpatched server.")
     except ConnectionRefusedError as err:
         assert err.args[0] == {
-            "message": "Authentication must be renewed.",
-            "code": "reauthentication-required",
+            "error": "access",
+            "code": "authentication-expired",
         }
 
 
@@ -77,7 +77,7 @@ async def test_on_connect_does_not_request_reauthentication_for_backend_failures
         )
 
     assert error.value.args[0] == {
-        "message": "Connection could not be established.",
+        "error": "connection",
         "code": "connection-failed",
     }
 

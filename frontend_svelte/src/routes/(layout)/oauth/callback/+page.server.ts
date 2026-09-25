@@ -37,6 +37,7 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 			// but still needs to execute, as this sets the access token in cache!
 			// const _authenticationResult: AuthenticationResult =
 			await msalAuthProvider.authenticateWithCode(sessionId, code, url.origin);
+			await redisCache.deleteSessionPath(sessionId, '$.csrfToken');
 			await redisCache.setSession(sessionId, '$.sessionId', JSON.stringify(sessionId));
 
 			const cookieOptions = appConfig.session_cookie_options as Record<string, unknown>;
@@ -79,6 +80,7 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 			const currentUser = await responseMe.json();
 			await redisCache.setSession(sessionId, '$.currentUser', JSON.stringify(currentUser));
 			await redisCache.setSession(sessionId, '$.loggedIn', JSON.stringify(true));
+			await redisCache.updateSessionExpiry(sessionId);
 			cookies.set('session_id', sessionId, {
 				path: '/',
 				...cookieOptions

@@ -133,20 +133,45 @@ class RedisCache {
 		sessionId: string,
 		path: string,
 		data: string,
-		timeOut: number = appConfig.session_timeout
+		timeOut?: number
 	): Promise<boolean> {
 		try {
 			const client = await this.provideClient();
 			if (!client) return false;
 
 			const setStatus = await client.json.set(`session:${sessionId}`, path, JSON.parse(data));
-			await client.expire(`session:${sessionId}`, timeOut);
+			if (timeOut !== undefined) await client.expire(`session:${sessionId}`, timeOut);
 			return setStatus === 'OK' ? true : false;
 		} catch (err) {
 			console.error('🔥 🥞 cache - server - setSession - failed');
 			console.error(err);
 			return false;
 		}
+	}
+
+	public async renewSessionIfNeeded(
+		sessionId: string,
+		timeOut: number = appConfig.session_timeout
+	): Promise<'renewed' | 'unchanged' | 'missing'> {
+		if (!sessionId) return 'missing';
+		const client = await this.provideClient();
+		if (!client) return 'missing';
+		const result = await client.eval(
+			`local ttl = redis.call('TTL', KEYS[1])
+			if ttl < 0 then return -1 end
+			if ttl < tonumber(ARGV[1]) then
+				if redis.call('EXPIRE', KEYS[1], ARGV[2]) == 1 then return 1 end
+				return -1
+			end
+			return 0`,
+			{
+				keys: [`session:${sessionId}`],
+				arguments: [String(timeOut / 2), String(timeOut)]
+			}
+		);
+		if (result === 1) return 'renewed';
+		if (result === 0) return 'unchanged';
+		return 'missing';
 	}
 
 	public async getSession<T = object>(

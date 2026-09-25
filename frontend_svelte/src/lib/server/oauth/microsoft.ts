@@ -173,12 +173,7 @@ class MicrosoftAuthenticationProvider implements OAuthProvider {
 					parentURL: parentUrl
 				})
 			);
-			await redisCache.setSession(
-				sessionId,
-				'$.csrfToken',
-				JSON.stringify(csrfToken),
-				appConfig.authentication_timeout
-			);
+			await redisCache.setSession(sessionId, '$.csrfToken', JSON.stringify(csrfToken));
 			const msalConfClient = this.createMsalConfClient(sessionId);
 			// pass the state here as well, so user can get redirected to the correct page after login:
 			// for example: https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/7a01aafc1af9aca6d51638204aa942700c0418ca/samples/msal-node-samples/auth-code-distributed-cache/src/AuthProvider.ts#L84

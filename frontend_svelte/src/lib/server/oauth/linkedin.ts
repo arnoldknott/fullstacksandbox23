@@ -126,8 +126,7 @@ class LinkedInAuthenticationProvider implements OAuthProvider {
 		await redisCache.setSession(
 			sessionId,
 			'$.linkedinAuthorization',
-			JSON.stringify(authorization),
-			appConfig.authentication_timeout
+			JSON.stringify(authorization)
 		);
 		return client.buildAuthorizationUrl(configuration, {
 			redirect_uri: redirectUri,
