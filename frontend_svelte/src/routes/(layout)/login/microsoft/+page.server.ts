@@ -38,7 +38,13 @@ export const load: PageServerLoad = async ({ url, request, cookies }) => {
 
 		const targetUrl = url.searchParams.get('target-url') || undefined;
 		const parentUrl = url.searchParams.get('parent-url') || undefined;
-		loginUrl = await msalAuthProvider.signIn(sessionId, url.origin, targetUrl, parentUrl);
+		loginUrl = await msalAuthProvider.signIn(
+			sessionId,
+			url.origin,
+			targetUrl,
+			parentUrl,
+			existingSession?.loggedIn ? 'reauthentication' : 'login'
+		);
 	} catch (err) {
 		console.error('🔥 🚪 login - server - sign in redirect failed');
 		console.error(err);

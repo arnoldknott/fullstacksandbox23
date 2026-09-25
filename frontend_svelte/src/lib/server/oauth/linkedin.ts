@@ -4,14 +4,16 @@ import { IdentityProvider } from '$lib/identityProvider';
 
 import { redisCache } from '../cache';
 import AppConfig from '../config';
-import type { OAuthProvider } from './base';
+import {
+	createOAuthTransaction,
+	type OAuthIntent,
+	type OAuthProvider,
+	type OAuthTransaction,
+	validateOAuthIntent,
+	validateOAuthTransaction
+} from './base';
 
-type LinkedInAuthorization = {
-	state: string;
-	redirectUri: string;
-	targetUrl: string;
-	parentUrl?: string;
-};
+type LinkedInAuthorization = OAuthTransaction;
 
 type LinkedInTokens = {
 	accessToken: string;
@@ -50,12 +52,20 @@ class LinkedInAuthenticationProvider implements OAuthProvider {
 		return `${origin}/oauth/callback/linkedin`;
 	}
 
-	private async getAuthorization(sessionId: string): Promise<LinkedInAuthorization> {
+	private async consumeAuthorization(
+		sessionId: string,
+		expectedState: string
+	): Promise<LinkedInAuthorization> {
 		const value = await redisCache.getSession(sessionId, '$.linkedinAuthorization');
 		if (!value || typeof value !== 'object' || !('state' in value)) {
 			throw new Error('LinkedIn authorization session was not found.');
 		}
-		return value as LinkedInAuthorization;
+		await redisCache.deleteSessionPath(sessionId, '$.linkedinAuthorization');
+		const authorization = validateOAuthTransaction(value as LinkedInAuthorization, expectedState);
+		const session = await redisCache.getSession<{ loggedIn?: boolean }>(sessionId);
+		if (!session) throw new Error('LinkedIn authorization session was not found.');
+		validateOAuthIntent(authorization.intent, session.loggedIn === true);
+		return authorization;
 	}
 
 	private async getTokens(sessionId: string): Promise<LinkedInTokens> {
@@ -112,17 +122,17 @@ class LinkedInAuthenticationProvider implements OAuthProvider {
 		sessionId: string,
 		origin: string,
 		targetUrl: string = '/',
-		parentUrl?: string
+		parentUrl?: string,
+		intent: OAuthIntent = 'login'
 	): Promise<string> {
 		const configuration = await this.getConfiguration();
 		const state = `${sessionId}.${client.randomState()}`;
 		const redirectUri = this.callbackUrl(origin);
-		const authorization: LinkedInAuthorization = {
-			state,
+		const authorization = createOAuthTransaction(state, intent, appConfig.authentication_timeout, {
 			redirectUri,
 			targetUrl,
 			parentUrl
-		};
+		});
 		await redisCache.setSession(
 			sessionId,
 			'$.linkedinAuthorization',
@@ -145,7 +155,7 @@ class LinkedInAuthenticationProvider implements OAuthProvider {
 		const separator = state?.indexOf('.') ?? -1;
 		if (!state || separator < 1) throw new Error('Invalid LinkedIn callback state.');
 		const sessionId = state.slice(0, separator);
-		const authorization = await this.getAuthorization(sessionId);
+		const authorization = await this.consumeAuthorization(sessionId, state);
 		if (!authorization.redirectUri) {
 			throw new Error('LinkedIn authorization redirect URI was not found.');
 		}
@@ -178,7 +188,6 @@ class LinkedInAuthenticationProvider implements OAuthProvider {
 				}
 				throw error;
 			});
-		await redisCache.deleteSessionPath(sessionId, '$.linkedinAuthorization');
 		const claims = response.claims();
 		if (!response.id_token || !claims?.sub || !claims.exp) {
 			throw new Error('LinkedIn did not return a valid identity token.');

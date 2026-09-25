@@ -1,6 +1,6 @@
 # LinkedIn authentication, account linking, and credential encryption
 
-Status: Stages A (guards), B (minimal identity/signup), and D (resource/event policies and answer ownership) are implemented. Stage C core lifecycle code and deployment configuration are implemented; live LinkedIn login and transient UserInfo display are verified, and the measured identity-token lifetime is one hour. Independently expiring OAuth transaction state and end-to-end expiry/reconnect acceptance remain tracked in the [authentication session lifecycle plan](authentication-session-lifecycle-plan.md). Account linking/merge and cache encryption remain subsequent stages.
+Status: Stages A (guards), B (minimal identity/signup), and D (resource/event policies and answer ownership) are implemented. Stage C lifecycle code, focused automated coverage, and deployment configuration are implemented; live LinkedIn login and transient UserInfo display are verified, and the measured identity-token lifetime is one hour. Live end-to-end provider expiry/reconnect acceptance remains tracked in the [authentication session lifecycle plan](authentication-session-lifecycle-plan.md). Account linking/merge and cache encryption remain subsequent stages.
 
 Agreed scope recorded on 2026-09-20; encryption and rotation decisions updated on 2026-09-21. This is the shared implementation handoff for frontend, backend, database, and Redis changes. Keep shared login/encryption decisions here and account-merge decisions in the linked merge plan, rather than maintaining separate plans in each application.
 
@@ -276,11 +276,11 @@ Main chain: **A → B → C → D**, with tests in each stage. **F** can run alo
 
 Keep authentication, guards and socket integration together: they share `security.py`, `types.py`, and the namespace base. Encryption is a suitable separate task once its contract is fixed. Merge work (separate plan) can be handed off after B and C's proof-of-identity interface are stable. Separate work uses isolated branches/worktrees and coordinates shared-file edits; do not run independent chats concurrently in this checkout.
 
-No additional design decision is required to continue. The identifier-storage decision is recorded in the [Redis contract](../../redis/README.md#encryption-scope). Sliding-session and socket-expiry code is implemented; explicit OAuth transaction expiry plus live expiry/reconnect acceptance still remain. Encryption needs startup key configuration. Do not paste real tokens or secrets into documentation or chat.
+No additional design decision is required to continue. The identifier-storage decision is recorded in the [Redis contract](../../redis/README.md#encryption-scope). Sliding-session, socket-expiry, and independently expiring intent-bound OAuth transaction code are implemented with focused automated coverage; live expiry/reconnect acceptance still remains. Encryption needs startup key configuration. Do not paste real tokens or secrets into documentation or chat.
 
 - [x] A: policy and validation contract
 - [x] B: minimal identity/signup and migrations
-- [ ] C: login, cache lookup, request integration and expiry (core lifecycle code, live login, UserInfo and token lifetime verified; independent OAuth transaction expiry and live end-to-end expiry/reconnect acceptance pending)
+- [ ] C: login, cache lookup, request integration and expiry (code and focused automated coverage implemented; live end-to-end provider expiry/reconnect acceptance pending)
 - [x] D: endpoint/event matrix and ownership
 - [ ] E: linking, merge preview, atomic reassignment and cleanup — see [account merge plan](./linkedin-azure-account-merge-plan.md)
 - [ ] F: encrypted cache compatibility and rollout

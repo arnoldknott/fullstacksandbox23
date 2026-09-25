@@ -302,6 +302,30 @@ describe('SocketIO for DemoResources', () => {
 		clientHandler.disconnect();
 	});
 
+	test('resubscribes with the snapshot cursor after reconnecting', async () => {
+		const entity = {
+			id: '00000000-0000-4000-8000-000000000001',
+			name: 'resource'
+		} as DemoResource;
+		const clientHandler = await SocketioClientHandler.create<DemoResource>(
+			{ namespace: '/demo-resource', sessionId: 'session-123' },
+			{ snapshot: { entities: [entity], cursor: 42 } }
+		);
+		await vi.waitFor(() =>
+			expect(serverMessages.filter((message) => message.event === 'subscribe')).toHaveLength(1)
+		);
+
+		clientHandler.socketioClient.client.disconnect().connect();
+
+		await vi.waitFor(() => {
+			const subscriptions = serverMessages.filter((message) => message.event === 'subscribe');
+			expect(subscriptions).toHaveLength(2);
+			expect(subscriptions[1].data[0]).toEqual({ entity_ids: [entity.id], cursor: 42 });
+		});
+		expect(clientHandler.socketioClient.entities).toEqual([entity]);
+		clientHandler.disconnect();
+	});
+
 	test('uses default handlers when no overrides are provided', async () => {
 		const emitSpy = vi.spyOn(testSocketio.client, 'emit');
 

@@ -36,7 +36,8 @@ export const load: PageServerLoad = async ({ url, request, cookies }) => {
 		sessionId,
 		url.origin,
 		url.searchParams.get('target-url') || undefined,
-		url.searchParams.get('parent-url') || undefined
+		url.searchParams.get('parent-url') || undefined,
+		existingSession?.loggedIn ? 'reauthentication' : 'login'
 	);
 	return { loginUrl, sessionId };
 };

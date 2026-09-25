@@ -83,6 +83,30 @@ async def test_on_connect_does_not_request_reauthentication_for_backend_failures
 
 
 @pytest.mark.anyio
+async def test_idle_socket_is_disconnected_when_authentication_expires(monkeypatch):
+    server = AsyncMock()
+    namespace = DemoNamespace(server=server)
+    monkeypatch.setattr(namespace, "_expiry_delay", lambda *_: 0)
+    monkeypatch.setattr(
+        namespace,
+        "_get_token_payload_if_authenticated",
+        AsyncMock(side_effect=ConnectionRefusedError("expired")),
+    )
+
+    await namespace._watch_authentication_expiry("socket-1", "session-1", {"exp": 1})
+
+    server.emit.assert_awaited_once()
+    assert server.emit.await_args.args == (
+        "status",
+        {"error": "access", "code": "authentication-expired"},
+    )
+    assert "socket-1" in server.emit.await_args.kwargs["to"]
+    server.disconnect.assert_awaited_once_with(
+        "socket-1", namespace=namespace.namespace
+    )
+
+
+@pytest.mark.anyio
 @pytest.mark.parametrize(
     "session_ids",
     [
