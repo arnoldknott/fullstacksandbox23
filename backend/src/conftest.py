@@ -18,11 +18,14 @@ from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from core.cache import redis_session_client
+from core.authentication.base import VerifiedIdentity
 from core.databases import postgres_async_engine  # should be SQLite here only!
 from core.security import (
     CurrentAccessToken,
     Guards,
+    LinkedInGuard,
     MicrosoftGuard,
+    check_token_against_guards,
     provide_http_token_payload,
 )
 from core.types import Action, CurrentUserData, GuardTypes, IdentityType, ResourceType
@@ -213,14 +216,19 @@ async def current_user_from_azure_token():
     """Returns a mock current user based on provided payload and adds to user database."""
 
     async def _current_user_from_azure_token(
-        token_payload: Optional[dict[str, Any]] = None,
+        token_payload: Optional[dict[str, Any] | VerifiedIdentity] = None,
     ) -> CurrentUserData:
-        current_user = None
         if token_payload is None:
             token_payload = token_admin
+        if isinstance(token_payload, VerifiedIdentity):
+            current_user = await check_token_against_guards(
+                token_payload,
+                Guards(MicrosoftGuard(), LinkedInGuard())(),
+            )
+            assert current_user is not None
+            return current_user
         token = CurrentAccessToken(token_payload)
-        current_user = await token.provides_current_user()
-        return current_user
+        return await token.provides_current_user()
 
     yield _current_user_from_azure_token
 

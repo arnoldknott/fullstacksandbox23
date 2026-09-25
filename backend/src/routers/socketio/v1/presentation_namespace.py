@@ -1,6 +1,6 @@
 import logging
 
-from core.security import AllowAnonymous, Guards, MicrosoftGuard
+from core.security import AllowAnonymous, Guards, LinkedInGuard, MicrosoftGuard
 from core.types import EventGuard
 from crud.presentation import PresentationCRUD
 from models.presentation import Presentation
@@ -10,7 +10,10 @@ from .base import BaseNamespace
 logger = logging.getLogger(__name__)
 
 guards = [
-    EventGuard(event="connect", guards=Guards(MicrosoftGuard(), AllowAnonymous())()),
+    EventGuard(
+        event="connect",
+        guards=Guards(MicrosoftGuard(), LinkedInGuard(), AllowAnonymous())(),
+    ),
     EventGuard(
         event="submit:create",
         guards=Guards(

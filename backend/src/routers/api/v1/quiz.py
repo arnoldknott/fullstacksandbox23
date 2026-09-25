@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, Query, Response
 from core.security import (
     AllowAnonymous,
     Guards,
+    LinkedInGuard,
     MicrosoftGuard,
     get_http_access_token_payload,
     provide_http_token_payload,
@@ -125,7 +126,10 @@ async def post_question_message(
     public: Annotated[bool, Query()] = False,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(
-        Guards(MicrosoftGuard(scopes=["api.read", "api.write"], roles=["User"]))
+        Guards(
+            MicrosoftGuard(scopes=["api.read", "api.write"], roles=["User"]),
+            LinkedInGuard(),
+        )
     ),
 ) -> MessageRead:
     """Creates a new message answer for a question."""
@@ -147,7 +151,10 @@ async def post_question_numerical(
     public: Annotated[bool, Query()] = False,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(
-        Guards(MicrosoftGuard(scopes=["api.read", "api.write"], roles=["User"]))
+        Guards(
+            MicrosoftGuard(scopes=["api.read", "api.write"], roles=["User"]),
+            LinkedInGuard(),
+        )
     ),
 ) -> NumericalRead:
     """Creates a new numerical answer for a question."""
@@ -165,14 +172,16 @@ async def post_question_numerical(
 async def get_questions(
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(
-        Guards(MicrosoftGuard(scopes=["api.read"], roles=["User"]))
+        Guards(MicrosoftGuard(scopes=["api.read"], roles=["User"]), LinkedInGuard())
     ),
 ) -> list[QuestionRead]:
     """Returns all questions."""
     return await question_view.get(token_payload, guards)
 
 
-get_question_entity_snapshot_guards = Guards(MicrosoftGuard(), AllowAnonymous())
+get_question_entity_snapshot_guards = Guards(
+    MicrosoftGuard(), LinkedInGuard(), AllowAnonymous()
+)
 
 
 @router.get("/question/snapshot", status_code=200)
@@ -201,7 +210,7 @@ async def get_question_entity_snapshot(
     return snapshot.items
 
 
-get_question_by_id_guards = Guards(MicrosoftGuard(), AllowAnonymous())
+get_question_by_id_guards = Guards(MicrosoftGuard(), LinkedInGuard(), AllowAnonymous())
 
 
 @router.get("/question/{resource_id}", status_code=200)
@@ -251,7 +260,10 @@ async def post_message(
     message: MessageCreate,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(
-        Guards(MicrosoftGuard(scopes=["api.read", "api.write"], roles=["User"]))
+        Guards(
+            MicrosoftGuard(scopes=["api.read", "api.write"], roles=["User"]),
+            LinkedInGuard(),
+        )
     ),
 ) -> MessageRead:
     """Creates a new message."""
@@ -262,14 +274,16 @@ async def post_message(
 async def get_messages(
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(
-        Guards(MicrosoftGuard(scopes=["api.read"], roles=["User"]))
+        Guards(MicrosoftGuard(scopes=["api.read"], roles=["User"]), LinkedInGuard())
     ),
 ) -> list[MessageRead]:
     """Returns all messages."""
     return await message_view.get(token_payload, guards)
 
 
-get_message_entity_snapshot_guards = Guards(MicrosoftGuard(), AllowAnonymous())
+get_message_entity_snapshot_guards = Guards(
+    MicrosoftGuard(), LinkedInGuard(), AllowAnonymous()
+)
 
 
 @router.get("/message/snapshot", status_code=200)
@@ -298,7 +312,7 @@ async def get_message_entity_snapshot(
     return snapshot.items
 
 
-get_message_by_id_guards = Guards(MicrosoftGuard(), AllowAnonymous())
+get_message_by_id_guards = Guards(MicrosoftGuard(), LinkedInGuard(), AllowAnonymous())
 
 
 @router.get("/message/{resource_id}", status_code=200)
@@ -319,7 +333,10 @@ async def put_message(
     message: MessageUpdate,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(
-        Guards(MicrosoftGuard(scopes=["api.read", "api.write"], roles=["User"]))
+        Guards(
+            MicrosoftGuard(scopes=["api.read", "api.write"], roles=["User"]),
+            LinkedInGuard(),
+        )
     ),
 ) -> MessageRead:
     """Updates a message."""
@@ -331,7 +348,10 @@ async def delete_message(
     resource_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(
-        Guards(MicrosoftGuard(scopes=["api.read", "api.write"], roles=["User"]))
+        Guards(
+            MicrosoftGuard(scopes=["api.read", "api.write"], roles=["User"]),
+            LinkedInGuard(),
+        )
     ),
 ) -> None:
     """Deletes a message."""
@@ -358,14 +378,16 @@ async def delete_message(
 async def get_numericals(
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(
-        Guards(MicrosoftGuard(scopes=["api.read"], roles=["User"]))
+        Guards(MicrosoftGuard(scopes=["api.read"], roles=["User"]), LinkedInGuard())
     ),
 ) -> list[NumericalRead]:
     """Returns all numerical answers."""
     return await numerical_view.get(token_payload, guards)
 
 
-get_numerical_entity_snapshot_guards = Guards(MicrosoftGuard(), AllowAnonymous())
+get_numerical_entity_snapshot_guards = Guards(
+    MicrosoftGuard(), LinkedInGuard(), AllowAnonymous()
+)
 
 
 @router.get("/numerical/snapshot", status_code=200)
@@ -394,7 +416,7 @@ async def get_numerical_entity_snapshot(
     return snapshot.items
 
 
-get_numerical_by_id_guards = Guards(MicrosoftGuard(), AllowAnonymous())
+get_numerical_by_id_guards = Guards(MicrosoftGuard(), LinkedInGuard(), AllowAnonymous())
 
 
 @router.get("/numerical/{resource_id}", status_code=200)
@@ -415,7 +437,10 @@ async def put_numerical(
     numerical: NumericalUpdate,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(
-        Guards(MicrosoftGuard(scopes=["api.read", "api.write"], roles=["User"]))
+        Guards(
+            MicrosoftGuard(scopes=["api.read", "api.write"], roles=["User"]),
+            LinkedInGuard(),
+        )
     ),
 ) -> NumericalRead:
     """Updates a numerical answer."""
@@ -427,7 +452,10 @@ async def delete_numerical(
     resource_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(
-        Guards(MicrosoftGuard(scopes=["api.read", "api.write"], roles=["User"]))
+        Guards(
+            MicrosoftGuard(scopes=["api.read", "api.write"], roles=["User"]),
+            LinkedInGuard(),
+        )
     ),
 ) -> None:
     """Deletes a numerical answer."""

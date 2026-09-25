@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from core.security import (
     AllowAnonymous,
     Guards,
+    LinkedInGuard,
     MicrosoftGuard,
     check_token_against_guards,
     get_http_access_token_payload,
@@ -51,7 +52,7 @@ async def post_presentation(
 async def get_presentations(
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(
-        Guards(MicrosoftGuard(scopes=["api.read"], roles=["User"]))
+        Guards(MicrosoftGuard(scopes=["api.read"], roles=["User"]), LinkedInGuard())
     ),
 ) -> list[PresentationRead]:
     """Returns all presentations."""
@@ -66,7 +67,7 @@ async def get_presentation_entity_snapshot(
     direction: Annotated[SortDirection, Query()] = SortDirection.ascending,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(
-        Guards(MicrosoftGuard(scopes=["api.read"], roles=["User"]))
+        Guards(MicrosoftGuard(scopes=["api.read"], roles=["User"]), LinkedInGuard())
     ),
 ) -> list[PresentationExtended]:
     """Returns an optionally enriched presentation snapshot."""
@@ -81,7 +82,9 @@ async def get_presentation_entity_snapshot(
     return cast(list[PresentationExtended], snapshot.items)
 
 
-get_presentation_by_id_guards = Guards(MicrosoftGuard(), AllowAnonymous())
+get_presentation_by_id_guards = Guards(
+    MicrosoftGuard(), LinkedInGuard(), AllowAnonymous()
+)
 
 
 @router.get("/{resource_id}", status_code=200)
@@ -96,7 +99,9 @@ async def get_presentation_by_id(
     return await presentation_view.get_by_id(resource_id, token_payload, guards=guards)
 
 
-get_presentation_by_path_guards = Guards(MicrosoftGuard(), AllowAnonymous())
+get_presentation_by_path_guards = Guards(
+    MicrosoftGuard(), LinkedInGuard(), AllowAnonymous()
+)
 
 
 @router.get("/path/{path:path}", status_code=200)

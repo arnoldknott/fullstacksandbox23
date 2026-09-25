@@ -40,7 +40,11 @@ from core.types import (
     GuardTypes,
     IdentityProvider,
 )
-from routers.socketio.v1.base import BaseNamespace
+from routers.socketio.v1.base import (
+    BaseNamespace,
+    SocketAuthenticationExpiredError,
+    SocketAuthorizationFailedError,
+)
 
 pytestmark = pytest.mark.anyio
 
@@ -361,12 +365,17 @@ def namespace_with(policy):
 
 
 @pytest.mark.anyio
-async def test_socket_explicit_anonymous_handles_missing_cached_token():
+async def test_socket_explicit_anonymous_rejects_missing_cached_token():
     namespace = namespace_with(Guards(MicrosoftGuard(), AllowAnonymous())())
     namespace._get_token_payload_if_authenticated = AsyncMock(
         side_effect=ValueError("No cached token")
     )
-    assert await namespace._get_current_user_and_check_guard("socket", "read") is None
+    namespace._end_expired_socket = AsyncMock()
+
+    with pytest.raises(SocketAuthenticationExpiredError):
+        await namespace._get_current_user_and_check_guard("socket", "read")
+
+    namespace._end_expired_socket.assert_awaited_once_with("socket")
 
 
 @pytest.mark.anyio
@@ -375,8 +384,12 @@ async def test_socket_protected_policy_rejects_missing_cached_token():
     namespace._get_token_payload_if_authenticated = AsyncMock(
         side_effect=ValueError("No cached token")
     )
-    with pytest.raises(ValueError):
+    namespace._end_expired_socket = AsyncMock()
+
+    with pytest.raises(SocketAuthenticationExpiredError):
         await namespace._get_current_user_and_check_guard("socket", "read")
+
+    namespace._end_expired_socket.assert_awaited_once_with("socket")
 
 
 @pytest.mark.anyio
@@ -387,8 +400,14 @@ async def test_socket_does_not_downgrade_failed_provider_requirements():
     namespace._get_token_payload_if_authenticated = AsyncMock(
         return_value={"roles": []}
     )
-    with pytest.raises(HTTPException):
+    namespace._emit_status = AsyncMock()
+
+    with pytest.raises(SocketAuthorizationFailedError):
         await namespace._get_current_user_and_check_guard("socket", "read")
+
+    namespace._emit_status.assert_awaited_once_with(
+        "socket", {"error": "access", "code": "authorization-failed"}
+    )
 
 
 async def test_new_socket_policy_rejects_missing_event_declaration():

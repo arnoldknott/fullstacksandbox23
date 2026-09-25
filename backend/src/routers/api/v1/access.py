@@ -9,6 +9,7 @@ from core.databases import get_async_session
 from core.security import (
     Guards,
     GuardTypes,
+    LinkedInGuard,
     MicrosoftGuard,
     check_token_against_guards,
     get_http_access_token_payload,
@@ -39,6 +40,11 @@ from .base import BaseView
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
+access_read_guards = Guards(MicrosoftGuard(roles=["User"]), LinkedInGuard())
+access_write_guards = Guards(
+    MicrosoftGuard(scopes=["api.write"], roles=["User"]), LinkedInGuard()
+)
+
 
 # region AccessPolicies
 
@@ -50,9 +56,7 @@ access_policy_view = BaseView(AccessPolicyCRUD)
 async def post_access_policy(
     access_policy: AccessPolicyCreate,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(
-        Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"]))
-    ),
+    guards: GuardTypes = Depends(access_write_guards),
 ) -> AccessPolicy:
     """Creates a new access policy."""
     return await access_policy_view.post(access_policy, token_payload, guards=guards)
@@ -61,7 +65,7 @@ async def post_access_policy(
 @router.get("/policies", status_code=200)
 async def get_access_policies(
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
+    guards: GuardTypes = Depends(access_read_guards),
 ) -> list[AccessPolicyRead]:
     """Returns all access policies."""
     return await access_policy_view.get(token_payload, guards)
@@ -74,7 +78,7 @@ async def get_access_policies_for_resource(
     # TBD: add a query parameter for action
     # TBD: add a query parameter for exclude current_user in the result
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
+    guards: GuardTypes = Depends(access_read_guards),
 ) -> list[AccessPolicyRead]:
     """Returns all access policies for requested resource_id."""
     logger.info("GET access policies for resource_id")
@@ -96,7 +100,7 @@ async def get_access_policies_for_resources(
     # TBD: add a query parameter for action
     # TBD: add a query parameter for exclude current_user in the result
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
+    guards: GuardTypes = Depends(access_read_guards),
 ) -> list[AccessPolicyRead]:
     """Returns all access policies for the requested resource_ids."""
     logger.info("GET access policies for resource_ids")
@@ -116,7 +120,7 @@ async def get_access_policies_for_resources(
 async def get_access_policies_by_resource_type(
     resource_type: ResourceType,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
+    guards: GuardTypes = Depends(access_read_guards),
 ) -> list[AccessPolicyRead]:
     """Returns all access policies for requested resource_type."""
     logger.info("GET access_policies for resource_type")
@@ -137,7 +141,7 @@ async def get_access_policies_by_resource_type(
 async def get_access_policies_for_identity(
     identity_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
+    guards: GuardTypes = Depends(access_read_guards),
 ) -> list[AccessPolicyRead]:
     """Returns all access policies for the requested identity."""
     logger.info("GET user by azure_user_id")
@@ -155,7 +159,7 @@ async def get_access_policies_for_identity(
 async def get_access_policies_by_identity_type(
     identity_type: IdentityType,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
+    guards: GuardTypes = Depends(access_read_guards),
 ) -> list[AccessPolicyRead]:
     """Returns all access policies for requested resource_type."""
     logger.info("GET access_policies for resource_type")
@@ -174,9 +178,7 @@ async def get_access_policies_by_identity_type(
 async def put_access_policy(
     access_policy: AccessPolicyUpdate,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(
-        Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"]))
-    ),
+    guards: GuardTypes = Depends(access_write_guards),
 ) -> AccessPolicyRead:
     """Deletes an old access policy and creates a new instead."""
     logger.info("PUT access policy")
@@ -196,9 +198,7 @@ async def delete_access_policy(
     action: Annotated[Action | None, Query()] = None,
     public: Annotated[bool | None, Query()] = None,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(
-        Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"]))
-    ),
+    guards: GuardTypes = Depends(access_write_guards),
 ) -> int:
     """Deletes an access policy."""
     logger.info("DELETE access policy")
@@ -224,7 +224,7 @@ async def delete_access_policy(
 async def get_access_policies_by_entity_type(
     entity_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
+    guards: GuardTypes = Depends(access_read_guards),
 ) -> ResourceType | IdentityType | None:
     """Returns all access policies for requested entity_type."""
     logger.info("GET access_policies for entity_type")
@@ -248,7 +248,7 @@ async def get_access_policies_by_entity_type(
 async def get_my_access_for_resource(
     resource_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
+    guards: GuardTypes = Depends(access_read_guards),
 ) -> Action | None:
     """Returns the access level to a resource for the current user."""
     logger.info("GET access level for resource_id")
@@ -265,7 +265,7 @@ async def get_my_access_for_resource(
 async def get_my_access_for_resources(
     resource_ids: list[UUID],
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
+    guards: GuardTypes = Depends(access_read_guards),
 ) -> list[Action | None]:
     """Returns the access level to a resource for the current user."""
     logger.info("GET access level for resource_id")
@@ -296,7 +296,7 @@ async def get_access_logs(
     action: Annotated[Action | None, Query()] = None,
     status_code: Annotated[int | None, Query(alias="status-code")] = None,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
+    guards: GuardTypes = Depends(access_read_guards),
 ) -> list[AccessLogRead]:
     """Returns all access logs."""
     logger.info("GET access logs")
@@ -314,7 +314,7 @@ async def get_access_logs_for_resource(
     resource_id: UUID,
     identity_id: Annotated[UUID | None, Query(alias="identity-id")] = None,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
+    guards: GuardTypes = Depends(access_read_guards),
 ) -> list[AccessLogRead]:
     """Returns creation information for a resource."""
     logger.info("GET access log information for resource")
@@ -331,7 +331,7 @@ async def get_access_logs_for_resource(
 async def get_access_logs_for_identity(
     identity_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
+    guards: GuardTypes = Depends(access_read_guards),
 ) -> list[AccessLogRead]:
     """Returns creation information for a resource."""
     logger.info("GET access log information for identity")
@@ -348,7 +348,7 @@ async def get_access_logs_for_identity(
 async def get_creation_date_for_resource(
     resource_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
+    guards: GuardTypes = Depends(access_read_guards),
 ) -> datetime:
     """Returns creation information for a resource."""
     logger.info("GET access log information for resource")
@@ -367,7 +367,7 @@ async def get_creation_date_for_resource(
 async def get_creation_date_for_resources(
     resource_ids: list[UUID],
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
+    guards: GuardTypes = Depends(access_read_guards),
 ) -> list[datetime]:
     """Returns creation information for a list of resources."""
     logger.info("GET access log information for resource")
@@ -389,7 +389,7 @@ async def get_creation_date_for_resources(
 async def get_last_modified_for_resource(
     resource_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
+    guards: GuardTypes = Depends(access_read_guards),
 ) -> datetime:
     """Returns the log for the latest modification of a resource."""
     logger.info("GET access log information for resource")
@@ -407,7 +407,7 @@ async def get_last_modified_for_resource(
 async def get_last_modified_for_resources(
     resource_ids: list[UUID],
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
+    guards: GuardTypes = Depends(access_read_guards),
 ) -> list[datetime]:
     """Returns latest modification time for resources."""
     logger.info("GET access log information for resource")
@@ -429,7 +429,7 @@ async def get_last_modified_for_resources(
 async def get_last_accessed_for_resource(
     resource_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
+    guards: GuardTypes = Depends(access_read_guards),
 ) -> AccessLogRead:
     """Returns the log for the latest access of a resource."""
     logger.info("GET access log information for resource")
@@ -447,7 +447,7 @@ async def get_last_accessed_for_resource(
 async def get_last_accessed_for_resources(
     resource_ids: list[UUID],
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
+    guards: GuardTypes = Depends(access_read_guards),
 ) -> list[datetime]:
     """Returns latest access time for resources."""
     logger.info("GET access log information for resource")
@@ -470,7 +470,7 @@ async def get_last_accessed_for_resources(
 async def get_access_count_for_resource(
     resource_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
+    guards: GuardTypes = Depends(access_read_guards),
 ) -> int:
     """Returns creation information for a resource."""
     logger.info("GET access log information for resource")
@@ -542,9 +542,7 @@ async def post_relationship(
     child_id: UUID,
     inherit: Annotated[bool, Query()] = False,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(
-        Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"]))
-    ),
+    guards: GuardTypes = Depends(access_write_guards),
     # ) -> List[ResourceHierarchyRead] | List[IdentityHierarchyRead]:
 ) -> ResourceHierarchyRead | IdentityHierarchyRead:
     """Creates a new relationship between a child and a parent resource."""
@@ -584,9 +582,7 @@ async def post_relationship(
 async def post_relationships(
     hierarchies: List[BaseHierarchyCreate],
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(
-        Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"]))
-    ),
+    guards: GuardTypes = Depends(access_write_guards),
 ) -> List[ResourceHierarchyRead | IdentityHierarchyRead]:
     """Creates a new relationship between a child and a parent resource."""
     logger.info("POST view to add child to parent calls add_child_to_parent CRUD")
@@ -611,9 +607,7 @@ async def get_relationships(
     parent_id: Annotated[UUID | None, Query(alias="parent-id")] = None,
     child_id: Annotated[UUID | None, Query(alias="child-id")] = None,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(
-        Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"]))
-    ),
+    guards: GuardTypes = Depends(access_write_guards),
 ) -> List[ResourceHierarchyRead] | List[IdentityHierarchyRead]:
     logger.info("GET retrieves parent-child relationships.")
     if not parent_id and not child_id:
@@ -642,9 +636,7 @@ async def post_reorder_children(
     position: str,
     other_child_id: Annotated[UUID | None, Query(alias="other-child-id")] = None,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(
-        Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"]))
-    ),
+    guards: GuardTypes = Depends(access_write_guards),
 ):
     """Within a parent resource moves one child before another child."""
     logger.info("POST reorder children view calls reorder_children CRUD")
@@ -678,9 +670,7 @@ async def put_relationship(
     child_id: UUID,
     inherit: bool,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(
-        Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"]))
-    ),
+    guards: GuardTypes = Depends(access_write_guards),
 ) -> ResourceHierarchyRead | IdentityHierarchyRead:
     logger.info("PUT updates a parent-child relationship.")
     current_user = await check_token_against_guards(token_payload, guards)
@@ -699,9 +689,7 @@ async def delete_relationship(
     parent_id: UUID,
     child_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(
-        Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"]))
-    ),
+    guards: GuardTypes = Depends(access_write_guards),
 ) -> int:
     """Deletes the relationship between a child and a parent resource."""
     logger.info("DELETE removes a child from a parent.")
@@ -718,9 +706,7 @@ async def delete_relationship(
 async def delete_relationships(
     hierarchies: List[BaseHierarchyDelete],
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(
-        Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"]))
-    ),
+    guards: GuardTypes = Depends(access_write_guards),
 ) -> int:
     """Removes several hierarchies."""
     logger.info("DELETE removes several hierarchies")

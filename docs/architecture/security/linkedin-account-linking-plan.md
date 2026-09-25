@@ -1,6 +1,6 @@
 # LinkedIn authentication, account linking, and credential encryption
 
-Status: Stages A (guards) and B (minimal identity/signup) are implemented. Stage C application code and deployment configuration are implemented; live LinkedIn login and transient UserInfo display are verified, and the measured identity-token lifetime is one hour. Sliding session renewal, one-session reauthentication, and socket expiry/reconnect work are tracked in the [authentication session lifecycle plan](authentication-session-lifecycle-plan.md) and remain before Stage C is accepted. Endpoint activation, account linking/merge, and cache encryption remain subsequent stages.
+Status: Stages A (guards), B (minimal identity/signup), and D (resource/event policies and answer ownership) are implemented. Stage C core lifecycle code and deployment configuration are implemented; live LinkedIn login and transient UserInfo display are verified, and the measured identity-token lifetime is one hour. Independently expiring OAuth transaction state and end-to-end expiry/reconnect acceptance remain tracked in the [authentication session lifecycle plan](authentication-session-lifecycle-plan.md). Account linking/merge and cache encryption remain subsequent stages.
 
 Agreed scope recorded on 2026-09-20; encryption and rotation decisions updated on 2026-09-21. This is the shared implementation handoff for frontend, backend, database, and Redis changes. Keep shared login/encryption decisions here and account-merge decisions in the linked merge plan, rather than maintaining separate plans in each application.
 
@@ -222,6 +222,13 @@ Files: matrix endpoints/namespaces, `core/fastapi.py`.
 - Permit ownership-based sharing/hierarchy operations through existing access checks; retain checks on parent and child resources.
 - Attribute activity to internal users consistently and preserve application-group inheritance.
 
+Implementation notes:
+
+- Request guards admit LinkedIn for the documented quiz answer operations, question reads, presentation reads, and access-policy/right/hierarchy routes. Question and presentation mutations, group administration, demo resources/files, and protected resources retain their Microsoft-only outer policies.
+- Socket.IO connect/read/subscription/replay policies admit LinkedIn on question, presentation, message, and numerical namespaces. Message and numerical creation, update, delete, share, and the existing link/unlink guard aliases admit LinkedIn; question and presentation mutations remain Microsoft-only.
+- Existing CRUD access-policy enforcement remains unchanged. Focused request tests verify that a LinkedIn caller owns an answer created under a publicly connectable question and can read/update/delete it through the public interfaces. Focused socket tests exercise LinkedIn creation, update, deletion, and sharing through the provider-specific Redis session/cache path.
+- Test-environment validation recorded `4 passed` for the focused request matrix, `26 passed` for focused Socket.IO coverage, and `1065 passed, 3 failed` for the full backend suite. The three failures were stale session-lifecycle exception assertions; after aligning them with the typed authentication/authorization errors, their targeted rerun recorded `3 passed`. Black and Ruff pass.
+
 Completion: owner/non-owner/anonymous request and socket tests pass for creation, reads, modification, deletion, sharing, hierarchy operations, snapshots and replay. This is the first complete participation milestone; linking is not required to release it.
 
 ### E. Linking and merge (separate plan)
@@ -269,12 +276,12 @@ Main chain: **A → B → C → D**, with tests in each stage. **F** can run alo
 
 Keep authentication, guards and socket integration together: they share `security.py`, `types.py`, and the namespace base. Encryption is a suitable separate task once its contract is fixed. Merge work (separate plan) can be handed off after B and C's proof-of-identity interface are stable. Separate work uses isolated branches/worktrees and coordinates shared-file edits; do not run independent chats concurrently in this checkout.
 
-No additional design decision is required to begin. The identifier-storage decision is recorded in the [Redis contract](../../redis/README.md#encryption-scope). Live verification has measured the identity-token lifetime; expiry/reconnect and sliding-session behavior still require verification. Encryption needs startup key configuration. Do not paste real tokens or secrets into documentation or chat.
+No additional design decision is required to continue. The identifier-storage decision is recorded in the [Redis contract](../../redis/README.md#encryption-scope). Sliding-session and socket-expiry code is implemented; explicit OAuth transaction expiry plus live expiry/reconnect acceptance still remain. Encryption needs startup key configuration. Do not paste real tokens or secrets into documentation or chat.
 
 - [x] A: policy and validation contract
 - [x] B: minimal identity/signup and migrations
-- [ ] C: login, cache lookup, request integration and expiry (live login, UserInfo and token lifetime verified; sliding renewal, one-session reauthentication and socket expiry verification pending)
-- [ ] D: endpoint/event matrix and ownership
+- [ ] C: login, cache lookup, request integration and expiry (core lifecycle code, live login, UserInfo and token lifetime verified; independent OAuth transaction expiry and live end-to-end expiry/reconnect acceptance pending)
+- [x] D: endpoint/event matrix and ownership
 - [ ] E: linking, merge preview, atomic reassignment and cleanup — see [account merge plan](./linkedin-azure-account-merge-plan.md)
 - [ ] F: encrypted cache compatibility and rollout
 - [ ] Test-environment validation and staging verification

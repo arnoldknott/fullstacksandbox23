@@ -2,7 +2,14 @@
 
 from uuid import uuid4
 
+from core.authentication.base import VerifiedIdentity
 from core.config import config
+from core.types import IdentityProvider
+
+linkedin_subject = "linkedin-user"
+linkedin_identity = VerifiedIdentity(
+    IdentityProvider.linkedin, {"sub": linkedin_subject}
+)
 
 user_id = "12345678-1234-1234-1234-123456789012"
 user_id_nonexistent = "87654321-4321-4321-4321-210987654321"
@@ -354,6 +361,7 @@ session_id_admin_read_socketio = uuid4()
 session_id_admin_write_socketio = uuid4()
 session_id_admin_read_write_socketio = uuid4()
 session_id_admin_read_write_socketio_groups = uuid4()
+session_id_linkedin_socketio = uuid4()
 
 session_id_invalid_token1 = uuid4()
 session_id_invalid_token2 = uuid4()
@@ -457,6 +465,10 @@ sessions = [
     {
         "session_id": session_id_admin_read_write_socketio_groups,
         "token_payload": token_admin_read_write_socketio_groups,
+    },
+    {
+        "session_id": session_id_linkedin_socketio,
+        "token_payload": linkedin_identity,
     },
     {
         "session_id": session_id_invalid_token1,

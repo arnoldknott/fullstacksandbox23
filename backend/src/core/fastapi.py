@@ -103,7 +103,11 @@ def mount_rest_api_routes(app: FastAPI, api_prefix: str, ws_prefix: str):
         access_router,
         prefix=f"{api_prefix}/access",
         tags=["Access"],
-        dependencies=[Depends(Guards(MicrosoftGuard(scopes=["api.read"])).check_http)],
+        dependencies=[
+            Depends(
+                Guards(MicrosoftGuard(scopes=["api.read"]), LinkedInGuard()).check_http
+            )
+        ],
     )
     app.include_router(
         public_resource_router,
