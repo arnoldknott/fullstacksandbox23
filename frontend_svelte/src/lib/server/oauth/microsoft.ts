@@ -18,7 +18,6 @@ import { IdentityProvider } from '$lib/identityProvider';
 
 import { redisCache } from '../cache';
 import AppConfig from '../config';
-import { Encryption } from '../encryption';
 import {
 	createOAuthTransaction,
 	type OAuthIntent,
@@ -30,7 +29,6 @@ import {
 } from './base';
 
 const appConfig = await AppConfig.getInstance();
-const encryption = new Encryption(appConfig.encryption);
 const scopesBackend = [
 	`api://${appConfig.api_scope}/api.read`,
 	`api://${appConfig.api_scope}/api.write`
@@ -60,7 +58,7 @@ class RedisClientWrapper implements ICacheClient {
 			(await this.redisClient.json.set(
 				redisKey,
 				'.',
-				encryption.encrypt(redisKey, '$', JSON.parse(value)) as RedisJSON
+				appConfig.getEncryption().encrypt(redisKey, '$', JSON.parse(value)) as RedisJSON
 			)) || '';
 
 		if (authSessionData) {
@@ -74,7 +72,7 @@ class RedisClientWrapper implements ICacheClient {
 		const cached = await this.redisClient.json.get(redisKey);
 		if (cached === null || cached === undefined) return '';
 		try {
-			const authSessionData = encryption.decrypt(redisKey, '$', cached);
+			const authSessionData = appConfig.getEncryption().decrypt(redisKey, '$', cached);
 			return JSON.stringify(authSessionData);
 		} catch {
 			console.warn('⚠️ 🔑 oauth - Microsoft cache - discarded unreadable record');

@@ -1,7 +1,5 @@
 import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto';
 
-import type { SecretClient, SecretProperties } from '@azure/keyvault-secrets';
-
 export const ENVELOPE_VERSION = 1;
 
 export type EncryptionEnvelope = {
@@ -47,17 +45,6 @@ export function resemblesEncryptionEnvelope(value: unknown): boolean {
 		value !== null &&
 		envelopeFields.some((field) => Object.hasOwn(value, field))
 	);
-}
-
-export function decodeEncryptionKey(value: string, label: string): Uint8Array {
-	if (!/^[A-Za-z0-9+/]+={0,2}$/.test(value) || value.length % 4 !== 0) {
-		throw new Error(`${label} must be valid Base64.`);
-	}
-	const key = Buffer.from(value, 'base64');
-	if (key.byteLength !== 32 || key.toString('base64') !== value) {
-		throw new Error(`${label} must decode to exactly 32 bytes.`);
-	}
-	return key;
 }
 
 function decodeEnvelopeField(value: unknown, label: string): Buffer {
@@ -139,99 +126,4 @@ export class Encryption {
 		}
 		return JSON.parse(plaintext.toString('utf8')) as unknown;
 	}
-}
-
-function localKeys(environment: NodeJS.ProcessEnv): EncryptionKey[] {
-	const keyIndices = Object.keys(environment)
-		.map((name) => /^ENCRYPTION_KEY_(\d+)$/.exec(name)?.[1])
-		.filter((index): index is string => index !== undefined)
-		.map(Number);
-	const versionIndices = Object.keys(environment)
-		.map((name) => /^ENCRYPTION_KEY_VERSION_(\d+)$/.exec(name)?.[1])
-		.filter((index): index is string => index !== undefined)
-		.map(Number);
-	const configured = [...new Set([...keyIndices, ...versionIndices])].sort((a, b) => a - b);
-	if (configured.length === 0) return [];
-	const expected = Array.from({ length: configured.at(-1)! }, (_, index) => index + 1);
-	if (configured.some((value, index) => value !== expected[index])) {
-		throw new Error('Local encryption keys must use contiguous indices from 1.');
-	}
-	return expected.map((index) => {
-		const keyName = `ENCRYPTION_KEY_${index}`;
-		const versionName = `ENCRYPTION_KEY_VERSION_${index}`;
-		const value = environment[keyName];
-		const version = environment[versionName];
-		if (!value || !version) throw new Error(`${keyName} requires both key and version.`);
-		return { version, key: decodeEncryptionKey(value, keyName) };
-	});
-}
-
-export function loadLocalEncryptionKeyring(
-	environment: NodeJS.ProcessEnv = process.env
-): EncryptionKeyring {
-	const keys = localKeys(environment);
-	if (!keys[0]) throw new Error('At least one local encryption key is required.');
-	return { keys };
-}
-
-function createdAt(properties: SecretProperties): number {
-	const timestamp = properties.createdOn?.getTime();
-	if (timestamp === undefined || !Number.isFinite(timestamp)) {
-		throw new Error('Encryption secret version is missing its creation time.');
-	}
-	return timestamp;
-}
-
-export async function loadKeyVaultEncryptionKeyring(
-	client: SecretClient
-): Promise<EncryptionKeyring> {
-	const secretName = 'application-encryption-key';
-	for (let attempt = 0; attempt < 3; attempt++) {
-		const firstLatest = await client.getSecret(secretName);
-		if (!firstLatest.value || !firstLatest.properties.version) {
-			throw new Error('Current encryption secret is incomplete.');
-		}
-
-		const versions: SecretProperties[] = [];
-		for await (const properties of client.listPropertiesOfSecretVersions(secretName)) {
-			versions.push(properties);
-		}
-		const ordered = [...versions].sort((left, right) => createdAt(right) - createdAt(left));
-		if (ordered[0]?.version !== firstLatest.properties.version) {
-			continue;
-		}
-		const createdTimes = ordered.map(createdAt);
-		if (new Set(createdTimes).size !== createdTimes.length) {
-			throw new Error('Encryption secret version order is ambiguous.');
-		}
-		for (const properties of ordered) {
-			if (!properties.version) throw new Error('Encryption secret metadata is missing a version.');
-			if (properties.enabled === false) {
-				throw new Error(`Encryption secret version ${properties.version} is disabled.`);
-			}
-		}
-
-		const keys: EncryptionKey[] = [
-			{
-				version: firstLatest.properties.version,
-				key: decodeEncryptionKey(firstLatest.value, secretName)
-			}
-		];
-		for (const properties of ordered.slice(1)) {
-			const version = properties.version!;
-			const secret = await client.getSecret(secretName, { version });
-			if (!secret.value || secret.properties.version !== version) {
-				throw new Error(`Encryption secret version ${version} is incomplete.`);
-			}
-			keys.push({
-				version,
-				key: decodeEncryptionKey(secret.value, `${secretName} ${version}`)
-			});
-		}
-
-		const secondLatest = await client.getSecret(secretName);
-		if (secondLatest.properties.version !== firstLatest.properties.version) continue;
-		return { keys };
-	}
-	throw new Error('Encryption secret rotated during startup discovery.');
 }
