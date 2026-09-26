@@ -1,11 +1,11 @@
 import redis
 
+from core.config import config, load_encryption_keyring
 from core.encryption import (
     Encryption,
     is_encryption_envelope,
     resembles_encryption_envelope,
 )
-from core.config import config, load_encryption_keyring
 
 # print("=== cache.py started ===")
 
@@ -19,13 +19,17 @@ redis_session_client = redis.Redis(
 
 encryption = Encryption(load_encryption_keyring())
 
+# Session roots that are protected in different ways: whole, leaf, or scalar:
+# Whole-protected session roots are encrypted as a whole:
 _WHOLE_PROTECTED_SESSION_ROOTS = {
     "microsoftAccount",
     "microsoftAuthorization",
     "linkedinAuthorization",
     "accountMerge",
 }
+# This means, this part is not encrypted as a whole, only its leaves are encrypted:
 _LEAF_PROTECTED_SESSION_ROOTS = {"currentUser"}
+# This means, this part is encrypted as a whole:
 _PROTECTED_SCALAR_SESSION_ROOTS = {"userAgent"}
 
 
