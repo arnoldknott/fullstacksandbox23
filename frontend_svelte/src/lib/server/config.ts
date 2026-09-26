@@ -63,7 +63,7 @@ export default class AppConfig {
 		// this.authentication_cookie_options = {};
 		this.session_timeout = 60 * 120; // 2 hours
 		this.session_cookie_options = {};
-		if (!process.env.AZ_KEYVAULT_HOST) this.encryption = loadLocalEncryptionKeyring();
+		this.encryption = {} as EncryptionKeyring;
 	}
 
 	public static async getInstance(): Promise<AppConfig> {
@@ -135,7 +135,6 @@ export default class AppConfig {
 				const redisSessionPassword = await client.getSecret('redis-session-password');
 				const linkedinClientId = await client.getSecret('linkedin-client-id');
 				const linkedinClientSecret = await client.getSecret('linkedin-client-secret');
-				this.encryption = await loadKeyVaultEncryptionKeyring(client);
 				this.keyvault_health = keyvaultHealth?.value;
 				this.backend_host = backend_host?.value || '';
 				this.backend_origin = `http://${this.backend_host}:80`;
@@ -151,6 +150,7 @@ export default class AppConfig {
 				// console.log(this.api_scope_default);
 				this.az_authority = `https://login.microsoftonline.com/${azTenantId?.value}`;
 				this.az_logout_uri = `https://login.microsoftonline.com/${azTenantId?.value}/oauth2/v2.0/logout`;
+				this.encryption = await loadKeyVaultEncryptionKeyring(client);
 				this.redis_session_password = redisSessionPassword?.value || '';
 				this.linkedin_client_id = linkedinClientId?.value || '';
 				this.linkedin_client_secret = linkedinClientSecret?.value || '';
@@ -184,6 +184,7 @@ export default class AppConfig {
 			this.api_scope_default = `api://${process.env.API_SCOPE}/.default`;
 			this.az_authority = `https://login.microsoftonline.com/${process.env.AZURE_TENANT_ID}`;
 			this.az_logout_uri = `https://login.microsoftonline.com/${process.env.AZURE_TENANT_ID}/oauth2/v2.0/logout`;
+			this.encryption = loadLocalEncryptionKeyring();
 			this.redis_session_password = process.env.REDIS_SESSION_PASSWORD || '';
 			this.linkedin_client_id = process.env.LINKEDIN_CLIENT_ID || '';
 			this.linkedin_client_secret = process.env.LINKEDIN_CLIENT_SECRET || '';
