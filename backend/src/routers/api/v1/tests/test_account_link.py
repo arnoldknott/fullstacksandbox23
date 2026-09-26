@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from httpx2 import AsyncClient
 
 from core.authentication.base import VerifiedIdentity
-from core.cache import redis_session_client
+from core.cache import encryption, redis_session_client
 from core.config import config
 from core.security import provide_http_token_payload
 from core.types import IdentityProvider
@@ -153,10 +153,17 @@ async def test_merge_invalidation_disconnects_and_deletes_only_affected_sessions
             ("source", source_id),
             ("unrelated", unrelated_id),
         ):
+            redis_key = f"session:{session_ids[name]}"
             redis_session_client.json().set(
-                f"session:{session_ids[name]}",
+                redis_key,
                 ".",
-                {"currentUser": {"id": str(user_id)}},
+                {
+                    "currentUser": {
+                        "id": encryption.encrypt(
+                            redis_key, "$.currentUser.id", str(user_id)
+                        )
+                    }
+                },
             )
         disconnect = AsyncMock()
         monkeypatch.setattr(
@@ -190,7 +197,15 @@ async def test_merge_cleanup_can_retry_after_socket_disconnect_failure(
     cleanup_key = f"session:merge-cleanup:{cleanup_id}"
     try:
         redis_session_client.json().set(
-            session_key, ".", {"currentUser": {"id": str(user_id)}}
+            session_key,
+            ".",
+            {
+                "currentUser": {
+                    "id": encryption.encrypt(
+                        session_key, "$.currentUser.id", str(user_id)
+                    )
+                }
+            },
         )
         monkeypatch.setattr(
             "routers.api.v1.account_linking.disconnect_auth_sessions",

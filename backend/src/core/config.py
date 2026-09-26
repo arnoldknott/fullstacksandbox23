@@ -9,6 +9,12 @@ from azure.keyvault.secrets import SecretClient
 from pydantic import PostgresDsn, ValidationInfo, field_validator
 from pydantic_settings import BaseSettings
 
+from core.encryption import (
+    EncryptionKeyring,
+    load_key_vault_encryption_keyring,
+    load_local_encryption_keyring,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -45,6 +51,19 @@ def get_variable(variable_name):
             return os.getenv(variable_name)
 
     return get_variable_inner(variable_name)
+
+
+def load_encryption_keyring() -> EncryptionKeyring:
+    """Load application encryption keys once at startup."""
+    if not os.getenv("AZ_KEYVAULT_HOST"):
+        return load_local_encryption_keyring()
+    credential = ManagedIdentityCredential(
+        client_id=cast(str, os.getenv("AZ_CLIENT_ID"))
+    )
+    client = SecretClient(
+        vault_url=cast(str, os.getenv("AZ_KEYVAULT_HOST")), credential=credential
+    )
+    return load_key_vault_encryption_keyring(client)
 
 
 class Config(BaseSettings):

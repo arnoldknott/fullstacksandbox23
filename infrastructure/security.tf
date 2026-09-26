@@ -163,7 +163,7 @@ resource "azurerm_key_vault" "keyVault" {
       "Get"
     ]
 
-    # Discover current/previous authentication-cache secret versions at startup.
+    # Discover every application-encryption secret version at startup.
     secret_permissions = [
       "Get", "List"
     ]
@@ -181,7 +181,7 @@ resource "azurerm_key_vault" "keyVault" {
       "Get"
     ]
 
-    # Discover current/previous authentication-cache secret versions at startup.
+    # Discover every application-encryption secret version at startup.
     secret_permissions = [
       "Get", "List"
     ]
@@ -267,8 +267,9 @@ resource "azurerm_key_vault" "keyVault" {
       "Get"
     ]
 
+    # Keep the worker ready to use the shared application encryption module.
     secret_permissions = [
-      "Get"
+      "Get", "List"
     ]
   }
 
@@ -346,6 +347,21 @@ resource "random_password" "redisSessionPassword" {
 resource "azurerm_key_vault_secret" "redisSessionPassword" {
   name         = "redis-session-password"
   value        = random_password.redisSessionPassword.result
+  key_vault_id = azurerm_key_vault.keyVault.id
+}
+
+resource "random_id" "applicationEncryptionKey" {
+  byte_length = 32
+
+  keepers = {
+    rotation_revision = var.encryption_rotation_revision
+  }
+}
+
+# Production rotation: deploy the backend successfully before approving the frontend deployment.
+resource "azurerm_key_vault_secret" "applicationEncryptionKey" {
+  name         = "application-encryption-key"
+  value        = random_id.applicationEncryptionKey.b64_std
   key_vault_id = azurerm_key_vault.keyVault.id
 }
 

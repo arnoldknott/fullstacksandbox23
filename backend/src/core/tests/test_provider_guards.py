@@ -22,6 +22,7 @@ from core.authentication.linkedin import (
     LINKEDIN_ISSUER,
     validate_linkedin_identity_token,
 )
+from core.cache import encryption
 from core.security import (
     AllowAnonymous,
     CurrentAccessToken,
@@ -543,11 +544,14 @@ async def test_http_extraction_preserves_verified_linkedin_provider(monkeypatch)
 
 @pytest.mark.anyio
 async def test_socket_cache_selects_linkedin_identity_token(monkeypatch):
+    encrypted_tokens = encryption.encrypt(
+        "linkedin:member-sub", "$", {"idToken": "identity-token"}
+    )
     cache_json = Mock()
     cache_json.get.side_effect = lambda key, path=None: {
         ("session:session", "$.identityProvider"): ["linkedin"],
         ("session:session", "$.linkedinSubject"): ["member-sub"],
-        ("linkedin:member-sub", None): {"idToken": "identity-token"},
+        ("linkedin:member-sub", None): encrypted_tokens,
     }[(key, path)]
     monkeypatch.setattr(
         "core.security.redis_session_client.json", Mock(return_value=cache_json)
@@ -569,3 +573,35 @@ async def test_socket_cache_selects_linkedin_identity_token(monkeypatch):
     assert identity.provider == IdentityProvider.linkedin
     assert identity.claims["sub"] == "member-sub"
     validate.assert_awaited_once_with("identity-token", client_id=CLIENT_ID)
+
+
+@pytest.mark.anyio
+async def test_socket_cache_defaults_a_missing_provider_path_to_microsoft(monkeypatch):
+    account = {"homeAccountId": "account", "username": "user@example.invalid"}
+    encrypted_account = encryption.encrypt(
+        "session:session", "$.microsoftAccount", account
+    )
+    cache_json = Mock()
+    responses: dict[tuple[str, str], list[object]] = {
+        ("session:session", "$.identityProvider"): [],
+        ("session:session", "$.microsoftAccount"): [encrypted_account],
+    }
+
+    def get_cached_value(key: str, path: str) -> list[object]:
+        return responses[(key, path)]
+
+    cache_json.get.side_effect = get_cached_value
+    monkeypatch.setattr(
+        "core.security.redis_session_client.json", Mock(return_value=cache_json)
+    )
+    token = AsyncMock(return_value="access-token")
+    validate = AsyncMock(return_value={"oid": "member", "tid": "tenant"})
+    monkeypatch.setattr("core.security.get_azure_token_from_cache", token)
+    monkeypatch.setattr("core.security.azure.get_azure_token_payload", validate)
+
+    identity = await get_token_payload_from_cache("session")
+
+    assert identity.provider == IdentityProvider.microsoft
+    assert identity.claims == {"oid": "member", "tid": "tenant"}
+    token.assert_awaited_once_with(account, None)
+    validate.assert_awaited_once_with("access-token")

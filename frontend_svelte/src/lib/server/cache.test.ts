@@ -17,7 +17,10 @@ vi.mock('./config', () => ({
 				redis_host: 'cache',
 				redis_port: 6379,
 				redis_session_db: 0,
-				session_timeout: 3600
+				session_timeout: 3600,
+				encryption: {
+					keys: [{ version: 'test', key: Uint8Array.from({ length: 32 }, () => 1) }]
+				}
 			})
 	}
 }));

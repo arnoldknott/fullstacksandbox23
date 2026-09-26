@@ -2,7 +2,7 @@
 
 Redis supports cached sessions and tokens, Socket.IO coordination, and Celery transport. Runtime configuration and access-control-list templates live in [cache](../../cache/); service wiring follows the application and Docker Compose configuration.
 
-This document owns the agreed encryption contract and operational requirements. Encryption/key-loading work is planned, not implemented by this documentation. Follow the [data-storage policy](../architecture/security/README.md#data-storage-policy) to decide what may be retained; encryption never makes prohibited third-party resource data eligible for storage. Implementation stages and tests are tracked in [Stage F](../architecture/security/linkedin-account-linking-plan.md#f-compatible-encrypted-cache-persistence).
+This document owns Redis-specific partitions, protected session/cache boundaries, and performance measurements. The [security architecture](../architecture/security/README.md#application-encryption) owns the application-wide encryption format, keyring, startup, and rotation contract. Follow the [data-storage policy](../architecture/security/README.md#data-storage-policy) to decide what may be retained; encryption never makes prohibited third-party resource data eligible for storage. Implementation stages and tests are tracked in [Stage F](../architecture/security/linkedin-account-linking-plan.md#f-encrypted-cache-persistence).
 
 ## Public signing-key caching
 
@@ -32,49 +32,34 @@ Preserve Redis JavaScript Object Notation (JSON) session path operations. Encryp
 
 MSAL adapters read/write complete serialized caches: decrypt before deserialization and encrypt after serialization, without depending on the library's internal token-field schema. Frontend wrappers and backend direct Redis consumers must agree on both whole-record and subdocument handling.
 
-## Encryption format
-
-Use Advanced Encryption Standard in Galois/Counter Mode with a 256-bit key (AES-256-GCM) and the same environment-specific key in both server runtimes. Use established libraries and the same envelope:
-
-| Field | Meaning |
-| --- | --- |
-| `version` | Envelope-format version |
-| `key-version` | Key Vault secret version selecting the decryption key |
-| `nonce` | Fresh cryptographically random 12-byte value per encryption; never reuse with the same key |
-| `ciphertext` | Encrypted data |
-| `tag` | Mandatory 16-byte authentication tag generated and verified by the library |
-
-Encode binary fields as Base64. Version identifiers and nonces are not secrets. Bind the full Redis key, canonical subdocument path/purpose, envelope version, and key version through consistently encoded associated data. This prevents moving ciphertext between accounts, providers, or protected fields.
-
-Verify the tag before consuming any plaintext; wrong keys, tampering, or changed associated data must fail. Libraries that append the tag to ciphertext must split/recombine it consistently at the envelope boundary. Cross-runtime tests establish compatibility. Keys remain in server memory, outside Redis/PostgreSQL and browser-visible data.
-
-## Key generation and startup configuration
-
-- Generate a cryptographically random 32-byte symmetric key in `infrastructure/security.tf` and store its Base64 representation as the Key Vault **secret** `auth-cache-encryption-key`. The same key encrypts and decrypts. Share it between the frontend server and backend for permitted authentication-cache data within one environment; keep separate keys for development, testing, staging, and production and for unrelated future encryption/signing purposes.
-- OpenTofu owns rotation. An explicit non-secret rotation revision changes the generated key; unrelated infrastructure updates preserve it. Update the value under the same secret name so previous secret versions remain available. Do not delete/recreate the secret to rotate it. Generated secrets can appear in infrastructure state and saved plans; protect those artifacts and do not print secret values.
-- Give only the frontend/backend application identities the additional secret `List` permission required for this feature, alongside their existing `Get`; leave other identities unchanged. These two permission additions are recorded in `security.tf`; this document does not establish deployment status. Under the existing vault access policies, `List` exposes vault-wide secret metadata, not secret values by itself.
-- At startup, fetch the latest secret, enumerate all pages of version metadata, and determine the immediately preceding version by creation time. Do not rely on listing order or sort opaque version identifiers. Fetch the previous value using its exact version. If creation times cannot establish a unique predecessor, fail with a configuration error rather than guess. Rotation must not run concurrently with startup discovery; detect a changed latest version and retry the snapshot if necessary.
-- Keep `encryption_key`, `previous_encryption_key`, and their version identifiers in memory, following each application's field-naming conventions. Versions come from Key Vault metadata; they require no additional Key Vault secrets or deployment environment variables. `config.ts` uses `getSecret` and `listPropertiesOfSecretVersions`; `config.py` uses `get_secret` and `list_properties_of_secret_versions`. Reuse a client within the loading operation.
-- The first generation has no previous key: use `undefined`/`None`. A permission, network, disabled-version, or malformed-key error is not equivalent to an absent predecessor. Validate decoded key lengths and fail configuration loading if required material cannot be loaded; do not copy the backend `get_variable()` helper's catch-all empty-string fallback for encryption keys. Do not skip an unavailable immediate predecessor and silently choose an older version.
-- Local development/test configuration supplies current/optional previous keys and matching non-secret version labels through the existing environment-variable setup, using only synthetic keys in fixtures. No new scripts or workflows are required. Keep configuration initialization compatible with frontend builds and backend test/worker imports.
-- New records use the current key. Readers select the in-memory key by the record's `key-version`; unknown versions produce a controlled cache/authentication failure, never an arbitrary on-demand Key Vault lookup. Redis versions select keys during reads; `List` separately discovers the predecessor at startup. There are no Key Vault requests per cache operation.
-
-## Routine rotation and deployment
-
-- Use the existing infrastructure-success triggers for the frontend/backend deployment workflows. For production rotation, approve and complete the backend deployment before approving the frontend deployment. When adding the secret-generation resource, put this reminder beside it in `security.tf`.
-- The user accepts temporary authentication failures, including affected existing sessions, while old and new processes overlap. Backend-first ordering reduces some incompatibilities but does not make rotation atomic: a new backend can write records the old frontend cannot decrypt. Applications must recover through normal cache/authentication failure handling; never bypass verification. A separate preparation deployment for zero interruption is not required.
-- Keep the previous version enabled and readable until every record encrypted with it has expired or been re-encrypted. Retaining a current and previous key only works if another rotation does not strand records from two generations earlier. Count retention from the last write by an old process, including remaining replicas, and account for session metadata as well as provider-cache expiry. Do not rotate again before that boundary unless deliberately accepting cache invalidation and fresh login.
-- Secret changes do not update keys already in process memory; both application deployments must complete to adopt them. Rolling back to processes that loaded only older keys can require deliberate authentication-cache invalidation. This routine key rotation is separate from the initial plaintext-to-encrypted format migration, which still requires compatible readers before encrypted writers.
-
-## Initial encryption rollout
-
-Deploy compatible readers on every instance before enabling encrypted writers. Retire temporary plaintext compatibility after migration/expiry; malformed encrypted data must never be interpreted as legacy plaintext. Missing required keys or failed authentication tags never permit plaintext fallback. Rollback after encrypted writes requires compatible readers or deliberate authentication-cache invalidation and fresh login, never persisted decrypted tokens.
-
 ## Performance measurement
 
-Benchmark synthetic representative payloads in both runtimes in the test environment. Measure encryption and decryption separately, report payload sizes, sample counts, warm-up conditions, median, 95th/99th percentiles and observed maximum. Measure both cryptographic work and added serialization/envelope overhead; report Redis network time and complete `set()`/`get()` timings separately. Notify the user of measured encryption/decryption overhead above 50 microseconds, including tail observations, for their acceptance decision. This is a reporting threshold, not an automatic failure limit or permission to omit encryption. No deployment-specific timing has been measured; remove unverified microsecond performance claims.
+Benchmark synthetic representative payloads in both runtimes in the test environment. Measure encryption and decryption separately, report payload sizes, sample counts, warm-up conditions, median, 95th/99th percentiles and observed maximum. Measure both cryptographic work and added serialization/envelope overhead; report Redis network time and complete `set()`/`get()` timings separately. Notify the user of measured encryption/decryption overhead above 50 microseconds, including tail observations, for their acceptance decision. This is a reporting threshold, not an automatic failure limit or permission to omit encryption.
 
-## References
+Measurements from the isolated test containers on 2026-09-26 include JavaScript Object Notation serialization, Base64 conversion, envelope construction/parsing, and AES-256-GCM. Each runtime used 1,000 warm-up iterations and 10,000 measured samples:
 
-- [Authenticated encryption](https://cryptography.io/en/latest/hazmat/primitives/aead/#cryptography.hazmat.primitives.ciphers.aead.AESGCM): nonce requirements, authentication tags, and rejection of modified ciphertext.
-- [Key Vault JavaScript secret versions](https://learn.microsoft.com/en-us/azure/key-vault/secrets/javascript-developer-guide-get-secret) and [Python SecretClient](https://learn.microsoft.com/en-us/python/api/azure-keyvault-secrets/azure.keyvault.secrets.secretclient?view=azure-python): version-specific retrieval and metadata listing permissions.
+| Runtime | Payload | Operation | Median | 95th | 99th | Maximum |
+| --- | ---: | --- | ---: | ---: | ---: | ---: |
+| Python | 1,390 bytes | encrypt | 7.79 µs | 14.38 µs | 20.88 µs | 221.62 µs |
+| Python | 1,390 bytes | decrypt | 5.50 µs | 6.96 µs | 12.46 µs | 65.17 µs |
+| Python | 8,558 bytes | encrypt | 29.92 µs | 110.79 µs | 367.58 µs | 1,258.38 µs |
+| Python | 8,558 bytes | decrypt | 20.08 µs | 28.75 µs | 35.96 µs | 360.17 µs |
+| Python | 33,134 bytes | encrypt | 149.92 µs | 698.08 µs | 1,080.58 µs | 3,762.46 µs |
+| Python | 33,134 bytes | decrypt | 78.52 µs | 110.79 µs | 374.71 µs | 711.75 µs |
+| TypeScript | 1,390 bytes | encrypt | 3.71 µs | 27.54 µs | 304.17 µs | 5,763.46 µs |
+| TypeScript | 1,390 bytes | decrypt | 5.75 µs | 12.29 µs | 19.08 µs | 2,415.38 µs |
+| TypeScript | 8,558 bytes | encrypt | 12.29 µs | 115.25 µs | 438.79 µs | 4,149.50 µs |
+| TypeScript | 8,558 bytes | decrypt | 24.25 µs | 59.29 µs | 88.21 µs | 2,199.92 µs |
+| TypeScript | 33,134 bytes | encrypt | 36.67 µs | 614.71 µs | 1,270.58 µs | 3,051.83 µs |
+| TypeScript | 33,134 bytes | decrypt | 98.75 µs | 349.33 µs | 976.13 µs | 3,337.50 µs |
+
+Redis timings used the 8,558-byte payload, 100 warm-up iterations, and 1,000 measured samples from the Python backend container. Plain RedisJSON network/serialization time and the complete encrypted operation were measured separately:
+
+| Operation | Median | 95th | 99th | Maximum |
+| --- | ---: | ---: | ---: | ---: |
+| Plain Redis `set()` | 101.83 µs | 138.71 µs | 397.25 µs | 1,368.17 µs |
+| Plain Redis `get()` | 106.12 µs | 142.75 µs | 343.96 µs | 995.71 µs |
+| Complete encrypted `set()` | 151.04 µs | 197.96 µs | 548.92 µs | 1,538.33 µs |
+| Complete encrypted `get()` | 136.17 µs | 183.04 µs | 478.67 µs | 979.08 µs |
+
+The 50-microsecond reporting threshold is exceeded for large-payload medians and for several 95th/99th-percentile and maximum observations. For the representative 8,558-byte Redis case, the measured median increase was 49.21 µs for `set()` and 30.05 µs for `get()`.

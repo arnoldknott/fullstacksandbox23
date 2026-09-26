@@ -1,6 +1,6 @@
 # LinkedIn authentication, account linking, and credential encryption
 
-Status: Stages A (guards), B (minimal identity/signup), D (resource/event policies and answer ownership), and E (provider linking and confirmed account merge) are implemented. Stage C lifecycle code, focused automated coverage, deployment configuration, and the live LinkedIn expiry/reconnect sequence are verified; the measured LinkedIn identity-token lifetime is one hour. Equivalent Microsoft live acceptance remains tracked in the [authentication session lifecycle plan](authentication-session-lifecycle-plan.md). Cache encryption remains a subsequent stage.
+Status: Stages A (guards), B (minimal identity/signup), D (resource/event policies and answer ownership), E (provider linking and confirmed account merge), and F (authentication-cache encryption) are implemented. Stage C lifecycle code, focused automated coverage, deployment configuration, and the live LinkedIn expiry/reconnect sequence are verified; the measured LinkedIn identity-token lifetime is one hour. Equivalent Microsoft live acceptance remains tracked in the [authentication session lifecycle plan](authentication-session-lifecycle-plan.md).
 
 Agreed scope recorded on 2026-09-20; encryption and rotation decisions updated on 2026-09-21. This is the shared implementation handoff for frontend, backend, database, and Redis changes. Keep shared login/encryption decisions here and account-merge decisions in the linked merge plan, rather than maintaining separate plans in each application.
 
@@ -16,7 +16,7 @@ Agreed scope recorded on 2026-09-20; encryption and rotation decisions updated o
 - Authenticated message/numerical creators become owners through existing policies. Anonymous creation never grants ownership to a shared anonymous identity.
 - Stages A–D require no changes to the inner authorization layer (`crud/access.py`, `crud/base.py`, `filters_allowed()`): it already operates on the internal `user_id` and treats a LinkedIn user with empty roles/groups correctly. Only the separate merge plan reassigns inner-layer identity references.
 - Support first-time linking and merging existing users in either provider direction. Reassign references and delete superseded records; no merge history, alias records, or retired users. Linking and merge are specified in the separate [account merge plan](./linkedin-azure-account-merge-plan.md); Stages A–D of this document do not require them.
-- Apply the [data-storage policy](README.md#data-storage-policy) and [Redis encryption contract](../../redis/README.md); Stage F maps them to implementation.
+- Apply the [data-storage policy](README.md#data-storage-policy), [application encryption contract](README.md#application-encryption), and [Redis storage contract](../../redis/README.md); Stage F maps them to implementation.
 - Preserve anonymous admission per endpoint/event. Do not make every read public, open anonymous request-based creation because sockets allow it, or open anonymous answer update/delete.
 - No cross-provider AND expressions, additional authentication service, new scripts, or deployment workflows.
 
@@ -182,7 +182,7 @@ Implementation notes:
 Files: provider modules, login/callback/logout routes, `backendApi.ts`, session types/hooks/layouts, configuration loaders.
 
 - Implement prepared `linkedin.ts` with the installed version 6 interface and existing route scaffolding. Register the actual callback addresses. First-party parameters use kebab-case; external protocol parameters remain unchanged.
-- During Stage C, `linkedin:<sub>` temporarily follows the existing plaintext `msal:<homeAccountId>` cache posture. This is an explicit interim implementation decision; Stage F must encrypt both complete provider-cache values before encrypted-cache rollout is complete.
+- During Stage C, `linkedin:<sub>` temporarily followed the existing plaintext `msal:<homeAccountId>` cache posture. Stage F replaced both complete provider-cache values with encrypted envelopes.
 - Keep credentials server-side and separate from client session/layout data. Store active provider and private cache references in the server session.
 - Select the active provider's credential for backend requests and socket cache lookup. Linking must not silently switch active identity or union cached claims.
 - Keep Graph acquisition separate: LinkedIn-only login must not run unconditional Microsoft Graph `/me`, Microsoft silent acquisition, or Microsoft logout redirects.
@@ -235,19 +235,21 @@ Completion: owner/non-owner/anonymous request and socket tests pass for creation
 
 First-time attachment and existing-user merge, including verified proof of control, settings-conflict resolution, atomic reassignment of identity references, and retryable cache/socket reconciliation, are implemented as specified in the separate [account merge plan](./linkedin-azure-account-merge-plan.md). The provider-generic operation retains the initiating internal user and currently serves Microsoft and LinkedIn. It is the only implemented work that reassigns inner authorization references; general authorization semantics remain unchanged.
 
-### F. Compatible encrypted cache persistence
+### F. Encrypted cache persistence
 
-Contract: [Redis encryption, partitioning, startup keys, rotation, and performance requirements](../../redis/README.md). That document is authoritative for cache design; this stage tracks the implementation.
+Contracts: [application encryption, startup keys, and rotation](README.md#application-encryption), plus [Redis partitioning and performance requirements](../../redis/README.md). Those documents are authoritative; this stage tracks the implementation.
 
 Files: `microsoft.ts`, frontend `cache.ts`, backend `RedisPersistence` in `security.py`, [frontend config](../../../frontend_svelte/src/lib/server/config.ts), [backend config](../../../backend/src/core/config.py), [security.tf](../../../infrastructure/security.tf), and infrastructure rotation configuration in `variables.tf`.
 
 - Implement the shared encryption envelope and provider-cache adapters in both runtimes.
 - Adapt session path/whole-session readers and writers, including backend direct Redis consumers, while preserving the account fields required by existing MSAL token retrieval.
 - Implement startup key loading, per-environment generation, and explicit rotation configuration using the existing configuration/deployment surfaces. Put the backend-first deployment reminder beside the secret-generation resource.
-- Add compatible migration readers before encrypted writers, preserving expiry and concurrent-write behavior.
+- Reject unencrypted protected values rather than carrying a plaintext migration reader. The direct encrypted-only rollout is intentional because no users were logged in in any environment when Stage F was implemented.
 - Run cross-runtime, tamper, account-lookup, and JSON path tests. Perform and report the [required benchmarks](../../redis/README.md#performance-measurement).
 
-Completion: the Redis contract is implemented and validated, including encrypted credentials and protected user data, the explicit plaintext-identifier exceptions, and absence of prohibited third-party resource data. Key generation and application changes remain planned until implemented.
+Completion: the Redis contract is implemented and validated, including encrypted credentials and protected user data, explicit plaintext-identifier exceptions, encrypted Microsoft account lookup from the backend, and rejection of unencrypted or tampered protected values. The reusable application-encryption modules share one mandatory environment-specific keyring across runtimes; encryption has no runtime disable switch. OpenTofu generates the current key, and startup loads every enabled Key Vault version newest-to-oldest so durable ciphertext can continue using ancient keys. Local/test configuration uses the same indexed loader, with three synthetic test keys. Performance measurements and threshold observations are recorded in the Redis contract.
+
+Test-environment validation recorded `20 passed` for backend encryption/startup-key tests and `82 passed` for the focused encrypted-cache/provider/account-merge paths. The full backend suite now passes, as do backend Black, Ruff, and Pyright. Frontend validation recorded `25 passed` test files with `122 passed, 3 todo`; lint and Svelte type checks pass. OpenTofu formatting passes; local `tofu validate` remains unavailable without the repository's Azure credentials/provider initialization.
 
 ### G. Provider unlinking (after encryption)
 
@@ -269,7 +271,7 @@ Use only the test environment for formatting, linting, type checks, tests and be
 
 Extend these suites:
 
-- Encryption/configuration tests in both runtimes: first generation, unsorted/paginated version discovery, ambiguous predecessor, startup rotation race, missing permissions, unavailable previous versions, malformed keys, current/previous reads, unknown key version, and modified nonce/ciphertext/tag/associated data. Verify tag failures expose no plaintext, and loading performs no per-cache-operation Key Vault calls. Cover encrypted `$.microsoftAccount` compatibility with existing frontend/backend token acquisition, encrypted user data, whole-session and selective/deeper-path access, and absence of plaintext duplicates.
+- Encryption/configuration tests in both runtimes: first generation, unsorted/paginated discovery of every version, ambiguous ordering, startup rotation race, missing permissions, unavailable or disabled historical versions, malformed keys, current/ancient reads, unknown key version, rejected unencrypted protected values, and modified nonce/ciphertext/tag/associated data. Verify tag failures expose no plaintext, and loading performs no per-operation Key Vault calls. Cover encrypted `$.microsoftAccount` compatibility with existing frontend/backend token acquisition, encrypted user data, whole-session and selective/deeper-path access, and absence of plaintext duplicates.
 - [Security](../../../backend/src/core/tests/test_security.py) and [types](../../../backend/src/core/tests/test_types.py): dispatch, claims, policy alternatives, optional compatibility, cached tokens, administrator/tenant isolation.
 - [Base CRUD](../../../backend/src/crud/tests/test_base_crud.py) and [access CRUD](../../../backend/src/crud/tests/test_access_crud.py): ownership, inheritance, strongest grants and non-owner denial. Add adjacent identity CRUD tests for merge transactions as needed.
 - [Identity routes](../../../backend/src/routers/api/v1/tests/test_identities.py), [quiz routes](../../../backend/src/routers/api/v1/tests/test_quiz.py), [presentation routes](../../../backend/src/routers/api/v1/tests/test_presentation.py), [access routes](../../../backend/src/routers/api/v1/tests/test_access.py): full matrix, enclosing dependencies and forbidden provider-field updates.
@@ -281,7 +283,7 @@ Rollout:
 1. Add identity migration and compatible guard/cache readers; require LinkedIn configuration in every environment before deploying the provider integration.
 2. Enable LinkedIn login and selected endpoint/event alternatives after A–D pass; verify expiry recovery and Socket.IO reconnect/resubscribe behavior.
 3. Linking/confirmed merge has passed atomicity and stale-authorization tests; complete the two live staging merge directions recorded in the [account merge plan](./linkedin-azure-account-merge-plan.md) before production rollout.
-4. Enable encrypted writes only after every reader is compatible; F can ship earlier if that condition is satisfied.
+4. Deploy the Stage F key and encrypted-only applications together. There is no plaintext migration phase because there were no logged-in users in any environment at implementation time; stale plaintext cache entries fail closed and require fresh login.
 5. Implement provider unlinking only after Stage F so credential deletion and session cleanup operate on the final encrypted-cache representation.
 6. Verify staging before production using existing branches/environments. Disabling LinkedIn admission is reversible. A completed merge is deliberately destructive and has no application merge history from which to undo it. A migration downgrade must not silently discard populated provider identifiers.
 
@@ -291,14 +293,14 @@ Main chain: **A → B → C → D**, with tests in each stage. **F** can run alo
 
 Keep authentication, guards and socket integration together: they share `security.py`, `types.py`, and the namespace base. Encryption is a suitable separate task once its contract is fixed. Merge work (separate plan) can be handed off after B and C's proof-of-identity interface are stable. Separate work uses isolated branches/worktrees and coordinates shared-file edits; do not run independent chats concurrently in this checkout.
 
-No additional design decision is required to continue. The identifier-storage decision is recorded in the [Redis contract](../../redis/README.md#encryption-scope). Sliding-session, socket-expiry, and independently expiring intent-bound OAuth transaction code are implemented with focused automated coverage; live expiry/reconnect acceptance still remains. Encryption needs startup key configuration. Do not paste real tokens or secrets into documentation or chat.
+No additional design decision is required to continue. The identifier-storage decision is recorded in the [Redis storage contract](../../redis/README.md#encryption-scope), and the encrypted-only rollout is recorded in the [application encryption contract](README.md#encrypted-only-behavior). Sliding-session, socket-expiry, independently expiring intent-bound OAuth transactions, and startup encryption-key configuration are implemented with focused automated coverage; equivalent Microsoft live expiry/reconnect acceptance still remains. Do not paste real tokens or secrets into documentation or chat.
 
 - [x] A: policy and validation contract
 - [x] B: minimal identity/signup and migrations
 - [ ] C: login, cache lookup, request integration and expiry (code, focused automated coverage, and live LinkedIn expiry/reconnect verified; equivalent Microsoft live acceptance pending)
 - [x] D: endpoint/event matrix and ownership
 - [x] E: linking, merge preview, atomic reassignment and cleanup — see [account merge plan](./linkedin-azure-account-merge-plan.md)
-- [ ] F: encrypted cache compatibility and rollout
+- [x] F: encrypted authentication-cache persistence and rotation support
 - [ ] G: unlink one provider while preserving a verified retained provider; account splitting remains unsupported
 - [ ] Test-environment validation and staging verification
 

@@ -9,7 +9,7 @@ import uvicorn
 from pydantic import BaseModel
 
 from core.authentication.base import VerifiedIdentity
-from core.cache import redis_session_client
+from core.cache import encryption, redis_session_client
 from core.security import (
     Guards,
     LinkedInGuard,
@@ -120,13 +120,22 @@ def load_test_sessions_into_redis():
                 },
             )
             redis_session_client.json().set(
-                f"linkedin:{linkedin_subject}", ".", {"idToken": "test-token"}
+                f"linkedin:{linkedin_subject}",
+                ".",
+                encryption.encrypt(
+                    f"linkedin:{linkedin_subject}", "$", {"idToken": "test-token"}
+                ),
             )
         else:
+            redis_key = f"session:{session['session_id']}"
             redis_session_client.json().set(
-                f"session:{session['session_id']}",
+                redis_key,
                 ".",
-                {"microsoftAccount": cast(Any, token_payload)},
+                {
+                    "microsoftAccount": encryption.encrypt(
+                        redis_key, "$.microsoftAccount", cast(Any, token_payload)
+                    )
+                },
             )
 
     yield

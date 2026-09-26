@@ -4,7 +4,7 @@ from fastapi import HTTPException
 from redis.commands.json._util import JsonType
 
 from core.authentication.base import VerifiedIdentity
-from core.cache import redis_session_client
+from core.cache import decrypt_session_value, redis_session_client
 from core.security import verify_access_token
 from core.socketio import disconnect_auth_sessions
 
@@ -37,7 +37,11 @@ async def _invalidate_merged_user_sessions(
     session_ids: set[str] = set()
     for raw_key in redis_session_client.scan_iter(match="session:*"):
         key = raw_key.decode() if isinstance(raw_key, bytes) else str(raw_key)
-        session = redis_session_client.json().get(key)
+        raw_session = redis_session_client.json().get(key)
+        try:
+            session = decrypt_session_value(key, "$", raw_session)
+        except TypeError, ValueError:
+            continue
         current_user = session.get("currentUser") if isinstance(session, dict) else None
         if isinstance(current_user, dict) and current_user.get("id") in user_id_strings:
             session_ids.add(key.removeprefix("session:"))

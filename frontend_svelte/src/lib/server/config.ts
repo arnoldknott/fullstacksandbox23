@@ -4,6 +4,12 @@ dotenv.config();
 
 import { ManagedIdentityCredential } from '@azure/identity';
 import { SecretClient } from '@azure/keyvault-secrets';
+
+import {
+	type EncryptionKeyring,
+	loadKeyVaultEncryptionKeyring,
+	loadLocalEncryptionKeyring
+} from './encryption';
 // import type { Configuration } from '$lib/types';
 
 export default class AppConfig {
@@ -31,6 +37,7 @@ export default class AppConfig {
 	// public authentication_cookie_options: object;
 	public session_timeout: number;
 	public session_cookie_options: object;
+	public encryption!: EncryptionKeyring;
 
 	private constructor() {
 		this.api_scope = '';
@@ -56,6 +63,7 @@ export default class AppConfig {
 		// this.authentication_cookie_options = {};
 		this.session_timeout = 60 * 120; // 2 hours
 		this.session_cookie_options = {};
+		if (!process.env.AZ_KEYVAULT_HOST) this.encryption = loadLocalEncryptionKeyring();
 	}
 
 	public static async getInstance(): Promise<AppConfig> {
@@ -66,7 +74,7 @@ export default class AppConfig {
 		return AppConfig.instance;
 	}
 
-	private async connectKeyvault(tries: number = 0): Promise<SecretClient | void> {
+	private async connectKeyvault(tries: number = 0): Promise<SecretClient> {
 		try {
 			// requires AZ_CLIENT_ID for keyvault access due to "working with AKS pod-identity" - see here:
 			// https://learn.microsoft.com/en-us/javascript/api/@azure/identity/managedidentitycredential?view=azure-node-latest
@@ -96,7 +104,7 @@ export default class AppConfig {
 			console.error('🥞 app_config - server - connectKeyvault - createClient failed');
 			console.log(`Retry attempt ${tries} to connect to keyvault in 1 second`);
 			await new Promise((resolve) => setTimeout(resolve, 5000));
-			await this.connectKeyvault(tries);
+			return this.connectKeyvault(tries);
 		}
 	}
 
@@ -111,22 +119,23 @@ export default class AppConfig {
 				const client = await this.connectKeyvault();
 				// console.log("📜 app_config - client:");
 				// console.log(client);
-				const keyvaultHealth = await client?.getSecret('keyvault-health');
-				const backend_host = await client?.getSecret('backend-host');
-				const backend_fqdn = await client?.getSecret('backend-fqdn');
+				const keyvaultHealth = await client.getSecret('keyvault-health');
+				const backend_host = await client.getSecret('backend-host');
+				const backend_fqdn = await client.getSecret('backend-fqdn');
 				// const backend_origin = await client?.getSecret('backend-origin');
 				// const backend_host = this.backend_origin.split('://')[1].split(':')[0]; // replace("https://", "").split(":")[0]
 				// console.log("📜 app_config - keyvaultHealth: ");
 				// console.log(keyvaultHealth);
 				// console.log("📜 app_config - keyvaultHealth.value: ");
 				// console.log(keyvaultHealth?.value);
-				const frontendSvelteClientId = await client?.getSecret('frontend-svelte-client-id');
-				const frontendSvelteClientSecret = await client?.getSecret('frontend-svelte-client-secret');
-				const apiScope = await client?.getSecret('api-scope');
-				const azTenantId = await client?.getSecret('azure-tenant-id');
-				const redisSessionPassword = await client?.getSecret('redis-session-password');
-				const linkedinClientId = await client?.getSecret('linkedin-client-id');
-				const linkedinClientSecret = await client?.getSecret('linkedin-client-secret');
+				const frontendSvelteClientId = await client.getSecret('frontend-svelte-client-id');
+				const frontendSvelteClientSecret = await client.getSecret('frontend-svelte-client-secret');
+				const apiScope = await client.getSecret('api-scope');
+				const azTenantId = await client.getSecret('azure-tenant-id');
+				const redisSessionPassword = await client.getSecret('redis-session-password');
+				const linkedinClientId = await client.getSecret('linkedin-client-id');
+				const linkedinClientSecret = await client.getSecret('linkedin-client-secret');
+				this.encryption = await loadKeyVaultEncryptionKeyring(client);
 				this.keyvault_health = keyvaultHealth?.value;
 				this.backend_host = backend_host?.value || '';
 				this.backend_origin = `http://${this.backend_host}:80`;

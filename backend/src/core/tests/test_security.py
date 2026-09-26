@@ -7,6 +7,7 @@ from fastapi import Depends, FastAPI
 from httpx2 import AsyncClient
 
 from core.authentication.azure import get_azure_jwks
+from core.cache import encryption, redis_session_client
 from core.security import (
     CurrentAzureUserInDatabase,
     Guards,
@@ -499,6 +500,24 @@ async def test_get_user_account_from_session_cache(setup_redis_session_data):
         assert (
             user_account["authorityType"] == mocked_microsoft_account["authorityType"]
         )
+
+
+@pytest.mark.anyio
+async def test_get_user_account_from_encrypted_session_cache(setup_redis_session_data):
+    """The backend can use a Microsoft account encrypted by the frontend format."""
+    session = setup_redis_session_data[0]
+    session_id = next(iter(session))
+    redis_key = f"session:{session_id}"
+    microsoft_account = session[session_id]["microsoftAccount"]
+    encrypted_account = encryption.encrypt(
+        redis_key, "$.microsoftAccount", microsoft_account
+    )
+    redis_session_client.json().set(
+        redis_key, ".", {"microsoftAccount": encrypted_account}
+    )
+
+    assert microsoft_account["username"] not in str(encrypted_account)
+    assert await get_user_account_from_session_cache(session_id) == microsoft_account
 
 
 @pytest.mark.anyio

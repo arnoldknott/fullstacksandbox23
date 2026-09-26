@@ -69,6 +69,9 @@ jobs:
       # Redis settings:
       REDIS_PORT: ${{ secrets.REDIS_PORT }}
       REDIS_INSIGHT_PORT: ${{ secrets.REDIS_INSIGHT_PORT }}
+      ENCRYPTION_ROTATION_REVISION_DEV: ${{ vars.ENCRYPTION_ROTATION_REVISION_DEV }}
+      ENCRYPTION_ROTATION_REVISION_STAGE: ${{ vars.ENCRYPTION_ROTATION_REVISION_STAGE }}
+      ENCRYPTION_ROTATION_REVISION_PROD: ${{ vars.ENCRYPTION_ROTATION_REVISION_PROD }}
       DTU_CAMPUSAI_API_KEY_DEV: ${{ secrets.DTU_CAMPUSAI_API_KEY_DEV }}
       DTU_CAMPUSAI_API_KEY_STAGE: ${{ secrets.DTU_CAMPUSAI_API_KEY_STAGE }}
       DTU_CAMPUSAI_API_KEY_PROD: ${{ secrets.DTU_CAMPUSAI_API_KEY_PROD }}
@@ -139,16 +142,19 @@ jobs:
         run: |
           if [ ${{ github.ref }} == 'refs/heads/dev' ]; then
             echo "WORKSPACE=dev" >> "$GITHUB_ENV"
+            echo "ENCRYPTION_ROTATION_REVISION=${ENCRYPTION_ROTATION_REVISION_DEV:-1}" >> "$GITHUB_ENV"
             echo "DTU_CAMPUSAI_API_KEY=${{ secrets.DTU_CAMPUSAI_API_KEY_DEV }}" >> "$GITHUB_ENV"
             echo "LINKEDIN_CLIENT_ID=${{ secrets.LINKEDIN_CLIENT_ID_DEV }}" >> "$GITHUB_ENV"
             echo "LINKEDIN_CLIENT_SECRET=${{ secrets.LINKEDIN_CLIENT_SECRET_DEV }}" >> "$GITHUB_ENV"
           elif [ ${{ github.ref }} == 'refs/heads/stage' ]; then
             echo "WORKSPACE=stage" >> "$GITHUB_ENV"
+            echo "ENCRYPTION_ROTATION_REVISION=${ENCRYPTION_ROTATION_REVISION_STAGE:-1}" >> "$GITHUB_ENV"
             echo "DTU_CAMPUSAI_API_KEY=${{ secrets.DTU_CAMPUSAI_API_KEY_STAGE }}" >> "$GITHUB_ENV"
             echo "LINKEDIN_CLIENT_ID=${{ secrets.LINKEDIN_CLIENT_ID_STAGE }}" >> "$GITHUB_ENV"
             echo "LINKEDIN_CLIENT_SECRET=${{ secrets.LINKEDIN_CLIENT_SECRET_STAGE }}" >> "$GITHUB_ENV"
           elif [ ${{ github.ref }} == 'refs/heads/main' ]; then
             echo "WORKSPACE=prod" >> "$GITHUB_ENV"
+            echo "ENCRYPTION_ROTATION_REVISION=${ENCRYPTION_ROTATION_REVISION_PROD:-1}" >> "$GITHUB_ENV"
             echo "DTU_CAMPUSAI_API_KEY=${{ secrets.DTU_CAMPUSAI_API_KEY_PROD }}" >> "$GITHUB_ENV"
             echo "LINKEDIN_CLIENT_ID=${{ secrets.LINKEDIN_CLIENT_ID_PROD }}" >> "$GITHUB_ENV"
             echo "LINKEDIN_CLIENT_SECRET=${{ secrets.LINKEDIN_CLIENT_SECRET_PROD }}" >> "$GITHUB_ENV"
@@ -223,6 +229,7 @@ jobs:
             -var "pgadmin_default_email=${PGADMIN_DEFAULT_EMAIL}" \
             -var "redis_port=${REDIS_PORT}" \
             -var "redis_insight_port=${REDIS_INSIGHT_PORT}" \
+            -var "encryption_rotation_revision=${ENCRYPTION_ROTATION_REVISION}" \
             -var "linkedin_client_id=${LINKEDIN_CLIENT_ID}" \
             -var "linkedin_client_secret=${LINKEDIN_CLIENT_SECRET}" \
             -var "dtu_campusai_api_key=${DTU_CAMPUSAI_API_KEY}" \

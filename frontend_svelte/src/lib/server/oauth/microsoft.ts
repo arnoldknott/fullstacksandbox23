@@ -11,13 +11,14 @@ import {
 	type ICacheClient,
 	type IPartitionManager
 } from '@azure/msal-node';
-import type { RedisClientType } from 'redis';
+import type { RedisClientType, RedisJSON } from 'redis';
 
 import { building } from '$app/environment';
 import { IdentityProvider } from '$lib/identityProvider';
 
 import { redisCache } from '../cache';
 import AppConfig from '../config';
+import { Encryption } from '../encryption';
 import {
 	createOAuthTransaction,
 	type OAuthIntent,
@@ -29,6 +30,7 @@ import {
 } from './base';
 
 const appConfig = await AppConfig.getInstance();
+const encryption = new Encryption(appConfig.encryption);
 const scopesBackend = [
 	`api://${appConfig.api_scope}/api.read`,
 	`api://${appConfig.api_scope}/api.write`
@@ -53,23 +55,32 @@ class RedisClientWrapper implements ICacheClient {
 	}
 
 	public async set(key: string, value: string): Promise<string> {
+		const redisKey = `msal:${key}`;
 		const authSessionData =
-			(await this.redisClient.json.set(`msal:${key}`, '.', JSON.parse(value))) || '';
+			(await this.redisClient.json.set(
+				redisKey,
+				'.',
+				encryption.encrypt(redisKey, '$', JSON.parse(value)) as RedisJSON
+			)) || '';
 
 		if (authSessionData) {
-			await this.redisClient.expire(`msal:${key}`, 60 * 60 * 24 * 7); // 7 days
+			await this.redisClient.expire(redisKey, 60 * 60 * 24 * 7); // 7 days
 		}
 		return authSessionData;
 	}
 
 	public async get(key: string): Promise<string> {
+		const redisKey = `msal:${key}`;
+		const cached = await this.redisClient.json.get(redisKey);
+		if (cached === null || cached === undefined) return '';
 		try {
-			const authSessionData = (await this.redisClient.json.get(`msal:${key}`)) || '';
+			const authSessionData = encryption.decrypt(redisKey, '$', cached);
 			return JSON.stringify(authSessionData);
-		} catch (error) {
-			console.log(error);
+		} catch {
+			console.warn('⚠️ 🔑 oauth - Microsoft cache - discarded unreadable record');
+			await this.redisClient.unlink(redisKey);
+			return '';
 		}
-		return '';
 	}
 }
 

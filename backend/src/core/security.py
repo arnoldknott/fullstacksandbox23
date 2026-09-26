@@ -19,7 +19,12 @@ from core.authentication.base import (
     VerifiedIdentity,
     verify_provider_token,
 )
-from core.cache import redis_session_client
+from core.cache import (
+    get_protected_cache_value,
+    get_session_value,
+    redis_session_client,
+    set_protected_cache_value,
+)
 from core.config import config
 from core.types import AllowAnonymous  # noqa: F401 - public guard declaration interface
 from core.types import LinkedInGuard  # noqa: F401 - public guard declaration interface
@@ -152,15 +157,13 @@ class RedisPersistence(BasePersistence):
     def save(self, content):  # type: ignore[override]
         """Saves the token to the cache"""
         # raise Exception("Backend does not support saving tokens")
-        result = redis_session_client.json().set(
-            self.get_location(), ".", json.loads(content)
-        )
+        result = set_protected_cache_value(self.get_location(), json.loads(content))
         # print("===➡️ 🔑 token saved to cache in backend based on session_id ===")
         return json.dumps(result)
 
     def load(self):
         """Loads the token from the cache"""
-        result = redis_session_client.json().get(self.get_location())
+        result = get_protected_cache_value(self.get_location())
         # print("===⬅️ 🔑 token loaded from cache in backend based on session_id ===")
         return json.dumps(result)
 
@@ -200,12 +203,11 @@ async def get_user_account_from_session_cache(session_id: str) -> Dict[str, Any]
     """Gets the user account from the cache"""
     logger.info("🔑 Getting user account from cache")
     user_account = cast(
-        List[Dict[str, Any]],
-        redis_session_client.json().get(f"session:{session_id}", "$.microsoftAccount"),
+        Optional[Dict[str, Any]], get_session_value(session_id, "$.microsoftAccount")
     )
     if not user_account:
         raise ValueError("User account not found in session.")
-    return user_account[0]
+    return user_account
 
 
 # TBD: write tests for this
@@ -240,24 +242,12 @@ async def get_token_payload_from_cache(
 ) -> VerifiedIdentity:
     """Load and validate the active provider credential for a server session."""
     logger.info("🔑 Getting token from cache")
-    raw_provider = redis_session_client.json().get(
-        f"session:{session_id}", "$.identityProvider"
-    )
-    provider = (
-        raw_provider[0] if isinstance(raw_provider, list) and raw_provider else None
-    )
+    provider = get_session_value(session_id, "$.identityProvider")
     if provider == IdentityProvider.linkedin.value:
-        raw_subject = redis_session_client.json().get(
-            f"session:{session_id}", "$.linkedinSubject"
-        )
-        subject = (
-            raw_subject[0]
-            if isinstance(raw_subject, list) and raw_subject
-            else raw_subject
-        )
+        subject = get_session_value(session_id, "$.linkedinSubject")
         if not isinstance(subject, str) or not subject:
             raise HTTPException(status_code=401, detail="LinkedIn session not found.")
-        cached = redis_session_client.json().get(f"linkedin:{subject}")
+        cached = get_protected_cache_value(f"linkedin:{subject}")
         token = cached.get("idToken") if isinstance(cached, dict) else None
         if not isinstance(token, str):
             raise HTTPException(

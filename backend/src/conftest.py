@@ -17,7 +17,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from core.cache import redis_session_client
+from core.cache import encryption, redis_session_client
 from core.authentication.base import VerifiedIdentity
 from core.databases import postgres_async_engine  # should be SQLite here only!
 from core.security import (
@@ -240,13 +240,20 @@ async def setup_redis_session_data():
     for azure_user_account in many_azure_user_accounts:
         session_id = uuid4()
         sessions.append({session_id: {"microsoftAccount": azure_user_account}})
+        redis_key = f"session:{session_id}"
         redis_session_client.json().set(
-            f"session:{session_id}", ".", {"microsoftAccount": azure_user_account}
+            redis_key,
+            ".",
+            {
+                "microsoftAccount": encryption.encrypt(
+                    redis_key, "$.microsoftAccount", azure_user_account
+                )
+            },
         )
     yield sessions
     # Clean up after the test
     for session in sessions:
-        redis_session_client.json().delete(f"session:{session.keys()}")
+        redis_session_client.json().delete(f"session:{next(iter(session))}")
 
 
 async def register_entity_to_identity_type_link_table(

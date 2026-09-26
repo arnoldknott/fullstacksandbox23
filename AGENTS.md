@@ -50,9 +50,10 @@ Keep edits focused, preserve existing patterns, and prefer small changes over br
 
 - Follow the repository-wide [data-storage policy](docs/architecture/security/README.md#data-storage-policy): only required authentication data may be cached; authorized third-party resource responses stay transient in memory.
 
-## Redis encryption and retrieval
+## Application encryption and Redis retrieval
 
-- Follow the [Redis encryption contract](docs/redis/README.md) when changing cache data or consumers. It defines encryption granularity, permitted plaintext identifiers, key loading/rotation, and performance measurement/reporting requirements.
+- Follow the [application encryption contract](docs/architecture/security/README.md#application-encryption) when changing protected application data or encryption consumers. It defines the shared format, key loading, rotation, and failure behavior.
+- Follow the [Redis storage contract](docs/redis/README.md) for Redis-specific encryption granularity, permitted plaintext identifiers, cache boundaries, and performance measurement/reporting requirements.
 
 ## Shared Integration Guidance
 

@@ -127,6 +127,12 @@ variable "redis_celery_backend_db" {
   type        = number
 }
 
+variable "encryption_rotation_revision" {
+  description = "Explicit revision that rotates the shared application encryption key"
+  type        = string
+  default     = "1"
+}
+
 variable "linkedin_client_id" {
   description = "LinkedIn OpenID Connect application client ID"
   type        = string
