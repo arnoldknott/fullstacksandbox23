@@ -5,7 +5,6 @@ import { IdentityProvider } from '$lib/identityProvider';
 
 import { redisCache } from '../cache';
 import AppConfig from '../config';
-import { Encryption } from '../encryption';
 import {
 	createOAuthTransaction,
 	type OAuthIntent,
@@ -29,7 +28,6 @@ type LinkedInTokens = {
 };
 
 const appConfig = await AppConfig.getInstance();
-const encryption = new Encryption(appConfig.encryption);
 
 export class LinkedInReauthenticationRequiredError extends Error {}
 
@@ -87,7 +85,7 @@ class LinkedInAuthenticationProvider implements OAuthProvider {
 		}
 		let tokens: unknown;
 		try {
-			tokens = encryption.decrypt(redisKey, '$', cached);
+			tokens = appConfig.getEncryption().decrypt(redisKey, '$', cached);
 		} catch {
 			console.warn('⚠️ 🔑 oauth - LinkedIn cache - discarded unreadable record');
 			await redis.unlink(redisKey);
@@ -105,7 +103,11 @@ class LinkedInAuthenticationProvider implements OAuthProvider {
 		const redisKey = `linkedin:${tokens.subject}`;
 		const redis = await redisCache.provideClient();
 		if (!redis) throw new Error('Redis is unavailable.');
-		await redis.json.set(redisKey, '$', encryption.encrypt(redisKey, '$', tokens) as RedisJSON);
+		await redis.json.set(
+			redisKey,
+			'$',
+			appConfig.getEncryption().encrypt(redisKey, '$', tokens) as RedisJSON
+		);
 		await redis.expire(redisKey, Math.max(expiresIn ?? 0, appConfig.session_timeout));
 	}
 

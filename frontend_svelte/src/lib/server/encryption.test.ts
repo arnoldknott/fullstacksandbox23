@@ -3,12 +3,10 @@ import { describe, expect, test, vi } from 'vitest';
 
 import {
 	decodeEncryptionKey,
-	Encryption,
-	type EncryptionEnvelope,
-	type EncryptionKey,
 	loadKeyVaultEncryptionKeyring,
 	loadLocalEncryptionKeyring
-} from './encryption';
+} from './config';
+import { Encryption, type EncryptionEnvelope, type EncryptionKey } from './encryption';
 import { decryptSessionValue, encryptSessionValue } from './sessionEncryption';
 
 const key = Uint8Array.from({ length: 32 }, (_, index) => index);

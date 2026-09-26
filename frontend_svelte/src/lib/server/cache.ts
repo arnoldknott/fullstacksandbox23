@@ -4,11 +4,9 @@ import { createClient, type RedisClientType, type RedisJSON } from 'redis';
 import { building } from '$app/environment';
 
 import AppConfig from './config';
-import { Encryption } from './encryption';
 import { decryptSessionValue, encryptSessionValue } from './sessionEncryption';
 
 const appConfig = await AppConfig.getInstance();
-const encryption = new Encryption(appConfig.encryption);
 
 // type AppRedisClient = ReturnType<typeof createClient>;
 
@@ -143,7 +141,12 @@ class RedisCache {
 			if (!client) return false;
 
 			const redisKey = `session:${sessionId}`;
-			const value = encryptSessionValue(encryption, redisKey, path, JSON.parse(data));
+			const value = encryptSessionValue(
+				appConfig.getEncryption(),
+				redisKey,
+				path,
+				JSON.parse(data)
+			);
 			const setStatus = await client.json.set(redisKey, path, value as RedisJSON);
 			if (timeOut !== undefined) await client.expire(`session:${sessionId}`, timeOut);
 			return setStatus === 'OK' ? true : false;
@@ -195,7 +198,7 @@ class RedisCache {
 			const redisKey = `session:${sessionId}`;
 			const result = await client.json.get(redisKey, { path: path });
 			if (Array.isArray(result) && result.length > 0) {
-				return decryptSessionValue(encryption, redisKey, path, result[0]) as T;
+				return decryptSessionValue(appConfig.getEncryption(), redisKey, path, result[0]) as T;
 			} else {
 				return undefined;
 			}
