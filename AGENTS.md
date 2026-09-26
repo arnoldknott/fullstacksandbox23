@@ -50,9 +50,10 @@ Keep edits focused, preserve existing patterns, and prefer small changes over br
 
 - Follow the repository-wide [data-storage policy](docs/architecture/security/README.md#data-storage-policy): only required authentication data may be cached; authorized third-party resource responses stay transient in memory.
 
-## Redis encryption and retrieval
+## Application encryption and Redis retrieval
 
-- Follow the [Redis encryption contract](docs/redis/README.md) when changing cache data or consumers. It defines encryption granularity, permitted plaintext identifiers, key loading/rotation, and performance measurement/reporting requirements.
+- Follow the [application encryption contract](docs/architecture/security/README.md#application-encryption) when changing protected application data or encryption consumers. It defines the shared format, key loading, rotation, and failure behavior.
+- Follow the [Redis storage contract](docs/redis/README.md) for Redis-specific encryption granularity, permitted plaintext identifiers, cache boundaries, and performance measurement/reporting requirements.
 
 ## Shared Integration Guidance
 
@@ -108,9 +109,9 @@ The test environment is a separate Docker Compose stack from the dev environment
 - **Build:** `./scripts/build_test.sh`
 - **Enter backend container:** `./scripts/enter_backend_test.sh` (starts the stack and opens a shell)
 - **Enter frontend container:** `./scripts/enter_frontend_svelte_test.sh` (starts the stack and opens a shell)
-- **Stop:** `./scripts/stop_test.sh`
+- **Stop:** `./scripts/stop_test.sh` (stops the test environment)
 
-The test containers can be reused across runs — you do not need to stop and rebuild between each task. Only stop when the user asks or when you are done with all validation.
+The test containers can be reused across runs — you do not need to stop and rebuild between each task. Only stop when the user asks or when you are done with all validation. **Never** stop the test environment if it was running already before you needed it.
 
 **Always show the output summary of the validation results in the same format as the called tool does.**
 

@@ -25,6 +25,8 @@ After connection, the frontend emits `subscribe` events sequentially and waits f
 
 The backend validates identifiers, filters the requested entity query through the same read authorization used by CRUD operations, and enters only authorized `resource:<UUID>` rooms. When a cursor is supplied, mutation logs newer than that cursor are read for the namespace entity type. Active authorized entities are emitted through `transferred`; snapshot entities deleted after the cursor are emitted through `deleted`. Normal create, update, delete, share, link, and unlink events continue over Socket.IO after subscription.
 
+Authentication expiry, protected-room removal, reauthentication, and reconnect are specified in the [authentication session lifecycle plan](../../security/authentication-session-lifecycle-plan.md). After successful reauthentication, reconnection reuses this document's authorized subscription and cursor-replay path; it does not introduce full collection transfer or a separate recovery stream.
+
 ## Security invariants
 
 Client-provided entity identifiers are subscription requests and never grant room membership. Snapshot reads, room subscriptions, replay reads, parent-room entry, and explicit single-entity reads remain access-controlled. Public namespace behavior and authenticated guard behavior continue to use their configured policy and guard paths.

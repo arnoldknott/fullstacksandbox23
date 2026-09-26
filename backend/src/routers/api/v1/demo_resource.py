@@ -2,10 +2,11 @@ import logging
 from typing import Annotated, List, cast
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 
 from core.security import (
     Guards,
+    MicrosoftGuard,
     check_token_against_guards,
     get_http_access_token_payload,
 )
@@ -30,24 +31,30 @@ demo_resource_view = BaseView(DemoResourceCRUD)
 
 
 # Post requires a user!
+
+
 @router.post("/", status_code=201)
 async def post_demo_resource(
     demo_resource: DemoResourceCreate,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+    guards: GuardTypes = Depends(
+        Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"]))
+    ),
 ) -> DemoResourceRead:
     """Creates a new demo resource."""
     return await demo_resource_view.post(demo_resource, token_payload, guards)
 
 
-# The get functions are totally public
-# However still a policy is needed for the fine grained access control to make the resource public!
+# Reads retain their existing token dependency without an additional endpoint guard.
+# BaseView receives an explicit policy with no extra scope or role requirements.
+
+
 @router.get("/", status_code=200)
 async def get_all_demo_resources(
     token_payload=Depends(get_http_access_token_payload),
 ) -> list[DemoResourceRead]:
     """Returns all demo resources resources."""
-    return await demo_resource_view.get(token_payload)
+    return await demo_resource_view.get(token_payload, Guards(MicrosoftGuard())())
 
 
 @router.get("/snapshot", status_code=200)
@@ -61,6 +68,7 @@ async def get_demo_resource_entity_snapshot(
     """Returns an optionally enriched demo-resource entity snapshot."""
     snapshot = await demo_resource_view.get_entity_snapshot(
         token_payload=token_payload,
+        guards=Guards(MicrosoftGuard())(),
         includes=include,
         sort=sort,
         direction=direction,
@@ -75,7 +83,9 @@ async def get_demo_resource_by_id(
     token_payload=Depends(get_http_access_token_payload),
 ) -> DemoResourceRead:
     """Returns a demo resource by id."""
-    return await demo_resource_view.get_by_id(demo_resource_id, token_payload)
+    return await demo_resource_view.get_by_id(
+        demo_resource_id, token_payload, Guards(MicrosoftGuard())()
+    )
 
 
 @router.put("/{demo_resource_id}", status_code=200)
@@ -83,7 +93,9 @@ async def put_demo_resource(
     demo_resource_id: UUID,
     demo_resource: DemoResourceUpdate,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+    guards: GuardTypes = Depends(
+        Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"]))
+    ),
 ) -> DemoResource:
     """Updates a demo resource by id."""
     return await demo_resource_view.put(
@@ -95,7 +107,9 @@ async def put_demo_resource(
 async def delete_demo_resource(
     demo_resource_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+    guards: GuardTypes = Depends(
+        Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"]))
+    ),
 ) -> None:  # DemoResource:
     """Deletes a protected resource."""
     return await demo_resource_view.delete(demo_resource_id, token_payload, guards)
@@ -106,10 +120,14 @@ async def add_tag_to_demo_resource(
     resource_id: UUID,
     tag_ids: Annotated[List[UUID], Query(alias="tag-ids")],
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+    guards: GuardTypes = Depends(
+        Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"]))
+    ),
 ) -> DemoResourceRead:
     """Adds a tag to a demo resource."""
     current_user = await check_token_against_guards(token_payload, guards)
+    if current_user is None:
+        raise HTTPException(status_code=401, detail="Authentication required.")
     async with TagCRUD() as crud:
         for tag_id in tag_ids:
             hierarchy_CRUD = crud.hierarchy_CRUD(session=crud.session)
@@ -127,10 +145,12 @@ async def add_tag_to_demo_resource(
 async def get_all_in_category(
     category_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(roles=["User"])),
+    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
 ) -> list[DemoResourceRead]:
     """Gets all demo resources that belong to specific category."""
     current_user = await check_token_against_guards(token_payload, guards)
+    if current_user is None:
+        raise HTTPException(status_code=401, detail="Authentication required.")
     async with demo_resource_view.crud() as crud:
         return await crud.read_by_category_id(current_user, category_id)
 
@@ -139,9 +159,11 @@ async def get_all_in_category(
 async def get_all_with_tag(
     tag_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(roles=["User"])),
+    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
 ) -> list[DemoResourceRead]:
     """Gets all demo resources that belong to specific tag."""
     current_user = await check_token_against_guards(token_payload, guards)
+    if current_user is None:
+        raise HTTPException(status_code=401, detail="Authentication required.")
     async with demo_resource_view.crud() as crud:
         return await crud.read_by_tag_id(current_user, tag_id)

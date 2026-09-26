@@ -55,10 +55,6 @@ from core.types import (
 
 logger = logging.getLogger(__name__)
 
-read = Action.read
-write = Action.write
-own = Action.own
-
 BaseModelType = TypeVar("BaseModelType", bound=BaseSQLModel)
 BaseSchemaTypeCreate = TypeVar("BaseSchemaTypeCreate", bound=SQLModel)
 BaseSchemaTypeRead = TypeVar("BaseSchemaTypeRead", bound=SQLModel)
@@ -287,29 +283,26 @@ class BaseCRUD(
                 )
                 current_user = CurrentUserData(user_id=public_user_id)
 
-            if parent_id or self.allow_standalone:
-                if not self.allow_standalone:
-                    parent_access_request = AccessRequest(
-                        resource_id=parent_id,
-                        action=write,
-                        current_user=current_user,
+            if parent_id:
+                parent_access_request = AccessRequest(
+                    resource_id=parent_id,
+                    action=Action.connect,
+                    current_user=current_user,
+                )
+                if not await self.policy_crud.allows(parent_access_request):
+                    logger.error(f"Parent {parent_id} does not allow connect access.")
+                    raise HTTPException(status_code=403, detail="Forbidden.")
+                # check if requested parent exists:
+                query = select(IdentifierTypeLink).where(
+                    IdentifierTypeLink.id == parent_id
+                )
+                parent_response = await self.session.exec(query)
+                parent_result = parent_response.one_or_none()
+                if parent_result is None:
+                    raise HTTPException(
+                        status_code=404, detail="Parent resource does not exist."
                     )
-                    # if not await self.policy_crud.allows(parent_access_request):
-                    if not await self.policy_crud.allows(parent_access_request):
-                        logger.error(f"Parent {parent_id} does not allow write access.")
-                        raise HTTPException(status_code=403, detail="Forbidden.")
-                    # check if requested parent exists:
-                    query = select(IdentifierTypeLink).where(
-                        IdentifierTypeLink.id == parent_id
-                    )
-                    parent_response = await self.session.exec(query)
-                    parent_results = parent_response.one()
-                    if not parent_results:
-                        raise HTTPException(
-                            status_code=404, detail="Parent resource does not exist."
-                        )
-                # async with self.policy_CRUD as policy_CRUD:
-            else:
+            elif not self.allow_standalone:
                 # TBD: is it only admin that can create stand-alone resources?
                 logger.error(
                     "Parent not provided and standalone creation is not allowed."
@@ -330,7 +323,7 @@ class BaseCRUD(
             # if not is_public_creation:
             access_log = AccessLogCreate(
                 resource_id=database_object.id,
-                action=own,
+                action=Action.own,
                 identity_id=current_user.user_id if current_user else None,
                 status_code=201,
             )
@@ -348,7 +341,7 @@ class BaseCRUD(
             # if not is_public_creation:
             access_policy = AccessPolicyCreate(
                 resource_id=database_object.id,
-                action=own,
+                action=Action.own,
                 identity_id=current_user.user_id if current_user else None,
             )
 
@@ -374,7 +367,7 @@ class BaseCRUD(
             # see comments above in the method signature.
             if public:
                 if not public_action:
-                    public_action = read
+                    public_action = Action.read
                 public_access_policy = AccessPolicyCreate(
                     resource_id=database_object.id,
                     action=public_action,
@@ -400,7 +393,7 @@ class BaseCRUD(
                     if database_object_id and current_user:
                         access_log = AccessLogCreate(
                             resource_id=database_object_id,
-                            action=own,
+                            action=Action.own,
                             identity_id=current_user.user_id,
                             status_code=404,
                         )
@@ -408,7 +401,7 @@ class BaseCRUD(
                     # await self._write_log(database_object.id, own, current_user, 404)
                 except Exception as log_error:
                     logger.error(
-                        f"Error in BaseCRUD.create of an object of type {self.model}, action: {own}, current_user: {current_user}, status_code: {404} results in  {log_error}"
+                        f"Error in BaseCRUD.create of an object of type {self.model}, action: {Action.own}, current_user: {current_user}, status_code: {404} results in  {log_error}"
                     )
             logger.error(f"Error in BaseCRUD.create: {e}")
             raise HTTPException(
@@ -547,7 +540,7 @@ class BaseCRUD(
 
             statement = self.policy_crud.filters_allowed(
                 statement=statement,
-                action=read,
+                action=Action.read,
                 model=self.model,
                 current_user=current_user,
             )
@@ -574,7 +567,7 @@ class BaseCRUD(
                     # related_statement = self.policy_CRUD.filters_allowed(
                     related_statement = self.policy_crud.filters_allowed(
                         related_statement,
-                        action=read,
+                        action=Action.read,
                         model=related_model,
                         current_user=current_user,
                     )
@@ -674,7 +667,7 @@ class BaseCRUD(
             access_logs = [
                 AccessLogCreate(
                     resource_id=result.id,  # result might not be available here?
-                    action=read,
+                    action=Action.read,
                     identity_id=current_user.user_id if current_user else None,
                     status_code=200,
                 )
@@ -689,7 +682,7 @@ class BaseCRUD(
                 try:
                     access_log = AccessLogCreate(
                         resource_id=failed_resource_id,
-                        action=read,
+                        action=Action.read,
                         identity_id=current_user.user_id if current_user else None,
                         status_code=404,
                     )
@@ -709,7 +702,7 @@ class BaseCRUD(
                     f"having: {having}, "
                     f"limit: {limit},"
                     f"offset: {offset},"
-                    f"action: {read},"
+                    f"action: {Action.read},"
                     f"current_user: {current_user},"
                     f"status_code: {404}"
                     f"results in {err}"
@@ -763,7 +756,7 @@ class BaseCRUD(
 
             statement = self.policy_crud.filters_allowed(
                 statement=statement,
-                action=write,
+                action=Action.write,
                 model=self.model,
                 current_user=current_user,
             )
@@ -781,7 +774,7 @@ class BaseCRUD(
             assert current.id is not None
             access_log = AccessLogCreate(
                 resource_id=current.id,
-                action=write,
+                action=Action.write,
                 identity_id=current_user.user_id,
                 status_code=200,
             )
@@ -798,14 +791,14 @@ class BaseCRUD(
                 if current_id and current_user:
                     access_log = AccessLogCreate(
                         resource_id=current_id,
-                        action=write,
+                        action=Action.write,
                         identity_id=current_user.user_id,
                         status_code=404,
                     )
                     await self.logging_crud.create(access_log)
             except Exception as log_error:
                 logger.error(
-                    f"Error in BaseCRUD.update with parameters object_id: {object_id}, action: {write}, current_user: {current_user}, status_code: {404} results in {log_error}"
+                    f"Error in BaseCRUD.update with parameters object_id: {object_id}, action: {Action.write}, current_user: {current_user}, status_code: {404} results in {log_error}"
                 )
             logger.error(f"Error in BaseCRUD.update: {e}")
             raise HTTPException(
@@ -876,7 +869,7 @@ class BaseCRUD(
             # subquery = self.policy_CRUD.filters_allowed(
             subquery = self.policy_crud.filters_allowed(
                 statement=subquery,
-                action=own,
+                action=Action.own,
                 model=model_alias,
                 current_user=current_user,
             )
@@ -958,7 +951,7 @@ class BaseCRUD(
             # Create the successful access log
             access_log = AccessLogCreate(
                 resource_id=object_id,
-                action=own,
+                action=Action.own,
                 identity_id=current_user.user_id,
                 status_code=200,
             )
@@ -979,7 +972,7 @@ class BaseCRUD(
             try:
                 access_log = AccessLogCreate(
                     resource_id=object_id,
-                    action=own,
+                    action=Action.own,
                     identity_id=current_user.user_id,
                     status_code=404,
                 )
@@ -987,7 +980,7 @@ class BaseCRUD(
                 await self.logging_crud.create(access_log)
             except Exception as log_error:
                 logger.error(
-                    f"Error in BaseCRUD.delete with parameters object_id: {object_id}, action: {own}, current_user: {current_user}, status_code: {404} results in  {log_error}"
+                    f"Error in BaseCRUD.delete with parameters object_id: {object_id}, action: {Action.own}, current_user: {current_user}, status_code: {404} results in  {log_error}"
                 )
             logger.error(f"Error in BaseCRUD.delete: {e}")
             raise HTTPException(

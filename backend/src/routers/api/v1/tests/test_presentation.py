@@ -8,6 +8,7 @@ from models.presentation import Presentation
 from routers.api.v1.tests.base import BaseTest
 from tests.utils import (
     current_user_data_admin,
+    linkedin_identity,
     token_admin,
     token_admin_read,
     token_admin_read_write,
@@ -38,6 +39,44 @@ class TestPresentation(BaseTest):
     _test_data_wrong = wrong_test_presentations
     _test_data_many = many_test_presentations
     _test_data_update = presentation_update_data
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "mocked_provide_http_token_payload", [linkedin_identity], indirect=True
+    )
+    async def test_linkedin_reads_but_cannot_mutate_presentations(
+        self,
+        mocked_provide_http_token_payload,
+        current_user_from_azure_token,
+        add_one_test_resource,
+    ):
+        """LinkedIn participates in reads while presentation writes stay Microsoft-only."""
+        current_user = await current_user_from_azure_token(linkedin_identity)
+        presentation = await add_one_test_resource(
+            PresentationCRUD, one_test_presentation, current_user
+        )
+
+        collection = await self.async_client.get(self.router_path)
+        snapshot = await self.async_client.get(f"{self.router_path}snapshot")
+        by_id = await self.async_client.get(f"{self.router_path}{presentation.id}")
+        by_path = await self.async_client.get(
+            f"{self.router_path}path/{presentation.path.lstrip('/')}"
+        )
+        assert collection.status_code == 200
+        assert snapshot.status_code == 200
+        assert by_id.status_code == 200
+        assert by_path.status_code == 200
+
+        created = await self.async_client.post(
+            self.router_path, json=one_test_presentation
+        )
+        updated = await self.async_client.put(
+            f"{self.router_path}{presentation.id}", json=presentation_update_data
+        )
+        deleted = await self.async_client.delete(f"{self.router_path}{presentation.id}")
+        assert created.status_code == 401
+        assert updated.status_code == 401
+        assert deleted.status_code == 401
 
     # Test methods - just declare them, BaseTest handles implementation
     ## POST tests

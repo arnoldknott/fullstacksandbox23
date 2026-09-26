@@ -1,12 +1,17 @@
 import logging
+from hashlib import sha256
 from typing import List, Optional
 from uuid import UUID
 
 from fastapi import HTTPException
+from sqlalchemy import func
+from sqlalchemy.exc import IntegrityError
 from sqlmodel import col, delete, select
+from sqlmodel.ext.asyncio.session import AsyncSession
 
+from core.config import config
 from core.types import Action, CurrentUserData, IdentityType
-from models.access import AccessLogCreate, AccessPolicyCreate
+from models.access import AccessLogCreate, AccessPolicyCreate, IdentifierTypeLink
 from models.identity import (  # AzureGroupUserLink,
     AzureGroup,
     AzureGroupCreate,
@@ -17,6 +22,7 @@ from models.identity import (  # AzureGroupUserLink,
     GroupRead,
     GroupUpdate,
     Me,
+    MeUpdate,
     SubGroup,
     SubGroupCreate,
     SubGroupRead,
@@ -102,151 +108,171 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
     # Any user passed in, get's checked for existence, if not existing, it get's created!
     # no matter if the user existed or not, group membership gets checked and created if needed!
     # Note the difference between user_id and azure_user_id as well as group_id and azure_group_id!
-    async def azure_user_self_sign_up(  # noqa: C901
-        self,
-        azure_user_id: UUID,
-        azure_tenant_id: UUID,
-        groups: Optional[List[str]],
+
+    async def azure_user_self_sign_up(
+        self, azure_user_id: UUID, azure_tenant_id: UUID, groups: Optional[List[str]]
     ) -> tuple[UserRead, int]:
-        """Checks if user and its groups exist, if not create and link them."""
-        session = self.session
-        current_user: Optional[User] = None
-        current_user_data: Optional[CurrentUserData] = None
-        response_status_code = 200
-        # Normalize the JWT groups (string UUIDs) into typed UUIDs once.
-        group_uuids: List[UUID] = [UUID(g) for g in (groups or [])]
+        """Resolve a verified Microsoft identity and synchronize its Azure groups."""
+        return await self._provider_sign_up(
+            azure_user_id=UUID(str(azure_user_id)),
+            azure_tenant_id=UUID(str(azure_tenant_id)),
+            groups=[UUID(group) for group in (groups or [])],
+        )
+
+    async def linkedin_user_self_sign_up(
+        self, linkedin_user_id: str
+    ) -> tuple[UserRead, int]:
+        """Resolve a verified LinkedIn subject without synchronizing Azure groups."""
+        if not isinstance(linkedin_user_id, str) or not linkedin_user_id:
+            raise HTTPException(status_code=401, detail="Invalid LinkedIn subject.")
+        return await self._provider_sign_up(linkedin_user_id=linkedin_user_id)
+
+    async def _provider_sign_up(
+        self,
+        *,
+        azure_user_id: UUID | None = None,
+        azure_tenant_id: UUID | None = None,
+        linkedin_user_id: str | None = None,
+        groups: list[UUID] | None = None,
+    ) -> tuple[UserRead, int]:
+        """Keep all signup writes atomic, including helpers that commit internally."""
+        identity_key = (
+            f"microsoft:{azure_user_id}"
+            if azure_user_id
+            else f"linkedin:{linkedin_user_id}"
+        )
+        lock_key = int.from_bytes(
+            sha256(identity_key.encode()).digest()[:8], "big", signed=True
+        )
         try:
-            # Note: current_user is not available here during self-sign-up! So no access control here!
-            statement = select(User).where(User.azure_user_id == azure_user_id)
-            results = await session.exec(statement)
-            current_user = results.first()
-            if current_user is None or not current_user.is_active:
-                database_user: Optional[User] = None
-                user_account: Optional[UserAccount] = None
-                user_profile: Optional[UserProfile] = None
-                if not current_user:
-                    user_create = UserCreate(
-                        azure_user_id=azure_user_id,
-                        azure_tenant_id=azure_tenant_id,
-                        is_active=True,
+            connection = await self.session.connection()
+            await connection.execute(select(func.pg_advisory_xact_lock(lock_key)))
+            # Helper commits release savepoints, never the owning transaction.
+            async with AsyncSession(
+                bind=connection,
+                join_transaction_mode="create_savepoint",
+                expire_on_commit=False,
+            ) as session:
+                worker = UserCRUD()
+                worker.bind_session(session)
+                user, status = await worker._initialize_provider_user(
+                    azure_user_id, azure_tenant_id, linkedin_user_id
+                )
+                assert user.id is not None
+                current_user_data = CurrentUserData(
+                    user_id=user.id,
+                    azure_token_roles=[],
+                    azure_token_groups=groups or [],
+                )
+                if azure_user_id is not None:
+                    assert azure_tenant_id is not None
+                    await worker._sync_azure_groups(
+                        user, current_user_data, azure_tenant_id, groups or []
                     )
-                    # The model-validation adds the default values (id) to the user_create object!
-                    # Can be used for linked tables: avoids multiple round trips to database
-                    database_user = User.model_validate(user_create)
-                    assert database_user.id is not None
-                    await self._write_identifier_type_link(database_user.id)
-                elif current_user.is_active is False:
-                    database_user = current_user
-                    database_user.is_active = True
-                    # The model-validation adds the default values (id) to the user_create object!
-                    # Can be used for linked tables: avoids multiple round trips to database
-                    existing_user = Me.model_validate(current_user)
-                    user_account = (
-                        existing_user.user_account
-                        if existing_user.user_account
-                        else None
-                    )
-                    user_profile = (
-                        existing_user.user_profile
-                        if existing_user.user_profile
-                        else None
-                    )
-                # The branches above always assign `database_user`.
-                assert database_user is not None
-                assert database_user.id is not None
-
-                # check if user_account and user_profile already exist:
-                if not database_user.user_account:
-                    user_account = UserAccount(user_id=database_user.id)
-                    assert user_account.id is not None
-                    await self._write_identifier_type_link(
-                        user_account.id, IdentityType.user_account
-                    )
-                    user_account = UserAccount.model_validate(user_account)
-                    database_user.user_account_id = user_account.id
-                    session.add(user_account)
-                if not database_user.user_profile:
-                    user_profile = UserProfile(user_id=database_user.id)
-                    assert user_profile.id is not None
-                    await self._write_identifier_type_link(
-                        user_profile.id, IdentityType.user_profile
-                    )
-                    user_profile = UserProfile.model_validate(user_profile)
-                    database_user.user_profile_id = user_profile.id
-                    session.add(user_profile)
-
-                session.add(database_user)
+                await session.refresh(user)
+                result = UserRead.model_validate(user)
                 await session.commit()
-                await session.refresh(database_user)
-                if user_account is not None:
-                    await session.refresh(user_account)
-                if user_profile is not None:
-                    await session.refresh(user_profile)
+            await self.session.commit()
+            return result, status
+        except IntegrityError as err:
+            await self.session.rollback()
+            raise HTTPException(
+                status_code=409, detail="Provider identity already exists."
+            ) from err
+        except BaseException:
+            await self.session.rollback()
+            raise
 
-                response_status_code = 201
-                current_user_data = CurrentUserData(
-                    user_id=database_user.id,
-                    azure_token_roles=[],  # Roles are coming from the token - but this information is not available here!
-                    azure_token_groups=group_uuids,
-                )
-
-                # User is owner of itself:
-                if not current_user:
-                    access_policy = AccessPolicyCreate(
-                        resource_id=database_user.id,
-                        action=Action.own,
-                        identity_id=current_user_data.user_id,
+    async def _initialize_provider_user(
+        self,
+        azure_user_id: UUID | None,
+        azure_tenant_id: UUID | None,
+        linkedin_user_id: str | None,
+    ) -> tuple[User, int]:
+        session = self.session
+        condition = (
+            User.azure_user_id == azure_user_id
+            if azure_user_id is not None
+            else User.linkedin_user_id == linkedin_user_id
+        )
+        user = (await session.exec(select(User).where(condition))).unique().first()
+        is_new = user is None
+        pending_invitation = (
+            user is not None
+            and user.is_active is False
+            and user.user_account_id is None
+            and user.user_profile_id is None
+        )
+        if user is not None:
+            if azure_user_id is not None and user.azure_tenant_id != azure_tenant_id:
+                if not (pending_invitation and user.azure_tenant_id is None):
+                    raise HTTPException(
+                        status_code=401, detail="Microsoft tenant mismatch."
                     )
-                    await self.policy_crud.create(access_policy, current_user_data)
+                user.azure_tenant_id = azure_tenant_id
+            if not user.is_active and not pending_invitation:
+                raise HTTPException(status_code=403, detail="User is disabled.")
+        else:
+            user = User(
+                azure_user_id=azure_user_id,
+                azure_tenant_id=azure_tenant_id,
+                linkedin_user_id=linkedin_user_id,
+                is_active=True,
+            )
+            assert user.id is not None
+            session.add(IdentifierTypeLink(id=user.id, type=IdentityType.user))
+            await session.flush()
+        assert user.id is not None
+        status = 201 if is_new or pending_invitation else 200
+        if status == 201:
+            user.is_active = True
+            account = UserAccount(user_id=user.id)
+            profile = UserProfile(user_id=user.id)
+            assert account.id is not None
+            assert profile.id is not None
+            session.add(
+                IdentifierTypeLink(id=account.id, type=IdentityType.user_account)
+            )
+            session.add(
+                IdentifierTypeLink(id=profile.id, type=IdentityType.user_profile)
+            )
+            await session.flush()
+            session.add(account)
+            session.add(profile)
+            await session.flush()
+            user.user_account_id = account.id
+            user.user_profile_id = profile.id
+            session.add(user)
+            await session.flush()
+            if is_new:
+                await self.policy_crud.create(
+                    AccessPolicyCreate(
+                        resource_id=user.id, identity_id=user.id, action=Action.own
+                    ),
+                    CurrentUserData(
+                        user_id=user.id, azure_token_roles=[], azure_token_groups=[]
+                    ),
+                )
+        await self.logging_crud.create(
+            AccessLogCreate(
+                resource_id=user.id,
+                identity_id=user.id,
+                action=Action.own if status == 201 else Action.read,
+                status_code=status,
+            )
+        )
+        return user, status
 
-                access_log = AccessLogCreate(
-                    resource_id=database_user.id,
-                    action=Action.own,
-                    identity_id=current_user_data.user_id,
-                    status_code=response_status_code,
-                )
-                await self.logging_crud.create(access_log)
-                # await self._write_log(
-                #     current_user.id, Action.own, current_user_data, 201
-                # )
-                # current_user = UserRead.model_validate(database_user)
-                current_user = database_user
-                logger.info("USER created in database")
-            else:
-                assert current_user.id is not None
-                access_log = AccessLogCreate(
-                    resource_id=current_user.id,
-                    action=Action.read,
-                    identity_id=current_user.id,
-                    status_code=200,
-                )
-                await self.logging_crud.create(access_log)
-                current_user_data = CurrentUserData(
-                    user_id=current_user.id,
-                    azure_token_roles=[],  # Roles are coming from the token - but this information is not available here!
-                    azure_token_groups=group_uuids,
-                )
-        except HTTPException as err:
-            if (
-                current_user_data is not None
-                and current_user_data.user_id is not None
-                and current_user is not None
-                and current_user.id is not None
-            ):
-                access_log = AccessLogCreate(
-                    resource_id=current_user.id,
-                    action=Action.own,
-                    identity_id=current_user_data.user_id,
-                    status_code=404,
-                )
-                await self.logging_crud.create(access_log)
-                # await self._write_log(
-                #     current_user.id, Action.own, current_user_data, 404
-                # )
-            logger.error(f"Error in BaseCRUD.create: {err}")
-            raise HTTPException(status_code=404, detail="User not found")
-        assert current_user is not None
-        assert current_user_data is not None
+    async def _sync_azure_groups(
+        self,
+        current_user: User,
+        current_user_data: CurrentUserData,
+        azure_tenant_id: UUID,
+        group_uuids: list[UUID],
+    ) -> None:
+        """Preserve existing Microsoft-only membership synchronization."""
+        session = self.session
+        await session.refresh(current_user, ["azure_groups"])
         for azure_group_id in group_uuids:
             # call group crud to check if group exists, if not create it!
             # TBD: refactor into using the access controlled protected methods:
@@ -325,13 +351,6 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                     current_user=current_user_data,
                 )
 
-        # read again after the relationship to the groups is created:
-        # TBD: put this one back in - but now with the current_user parameter!
-        # current_user = await self.read_by_azure_user_id(
-        #     azure_user_id  # , update_last_access
-        # )
-        return UserRead.model_validate(current_user), response_status_code
-
     async def create_invited_azure_user(
         self,
         current_user: CurrentUserData,
@@ -341,11 +360,11 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         """Creates a new user with azure_user_id and azure_tenant_id - if it does not exist - and keeps that user disabled until that user signs in the first time."""
 
         try:
-            user_create = UserCreate(
+            user_create = User(
                 azure_user_id=azure_user_id,
                 azure_tenant_id=(
-                    azure_tenant_id if azure_tenant_id else None
-                ),  # database sets default, if no value is provided
+                    azure_tenant_id if azure_tenant_id else UUID(config.AZURE_TENANT_ID)
+                ),
                 is_active=False,
             )
             # The model-validation adds the default values (id) to the user_create object!
@@ -399,15 +418,15 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             logging.error(err)
             raise HTTPException(status_code=404, detail="User not found")
 
-    async def update_me(self, current_user: CurrentUserData, new_me: Me) -> Me:
+    async def update_me(self, current_user: CurrentUserData, new_me: MeUpdate) -> Me:
         """Updates the current user including user account and user profile."""
         try:
             # using self.update() also verifies the access rights of the user to itself:
 
+            if new_me.id != current_user.user_id:
+                raise HTTPException(status_code=403, detail="Forbidden.")
             user_update = UserUpdate(
-                **new_me.model_dump(
-                    exclude={"user_account", "user_profile"}, exclude_unset=True
-                )
+                **new_me.model_dump(include={"is_active"}, exclude_unset=True)
             )
 
             user = await self.update(
@@ -426,8 +445,9 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                 )
                 raise HTTPException(status_code=404, detail="User account not found")
             if new_me.user_account is not None:
-                UserAccount.model_validate(new_me.user_account)
-                updated_account = new_me.user_account.model_dump(exclude_unset=True)
+                updated_account = new_me.user_account.model_dump(
+                    exclude_unset=True, exclude_none=True
+                )
                 for key, value in updated_account.items():
                     setattr(current_account, key, value)
                 self.session.add(current_account)
@@ -443,8 +463,9 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                 )
                 raise HTTPException(status_code=404, detail="User profile not found")
             if new_me.user_profile is not None:
-                UserProfile.model_validate(new_me.user_profile)
-                updated_profile = new_me.user_profile.model_dump(exclude_unset=True)
+                updated_profile = new_me.user_profile.model_dump(
+                    exclude_unset=True, exclude_none=True
+                )
                 for key, value in updated_profile.items():
                     setattr(current_profile, key, value)
                 self.session.add(current_profile)

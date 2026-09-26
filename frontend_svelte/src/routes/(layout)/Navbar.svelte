@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { type SubmitFunction } from '@sveltejs/kit';
-	import { onMount } from 'svelte';
 
+	import { page } from '$app/state';
 	import Guard from '$components/Guard.svelte';
 	import { type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
 	import { type ThemeRuntimeContext } from '$lib/theming';
@@ -15,6 +15,7 @@
 
 	let {
 		loggedIn,
+		avatarUrl,
 		updateProfileAccount,
 		saveProfileAccount,
 		artificialIntelligenceConfiguration = $bindable(),
@@ -24,6 +25,7 @@
 		parentUrl
 	}: {
 		loggedIn: boolean;
+		avatarUrl: string | null;
 		updateProfileAccount: SubmitFunction;
 		saveProfileAccount: () => Promise<void>;
 		artificialIntelligenceConfiguration: ArtificialIntelligenceConfig;
@@ -34,37 +36,7 @@
 	} = $props();
 
 	let navBar: HTMLElement | null = $state(null);
-
-	let avatarUrl: string | null = $state(null);
-
-	async function loadAvatar() {
-		try {
-			const sessionId = localStorage.getItem('session_id');
-
-			const response = await fetch('/apiproxies/msgraph?endpoint=/me/photo/$value', {
-				method: 'GET',
-				headers: sessionId ? { Authorization: `Bearer ${sessionId}` } : {}
-			});
-
-			if (!response.ok) {
-				throw new Error(`Avatar request failed: ${response.status}`);
-			}
-
-			const blob = await response.blob();
-			avatarUrl = URL.createObjectURL(blob);
-		} catch (err) {
-			console.error('Avatar load failed', err);
-			avatarUrl = null;
-		}
-	}
-
-	onMount(() => {
-		loadAvatar();
-
-		return () => {
-			if (avatarUrl) URL.revokeObjectURL(avatarUrl);
-		};
-	});
+	let accountLinkTarget = $derived(encodeURIComponent(`${page.url.pathname}${page.url.search}`));
 
 	let artificialIntelligenceForm = $state<HTMLFormElement | null>(null);
 </script>
@@ -79,7 +51,7 @@
 {/snippet}
 
 <nav
-	class="navbar rounded-box shadow-shadow border-outline-variant bg-base-250 start-0 top-0 z-1 flex justify-between border-1 border-b px-3 shadow-md transition-all duration-300 max-sm:h-14 md:items-center"
+	class="navbar rounded-box shadow-base-shadow border-outline-variant bg-base-250 start-0 top-0 z-1 flex justify-between border-1 border-b px-3 shadow-md transition-all duration-300 max-sm:h-14 md:items-center"
 	bind:this={navBar}
 >
 	<!-- {@attach updateNavbarBottom} -->
@@ -149,20 +121,19 @@
 				aria-label="User Menu"
 			>
 				{#if loggedIn}
-					<!-- {#if avatarUrl} -->
-					<img
-						src={avatarUrl ?? ''}
-						alt="your profile"
-						class="not-hover:mask-radial-t-0% h-10 min-w-10 rounded-full not-hover:mask-radial-from-40%"
-					/>
-					<!-- {:else}
-							<span class="icon-[fa6-solid--user] bg-secondary size-5 h-10 w-10 rounded-full"
-							></span>
-						{/if} -->
+					{#if avatarUrl}
+						<img
+							src={avatarUrl}
+							alt="your profile"
+							class="not-hover:mask-radial-t-0% h-10 min-w-10 rounded-full object-cover not-hover:mask-radial-from-40%"
+						/>
+					{:else}
+						<span class="icon-[fa6-solid--user] bg-secondary size-5 h-10 w-10 rounded-full"></span>
+					{/if}
 				{/if}
 			</span>
 			<ul
-				class="dropdown-menu bg-base-200 text-secondary shadow-outline dropdown-open:opacity-100 hidden shadow-md"
+				class="dropdown-menu bg-base-200 text-secondary shadow-base-shadow dropdown-open:opacity-100 hidden"
 				role="menu"
 				aria-orientation="vertical"
 				aria-labelledby="dropdown-menu-icon-user"
@@ -186,6 +157,33 @@
 				<li>
 					<hr class="border-outline -mx-2 my-5" />
 				</li>
+				{#if loggedIn && !page.data.session?.currentUser?.linkedin_user_id}
+					<li>
+						<a
+							class="dropdown-item dropdown-close"
+							href="/login/linkedin?intent=link&target-url={accountLinkTarget}"
+						>
+							<span class="icon-[cib--linkedin-in] bg-secondary size-5"></span>
+							<span class="text-secondary grow">Link LinkedIn account</span>
+						</a>
+					</li>
+				{/if}
+				{#if loggedIn && !page.data.session?.currentUser?.azure_user_id}
+					<li>
+						<a
+							class="dropdown-item dropdown-close"
+							href="/login/microsoft?intent=link&target-url={accountLinkTarget}"
+						>
+							<span class="icon-[codicon--microsoft] size-5"></span>
+							<span class="text-secondary grow">Link Microsoft account</span>
+						</a>
+					</li>
+				{/if}
+				{#if loggedIn && (!page.data.session?.currentUser?.linkedin_user_id || !page.data.session?.currentUser?.azure_user_id)}
+					<li>
+						<hr class="border-outline -mx-2 my-5" />
+					</li>
+				{/if}
 				<li class="flex items-center gap-2">
 					<button
 						aria-label="show Modal"

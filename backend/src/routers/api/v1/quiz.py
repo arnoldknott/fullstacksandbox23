@@ -5,9 +5,12 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query, Response
 
 from core.security import (
+    AllowAnonymous,
     Guards,
+    LinkedInGuard,
+    MicrosoftGuard,
     get_http_access_token_payload,
-    provide_http_token_payload_optional,
+    provide_http_token_payload,
 )
 from core.types import CollectionInclude, CollectionSort, GuardTypes, SortDirection
 
@@ -47,7 +50,7 @@ numerical_view = BaseView(NumericalCRUD)
 #     quiz: Quiz.Create,
 #     token_payload=Depends(get_http_access_token_payload),
 #     guards: GuardTypes = Depends(
-#         Guards(scopes=["api.read", "api.write"], roles=["User"])
+#       Guards(MicrosoftGuard(scopes=["api.read", "api.write"], roles=["User"]))
 #     ),
 # ) -> Quiz:
 #     """Creates a new quiz."""
@@ -57,7 +60,7 @@ numerical_view = BaseView(NumericalCRUD)
 # @router.get("/", status_code=200)
 # async def get_quizzes(
 #     token_payload=Depends(get_http_access_token_payload),
-#     guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
+#           Guards(MicrosoftGuard(scopes=["api.read"], roles=["User"]))
 # ) -> list[Quiz.Read]:
 #     """Returns all quizzes."""
 #     return await quiz_view.get(token_payload, guards)
@@ -67,7 +70,7 @@ numerical_view = BaseView(NumericalCRUD)
 # async def get_quiz_by_id(
 #     resource_id: UUID,
 #     token_payload=Depends(get_http_access_token_payload),
-#     guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
+#       Guards(MicrosoftGuard(scopes=["api.read"], roles=["User"]))
 # ) -> Quiz.Read:
 #     """Returns a quiz."""
 #     return await quiz_view.get_by_id(resource_id, token_payload, guards)
@@ -79,7 +82,7 @@ numerical_view = BaseView(NumericalCRUD)
 #     quiz: Quiz.Update,
 #     token_payload=Depends(get_http_access_token_payload),
 #     guards: GuardTypes = Depends(
-#         Guards(scopes=["api.read", "api.write"], roles=["User"])
+#       Guards(MicrosoftGuard(scopes=["api.read", "api.write"], roles=["User"]))
 #     ),
 # ) -> Quiz:
 #     """Updates a quiz."""
@@ -91,7 +94,7 @@ numerical_view = BaseView(NumericalCRUD)
 #     resource_id: UUID,
 #     token_payload=Depends(get_http_access_token_payload),
 #     guards: GuardTypes = Depends(
-#         Guards(scopes=["api.read", "api.write"], roles=["User"])
+#       Guards(MicrosoftGuard(scopes=["api.read", "api.write"], roles=["User"]))
 #     ),
 # ) -> None:
 #     """Deletes a quiz."""
@@ -108,7 +111,7 @@ async def post_question(
     question: QuestionCreate,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(
-        Guards(scopes=["api.read", "api.write"], roles=["User"])
+        Guards(MicrosoftGuard(scopes=["api.read", "api.write"], roles=["User"]))
     ),
 ) -> QuestionRead:
     """Creates a new question."""
@@ -123,7 +126,10 @@ async def post_question_message(
     public: Annotated[bool, Query()] = False,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(
-        Guards(scopes=["api.read", "api.write"], roles=["User"])
+        Guards(
+            MicrosoftGuard(scopes=["api.read", "api.write"], roles=["User"]),
+            LinkedInGuard(),
+        )
     ),
 ) -> MessageRead:
     """Creates a new message answer for a question."""
@@ -145,7 +151,10 @@ async def post_question_numerical(
     public: Annotated[bool, Query()] = False,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(
-        Guards(scopes=["api.read", "api.write"], roles=["User"])
+        Guards(
+            MicrosoftGuard(scopes=["api.read", "api.write"], roles=["User"]),
+            LinkedInGuard(),
+        )
     ),
 ) -> NumericalRead:
     """Creates a new numerical answer for a question."""
@@ -162,10 +171,17 @@ async def post_question_numerical(
 @router.get("/question/", status_code=200)
 async def get_questions(
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
+    guards: GuardTypes = Depends(
+        Guards(MicrosoftGuard(scopes=["api.read"], roles=["User"]), LinkedInGuard())
+    ),
 ) -> list[QuestionRead]:
     """Returns all questions."""
     return await question_view.get(token_payload, guards)
+
+
+get_question_entity_snapshot_guards = Guards(
+    MicrosoftGuard(), LinkedInGuard(), AllowAnonymous()
+)
 
 
 @router.get("/question/snapshot", status_code=200)
@@ -176,15 +192,15 @@ async def get_question_entity_snapshot(
     sort: Annotated[CollectionSort | None, Query()] = None,
     direction: Annotated[SortDirection, Query()] = SortDirection.ascending,
     token_payload: Annotated[
-        Optional[dict], Depends(provide_http_token_payload_optional)
+        Optional[dict], Depends(provide_http_token_payload)
     ] = None,
-    # guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
+    guards: GuardTypes = Depends(get_question_entity_snapshot_guards),
 ) -> list[QuestionExtended]:
     """Returns an optionally enriched question snapshot."""
     snapshot = await question_view.get_entity_snapshot(
         # token_payload, guards, include, sort, direction
         token_payload,
-        None,
+        guards,
         include,
         sort,
         direction,
@@ -194,15 +210,19 @@ async def get_question_entity_snapshot(
     return snapshot.items
 
 
+get_question_by_id_guards = Guards(MicrosoftGuard(), LinkedInGuard(), AllowAnonymous())
+
+
 @router.get("/question/{resource_id}", status_code=200)
 async def get_question_by_id(
     resource_id: UUID,
     token_payload: Annotated[
-        Optional[dict], Depends(provide_http_token_payload_optional)
+        Optional[dict], Depends(provide_http_token_payload)
     ] = None,
+    guards: GuardTypes = Depends(get_question_by_id_guards),
 ) -> QuestionRead:
     """Returns a question."""
-    return await question_view.get_by_id(resource_id, token_payload, guards=None)
+    return await question_view.get_by_id(resource_id, token_payload, guards=guards)
 
 
 @router.put("/question/{resource_id}", status_code=200)
@@ -211,7 +231,7 @@ async def put_question(
     question: QuestionUpdate,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(
-        Guards(scopes=["api.read", "api.write"], roles=["User"])
+        Guards(MicrosoftGuard(scopes=["api.read", "api.write"], roles=["User"]))
     ),
 ) -> QuestionRead:
     """Updates a question."""
@@ -223,7 +243,7 @@ async def delete_question(
     resource_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(
-        Guards(scopes=["api.read", "api.write"], roles=["User"])
+        Guards(MicrosoftGuard(scopes=["api.read", "api.write"], roles=["User"]))
     ),
 ) -> None:
     """Deletes a question."""
@@ -240,7 +260,10 @@ async def post_message(
     message: MessageCreate,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(
-        Guards(scopes=["api.read", "api.write"], roles=["User"])
+        Guards(
+            MicrosoftGuard(scopes=["api.read", "api.write"], roles=["User"]),
+            LinkedInGuard(),
+        )
     ),
 ) -> MessageRead:
     """Creates a new message."""
@@ -250,10 +273,17 @@ async def post_message(
 @router.get("/message/", status_code=200)
 async def get_messages(
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
+    guards: GuardTypes = Depends(
+        Guards(MicrosoftGuard(scopes=["api.read"], roles=["User"]), LinkedInGuard())
+    ),
 ) -> list[MessageRead]:
     """Returns all messages."""
     return await message_view.get(token_payload, guards)
+
+
+get_message_entity_snapshot_guards = Guards(
+    MicrosoftGuard(), LinkedInGuard(), AllowAnonymous()
+)
 
 
 @router.get("/message/snapshot", status_code=200)
@@ -264,15 +294,15 @@ async def get_message_entity_snapshot(
     sort: Annotated[CollectionSort | None, Query()] = None,
     direction: Annotated[SortDirection, Query()] = SortDirection.ascending,
     token_payload: Annotated[
-        Optional[dict], Depends(provide_http_token_payload_optional)
+        Optional[dict], Depends(provide_http_token_payload)
     ] = None,
-    # guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
+    guards: GuardTypes = Depends(get_message_entity_snapshot_guards),
 ) -> list[MessageExtended]:
     """Returns an optionally enriched message snapshot."""
     snapshot = await message_view.get_entity_snapshot(
         # token_payload, guards, include, sort, direction, parent_id
         token_payload,
-        None,
+        guards,
         include,
         sort,
         direction,
@@ -282,15 +312,19 @@ async def get_message_entity_snapshot(
     return snapshot.items
 
 
+get_message_by_id_guards = Guards(MicrosoftGuard(), LinkedInGuard(), AllowAnonymous())
+
+
 @router.get("/message/{resource_id}", status_code=200)
 async def get_message_by_id(
     resource_id: UUID,
     token_payload: Annotated[
-        Optional[dict], Depends(provide_http_token_payload_optional)
+        Optional[dict], Depends(provide_http_token_payload)
     ] = None,
+    guards: GuardTypes = Depends(get_message_by_id_guards),
 ) -> MessageRead:
     """Returns a message."""
-    return await message_view.get_by_id(resource_id, token_payload, guards=None)
+    return await message_view.get_by_id(resource_id, token_payload, guards=guards)
 
 
 @router.put("/message/{resource_id}", status_code=200)
@@ -299,7 +333,10 @@ async def put_message(
     message: MessageUpdate,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(
-        Guards(scopes=["api.read", "api.write"], roles=["User"])
+        Guards(
+            MicrosoftGuard(scopes=["api.read", "api.write"], roles=["User"]),
+            LinkedInGuard(),
+        )
     ),
 ) -> MessageRead:
     """Updates a message."""
@@ -311,7 +348,10 @@ async def delete_message(
     resource_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(
-        Guards(scopes=["api.read", "api.write"], roles=["User"])
+        Guards(
+            MicrosoftGuard(scopes=["api.read", "api.write"], roles=["User"]),
+            LinkedInGuard(),
+        )
     ),
 ) -> None:
     """Deletes a message."""
@@ -328,7 +368,6 @@ async def delete_message(
 #     numerical: Numerical.Create,
 #     token_payload=Depends(get_http_access_token_payload),
 #     guards: GuardTypes = Depends(
-#         Guards(scopes=["api.read", "api.write"], roles=["User"])
 #     ),
 # ) -> Numerical:
 #     """Creates a new numerical answer."""
@@ -338,10 +377,17 @@ async def delete_message(
 @router.get("/numerical/", status_code=200)
 async def get_numericals(
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
+    guards: GuardTypes = Depends(
+        Guards(MicrosoftGuard(scopes=["api.read"], roles=["User"]), LinkedInGuard())
+    ),
 ) -> list[NumericalRead]:
     """Returns all numerical answers."""
     return await numerical_view.get(token_payload, guards)
+
+
+get_numerical_entity_snapshot_guards = Guards(
+    MicrosoftGuard(), LinkedInGuard(), AllowAnonymous()
+)
 
 
 @router.get("/numerical/snapshot", status_code=200)
@@ -352,15 +398,15 @@ async def get_numerical_entity_snapshot(
     sort: Annotated[CollectionSort | None, Query()] = None,
     direction: Annotated[SortDirection, Query()] = SortDirection.ascending,
     token_payload: Annotated[
-        Optional[dict], Depends(provide_http_token_payload_optional)
+        Optional[dict], Depends(provide_http_token_payload)
     ] = None,
-    # guards: GuardTypes = Depends(Guards(scopes=["api.read"], roles=["User"])),
+    guards: GuardTypes = Depends(get_numerical_entity_snapshot_guards),
 ) -> list[NumericalExtended]:
     """Returns an optionally enriched numerical snapshot."""
     snapshot = await numerical_view.get_entity_snapshot(
         # token_payload, guards, include, sort, direction, parent_id
         token_payload,
-        None,
+        guards,
         include,
         sort,
         direction,
@@ -370,15 +416,19 @@ async def get_numerical_entity_snapshot(
     return snapshot.items
 
 
+get_numerical_by_id_guards = Guards(MicrosoftGuard(), LinkedInGuard(), AllowAnonymous())
+
+
 @router.get("/numerical/{resource_id}", status_code=200)
 async def get_numerical_by_id(
     resource_id: UUID,
     token_payload: Annotated[
-        Optional[dict], Depends(provide_http_token_payload_optional)
+        Optional[dict], Depends(provide_http_token_payload)
     ] = None,
+    guards: GuardTypes = Depends(get_numerical_by_id_guards),
 ) -> NumericalRead:
     """Returns a numerical answer."""
-    return await numerical_view.get_by_id(resource_id, token_payload, guards=None)
+    return await numerical_view.get_by_id(resource_id, token_payload, guards=guards)
 
 
 @router.put("/numerical/{resource_id}", status_code=200)
@@ -387,7 +437,10 @@ async def put_numerical(
     numerical: NumericalUpdate,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(
-        Guards(scopes=["api.read", "api.write"], roles=["User"])
+        Guards(
+            MicrosoftGuard(scopes=["api.read", "api.write"], roles=["User"]),
+            LinkedInGuard(),
+        )
     ),
 ) -> NumericalRead:
     """Updates a numerical answer."""
@@ -399,7 +452,10 @@ async def delete_numerical(
     resource_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(
-        Guards(scopes=["api.read", "api.write"], roles=["User"])
+        Guards(
+            MicrosoftGuard(scopes=["api.read", "api.write"], roles=["User"]),
+            LinkedInGuard(),
+        )
     ),
 ) -> None:
     """Deletes a numerical answer."""

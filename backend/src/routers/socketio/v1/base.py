@@ -1,4 +1,7 @@
+import asyncio
 import logging
+import time
+
 from typing import (
     Any,
     Dict,
@@ -15,10 +18,14 @@ from typing import (
 from urllib.parse import parse_qs
 from uuid import UUID
 
+import jwt
 import socketio
+from fastapi import HTTPException
 from sqlmodel import SQLModel, col, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
+from core.authentication.base import VerifiedIdentity
+from core.cache import redis_session_client
 from core.config import config
 from core.databases import get_async_session
 from core.security import (
@@ -54,6 +61,14 @@ from models.base import BaseExtendedSQLModel, BaseReadSQLModel
 from routers.socketio.v1 import register_namespace, registry_namespaces
 
 logger = logging.getLogger(__name__)
+
+
+class SocketAuthenticationExpiredError(Exception):
+    pass
+
+
+class SocketAuthorizationFailedError(Exception):
+    pass
 
 
 BaseSchemaTypeCreate = TypeVar("BaseSchemaTypeCreate", bound=SQLModel)
@@ -130,10 +145,63 @@ class BaseNamespace(
         self.room = room  # use in hierarchical resource system for parent resource id and/or identity (group) id? Can be assigned after authentication by using enter_room()
         self.callback_on_connect = callback_on_connect
         self.callback_on_disconnect = callback_on_disconnect
+        self._expiry_tasks: dict[str, asyncio.Task] = {}
+
+    @staticmethod
+    def _expiry_delay(session_id: str, token_payload: VerifiedIdentity | dict) -> float:
+        ttl = redis_session_client.ttl(f"session:{session_id}")
+        if not isinstance(ttl, int) or ttl < 0:
+            return 0
+        claims = (
+            token_payload.claims
+            if isinstance(token_payload, VerifiedIdentity)
+            else token_payload
+        )
+        expiration = claims.get("exp")
+        token_ttl = (
+            max(0, float(expiration) - time.time())
+            if isinstance(expiration, (int, float))
+            else float(ttl)
+        )
+        return min(float(ttl), token_ttl)
+
+    async def _end_expired_socket(self, sid: str) -> None:
+        await self._emit_status(
+            sid, {"error": "access", "code": "authentication-expired"}
+        )
+        await self.server.disconnect(sid, namespace=self.namespace)
+
+    async def _watch_authentication_expiry(
+        self, sid: str, session_id: str, token_payload: VerifiedIdentity | dict
+    ) -> None:
+        current_payload = token_payload
+        try:
+            while True:
+                delay = self._expiry_delay(session_id, current_payload)
+                await asyncio.sleep(max(delay, 0.25))
+                try:
+                    current_payload = await self._get_token_payload_if_authenticated(
+                        session_id
+                    )
+                except Exception:
+                    await self._end_expired_socket(sid)
+                    return
+        except asyncio.CancelledError:
+            return
+
+    def _schedule_authentication_expiry(
+        self, sid: str, session_id: str, token_payload: VerifiedIdentity | dict
+    ) -> None:
+        previous = self._expiry_tasks.pop(sid, None)
+        if previous is not None:
+            previous.cancel()
+        self._expiry_tasks[sid] = asyncio.create_task(
+            self._watch_authentication_expiry(sid, session_id, token_payload)
+        )
 
     async def _get_token_payload_if_authenticated(
         self, session_id: str
-    ) -> Optional[dict]:
+    ) -> VerifiedIdentity | dict:
         """Get the token payload from the cache if authenticated."""
         logger.info("🧦 Getting token payload from cache")
         token_payload = await get_token_payload_from_cache(
@@ -143,15 +211,12 @@ class BaseNamespace(
             raise ConnectionRefusedError("Authorization failed.")
         return token_payload
 
-    def _get_event_guards(self, event: str) -> Optional[GuardTypes]:
-        """Get the guards for the event."""
-        if self.event_guards:
-            guard = next(
-                (guard.guards for guard in self.event_guards if guard.event == event),
-                None,
-            )
-            return guard
-        return None
+    def _get_event_guards(self, event: str) -> GuardTypes:
+        """Every admitted event must have a declared policy."""
+        for declaration in self.event_guards:
+            if declaration.event == event:
+                return declaration.guards
+        raise ConnectionRefusedError("Event has no admission policy.")
 
     async def _get_session_data(self, sid: str) -> SocketIoSessionData:
         """Get socketio session data from the socketio server."""
@@ -213,46 +278,20 @@ class BaseNamespace(
     ) -> Optional[CurrentUserData]:
         """Check the auth token against the event guards."""
 
-        current_user = None
-
         guards = self._get_event_guards(guard_name)
-        ### This solution works for none-protected events, but a user is logged in anyways:
-        # try:
-        #     token_payload = await self._get_token_payload_if_authenticated(
-        #         session["session_id"]
-        #     )
-        #     current_user = await check_token_against_guards(token_payload, guards)
-        # except Exception as _error:
-        #     logger.info(f"🧦 Client with session id {sid} authenticated.")
-
-        # if guards is not None and current_user is None:
-        #     logger.error(
-        #         f"🧦 Client with session id {sid} is missing current_user data."
-        #     )
-        #     self._emit_status(sid, {"error": "No Current User found."})
-        # return current_user
-
+        session_id = await self._get_session_id(sid)
+        if session_id is None:
+            if guards.allows_anonymous:
+                return await check_token_against_guards(None, guards)
+            raise SocketAuthenticationExpiredError("No session id.")
         try:
-            session_id = await self._get_session_id(sid)
-            if session_id is None:
-                raise ConnectionRefusedError("No session id.")
             token_payload = await self._get_token_payload_if_authenticated(session_id)
-            current_user = await check_token_against_guards(token_payload, guards)
         except Exception as error:
-            if guards is not None:
-                if current_user is None:
-                    logger.error(
-                        # f"🧦 Client with session id {sid} is missing current_user data."
-                        f"🧦 Failed to authenticate client {sid}."
-                    )
-                    # self._emit_status(sid, {"error": "No Current User found."})
-                    # await self._emit_status(sid, {"error": str(error)})
-                raise error
-            else:
-                logger.info(
-                    f"🧦 Client {sid} accessing namespace {self.namespace} publically."
-                )
-        return current_user
+            raise SocketAuthenticationExpiredError("Authentication expired.") from error
+        try:
+            return await check_token_against_guards(token_payload, guards)
+        except HTTPException as error:
+            raise SocketAuthorizationFailedError("Authorization failed.") from error
 
     async def _get_all(  # noqa: C901
         self,
@@ -308,9 +347,7 @@ class BaseNamespace(
                     to=sid,
                 )
         except Exception as error:
-            logger.error(f"Failed to get all data for client {sid}.")
-            print(error)
-            await self._emit_status(sid, {"error": str(error)})
+            await self._handle_event_error(sid, error, context="Failed to get all data")
 
     async def _attach_access_data(
         self,
@@ -392,6 +429,56 @@ class BaseNamespace(
             data,
             namespace=namespace,
             to=receivers if not public else None,
+        )
+
+    async def _handle_event_error(
+        self,
+        sid: str,
+        error: Exception,
+        *,
+        context: str,
+        generic_detail: Optional[str] = None,
+    ) -> None:
+        """Log and emit an event error exactly once where it is finally handled."""
+        logger.exception("🧦 %s for client %s.", context, sid)
+        if isinstance(error, SocketAuthenticationExpiredError):
+            await self._end_expired_socket(sid)
+            return
+        if isinstance(error, SocketAuthorizationFailedError):
+            await self._emit_status(
+                sid, {"error": "access", "code": "authorization-failed"}
+            )
+            return
+        await self._emit_status(
+            sid,
+            {
+                "error": "other",
+                "detail": generic_detail if generic_detail is not None else str(error),
+            },
+        )
+
+    async def _handle_read_error(
+        self, sid: str, resource_id: Optional[UUID], error: Exception
+    ) -> None:
+        """Handle read-specific recovery before delegating status ownership."""
+        if isinstance(
+            error,
+            (SocketAuthenticationExpiredError, SocketAuthorizationFailedError),
+        ):
+            await self._handle_event_error(sid, error, context="Failed to read data")
+            return
+        await self.server.emit(
+            "deleted",
+            resource_id,
+            namespace=self.namespace,
+            to=sid,
+        )
+        await self._emit_status(sid, {"success": "deleted", "id": str(resource_id)})
+        await self._handle_event_error(
+            sid,
+            error,
+            context="Failed to read data",
+            generic_detail=f"Resource {str(resource_id)} not found.",
         )
 
     async def on_connect(  # noqa: C901
@@ -489,41 +576,142 @@ class BaseNamespace(
             "query_strings": session_query_strings,
         }
         auth_rejected = False
+        token_payload: VerifiedIdentity | dict | None = None
+        auth_session_id = auth["session-id"] if auth else None
         try:
-            # TBD: catch and handle an expired token gracefully and return something to the client on a different message channel,
-            # so it can initiate the authentication process and come back with a new session id
-            auth_session_id = auth["session-id"] if auth else None
-            if auth_session_id is None:
-                raise ConnectionRefusedError("No session id provided.")
-            token_payload = await self._get_token_payload_if_authenticated(
-                auth_session_id
-            )
-            current_user = await check_token_against_guards(token_payload, guards)
-            session_data["user_name"] = (token_payload or {}).get("name", "")
-            session_data["session_id"] = auth_session_id
-            # if "Admin" in current_user.azure_token_roles:
-            if (
-                current_user is not None
-                and "Admin" in (current_user.azure_token_roles or [])
-                and join_admin_room
-            ):
-                await self.server.enter_room(
-                    sid,
-                    "role:Admin",
-                    namespace=self.namespace,
-                )
-            logger.info(
-                f"🧦 Client authenticated to access protected namespace {self.namespace}."
-            )
-        except Exception:
-            if guards is not None:
-                auth_rejected = True
-                logger.error(f"🧦 Client with session id {sid} failed to authenticate.")
-                raise ConnectionRefusedError("Authorization failed.")
-            else:
+            if auth_session_id is not None:
+                authentication_error: Exception | None = None
+                try:
+                    token_payload = await self._get_token_payload_if_authenticated(
+                        auth_session_id
+                    )
+                except HTTPException as err:
+                    if err.status_code == 401:
+                        authentication_error = err
+                    else:
+                        auth_rejected = True
+                        logger.exception(
+                            "🧦 Authentication service failed while connecting client %s.",
+                            sid,
+                        )
+                        raise ConnectionRefusedError(
+                            {
+                                "error": "connection",
+                                "code": "connection-failed",
+                            }
+                        ) from err
+                except (jwt.PyJWTError, ConnectionRefusedError) as err:
+                    authentication_error = err
+                except Exception as err:
+                    auth_rejected = True
+                    logger.exception(
+                        "🧦 Unexpected authentication failure while connecting client %s.",
+                        sid,
+                    )
+                    raise ConnectionRefusedError(
+                        {
+                            "error": "connection",
+                            "code": "connection-failed",
+                        }
+                    ) from err
+
+                if authentication_error is not None:
+                    if not guards.allows_anonymous:
+                        auth_rejected = True
+                        logger.info(
+                            "🧦 Client %s must renew authentication.",
+                            sid,
+                        )
+                        raise ConnectionRefusedError(
+                            {
+                                "error": "access",
+                                "code": "authentication-expired",
+                            }
+                        ) from authentication_error
+                    logger.info(
+                        "🧦 Client %s is using anonymous access after authentication failed.",
+                        sid,
+                    )
+
+            if token_payload is None:
+                if not guards.allows_anonymous:
+                    auth_rejected = True
+                    logger.info("🧦 Client %s did not provide authentication.", sid)
+                    raise ConnectionRefusedError(
+                        {
+                            "error": "access",
+                            "code": "authentication-expired",
+                        }
+                    )
                 logger.info(
-                    # f"🧦 Client authenticated to public namespace {self.namespace}."
-                    f"🧦 Client {sid} accessing namespace {self.namespace} publically."
+                    "🧦 Client %s accessing namespace %s anonymously.",
+                    sid,
+                    self.namespace,
+                )
+            else:
+                try:
+                    current_user = await check_token_against_guards(
+                        token_payload, guards
+                    )
+                except HTTPException as err:
+                    auth_rejected = True
+                    logger.info(
+                        "🧦 Client %s is not authorized for namespace %s.",
+                        sid,
+                        self.namespace,
+                    )
+                    raise ConnectionRefusedError(
+                        {
+                            "error": "access",
+                            "code": "authorization-failed",
+                        }
+                    ) from err
+                except Exception as err:
+                    auth_rejected = True
+                    logger.exception(
+                        "🧦 Authorization service failed while connecting client %s.",
+                        sid,
+                    )
+                    raise ConnectionRefusedError(
+                        {
+                            "error": "connection",
+                            "code": "connection-failed",
+                        }
+                    ) from err
+
+                try:
+                    claims = (
+                        token_payload.claims
+                        if isinstance(token_payload, VerifiedIdentity)
+                        else token_payload
+                    )
+                    session_data["user_name"] = claims.get("name", "")
+                    session_data["session_id"] = auth_session_id
+                    if (
+                        current_user is not None
+                        and "Admin" in (current_user.azure_token_roles or [])
+                        and join_admin_room
+                    ):
+                        await self.server.enter_room(
+                            sid,
+                            "role:Admin",
+                            namespace=self.namespace,
+                        )
+                except Exception as err:
+                    auth_rejected = True
+                    logger.exception(
+                        "🧦 Failed to complete the authenticated socket connection for client %s.",
+                        sid,
+                    )
+                    raise ConnectionRefusedError(
+                        {
+                            "error": "connection",
+                            "code": "connection-failed",
+                        }
+                    ) from err
+                logger.info(
+                    "🧦 Client authenticated to access protected namespace %s.",
+                    self.namespace,
                 )
         finally:
             # TBD: write tests for anonymous user access to parent resources
@@ -557,6 +745,14 @@ class BaseNamespace(
                 await self.server.save_session(
                     sid, session_data, namespace=self.namespace
                 )
+                if auth_session_id is not None:
+                    await self.server.enter_room(
+                        sid,
+                        f"auth-session:{auth_session_id}",
+                        namespace=self.namespace,
+                    )
+        if auth_session_id is not None and token_payload is not None:
+            self._schedule_authentication_expiry(sid, auth_session_id, token_payload)
         if self.callback_on_connect is not None and not snapshot_subscription:
             await self.callback_on_connect(
                 sid,
@@ -609,24 +805,11 @@ class BaseNamespace(
                 to=sid,
             )
         except Exception as error:
-            logger.error(f"🧦 Failed to read data from client {sid}.")
-            print(error)
-            # In case user was accessing a resource after an unshare event:
-            await self.server.emit(
-                "deleted",
-                resource_id,
-                namespace=self.namespace,
-                to=sid,
-            )
-            # TBD: consider changing this - can be misleading:
-            # it's not necessarily deleted: might be the user's access has changed.
-            await self._emit_status(sid, {"success": "deleted", "id": str(resource_id)})
-            await self._emit_status(
-                sid, {"error": f"Resource {str(resource_id)} not found."}
-            )
-            # await self._emit_status(sid, {"error": str(error)})
+            await self._handle_read_error(sid, resource_id, error)
 
-    async def on_subscribe(self, sid: str, data: Dict[str, Any]) -> SubscriptionResult:
+    async def on_subscribe(  # noqa: C901
+        self, sid: str, data: Dict[str, Any]
+    ) -> SubscriptionResult:
         """Subscribes a client to rooms for access-controlled entities."""
         raw_entity_ids = data.get("entity_ids")
         if not isinstance(raw_entity_ids, list):
@@ -653,7 +836,16 @@ class BaseNamespace(
         except TypeError, ValueError:
             return {"error": "entity_ids must contain valid UUIDs."}
 
-        current_user = await self._get_current_user_and_check_guard(sid, "connect")
+        try:
+            current_user = await self._get_current_user_and_check_guard(sid, "connect")
+        except (
+            SocketAuthenticationExpiredError,
+            SocketAuthorizationFailedError,
+        ) as error:
+            await self._handle_event_error(
+                sid, error, context="Failed to subscribe client"
+            )
+            return {"subscribed": [], "rejected": []}
         async with self.crud() as crud:
             model_columns = cast(Any, crud.model)
             statement = select(model_columns.id).where(
@@ -776,23 +968,9 @@ class BaseNamespace(
                 else:
                     event_name = "submit:create"
 
-                # Get guards for this event
-                guards = self._get_event_guards(event_name)
-
-                # Try to authenticate
-                current_user = None
-                try:
-                    current_user = await self._get_current_user_and_check_guard(
-                        sid, event_name
-                    )
-                except Exception as error:
-                    # If guards exist, authentication is required - fail
-                    if guards is not None:
-                        logger.error(f"🧦 Failed authenticating {sid}.")
-                        # await self._emit_status(sid, {"error": str(error)})
-                        raise error
-                    # If guards=None, continue without authentication
-                    logger.info(f"Public access (no authentication) for {event_name}")
+                current_user = await self._get_current_user_and_check_guard(
+                    sid, event_name
+                )
 
                 try:
                     database_object = None
@@ -1085,9 +1263,9 @@ class BaseNamespace(
                     #         to=sid,
                     #     )
                 except Exception as error:
-                    logger.error(f"🧦 Failed to write data from client {sid}.")
-                    print(error, flush=True)
-                    await self._emit_status(sid, {"error": str(error)})
+                    await self._handle_event_error(
+                        sid, error, context="Failed to write data"
+                    )
             else:
                 # Distributes incoming data to all clients in the namespace
                 # "transferred" is communication from server to client
@@ -1097,14 +1275,15 @@ class BaseNamespace(
                     namespace=self.namespace,
                 )
         except Exception as error:
-            logger.error(f"🧦 Failed to write data from client {sid}.")
-            await self._emit_status(sid, {"error": str(error)})
+            await self._handle_event_error(sid, error, context="Failed to write data")
 
     async def on_delete(self, sid, entity_ids: UUID | List[UUID]):
         """Delete event for socket.io namespaces."""
         logger.info(f"🧦 Delete request from client {sid}.")
         if self.crud is None:
-            await self._emit_status(sid, {"error": "No CRUD configured."})
+            await self._emit_status(
+                sid, {"error": "other", "detail": "No CRUD configured."}
+            )
             return
         try:
             current_user = await self._get_current_user_and_check_guard(sid, "delete")
@@ -1128,9 +1307,7 @@ class BaseNamespace(
                 )
                 await self._emit_status(sid, {"success": "deleted", "id": entity_id})
         except Exception as error:
-            logger.error(f"🧦 Failed to delete item for client {sid}.")
-            print(error)
-            await self._emit_status(sid, {"error": str(error)})
+            await self._handle_event_error(sid, error, context="Failed to delete item")
 
     async def on_share(self, sid, access_policy: Dict[str, Any]):
         """Share event for socket.io namespaces."""
@@ -1206,9 +1383,9 @@ class BaseNamespace(
             #         rooms=[f"identity:{str(access_policy.identity_id)}"],
             #     )
         except Exception as error:
-            logger.error(f"🧦 Failed update access attempted from client {sid}.")
-            print(error, flush=True)
-            await self._emit_status(sid, {"error": str(error)})
+            await self._handle_event_error(
+                sid, error, context="Failed to update access"
+            )
 
     #     try:
     #         async with self.crud() as crud:
@@ -1231,13 +1408,15 @@ class BaseNamespace(
     #     except Exception as error:
     #         logger.error(f"🧦 Failed to share item for client {sid}.")
     #         print(error)
-    #         await self._emit_status(sid, {"error": str(error)})
+    #         await self._emit_status(sid, {"error": "other", "detail": str(error)})
 
     async def on_link(self, sid, hierarchy: Dict[str, Any]):
         """Link event for socket.io namespaces."""
         logger.info(f"🧦 Link request from client {sid}.")
         if self.crud is None:
-            await self._emit_status(sid, {"error": "No CRUD configured."})
+            await self._emit_status(
+                sid, {"error": "other", "detail": "No CRUD configured."}
+            )
             return
         try:
             hierarchy_obj = BaseHierarchyCreate(**hierarchy)
@@ -1278,9 +1457,7 @@ class BaseNamespace(
                 namespace=parent_namespace,
             )
         except Exception as error:
-            logger.error(f"🧦 Failed to link item for client {sid}.")
-            print(error)
-            await self._emit_status(sid, {"error": str(error)})
+            await self._handle_event_error(sid, error, context="Failed to link item")
 
     # TBD: implement and write tests for this:
     # async def on_changelink(self, sid, hierarchy: Dict[str, Any]):
@@ -1290,7 +1467,9 @@ class BaseNamespace(
         """Unlink event for socket.io namespaces."""
         logger.info(f"🧦 Unlink request from client {sid}.")
         if self.crud is None:
-            await self._emit_status(sid, {"error": "No CRUD configured."})
+            await self._emit_status(
+                sid, {"error": "other", "detail": "No CRUD configured."}
+            )
             return
         try:
             hierarchy_obj = BaseHierarchyCreate(**hierarchy)
@@ -1331,12 +1510,13 @@ class BaseNamespace(
                 namespace=parent_namespace,
             )
         except Exception as error:
-            logger.error(f"🧦 Failed to unlink item for client {sid}.")
-            print(error)
-            await self._emit_status(sid, {"error": str(error)})
+            await self._handle_event_error(sid, error, context="Failed to unlink item")
 
     async def on_disconnect(self, sid):
         """Disconnect event for socket.io namespaces."""
+        expiry_task = self._expiry_tasks.pop(sid, None)
+        if expiry_task is not None and expiry_task is not asyncio.current_task():
+            expiry_task.cancel()
         logger.info(f"🧦 Client with session id {sid} disconnected.")
         if self.callback_on_disconnect is not None:
             await self.callback_on_disconnect(sid)

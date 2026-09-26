@@ -2,15 +2,18 @@ import logging
 from typing import Annotated, Optional, cast
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response
 
 from core.security import (
-    CurrentAccessToken,
     Guards,
+    LinkedInGuard,
+    MicrosoftGuard,
     check_token_against_guards,
+    check_token_against_guards_with_status,
     get_http_access_token_payload,
 )
 from core.types import CollectionInclude, CollectionSort, GuardTypes, SortDirection
+from crud.account_merge import AccountMergeCRUD
 from crud.identity import (
     GroupCRUD,
     SubGroupCRUD,
@@ -19,11 +22,16 @@ from crud.identity import (
     UserCRUD,
 )
 from models.identity import (
+    AccountLinkResult,
+    AccountMergeConfirm,
+    AccountMergePreview,
+    AccountMergeResult,
     Group,
     GroupCreate,
     GroupExtended,
     GroupRead,
     Me,
+    MeUpdate,
     SubGroup,
     SubGroupCreate,
     SubGroupExtended,
@@ -42,6 +50,11 @@ from models.identity import (
     UserUpdate,
 )
 
+from .account_linking import (
+    _complete_merge_cleanup,
+    _invalidate_merged_user_sessions,
+    _link_identities,
+)
 from .base import BaseView
 
 logger = logging.getLogger(__name__)
@@ -62,7 +75,9 @@ user_view = BaseView(UserCRUD)
 async def post_user(
     user: UserCreate,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["Admin"])),
+    guards: GuardTypes = Depends(
+        Guards(MicrosoftGuard(scopes=["api.write"], roles=["Admin"]))
+    ),
 ) -> User:
     """Creates a new user."""
     logger.info("POST user")
@@ -80,11 +95,15 @@ async def post_invite_azure_user(
         Optional[UUID], Query(alias="azure-tenant-id")
     ] = None,  # The Azure tenant ID as optional query parameter
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+    guards: GuardTypes = Depends(
+        Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"]))
+    ),
 ) -> User:
     """Invites an existing user in Azure as new user in the app."""
     logger.info("POST user invite")
     current_user = await check_token_against_guards(token_payload, guards)
+    if current_user is None:
+        raise HTTPException(status_code=401, detail="Authentication required.")
     async with UserCRUD() as crud:
         invited_user = await crud.create_invited_azure_user(
             current_user, UUID(azure_user_id), azure_tenant_id
@@ -96,23 +115,74 @@ async def post_invite_azure_user(
 async def get_me(
     response: Response,
     token_payload=Depends(get_http_access_token_payload),
-    guards=Depends(Guards(roles=["User"])),
+    guards=Depends(Guards(MicrosoftGuard(roles=["User"]), LinkedInGuard())),
 ) -> Me:
     """Returns the current user with account and profile or creates through self-sign-up."""
-    _, response.status_code = await CurrentAccessToken(
-        token_payload
-    ).gets_or_signs_up_current_user()
-    current_user = await check_token_against_guards(token_payload, guards)
+    current_user, status_code = await check_token_against_guards_with_status(
+        token_payload, guards
+    )
+    if status_code is not None:
+        response.status_code = status_code
+    if current_user is None:
+        raise HTTPException(status_code=401, detail="Authentication required.")
     async with UserCRUD() as crud:
         me = await crud.read_me(current_user)
     me = Me.model_validate(me)
     return me
 
 
+@user_router.post("/me/link/preview", status_code=200)
+async def post_account_link_preview(
+    x_account_link_authorization: Annotated[str, Header()],
+    token_payload=Depends(get_http_access_token_payload),
+) -> AccountLinkResult | AccountMergePreview:
+    """Attach an unclaimed provider identity or return a confirmed-merge preview."""
+    survivor_identity, source_identity = await _link_identities(
+        token_payload, x_account_link_authorization
+    )
+    async with AccountMergeCRUD() as crud:
+        result = await crud.link_or_preview(
+            survivor_identity.provider,
+            survivor_identity.claims,
+            source_identity.provider,
+            source_identity.claims,
+        )
+    if isinstance(result, AccountMergePreview):
+        return result
+    return AccountLinkResult(result=result)
+
+
+@user_router.post("/me/link/confirm", status_code=200)
+async def post_account_merge_confirm(
+    confirmation: AccountMergeConfirm,
+    x_account_link_authorization: Annotated[str, Header()],
+    token_payload=Depends(get_http_access_token_payload),
+) -> AccountMergeResult:
+    """Revalidate both provider proofs and atomically merge their internal users."""
+    survivor_identity, source_identity = await _link_identities(
+        token_payload, x_account_link_authorization
+    )
+    if await _complete_merge_cleanup(confirmation.preview_hash):
+        return AccountMergeResult()
+    async with AccountMergeCRUD() as crud:
+        survivor_id, source_id = await crud.merge_provider_users(
+            survivor_identity.provider,
+            survivor_identity.claims,
+            source_identity.provider,
+            source_identity.claims,
+            confirmation.preview_hash,
+            confirmation.choices,
+        )
+    await _invalidate_merged_user_sessions(
+        {survivor_id, source_id}, confirmation.preview_hash
+    )
+    return AccountMergeResult()
+
+
 @user_router.get("/", status_code=200)
 async def get_all_users(
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(roles=["Admin"])),
+    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["Admin"]))),
 ) -> list[UserRead]:
     """Returns all users."""
     return await user_view.get(token_payload, guards)
@@ -122,11 +192,13 @@ async def get_all_users(
 async def get_user_by_azure_user_id(
     azure_user_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(roles=["User"])),
+    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
 ) -> UserRead:
     """Returns a user based on its azure user id."""
     logger.info("GET user by azure_user_id")
     current_user = await check_token_against_guards(token_payload, guards)
+    if current_user is None:
+        raise HTTPException(status_code=401, detail="Authentication required.")
     async with user_view.crud() as crud:
         user = await crud.read_by_azure_user_id(azure_user_id, current_user)
     return user
@@ -136,7 +208,7 @@ async def get_user_by_azure_user_id(
 async def get_user_by_id(
     user_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
-    guards=Depends(Guards(roles=["User"])),
+    guards=Depends(Guards(MicrosoftGuard(roles=["User"]))),
 ) -> UserRead:
     """Returns a user with a specific user_id."""
     return await user_view.get_by_id(
@@ -148,12 +220,14 @@ async def get_user_by_id(
 
 @user_router.put("/me", status_code=200)
 async def put_me(
-    user: Me,
+    user: MeUpdate,
     token_payload=Depends(get_http_access_token_payload),
-    guards=Depends(Guards(roles=["User"])),
+    guards=Depends(Guards(MicrosoftGuard(roles=["User"]), LinkedInGuard())),
 ) -> Me:
     """Updates the current user with account and profile."""
     current_user = await check_token_against_guards(token_payload, guards)
+    if current_user is None:
+        raise HTTPException(status_code=401, detail="Authentication required.")
     if current_user.user_id != user.id:
         raise HTTPException(status_code=403, detail="Forbidden.")
     async with UserCRUD() as crud:
@@ -169,7 +243,7 @@ async def put_user(
     user_id: UUID,
     user: UserUpdate,
     token_payload=Depends(get_http_access_token_payload),
-    guards=Depends(Guards(scopes=["api.write"], roles=["User"])),
+    guards=Depends(Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"]))),
 ) -> User:
     """Updates a user."""
     return await user_view.put(
@@ -184,7 +258,7 @@ async def put_user(
 async def delete_user(
     user_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
-    guards=Depends(Guards(scopes=["api.write"], roles=["User"])),
+    guards=Depends(Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"]))),
 ) -> None:  # User:
     """Deletes a user."""
     return await user_view.delete(user_id, token_payload, guards)
@@ -202,7 +276,9 @@ ueber_group_view = BaseView(UeberGroupCRUD)
 async def post_ueber_group(
     ueber_group: UeberGroupCreate,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["Admin"])),
+    guards: GuardTypes = Depends(
+        Guards(MicrosoftGuard(scopes=["api.write"], roles=["Admin"]))
+    ),
 ) -> UeberGroup:  # type: ignore[valid-type]
     """Creates a new ueber_group."""
     logger.info("POST ueber_group")
@@ -219,7 +295,9 @@ async def post_group_to_uebergroup(
     ueber_group_id: UUID,
     inherit: Annotated[bool, Query()] = True,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["Admin"])),
+    guards: GuardTypes = Depends(
+        Guards(MicrosoftGuard(scopes=["api.write"], roles=["Admin"]))
+    ),
 ) -> SubGroup:  # type: ignore[valid-type]
     """Creates a new group as a child of an ueber_group with ueber_group_id."""
     logger.info("POST group to ueber_group")
@@ -231,7 +309,7 @@ async def post_group_to_uebergroup(
 @ueber_group_router.get("/", status_code=200)
 async def get_all_ueber_groups(
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(roles=["User"])),
+    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
 ) -> list[UeberGroupRead]:
     """Returns all ueber_groups."""
     return await ueber_group_view.get(token_payload, guards)
@@ -244,7 +322,7 @@ async def get_ueber_group_entity_snapshot(
     sort: Annotated[CollectionSort | None, Query()] = None,
     direction: Annotated[SortDirection, Query()] = SortDirection.ascending,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(roles=["User"])),
+    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
 ) -> list[UeberGroupExtended]:  # type: ignore[valid-type]
     """Returns an optionally enriched ueber-group snapshot."""
     snapshot = await ueber_group_view.get_entity_snapshot(
@@ -258,7 +336,7 @@ async def get_ueber_group_entity_snapshot(
 async def get_ueber_group_by_id(
     ueber_group_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
-    guards=Depends(Guards(roles=["User"])),
+    guards=Depends(Guards(MicrosoftGuard(roles=["User"]))),
 ) -> UeberGroupRead:
     """Returns an ueber_group with a specific ueber_group_id."""
     return await ueber_group_view.get_by_id(
@@ -273,7 +351,7 @@ async def put_ueber_group(
     ueber_group_id: UUID,
     ueber_group: UeberGroupUpdate,
     token_payload=Depends(get_http_access_token_payload),
-    guards=Depends(Guards(scopes=["api.write"], roles=["User"])),
+    guards=Depends(Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"]))),
 ) -> UeberGroup:  # type: ignore[valid-type]
     """Updates an ueber_group."""
     return await ueber_group_view.put(
@@ -288,7 +366,7 @@ async def put_ueber_group(
 async def delete_ueber_group(
     ueber_group_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
-    guards=Depends(Guards(scopes=["api.write"], roles=["Admin"])),
+    guards=Depends(Guards(MicrosoftGuard(scopes=["api.write"], roles=["Admin"]))),
 ) -> None:
     """Deletes an ueber_group."""
     return await ueber_group_view.delete(ueber_group_id, token_payload, guards)
@@ -307,7 +385,9 @@ group_view = BaseView(GroupCRUD)
 async def post_group(
     group: GroupCreate,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["Admin"])),
+    guards: GuardTypes = Depends(
+        Guards(MicrosoftGuard(scopes=["api.write"], roles=["Admin"]))
+    ),
 ) -> Group:  # type: ignore[valid-type]
     """Creates a new group without a parent ueber-group."""
     logger.info("POST group")
@@ -324,7 +404,9 @@ async def post_sub_group_to_group(
     group_id: UUID,
     inherit: Annotated[bool, Query()] = True,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["Admin"])),
+    guards: GuardTypes = Depends(
+        Guards(MicrosoftGuard(scopes=["api.write"], roles=["Admin"]))
+    ),
 ) -> SubGroup:  # type: ignore[valid-type]
     """Creates a new sub_group as a child of group with group_id."""
     logger.info("POST sub_group to group")
@@ -336,7 +418,7 @@ async def post_sub_group_to_group(
 @group_router.get("/", status_code=200)
 async def get_all_groups(
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(roles=["User"])),
+    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
 ) -> list[GroupRead]:
     """Returns all groups."""
     return await group_view.get(token_payload, guards)
@@ -349,7 +431,7 @@ async def get_group_entity_snapshot(
     sort: Annotated[CollectionSort | None, Query()] = None,
     direction: Annotated[SortDirection, Query()] = SortDirection.ascending,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(roles=["User"])),
+    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
 ) -> list[GroupExtended]:  # type: ignore[valid-type]
     """Returns an optionally enriched group snapshot."""
     snapshot = await group_view.get_entity_snapshot(
@@ -363,7 +445,7 @@ async def get_group_entity_snapshot(
 async def get_group_by_id(
     group_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
-    guards=Depends(Guards(roles=["User"])),
+    guards=Depends(Guards(MicrosoftGuard(roles=["User"]))),
 ) -> GroupRead:
     """Returns a group with a specific group_id."""
     return await group_view.get_by_id(
@@ -378,7 +460,7 @@ async def put_group(
     group_id: UUID,
     group: UeberGroupUpdate,
     token_payload=Depends(get_http_access_token_payload),
-    guards=Depends(Guards(scopes=["api.write"], roles=["User"])),
+    guards=Depends(Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"]))),
 ) -> Group:  # type: ignore[valid-type]
     """Updates a group."""
     return await group_view.put(
@@ -393,7 +475,7 @@ async def put_group(
 async def delete_group(
     group_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
-    guards=Depends(Guards(scopes=["api.write"], roles=["User"])),
+    guards=Depends(Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"]))),
 ) -> None:
     """Deletes a group."""
     return await group_view.delete(group_id, token_payload, guards)
@@ -414,7 +496,6 @@ sub_group_view = BaseView(SubGroupCRUD)
 # async def post_sub_group(
 #     sub_group: SubGroupCreate,
 #     token_payload=Depends(get_http_access_token_payload),
-#     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["Admin"])),
 # ) -> SubGroup:
 #     """Creates a new sub_group."""
 #     logger.info("POST sub_group")
@@ -431,7 +512,9 @@ async def post_sub_sub_group_to_sub_group(
     sub_group_id: UUID,
     inherit: Annotated[bool, Query()] = True,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+    guards: GuardTypes = Depends(
+        Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"]))
+    ),
 ) -> SubGroup:  # type: ignore[valid-type]
     """Creates a new sub_sub_group as a child of sub_group with sub_group_id."""
     logger.info("POST sub_sub_group to sub_group")
@@ -443,7 +526,7 @@ async def post_sub_sub_group_to_sub_group(
 @sub_group_router.get("/", status_code=200)
 async def get_all_sub_groups(
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(roles=["User"])),
+    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
 ) -> list[SubGroupRead]:
     """Returns all sub_groups."""
     return await sub_group_view.get(token_payload, guards)
@@ -456,7 +539,7 @@ async def get_sub_group_entity_snapshot(
     sort: Annotated[CollectionSort | None, Query()] = None,
     direction: Annotated[SortDirection, Query()] = SortDirection.ascending,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(roles=["User"])),
+    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
 ) -> list[SubGroupExtended]:  # type: ignore[valid-type]
     """Returns an optionally enriched sub-group snapshot."""
     snapshot = await sub_group_view.get_entity_snapshot(
@@ -470,7 +553,7 @@ async def get_sub_group_entity_snapshot(
 async def get_sub_group_by_id(
     sub_group_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
-    guards=Depends(Guards(roles=["User"])),
+    guards=Depends(Guards(MicrosoftGuard(roles=["User"]))),
 ) -> SubGroupRead:
     """Returns a sub_group with a specific sub_group_id."""
     return await sub_group_view.get_by_id(
@@ -485,7 +568,7 @@ async def put_sub_group(
     sub_group_id: UUID,
     sub_group: SubGroupUpdate,
     token_payload=Depends(get_http_access_token_payload),
-    guards=Depends(Guards(scopes=["api.write"], roles=["User"])),
+    guards=Depends(Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"]))),
 ) -> SubGroup:  # type: ignore[valid-type]
     """Updates a sub_group."""
     return await sub_group_view.put(
@@ -500,7 +583,7 @@ async def put_sub_group(
 async def delete_sub_group(
     sub_group_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
-    guards=Depends(Guards(scopes=["api.write"], roles=["User"])),
+    guards=Depends(Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"]))),
 ) -> None:
     """Deletes a sub_group."""
     return await sub_group_view.delete(sub_group_id, token_payload, guards)
@@ -521,7 +604,6 @@ sub_sub_group_view = BaseView(SubSubGroupCRUD)
 # async def post_sub_sub_group(
 #     sub_sub_group: SubGroupCreate,
 #     token_payload=Depends(get_http_access_token_payload),
-#     guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["Admin"])),
 # ) -> SubGroup:
 #     """Creates a new sub_sub_group."""
 #     logger.info("POST sub_sub_group")
@@ -535,7 +617,7 @@ sub_sub_group_view = BaseView(SubSubGroupCRUD)
 @sub_sub_group_router.get("/", status_code=200)
 async def get_all_sub_sub_groups(
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(roles=["Admin"])),
+    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["Admin"]))),
 ) -> list[SubGroupRead]:
     """Returns all sub_sub_groups."""
     return await sub_sub_group_view.get(token_payload, guards)
@@ -548,7 +630,7 @@ async def get_sub_sub_group_entity_snapshot(
     sort: Annotated[CollectionSort | None, Query()] = None,
     direction: Annotated[SortDirection, Query()] = SortDirection.ascending,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(roles=["Admin"])),
+    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["Admin"]))),
 ) -> list[SubSubGroupExtended]:  # type: ignore[valid-type]
     """Returns an optionally enriched sub-sub-group snapshot."""
     snapshot = await sub_sub_group_view.get_entity_snapshot(
@@ -562,7 +644,7 @@ async def get_sub_sub_group_entity_snapshot(
 async def get_sub_sub_group_by_id(
     sub_sub_group_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
-    guards=Depends(Guards(roles=["User"])),
+    guards=Depends(Guards(MicrosoftGuard(roles=["User"]))),
 ) -> SubGroupRead:
     """Returns a sub_sub_group with a specific sub_sub_group_id."""
     return await sub_sub_group_view.get_by_id(
@@ -577,7 +659,7 @@ async def put_sub_sub_group(
     sub_sub_group_id: UUID,
     sub_sub_group: SubGroupUpdate,
     token_payload=Depends(get_http_access_token_payload),
-    guards=Depends(Guards(scopes=["api.write"], roles=["User"])),
+    guards=Depends(Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"]))),
 ) -> SubGroup:  # type: ignore[valid-type]
     """Updates a sub_sub_group."""
     return await sub_sub_group_view.put(
@@ -592,7 +674,7 @@ async def put_sub_sub_group(
 async def delete_sub_sub_group(
     sub_sub_group_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
-    guards=Depends(Guards(scopes=["api.write"], roles=["User"])),
+    guards=Depends(Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"]))),
 ) -> None:
     """Deletes a sub_sub_group."""
     return await sub_sub_group_view.delete(sub_sub_group_id, token_payload, guards)

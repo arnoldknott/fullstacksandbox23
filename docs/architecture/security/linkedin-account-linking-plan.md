@@ -1,6 +1,6 @@
 # LinkedIn authentication, account linking, and credential encryption
 
-Status: implementation plan; application changes are not implemented by this document.
+Status: Stages A (guards), B (minimal identity/signup), D (resource/event policies and answer ownership), E (provider linking and confirmed account merge), and F (authentication-cache encryption) are implemented. Stage C lifecycle code, focused automated coverage, deployment configuration, and the live LinkedIn expiry/reconnect sequence are verified; the measured LinkedIn identity-token lifetime is one hour. Equivalent Microsoft live acceptance remains tracked in the [authentication session lifecycle plan](authentication-session-lifecycle-plan.md).
 
 Agreed scope recorded on 2026-09-20; encryption and rotation decisions updated on 2026-09-21. This is the shared implementation handoff for frontend, backend, database, and Redis changes. Keep shared login/encryption decisions here and account-merge decisions in the linked merge plan, rather than maintaining separate plans in each application.
 
@@ -16,7 +16,7 @@ Agreed scope recorded on 2026-09-20; encryption and rotation decisions updated o
 - Authenticated message/numerical creators become owners through existing policies. Anonymous creation never grants ownership to a shared anonymous identity.
 - Stages A–D require no changes to the inner authorization layer (`crud/access.py`, `crud/base.py`, `filters_allowed()`): it already operates on the internal `user_id` and treats a LinkedIn user with empty roles/groups correctly. Only the separate merge plan reassigns inner-layer identity references.
 - Support first-time linking and merging existing users in either provider direction. Reassign references and delete superseded records; no merge history, alias records, or retired users. Linking and merge are specified in the separate [account merge plan](./linkedin-azure-account-merge-plan.md); Stages A–D of this document do not require them.
-- Apply the [data-storage policy](README.md#data-storage-policy) and [Redis encryption contract](../../redis/README.md); Stage F maps them to implementation.
+- Apply the [data-storage policy](README.md#data-storage-policy), [application encryption contract](README.md#application-encryption), and [Redis storage contract](../../redis/README.md); Stage F maps them to implementation.
 - Preserve anonymous admission per endpoint/event. Do not make every read public, open anonymous request-based creation because sockets allow it, or open anonymous answer update/delete.
 - No cross-provider AND expressions, additional authentication service, new scripts, or deployment workflows.
 
@@ -27,7 +27,7 @@ Paths are relative to this document.
 | Concern | Existing code | Planned responsibility |
 | --- | --- | --- |
 | User identifiers/settings | [identity model](../../../backend/src/models/identity.py) | LinkedIn subject, protected identifier updates, merge settings schemas |
-| Signup and account operations | [identity CRUD](../../../backend/src/crud/identity.py) | Provider lookup/signup and verified attachment; transactional merge in the separate merge plan |
+| Signup and account operations | [identity CRUD](../../../backend/src/crud/identity.py), [account merge CRUD](../../../backend/src/crud/account_merge.py) | Provider signup remains in `UserCRUD`; verified attachment and transactional merge use `AccountMergeCRUD` |
 | Authentication | [security.py](../../../backend/src/core/security.py) | Provider dispatch/validation, cached-token retrieval, guard evaluation and user resolution |
 | Shared contracts | [types.py](../../../backend/src/core/types.py) | Provider alternatives in guards; retain current-user interface |
 | Router-wide dependencies | [fastapi.py](../../../backend/src/core/fastapi.py) | Relax router-level Microsoft guards only on selected mixed-provider routes; keep them on Microsoft-only routers |
@@ -81,11 +81,11 @@ Replace `provide_http_token_payload_optional` with provider-neutral extraction/v
 
 - Validate signature, explicit allowed algorithm, expected issuer, exact configured client audience, and applicable authorized-party/multiple-audience rules.
 - Require a nonempty string subject, issuance time (`iat`), and expiry (`exp`); enforce relevant time checks with bounded clock tolerance.
-- Validate callback state and nonce against a short-lived login transaction. Bind provider, login/link intent, initiating user, and allowed return destination. Use Proof Key for Code Exchange (PKCE) according to supported provider behavior and version 6 client-library guidance.
+- Validate callback state against a short-lived login transaction. Bind provider, login/link intent, initiating user, exact redirect URI, and allowed return destination. LinkedIn does not advertise or return the OpenID Connect nonce claim, so this provider flow does not request or validate one. LinkedIn login uses the member-authorized 3-legged OAuth authorization-code flow. During the code-to-token exchange, the frontend server sends the client ID and client secret in the request body as required by LinkedIn; the grant type remains authorization_code. LinkedIn's separately enabled native-client Proof Key for Code Exchange (PKCE) flow is outside this implementation.
 - This identity token authenticates within this application's configured login-client/backend trust boundary. It contains no LinkedIn-issued resource permissions for our backend; guards and access policies supply those decisions.
 - No UserInfo call is needed merely to obtain the validated subject. No email/profile persistence is necessary for identity mapping.
 - Cached token/key lookup never extends token validity. Check expiry for requests and authorized socket operations, subscriptions and replay. End protected room access on expiry and require valid authentication before resubscribing.
-- A fixed identity-token lifetime has not been verified. Measure `exp - iat` during a real login without logging the token. Do not assume the advertised access-token lifetime applies or that refresh tokens are available. Reauthentication is the initial recovery path. If lifetime is unsuitable, revisit the decision explicitly; do not silently accept expired tokens or switch token types.
+- Live verification measured `exp - iat` as 3,600 seconds for the LinkedIn identity token. The returned access token had an approximately 60-day lifetime, and the observed response contained no refresh token. These token lifetimes are independent: the identity token remains the backend credential and reauthentication is the recovery path when it expires. Never accept an expired identity token or substitute the LinkedIn access token as backend authentication.
 
 ## 4. Endpoint and event matrix
 
@@ -133,16 +133,26 @@ Preserve the [snapshot and incremental Socket.IO contract](../data-transfer/inte
 
 ## 5. Implementation stages
 
-### A. Policy types, provider dispatch, and compatibility tests
+### A. Policy types, provider dispatch, and guard migration
 
 Files: `core/types.py`, `core/security.py`, request `BaseView`, socket `BaseNamespace`.
 
 - Implement provider alternatives, callable `Guards`, and shared evaluation with a minimal verified-provider/claims context.
-- Keep existing declarations working through a small migration adapter or migrate all call sites together. Old constructors or missing event declarations must not silently become public.
+- Migrate all application guard declarations together. Do not retain old keyword constructors or implicit `guards=None` policies. Empty policies and missing event declarations fail closed; anonymous admission requires `AllowAnonymous()` explicitly.
 - Separate policy configuration from validation and user lookup; keep current endpoint layering.
 - Add mocked tests before enabling LinkedIn: provider selection, wrong issuer/audience/signature, expiry, exact scope membership, roles/groups, anonymous compatibility and socket cache lookup.
 
 Completion: existing Microsoft/anonymous tests pass and both transports evaluate the new representation. LinkedIn database signup is not yet required.
+
+Implementation notes:
+
+- The `authentication/` package contains identity-provider token validation helpers in `azure.py` and `linkedin.py`, with shared issuer dispatch and public-key caching in `base.py`. `security.py` owns provider requirement checks, guard evaluation, and internal user resolution. Guard evaluation returns `GuardOutcome.AUTHENTICATED` or `GuardOutcome.ANONYMOUS` on admission and raises on rejection; it never uses `False` to mean successful anonymous admission.
+- Endpoint dependencies inline single-alternative policies, for example `Depends(Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"])))`. Multiple-alternative policies may use named declarations. Both return `GuardTypes` configuration. Router-wide dependencies use the same policy's `check_http` method to enforce admission without database user resolution.
+- Socket event declarations use `Guards(...)()` for the same configuration. Read, subscribe, and replay reuse the connect policy; link/unlink retain the documented submit aliases.
+- Missing/invalid credentials require an explicit anonymous alternative. Verified identities failing provider requirements never fall back to anonymous.
+- Provider dispatch and LinkedIn signature/claim validation have synthetic signed-token tests. Runtime extraction still uses Microsoft until Stages B–C connect provider signup and frontend acquisition; no live endpoint enables LinkedIn yet.
+- Validation in the test Docker Compose stack: the combined security, REST, and Socket.IO run recorded `894 passed, 4 failed, 2 deselected`; the four failures were corrected and the targeted rerun recorded `4 passed`. Two live Microsoft key-fetch tests were excluded. Ruff and production-code Pyright checks passed. Missing/invalid bearer credentials now consistently use the `Invalid token.` error detail with status 401 on protected routes.
+
 
 ### B. Minimal user identity and signup
 
@@ -152,17 +162,27 @@ Files: `models/identity.py`, `crud/identity.py`, frontend identity types, [devel
 - Ensure LinkedIn-only users do not acquire an Azure tenant solely through `UserCreate`'s current default. Existing Microsoft users remain unchanged.
 - Implement `linkedin_user_self_sign_up`; reuse internal user/account/profile/identifier creation where appropriate. Never invoke Azure group synchronization for LinkedIn.
 - Resolve Microsoft identities against the validated configured tenant and object identifier; do not reinterpret its object identifier as an OpenID subject.
-- Exclude provider-identifier assignment from ordinary profile/create/update inputs; permit only verified signup/linking paths.
+- Allow administrators to assign provider identifiers when creating users through guarded REST or Socket.IO interfaces. Exclude provider-identifier reassignment from ordinary user/profile updates; verified signup and linking remain the other permitted identity paths.
 - Handle concurrent signup and unique conflicts without duplicates or orphan settings records. Preserve deliberate disabled-user semantics.
 - Follow each migration tree's actual current head and existing environment workflow, rather than assuming one revision can attach to both histories.
 
 Completion: both providers resolve internal users, signup creates expected settings/self-ownership, and Microsoft data migrates unchanged.
+
+Implementation notes:
+
+- `User.linkedin_user_id` has a unique index with PostgreSQL `C` collation. No provider profile data is stored. Admin create schemas accept provider identifiers. User/profile update schemas exclude provider identifiers from database updates; `UserUpdate.id` remains a REST/Socket.IO resource selector excluded from database updates.
+- `UserCRUD._provider_sign_up()` serializes signup for each provider identifier with a transaction-scoped PostgreSQL advisory lock. Helpers run in a savepoint-bound session, so their internal commits cannot leave partial users, settings, policies, or logs if signup fails. Existing inner access-control helpers are unchanged.
+- Microsoft signup still synchronizes Azure groups; LinkedIn signup never does. `check_token_against_guards()` resolves a verified LinkedIn subject with empty Azure roles/groups. Runtime transport extraction remains Microsoft-only until Stage C.
+- Inactive initialized users stay disabled. An inactive Microsoft invitation with neither account nor profile settings is initialized on its first verified login; a legacy invitation with no tenant adopts the verified tenant. A conflicting stored tenant is rejected.
+- Local development revision `b19e08c4f126` follows this workspace's `e2c3b40e9e73`; development revisions remain gitignored. The pipeline generates the stage/production revision from model metadata; no manual stage/production revision is needed for this column/index addition. Follow the [PostgreSQL migration workflow](../../postgres/README.md#schema-migration-workflow). Fresh checkouts generate their own development revisions from model metadata.
+- Regression coverage includes provider isolation, concurrent signup, rollback after helper commits, disabled users, invitation activation, HTTP/Socket.IO input boundaries, and database identifier constraints. Migration validation follows the existing PostgreSQL workflow without a dedicated test for each generated revision. The frontend skips Microsoft Graph lookup for users without an Azure identifier.
 
 ### C. Frontend login, credential selection, and expiry
 
 Files: provider modules, login/callback/logout routes, `backendApi.ts`, session types/hooks/layouts, configuration loaders.
 
 - Implement prepared `linkedin.ts` with the installed version 6 interface and existing route scaffolding. Register the actual callback addresses. First-party parameters use kebab-case; external protocol parameters remain unchanged.
+- During Stage C, `linkedin:<sub>` temporarily followed the existing plaintext `msal:<homeAccountId>` cache posture. Stage F replaced both complete provider-cache values with encrypted envelopes.
 - Keep credentials server-side and separate from client session/layout data. Store active provider and private cache references in the server session.
 - Select the active provider's credential for backend requests and socket cache lookup. Linking must not silently switch active identity or union cached claims.
 - Keep Graph acquisition separate: LinkedIn-only login must not run unconditional Microsoft Graph `/me`, Microsoft silent acquisition, or Microsoft logout redirects.
@@ -173,40 +193,77 @@ Files: provider modules, login/callback/logout routes, `backendApi.ts`, session 
 - Reuse `locals.sessionData`, session status and `/user/me`. Adapt Microsoft-specific profile display and route protection without fabricating Microsoft profiles.
 - Bind and consume login/link state securely, rotate/complete sessions, allowlist return destinations, and preserve embed/session restoration.
 - Add visible reauthentication and socket reconnect/resubscribe behavior on expiry. Logout removes application session/references; do not blindly delete account-wide caches used by other sessions.
-- Extend existing configuration/example environment and synthetic test fixtures. Unconfigured LinkedIn must not break imports, worker startup, or frontend builds.
+- Use a sliding application-session lifetime. After a valid normal page request or successfully authenticated Socket.IO event, renew the Redis expiry to `session_timeout` only when the remaining lifetime is less than half of `session_timeout`. A normal page request renews the existing `session_id` cookie at the same time. Socket.IO can renew Redis but cannot renew the HTTP-only cookie, so long-lived socket-only activity also needs a throttled same-origin session touch before the cookie expires.
+- Create a new ten-minute pending session only for an initial unauthenticated login. Reauthentication and provider linking from an authenticated session retain that established `session_id`; keep their short-lived OAuth transaction separate so it neither changes the established session status nor shortens its lifetime. Remove a superseded session after intentional rotation or consolidation instead of leaving duplicate authenticated sessions until expiry.
+- Implement and validate those renewal, reauthentication, established-socket expiry, compact status, and reconnect details through the [authentication session lifecycle plan](authentication-session-lifecycle-plan.md). This document retains their Stage C acceptance dependency without duplicating the transport design.
+- Extend existing configuration/example environment and synthetic test fixtures. LinkedIn configuration is part of every environment, while configuration field types and initialization continue following the existing Microsoft patterns.
 
-Completion: a real LinkedIn login reaches an authorized request and socket connection; actual token lifetime and recovery are verified; Microsoft login/logout still work. Live verification requires developer-app configuration; mocked tests do not.
+
+Implementation notes:
+
+- Provider routes are `/login/microsoft`, `/logout/microsoft`, `/login/linkedin`, `/logout/linkedin`, and `/oauth/callback/linkedin`; the existing Microsoft callback remains `/oauth/callback`. The generic `/login` route redirects server-side to `/login/microsoft`, whose page performs the OAuth navigation client-side and targets the top-level window when embedded; the LinkedIn provider route uses the same client-side top-window behavior. Navbar and sidebar controls retain Microsoft as their provider. `/oauth/providers` offers both providers only as a hidden debugging page; normal login and reauthentication flows do not redirect users there.
+- Login entry parameters are target-url and parent-url. LinkedIn callback state binds the server session, exact redirect URI, state, and return values. The one-time authorization transaction is removed after a successful code exchange, and the application session becomes logged in only after /user/me succeeds.
+- Backend requests select the active provider from the server-side session. Microsoft sends its backend access token; LinkedIn sends its identity token. LinkedIn UserInfo uses only the LinkedIn access token and is fetched into memory for the current response without profile persistence.
+- The protected `/identities/linkedin` page provides a deliberately simple diagnostic view comparable to the Microsoft Graph identity page. It reads the inherited root-layout session data directly and displays the signed-in member's transient `/v2/userinfo` name, picture and response. It performs no additional request or persistence.
+- The navbar avatar reuses the root layout profile data: Microsoft sessions use the proxied Graph photo, LinkedIn sessions fall back to the transient UserInfo `picture`, and sessions without either render the generic user icon. The LinkedIn picture URL is not persisted.
+- The Key Vault secrets are linkedin-client-id and linkedin-client-secret. OpenTofu creates both from the corresponding required GitHub/environment inputs LINKEDIN_CLIENT_ID and LINKEDIN_CLIENT_SECRET. Each LinkedIn application registration must allow the exact frontend callback URL <frontend-origin>/oauth/callback/linkedin.
+- The observed LinkedIn response did not include a refresh token. If reauthentication is required while session data remains available, the frontend derives the provider from the active provider and linked identities, with Microsoft taking precedence. Socket.IO and server-rendered redirects preserve target-url. No additional provider cookie or browser storage is used; after a full reload with an expired application session, Microsoft is the fallback. Live testing must still verify Socket.IO reconnect/resubscribe behavior.
+
+Completion: a real LinkedIn login reaches an authorized request and socket connection; identity-token lifetime, sliding application-session renewal, one-session reauthentication, expiry recovery, and transient UserInfo display are verified; Microsoft login/logout still work. Live verification requires developer-app configuration; mocked tests do not.
 
 ### D. Resource/event policies and answer ownership
 
 Files: matrix endpoints/namespaces, `core/fastapi.py`.
 
 - Verify existing ownership and filtering behavior against the matrix under the [inner-layer change boundary](../../../AGENTS.md#security-layers-and-change-boundaries).
-- Apply named guard configurations and remove Azure-specific optional extraction only from the migrated endpoints; leave router-level Microsoft guards in place for Microsoft-only routers.
+- Extend the named guard configurations with LinkedIn according to the matrix; retain router-level Microsoft guards on Microsoft-only routers. Stage A already replaces optional-token admission with explicit `AllowAnonymous()` policies.
 - Ensure authenticated creation assigns `Action.own` to the internal user, including creation under a publicly writable question. The public-creation branch must not discard valid caller identity.
 - Preserve anonymous creation without a shared owner grant; update/delete remain blocked at the outer layer.
 - Permit ownership-based sharing/hierarchy operations through existing access checks; retain checks on parent and child resources.
 - Attribute activity to internal users consistently and preserve application-group inheritance.
 
+Implementation notes:
+
+- Request guards admit LinkedIn for the documented quiz answer operations, question reads, presentation reads, and access-policy/right/hierarchy routes. Question and presentation mutations, group administration, demo resources/files, and protected resources retain their Microsoft-only outer policies.
+- Socket.IO connect/read/subscription/replay policies admit LinkedIn on question, presentation, message, and numerical namespaces. Message and numerical creation, update, delete, share, and the existing link/unlink guard aliases admit LinkedIn; question and presentation mutations remain Microsoft-only.
+- Existing CRUD access-policy enforcement remains unchanged. Focused request tests verify that a LinkedIn caller owns an answer created under a publicly connectable question and can read/update/delete it through the public interfaces. Focused socket tests exercise LinkedIn creation, update, deletion, and sharing through the provider-specific Redis session/cache path.
+- Test-environment validation recorded `4 passed` for the focused request matrix, `26 passed` for focused Socket.IO coverage, and `1065 passed, 3 failed` for the full backend suite. The three failures were stale session-lifecycle exception assertions; after aligning them with the typed authentication/authorization errors, their targeted rerun recorded `3 passed`. Black and Ruff pass.
+
 Completion: owner/non-owner/anonymous request and socket tests pass for creation, reads, modification, deletion, sharing, hierarchy operations, snapshots and replay. This is the first complete participation milestone; linking is not required to release it.
 
 ### E. Linking and merge (separate plan)
 
-First-time attachment and existing-user merge, including verified proof of control, settings-conflict resolution, atomic reassignment of identity references, and cache/socket reconciliation, are specified in the separate [account merge plan](./linkedin-azure-account-merge-plan.md). That plan is written provider-generically so further identity providers reuse the same merge operation. It depends on Stage B's identity model and Stage C's proof-of-identity interface, and is the only work that touches the inner authorization layer. Stages A–D and F do not require it.
+First-time attachment and existing-user merge, including verified proof of control, settings-conflict resolution, atomic reassignment of identity references, and retryable cache/socket reconciliation, are implemented as specified in the separate [account merge plan](./linkedin-azure-account-merge-plan.md). The provider-generic operation retains the initiating internal user and currently serves Microsoft and LinkedIn. It is the only implemented work that reassigns inner authorization references; general authorization semantics remain unchanged.
 
-### F. Compatible encrypted cache persistence
+### F. Encrypted cache persistence
 
-Contract: [Redis encryption, partitioning, startup keys, rotation, and performance requirements](../../redis/README.md). That document is authoritative for cache design; this stage tracks the implementation.
+Contracts: [application encryption, startup keys, and rotation](README.md#application-encryption), plus [Redis partitioning and performance requirements](../../redis/README.md). Those documents are authoritative; this stage tracks the implementation.
 
 Files: `microsoft.ts`, frontend `cache.ts`, backend `RedisPersistence` in `security.py`, [frontend config](../../../frontend_svelte/src/lib/server/config.ts), [backend config](../../../backend/src/core/config.py), [security.tf](../../../infrastructure/security.tf), and infrastructure rotation configuration in `variables.tf`.
 
 - Implement the shared encryption envelope and provider-cache adapters in both runtimes.
 - Adapt session path/whole-session readers and writers, including backend direct Redis consumers, while preserving the account fields required by existing MSAL token retrieval.
 - Implement startup key loading, per-environment generation, and explicit rotation configuration using the existing configuration/deployment surfaces. Put the backend-first deployment reminder beside the secret-generation resource.
-- Add compatible migration readers before encrypted writers, preserving expiry and concurrent-write behavior.
+- Reject unencrypted protected values rather than carrying a plaintext migration reader. The direct encrypted-only rollout is intentional because no users were logged in in any environment when Stage F was implemented.
 - Run cross-runtime, tamper, account-lookup, and JSON path tests. Perform and report the [required benchmarks](../../redis/README.md#performance-measurement).
 
-Completion: the Redis contract is implemented and validated, including encrypted credentials and protected user data, the explicit plaintext-identifier exceptions, and absence of prohibited third-party resource data. Key generation and application changes remain planned until implemented.
+Completion: the Redis contract is implemented and validated, including encrypted credentials and protected user data, explicit plaintext-identifier exceptions, encrypted Microsoft account lookup from the backend, and rejection of unencrypted or tampered protected values. The reusable application-encryption modules share one mandatory environment-specific keyring across runtimes; encryption has no runtime disable switch. OpenTofu generates the current key, and startup loads every enabled Key Vault version newest-to-oldest so durable ciphertext can continue using ancient keys. Local/test configuration uses the same indexed loader, with three synthetic test keys. Performance measurements and threshold observations are recorded in the Redis contract.
+
+Test-environment validation recorded `20 passed` for backend encryption/startup-key tests and `82 passed` for the focused encrypted-cache/provider/account-merge paths. The full backend suite now passes, as do backend Black, Ruff, and Pyright. Frontend validation recorded `25 passed` test files with `122 passed, 3 todo`; lint and Svelte type checks pass. OpenTofu formatting passes; local `tofu validate` remains unavailable without the repository's Azure credentials/provider initialization.
+
+### G. Provider unlinking (after encryption)
+
+Implement removal of a linked authentication provider, not reversal of an account merge. A completed merge deletes the source user/settings records and reassigns their references without retaining provenance, so the application cannot safely reconstruct two former accounts. Account splitting remains unsupported.
+
+- Allow unlinking only when the internal user has at least two linked providers; never remove the final authentication method.
+- Allow a session to unlink only a provider other than its active provider. To remove the active provider, the user must first authenticate through another linked provider so the retained identity is freshly verified.
+- Clear the provider identifier from `User`; clearing Microsoft also clears its tenant identifier. Delete the corresponding cached provider credentials and authentication metadata, and revoke provider-side credentials where a supported revocation interface exists.
+- Invalidate and disconnect sessions authenticated through the removed provider. Preserve sessions authenticated through retained providers after revalidation.
+- Preserve the internal `User`, settings, first-party content, access policies, memberships, hierarchy relationships, and logs. Unlinking removes an authentication method; it does not attempt to identify or undo data and permissions that may once have arrived through a merged account.
+- Keep the operation provider-generic and expose it through a guarded self-service endpoint and account interface. Require explicit confirmation and recent authentication; do not accept an internal user identifier as proof.
+- Test last-provider rejection, active-provider rejection, identifier/cache cleanup, affected-session/socket invalidation, retained-provider access, concurrent unlink attempts, and rollback on cleanup failure. Verify Microsoft tenant cleanup and LinkedIn/Microsoft credential isolation independently.
+
+Completion: either linked provider can be removed safely while another verified provider remains, removed credentials and sessions cannot authenticate, retained-provider access continues, and no account-splitting behavior is implied.
 
 ## 6. Validation and rollout
 
@@ -214,40 +271,42 @@ Use only the test environment for formatting, linting, type checks, tests and be
 
 Extend these suites:
 
-- Encryption/configuration tests in both runtimes: first generation, unsorted/paginated version discovery, ambiguous predecessor, startup rotation race, missing permissions, unavailable previous versions, malformed keys, current/previous reads, unknown key version, and modified nonce/ciphertext/tag/associated data. Verify tag failures expose no plaintext, and loading performs no per-cache-operation Key Vault calls. Cover encrypted `$.microsoftAccount` compatibility with existing frontend/backend token acquisition, encrypted user data, whole-session and selective/deeper-path access, and absence of plaintext duplicates.
+- Encryption/configuration tests in both runtimes: first generation, unsorted/paginated discovery of every version, ambiguous ordering, startup rotation race, missing permissions, unavailable or disabled historical versions, malformed keys, current/ancient reads, unknown key version, rejected unencrypted protected values, and modified nonce/ciphertext/tag/associated data. Verify tag failures expose no plaintext, and loading performs no per-operation Key Vault calls. Cover encrypted `$.microsoftAccount` compatibility with existing frontend/backend token acquisition, encrypted user data, whole-session and selective/deeper-path access, and absence of plaintext duplicates.
 - [Security](../../../backend/src/core/tests/test_security.py) and [types](../../../backend/src/core/tests/test_types.py): dispatch, claims, policy alternatives, optional compatibility, cached tokens, administrator/tenant isolation.
 - [Base CRUD](../../../backend/src/crud/tests/test_base_crud.py) and [access CRUD](../../../backend/src/crud/tests/test_access_crud.py): ownership, inheritance, strongest grants and non-owner denial. Add adjacent identity CRUD tests for merge transactions as needed.
 - [Identity routes](../../../backend/src/routers/api/v1/tests/test_identities.py), [quiz routes](../../../backend/src/routers/api/v1/tests/test_quiz.py), [presentation routes](../../../backend/src/routers/api/v1/tests/test_presentation.py), [access routes](../../../backend/src/routers/api/v1/tests/test_access.py): full matrix, enclosing dependencies and forbidden provider-field updates.
 - [Socket suites](../../../backend/src/routers/socketio/v1/tests/): providers, expiry, reconnect, mutation authorization, link/unlink aliases, subscription/replay isolation and merge invalidation.
-- [Backend wrapper](../../../frontend_svelte/src/lib/server/apis/backendApi.test.ts), [socket client](../../../frontend_svelte/src/lib/socketio.svelte.test.ts), and adjacent provider/cache/component tests: selection, state/nonce, login versus link, conflict choices, recovery, UserInfo subject matching, memory-only profile display, missing pictures/profile-service failures, independent token expirations, and cross-runtime encryption using synthetic fixtures. Add regression coverage proving that UserInfo and Graph responses/derived profile fields never reach Redis, database writes, persisted sessions, browser storage, or logs, while authentication tokens and necessary authentication metadata remain cacheable.
+- [Backend wrapper](../../../frontend_svelte/src/lib/server/apis/backendApi.test.ts), [socket client](../../../frontend_svelte/src/lib/socketio.svelte.test.ts), and adjacent provider/cache/component tests: selection, callback state and redirect binding, login versus link, conflict choices, recovery, UserInfo subject matching, memory-only profile display, missing pictures/profile-service failures, independent token expirations, and cross-runtime encryption using synthetic fixtures. Add regression coverage proving that UserInfo and Graph responses/derived profile fields never reach Redis, database writes, persisted sessions, browser storage, or logs, while authentication tokens and necessary authentication metadata remain cacheable.
 
 Rollout:
 
-1. Add identity migration and compatible guard/cache readers; keep LinkedIn disabled until configuration and tests are ready.
-2. Enable LinkedIn login and selected endpoint/event alternatives after A–D pass; verify actual token lifetime and recovery.
-3. Enable linking/confirmed merge after atomicity and stale-authorization tests pass; see the [account merge plan](./linkedin-azure-account-merge-plan.md).
-4. Enable encrypted writes only after every reader is compatible; F can ship earlier if that condition is satisfied.
-5. Verify staging before production using existing branches/environments. Disabling LinkedIn admission is reversible. A completed merge is deliberately destructive and has no application merge history from which to undo it. A migration downgrade must not silently discard populated provider identifiers.
+1. Add identity migration and compatible guard/cache readers; require LinkedIn configuration in every environment before deploying the provider integration.
+2. Enable LinkedIn login and selected endpoint/event alternatives after A–D pass; verify expiry recovery and Socket.IO reconnect/resubscribe behavior.
+3. Linking/confirmed merge has passed atomicity and stale-authorization tests; complete the two live staging merge directions recorded in the [account merge plan](./linkedin-azure-account-merge-plan.md) before production rollout.
+4. Deploy the Stage F key and encrypted-only applications together. There is no plaintext migration phase because there were no logged-in users in any environment at implementation time; stale plaintext cache entries fail closed and require fresh login.
+5. Implement provider unlinking only after Stage F so credential deletion and session cleanup operate on the final encrypted-cache representation.
+6. Verify staging before production using existing branches/environments. Disabling LinkedIn admission is reversible. A completed merge is deliberately destructive and has no application merge history from which to undo it. A migration downgrade must not silently discard populated provider identifiers.
 
 ## 7. Sequencing, handoffs, and tracking
 
-Main chain: **A → B → C → D**, with tests in each stage. **F** can run alongside B–D after agreeing on cache format, partitioning, configuration and transition. Linking and merge move to the separate [account merge plan](./linkedin-azure-account-merge-plan.md).
+Main chain: **A → B → C → D**, with tests in each stage. **F** can run alongside B–D after agreeing on cache format, partitioning, configuration and transition. Linking and merge move to the separate [account merge plan](./linkedin-azure-account-merge-plan.md). Provider unlinking is **G** and follows F so it targets only the encrypted-cache representation.
 
 Keep authentication, guards and socket integration together: they share `security.py`, `types.py`, and the namespace base. Encryption is a suitable separate task once its contract is fixed. Merge work (separate plan) can be handed off after B and C's proof-of-identity interface are stable. Separate work uses isolated branches/worktrees and coordinates shared-file edits; do not run independent chats concurrently in this checkout.
 
-No additional design decision is required to begin. The identifier-storage decision is recorded in the [Redis contract](../../redis/README.md#encryption-scope). Live verification needs provider application configuration, encryption needs startup key configuration, and actual identity-token lifetime must be measured before accepting the login experience. Do not paste real tokens or secrets into documentation or chat.
+No additional design decision is required to continue. The identifier-storage decision is recorded in the [Redis storage contract](../../redis/README.md#encryption-scope), and the encrypted-only rollout is recorded in the [application encryption contract](README.md#encrypted-only-behavior). Sliding-session, socket-expiry, independently expiring intent-bound OAuth transactions, and startup encryption-key configuration are implemented with focused automated coverage; equivalent Microsoft live expiry/reconnect acceptance still remains. Do not paste real tokens or secrets into documentation or chat.
 
-- [ ] A: policy and validation contract
-- [ ] B: minimal identity/signup and migrations
-- [ ] C: login, cache lookup, request integration and expiry
-- [ ] D: endpoint/event matrix and ownership
-- [ ] E: linking, merge preview, atomic reassignment and cleanup — see [account merge plan](./linkedin-azure-account-merge-plan.md)
-- [ ] F: encrypted cache compatibility and rollout
+- [x] A: policy and validation contract
+- [x] B: minimal identity/signup and migrations
+- [ ] C: login, cache lookup, request integration and expiry (code, focused automated coverage, and live LinkedIn expiry/reconnect verified; equivalent Microsoft live acceptance pending)
+- [x] D: endpoint/event matrix and ownership
+- [x] E: linking, merge preview, atomic reassignment and cleanup — see [account merge plan](./linkedin-azure-account-merge-plan.md)
+- [x] F: encrypted authentication-cache persistence and rotation support
+- [ ] G: unlink one provider while preserving a verified retained provider; account splitting remains unsupported
 - [ ] Test-environment validation and staging verification
 
 ## References
 
-- [LinkedIn OpenID Connect](https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin-v2): identity claims, issuer, pairwise subjects and public verification keys; no fixed identity-token lifetime is assumed.
+- [LinkedIn OpenID Connect](https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin-v2): identity claims, issuer, pairwise subjects and public verification keys. The provider documentation does not promise a fixed identity-token lifetime; the current live result is recorded above.
 - [OpenID Connect identity-token validation](https://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation): issuer, audience, signature, time and nonce rules.
 - [openid-client version 6.8.8](https://github.com/panva/openid-client/tree/v6.8.8): use the installed major version's interface.
 - [MSAL Node cache guidance](https://learn.microsoft.com/en-us/entra/msal/javascript/node/caching): distributed persistence and encryption responsibilities.

@@ -1,4 +1,12 @@
+import type { User as MicrosoftProfile } from '@microsoft/microsoft-graph-types';
+
+import { IdentityProvider, preferredIdentityProvider } from '$lib/identityProvider';
+import { linkedInAPI } from '$lib/server/apis/linkedin';
+import { microsoftGraph } from '$lib/server/apis/msgraph';
 import AppConfig from '$lib/server/config';
+import { redirectToReauthentication } from '$lib/server/oauth/base';
+import { LinkedInReauthenticationRequiredError } from '$lib/server/oauth/linkedin';
+import type { LinkedInProfile } from '$lib/types';
 import type { BackendAPIConfiguration } from '$lib/types.d.ts';
 
 import type { LayoutServerLoad } from './$types';
@@ -27,12 +35,36 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 	// console.log('=== layout.server.ts - load - locals.sessionData ===');
 	// console.log(locals.sessionData?.loggedIn);
 	if (locals.sessionData && locals.sessionData.loggedIn) {
+		let microsoftProfile: MicrosoftProfile | undefined;
+		let linkedinProfile: LinkedInProfile | undefined;
+		try {
+			if (locals.sessionData.identityProvider === IdentityProvider.MICROSOFT) {
+				const response = await microsoftGraph.get(locals.sessionData.sessionId, '/me');
+				if (response.ok) microsoftProfile = (await response.json()) as MicrosoftProfile;
+			} else if (locals.sessionData.identityProvider === IdentityProvider.LINKEDIN) {
+				linkedinProfile = await linkedInAPI.getUserInfo(locals.sessionData.sessionId);
+			}
+		} catch (error) {
+			if (error instanceof LinkedInReauthenticationRequiredError) {
+				redirectToReauthentication(
+					preferredIdentityProvider(
+						locals.sessionData.currentUser ?? {},
+						locals.sessionData.identityProvider
+					)
+				);
+			}
+			// Resource-profile failure does not invalidate an authenticated application session.
+			console.error('layout - server - provider profile retrieval failed');
+			console.error(error);
+		}
 		const globalClientData = {
 			backendAPIConfiguration: backendAPIConfiguration,
 			session: {
 				loggedIn: locals.sessionData.loggedIn,
 				status: locals.sessionData.status,
-				microsoftProfile: locals.sessionData.microsoftProfile,
+				identityProvider: locals.sessionData.identityProvider,
+				microsoftProfile,
+				linkedinProfile,
 				sessionId: locals.sessionData.sessionId,
 				currentUser: locals.sessionData.currentUser
 			}

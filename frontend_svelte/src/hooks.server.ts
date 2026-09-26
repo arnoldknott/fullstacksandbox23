@@ -4,7 +4,10 @@ import { type Handle, type HandleFetch, redirect } from '@sveltejs/kit';
 
 import { backendAPI } from '$lib/server/apis/backendApi';
 import { redisCache } from '$lib/server/cache';
+import AppConfig from '$lib/server/config';
 import type { Session } from '$lib/types'; // or types.d.ts?
+
+const appConfig = await AppConfig.getInstance();
 
 const getSession = async (sessionId: string): Promise<Session | void> => {
 	try {
@@ -38,19 +41,31 @@ export const handle: Handle = async ({ event, resolve }) => {
 	// console.log(sessionId);
 	const session = sessionId ? await getSession(sessionId) : undefined;
 	if (session) {
-		// console.log('=== hooks.server.ts - handle - session found - sessionId ===');
-		// console.log(sessionId);
-		event.locals.sessionData = session;
+		const renewal =
+			event.url.pathname === '/session/touch'
+				? 'unchanged'
+				: await redisCache.renewSessionIfNeeded(session.sessionId);
+		if (renewal !== 'missing') {
+			if (renewal === 'renewed') {
+				event.cookies.set('session_id', session.sessionId, {
+					path: '/',
+					...appConfig.session_cookie_options
+				});
+			}
+			// console.log('=== hooks.server.ts - handle - session found - sessionId ===');
+			// console.log(sessionId);
+			event.locals.sessionData = session;
+		}
 	}
 	// else if (sessionId) {
 	// 	// Store sessionId even if session not fully loaded yet
 	// 	event.locals.sessionData = { sessionId } as any;
 	// }
 
-	let redirectTarget = `/login?targetURL=${event.url.href}`;
+	let redirectTarget = `/login?target-url=${encodeURIComponent(event.url.href)}`;
 	try {
 		if (event.route.id?.includes('(protected)')) {
-			if (event.locals.sessionData.loggedIn !== true) {
+			if (event.locals.sessionData?.loggedIn !== true) {
 				console.error(
 					'🔥 🎣 hooks - server - access attempt to protected route with invalid session'
 				);
@@ -76,7 +91,9 @@ export const handle: Handle = async ({ event, resolve }) => {
 			'🔥 🎣 hooks - server - access to this protected route failed (potentially session expired):'
 		);
 		console.log(event.url.href);
-		redirect(307, redirectTarget);
+		// A 307 would preserve a rejected form action's POST method and repost it to
+		// /login, which has no form actions. A 303 always enters the login page via GET.
+		redirect(303, redirectTarget);
 	}
 	return await resolve(event);
 };

@@ -3,7 +3,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends
 
-from core.security import Guards, get_http_access_token_payload
+from core.security import Guards, MicrosoftGuard, get_http_access_token_payload
 from core.types import GuardTypes
 from crud.category import CategoryCRUD
 from models.category import Category, CategoryCreate, CategoryRead, CategoryUpdate
@@ -20,7 +20,9 @@ category_view = BaseView(CategoryCRUD)
 async def post_category(
     category: CategoryCreate,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+    guards: GuardTypes = Depends(
+        Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"]))
+    ),
 ) -> Category:
     """Creates a new category."""
     return await category_view.post(
@@ -35,7 +37,7 @@ async def post_category(
 @router.get("/", status_code=200)
 async def get_categories(
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(roles=["User"])),
+    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
 ) -> list[CategoryRead]:
     """Returns all category."""
     return await category_view.get(
@@ -49,7 +51,7 @@ async def get_categories(
 async def get_category_by_id(
     category_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(roles=["User"])),
+    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
 ) -> CategoryRead:
     """Returns a category."""
     return await category_view.get_by_id(category_id, token_payload, guards)
@@ -60,7 +62,9 @@ async def put_category(
     category_id: UUID,
     category: CategoryUpdate,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+    guards: GuardTypes = Depends(
+        Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"]))
+    ),
 ) -> Category:
     """Updates a category."""
     return await category_view.put(category_id, category, token_payload, guards)
@@ -70,7 +74,9 @@ async def put_category(
 async def delete_category(
     category_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+    guards: GuardTypes = Depends(
+        Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"]))
+    ),
 ) -> None:  # Category:
     """Deletes a category."""
     return await category_view.delete(category_id, token_payload, guards)

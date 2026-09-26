@@ -1,6 +1,6 @@
 import asyncio
 import uuid
-from typing import List, Optional
+from typing import Any, List, Optional, cast
 from unittest.mock import patch
 
 import pytest
@@ -8,9 +8,15 @@ import socketio
 import uvicorn
 from pydantic import BaseModel
 
-from core.cache import redis_session_client
-from core.security import CurrentAccessToken
-from core.types import CurrentUserData
+from core.authentication.base import VerifiedIdentity
+from core.cache import encryption, redis_session_client
+from core.security import (
+    Guards,
+    LinkedInGuard,
+    MicrosoftGuard,
+    check_token_against_guards,
+)
+from core.types import CurrentUserData, IdentityProvider
 from routers.socketio.v1.demo_namespace import DemoNamespace
 from routers.socketio.v1.demo_resource import DemoResourceNamespace
 from routers.socketio.v1.identities import (
@@ -28,7 +34,7 @@ from routers.socketio.v1.quiz_namespace import (
     NumericalNamespace,
     QuestionNamespace,
 )
-from tests.utils import sessions
+from tests.utils import linkedin_identity, linkedin_subject, sessions
 
 # Mocking the sessions for testing purposes.
 
@@ -100,15 +106,42 @@ def load_test_sessions_into_redis():
         # This enables that the production code from get_user_account_from_session_cache
         # to accesses the cache - afterwards the get_azure_token_from_cache and
         # get_azure_token_payload functions are mocked to just pass the raw data through.
-        redis_session_client.json().set(
-            f"session:{session['session_id']}",
-            ".",
-            {"microsoftAccount": session["token_payload"]},
-        )
+        token_payload = session["token_payload"]
+        if (
+            isinstance(token_payload, VerifiedIdentity)
+            and token_payload.provider == IdentityProvider.linkedin
+        ):
+            redis_session_client.json().set(
+                f"session:{session['session_id']}",
+                ".",
+                {
+                    "identityProvider": IdentityProvider.linkedin.value,
+                    "linkedinSubject": linkedin_subject,
+                },
+            )
+            redis_session_client.json().set(
+                f"linkedin:{linkedin_subject}",
+                ".",
+                encryption.encrypt(
+                    f"linkedin:{linkedin_subject}", "$", {"idToken": "test-token"}
+                ),
+            )
+        else:
+            redis_key = f"session:{session['session_id']}"
+            redis_session_client.json().set(
+                redis_key,
+                ".",
+                {
+                    "microsoftAccount": encryption.encrypt(
+                        redis_key, "$.microsoftAccount", cast(Any, token_payload)
+                    )
+                },
+            )
 
     yield
     for session in sessions:
         redis_session_client.json().delete(f"session:{session['session_id']}")
+    redis_session_client.json().delete(f"linkedin:{linkedin_subject}")
 
 
 @pytest.fixture(scope="package", autouse=True)
@@ -126,9 +159,17 @@ async def socketio_test_server(
         mocked_token = args[0]
         return mocked_token
 
-    with patch("core.security.get_azure_token_from_cache") as mocked_user_account:
+    with (
+        patch("core.security.get_azure_token_from_cache") as mocked_user_account,
+        patch(
+            "core.authentication.linkedin.get_linkedin_token_payload"
+        ) as mocked_linkedin_token,
+    ):
         mocked_user_account.side_effect = return_input
-        with patch("core.security.get_azure_token_payload") as mocked_decode_token:
+        mocked_linkedin_token.return_value = linkedin_identity.claims
+        with patch(
+            "core.authentication.azure.get_azure_token_payload"
+        ) as mocked_decode_token:
             mocked_decode_token.side_effect = return_input
 
             sio = socketio.AsyncServer(
@@ -310,9 +351,11 @@ class SocketIOTestConnection:
 
     async def current_user(self) -> CurrentUserData:
         """Returns the current user for the user of this session."""
-        current_user = None
-        token = CurrentAccessToken(self.token_payload())
-        current_user = await token.provides_current_user()
+        current_user = await check_token_against_guards(
+            self.token_payload(),
+            Guards(MicrosoftGuard(), LinkedInGuard())(),
+        )
+        assert current_user is not None
         return current_user
 
 

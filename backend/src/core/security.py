@@ -1,24 +1,41 @@
 import json
 import logging
+from collections.abc import Mapping
 from datetime import datetime, timedelta
 from typing import Annotated, Any, Dict, List, Optional, cast
-
-# from enum import Enum
 from uuid import UUID
 
+# from enum import Enum
 # import asyncio
-import httpx2
-import jwt
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2AuthorizationCodeBearer
-from jwt.algorithms import RSAAlgorithm
 from msal import ConfidentialClientApplication
 from msal_extensions.persistence import BasePersistence
 from msal_extensions.token_cache import PersistedTokenCache
 
-from core.cache import redis_session_client
+from core.authentication import azure, linkedin
+from core.authentication.base import (
+    ProviderValidator,
+    VerifiedIdentity,
+    verify_provider_token,
+)
+from core.cache import (
+    get_protected_cache_value,
+    get_session_value,
+    redis_session_client,
+    set_protected_cache_value,
+)
 from core.config import config
-from core.types import CurrentUserData, GuardTypes
+from core.types import AllowAnonymous  # noqa: F401 - public guard declaration interface
+from core.types import LinkedInGuard  # noqa: F401 - public guard declaration interface
+from core.types import MicrosoftGuard  # noqa: F401 - public guard declaration interface
+from core.types import (
+    CurrentUserData,
+    GuardOutcome,
+    GuardTypes,
+    IdentityProvider,
+    ProviderGuard,
+)
 from crud.identity import UserCRUD
 from models.identity import UserRead
 
@@ -47,111 +64,6 @@ logger = logging.getLogger(__name__)
 #         raise err
 
 
-# Helper function for get_token_payload:
-async def get_azure_jwks(no_cache: bool = False) -> Dict[str, Any]:
-    """Fetches the JWKs from identity provider"""
-    logger.info("🔑 Fetching JWKs")
-    try:
-        if no_cache is False:
-            # print("=== no_cache ===")
-            # print(no_cache)
-            jwks = redis_session_client.json().get("jwks:microsoft")
-            # print("=== jwks ===")
-            # print(jwks)
-            if jwks:
-                # print("=== 🔑 JWKS fetched from cache ===")
-                return cast(Dict[str, Any], jwks)
-            else:
-                return await get_azure_jwks(no_cache=True)
-        else:
-            logger.info("🔑 Getting JWKs from Azure")
-            oidc_url = config.AZURE_OPENID_CONFIG_URL
-            if not oidc_url:
-                raise HTTPException(
-                    status_code=500, detail="AZURE_OPENID_CONFIG_URL not configured"
-                )
-            oidc_config = httpx2.get(oidc_url).json()
-            print("=== 🔑 got JWKs from Azure ===")
-            if oidc_config is False:
-                raise HTTPException(
-                    status_code=404, detail="Failed to fetch Open ID config."
-                )
-            try:
-                jwks = httpx2.get(oidc_config["jwks_uri"]).json()
-            except Exception as err:
-                raise HTTPException(
-                    status_code=404, detail=f"Failed to fetch JWKS online ${err}"
-                )
-            try:
-                # TBD: for real multi-tenant applications, the cache-key should be tenant specific
-                redis_session_client.json().set("jwks:microsoft", ".", jwks)
-                logger.info("🔑 Setting JWKs in cache")
-                print("=== 🔑 JWKS set in cache ===")
-                return cast(Dict[str, Any], jwks)
-            except Exception as err:
-                raise HTTPException(
-                    status_code=404, detail=f"Failed to set JWKS in redis: ${err}"
-                )
-    except Exception as err:
-        logger.error("🔑 Failed to get JWKS.")
-        raise err
-
-
-async def decode_token(token: str, jwks: Dict[str, Any]) -> dict:
-    """Decodes the token"""
-    # Get the key that matches the kid:
-    kid = jwt.get_unverified_header(token)["kid"]
-    rsa_key = {}
-    for key in jwks.get("keys", []):
-        if key["kid"] == kid:
-            rsa_key = RSAAlgorithm.from_jwk(key)
-    logger.info("Decoding token")
-    # validate the token. `RSAAlgorithm.from_jwk` may return a private or public
-    # key type; the JWKS endpoint only publishes public keys, so we view it as
-    # `Any` to satisfy PyJWT's typed `decode()` overloads.
-    payload = jwt.decode(
-        token,
-        cast(Any, rsa_key),
-        algorithms=["RS256"],
-        audience=config.API_SCOPE,
-        issuer=config.AZURE_ISSUER_URL,
-        options=cast(
-            Any,
-            {
-                "validate_iss": True,
-                "validate_aud": True,
-                "validate_exp": True,
-                "validate_nbf": True,
-                "validate_iat": True,
-            },
-        ),
-    )
-    # print("=== decode_token - payload ===")
-    # print(payload)
-    logger.info("Token decoded successfully")
-    return payload
-
-
-# This function is available for all protocols - like websockets, socket.io and http(s).
-# It no longer follows FastAPI's dependency injection pattern
-# which requires the response - request pattern from http(s) routes.
-async def get_azure_token_payload(token: str) -> Optional[dict]:
-    """Validates the Azure access token sent in the request header and returns the payload if valid"""
-    # print("=== get_azure_token_payload - called  ===")
-    logger.info("🔑 Validating token")
-    try:
-        jwks = await get_azure_jwks()
-        payload = await decode_token(token, jwks)
-        return payload
-    except Exception:
-        logger.info("🔑 Failed to validate token, fetching new JWKS and trying again.")
-        jwks = await get_azure_jwks(no_cache=True)
-        payload = await decode_token(token, jwks)
-        # print("=== get_azure_token_payload - payload ===")
-        # print(payload)
-        return payload
-
-
 oauth2_config = {
     "authorizationUrl": f"https://login.microsoftonline.com/{config.AZURE_TENANT_ID}/oauth2/v2.0/authorize",
     "tokenUrl": f"https://login.microsoftonline.com/{config.AZURE_TENANT_ID}/oauth2/v2.0/token",
@@ -178,36 +90,51 @@ oauth2_scheme_optional = OAuth2AuthorizationCodeBearer(
 )
 
 
+async def _validate_azure_token(token: str) -> dict[str, Any]:
+    payload = await azure.get_azure_token_payload(token)
+    if payload is None:
+        raise HTTPException(status_code=401, detail="Invalid Microsoft token.")
+    return cast(dict[str, Any], payload)
+
+
+async def _validate_linkedin_token(token: str) -> dict[str, Any]:
+    return await linkedin.get_linkedin_token_payload(
+        token, client_id=cast(str, config.LINKEDIN_CLIENT_ID)
+    )
+
+
+def _provider_validators() -> dict[str, ProviderValidator]:
+    return {
+        cast(str, config.AZURE_ISSUER_URL): ProviderValidator(
+            IdentityProvider.microsoft, _validate_azure_token
+        ),
+        linkedin.LINKEDIN_ISSUER: ProviderValidator(
+            IdentityProvider.linkedin, _validate_linkedin_token
+        ),
+    }
+
+
 async def provide_http_token_payload(
-    token: Annotated[str, Depends(oauth2_scheme)],
-) -> Optional[dict]:
-    """General function to get the access token payload"""
-    try:
-        return await get_azure_token_payload(token)
-    except Exception as err:
-        logger.error(f"🔑 Token validation failed: ${err}")
-        return None
-
-
-async def provide_http_token_payload_optional(
     token: Annotated[Optional[str], Depends(oauth2_scheme_optional)],
-) -> Optional[dict]:
-    """General function to get the access token payload"""
-    try:
-        if token is None:
-            logger.debug("🔑 optional_auth: no token provided")
-            return None
-        return await get_azure_token_payload(token)
-    except Exception as err:
-        logger.warning(
-            f"🔑 optional_auth: invalid token provided; treating as unauthenticated: {err}"
-        )
+) -> Optional[VerifiedIdentity]:
+    """Extract and validate a credential from an allowlisted identity provider."""
+    if token is None:
         return None
+    try:
+        return await verify_provider_token(token, _provider_validators())
+    except Exception:
+        logger.info("🔑 Token validation failed.")
+        return None
+
+
+async def verify_access_token(token: str) -> VerifiedIdentity:
+    """Validate an explicit bearer token through the configured provider allowlist."""
+    return await verify_provider_token(token, _provider_validators())
 
 
 async def get_http_access_token_payload(
-    payload: dict = Depends(provide_http_token_payload),
-) -> dict:
+    payload: VerifiedIdentity | dict | None = Depends(provide_http_token_payload),
+) -> VerifiedIdentity | dict:
     """General function to get the access token payload"""
     # can later be used for customizing different identity service providers
     if payload is None:
@@ -230,15 +157,13 @@ class RedisPersistence(BasePersistence):
     def save(self, content):  # type: ignore[override]
         """Saves the token to the cache"""
         # raise Exception("Backend does not support saving tokens")
-        result = redis_session_client.json().set(
-            self.get_location(), ".", json.loads(content)
-        )
+        result = set_protected_cache_value(self.get_location(), json.loads(content))
         # print("===➡️ 🔑 token saved to cache in backend based on session_id ===")
         return json.dumps(result)
 
     def load(self):
         """Loads the token from the cache"""
-        result = redis_session_client.json().get(self.get_location())
+        result = get_protected_cache_value(self.get_location())
         # print("===⬅️ 🔑 token loaded from cache in backend based on session_id ===")
         return json.dumps(result)
 
@@ -278,12 +203,11 @@ async def get_user_account_from_session_cache(session_id: str) -> Dict[str, Any]
     """Gets the user account from the cache"""
     logger.info("🔑 Getting user account from cache")
     user_account = cast(
-        List[Dict[str, Any]],
-        redis_session_client.json().get(f"session:{session_id}", "$.microsoftAccount"),
+        Optional[Dict[str, Any]], get_session_value(session_id, "$.microsoftAccount")
     )
     if not user_account:
         raise ValueError("User account not found in session.")
-    return user_account[0]
+    return user_account
 
 
 # TBD: write tests for this
@@ -315,19 +239,38 @@ async def get_azure_token_from_cache(
 
 async def get_token_payload_from_cache(
     session_id: str, scopes: List[str] | None = None
-) -> dict:
-    """Gets the azure token from the cache"""
+) -> VerifiedIdentity:
+    """Load and validate the active provider credential for a server session."""
     logger.info("🔑 Getting token from cache")
-    user_account = await get_user_account_from_session_cache(session_id)
-
-    # Can be extended to further identity service providers:
+    provider = get_session_value(session_id, "$.identityProvider")
+    if provider == IdentityProvider.linkedin.value:
+        subject = get_session_value(session_id, "$.linkedinSubject")
+        if not isinstance(subject, str) or not subject:
+            raise HTTPException(status_code=401, detail="LinkedIn session not found.")
+        cached = get_protected_cache_value(f"linkedin:{subject}")
+        token = cached.get("idToken") if isinstance(cached, dict) else None
+        if not isinstance(token, str):
+            raise HTTPException(
+                status_code=401, detail="No cached LinkedIn identity token found."
+            )
+        claims = await linkedin.get_linkedin_token_payload(
+            token,
+            client_id=cast(str, config.LINKEDIN_CLIENT_ID),
+        )
+        return VerifiedIdentity(IdentityProvider.linkedin, claims)
+    if provider not in (None, IdentityProvider.microsoft.value):
+        raise HTTPException(status_code=401, detail="Unsupported identity provider.")
+    try:
+        user_account = await get_user_account_from_session_cache(session_id)
+    except ValueError as err:
+        raise HTTPException(status_code=401, detail=str(err)) from err
     token = await get_azure_token_from_cache(user_account, scopes)
     if not token:
         raise HTTPException(status_code=401, detail="No cached access token found.")
-    payload = await get_azure_token_payload(token)
+    payload = await azure.get_azure_token_payload(token)
     if payload is None:
         raise HTTPException(status_code=401, detail="Invalid token.")
-    return payload
+    return VerifiedIdentity(IdentityProvider.microsoft, payload)
 
     # # Create the PersistentTokenCache
     # cache = get_persistent_cache(user_account)
@@ -363,48 +306,81 @@ async def get_token_payload_from_cache(
 # region: GUARDS
 
 
+def microsoft_requirements_match(
+    claims: Mapping[str, Any], guard: MicrosoftGuard
+) -> bool:
+    """Scope/role/group membership is exact; preserve the Microsoft Admin role override."""
+    raw_scopes = claims.get("scp", "")
+    scopes = raw_scopes.split() if isinstance(raw_scopes, str) else []
+    roles = claims.get("roles", [])
+    groups = claims.get("groups", [])
+    roles = roles if isinstance(roles, list) else []
+    groups = groups if isinstance(groups, list) else []
+    return (
+        all(scope in scopes for scope in guard.scopes)
+        and all(role in roles or "Admin" in roles for role in guard.roles)
+        and all(str(group) in groups for group in guard.groups)
+    )
+
+
+def evaluate_guards(
+    identity: VerifiedIdentity | None, guards: GuardTypes
+) -> GuardOutcome:
+    """Return an explicit successful admission outcome; otherwise reject.
+
+    Failed requirements on a verified provider never fall back to anonymous.
+    Missing/invalid credentials may reach AllowAnonymous after extraction, retaining
+    existing optional-authentication behavior without carrying unverified claims.
+    """
+    for guard in guards.alternatives:
+        if isinstance(guard, AllowAnonymous):
+            if identity is None:
+                return GuardOutcome.ANONYMOUS
+            continue
+        if identity is None or guard.provider != identity.provider.value:
+            continue
+        if isinstance(guard, MicrosoftGuard) and not microsoft_requirements_match(
+            identity.claims, guard
+        ):
+            continue
+        return GuardOutcome.AUTHENTICATED
+    raise HTTPException(status_code=401, detail="Invalid token.")
+
+
 class Guards:
-    """Decorator to protect the routes with scopes, roles and groups."""
+    """Callable endpoint policy; positional alternatives are combined with OR."""
 
-    def __init__(
-        self, scopes: List[str] = [], roles: List[str] = [], groups: List[UUID] = []
-    ):
-        """Initializes the guards for the routes."""
-        self.scopes = scopes
-        self.roles = roles
-        self.groups = groups
+    def __init__(self, *alternatives: ProviderGuard):
+        self.policy = GuardTypes(alternatives=alternatives)
 
-    def __call__(self):
-        """Returns the guards for the routes."""
-        protectors = GuardTypes(
-            scopes=self.scopes, roles=self.roles, groups=self.groups
+    def __call__(self) -> GuardTypes:
+        """Return configuration, not a user or a validation result."""
+        return self.policy
+
+    async def check_http(
+        self,
+        payload: VerifiedIdentity | dict | None = Depends(provide_http_token_payload),
+    ) -> GuardOutcome:
+        """Enforce router-wide admission without resolving a database user."""
+        identity = (
+            payload
+            if isinstance(payload, VerifiedIdentity)
+            else (
+                VerifiedIdentity(IdentityProvider.microsoft, payload)
+                if payload
+                else None
+            )
         )
-        return protectors
+        return evaluate_guards(identity, self.policy)
 
 
 # endregion: GUARDS
+
 
 # region: CHECKS:
 #
 # region: Generic check usage:
 #
-# Use those classes directly as checks, e.g.:
-#
-# @router.post("/", status_code=201)
-# async def post_user(
-#     user: ProtectedResourceCreate,
-#     token_payload=Depends(get_http_access_token_payload),
-# ) -> ProtectedResource:
-#     """Creates a new user."""
-#     logger.info("POST user")
-#     token = CurrentAccessToken(token_payload)
-#     await token.has_scope("api.write")
-#     await token.has_role("User")
-#     async with ProtectedResourceCRUD() as crud:
-#         created_user = await crud.create(user)
-#     return created_user
-
-
 class CurrentAccessToken:
     """class for all checks related to the current access token"""
 
@@ -424,7 +400,11 @@ class CurrentAccessToken:
     async def has_scope(self, scope: str, require=True) -> bool:
         """Checks if the current token includes a specific scope"""
         payload = self.payload
-        if ("scp" in payload) and (scope in payload["scp"]):
+        if (
+            payload
+            and isinstance(payload.get("scp"), str)
+            and scope in payload["scp"].split()
+        ):
             return True
         else:
             if require:
@@ -479,7 +459,9 @@ class CurrentAccessToken:
             if "groups" in self.payload:
                 groups = self.payload["groups"]
             user_id = self.payload["oid"]  # this is the azure_user_id!
-            tenant_id = self.payload["tid"]
+            tenant_id = UUID(str(self.payload["tid"]))
+            if tenant_id != UUID(config.AZURE_TENANT_ID):
+                raise HTTPException(status_code=401, detail="Invalid Microsoft tenant.")
             # TBD move the crud operations to the base view class, which should have an instance of the checks class.
             # if the user information stored in this class is already valid - no need to make another database call
             # if the user information stored in this class is not valid: get or sign-up the user.
@@ -534,84 +516,6 @@ class CurrentAccessToken:
         return current_user
 
 
-# endregion: Generic check
-
-# region: Specific checks
-
-
-# Use those classes directly as checks, e.g.:
-# @app.get("/example_endpoint")
-# def example(
-#     token: bool = Depends(CurrentAccessTokenIsValid()),
-# ):
-#     """Returns the result of the check."""
-#     return token
-#
-#   options: require
-#            - if set to False, the check will not raise an exception if the condition is not met but return False
-#            - if set to True, the check will raise an exception if the condition is not met
-#            - default is True
-#
-#
-#   examples:
-#   - token_valid: bool = Depends(CurrentAccessTokenIsValid())
-
-
-class CurrentAccessTokenIsValid(CurrentAccessToken):
-    """Checks if the current token is valid"""
-
-    def __init__(self, require=True) -> None:
-        self.require = require
-
-    async def __call__(
-        self, payload: dict = Depends(get_http_access_token_payload)
-    ) -> bool:
-        super().__init__(payload)
-        return await self.is_valid(self.require)
-
-
-class CurrentAccessTokenHasScope(CurrentAccessToken):
-    """Checks if the current token includes a specific scope"""
-
-    def __init__(self, scope, require=True) -> None:
-        self.scope = scope
-        self.require = require
-
-    async def __call__(
-        self, payload: dict = Depends(get_http_access_token_payload)
-    ) -> bool:
-        super().__init__(payload)
-        return await self.has_scope(self.scope, self.require)
-
-
-class CurrentAccessTokenHasRole(CurrentAccessToken):
-    """Checks if the current token includes a specific scope"""
-
-    def __init__(self, role, require=True) -> None:
-        self.role = role
-        self.require = require
-
-    async def __call__(
-        self, payload: dict = Depends(get_http_access_token_payload)
-    ) -> bool:
-        super().__init__(payload)
-        return await self.has_role(self.role, self.require)
-
-
-class CurrentAccessTokenHasGroup(CurrentAccessToken):
-    """Checks if the current token includes a specific scope"""
-
-    def __init__(self, group, require=True) -> None:
-        self.group = group
-        self.require = require
-
-    async def __call__(
-        self, payload: dict = Depends(get_http_access_token_payload)
-    ) -> bool:
-        super().__init__(payload)
-        return await self.has_group(self.group, self.require)
-
-
 class CurrentAzureUserInDatabase(CurrentAccessToken):
     """Checks user in database, if not adds user (self-sign-up) and adds or updates the group membership of the user"""
 
@@ -619,29 +523,94 @@ class CurrentAzureUserInDatabase(CurrentAccessToken):
         pass
 
     async def __call__(
-        self, payload: dict = Depends(provide_http_token_payload)
+        self,
+        payload: VerifiedIdentity | dict | None = Depends(provide_http_token_payload),
     ) -> UserRead:
-        super().__init__(payload)
+        if isinstance(payload, VerifiedIdentity):
+            if payload.provider != IdentityProvider.microsoft:
+                raise HTTPException(
+                    status_code=401, detail="Microsoft identity required."
+                )
+            claims = payload.claims
+        elif isinstance(payload, dict):
+            claims = payload
+        else:
+            raise HTTPException(status_code=401, detail="Invalid token.")
+        super().__init__(claims)
         current_user, _ = await self.gets_or_signs_up_current_user()
         return current_user
 
 
+async def check_token_against_guards_with_status(
+    token_payload: Optional[dict] | VerifiedIdentity, guards: GuardTypes
+) -> tuple[Optional[CurrentUserData], Optional[int]]:
+    """Evaluate outer admission and resolve the user with signup status."""
+    if isinstance(token_payload, VerifiedIdentity):
+        identity = token_payload
+    elif token_payload:
+        identity = VerifiedIdentity(IdentityProvider.microsoft, token_payload)
+    else:
+        identity = None
+
+    admission = evaluate_guards(identity, guards)
+    if admission is GuardOutcome.ANONYMOUS:
+        return None, None
+    assert identity is not None
+    if identity.provider == IdentityProvider.linkedin:
+        subject = identity.claims.get("sub")
+        if not isinstance(subject, str) or not subject:
+            raise HTTPException(status_code=401, detail="Invalid LinkedIn subject.")
+        async with UserCRUD() as crud:
+            user, status_code = await crud.linkedin_user_self_sign_up(subject)
+        return (
+            CurrentUserData(
+                user_id=user.id, azure_token_roles=[], azure_token_groups=[]
+            ),
+            status_code,
+        )
+    if identity.provider == IdentityProvider.microsoft:
+        token = CurrentAccessToken(identity.claims)
+        user, status_code = await token.gets_or_signs_up_current_user()
+        roles = identity.claims.get("roles")
+        groups = identity.claims.get("groups")
+        return (
+            CurrentUserData(
+                user_id=user.id,
+                azure_token_roles=roles if isinstance(roles, list) else None,
+                azure_token_groups=groups if isinstance(groups, list) else None,
+            ),
+            status_code,
+        )
+    raise HTTPException(status_code=401, detail="Unsupported identity provider.")
+
+
 async def check_token_against_guards(
-    token_payload: Optional[dict], guards: Optional[GuardTypes]
-) -> CurrentUserData:
-    """checks if token fulfills the required guards and returns current user."""
-    token = CurrentAccessToken(token_payload)
-    if guards is not None:
-        if guards.scopes is not None:
-            for scope in guards.scopes:
-                await token.has_scope(scope)
-        if guards.roles is not None:
-            for role in guards.roles:
-                await token.has_role(role)
-        if guards.groups is not None:
-            for group in guards.groups:
-                await token.has_group(str(group))
-    return await token.provides_current_user()
+    token_payload: Optional[dict] | VerifiedIdentity, guards: GuardTypes
+) -> Optional[CurrentUserData]:
+    """Evaluate outer admission, then resolve the user for existing CRUD checks."""
+    if isinstance(token_payload, VerifiedIdentity):
+        identity = token_payload
+    elif token_payload:
+        identity = VerifiedIdentity(IdentityProvider.microsoft, token_payload)
+    else:
+        identity = None
+
+    admission = evaluate_guards(identity, guards)
+    if admission is GuardOutcome.ANONYMOUS:
+        return None
+    assert identity is not None
+    if identity.provider == IdentityProvider.linkedin:
+        subject = identity.claims.get("sub")
+        if not isinstance(subject, str) or not subject:
+            raise HTTPException(status_code=401, detail="Invalid LinkedIn subject.")
+        async with UserCRUD() as crud:
+            user, _ = await crud.linkedin_user_self_sign_up(subject)
+        return CurrentUserData(
+            user_id=user.id, azure_token_roles=[], azure_token_groups=[]
+        )
+    if identity.provider == IdentityProvider.microsoft:
+        return await CurrentAccessToken(identity.claims).provides_current_user()
+    raise HTTPException(status_code=401, detail="Unsupported identity provider.")
 
 
 # endregion: Specific checks

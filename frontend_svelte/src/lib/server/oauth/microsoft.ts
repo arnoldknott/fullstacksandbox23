@@ -11,15 +11,26 @@ import {
 	type ICacheClient,
 	type IPartitionManager
 } from '@azure/msal-node';
-import { redirect } from '@sveltejs/kit';
-import type { RedisClientType } from 'redis';
+import type { RedisClientType, RedisJSON } from 'redis';
 
 import { building } from '$app/environment';
+import { IdentityProvider } from '$lib/identityProvider';
 
 import { redisCache } from '../cache';
 import AppConfig from '../config';
+import { Encryption } from '../encryption';
+import {
+	createOAuthTransaction,
+	type OAuthIntent,
+	type OAuthProvider,
+	type OAuthTransaction,
+	redirectToReauthentication,
+	validateOAuthIntent,
+	validateOAuthTransaction
+} from './base';
 
 const appConfig = await AppConfig.getInstance();
+const encryption = new Encryption(appConfig.encryption);
 const scopesBackend = [
 	`api://${appConfig.api_scope}/api.read`,
 	`api://${appConfig.api_scope}/api.write`
@@ -36,17 +47,6 @@ const scopesMsGraph = [
 ];
 const scopesAzure = ['https://management.azure.com/user_impersonation']; // for onbehalfof workflow
 
-// Note: this is only exporting the BaseOauthProvider type, not the class itself!
-class BaseOauthProvider {
-	constructor() {}
-
-	async getAccessToken(_sessionId: string, _scopes: string[]): Promise<string> {
-		throw new Error('Method not implemented.');
-	}
-}
-
-export type { BaseOauthProvider };
-
 class RedisClientWrapper implements ICacheClient {
 	private redisClient: RedisClientType;
 
@@ -55,23 +55,32 @@ class RedisClientWrapper implements ICacheClient {
 	}
 
 	public async set(key: string, value: string): Promise<string> {
+		const redisKey = `msal:${key}`;
 		const authSessionData =
-			(await this.redisClient.json.set(`msal:${key}`, '.', JSON.parse(value))) || '';
+			(await this.redisClient.json.set(
+				redisKey,
+				'.',
+				encryption.encrypt(redisKey, '$', JSON.parse(value)) as RedisJSON
+			)) || '';
 
 		if (authSessionData) {
-			await this.redisClient.expire(`msal:${key}`, 60 * 60 * 24 * 7); // 7 days
+			await this.redisClient.expire(redisKey, 60 * 60 * 24 * 7); // 7 days
 		}
 		return authSessionData;
 	}
 
 	public async get(key: string): Promise<string> {
+		const redisKey = `msal:${key}`;
+		const cached = await this.redisClient.json.get(redisKey);
+		if (cached === null || cached === undefined) return '';
 		try {
-			const authSessionData = (await this.redisClient.json.get(`msal:${key}`)) || '';
+			const authSessionData = encryption.decrypt(redisKey, '$', cached);
 			return JSON.stringify(authSessionData);
-		} catch (error) {
-			console.log(error);
+		} catch {
+			console.warn('⚠️ 🔑 oauth - Microsoft cache - discarded unreadable record');
+			await this.redisClient.unlink(redisKey);
+			return '';
 		}
-		return '';
 	}
 }
 
@@ -80,6 +89,10 @@ interface SessionCacheData {
 	account: AccountInfo;
 	[key: string]: string | AccountInfo;
 }
+
+type MicrosoftAuthorization = OAuthTransaction & {
+	sessionId: string;
+};
 
 //
 class RedisPartitionManager implements IPartitionManager {
@@ -113,13 +126,12 @@ class RedisPartitionManager implements IPartitionManager {
 	}
 }
 
-class MicrosoftAuthenticationProvider extends BaseOauthProvider {
+class MicrosoftAuthenticationProvider implements OAuthProvider {
 	private msalCommonConfig;
 	private redisClientWrapper: RedisClientWrapper;
 	private cryptoProvider: CryptoProvider;
 
 	constructor(redisClient: RedisClientType) {
-		super();
 		// Common configuration for all users:
 		this.msalCommonConfig = {
 			auth: {
@@ -171,26 +183,35 @@ class MicrosoftAuthenticationProvider extends BaseOauthProvider {
 		origin: string,
 		targetUrl: string = '/',
 		parentUrl: string | undefined = undefined,
+		intent: OAuthIntent = 'login',
+		initiator?: Pick<OAuthTransaction, 'initiatingProvider' | 'initiatingUserId'>,
 		scopes: string[] = [...scopesBackend, ...scopesMsGraph, ...scopesAzure]
 	): Promise<string> {
 		try {
 			// console.log('🔑 oauth - Authentication - signIn ');
 			const csrfToken = this.cryptoProvider.createNewGuid();
-			const state = this.cryptoProvider.base64Encode(
-				JSON.stringify({
-					sessionId: sessionId,
-					csrfToken: csrfToken,
-					targetURL: targetUrl,
-					parentURL: parentUrl
-				})
+			const state = this.cryptoProvider.base64Encode(JSON.stringify({ sessionId, csrfToken }));
+			const redirectUri = `${origin}/oauth/callback`;
+			const authorization: MicrosoftAuthorization = {
+				...createOAuthTransaction(state, intent, appConfig.authentication_timeout, {
+					redirectUri,
+					targetUrl,
+					parentUrl,
+					...initiator
+				}),
+				sessionId
+			};
+			await redisCache.setSession(
+				sessionId,
+				'$.microsoftAuthorization',
+				JSON.stringify(authorization)
 			);
-			await redisCache.setSession(sessionId, '$.csrfToken', JSON.stringify(csrfToken), 60 * 10);
 			const msalConfClient = this.createMsalConfClient(sessionId);
 			// pass the state here as well, so user can get redirected to the correct page after login:
 			// for example: https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/7a01aafc1af9aca6d51638204aa942700c0418ca/samples/msal-node-samples/auth-code-distributed-cache/src/AuthProvider.ts#L84
 			const authCodeUrlParameters = {
 				scopes: scopes,
-				redirectUri: `${origin}/oauth/callback`,
+				redirectUri,
 				state: state
 			};
 			const authCodeUrl = await msalConfClient.getAuthCodeUrl(authCodeUrlParameters);
@@ -205,14 +226,21 @@ class MicrosoftAuthenticationProvider extends BaseOauthProvider {
 	public async decodeState(
 		// sessionId: string,
 		state: string
-	): Promise<[string, string, string | undefined]> {
-		const stateJSON = JSON.parse(this.cryptoProvider.base64Decode(state));
-		const cachedCsrfToken = await redisCache.getSession(stateJSON.sessionId, '$.csrfToken');
-		if (stateJSON.csrfToken === cachedCsrfToken) {
-			return [stateJSON.sessionId, stateJSON.targetURL, stateJSON.parentURL];
-		} else {
-			throw new Error('CSRF Token mismatch');
+	): Promise<MicrosoftAuthorization> {
+		const stateJSON = JSON.parse(this.cryptoProvider.base64Decode(state)) as {
+			sessionId?: string;
+		};
+		if (!stateJSON.sessionId) throw new Error('OAuth transaction state is invalid.');
+		const value = await redisCache.getSession(stateJSON.sessionId, '$.microsoftAuthorization');
+		if (!value || typeof value !== 'object' || !('state' in value)) {
+			throw new Error('Microsoft authorization session was not found.');
 		}
+		await redisCache.deleteSessionPath(stateJSON.sessionId, '$.microsoftAuthorization');
+		const authorization = validateOAuthTransaction(value as MicrosoftAuthorization, state);
+		const session = await redisCache.getSession<{ loggedIn?: boolean }>(stateJSON.sessionId);
+		if (!session) throw new Error('Microsoft authorization session was not found.');
+		validateOAuthIntent(authorization.intent, session.loggedIn === true);
+		return authorization;
 	}
 
 	public async authenticateWithCode(
@@ -261,7 +289,7 @@ class MicrosoftAuthenticationProvider extends BaseOauthProvider {
 		} catch (error) {
 			if (error instanceof InteractionRequiredAuthError) {
 				console.warn('👎 🔑 oauth - GetAccessToken silent failed - sign in again!');
-				redirect(307, '/login');
+				redirectToReauthentication(IdentityProvider.MICROSOFT);
 			} else {
 				console.error('🔥 🔑 oauth - GetAccessToken failed');
 				console.error(error);

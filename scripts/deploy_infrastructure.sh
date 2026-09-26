@@ -197,6 +197,7 @@ tofu plan -out=${WORKSPACE}.tfplan \
         -var "pgadmin_default_email=${PGADMIN_DEFAULT_EMAIL}" \
         -var "redis_port=${REDIS_PORT}" \
         -var "redis_insight_port=${REDIS_INSIGHT_PORT}" \
+        -var "encryption_rotation_revision=${ENCRYPTION_ROTATION_REVISION:-1}" \
         -var "dtu_campusai_api_key=${DTU_CAMPUSAI_API_KEY}"'
 # -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}"'
 

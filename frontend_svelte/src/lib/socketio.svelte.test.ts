@@ -5,6 +5,8 @@ import { Server, type Socket as ServerSocket } from 'socket.io';
 import { afterAll, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 import { WebSocketServer } from 'ws';
 
+import { goto } from '$app/navigation';
+
 import { Action } from './accessHandler';
 import {
 	SocketIO,
@@ -24,12 +26,27 @@ let backendConfig = vi.hoisted(() => ({
 	socketIOPath: '/socketio/v1'
 }));
 
+vi.mock('$app/navigation', () => ({ goto: vi.fn() }));
+vi.mock('$app/state', () => ({
+	page: {
+		data: {
+			session: {
+				identityProvider: 'linkedin',
+				currentUser: {
+					azure_user_id: 'azure-id',
+					linkedin_user_id: 'linkedin-id'
+				}
+			}
+		}
+	}
+}));
+
 vi.mock('svelte', async (importOriginal) => {
 	const actual = await importOriginal<typeof import('svelte')>();
 	return {
 		...actual,
 		getContext: vi.fn((key: unknown) =>
-			key === 'backendAPIConfiguration' ? backendConfig : actual.getContext(key as never)
+			key === 'backendAPIConfiguration' ? backendConfig : undefined
 		)
 	};
 });
@@ -88,6 +105,14 @@ beforeAll(async () => {
 		// socket.on('disconnect', () => {
 		// console.log('✅ Client disconnected'); // your "life sign"
 		// });
+	});
+
+	socketioServer.of('/authentication-expired').use((_socket, next) => {
+		const error = new Error('Authentication expired.') as Error & {
+			data?: { code: string };
+		};
+		error.data = { code: 'authentication-expired' };
+		next(error);
 	});
 });
 
@@ -151,6 +176,7 @@ describe('SocketIO for DemoResources', () => {
 
 	beforeEach(async () => {
 		rejectedSubscriptionIds = [];
+		vi.mocked(goto).mockClear();
 		socketioClientHandler = await SocketioClientHandler.create<DemoResource>({
 			namespace: '/demo-resource',
 			sessionId: 'session-123',
@@ -170,6 +196,35 @@ describe('SocketIO for DemoResources', () => {
 
 	test('establishes a connection to the test server', async () => {
 		expect(serverSocket.connected).toBe(true);
+	});
+
+	test('redirects through provider-aware login when socket authentication must be renewed', async () => {
+		let reauthenticationSocket!: SocketIO<DemoResource>;
+		const cleanup = $effect.root(() => {
+			reauthenticationSocket = new SocketIO({
+				namespace: '/authentication-expired',
+				sessionId: 'expired-session'
+			});
+		});
+
+		await vi.waitFor(() =>
+			expect(goto).toHaveBeenCalledWith(
+				`/login/microsoft?target-url=${encodeURIComponent(window.location.href)}`
+			)
+		);
+		cleanup();
+		reauthenticationSocket.client.disconnect();
+	});
+
+	test('disconnects and reauthenticates on an established-socket expiry status', async () => {
+		serverSocket.emit('status', { error: 'access', code: 'authentication-expired' });
+
+		await vi.waitFor(() =>
+			expect(goto).toHaveBeenCalledWith(
+				`/login/microsoft?target-url=${encodeURIComponent(window.location.href)}`
+			)
+		);
+		expect(testSocketio.client.connected).toBe(false);
 	});
 
 	test('preseeds entities and subscribes in bounded batches with the snapshot cursor', async () => {
@@ -220,7 +275,8 @@ describe('SocketIO for DemoResources', () => {
 
 		await vi.waitFor(() => {
 			expect(status).toHaveBeenCalledWith({
-				error: `Subscription rejected for entity ids: ${rejectedId}`
+				error: 'other',
+				detail: `Subscription rejected for entity ids: ${rejectedId}`
 			});
 		});
 
@@ -243,6 +299,30 @@ describe('SocketIO for DemoResources', () => {
 			});
 		});
 
+		clientHandler.disconnect();
+	});
+
+	test('resubscribes with the snapshot cursor after reconnecting', async () => {
+		const entity = {
+			id: '00000000-0000-4000-8000-000000000001',
+			name: 'resource'
+		} as DemoResource;
+		const clientHandler = await SocketioClientHandler.create<DemoResource>(
+			{ namespace: '/demo-resource', sessionId: 'session-123' },
+			{ snapshot: { entities: [entity], cursor: 42 } }
+		);
+		await vi.waitFor(() =>
+			expect(serverMessages.filter((message) => message.event === 'subscribe')).toHaveLength(1)
+		);
+
+		clientHandler.socketioClient.client.disconnect().connect();
+
+		await vi.waitFor(() => {
+			const subscriptions = serverMessages.filter((message) => message.event === 'subscribe');
+			expect(subscriptions).toHaveLength(2);
+			expect(subscriptions[1].data[0]).toEqual({ entity_ids: [entity.id], cursor: 42 });
+		});
+		expect(clientHandler.socketioClient.entities).toEqual([entity]);
 		clientHandler.disconnect();
 	});
 
@@ -790,7 +870,7 @@ describe('SocketIO for DemoResources', () => {
 	test.todo('handleStatus for "error" logs the error message', async () => {
 		const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-		serverSocket.emit('status', { error: 'Something went wrong' });
+		serverSocket.emit('status', { error: 'other', detail: 'Something went wrong' });
 
 		await vi.waitFor(() => {
 			expect(consoleErrorSpy).toHaveBeenCalledWith(
