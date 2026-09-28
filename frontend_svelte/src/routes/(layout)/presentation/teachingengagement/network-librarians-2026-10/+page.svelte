@@ -4,6 +4,7 @@
 	import RevealJs from '$components/RevealJS.svelte';
 
 	import FramedSlide from './FramedSlide.svelte';
+	import Overview from './Overview.svelte';
 
 	let revealInstance = $state<RevealApi | undefined>(undefined);
 </script>
@@ -12,6 +13,33 @@
 	<section>
 		<div class="text-base-content-variant text-[200px] font-bold">Welcome</div>
 	</section>
+	<FramedSlide>Checkin - map Denmark</FramedSlide>
+	<FramedSlide>
+		<Overview
+			items={[
+				{
+					icon: 'stash:circle-dot',
+					title: 'Context'
+				},
+				{
+					icon: 'vaadin:thumbs-up-o',
+					title: 'Motivation'
+				},
+				{
+					icon: 'carbon:development',
+					title: 'Implementation'
+				},
+				{
+					icon: 'bi:bar-chart',
+					title: 'Results'
+				},
+				{
+					icon: 'glyphs:books-bold',
+					title: 'Inspiration'
+				}
+			]}
+		/>
+	</FramedSlide>
 	<!-- <FramedSlide>
 			<div
 			class="r-stretch my-50 grid grid-cols-[1fr_max-content_1fr] items-center justify-between justify-items-start gap-12 text-7xl"
@@ -39,9 +67,9 @@
 			>
 			<div></div>
 		</div>
-	</FramedSlide> -->
-	<FramedSlide>Checkin - map Denmark</FramedSlide>
-	<FramedSlide>Allan Watts - Chinese Farmer</FramedSlide>
+		</FramedSlide> -->
+
+	<FramedSlide>Allan Watts - Chinese Farmer ?</FramedSlide>
 	<FramedSlide>Drawing from BusinessIllustrator - closed box</FramedSlide>
 	<FramedSlide>Course 2nd semester -> linearising</FramedSlide>
 	<FramedSlide>Course 2nd semester -> a bit closer to reality</FramedSlide>
@@ -58,10 +86,10 @@
 	<FramedSlide>Meditation</FramedSlide>
 	<FramedSlide>Qualitative results</FramedSlide>
 	<FramedSlide>Quantitative results</FramedSlide>
+	<FramedSlide>Questions / comments?</FramedSlide>
 	<FramedSlide>
 		planetary boundaries -> inner work -> trust<br />
 		stressed people -> stressed systems -> stressed planet (from regenerative leadership)
 	</FramedSlide>
 	<FramedSlide>Books -> clickable reflection</FramedSlide>
-	<FramedSlide>Questions / comments?</FramedSlide>
 </RevealJs>
