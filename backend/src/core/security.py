@@ -306,6 +306,54 @@ async def get_token_payload_from_cache(
 # region: GUARDS
 
 
+PROVIDER_PRIORITY = (
+    IdentityProvider.microsoft,
+    IdentityProvider.linkedin,
+)
+
+
+async def load_session_provider_candidates(
+    session_id: str, scopes: List[str] | None = None
+) -> tuple[VerifiedIdentity, ...]:
+    """Load every currently valid provider identity referenced by a session.
+
+    An absent or expired provider credential is unavailable and does not prevent another
+    linked provider from authenticating. Cache decryption and storage failures propagate:
+    they are service failures, not evidence that a credential is merely unavailable.
+    """
+    candidates: list[VerifiedIdentity] = []
+
+    user_account = get_session_value(session_id, "$.microsoftAccount")
+    if isinstance(user_account, dict):
+        token = await get_azure_token_from_cache(user_account, scopes)
+        if token:
+            payload = await azure.get_azure_token_payload(token)
+            if payload is not None:
+                candidates.append(VerifiedIdentity(IdentityProvider.microsoft, payload))
+
+    subject = get_session_value(session_id, "$.linkedinSubject")
+    if isinstance(subject, str) and subject:
+        cached = get_protected_cache_value(f"linkedin:{subject}")
+        token = cached.get("idToken") if isinstance(cached, dict) else None
+        if isinstance(token, str):
+            try:
+                claims = await linkedin.get_linkedin_token_payload(
+                    token,
+                    client_id=cast(str, config.LINKEDIN_CLIENT_ID),
+                )
+            except HTTPException as error:
+                if error.status_code != 401:
+                    raise
+            else:
+                if claims.get("sub") != subject:
+                    raise HTTPException(
+                        status_code=401, detail="LinkedIn session subject mismatch."
+                    )
+                candidates.append(VerifiedIdentity(IdentityProvider.linkedin, claims))
+
+    return tuple(candidates)
+
+
 def microsoft_requirements_match(
     claims: Mapping[str, Any], guard: MicrosoftGuard
 ) -> bool:
@@ -321,6 +369,28 @@ def microsoft_requirements_match(
         and all(role in roles or "Admin" in roles for role in guard.roles)
         and all(str(group) in groups for group in guard.groups)
     )
+
+
+def select_provider_candidate(
+    candidates: tuple[VerifiedIdentity, ...], guards: GuardTypes
+) -> VerifiedIdentity | None:
+    """Select one independently valid identity by policy and provider priority."""
+    by_provider = {candidate.provider: candidate for candidate in candidates}
+    for provider in PROVIDER_PRIORITY:
+        candidate = by_provider.get(provider)
+        if candidate is None:
+            continue
+        for guard in guards.alternatives:
+            if guard.provider != provider.value:
+                continue
+            if isinstance(guard, MicrosoftGuard) and not microsoft_requirements_match(
+                candidate.claims, guard
+            ):
+                continue
+            return candidate
+    if not candidates and guards.allows_anonymous:
+        return None
+    raise HTTPException(status_code=401, detail="Invalid token.")
 
 
 def evaluate_guards(
@@ -541,21 +611,10 @@ class CurrentAzureUserInDatabase(CurrentAccessToken):
         return current_user
 
 
-async def check_token_against_guards_with_status(
-    token_payload: Optional[dict] | VerifiedIdentity, guards: GuardTypes
-) -> tuple[Optional[CurrentUserData], Optional[int]]:
-    """Evaluate outer admission and resolve the user with signup status."""
-    if isinstance(token_payload, VerifiedIdentity):
-        identity = token_payload
-    elif token_payload:
-        identity = VerifiedIdentity(IdentityProvider.microsoft, token_payload)
-    else:
-        identity = None
-
-    admission = evaluate_guards(identity, guards)
-    if admission is GuardOutcome.ANONYMOUS:
-        return None, None
-    assert identity is not None
+async def resolve_verified_identity_with_status(
+    identity: VerifiedIdentity,
+) -> tuple[CurrentUserData, int]:
+    """Resolve one verified provider identity to its internal active user."""
     if identity.provider == IdentityProvider.linkedin:
         subject = identity.claims.get("sub")
         if not isinstance(subject, str) or not subject:
@@ -582,6 +641,60 @@ async def check_token_against_guards_with_status(
             status_code,
         )
     raise HTTPException(status_code=401, detail="Unsupported identity provider.")
+
+
+async def authorize_session_candidates(
+    session_id: str,
+    candidates: tuple[VerifiedIdentity, ...],
+    guards: GuardTypes,
+) -> tuple[VerifiedIdentity | None, CurrentUserData | None]:
+    """Bind all valid session credentials to one user and select one for a policy."""
+    session_user = get_session_value(session_id, "$.currentUser")
+    session_user_id = session_user.get("id") if isinstance(session_user, dict) else None
+    try:
+        expected_user_id = UUID(str(session_user_id))
+    except (TypeError, ValueError) as error:
+        raise HTTPException(
+            status_code=401, detail="Session user not found."
+        ) from error
+
+    resolved: dict[IdentityProvider, CurrentUserData] = {}
+    for candidate in candidates:
+        current_user, _ = await resolve_verified_identity_with_status(candidate)
+        if current_user.user_id != expected_user_id:
+            raise HTTPException(
+                status_code=401, detail="Session provider identity mismatch."
+            )
+        resolved[candidate.provider] = current_user
+
+    selected = select_provider_candidate(candidates, guards)
+    return selected, resolved[selected.provider] if selected is not None else None
+
+
+async def authorize_session(
+    session_id: str, guards: GuardTypes, scopes: List[str] | None = None
+) -> tuple[VerifiedIdentity | None, CurrentUserData | None]:
+    """Load, bind, and select session credentials for one guarded operation."""
+    candidates = await load_session_provider_candidates(session_id, scopes)
+    return await authorize_session_candidates(session_id, candidates, guards)
+
+
+async def check_token_against_guards_with_status(
+    token_payload: Optional[dict] | VerifiedIdentity, guards: GuardTypes
+) -> tuple[Optional[CurrentUserData], Optional[int]]:
+    """Evaluate outer admission and resolve the user with signup status."""
+    if isinstance(token_payload, VerifiedIdentity):
+        identity = token_payload
+    elif token_payload:
+        identity = VerifiedIdentity(IdentityProvider.microsoft, token_payload)
+    else:
+        identity = None
+
+    admission = evaluate_guards(identity, guards)
+    if admission is GuardOutcome.ANONYMOUS:
+        return None, None
+    assert identity is not None
+    return await resolve_verified_identity_with_status(identity)
 
 
 async def check_token_against_guards(

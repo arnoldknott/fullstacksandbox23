@@ -29,10 +29,13 @@ from core.security import (
     Guards,
     LinkedInGuard,
     MicrosoftGuard,
+    authorize_session_candidates,
     check_token_against_guards,
     evaluate_guards,
     get_token_payload_from_cache,
+    load_session_provider_candidates,
     provide_http_token_payload,
+    select_provider_candidate,
 )
 from core.types import (
     CurrentUserData,
@@ -331,6 +334,172 @@ async def test_anonymous_requires_explicit_branch_and_never_keeps_failed_claims(
         evaluate_guards(
             identity, Guards(MicrosoftGuard(roles=["User"]), AllowAnonymous())()
         )
+
+
+async def test_session_candidate_selection_prefers_eligible_microsoft():
+    microsoft = VerifiedIdentity(
+        IdentityProvider.microsoft, {"scp": "api.read", "roles": ["User"]}
+    )
+    linkedin = VerifiedIdentity(IdentityProvider.linkedin, {"sub": "member"})
+    selected = select_provider_candidate(
+        (linkedin, microsoft),
+        Guards(MicrosoftGuard(scopes=["api.read"]), LinkedInGuard())(),
+    )
+    assert selected is microsoft
+
+
+async def test_session_candidate_selection_falls_back_only_to_declared_provider():
+    microsoft = VerifiedIdentity(
+        IdentityProvider.microsoft, {"scp": "api.read", "roles": []}
+    )
+    linkedin = VerifiedIdentity(IdentityProvider.linkedin, {"sub": "member"})
+    assert (
+        select_provider_candidate(
+            (microsoft, linkedin),
+            Guards(MicrosoftGuard(roles=["User"]), LinkedInGuard())(),
+        )
+        is linkedin
+    )
+    with pytest.raises(HTTPException):
+        select_provider_candidate(
+            (microsoft, linkedin), Guards(MicrosoftGuard(roles=["User"]))()
+        )
+
+
+async def test_session_candidate_selection_does_not_downgrade_verified_identity():
+    microsoft = VerifiedIdentity(IdentityProvider.microsoft, {"roles": []})
+    with pytest.raises(HTTPException):
+        select_provider_candidate(
+            (microsoft,),
+            Guards(MicrosoftGuard(roles=["User"]), AllowAnonymous())(),
+        )
+    assert (
+        select_provider_candidate((), Guards(MicrosoftGuard(), AllowAnonymous())())
+        is None
+    )
+
+
+@pytest.mark.anyio
+async def test_session_candidates_must_all_resolve_to_session_user(monkeypatch):
+    session_user_id = uuid4()
+    microsoft = VerifiedIdentity(IdentityProvider.microsoft, {"roles": ["User"]})
+    linkedin = VerifiedIdentity(IdentityProvider.linkedin, {"sub": "member"})
+    resolved = {
+        IdentityProvider.microsoft: CurrentUserData(user_id=session_user_id),
+        IdentityProvider.linkedin: CurrentUserData(user_id=session_user_id),
+    }
+    resolver = AsyncMock(
+        side_effect=lambda identity: (resolved[identity.provider], 200)
+    )
+    monkeypatch.setattr(
+        "core.security.get_session_value",
+        lambda session_id, path: {"id": str(session_user_id)},
+    )
+    monkeypatch.setattr("core.security.resolve_verified_identity_with_status", resolver)
+    selected, current_user = await authorize_session_candidates(
+        "session",
+        (linkedin, microsoft),
+        Guards(MicrosoftGuard(roles=["User"]), LinkedInGuard())(),
+    )
+    assert selected is microsoft
+    assert current_user == resolved[IdentityProvider.microsoft]
+    assert resolver.await_count == 2
+
+
+@pytest.mark.anyio
+async def test_session_candidate_user_mismatch_fails_closed(monkeypatch):
+    session_user_id = uuid4()
+    microsoft = VerifiedIdentity(IdentityProvider.microsoft, {"roles": ["User"]})
+    linkedin = VerifiedIdentity(IdentityProvider.linkedin, {"sub": "member"})
+    resolver = AsyncMock(
+        side_effect=[
+            (CurrentUserData(user_id=session_user_id), 200),
+            (CurrentUserData(user_id=uuid4()), 200),
+        ]
+    )
+    monkeypatch.setattr(
+        "core.security.get_session_value",
+        lambda session_id, path: {"id": str(session_user_id)},
+    )
+    monkeypatch.setattr("core.security.resolve_verified_identity_with_status", resolver)
+    with pytest.raises(HTTPException) as error:
+        await authorize_session_candidates(
+            "session",
+            (microsoft, linkedin),
+            Guards(MicrosoftGuard(roles=["User"]), LinkedInGuard())(),
+        )
+    assert error.value.status_code == 401
+    assert error.value.detail == "Session provider identity mismatch."
+
+
+@pytest.mark.anyio
+async def test_session_candidate_loader_returns_all_valid_providers(monkeypatch):
+    account = {"homeAccountId": "account", "username": "user@example.invalid"}
+    session_values = {
+        "$.microsoftAccount": account,
+        "$.linkedinSubject": "linkedin-subject",
+    }
+    monkeypatch.setattr(
+        "core.security.get_session_value",
+        lambda session_id, path: session_values[path],
+    )
+    monkeypatch.setattr(
+        "core.security.get_protected_cache_value",
+        lambda key: {"idToken": "linkedin-token"},
+    )
+    microsoft_token = AsyncMock(return_value="microsoft-token")
+    microsoft_claims = AsyncMock(return_value={"oid": "microsoft-subject"})
+    linkedin_claims = AsyncMock(return_value={"sub": "linkedin-subject"})
+    monkeypatch.setattr("core.security.get_azure_token_from_cache", microsoft_token)
+    monkeypatch.setattr("core.security.azure.get_azure_token_payload", microsoft_claims)
+    monkeypatch.setattr(
+        "core.security.linkedin.get_linkedin_token_payload", linkedin_claims
+    )
+    monkeypatch.setattr("core.security.config.LINKEDIN_CLIENT_ID", CLIENT_ID)
+
+    candidates = await load_session_provider_candidates("session", ["api.read"])
+
+    assert [candidate.provider for candidate in candidates] == [
+        IdentityProvider.microsoft,
+        IdentityProvider.linkedin,
+    ]
+    microsoft_token.assert_awaited_once_with(account, ["api.read"])
+    linkedin_claims.assert_awaited_once_with("linkedin-token", client_id=CLIENT_ID)
+
+
+@pytest.mark.anyio
+async def test_session_candidate_loader_treats_expired_linkedin_as_unavailable(
+    monkeypatch,
+):
+    session_values = {
+        "$.microsoftAccount": {"username": "user@example.invalid"},
+        "$.linkedinSubject": "linkedin-subject",
+    }
+    monkeypatch.setattr(
+        "core.security.get_session_value",
+        lambda session_id, path: session_values[path],
+    )
+    monkeypatch.setattr(
+        "core.security.get_protected_cache_value",
+        lambda key: {"idToken": "expired-linkedin-token"},
+    )
+    monkeypatch.setattr(
+        "core.security.get_azure_token_from_cache",
+        AsyncMock(return_value="microsoft-token"),
+    )
+    monkeypatch.setattr(
+        "core.security.azure.get_azure_token_payload",
+        AsyncMock(return_value={"oid": "microsoft-subject"}),
+    )
+    monkeypatch.setattr(
+        "core.security.linkedin.get_linkedin_token_payload",
+        AsyncMock(side_effect=HTTPException(status_code=401)),
+    )
+
+    candidates = await load_session_provider_candidates("session")
+
+    assert len(candidates) == 1
+    assert candidates[0].provider == IdentityProvider.microsoft
 
 
 @pytest.mark.anyio

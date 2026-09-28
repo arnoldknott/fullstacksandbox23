@@ -151,7 +151,7 @@ Completion requires REST and Socket.IO to select from the same verified session 
 
 - [ ] Select and document the Azure mechanism for authenticating the frontend service to the backend.
 - [ ] Select authenticated Socket.IO proxying or short-lived admission tickets; prohibit raw session references on public ingress.
-- [ ] A: shared candidate loading, same-user binding, and guard-aware selection.
+- [x] A: shared candidate loading, same-user binding, and guard-aware selection.
 - [ ] B: REST session-reference transport and direct bearer compatibility.
 - [ ] C: Socket.IO per-event selection and room reconciliation.
 - [ ] D: lifecycle, reauthentication, session-field, and providers-page cleanup.
