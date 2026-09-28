@@ -15,6 +15,13 @@ export const initialSidebarLinks: SidebarItemContent[] = $state([
 		items: []
 	},
 	{
+		name: 'Account Management',
+		pathname: resolve('/(layout)/oauth/providers'),
+		icon: 'icon-[ic--outline-manage-accounts]',
+		id: 'accounts',
+		items: []
+	},
+	{
 		name: 'Open Playground',
 		pathname: resolve('/(layout)/playground'),
 		icon: 'icon-[mdi--playground-seesaw]',
