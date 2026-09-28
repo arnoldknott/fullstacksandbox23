@@ -63,4 +63,5 @@
 		stressed people -> stressed systems -> stressed planet (from regenerative leadership)
 	</FramedSlide>
 	<FramedSlide>Books -> clickable reflection</FramedSlide>
+	<FramedSlide>Questions / comments?</FramedSlide>
 </RevealJs>
