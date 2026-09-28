@@ -1190,6 +1190,7 @@ async def test_user_gets_user_by_id(
     assert user["azure_user_id"] == str(modelled_response_user.azure_user_id)
     assert user["azure_tenant_id"] == str(modelled_response_user.azure_tenant_id)
     assert len(user["azure_groups"]) == 3
+    assert all("is_active" not in group for group in user["azure_groups"])
     assert not hasattr(modelled_response_user, "user_account")
     assert not hasattr(modelled_response_user, "user_profile")
 
@@ -1236,7 +1237,9 @@ async def test_admin_gets_user_by_id(
     assert "id" in user
     assert user["azure_user_id"] == str(user_in_database.azure_user_id)
     assert user["azure_tenant_id"] == str(user_in_database.azure_tenant_id)
+    assert "is_active" in user
     assert len(user["azure_groups"]) == 3
+    assert all("is_active" not in group for group in user["azure_groups"])
 
     async with AccessLoggingCRUD() as crud:
         created_at = await crud.read_resource_created_at(

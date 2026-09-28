@@ -272,7 +272,6 @@ export type Me = User & {
 type AzureGroup = {
 	id: string;
 	azure_tenant_id: string;
-	is_active: boolean;
 	azure_users: User[];
 };
 
