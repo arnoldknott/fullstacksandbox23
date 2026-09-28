@@ -4,6 +4,7 @@
 	import RevealJs from '$components/RevealJS.svelte';
 
 	import FramedSlide from './FramedSlide.svelte';
+	import Library from './Library.svelte';
 	import Overview from './Overview.svelte';
 
 	let revealInstance = $state<RevealApi | undefined>(undefined);
@@ -91,5 +92,8 @@
 		planetary boundaries -> inner work -> trust<br />
 		stressed people -> stressed systems -> stressed planet (from regenerative leadership)
 	</FramedSlide>
-	<FramedSlide>Books -> clickable reflection</FramedSlide>
+	<FramedSlide>
+		<Library />
+		Books -> clickable reflection
+	</FramedSlide>
 </RevealJs>
