@@ -306,12 +306,6 @@ async def get_token_payload_from_cache(
 # region: GUARDS
 
 
-PROVIDER_PRIORITY = (
-    IdentityProvider.microsoft,
-    IdentityProvider.linkedin,
-)
-
-
 async def load_session_provider_candidates(
     session_id: str, scopes: List[str] | None = None
 ) -> tuple[VerifiedIdentity, ...]:
@@ -374,21 +368,20 @@ def microsoft_requirements_match(
 def select_provider_candidate(
     candidates: tuple[VerifiedIdentity, ...], guards: GuardTypes
 ) -> VerifiedIdentity | None:
-    """Select one independently valid identity by policy and provider priority."""
+    """Select one independently valid identity in guard declaration order."""
     by_provider = {candidate.provider: candidate for candidate in candidates}
-    for provider in PROVIDER_PRIORITY:
-        candidate = by_provider.get(provider)
+    for guard in guards.alternatives:
+        if isinstance(guard, AllowAnonymous):
+            continue
+        candidate = by_provider.get(IdentityProvider(guard.provider))
         if candidate is None:
             continue
-        for guard in guards.alternatives:
-            if guard.provider != provider.value:
-                continue
-            if isinstance(guard, MicrosoftGuard) and not microsoft_requirements_match(
-                candidate.claims, guard
-            ):
-                continue
-            return candidate
-    if not candidates and guards.allows_anonymous:
+        if isinstance(guard, MicrosoftGuard) and not microsoft_requirements_match(
+            candidate.claims, guard
+        ):
+            continue
+        return candidate
+    if guards.allows_anonymous:
         return None
     raise HTTPException(status_code=401, detail="Invalid token.")
 
@@ -398,14 +391,11 @@ def evaluate_guards(
 ) -> GuardOutcome:
     """Return an explicit successful admission outcome; otherwise reject.
 
-    Failed requirements on a verified provider never fall back to anonymous.
-    Missing/invalid credentials may reach AllowAnonymous after extraction, retaining
-    existing optional-authentication behavior without carrying unverified claims.
+    Provider alternatives are evaluated in declaration order. AllowAnonymous is always
+    the final fallback and never carries verified or unverified claims into user data.
     """
     for guard in guards.alternatives:
         if isinstance(guard, AllowAnonymous):
-            if identity is None:
-                return GuardOutcome.ANONYMOUS
             continue
         if identity is None or guard.provider != identity.provider.value:
             continue
@@ -414,6 +404,8 @@ def evaluate_guards(
         ):
             continue
         return GuardOutcome.AUTHENTICATED
+    if guards.allows_anonymous:
+        return GuardOutcome.ANONYMOUS
     raise HTTPException(status_code=401, detail="Invalid token.")
 
 

@@ -8,7 +8,7 @@ An application session may hold independently validated credentials for multiple
 
 - **Available provider:** the session contains a credential that can currently be validated, including normal silent renewal where the provider supports it.
 - **Selected provider:** the one available provider used for one authorization decision.
-- **Preferred provider:** the first suitable provider in the configured priority order. The initial order is Microsoft, then LinkedIn.
+- **Preferred provider:** the first suitable provider in the interface's guard declaration order.
 - **Linked provider:** a persistent provider identifier attached to the internal user. Linking alone does not make a credential available.
 
 The most recently completed login does not globally select authorization for the session. `identityProvider` must no longer be interpreted as a session-wide active provider. Remove it where it becomes redundant or retain it only as explicitly named login/diagnostic history; it must not drive REST or Socket.IO authorization.
@@ -17,9 +17,8 @@ The most recently completed login does not globally select authorization for the
 
 - Endpoint and event `Guards(...)` declarations remain the only source of truth for accepted providers and Microsoft scope, role, group, and tenant requirements. Do not duplicate guard configuration in frontend route wrappers.
 - For one operation, evaluate one provider's validated claims. Never union Microsoft roles/groups/scopes with LinkedIn claims or let one provider satisfy another provider's requirements.
-- Filter the global priority list by the operation's guard alternatives. Microsoft wins only when its credential is valid and its Microsoft guard requirements pass. Otherwise evaluate LinkedIn when that operation declares a LinkedIn alternative.
-- A Microsoft-only operation never falls back to LinkedIn. A LinkedIn-only operation may select LinkedIn even while Microsoft is available. An operation accepting both prefers Microsoft when both alternatives pass.
-- Missing or invalid credentials may use an explicit anonymous guard alternative. A session containing verified identities that fail all provider requirements must never downgrade to anonymous.
+- Evaluate authenticated alternatives in guard declaration order. A Microsoft-only operation never falls back to LinkedIn; an operation declaring both providers uses whichever eligible provider guard appears first.
+- Evaluate `AllowAnonymous` only after every authenticated alternative, regardless of its declaration position. Missing, invalid, expired, or insufficient provider credentials may therefore use explicitly permitted anonymous access, with no provider claims or `CurrentUserData` passed to the inner layer. Session/user binding failures, cache decryption failures, and authentication-service failures still fail closed rather than becoming anonymous.
 - Every candidate provider identity must resolve to the same active internal user recorded in the application session. A mismatch fails the entire session request with status 401 and must not fall through to another provider.
 - Inner application access-control-list enforcement continues to receive one `CurrentUserData` derived from the selected identity. General CRUD authorization semantics do not change.
 - Account-link and merge proof headers remain explicit, separately validated proof-of-control inputs. They are not replaced by automatic session-provider selection.
@@ -39,7 +38,7 @@ The backend then:
 2. Loads every provider credential referenced by that session.
 3. Validates each candidate with its provider validator.
 4. Resolves each candidate to an internal user and verifies equality with the session's `currentUser.id` and stored linked identifiers.
-5. Selects the first candidate in provider-priority order that independently satisfies an endpoint guard alternative.
+5. Selects the first candidate that independently satisfies an endpoint guard alternative, using guard declaration order.
 6. Supplies only that selected `VerifiedIdentity` and its derived `CurrentUserData` to the endpoint and CRUD layer.
 
 The backend may perform Microsoft silent acquisition against the encrypted Microsoft Authentication Library cache. LinkedIn availability requires a valid identity token or a successful supported refresh; a LinkedIn access token alone cannot authenticate the backend.
@@ -104,7 +103,7 @@ The deployment design must therefore provide an authenticated frontend-service i
 
 - Introduce a request-independent provider-candidate loader in backend security code.
 - Validate all referenced credentials and bind them to the session user.
-- Implement deterministic Microsoft→LinkedIn priority filtered by `GuardTypes`.
+- Implement deterministic guard-declaration-order selection through `GuardTypes`, with anonymous access as the final explicit fallback.
 - Return the selected `VerifiedIdentity` plus `CurrentUserData` without combining claims.
 
 ### B. REST session-reference mode
@@ -137,7 +136,7 @@ The deployment design must therefore provide an authenticated frontend-service i
 ## 8. Required tests and acceptance
 
 - Candidate loading: Microsoft only, LinkedIn only, both valid, each independently expired, silent Microsoft renewal, LinkedIn refresh/no-refresh behavior, missing session, expired Redis session, disabled user, unlinked credential, tampered encryption, and credential-to-user mismatch.
-- Guard selection: Microsoft-only, LinkedIn-only, both alternatives, Microsoft requirement failure followed by valid LinkedIn alternative, global priority, explicit anonymous behavior, and no verified-identity downgrade.
+- Guard selection: Microsoft-only, LinkedIn-only, both alternative orders, provider requirement failure followed by the next declared provider, and explicit anonymous fallback without provider claims.
 - REST: internal session-reference mode, direct bearer compatibility, conflicting modes, request-scoped single selection, no mutation retry, no provider token forwarded by the frontend server, and no credential/session value in logs or errors.
 - Socket.IO: provider choice per connect and event, transition between providers, expiry fallback, LinkedIn-only event while Microsoft is available, stale-room removal, passive broadcast denial, reconnect, and session deletion.
 - Same-user binding: credentials for two different internal users fail closed even if both tokens are individually valid. Linked/merged credentials for one user succeed without claim union.

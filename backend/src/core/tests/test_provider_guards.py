@@ -308,10 +308,12 @@ async def test_linkedin_cannot_satisfy_microsoft_admin_guard():
         IdentityProvider.linkedin,
         {"roles": ["Admin"], "scp": "api.read", "provider": "microsoft"},
     )
-    with pytest.raises(HTTPException):
+    assert (
         evaluate_guards(
             identity, Guards(MicrosoftGuard(roles=["Admin"]), AllowAnonymous())()
         )
+        is GuardOutcome.ANONYMOUS
+    )
     assert (
         evaluate_guards(
             identity, Guards(MicrosoftGuard(roles=["Admin"]), LinkedInGuard())()
@@ -320,7 +322,7 @@ async def test_linkedin_cannot_satisfy_microsoft_admin_guard():
     )
 
 
-async def test_anonymous_requires_explicit_branch_and_never_keeps_failed_claims():
+async def test_anonymous_is_the_final_explicit_fallback_without_claims():
     assert (
         evaluate_guards(None, Guards(MicrosoftGuard(), AllowAnonymous())())
         is GuardOutcome.ANONYMOUS
@@ -330,10 +332,12 @@ async def test_anonymous_requires_explicit_branch_and_never_keeps_failed_claims(
     identity = VerifiedIdentity(
         IdentityProvider.microsoft, {"scp": "api.read", "roles": []}
     )
-    with pytest.raises(HTTPException):
+    assert (
         evaluate_guards(
-            identity, Guards(MicrosoftGuard(roles=["User"]), AllowAnonymous())()
+            identity, Guards(AllowAnonymous(), MicrosoftGuard(roles=["User"]))()
         )
+        is GuardOutcome.ANONYMOUS
+    )
 
 
 async def test_session_candidate_selection_prefers_eligible_microsoft():
@@ -366,13 +370,28 @@ async def test_session_candidate_selection_falls_back_only_to_declared_provider(
         )
 
 
-async def test_session_candidate_selection_does_not_downgrade_verified_identity():
+async def test_session_candidate_selection_uses_guard_order():
+    microsoft = VerifiedIdentity(
+        IdentityProvider.microsoft, {"scp": "api.read", "roles": ["User"]}
+    )
+    linkedin = VerifiedIdentity(IdentityProvider.linkedin, {"sub": "member"})
+    assert (
+        select_provider_candidate(
+            (microsoft, linkedin), Guards(LinkedInGuard(), MicrosoftGuard())()
+        )
+        is linkedin
+    )
+
+
+async def test_session_candidate_selection_uses_anonymous_as_final_fallback():
     microsoft = VerifiedIdentity(IdentityProvider.microsoft, {"roles": []})
-    with pytest.raises(HTTPException):
+    assert (
         select_provider_candidate(
             (microsoft,),
-            Guards(MicrosoftGuard(roles=["User"]), AllowAnonymous())(),
+            Guards(AllowAnonymous(), MicrosoftGuard(roles=["User"]))(),
         )
+        is None
+    )
     assert (
         select_provider_candidate((), Guards(MicrosoftGuard(), AllowAnonymous())())
         is None
@@ -563,7 +582,7 @@ async def test_socket_protected_policy_rejects_missing_cached_token():
 
 
 @pytest.mark.anyio
-async def test_socket_does_not_downgrade_failed_provider_requirements():
+async def test_socket_uses_anonymous_after_provider_requirements_fail():
     namespace = namespace_with(
         Guards(MicrosoftGuard(roles=["User"]), AllowAnonymous())()
     )
@@ -572,9 +591,7 @@ async def test_socket_does_not_downgrade_failed_provider_requirements():
     )
     namespace._emit_status = AsyncMock()
 
-    with pytest.raises(SocketAuthorizationFailedError):
-        await namespace._get_current_user_and_check_guard("socket", "read")
-
+    assert await namespace._get_current_user_and_check_guard("socket", "read") is None
     namespace._emit_status.assert_not_awaited()
 
 
