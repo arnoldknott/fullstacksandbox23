@@ -63,6 +63,43 @@ class AccountMergeCRUD(UserCRUD):
             statement = statement.with_for_update(of=User)
         return (await self.session.exec(statement)).unique().first()
 
+    async def prepare_provider_unlink(
+        self,
+        active_provider: IdentityProvider,
+        active_claims: dict[str, Any],
+        provider: IdentityProvider,
+    ) -> tuple[User, UUID | str]:
+        """Lock and update a user without committing before external cleanup."""
+        if provider == active_provider:
+            raise HTTPException(
+                status_code=409, detail="The active provider cannot be unlinked."
+            )
+        user = await self.find_provider_user(active_provider, active_claims, lock=True)
+        if user is None or user.id is None:
+            raise HTTPException(
+                status_code=409, detail="Initiating user no longer exists."
+            )
+        self._require_active_initiator(user)
+        if user.azure_user_id is None or user.linkedin_user_id is None:
+            raise HTTPException(
+                status_code=409,
+                detail="The final authentication provider cannot be unlinked.",
+            )
+        field_name = (
+            "azure_user_id"
+            if provider == IdentityProvider.microsoft
+            else "linkedin_user_id"
+        )
+        identifier = getattr(user, field_name)
+        if identifier is None:
+            raise HTTPException(status_code=409, detail="Provider is not linked.")
+        setattr(user, field_name, None)
+        if provider == IdentityProvider.microsoft:
+            user.azure_tenant_id = None
+        self.session.add(user)
+        await self.session.flush()
+        return user, identifier
+
     async def link_or_preview(
         self,
         survivor_provider: IdentityProvider,

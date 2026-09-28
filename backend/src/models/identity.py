@@ -421,12 +421,6 @@ class AccountMergeConfirm(SQLModel):
     choices: dict[str, Literal["survivor", "source"]] = Field(default_factory=dict)
 
 
-class AccountMergeResult(SQLModel):
-    """Successful destructive merge result."""
-
-    result: Literal["merged"] = "merged"
-
-
 class UserUpdate(SQLModel):
     """Editable user state; provider identifiers remain immutable."""
 

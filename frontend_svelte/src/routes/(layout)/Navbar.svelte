@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { type SubmitFunction } from '@sveltejs/kit';
 
+	import { enhance } from '$app/forms';
 	import { page } from '$app/state';
 	import Guard from '$components/Guard.svelte';
 	import { type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
+	import { IdentityProvider } from '$lib/identityProvider';
 	import { type ThemeRuntimeContext } from '$lib/theming';
 	import { initDropdown } from '$lib/userInterface';
 
@@ -39,6 +41,16 @@
 	let accountLinkTarget = $derived(encodeURIComponent(`${page.url.pathname}${page.url.search}`));
 
 	let artificialIntelligenceForm = $state<HTMLFormElement | null>(null);
+
+	const unlinkAccount: SubmitFunction = ({ formData, cancel }) => {
+		const provider = formData.get('provider');
+		const label = provider === IdentityProvider.MICROSOFT ? 'Microsoft' : 'LinkedIn';
+		if (!confirm(`Remove the linked ${label} account?`)) {
+			cancel();
+			return;
+		}
+		return async ({ update }) => update({ reset: false });
+	};
 </script>
 
 {#snippet navbarPartItem(href: string, icon: string, text: string, textClasses?: string)}
@@ -179,7 +191,28 @@
 						</a>
 					</li>
 				{/if}
-				{#if loggedIn && (!page.data.session?.currentUser?.linkedin_user_id || !page.data.session?.currentUser?.azure_user_id)}
+				{#if loggedIn && page.data.session?.currentUser?.linkedin_user_id && page.data.session?.currentUser?.azure_user_id && page.data.session?.identityProvider}
+					{@const provider =
+						page.data.session.identityProvider === IdentityProvider.MICROSOFT
+							? IdentityProvider.LINKEDIN
+							: IdentityProvider.MICROSOFT}
+					<li>
+						<form method="POST" action="/?/unlinkaccount" use:enhance={unlinkAccount}>
+							<input type="hidden" name="provider" value={provider} />
+							<button type="submit" class="dropdown-item dropdown-close w-full">
+								<span
+									class={provider === IdentityProvider.LINKEDIN
+										? 'icon-[cib--linkedin-in] bg-secondary size-5'
+										: 'icon-[codicon--microsoft] size-5'}
+								></span>
+								<span class="text-secondary grow">
+									Remove {provider === IdentityProvider.LINKEDIN ? 'LinkedIn' : 'Microsoft'} account
+								</span>
+							</button>
+						</form>
+					</li>
+				{/if}
+				{#if loggedIn}
 					<li>
 						<hr class="border-outline -mx-2 my-5" />
 					</li>

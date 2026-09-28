@@ -1,6 +1,6 @@
 # LinkedIn authentication, account linking, and credential encryption
 
-Status: Stages A (guards), B (minimal identity/signup), D (resource/event policies and answer ownership), E (provider linking and confirmed account merge), and F (authentication-cache encryption) are implemented. Stage C lifecycle code, focused automated coverage, deployment configuration, and the live LinkedIn expiry/reconnect sequence are verified; the measured LinkedIn identity-token lifetime is one hour. Equivalent Microsoft live acceptance remains tracked in the [authentication session lifecycle plan](authentication-session-lifecycle-plan.md).
+Status: Stages A (guards), B (minimal identity/signup), D (resource/event policies and answer ownership), E (provider linking and confirmed account merge), F (authentication-cache encryption), and G (provider unlinking) are implemented. Stage C lifecycle code, focused automated coverage, deployment configuration, and the live LinkedIn expiry/reconnect sequence are verified; the measured LinkedIn identity-token lifetime is one hour. Equivalent Microsoft live acceptance remains tracked in the [authentication session lifecycle plan](authentication-session-lifecycle-plan.md).
 
 Agreed scope recorded on 2026-09-20; encryption and rotation decisions updated on 2026-09-21. This is the shared implementation handoff for frontend, backend, database, and Redis changes. Keep shared login/encryption decisions here and account-merge decisions in the linked merge plan, rather than maintaining separate plans in each application.
 
@@ -265,6 +265,14 @@ Implement removal of a linked authentication provider, not reversal of an accoun
 
 Completion: either linked provider can be removed safely while another verified provider remains, removed credentials and sessions cannot authenticate, retained-provider access continues, and no account-splitting behavior is implied.
 
+Implementation notes:
+
+- `DELETE /api/v1/user/me/link/{provider}` accepts only a currently verified provider identity, returns `204 No Content` on success, and rejects removal of that active provider or the final linked provider. Row locking serializes concurrent attempts; only one removal can succeed. Merge confirmation likewise returns `204 No Content`; neither completed operation exposes a redundant fixed-value result model.
+- The operation clears the provider identifier (and Microsoft tenant identifier), deletes the matching encrypted LinkedIn or Microsoft Authentication Library cache, disconnects and deletes sessions authenticated through the removed provider, and removes the retired provider metadata from retained-provider sessions. The internal user and all first-party authorization/data relationships remain unchanged.
+- The navbar account menu uses the former link-action position to offer removal of the inactive provider only when both providers are linked. Submission requires explicit browser confirmation, and the frontend reloads `/user/me` into the retained session after success.
+- Focused automated coverage exercises both provider cache formats, active/final-provider rejection, encrypted credential isolation, removed-session/socket invalidation, retained sessions, concurrent attempts, Microsoft tenant cleanup, and database rollback when cleanup fails. Live unlinking in both provider directions remains a staging acceptance check.
+- Test-environment validation recorded `12 passed` for the focused backend account-link/merge/unlink module and `1112 passed` for the full backend suite. Black, Ruff, and Pyright pass. Frontend validation recorded `26 passed` test files with `124 passed, 3 todo`; lint, Svelte type checks, and the production build pass.
+
 ## 6. Validation and rollout
 
 Use only the test environment for formatting, linting, type checks, tests and benchmarks. Follow [backend guidance](../../../backend/AGENTS.md), [frontend guidance](../../../frontend_svelte/AGENTS.md), and existing [backend](../../../.github/workflows/backendAPI.yml) / [frontend](../../../.github/workflows/frontend_svelte.yml) continuous-integration workflows. Do not introduce alternate scripts. Report validation summaries in the called tools' format and distinguish baseline failures.
@@ -301,7 +309,7 @@ No additional design decision is required to continue. The identifier-storage de
 - [x] D: endpoint/event matrix and ownership
 - [x] E: linking, merge preview, atomic reassignment and cleanup — see [account merge plan](./linkedin-azure-account-merge-plan.md)
 - [x] F: encrypted authentication-cache persistence and rotation support
-- [ ] G: unlink one provider while preserving a verified retained provider; account splitting remains unsupported
+- [x] G: unlink one provider while preserving a verified retained provider; account splitting remains unsupported
 - [ ] Test-environment validation and staging verification
 
 ## References

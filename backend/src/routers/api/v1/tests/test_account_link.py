@@ -1,21 +1,24 @@
+import asyncio
 import uuid
 from unittest.mock import AsyncMock
 
 import pytest
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from httpx2 import AsyncClient
 
 from core.authentication.base import VerifiedIdentity
-from core.cache import encryption, redis_session_client
+from core.cache import encryption, redis_session_client, set_protected_cache_value
 from core.config import config
 from core.security import provide_http_token_payload
 from core.types import IdentityProvider
 from crud.identity import UserCRUD
 from models.identity import User
 from routers.api.v1.account_linking import (
-    _complete_merge_cleanup,
-    _invalidate_merged_user_sessions,
+    cleanup_unlinked_provider,
+    complete_merge_cleanup,
+    invalidate_merged_user_sessions,
 )
+from routers.api.v1.identities import delete_account_link
 
 
 def microsoft_identity() -> VerifiedIdentity:
@@ -85,7 +88,7 @@ async def test_link_endpoint_previews_and_confirms_existing_user_merge(
     )
     invalidate = AsyncMock()
     monkeypatch.setattr(
-        "routers.api.v1.identities._invalidate_merged_user_sessions", invalidate
+        "routers.api.v1.identities.invalidate_merged_user_sessions", invalidate
     )
     headers = {"X-Account-Link-Authorization": "Bearer linked-proof"}
 
@@ -99,8 +102,8 @@ async def test_link_endpoint_previews_and_confirms_existing_user_merge(
         json={"preview_hash": preview.json()["preview_hash"], "choices": {}},
     )
 
-    assert confirmed.status_code == 200
-    assert confirmed.json() == {"result": "merged"}
+    assert confirmed.status_code == 204
+    assert confirmed.content == b""
     invalidate.assert_awaited_once_with(
         {survivor.id, source.id}, preview.json()["preview_hash"]
     )
@@ -133,6 +136,206 @@ async def test_link_endpoint_rejects_a_second_proof_from_the_same_provider(
 
     assert response.status_code == 409
     assert response.json()["detail"] == "A different provider is required."
+
+
+@pytest.mark.anyio
+async def test_unlink_endpoint_removes_the_inactive_provider(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    linkedin = VerifiedIdentity(
+        IdentityProvider.linkedin, {"sub": f"linkedin-{uuid.uuid4()}"}
+    )
+    microsoft_id = uuid.uuid4()
+    async with UserCRUD() as crud:
+        user, _ = await crud.linkedin_user_self_sign_up(linkedin.claims["sub"])
+        stored_user = await crud.session.get(User, user.id)
+        assert stored_user
+        stored_user.azure_user_id = microsoft_id
+        stored_user.azure_tenant_id = uuid.UUID(config.AZURE_TENANT_ID)
+        crud.session.add(stored_user)
+        await crud.session.commit()
+    cleanup = AsyncMock()
+    monkeypatch.setattr("routers.api.v1.identities.cleanup_unlinked_provider", cleanup)
+    app_override_provide_http_token_payload.dependency_overrides[
+        provide_http_token_payload
+    ] = lambda: linkedin
+
+    response = await async_client.delete("/api/v1/user/me/link/microsoft")
+
+    assert response.status_code == 204
+    assert response.content == b""
+    cleanup.assert_awaited_once_with(user.id, IdentityProvider.microsoft, microsoft_id)
+    async with UserCRUD() as crud:
+        updated = await crud.session.get(User, user.id)
+        assert updated
+        assert updated.azure_user_id is None
+        assert updated.azure_tenant_id is None
+        assert updated.linkedin_user_id == linkedin.claims["sub"]
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize("target", ["linkedin", "microsoft"])
+async def test_unlink_rejects_active_or_final_provider(
+    target: str,
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+):
+    linkedin = VerifiedIdentity(
+        IdentityProvider.linkedin, {"sub": f"linkedin-{uuid.uuid4()}"}
+    )
+    async with UserCRUD() as crud:
+        await crud.linkedin_user_self_sign_up(linkedin.claims["sub"])
+    app_override_provide_http_token_payload.dependency_overrides[
+        provide_http_token_payload
+    ] = lambda: linkedin
+
+    response = await async_client.delete(f"/api/v1/user/me/link/{target}")
+
+    assert response.status_code == 409
+    expected = (
+        "The active provider cannot be unlinked."
+        if target == "linkedin"
+        else "The final authentication provider cannot be unlinked."
+    )
+    assert response.json()["detail"] == expected
+
+
+@pytest.mark.anyio
+async def test_unlink_rolls_back_identifier_when_cleanup_fails(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    linkedin = VerifiedIdentity(
+        IdentityProvider.linkedin, {"sub": f"linkedin-{uuid.uuid4()}"}
+    )
+    microsoft_id = uuid.uuid4()
+    async with UserCRUD() as crud:
+        user, _ = await crud.linkedin_user_self_sign_up(linkedin.claims["sub"])
+        stored_user = await crud.session.get(User, user.id)
+        assert stored_user
+        stored_user.azure_user_id = microsoft_id
+        stored_user.azure_tenant_id = uuid.UUID(config.AZURE_TENANT_ID)
+        crud.session.add(stored_user)
+        await crud.session.commit()
+    monkeypatch.setattr(
+        "routers.api.v1.identities.cleanup_unlinked_provider",
+        AsyncMock(side_effect=RuntimeError("cleanup failed")),
+    )
+
+    with pytest.raises(RuntimeError, match="cleanup failed"):
+        await delete_account_link(IdentityProvider.microsoft, linkedin)
+
+    async with UserCRUD() as crud:
+        unchanged = await crud.session.get(User, user.id)
+        assert unchanged
+        assert unchanged.azure_user_id == microsoft_id
+        assert unchanged.azure_tenant_id == uuid.UUID(config.AZURE_TENANT_ID)
+
+
+@pytest.mark.anyio
+async def test_concurrent_unlink_allows_only_one_removal(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    linkedin = VerifiedIdentity(
+        IdentityProvider.linkedin, {"sub": f"linkedin-{uuid.uuid4()}"}
+    )
+    microsoft_id = uuid.uuid4()
+    async with UserCRUD() as crud:
+        user, _ = await crud.linkedin_user_self_sign_up(linkedin.claims["sub"])
+        stored_user = await crud.session.get(User, user.id)
+        assert stored_user
+        stored_user.azure_user_id = microsoft_id
+        stored_user.azure_tenant_id = uuid.UUID(config.AZURE_TENANT_ID)
+        crud.session.add(stored_user)
+        await crud.session.commit()
+    cleanup = AsyncMock()
+    monkeypatch.setattr("routers.api.v1.identities.cleanup_unlinked_provider", cleanup)
+
+    results = await asyncio.gather(
+        delete_account_link(IdentityProvider.microsoft, linkedin),
+        delete_account_link(IdentityProvider.microsoft, linkedin),
+        return_exceptions=True,
+    )
+
+    assert sum(not isinstance(result, BaseException) for result in results) == 1
+    failures = [result for result in results if isinstance(result, HTTPException)]
+    assert len(failures) == 1
+    assert failures[0].status_code == 409
+    cleanup.assert_awaited_once_with(user.id, IdentityProvider.microsoft, microsoft_id)
+
+
+@pytest.mark.anyio
+async def test_unlink_cleanup_invalidates_removed_provider_sessions_only(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    user_id = uuid.uuid4()
+    removed_session_id = str(uuid.uuid4())
+    retained_session_id = str(uuid.uuid4())
+    subject = f"linkedin-{uuid.uuid4()}"
+    removed_key = f"session:{removed_session_id}"
+    retained_key = f"session:{retained_session_id}"
+    credential_key = f"linkedin:{subject}"
+    try:
+        for key, provider in (
+            (removed_key, IdentityProvider.linkedin),
+            (retained_key, IdentityProvider.microsoft),
+        ):
+            redis_session_client.json().set(
+                key,
+                ".",
+                {
+                    "identityProvider": provider.value,
+                    "linkedinSubject": subject,
+                    "currentUser": {
+                        "id": encryption.encrypt(key, "$.currentUser.id", str(user_id))
+                    },
+                },
+            )
+        redis_session_client.json().set(
+            credential_key,
+            ".",
+            encryption.encrypt(credential_key, "$", {"idToken": "token"}),
+        )
+        disconnect = AsyncMock()
+        monkeypatch.setattr(
+            "routers.api.v1.account_linking.disconnect_auth_sessions", disconnect
+        )
+
+        await cleanup_unlinked_provider(user_id, IdentityProvider.linkedin, subject)
+
+        disconnect.assert_awaited_once_with({removed_session_id})
+        assert not redis_session_client.exists(removed_key)
+        assert redis_session_client.exists(retained_key)
+        assert redis_session_client.json().get(retained_key, "$.linkedinSubject") == []
+        assert not redis_session_client.exists(credential_key)
+    finally:
+        redis_session_client.delete(removed_key, retained_key, credential_key)
+
+
+@pytest.mark.anyio
+async def test_microsoft_unlink_cleanup_deletes_only_matching_encrypted_caches():
+    microsoft_id = uuid.uuid4()
+    matching_key = f"msal:{uuid.uuid4()}"
+    unrelated_key = f"msal:{uuid.uuid4()}"
+    try:
+        set_protected_cache_value(
+            matching_key,
+            {"Account": {"entry": {"local_account_id": str(microsoft_id)}}},
+        )
+        set_protected_cache_value(
+            unrelated_key,
+            {"Account": {"entry": {"local_account_id": str(uuid.uuid4())}}},
+        )
+
+        await cleanup_unlinked_provider(
+            uuid.uuid4(), IdentityProvider.microsoft, microsoft_id
+        )
+
+        assert not redis_session_client.exists(matching_key)
+        assert redis_session_client.exists(unrelated_key)
+    finally:
+        redis_session_client.delete(matching_key, unrelated_key)
 
 
 @pytest.mark.anyio
@@ -170,7 +373,7 @@ async def test_merge_invalidation_disconnects_and_deletes_only_affected_sessions
             "routers.api.v1.account_linking.disconnect_auth_sessions", disconnect
         )
 
-        await _invalidate_merged_user_sessions(
+        await invalidate_merged_user_sessions(
             {survivor_id, source_id}, "successful-cleanup"
         )
 
@@ -213,7 +416,7 @@ async def test_merge_cleanup_can_retry_after_socket_disconnect_failure(
         )
 
         with pytest.raises(RuntimeError, match="temporary Socket.IO failure"):
-            await _invalidate_merged_user_sessions({user_id}, cleanup_id)
+            await invalidate_merged_user_sessions({user_id}, cleanup_id)
 
         assert redis_session_client.exists(session_key)
         assert redis_session_client.exists(cleanup_key)
@@ -222,7 +425,7 @@ async def test_merge_cleanup_can_retry_after_socket_disconnect_failure(
             "routers.api.v1.account_linking.disconnect_auth_sessions", disconnect
         )
 
-        assert await _complete_merge_cleanup(cleanup_id) is True
+        assert await complete_merge_cleanup(cleanup_id) is True
         disconnect.assert_awaited_once_with({session_id})
         assert not redis_session_client.exists(session_key)
         assert not redis_session_client.exists(cleanup_key)

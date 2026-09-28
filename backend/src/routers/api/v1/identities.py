@@ -4,6 +4,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response
 
+from core.authentication.base import VerifiedIdentity
 from core.security import (
     Guards,
     LinkedInGuard,
@@ -12,7 +13,13 @@ from core.security import (
     check_token_against_guards_with_status,
     get_http_access_token_payload,
 )
-from core.types import CollectionInclude, CollectionSort, GuardTypes, SortDirection
+from core.types import (
+    CollectionInclude,
+    CollectionSort,
+    GuardTypes,
+    IdentityProvider,
+    SortDirection,
+)
 from crud.account_merge import AccountMergeCRUD
 from crud.identity import (
     GroupCRUD,
@@ -25,7 +32,6 @@ from models.identity import (
     AccountLinkResult,
     AccountMergeConfirm,
     AccountMergePreview,
-    AccountMergeResult,
     Group,
     GroupCreate,
     GroupExtended,
@@ -51,9 +57,10 @@ from models.identity import (
 )
 
 from .account_linking import (
-    _complete_merge_cleanup,
-    _invalidate_merged_user_sessions,
-    _link_identities,
+    cleanup_unlinked_provider,
+    complete_merge_cleanup,
+    invalidate_merged_user_sessions,
+    link_identities,
 )
 from .base import BaseView
 
@@ -137,7 +144,7 @@ async def post_account_link_preview(
     token_payload=Depends(get_http_access_token_payload),
 ) -> AccountLinkResult | AccountMergePreview:
     """Attach an unclaimed provider identity or return a confirmed-merge preview."""
-    survivor_identity, source_identity = await _link_identities(
+    survivor_identity, source_identity = await link_identities(
         token_payload, x_account_link_authorization
     )
     async with AccountMergeCRUD() as crud:
@@ -152,18 +159,18 @@ async def post_account_link_preview(
     return AccountLinkResult(result=result)
 
 
-@user_router.post("/me/link/confirm", status_code=200)
+@user_router.post("/me/link/confirm", status_code=204)
 async def post_account_merge_confirm(
     confirmation: AccountMergeConfirm,
     x_account_link_authorization: Annotated[str, Header()],
     token_payload=Depends(get_http_access_token_payload),
-) -> AccountMergeResult:
+) -> None:
     """Revalidate both provider proofs and atomically merge their internal users."""
-    survivor_identity, source_identity = await _link_identities(
+    survivor_identity, source_identity = await link_identities(
         token_payload, x_account_link_authorization
     )
-    if await _complete_merge_cleanup(confirmation.preview_hash):
-        return AccountMergeResult()
+    if await complete_merge_cleanup(confirmation.preview_hash):
+        return
     async with AccountMergeCRUD() as crud:
         survivor_id, source_id = await crud.merge_provider_users(
             survivor_identity.provider,
@@ -173,10 +180,33 @@ async def post_account_merge_confirm(
             confirmation.preview_hash,
             confirmation.choices,
         )
-    await _invalidate_merged_user_sessions(
+    await invalidate_merged_user_sessions(
         {survivor_id, source_id}, confirmation.preview_hash
     )
-    return AccountMergeResult()
+
+
+@user_router.delete("/me/link/{provider}", status_code=204)
+async def delete_account_link(
+    provider: IdentityProvider,
+    token_payload=Depends(get_http_access_token_payload),
+) -> None:
+    """Remove an inactive linked provider while retaining the current provider."""
+    if not isinstance(token_payload, VerifiedIdentity):
+        raise HTTPException(
+            status_code=401, detail="Verified provider identity required."
+        )
+    async with AccountMergeCRUD() as crud:
+        try:
+            user, identifier = await crud.prepare_provider_unlink(
+                token_payload.provider, token_payload.claims, provider
+            )
+            if user.id is None:
+                raise HTTPException(status_code=409, detail="User is incomplete.")
+            await cleanup_unlinked_provider(user.id, provider, identifier)
+            await crud.session.commit()
+        except BaseException:
+            await crud.session.rollback()
+            raise
 
 
 @user_router.get("/", status_code=200)
