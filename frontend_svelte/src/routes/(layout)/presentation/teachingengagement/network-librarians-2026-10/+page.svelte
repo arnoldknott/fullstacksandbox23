@@ -40,6 +40,7 @@
 			<div></div>
 		</div>
 	</FramedSlide> -->
+	<FramedSlide>Checkin - map Denmark</FramedSlide>
 	<FramedSlide>Allan Watts - Chinese Farmer</FramedSlide>
 	<FramedSlide>Drawing from BusinessIllustrator - closed box</FramedSlide>
 	<FramedSlide>Course 2nd semester -> linearising</FramedSlide>
@@ -48,4 +49,18 @@
 		Master level -> closely related to product design -> linearized models ain't no good any more
 	</FramedSlide>
 	<FramedSlide>Drawing from BusinessIllustrator - box opened</FramedSlide>
+	<FramedSlide>Self determintation theory</FramedSlide>
+	<FramedSlide>Principles - see wisdom seat</FramedSlide>
+	<FramedSlide>Start with nature pictures</FramedSlide>
+	<FramedSlide>Learning reflections</FramedSlide>
+	<FramedSlide>Qualitative results</FramedSlide>
+	<FramedSlide>Quantitative results</FramedSlide>
+	<FramedSlide>Meditation</FramedSlide>
+	<FramedSlide>Qualitative results</FramedSlide>
+	<FramedSlide>Quantitative results</FramedSlide>
+	<FramedSlide>
+		planetary boundaries -> inner work -> trust<br />
+		stressed people -> stressed systems -> stressed planet (from regenerative leadership)
+	</FramedSlide>
+	<FramedSlide>Books -> clickable reflection</FramedSlide>
 </RevealJs>
