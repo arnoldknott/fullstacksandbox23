@@ -407,14 +407,12 @@ async def test_session_candidates_must_all_resolve_to_session_user(monkeypatch):
         IdentityProvider.microsoft: CurrentUserData(user_id=session_user_id),
         IdentityProvider.linkedin: CurrentUserData(user_id=session_user_id),
     }
-    resolver = AsyncMock(
-        side_effect=lambda identity: (resolved[identity.provider], 200)
-    )
+    resolver = AsyncMock(side_effect=lambda identity: resolved[identity.provider])
     monkeypatch.setattr(
         "core.security.get_session_value",
         lambda session_id, path: {"id": str(session_user_id)},
     )
-    monkeypatch.setattr("core.security.resolve_verified_identity_with_status", resolver)
+    monkeypatch.setattr("core.security.resolve_session_identity", resolver)
     selected, current_user = await authorize_session_candidates(
         "session",
         (linkedin, microsoft),
@@ -432,15 +430,15 @@ async def test_session_candidate_user_mismatch_fails_closed(monkeypatch):
     linkedin = VerifiedIdentity(IdentityProvider.linkedin, {"sub": "member"})
     resolver = AsyncMock(
         side_effect=[
-            (CurrentUserData(user_id=session_user_id), 200),
-            (CurrentUserData(user_id=uuid4()), 200),
+            CurrentUserData(user_id=session_user_id),
+            CurrentUserData(user_id=uuid4()),
         ]
     )
     monkeypatch.setattr(
         "core.security.get_session_value",
         lambda session_id, path: {"id": str(session_user_id)},
     )
-    monkeypatch.setattr("core.security.resolve_verified_identity_with_status", resolver)
+    monkeypatch.setattr("core.security.resolve_session_identity", resolver)
     with pytest.raises(HTTPException) as error:
         await authorize_session_candidates(
             "session",

@@ -104,6 +104,33 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             logging.error(err)
             raise HTTPException(status_code=404, detail="User not found")
 
+    async def resolve_existing_provider_user(
+        self,
+        *,
+        azure_user_id: UUID | None = None,
+        azure_tenant_id: UUID | None = None,
+        linkedin_user_id: str | None = None,
+    ) -> UserRead:
+        """Resolve an active provider identity without signup or synchronization."""
+        if (azure_user_id is None) == (linkedin_user_id is None):
+            raise ValueError("Exactly one provider identifier is required.")
+        if azure_user_id is not None and azure_tenant_id is None:
+            raise ValueError("Microsoft identity requires a tenant identifier.")
+
+        condition = (
+            User.azure_user_id == azure_user_id
+            if azure_user_id is not None
+            else User.linkedin_user_id == linkedin_user_id
+        )
+        user = (await self.session.exec(select(User).where(condition))).unique().first()
+        if user is None:
+            raise HTTPException(status_code=401, detail="Provider user not found.")
+        if not user.is_active:
+            raise HTTPException(status_code=403, detail="User is disabled.")
+        if azure_user_id is not None and user.azure_tenant_id != azure_tenant_id:
+            raise HTTPException(status_code=401, detail="Microsoft tenant mismatch.")
+        return UserRead.model_validate(user)
+
     # This allows self-sign-up, unless user has been disabled by admin!
     # Any user passed in, get's checked for existence, if not existing, it get's created!
     # no matter if the user existed or not, group membership gets checked and created if needed!

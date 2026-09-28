@@ -635,6 +635,43 @@ async def resolve_verified_identity_with_status(
     raise HTTPException(status_code=401, detail="Unsupported identity provider.")
 
 
+async def resolve_session_identity(identity: VerifiedIdentity) -> CurrentUserData:
+    """Resolve an established-session identity without performing any writes."""
+    async with UserCRUD() as crud:
+        if identity.provider == IdentityProvider.linkedin:
+            subject = identity.claims.get("sub")
+            if not isinstance(subject, str) or not subject:
+                raise HTTPException(status_code=401, detail="Invalid LinkedIn subject.")
+            user = await crud.resolve_existing_provider_user(linkedin_user_id=subject)
+            return CurrentUserData(
+                user_id=user.id, azure_token_roles=[], azure_token_groups=[]
+            )
+        if identity.provider == IdentityProvider.microsoft:
+            oid = identity.claims.get("oid")
+            tenant = identity.claims.get("tid")
+            try:
+                azure_user_id = UUID(str(oid))
+                azure_tenant_id = UUID(str(tenant))
+            except (TypeError, ValueError) as error:
+                raise HTTPException(
+                    status_code=401, detail="Invalid Microsoft identity."
+                ) from error
+            if azure_tenant_id != UUID(cast(str, config.AZURE_TENANT_ID)):
+                raise HTTPException(status_code=401, detail="Invalid Microsoft tenant.")
+            user = await crud.resolve_existing_provider_user(
+                azure_user_id=azure_user_id,
+                azure_tenant_id=azure_tenant_id,
+            )
+            roles = identity.claims.get("roles")
+            groups = identity.claims.get("groups")
+            return CurrentUserData(
+                user_id=user.id,
+                azure_token_roles=roles if isinstance(roles, list) else None,
+                azure_token_groups=groups if isinstance(groups, list) else None,
+            )
+    raise HTTPException(status_code=401, detail="Unsupported identity provider.")
+
+
 async def authorize_session_candidates(
     session_id: str,
     candidates: tuple[VerifiedIdentity, ...],
@@ -652,7 +689,7 @@ async def authorize_session_candidates(
 
     resolved: dict[IdentityProvider, CurrentUserData] = {}
     for candidate in candidates:
-        current_user, _ = await resolve_verified_identity_with_status(candidate)
+        current_user = await resolve_session_identity(candidate)
         if current_user.user_id != expected_user_id:
             raise HTTPException(
                 status_code=401, detail="Session provider identity mismatch."
