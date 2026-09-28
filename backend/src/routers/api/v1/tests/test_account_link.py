@@ -287,9 +287,7 @@ async def test_unlink_cleanup_invalidates_removed_provider_sessions_only(
                 {
                     "identityProvider": provider.value,
                     "linkedinSubject": subject,
-                    "currentUser": {
-                        "id": encryption.encrypt(key, "$.currentUser.id", str(user_id))
-                    },
+                    "currentUser": {"id": str(user_id)},
                 },
             )
         redis_session_client.json().set(
@@ -360,13 +358,7 @@ async def test_merge_invalidation_disconnects_and_deletes_only_affected_sessions
             redis_session_client.json().set(
                 redis_key,
                 ".",
-                {
-                    "currentUser": {
-                        "id": encryption.encrypt(
-                            redis_key, "$.currentUser.id", str(user_id)
-                        )
-                    }
-                },
+                {"currentUser": {"id": str(user_id)}},
             )
         disconnect = AsyncMock()
         monkeypatch.setattr(
@@ -402,13 +394,7 @@ async def test_merge_cleanup_can_retry_after_socket_disconnect_failure(
         redis_session_client.json().set(
             session_key,
             ".",
-            {
-                "currentUser": {
-                    "id": encryption.encrypt(
-                        session_key, "$.currentUser.id", str(user_id)
-                    )
-                }
-            },
+            {"currentUser": {"id": str(user_id)}},
         )
         monkeypatch.setattr(
             "routers.api.v1.account_linking.disconnect_auth_sessions",

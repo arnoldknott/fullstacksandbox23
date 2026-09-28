@@ -1,11 +1,7 @@
 import redis
 
 from core.config import config, load_encryption_keyring
-from core.encryption import (
-    Encryption,
-    is_encryption_envelope,
-    resembles_encryption_envelope,
-)
+from core.encryption import Encryption
 
 # print("=== cache.py started ===")
 
@@ -19,38 +15,12 @@ redis_session_client = redis.Redis(
 
 encryption = Encryption(load_encryption_keyring())
 
-# Session roots that are protected in different ways: whole, leaf, or scalar:
-# Whole-protected session roots are encrypted as a whole:
 _WHOLE_PROTECTED_SESSION_ROOTS = {
     "microsoftAccount",
     "microsoftAuthorization",
     "linkedinAuthorization",
     "accountMerge",
 }
-# This means, this part is not encrypted as a whole, only its leaves are encrypted:
-_LEAF_PROTECTED_SESSION_ROOTS = {"currentUser"}
-# This means, this part is encrypted as a whole:
-_PROTECTED_SCALAR_SESSION_ROOTS = {"userAgent"}
-
-
-def _child_path(path: str, key: str | int) -> str:
-    return f"{path}[{key}]" if isinstance(key, int) else f"{path}.{key}"
-
-
-def _decrypt_leaves(redis_key: str, path: str, value):
-    if is_encryption_envelope(value) or resembles_encryption_envelope(value):
-        return encryption.decrypt(redis_key, path, value)
-    if isinstance(value, list):
-        return [
-            _decrypt_leaves(redis_key, _child_path(path, index), item)
-            for index, item in enumerate(value)
-        ]
-    if isinstance(value, dict):
-        return {
-            key: _decrypt_leaves(redis_key, _child_path(path, key), item)
-            for key, item in value.items()
-        }
-    return encryption.decrypt(redis_key, path, value)
 
 
 def decrypt_session_value(redis_key: str, path: str, value):
@@ -61,24 +31,16 @@ def decrypt_session_value(redis_key: str, path: str, value):
         result = dict(value)
         for key, item in value.items():
             item_path = f"$.{key}"
-            if key in _WHOLE_PROTECTED_SESSION_ROOTS | _PROTECTED_SCALAR_SESSION_ROOTS:
+            if key in _WHOLE_PROTECTED_SESSION_ROOTS:
                 result[key] = encryption.decrypt(redis_key, item_path, item)
-            elif key in _LEAF_PROTECTED_SESSION_ROOTS:
-                result[key] = _decrypt_leaves(redis_key, item_path, item)
         return result
     root = path[2:].split(".", 1)[0].split("[", 1)[0] if path.startswith("$.") else None
-    if root in _WHOLE_PROTECTED_SESSION_ROOTS | _PROTECTED_SCALAR_SESSION_ROOTS:
+    if root in _WHOLE_PROTECTED_SESSION_ROOTS:
         if path != f"$.{root}":
             raise ValueError(
                 f"Protected session subdocument {root} only supports whole-value reads."
             )
         return encryption.decrypt(redis_key, path, value)
-    if root in _LEAF_PROTECTED_SESSION_ROOTS:
-        return (
-            _decrypt_leaves(redis_key, path, value)
-            if path == f"$.{root}"
-            else encryption.decrypt(redis_key, path, value)
-        )
     return value
 
 

@@ -46,7 +46,9 @@ async def invalidate_merged_user_sessions(user_ids: set[UUID], cleanup_id: str) 
             session = decrypt_session_value(key, "$", raw_session)
         except TypeError, ValueError:
             continue
-        current_user = session.get("currentUser") if isinstance(session, dict) else None
+        if not isinstance(session, dict):
+            continue
+        current_user = session.get("currentUser")
         if isinstance(current_user, dict) and current_user.get("id") in user_id_strings:
             session_ids.add(key.removeprefix("session:"))
     await complete_merge_cleanup(cleanup_id, session_ids)
@@ -116,7 +118,9 @@ def _provider_session_cleanup_targets(
             session = decrypt_session_value(key, "$", raw_session)
         except TypeError, ValueError:
             continue
-        current_user = session.get("currentUser") if isinstance(session, dict) else None
+        if not isinstance(session, dict):
+            continue
+        current_user = session.get("currentUser")
         if (
             not isinstance(current_user, dict)
             or current_user.get("id") != user_id_string
