@@ -12,7 +12,7 @@
 	<Title id="microsoft">Microsoft</Title>
 	<div class="flex items-center gap-3">
 		<LoginOutButton loggedIn={authentication.microsoft} provider={IdentityProvider.MICROSOFT} />
-		{#if session?.identityProvider === IdentityProvider.MICROSOFT}
+		{#if authentication.microsoft && page.data.preferredProvider === IdentityProvider.MICROSOFT}
 			<span
 				class="icon-[hugeicons--token-circle] text-primary size-6"
 				role="img"
@@ -42,7 +42,7 @@
 	<Title id="linkedIn">LinkedIn</Title>
 	<div class="flex items-center gap-3">
 		<LoginOutButton loggedIn={authentication.linkedin} provider={IdentityProvider.LINKEDIN} />
-		{#if session?.identityProvider === IdentityProvider.LINKEDIN}
+		{#if authentication.linkedin && page.data.preferredProvider === IdentityProvider.LINKEDIN}
 			<span
 				class="icon-[hugeicons--token-circle] text-primary size-6"
 				role="img"

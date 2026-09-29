@@ -1,6 +1,6 @@
 # Multi-provider session authorization
 
-Status: in progress; stages A and B are implemented. This plan replaces the currently implemented single-active-provider selection model for communication from the trusted frontend server to the backend. Account linking, provider credential acquisition, encrypted cache storage, and the existing inner access-control layer remain unchanged until this plan is implemented.
+Status: in progress; stages A through D are implemented. This plan replaces the previously implemented single-active-provider selection model for communication from the trusted frontend server to the backend. Account linking, provider credential acquisition, encrypted cache storage, and the existing inner access-control layer remain unchanged.
 
 ## 1. Outcome and terminology
 
@@ -154,5 +154,5 @@ Completion requires REST and Socket.IO to select from the same verified session 
 - [x] A: shared candidate loading, same-user binding, and guard-aware selection.
 - [x] B: REST session-reference transport and direct bearer compatibility.
 - [x] C: Socket.IO per-event selection and room reconciliation.
-- [ ] D: lifecycle, reauthentication, session-field, and providers-page cleanup.
+- [x] D: lifecycle, reauthentication, session-field, and providers-page cleanup.
 - [ ] E: deployment boundary, complete automated validation, and live staging verification.

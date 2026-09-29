@@ -286,37 +286,12 @@ async def get_azure_token_from_cache(
 async def get_token_payload_from_cache(
     session_id: str, scopes: List[str] | None = None
 ) -> VerifiedIdentity:
-    """Load and validate the active provider credential for a server session."""
+    """Load the preferred currently valid provider credential for a server session."""
     logger.info("🔑 Getting token from cache")
-    provider = get_session_value(session_id, "$.identityProvider")
-    if provider == IdentityProvider.linkedin.value:
-        subject = get_session_value(session_id, "$.linkedinSubject")
-        if not isinstance(subject, str) or not subject:
-            raise HTTPException(status_code=401, detail="LinkedIn session not found.")
-        cached = get_protected_cache_value(f"linkedin:{subject}")
-        token = cached.get("idToken") if isinstance(cached, dict) else None
-        if not isinstance(token, str):
-            raise HTTPException(
-                status_code=401, detail="No cached LinkedIn identity token found."
-            )
-        claims = await linkedin.get_linkedin_token_payload(
-            token,
-            client_id=cast(str, config.LINKEDIN_CLIENT_ID),
-        )
-        return VerifiedIdentity(IdentityProvider.linkedin, claims)
-    if provider not in (None, IdentityProvider.microsoft.value):
-        raise HTTPException(status_code=401, detail="Unsupported identity provider.")
-    try:
-        user_account = await get_user_account_from_session_cache(session_id)
-    except ValueError as err:
-        raise HTTPException(status_code=401, detail=str(err)) from err
-    token = await get_azure_token_from_cache(user_account, scopes)
-    if not token:
-        raise HTTPException(status_code=401, detail="No cached access token found.")
-    payload = await azure.get_azure_token_payload(token)
-    if payload is None:
-        raise HTTPException(status_code=401, detail="Invalid token.")
-    return VerifiedIdentity(IdentityProvider.microsoft, payload)
+    candidates = await load_session_provider_candidates(session_id, scopes)
+    if not candidates:
+        raise HTTPException(status_code=401, detail="No cached provider token found.")
+    return candidates[0]
 
     # # Create the PersistentTokenCache
     # cache = get_persistent_cache(user_account)

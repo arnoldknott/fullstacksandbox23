@@ -14,11 +14,17 @@ async function credentialAvailable(getCredential: () => Promise<string>): Promis
 export const load: PageServerLoad = async ({ locals }) => {
 	const session = locals.sessionData;
 	if (!session?.loggedIn) {
-		return { providerAuthentication: { microsoft: false, linkedin: false } };
+		return {
+			providerAuthentication: { microsoft: false, linkedin: false },
+			preferredProvider: null
+		};
 	}
 	const [microsoft, linkedin] = await Promise.all([
 		credentialAvailable(() => msalAuthProvider.getAccessToken(session.sessionId)),
 		credentialAvailable(() => linkedinAuthProvider.getIdentityToken(session.sessionId))
 	]);
-	return { providerAuthentication: { microsoft, linkedin } };
+	return {
+		providerAuthentication: { microsoft, linkedin },
+		preferredProvider: microsoft ? 'microsoft' : linkedin ? 'linkedin' : null
+	};
 };

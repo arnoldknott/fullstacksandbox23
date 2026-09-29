@@ -1038,7 +1038,7 @@ async def test_socket_cache_selects_linkedin_identity_token(monkeypatch):
         ("session:session", "$.identityProvider"): ["linkedin"],
         ("session:session", "$.linkedinSubject"): ["member-sub"],
         ("linkedin:member-sub", None): encrypted_tokens,
-    }[(key, path)]
+    }.get((key, path), [])
     monkeypatch.setattr(
         "core.security.redis_session_client.json", Mock(return_value=cache_json)
     )
@@ -1074,7 +1074,7 @@ async def test_socket_cache_defaults_a_missing_provider_path_to_microsoft(monkey
     }
 
     def get_cached_value(key: str, path: str) -> list[object]:
-        return responses[(key, path)]
+        return responses.get((key, path), [])
 
     cache_json.get.side_effect = get_cached_value
     monkeypatch.setattr(

@@ -22,7 +22,8 @@ describe('provider authentication status', () => {
 		vi.spyOn(linkedinAuthProvider, 'getIdentityToken').mockResolvedValue('linkedin-token');
 
 		await expect(load(event())).resolves.toEqual({
-			providerAuthentication: { microsoft: true, linkedin: true }
+			providerAuthentication: { microsoft: true, linkedin: true },
+			preferredProvider: 'microsoft'
 		});
 	});
 
@@ -33,7 +34,8 @@ describe('provider authentication status', () => {
 		);
 
 		await expect(load(event())).resolves.toEqual({
-			providerAuthentication: { microsoft: true, linkedin: false }
+			providerAuthentication: { microsoft: true, linkedin: false },
+			preferredProvider: 'microsoft'
 		});
 	});
 
@@ -42,7 +44,8 @@ describe('provider authentication status', () => {
 		const linkedin = vi.spyOn(linkedinAuthProvider, 'getIdentityToken');
 
 		await expect(load(event(false))).resolves.toEqual({
-			providerAuthentication: { microsoft: false, linkedin: false }
+			providerAuthentication: { microsoft: false, linkedin: false },
+			preferredProvider: null
 		});
 		expect(microsoft).not.toHaveBeenCalled();
 		expect(linkedin).not.toHaveBeenCalled();
@@ -50,7 +53,8 @@ describe('provider authentication status', () => {
 
 	it('handles a public request without session data', async () => {
 		await expect(load(event(null))).resolves.toEqual({
-			providerAuthentication: { microsoft: false, linkedin: false }
+			providerAuthentication: { microsoft: false, linkedin: false },
+			preferredProvider: null
 		});
 	});
 });
