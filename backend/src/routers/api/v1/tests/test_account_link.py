@@ -9,8 +9,9 @@ from httpx2 import AsyncClient
 from core.authentication.base import VerifiedIdentity
 from core.cache import encryption, redis_session_client, set_protected_cache_value
 from core.config import config
-from core.security import provide_http_token_payload
+from core.security import SessionReferenceCredential, provide_http_token_payload
 from core.types import IdentityProvider
+from crud.account_merge import AccountMergeCRUD
 from crud.identity import UserCRUD
 from models.identity import User
 from routers.api.v1.account_linking import (
@@ -26,6 +27,35 @@ def microsoft_identity() -> VerifiedIdentity:
         IdentityProvider.microsoft,
         {"oid": str(uuid.uuid4()), "tid": config.AZURE_TENANT_ID},
     )
+
+
+@pytest.mark.anyio
+async def test_link_endpoint_uses_operation_specific_session_validation(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    microsoft = microsoft_identity()
+    linkedin = VerifiedIdentity(
+        IdentityProvider.linkedin, {"sub": f"linkedin-{uuid.uuid4()}"}
+    )
+    app_override_provide_http_token_payload.dependency_overrides[
+        provide_http_token_payload
+    ] = lambda: SessionReferenceCredential(str(uuid.uuid4()))
+    link = AsyncMock(return_value=(microsoft, linkedin))
+    monkeypatch.setattr("routers.api.v1.identities.link_identities", link)
+    link_or_preview = AsyncMock(return_value="already-linked")
+    monkeypatch.setattr(AccountMergeCRUD, "link_or_preview", link_or_preview)
+
+    response = await async_client.post(
+        "/api/v1/user/me/link/preview",
+        headers={"X-Account-Link-Authorization": "Bearer linked-proof"},
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {"result": "already-linked"}
+    link.assert_awaited_once()
+    link_or_preview.assert_awaited_once()
 
 
 @pytest.mark.anyio

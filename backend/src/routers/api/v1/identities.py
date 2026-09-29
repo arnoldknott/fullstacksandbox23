@@ -67,6 +67,7 @@ from .base import BaseView
 logger = logging.getLogger(__name__)
 
 user_router = APIRouter()
+account_link_router = APIRouter()
 user_view = BaseView(UserCRUD)
 
 
@@ -138,7 +139,7 @@ async def get_me(
     return me
 
 
-@user_router.post("/me/link/preview", status_code=200)
+@account_link_router.post("/me/link/preview", status_code=200)
 async def post_account_link_preview(
     x_account_link_authorization: Annotated[str, Header()],
     token_payload=Depends(get_http_access_token_payload),
@@ -159,7 +160,7 @@ async def post_account_link_preview(
     return AccountLinkResult(result=result)
 
 
-@user_router.post("/me/link/confirm", status_code=204)
+@account_link_router.post("/me/link/confirm", status_code=204)
 async def post_account_merge_confirm(
     confirmation: AccountMergeConfirm,
     x_account_link_authorization: Annotated[str, Header()],
@@ -185,7 +186,7 @@ async def post_account_merge_confirm(
     )
 
 
-@user_router.delete("/me/link/{provider}", status_code=204)
+@account_link_router.delete("/me/link/{provider}", status_code=204)
 async def delete_account_link(
     provider: IdentityProvider,
     token_payload=Depends(get_http_access_token_payload),

@@ -1,11 +1,10 @@
 <script lang="ts">
 	import { type SubmitFunction } from '@sveltejs/kit';
 
-	import { enhance } from '$app/forms';
 	import { page } from '$app/state';
 	import Guard from '$components/Guard.svelte';
 	import { type ArtificialIntelligenceConfig } from '$lib/artificialIntelligence';
-	import { IdentityProvider } from '$lib/identityProvider';
+	// import { IdentityProvider } from '$lib/identityProvider';
 	import { type ThemeRuntimeContext } from '$lib/theming';
 	import { initDropdown } from '$lib/userInterface';
 
@@ -42,6 +41,7 @@
 
 	let artificialIntelligenceForm = $state<HTMLFormElement | null>(null);
 
+	/* Retained while the unlink interaction is tested on /oauth/providers.
 	const unlinkAccount: SubmitFunction = ({ formData, cancel }) => {
 		const provider = formData.get('provider');
 		const label = provider === IdentityProvider.MICROSOFT ? 'Microsoft' : 'LinkedIn';
@@ -51,6 +51,7 @@
 		}
 		return async ({ update }) => update({ reset: false });
 	};
+	*/
 </script>
 
 {#snippet navbarPartItem(href: string, icon: string, text: string, textClasses?: string)}
@@ -191,6 +192,7 @@
 						</a>
 					</li>
 				{/if}
+				<!-- Retained while the unlink interaction is tested on /oauth/providers.
 				{#if loggedIn && page.data.session?.currentUser?.linkedin_user_id && page.data.session?.currentUser?.azure_user_id && page.data.session?.sessionOwnerProvider}
 					{@const provider =
 						page.data.session.sessionOwnerProvider === IdentityProvider.MICROSOFT
@@ -212,6 +214,7 @@
 						</form>
 					</li>
 				{/if}
+				-->
 				{#if loggedIn}
 					<li>
 						<hr class="border-outline -mx-2 my-5" />
