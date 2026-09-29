@@ -64,10 +64,8 @@ class BackendAPI extends BaseAPI {
 			return response;
 		}
 		const detail = (body as { detail?: Record<string, unknown> }).detail;
-		if (
-			detail?.code !== 'provider-token-required' ||
-			detail.provider !== 'microsoft'
-		) return response;
+		if (detail?.code !== 'provider-token-required' || detail.provider !== 'microsoft')
+			return response;
 		let refresh = this.providerRefreshes.get(sessionId);
 		if (!refresh) {
 			refresh = msalAuthProvider.getAccessToken(sessionId, [appConfig.api_scope_default]);
@@ -86,14 +84,8 @@ class BackendAPI extends BaseAPI {
 		options: RequestInit = {},
 		headers: HeadersInit = {}
 	) {
-		const request = () => super.post(
-			sessionId,
-			path,
-			body,
-			scopes,
-			options,
-			this.sessionHeaders(sessionId, headers)
-		);
+		const request = () =>
+			super.post(sessionId, path, body, scopes, options, this.sessionHeaders(sessionId, headers));
 		return this.retryAfterProviderRefresh(sessionId, await request(), request);
 	}
 
@@ -104,13 +96,8 @@ class BackendAPI extends BaseAPI {
 		options: RequestInit = {},
 		headers: HeadersInit = {}
 	) {
-		const request = () => super.get(
-			sessionId,
-			path,
-			scopes,
-			options,
-			this.sessionHeaders(sessionId, headers)
-		);
+		const request = () =>
+			super.get(sessionId, path, scopes, options, this.sessionHeaders(sessionId, headers));
 		return this.retryAfterProviderRefresh(sessionId, await request(), request);
 	}
 
@@ -137,14 +124,8 @@ class BackendAPI extends BaseAPI {
 		options: RequestInit = {},
 		headers: HeadersInit = {}
 	) {
-		const request = () => super.put(
-			sessionId,
-			path,
-			body,
-			scopes,
-			options,
-			this.sessionHeaders(sessionId, headers)
-		);
+		const request = () =>
+			super.put(sessionId, path, body, scopes, options, this.sessionHeaders(sessionId, headers));
 		return this.retryAfterProviderRefresh(sessionId, await request(), request);
 	}
 
@@ -155,13 +136,8 @@ class BackendAPI extends BaseAPI {
 		options: RequestInit = {},
 		headers: HeadersInit = {}
 	) {
-		const request = () => super.delete(
-			sessionId,
-			path,
-			scopes,
-			options,
-			this.sessionHeaders(sessionId, headers)
-		);
+		const request = () =>
+			super.delete(sessionId, path, scopes, options, this.sessionHeaders(sessionId, headers));
 		return this.retryAfterProviderRefresh(sessionId, await request(), request);
 	}
 
