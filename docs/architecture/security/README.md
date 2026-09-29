@@ -112,14 +112,14 @@ Deploy the backend successfully before the frontend during a production rotation
 
 Encryption is mandatory and has no runtime disable switch. There is no plaintext compatibility reader. Existing plaintext is never consumed as encrypted data. Redis provider-cache adapters delete unreadable existing records: Microsoft treats the deletion as a cache miss, while LinkedIn requires reauthentication. Missing keys fail startup; authentication failures, malformed envelopes, and unknown key versions fail closed.
 
-## Implementation plans
+## Detailed security contracts
 
-- [LinkedIn authentication and credential encryption](linkedin-account-linking-plan.md) — provider/guard contracts, endpoint matrix, code mappings, stages, and validation.
+- [LinkedIn authentication and credential encryption](linkedin-account-linking-plan.md) — provider/guard contracts, endpoint matrix, account lifecycle, and encrypted credential storage.
 - [Authentication session lifecycle and Socket.IO expiry recovery](authentication-session-lifecycle-plan.md) — sliding Redis/cookie renewal, one-session reauthentication, established-connection expiry enforcement, compact status events, and reconnect/replay.
 - [Account linking and merge](linkedin-azure-account-merge-plan.md) — verified attachment, settings choices, reference reconciliation, and transactional merging across providers.
-- [Multi-provider session authorization](multi-provider-session-authorization-plan.md) — guard-driven credential selection across linked providers, session-reference REST transport, Socket.IO parity, and the frontend/backend trust boundary.
+- [Multi-provider session authorization](multi-provider-session-authorization.md) — guard-driven credential selection across linked providers, session-reference REST transport, Socket.IO parity, and the frontend/backend trust boundary.
 
-The [Redis README](../../redis/README.md) owns Redis partitions, protected cache/session boundaries, and Redis-specific performance measurements. This document owns the application-wide encryption and key-rotation contract. The plans describe implementation work; they do not imply that planned features are already deployed.
+The [Redis README](../../redis/README.md) owns Redis partitions, protected cache/session boundaries, and Redis-specific performance measurements. This document owns the application-wide encryption and key-rotation contract.
 
 ## References
 

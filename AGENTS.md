@@ -39,12 +39,13 @@ Keep edits focused, preserve existing patterns, and prefer small changes over br
 - Do not hard-code secrets, tokens, or environment-specific values.
 - Use environment variables from local `.env` files in development and testing. If `AZURE_KEYVAULT_HOST` is set, the apps may load variables from Azure Key Vault.
 - For follow-up notes in code comments and workflows, prefer `TBD:` as the marker instead of `TODO:`.
-
+- Documentation describes only the current architecture, behavior, and operational guidance. Update it in place and remove superseded designs, migration narratives, completed-stage tracking, and historical commentary; Git history is the source for past implementations.
 ## Security layers and change boundaries
+
 
 - **Outer security layer:** authentication and admission authorization through OAuth 2.0 and OpenID Connect across identity service providers, including token validation and endpoint/event guards.
 - **Inner security layer:** application access control lists implemented by `AccessPolicy`, identity/resource hierarchies and inheritance, enforced in the create/read/update/delete (CRUD) layer.
-- Consult the user before changing the inner layer, including fixes or refactors. The agreed account-merge work is the exception; it must preserve general authorization semantics. See [security architecture and implementation plans](docs/architecture/security/README.md).
+- Consult the user before changing the inner layer, including fixes or refactors. The agreed account-merge work is the exception; it must preserve general authorization semantics. See the [security architecture and detailed contracts](docs/architecture/security/README.md).
 
 ## Third-party data storage
 

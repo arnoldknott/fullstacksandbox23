@@ -2,7 +2,7 @@
 
 Redis supports cached sessions and tokens, Socket.IO coordination, and Celery transport. Runtime configuration and access-control-list templates live in [cache](../../cache/); service wiring follows the application and Docker Compose configuration.
 
-This document owns Redis-specific partitions, protected session/cache boundaries, and performance measurements. The [security architecture](../architecture/security/README.md#application-encryption) owns the application-wide encryption format, keyring, startup, and rotation contract. Follow the [data-storage policy](../architecture/security/README.md#data-storage-policy) to decide what may be retained; encryption never makes prohibited third-party resource data eligible for storage. Implementation stages and tests are tracked in [Stage F](../architecture/security/linkedin-account-linking-plan.md#f-encrypted-cache-persistence).
+This document owns Redis-specific partitions, protected session/cache boundaries, and performance measurements. The [security architecture](../architecture/security/README.md#application-encryption) owns the application-wide encryption format, keyring, startup, and rotation contract. Follow the [data-storage policy](../architecture/security/README.md#data-storage-policy) to decide what may be retained; encryption never makes prohibited third-party resource data eligible for storage.
 
 ## Public signing-key caching
 
@@ -31,8 +31,6 @@ Retain the `homeAccountId` used by `RedisPartitionManager`, the account object r
 Keep `msal:<homeAccountId>`, `linkedin:<sub>`, and `session:<id>` names. The client identifier is application configuration, not part of each LinkedIn partition key. This assumes environment/cache isolation and one LinkedIn application per namespace; changing the application registration requires invalidating its old cache. Server sessions reference provider partitions for frontend requests and backend Socket.IO lookup. Track identity/access token expirations independently; retain refresh tokens only when issued and needed. Cache retention cannot extend token validity.
 
 Preserve Redis JavaScript Object Notation (JSON) session path operations. Encrypt/decrypt only the protected whole subdocuments at their existing access boundaries; selective reads need not decrypt the whole session. Whole-session readers decode protected units too. Audit deeper-path reads/writes before placing a parent behind an envelope. Preserve caller-facing object shapes, cache expiry, and concurrent writes; do not persist decrypted duplicates.
-
-The implementation has no compatibility reader for the previously encrypted `currentUser` leaves or `userAgent` value. Invalidate pre-change `session:*` records during rollout, or deploy only after they have expired. The encrypted provider credential partitions are unaffected.
 
 MSAL adapters read/write complete serialized caches: decrypt before deserialization and encrypt after serialization, without depending on the library's internal token-field schema. Frontend wrappers and backend direct Redis consumers must agree on both whole-record and subdocument handling.
 

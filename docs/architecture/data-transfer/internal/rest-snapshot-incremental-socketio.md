@@ -53,10 +53,10 @@ The recommended runner uses an ephemeral frontend test container, does not start
 # Small smoke test
 ./scripts/socketio_load.sh --users=5 --ramp=5 --hold=10 --timeout=60
 
-# Previously used 200-user scenario
+# Reference 200-user scenario
 ./scripts/socketio_load.sh --users=200 --ramp=30 --hold=30 --timeout=120
 
-# Previously used 500-user scenario
+# Reference 500-user stress scenario
 ./scripts/socketio_load.sh --users=500 --ramp=30 --hold=30 --timeout=120
 ```
 
