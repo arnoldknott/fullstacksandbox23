@@ -7,6 +7,7 @@
 	// import type { Action } from 'svelte/action';
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
+	import { setSessionLifecycleContext } from '$lib/session';
 	import {
 		type ColorConfig,
 		FSSB23_THEME_KEY,
@@ -32,6 +33,7 @@
 	// let { children, data }: { children: Snippet; data: LayoutData } = $props();
 
 	setContext('backendAPIConfiguration', page.data.backendAPIConfiguration);
+	setSessionLifecycleContext();
 
 	let restoring = false;
 

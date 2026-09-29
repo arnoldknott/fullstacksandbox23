@@ -4,7 +4,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Response
 
-from core.security import Guards, get_http_access_token_payload
+from core.security import Guards, MicrosoftGuard, get_http_access_token_payload
 from core.types import CollectionInclude, CollectionSort, GuardTypes, SortDirection
 from crud.protected_resource import (
     ProtectedChildCRUD,
@@ -49,7 +49,9 @@ protected_resource_view = BaseView(ProtectedResourceCRUD)
 async def post_protected_resource(
     protected_resource: ProtectedResourceCreate,  # pyright: ignore[reportInvalidTypeForm]
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+    guards: GuardTypes = Depends(
+        Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"]))
+    ),
 ) -> ProtectedResource:  # pyright: ignore[reportInvalidTypeForm]
     """Creates a new protected resource."""
     return await protected_resource_view.post(protected_resource, token_payload, guards)
@@ -58,7 +60,7 @@ async def post_protected_resource(
 @router.get("/resource/", status_code=200)
 async def get_protected_resources(
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(roles=["User"])),
+    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
 ) -> list[ProtectedResourceRead]:
     """Returns all protected resources."""
     return await protected_resource_view.get(token_payload, guards)
@@ -71,7 +73,7 @@ async def get_protected_resource_entity_snapshot(
     sort: Annotated[CollectionSort | None, Query()] = None,
     direction: Annotated[SortDirection, Query()] = SortDirection.ascending,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(roles=["User"])),
+    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
 ) -> list[ProtectedResourceExtended]:  # pyright: ignore[reportInvalidTypeForm]
     """Returns an optionally enriched protected-resource entity snapshot."""
     snapshot = await protected_resource_view.get_entity_snapshot(
@@ -85,7 +87,7 @@ async def get_protected_resource_entity_snapshot(
 async def get_protected_resource_by_id(
     resource_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(roles=["User"])),
+    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
 ) -> ProtectedResourceRead:
     """Returns a protected resource."""
     return await protected_resource_view.get_by_id(resource_id, token_payload, guards)
@@ -96,7 +98,9 @@ async def put_protected_resource(
     resource_id: UUID,
     protected_resource: ProtectedResourceUpdate,  # pyright: ignore[reportInvalidTypeForm]
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+    guards: GuardTypes = Depends(
+        Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"]))
+    ),
 ) -> ProtectedResource:  # pyright: ignore[reportInvalidTypeForm]
     """Updates a protected resource."""
     return await protected_resource_view.put(
@@ -108,7 +112,9 @@ async def put_protected_resource(
 async def delete_protected_resource(
     resource_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+    guards: GuardTypes = Depends(
+        Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"]))
+    ),
 ) -> None:
     """Deletes a protected resource."""
     return await protected_resource_view.delete(resource_id, token_payload, guards)
@@ -128,7 +134,9 @@ async def post_protected_child(
     protected_resource_id: UUID,
     inherit: Annotated[bool, Query()] = False,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+    guards: GuardTypes = Depends(
+        Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"]))
+    ),
 ) -> ProtectedChild:  # pyright: ignore[reportInvalidTypeForm]
     """Creates a new protected child."""
     return await protected_child_view.post(
@@ -139,7 +147,7 @@ async def post_protected_child(
 @router.get("/child/", status_code=200)
 async def get_protected_child(
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(roles=["User"])),
+    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
 ) -> list[ProtectedChildRead]:
     """Returns all protected child resources."""
     return await protected_child_view.get(token_payload, guards)
@@ -152,7 +160,7 @@ async def get_protected_child_entity_snapshot(
     sort: Annotated[CollectionSort | None, Query()] = None,
     direction: Annotated[SortDirection, Query()] = SortDirection.ascending,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(roles=["User"])),
+    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
 ) -> list[ProtectedChildExtended]:  # pyright: ignore[reportInvalidTypeForm]
     """Returns an optionally enriched protected-child entity snapshot."""
     snapshot = await protected_child_view.get_entity_snapshot(
@@ -166,7 +174,7 @@ async def get_protected_child_entity_snapshot(
 async def get_protected_child_by_id(
     resource_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(roles=["User"])),
+    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
 ) -> ProtectedChildRead:
     """Returns a protected child resource."""
     return await protected_child_view.get_by_id(resource_id, token_payload, guards)
@@ -177,7 +185,9 @@ async def put_protected_child(
     resource_id: UUID,
     protected_child: ProtectedChildUpdate,  # pyright: ignore[reportInvalidTypeForm]
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+    guards: GuardTypes = Depends(
+        Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"]))
+    ),
 ) -> ProtectedChild:  # pyright: ignore[reportInvalidTypeForm]
     """Updates a protected child resource."""
     return await protected_child_view.put(
@@ -189,7 +199,9 @@ async def put_protected_child(
 async def delete_protected_child(
     resource_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+    guards: GuardTypes = Depends(
+        Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"]))
+    ),
 ) -> None:
     """Deletes a protected child resource."""
     return await protected_child_view.delete(resource_id, token_payload, guards)
@@ -209,7 +221,9 @@ async def post_protected_grandchild(
     # parent_id: Annotated[UUID | None, Query()] = None,
     inherit: Annotated[bool, Query()] = False,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+    guards: GuardTypes = Depends(
+        Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"]))
+    ),
 ) -> ProtectedGrandChild:  # pyright: ignore[reportInvalidTypeForm]
     """Creates a new protected grandchild."""
     return await protected_grand_child_view.post(
@@ -220,7 +234,7 @@ async def post_protected_grandchild(
 @router.get("/grandchild/", status_code=200)
 async def get_protected_grandchild(
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(roles=["User"])),
+    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
 ) -> list[ProtectedGrandChildRead]:
     """Returns all protected grandchild resources."""
     return await protected_grand_child_view.get(token_payload, guards)
@@ -233,7 +247,7 @@ async def get_protected_grandchild_entity_snapshot(
     sort: Annotated[CollectionSort | None, Query()] = None,
     direction: Annotated[SortDirection, Query()] = SortDirection.ascending,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(roles=["User"])),
+    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
 ) -> list[ProtectedGrandChildExtended]:  # pyright: ignore[reportInvalidTypeForm]
     """Returns an optionally enriched protected-grandchild entity snapshot."""
     snapshot = await protected_grand_child_view.get_entity_snapshot(
@@ -247,7 +261,7 @@ async def get_protected_grandchild_entity_snapshot(
 async def get_protected_grandchild_by_id(
     resource_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(roles=["User"])),
+    guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
 ) -> ProtectedGrandChildRead:
     """Returns a protected grandchild resource."""
     return await protected_grand_child_view.get_by_id(
@@ -260,7 +274,9 @@ async def put_protected_grandchild(
     resource_id: UUID,
     protected_grandchild: ProtectedGrandChildUpdate,  # pyright: ignore[reportInvalidTypeForm]
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+    guards: GuardTypes = Depends(
+        Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"]))
+    ),
 ) -> ProtectedGrandChild:  # pyright: ignore[reportInvalidTypeForm]
     """Updates a protected grandchild resource."""
     return await protected_grand_child_view.put(
@@ -272,7 +288,9 @@ async def put_protected_grandchild(
 async def delete_protected_grandchild(
     resource_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+    guards: GuardTypes = Depends(
+        Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"]))
+    ),
 ) -> None:
     """Deletes a protected grandchild resource."""
     return await protected_grand_child_view.delete(resource_id, token_payload, guards)

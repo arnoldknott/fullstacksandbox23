@@ -40,14 +40,20 @@ Keep edits focused, preserve existing patterns, and prefer small changes over br
 - Use environment variables from local `.env` files in development and testing. If `AZURE_KEYVAULT_HOST` is set, the apps may load variables from Azure Key Vault.
 - For follow-up notes in code comments and workflows, prefer `TBD:` as the marker instead of `TODO:`.
 
+## Security layers and change boundaries
+
+- **Outer security layer:** authentication and admission authorization through OAuth 2.0 and OpenID Connect across identity service providers, including token validation and endpoint/event guards.
+- **Inner security layer:** application access control lists implemented by `AccessPolicy`, identity/resource hierarchies and inheritance, enforced in the create/read/update/delete (CRUD) layer.
+- Consult the user before changing the inner layer, including fixes or refactors. The agreed account-merge work is the exception; it must preserve general authorization semantics. See [security architecture and implementation plans](docs/architecture/security/README.md).
+
 ## Third-party data storage
 
-- For third-party data, only information received directly through authentication may be cached: tokens, authentication-library account metadata, and necessary validated claims. Keep credentials server-side and protect them as required by the authentication design.
-- Data retrieved by using authorization to call a third-party Application Programming Interface (API), including LinkedIn `/v2/userinfo` and Microsoft Graph `/me`, is transient and may exist only in application memory while being processed or displayed.
-- Never cache or persist those third-party responses, selected fields, downloaded media, or derived copies in Redis, database tables, files, logs, telemetry, durable queues, browser storage, service-worker caches, or other application-controlled storage. Encryption does not make such storage permissible. Configure application-controlled Hypertext Transfer Protocol (HTTP) responses and fetches to avoid caching this data.
-- This includes names, email addresses, profile information, picture URLs, avatars, and other data returned by authorized third-party endpoints. Do not place it in persisted session objects, including existing Microsoft or new LinkedIn profile fields.
-- First-party application records/settings and the minimal verified provider identifiers used to link users remain permitted. This distinction must not be used to relabel third-party response data as first-party data. Authentication-derived metadata must not be enriched with persisted third-party API responses.
-- Use synthetic third-party data in stored test fixtures. When changing an existing integration, remove conflicting persistence from the affected flow rather than copying that pattern.
+- Follow the repository-wide [data-storage policy](docs/architecture/security/README.md#data-storage-policy): only required authentication data may be cached; authorized third-party resource responses stay transient in memory.
+
+## Application encryption and Redis retrieval
+
+- Follow the [application encryption contract](docs/architecture/security/README.md#application-encryption) when changing protected application data or encryption consumers. It defines the shared format, key loading, rotation, and failure behavior.
+- Follow the [Redis storage contract](docs/redis/README.md) for Redis-specific encryption granularity, permitted plaintext identifiers, cache boundaries, and performance measurement/reporting requirements.
 
 ## Shared Integration Guidance
 
@@ -103,9 +109,9 @@ The test environment is a separate Docker Compose stack from the dev environment
 - **Build:** `./scripts/build_test.sh`
 - **Enter backend container:** `./scripts/enter_backend_test.sh` (starts the stack and opens a shell)
 - **Enter frontend container:** `./scripts/enter_frontend_svelte_test.sh` (starts the stack and opens a shell)
-- **Stop:** `./scripts/stop_test.sh`
+- **Stop:** `./scripts/stop_test.sh` (stops the test environment)
 
-The test containers can be reused across runs — you do not need to stop and rebuild between each task. Only stop when the user asks or when you are done with all validation.
+The test containers can be reused across runs — you do not need to stop and rebuild between each task. Only stop when the user asks or when you are done with all validation. **Never** stop the test environment if it was running already before you needed it.
 
 **Always show the output summary of the validation results in the same format as the called tool does.**
 

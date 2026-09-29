@@ -2,6 +2,7 @@ import { error, fail } from '@sveltejs/kit';
 
 import { Action, IdentityType } from '$lib/accessHandler';
 import AppConfig from '$lib/server/config';
+import type { OAuthProvider } from '$lib/server/oauth/base';
 import { msalAuthProvider } from '$lib/server/oauth/microsoft';
 import type {
 	AccessPolicy,
@@ -22,13 +23,58 @@ export type BackendEntitySnapshot<T> = {
 	cursor: number;
 };
 
+class BackendAuthenticationProvider implements OAuthProvider {
+	async getAccessToken(_sessionId: string, _scopes: string[] = []): Promise<string> {
+		return msalAuthProvider.getApplicationAccessToken();
+	}
+}
+
+export const backendAuthProvider = new BackendAuthenticationProvider();
+
 class BackendAPI extends BaseAPI {
 	appConfig: AppConfig;
 	static pathPrefix = '/api/v1';
+	private providerRefreshes = new Map<string, Promise<string>>();
 
 	constructor() {
-		super(msalAuthProvider, `${appConfig.backend_origin}${BackendAPI.pathPrefix}`);
+		super(backendAuthProvider, `${appConfig.backend_origin}${BackendAPI.pathPrefix}`);
 		this.appConfig = appConfig;
+	}
+
+	private sessionHeaders(sessionId: string | null, headers: HeadersInit): Record<string, string> {
+		const sessionHeaders: Record<string, string> = {};
+		new Headers(headers).forEach((value, name) => {
+			sessionHeaders[name] = value;
+		});
+		delete sessionHeaders['x-application-session'];
+		if (sessionId) sessionHeaders['X-Application-Session'] = sessionId;
+		return sessionHeaders;
+	}
+
+	private async retryAfterProviderRefresh(
+		sessionId: string | null,
+		response: Response,
+		retry: () => Promise<Response>
+	): Promise<Response> {
+		if (!sessionId || response.status !== 401) return response;
+		let body: unknown;
+		try {
+			body = await response.clone().json();
+		} catch {
+			return response;
+		}
+		const detail = (body as { detail?: Record<string, unknown> }).detail;
+		if (detail?.error !== 'authentication' || detail.code !== 'microsoft-token-required') {
+			return response;
+		}
+		let refresh = this.providerRefreshes.get(sessionId);
+		if (!refresh) {
+			refresh = msalAuthProvider.getAccessToken(sessionId, [appConfig.api_scope_default]);
+			this.providerRefreshes.set(sessionId, refresh);
+			refresh.finally(() => this.providerRefreshes.delete(sessionId));
+		}
+		await refresh;
+		return retry();
 	}
 
 	async post(
@@ -39,7 +85,9 @@ class BackendAPI extends BaseAPI {
 		options: RequestInit = {},
 		headers: HeadersInit = {}
 	) {
-		return await super.post(sessionId, path, body, scopes, options, headers);
+		const request = () =>
+			super.post(sessionId, path, body, scopes, options, this.sessionHeaders(sessionId, headers));
+		return this.retryAfterProviderRefresh(sessionId, await request(), request);
 	}
 
 	async get(
@@ -49,7 +97,9 @@ class BackendAPI extends BaseAPI {
 		options: RequestInit = {},
 		headers: HeadersInit = {}
 	) {
-		return await super.get(sessionId, path, scopes, options, headers);
+		const request = () =>
+			super.get(sessionId, path, scopes, options, this.sessionHeaders(sessionId, headers));
+		return this.retryAfterProviderRefresh(sessionId, await request(), request);
 	}
 
 	async getSnapshot<T>(sessionId: string | null, path: string): Promise<BackendEntitySnapshot<T>> {
@@ -75,7 +125,9 @@ class BackendAPI extends BaseAPI {
 		options: RequestInit = {},
 		headers: HeadersInit = {}
 	) {
-		return await super.put(sessionId, path, body, scopes, options, headers);
+		const request = () =>
+			super.put(sessionId, path, body, scopes, options, this.sessionHeaders(sessionId, headers));
+		return this.retryAfterProviderRefresh(sessionId, await request(), request);
 	}
 
 	async delete(
@@ -85,7 +137,9 @@ class BackendAPI extends BaseAPI {
 		options: RequestInit = {},
 		headers: HeadersInit = {}
 	) {
-		return await super.delete(sessionId, path, scopes, options, headers);
+		const request = () =>
+			super.delete(sessionId, path, scopes, options, this.sessionHeaders(sessionId, headers));
+		return this.retryAfterProviderRefresh(sessionId, await request(), request);
 	}
 
 	async share(

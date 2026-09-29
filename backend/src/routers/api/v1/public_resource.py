@@ -16,7 +16,7 @@ router = APIRouter()
 
 
 @router.post("/", status_code=201)
-async def post_protected_resource(
+async def post_public_resource(
     public_resource: PublicResourceCreate,
 ) -> PublicResource:
     """Creates a new public resource."""

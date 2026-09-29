@@ -11,7 +11,7 @@
 		resourceId,
 		accessRight,
 		socketio,
-		actions = [Action.OWN, Action.WRITE, Action.READ, undefined]
+		actions = [Action.OWN, Action.WRITE, Action.CONNECT, Action.READ, undefined]
 	}: {
 		resourceId: string;
 		accessRight: Action | undefined;

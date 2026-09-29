@@ -1,5 +1,7 @@
 """Tests for Quiz, Question, Message and Numerical API endpoints."""
 
+from uuid import uuid4
+
 import pytest
 
 from crud.quiz import MessageCRUD, NumericalCRUD, QuestionCRUD
@@ -7,6 +9,7 @@ from models.presentation import Presentation
 from models.quiz import Message, Numerical, Question
 from routers.api.v1.tests.base import BaseTest
 from tests.utils import (
+    linkedin_identity,
     token_admin,
     token_admin_read,
     token_admin_read_write,
@@ -41,6 +44,38 @@ class TestQuestion(BaseTest):
     _test_data_wrong = wrong_test_questions
     _test_data_many = many_test_questions
     _test_data_update = question_update_data
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "mocked_provide_http_token_payload", [linkedin_identity], indirect=True
+    )
+    async def test_linkedin_reads_but_cannot_mutate_questions(
+        self,
+        mocked_provide_http_token_payload,
+        current_user_from_azure_token,
+        add_one_test_resource,
+    ):
+        """LinkedIn participates in reads while question writes stay Microsoft-only."""
+        current_user = await current_user_from_azure_token(linkedin_identity)
+        question = await add_one_test_resource(
+            QuestionCRUD, one_test_question, current_user
+        )
+
+        collection = await self.async_client.get(self.router_path)
+        snapshot = await self.async_client.get(f"{self.router_path}snapshot")
+        by_id = await self.async_client.get(f"{self.router_path}{question.id}")
+        assert collection.status_code == 200
+        assert snapshot.status_code == 200
+        assert by_id.status_code == 200
+
+        created = await self.async_client.post(self.router_path, json=one_test_question)
+        updated = await self.async_client.put(
+            f"{self.router_path}{question.id}", json=question_update_data
+        )
+        deleted = await self.async_client.delete(f"{self.router_path}{question.id}")
+        assert created.status_code == 401
+        assert updated.status_code == 401
+        assert deleted.status_code == 401
 
     # POST tests
     @pytest.mark.anyio
@@ -348,6 +383,57 @@ class TestMessage(BaseTest):
     _hierarchical_router_path = "/api/v1/quiz/question/{parent_id}/message/"
     _parent_model = Question
 
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "mocked_provide_http_token_payload", [linkedin_identity], indirect=True
+    )
+    async def test_linkedin_answer_lifecycle_and_ownership(
+        self,
+        mocked_provide_http_token_payload,
+        add_one_test_access_policy,
+    ):
+        """LinkedIn owns an answer created below a publicly connectable question."""
+        parent_id = uuid4()
+        await add_one_test_access_policy(
+            {
+                "resource_id": str(parent_id),
+                "action": "connect",
+                "public": True,
+            },
+            model=Question,
+        )
+
+        created = await self.async_client.post(
+            f"/api/v1/quiz/question/{parent_id}/message/", json=one_test_message
+        )
+        assert created.status_code == 201
+        resource_id = created.json()["id"]
+
+        current_user = await self.async_client.get("/api/v1/user/me")
+        policies = await self.async_client.get(
+            f"/api/v1/access/policy/resource/{resource_id}"
+        )
+        collection = await self.async_client.get(self.router_path)
+        snapshot = await self.async_client.get(f"{self.router_path}snapshot")
+        by_id = await self.async_client.get(f"{self.router_path}{resource_id}")
+        assert current_user.status_code == 200
+        assert policies.status_code == 200
+        assert collection.status_code == 200
+        assert snapshot.status_code == 200
+        assert by_id.status_code == 200
+        assert any(
+            policy["action"] == "own"
+            and policy["identity_id"] == current_user.json()["id"]
+            for policy in policies.json()
+        )
+
+        updated = await self.async_client.put(
+            f"{self.router_path}{resource_id}", json=message_update_data
+        )
+        deleted = await self.async_client.delete(f"{self.router_path}{resource_id}")
+        assert updated.status_code == 200
+        assert deleted.status_code == 200
+
     # POST tests
     @pytest.mark.anyio
     @pytest.mark.parametrize(
@@ -636,6 +722,47 @@ class TestNumerical(BaseTest):
     # Hierarchical routing (Numerical requires parent Question)
     _hierarchical_router_path = "/api/v1/quiz/question/{parent_id}/numerical/"
     _parent_model = Question
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "mocked_provide_http_token_payload", [linkedin_identity], indirect=True
+    )
+    async def test_linkedin_numerical_lifecycle(
+        self,
+        mocked_provide_http_token_payload,
+        add_one_test_access_policy,
+    ):
+        """LinkedIn can create, read, update, and delete a numerical answer."""
+        parent_id = uuid4()
+        await add_one_test_access_policy(
+            {
+                "resource_id": str(parent_id),
+                "action": "connect",
+                "public": True,
+            },
+            model=Question,
+        )
+
+        created = await self.async_client.post(
+            f"/api/v1/quiz/question/{parent_id}/numerical/",
+            json=one_test_numerical,
+        )
+        assert created.status_code == 201
+        resource_id = created.json()["id"]
+        assert (await self.async_client.get(self.router_path)).status_code == 200
+        assert (
+            await self.async_client.get(f"{self.router_path}snapshot")
+        ).status_code == 200
+        assert (
+            await self.async_client.get(f"{self.router_path}{resource_id}")
+        ).status_code == 200
+
+        updated = await self.async_client.put(
+            f"{self.router_path}{resource_id}", json=numerical_update_data
+        )
+        deleted = await self.async_client.delete(f"{self.router_path}{resource_id}")
+        assert updated.status_code == 200
+        assert deleted.status_code == 200
 
     # POST tests
     @pytest.mark.anyio

@@ -1,6 +1,6 @@
 import asyncio
 import uuid
-from typing import List, Optional
+from typing import Any, List, Optional, cast
 from unittest.mock import patch
 
 import pytest
@@ -8,9 +8,19 @@ import socketio
 import uvicorn
 from pydantic import BaseModel
 
-from core.cache import redis_session_client
-from core.security import CurrentAccessToken
-from core.types import CurrentUserData
+from core.authentication.base import VerifiedIdentity
+from core.cache import (
+    create_socketio_admission_ticket,
+    encryption,
+    redis_session_client,
+)
+from core.security import (
+    Guards,
+    LinkedInGuard,
+    MicrosoftGuard,
+    check_token_against_guards,
+)
+from core.types import CurrentUserData, IdentityProvider
 from routers.socketio.v1.demo_namespace import DemoNamespace
 from routers.socketio.v1.demo_resource import DemoResourceNamespace
 from routers.socketio.v1.identities import (
@@ -28,28 +38,7 @@ from routers.socketio.v1.quiz_namespace import (
     NumericalNamespace,
     QuestionNamespace,
 )
-from tests.utils import sessions
-
-# Mocking the sessions for testing purposes.
-
-
-# === Structure of mocked sessions in redis ===
-# That would include the cache, that means we need a fixture that puts session-ids
-# in the cache and return the token_payloads directly from there. That means putting token payloads
-# into the cache, which is not done yet.
-# _________________________________________________
-# | session-id     | token_payload                |
-# |________________|______________________________|
-# | admin-with-... | token_payload_admin-with-... |
-# | user1-with-... | token_payload_user1-with-... |
-# |________________|______________________________|
-#
-# means: get_azure_token_from_cache() gets the token content
-# instead of the user_account, as input
-# and simply returns that token content.
-# no need to mock based on input any more.
-# just make sure that parameterization is now done with the session-id
-# and session-id matches the token_payload in the cache.
+from tests.utils import linkedin_identity, linkedin_subject, sessions
 
 
 @pytest.fixture(scope="function")
@@ -74,18 +63,6 @@ async def mock_sessions(request):
             yield {"mock": mocked_sessions, "mocked_results": results}
 
 
-@pytest.fixture(scope="function")
-async def mock_get_user_account_from_session_cache():
-    """Returns a mocked token."""
-
-    with patch("core.security.get_user_account_from_session_cache") as mock:
-        mock.return_value = {
-            "userName": "testuser",
-            "homeAccountId": "testhometenantid.testhomeaccounid",
-        }
-        yield mock
-
-
 # Setting up socketio server side for testing
 
 
@@ -94,21 +71,47 @@ def load_test_sessions_into_redis():
     """Loads test sessions into Redis for testing purposes."""
 
     for session in sessions:
-        # This is where the mock happens:
-        # instead of linking the session_id with the microsoftAccount,
-        # it links microsoftAccount with the token payload
-        # This enables that the production code from get_user_account_from_session_cache
-        # to accesses the cache - afterwards the get_azure_token_from_cache and
-        # get_azure_token_payload functions are mocked to just pass the raw data through.
-        redis_session_client.json().set(
-            f"session:{session['session_id']}",
-            ".",
-            {"microsoftAccount": session["token_payload"]},
-        )
+        token_payload = session["token_payload"]
+        if (
+            isinstance(token_payload, VerifiedIdentity)
+            and token_payload.provider == IdentityProvider.linkedin
+        ):
+            redis_session_client.json().set(
+                f"session:{session['session_id']}",
+                ".",
+                {
+                    "sessionOwnerProvider": IdentityProvider.linkedin.value,
+                    "linkedinSubject": linkedin_subject,
+                },
+            )
+            redis_session_client.json().set(
+                f"linkedin:{linkedin_subject}",
+                ".",
+                encryption.encrypt(
+                    f"linkedin:{linkedin_subject}", "$", {"idToken": "test-token"}
+                ),
+            )
+        else:
+            redis_key = f"session:{session['session_id']}"
+            redis_session_client.json().set(
+                redis_key,
+                ".",
+                {
+                    "microsoftAccount": encryption.encrypt(
+                        redis_key, "$.microsoftAccount", cast(Any, token_payload)
+                    ),
+                    "microsoftBackendAccessToken": encryption.encrypt(
+                        redis_key,
+                        "$.microsoftBackendAccessToken",
+                        {"accessToken": str(session["session_id"])},
+                    ),
+                },
+            )
 
     yield
     for session in sessions:
         redis_session_client.json().delete(f"session:{session['session_id']}")
+    redis_session_client.json().delete(f"linkedin:{linkedin_subject}")
 
 
 @pytest.fixture(scope="package", autouse=True)
@@ -120,16 +123,29 @@ async def socketio_test_server(
     This fixture skips Authorization but still checks Authentication."""
     # mock_azure_token_in_redis
 
-    def return_input(*args):
-        """Chooses the token associated with the session ID from redis."""
-        # Compute the return value based on the arguments
-        mocked_token = args[0]
-        return mocked_token
+    def return_token_payload(token, *args):
+        """Resolve an opaque fixture token to its provider claims."""
+        for session in sessions:
+            if str(session["session_id"]) != token:
+                continue
+            identity = session["token_payload"]
+            return (
+                identity.claims if isinstance(identity, VerifiedIdentity) else identity
+            )
+        return token
 
-    with patch("core.security.get_azure_token_from_cache") as mocked_user_account:
-        mocked_user_account.side_effect = return_input
-        with patch("core.security.get_azure_token_payload") as mocked_decode_token:
-            mocked_decode_token.side_effect = return_input
+    with (
+        patch("core.security.azure.get_azure_token_payload") as mocked_user_account,
+        patch(
+            "core.authentication.linkedin.get_linkedin_token_payload"
+        ) as mocked_linkedin_token,
+    ):
+        mocked_user_account.side_effect = return_token_payload
+        mocked_linkedin_token.return_value = linkedin_identity.claims
+        with patch(
+            "core.authentication.azure.get_azure_token_payload"
+        ) as mocked_decode_token:
+            mocked_decode_token.side_effect = return_token_payload
 
             sio = socketio.AsyncServer(
                 async_mode="asgi", logger=True, engineio_logger=True
@@ -257,11 +273,16 @@ class SocketIOTestConnection:
             )
             server_url += f"?{query_string}"
         all_namespaces = [namespace["namespace"] for namespace in self.client_config]  # type: ignore[arg-type,call-arg]
+        auth = {}
+        if self.session_id is not None:
+            auth["admission-ticket"] = create_socketio_admission_ticket(
+                str(self.session_id)
+            )
         await self.client.connect(  # type: ignore[attr-defined]
             server_url,
             socketio_path="socketio/v1",
             namespaces=all_namespaces,
-            auth={"session-id": str(self.session_id)},
+            auth=auth,
         )
 
     async def client(self):
@@ -310,9 +331,11 @@ class SocketIOTestConnection:
 
     async def current_user(self) -> CurrentUserData:
         """Returns the current user for the user of this session."""
-        current_user = None
-        token = CurrentAccessToken(self.token_payload())
-        current_user = await token.provides_current_user()
+        current_user = await check_token_against_guards(
+            self.token_payload(),
+            Guards(MicrosoftGuard(), LinkedInGuard())(),
+        )
+        assert current_user is not None
         return current_user
 
 

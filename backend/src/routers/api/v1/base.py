@@ -84,15 +84,11 @@ class BaseView:
     async def get(
         self,
         # get operation does not need a token_payload, if the resource is public
-        token_payload=None,
-        guards=None,
+        token_payload,
+        guards: GuardTypes,
     ):
         logger.info("GET view to retrieve all objects from read CRUD")
-        current_user = None
-        if guards:
-            current_user = await check_token_against_guards(token_payload, guards)
-        elif token_payload:
-            current_user = await check_token_against_guards(token_payload, None)
+        current_user = await check_token_against_guards(token_payload, guards)
         async with self.crud() as crud:
             objects = await crud.read(current_user)
 
@@ -100,19 +96,15 @@ class BaseView:
 
     async def get_entity_snapshot(
         self,
-        token_payload=None,
-        guards=None,
+        token_payload,
+        guards: GuardTypes,
         includes=None,
         sort: CollectionSort | None = None,
         direction: SortDirection = SortDirection.ascending,
         parent_id=None,
     ):
         """Returns an enriched entity collection and its mutation cursor."""
-        current_user = None
-        if guards:
-            current_user = await check_token_against_guards(token_payload, guards)
-        elif token_payload:
-            current_user = await check_token_against_guards(token_payload, None)
+        current_user = await check_token_against_guards(token_payload, guards)
         async with self.crud() as crud:
             return await crud.read_entity_snapshot(
                 current_user=current_user,
@@ -125,15 +117,11 @@ class BaseView:
     async def get_by_id(
         self,
         id,
-        token_payload=None,
-        guards=None,
+        token_payload,
+        guards: GuardTypes,
     ):
         logger.info("GET by id view to retrieve specific object from read CRUD")
-        current_user = None
-        if guards:
-            current_user = await check_token_against_guards(token_payload, guards)
-        elif token_payload:
-            current_user = await check_token_against_guards(token_payload, None)
+        current_user = await check_token_against_guards(token_payload, guards)
         async with self.crud() as crud:
             object = await crud.read_by_id(id, current_user)
         return object
@@ -141,17 +129,13 @@ class BaseView:
     async def get_file_by_id(
         self,
         id,
-        token_payload=None,
-        guards=None,
+        token_payload,
+        guards: GuardTypes,
     ):
         logger.info(
             "GET file by id view to retrieve specific file from disk through read CRUD"
         )
-        current_user = None
-        if guards:
-            current_user = await check_token_against_guards(token_payload, guards)
-        elif token_payload:
-            current_user = await check_token_against_guards(token_payload, None)
+        current_user = await check_token_against_guards(token_payload, guards)
         async with self.crud() as crud:
             return await crud.read_file_by_id(id, current_user)
 

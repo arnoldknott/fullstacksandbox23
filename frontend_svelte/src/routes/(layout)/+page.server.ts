@@ -1,5 +1,6 @@
 import { fail } from '@sveltejs/kit';
 
+import { IdentityProvider } from '$lib/identityProvider';
 import { backendAPI } from '$lib/server/apis/backendApi';
 import { redisCache } from '$lib/server/cache';
 import { SessionStatus } from '$lib/session';
@@ -8,6 +9,34 @@ import { Variant } from '$lib/theming';
 import type { Actions } from './$types';
 
 export const actions: Actions = {
+	unlinkaccount: async ({ locals, request }) => {
+		const session = locals.sessionData;
+		const data = await request.formData();
+		const provider = data.get('provider');
+		if (
+			!session.loggedIn ||
+			!session.currentUser?.id ||
+			!session.sessionOwnerProvider ||
+			(provider !== IdentityProvider.MICROSOFT && provider !== IdentityProvider.LINKEDIN)
+		) {
+			return fail(400, { error: 'Invalid account unlink request.' });
+		}
+		if (provider === session.sessionOwnerProvider) {
+			return fail(409, { error: 'The active provider cannot be unlinked.' });
+		}
+		const response = await backendAPI.delete(session.sessionId, `/user/me/link/${provider}`);
+		if (!response.ok) {
+			return fail(response.status, { error: await response.text() });
+		}
+		const responseMe = await backendAPI.get(session.sessionId, '/user/me');
+		if (!responseMe.ok) {
+			return fail(responseMe.status, { error: 'Updated account could not be reloaded.' });
+		}
+		const currentUser = await responseMe.json();
+		await redisCache.setSession(session.sessionId, '$.currentUser', JSON.stringify(currentUser));
+		session.currentUser = currentUser;
+		return { unlinkedProvider: provider };
+	},
 	putme: async ({ locals, request }) => {
 		const data = await request.formData();
 		const sessionId = locals.sessionData.sessionId;

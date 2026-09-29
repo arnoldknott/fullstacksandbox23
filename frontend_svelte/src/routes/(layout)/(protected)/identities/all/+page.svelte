@@ -2,6 +2,7 @@
 	import { onDestroy, onMount } from 'svelte';
 
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import Display from '$components/Display.svelte';
 	import Heading from '$components/Heading.svelte';
@@ -292,7 +293,7 @@
 		{#snippet ueberGroupsActions()}
 			<div class="flex gap-2">
 				<a
-					href="./identities/ueber-group/{ueberGroup.id}"
+					href={resolve(`/(layout)/(protected)/identities/ueber-group/[ueberGroupId]`, {ueberGroupId: ueberGroup.id})}
 					aria-label="More information about {ueberGroup.name}"
 					><button
 						class="btn btn-info-container btn-gradient shadow-outline btn-circle shadow-sm"

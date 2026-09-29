@@ -15,6 +15,13 @@ export const initialSidebarLinks: SidebarItemContent[] = $state([
 		items: []
 	},
 	{
+		name: 'Account Management',
+		pathname: resolve('/(layout)/oauth/providers'),
+		icon: 'icon-[ic--outline-manage-accounts]',
+		id: 'accounts',
+		items: []
+	},
+	{
 		name: 'Open Playground',
 		pathname: resolve('/(layout)/playground'),
 		icon: 'icon-[mdi--playground-seesaw]',
@@ -199,8 +206,14 @@ export const initialProtectedSidebarLinks: SidebarItemContent[] = $state([
 					{
 						name: 'Microsoft',
 						pathname: resolve('/(layout)/(protected)/identities/msgraph'),
-						icon: 'icon-[fluent--person-20-filled]',
+						icon: 'icon-[codicon--microsoft]',
 						id: 'identities-microsoft'
+					},
+					{
+						name: 'LinkedIn',
+						pathname: resolve('/(layout)/(protected)/identities/linkedin'),
+						icon: 'icon-[cib--linkedin-in]',
+						id: 'identities-linkedin'
 					}
 				]
 			},

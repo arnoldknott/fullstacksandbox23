@@ -1,6 +1,7 @@
 import logging
 
-from core.types import EventGuard, GuardTypes
+from core.security import Guards, MicrosoftGuard
+from core.types import EventGuard
 from crud.identity import (
     GroupCRUD,
     SubGroupCRUD,
@@ -13,7 +14,7 @@ from models.identity import (
     GroupExtended,
     GroupRead,
     GroupUpdate,
-    Me,
+    MeUpdate,
     SubGroupCreate,
     SubGroupExtended,
     SubGroupRead,
@@ -39,23 +40,33 @@ logger = logging.getLogger(__name__)
 user_guards = [
     EventGuard(
         event="connect",
-        guards=GuardTypes(scopes=["socketio", "api.read"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.read"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="submit:create",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["Admin"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["Admin"])
+        )(),
     ),
     EventGuard(
         event="submit:update",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="delete",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["Admin"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["Admin"])
+        )(),
     ),
     EventGuard(
         event="share",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
 ]
 
@@ -96,7 +107,7 @@ class UserNamespace(BaseNamespace):
     #     except Exception as error:
     #         logger.error(f"Failed to current user data for client {sid}.")
     #         print(error)
-    #         await self._emit_status(sid, {"error": str(error)})
+    #         await self._emit_status(sid, {"error": "other", "detail": str(error)})
 
     async def on_read_me(self, sid):
         """Callback on connect for returns Me."""
@@ -115,9 +126,9 @@ class UserNamespace(BaseNamespace):
                 to=sid,
             )
         except Exception as error:
-            logger.error(f"Failed to current user data for client {sid}.")
-            print(error)
-            await self._emit_status(sid, {"error": str(error)})
+            await self._handle_event_error(
+                sid, error, context="Failed to read current user data"
+            )
 
     async def on_update_me(self, sid, data):
         """Update Me event for socket.io namespaces."""
@@ -126,7 +137,7 @@ class UserNamespace(BaseNamespace):
             current_user = await self._get_current_user_and_check_guard(
                 sid, "submit:update"
             )
-            new_me = Me(**data)
+            new_me = MeUpdate.model_validate(data)
             updated_me = None
             assert self.crud is not None
             async with self.crud() as crud:
@@ -138,31 +149,41 @@ class UserNamespace(BaseNamespace):
                 to=sid,
             )
         except Exception as error:
-            logger.error(f"Failed to update Me for client {sid}.")
-            print(error)
-            await self._emit_status(sid, {"error": str(error)})
+            await self._handle_event_error(
+                sid, error, context="Failed to update current user data"
+            )
 
 
 ueber_group_guards = [
     EventGuard(
         event="connect",
-        guards=GuardTypes(scopes=["socketio", "api.read"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.read"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="submit:create",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["Admin"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["Admin"])
+        )(),
     ),
     EventGuard(
         event="submit:update",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="delete",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["Admin"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["Admin"])
+        )(),
     ),
     EventGuard(
         event="share",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
 ]
 
@@ -196,23 +217,33 @@ class UeberGroupNamespace(BaseNamespace):
 group_guards = [
     EventGuard(
         event="connect",
-        guards=GuardTypes(scopes=["socketio", "api.read"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.read"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="submit:create",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="submit:update",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="delete",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="share",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
 ]
 
@@ -245,23 +276,33 @@ class GroupNamespace(BaseNamespace):
 sub_group_guards = [
     EventGuard(
         event="connect",
-        guards=GuardTypes(scopes=["socketio", "api.read"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.read"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="submit:create",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="submit:update",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="delete",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="share",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
 ]
 
@@ -294,23 +335,33 @@ class SubGroupNamespace(BaseNamespace):
 sub_sub_group_guards = [
     EventGuard(
         event="connect",
-        guards=GuardTypes(scopes=["socketio", "api.read"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.read"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="submit:create",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="submit:update",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="delete",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="share",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
 ]
 

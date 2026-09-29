@@ -271,7 +271,7 @@ async def test_user_gets_error_on_status_event_due_to_database_error(
         status_data = connection.responses("status")
 
         assert transfer_data == []
-        assert status_data == [{"error": "Database error."}]
+        assert status_data == [{"error": "other", "detail": "Database error."}]
 
 
 @pytest.mark.anyio
@@ -433,7 +433,7 @@ async def test_user_submits_resource_without_id_for_creation_missing_write_scope
 
     # However the submit event fails due to missing "api.write" scope
     assert len(status_data) == 1
-    assert status_data[0]["error"] == "401: Invalid token."
+    assert status_data[0] == {"error": "access", "code": "authorization-failed"}
 
 
 @pytest.mark.anyio
@@ -623,7 +623,7 @@ async def test_user_submits_resource_with_random_string_in_id_field_fails(
     await connection.client.sleep(0.3)
     status_data = connection.responses("status")
 
-    assert status_data[0]["error"] == "badly formed hexadecimal UUID string"
+    assert status_data[0]["detail"] == "badly formed hexadecimal UUID string"
 
 
 @pytest.mark.anyio
@@ -652,7 +652,7 @@ async def test_user_submits_resource_without_id_for_creation_missing_name(
 
     assert (
         "1 validation error for DemoResourceCreate\nname\n  Field required [type=missing, input_value={'description': 'Description of test resource'}, input_type=dict]"
-        in statuses_data[0]["error"]
+        in statuses_data[0]["detail"]
     )
 
 
@@ -682,7 +682,7 @@ async def test_user_submits_resource_with_nonexisting_uuid_fails(
     await connection.client.sleep(0.3)
     statuses_data = connection.responses("status")
 
-    assert statuses_data[0]["error"] == "404: DemoResource not updated."
+    assert statuses_data[0]["detail"] == "404: DemoResource not updated."
 
 
 @pytest.mark.anyio
@@ -791,7 +791,7 @@ async def test_user_updates_demo_resource_missing_write_scope_in_token_fails(
     # Wait for the response to be set
     await connection.client.sleep(0.3)
     status_data = connection.responses("status")
-    assert status_data[0]["error"] == "401: Invalid token."
+    assert status_data[0] == {"error": "access", "code": "authorization-failed"}
 
     # Connection is still open, so disconnection_result should be None
     disconnection_result = await connection.client.disconnect()
@@ -841,7 +841,7 @@ async def test_user_updates_demo_resource_not_having_write_access_fails(
     await connection.client.sleep(0.3)
     statuses_data = connection.responses("status")
 
-    assert statuses_data[0]["error"] == "404: DemoResource not updated."
+    assert statuses_data[0]["detail"] == "404: DemoResource not updated."
 
 
 @pytest.mark.anyio
@@ -953,7 +953,7 @@ async def test_user_deletes_a_demo_resource_missing_write_scope_in_token(
     deleted_data = connection.responses("deleted")
 
     assert deleted_data == []
-    assert statuses_data == [{"error": "401: Invalid token."}]
+    assert statuses_data == [{"error": "access", "code": "authorization-failed"}]
 
     disconnection_result = await connection.client.disconnect()
     assert disconnection_result is None
@@ -982,7 +982,8 @@ async def test_client_tries_to_delete_demo_resource_without_owner_rights_fails_a
     await connection.client.sleep(0.3)
 
     assert connection.responses("status")[0] == {
-        "error": "404: DemoResource not deleted."
+        "error": "other",
+        "detail": "404: DemoResource not deleted.",
     }
 
 
@@ -1411,7 +1412,7 @@ async def test_user_updates_access_to_owned_resource_for_a_group_identity_to_sam
     await connection1.client.sleep(0.4)
 
     assert connection1.responses("status") == [
-        {"error": "404: Access policy not found."}
+        {"error": "other", "detail": "404: Access policy not found."}
     ]
     assert connection2.responses("status") == []
     # Even the third user is admin, share events don't get emitted automatically to admin,
@@ -1551,7 +1552,7 @@ async def test_user_removes_share_with_group(
                 "id": str(resources[1].id),
             },
             {"success": "deleted", "id": str(resources[1].id)},
-            {"error": f"Resource {str(resources[1].id)} not found."},
+            {"error": "other", "detail": f"Resource {str(resources[1].id)} not found."},
         ]
     else:
         assert status_data2 == [
@@ -1612,7 +1613,9 @@ async def test_user_shares_tries_to_share_resource_without_having_access(
     # Wait for the response to be set
     await connection.client.sleep(0.3)
 
-    assert connection.responses("status") == [{"error": "403: Forbidden."}]
+    assert connection.responses("status") == [
+        {"error": "other", "detail": "403: Forbidden."}
+    ]
 
     assert len(connection.responses("transferred")) == 0
 
@@ -1801,7 +1804,8 @@ async def test_user_removes_last_inherited_owner_access_and_reread_fails(
         "id": str(resources[0].id),
     }
     assert connection.responses("status")[2] == {
-        "error": f"Resource {str(resources[0].id)} not found."
+        "error": "other",
+        "detail": f"Resource {str(resources[0].id)} not found.",
     }
     assert len(connection.responses("transferred")) == 1
 

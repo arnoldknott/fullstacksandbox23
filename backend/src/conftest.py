@@ -17,15 +17,18 @@ from sqlalchemy.ext.asyncio import async_sessionmaker
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from core.cache import redis_session_client
+from core.cache import encryption, redis_session_client
+from core.authentication.base import VerifiedIdentity
 from core.databases import postgres_async_engine  # should be SQLite here only!
 from core.security import (
     CurrentAccessToken,
     Guards,
+    LinkedInGuard,
+    MicrosoftGuard,
+    check_token_against_guards,
     provide_http_token_payload,
-    provide_http_token_payload_optional,
 )
-from core.types import Action, CurrentUserData, IdentityType, ResourceType
+from core.types import Action, CurrentUserData, GuardTypes, IdentityType, ResourceType
 from crud.access import (
     AccessLoggingCRUD,
     AccessPolicyCRUD,
@@ -151,9 +154,6 @@ def app_override_provide_http_token_payload(
     fastapi_app.dependency_overrides[provide_http_token_payload] = (
         lambda: mocked_provide_http_token_payload
     )
-    fastapi_app.dependency_overrides[provide_http_token_payload_optional] = (
-        lambda: mocked_provide_http_token_payload
-    )
     yield fastapi_app
     fastapi_app.dependency_overrides = {}
 
@@ -169,7 +169,7 @@ async def current_test_user(
 
 @pytest.fixture(scope="function")
 def mock_guards() -> Generator[
-    Callable[[List[str], List[str], List[UUID]], Guards],
+    Callable[[List[str], List[str], List[UUID]], GuardTypes],
     None,
     None,
 ]:
@@ -180,7 +180,7 @@ def mock_guards() -> Generator[
         roles: List[str] = [],
         groups: List[UUID] = [],
     ):
-        return Guards(scopes=scopes, roles=roles, groups=groups)
+        return Guards(MicrosoftGuard(scopes=scopes, roles=roles, groups=groups))()
 
     yield _mock_guards
 
@@ -216,14 +216,19 @@ async def current_user_from_azure_token():
     """Returns a mock current user based on provided payload and adds to user database."""
 
     async def _current_user_from_azure_token(
-        token_payload: Optional[dict[str, Any]] = None,
+        token_payload: Optional[dict[str, Any] | VerifiedIdentity] = None,
     ) -> CurrentUserData:
-        current_user = None
         if token_payload is None:
             token_payload = token_admin
+        if isinstance(token_payload, VerifiedIdentity):
+            current_user = await check_token_against_guards(
+                token_payload,
+                Guards(MicrosoftGuard(), LinkedInGuard())(),
+            )
+            assert current_user is not None
+            return current_user
         token = CurrentAccessToken(token_payload)
-        current_user = await token.provides_current_user()
-        return current_user
+        return await token.provides_current_user()
 
     yield _current_user_from_azure_token
 
@@ -235,13 +240,20 @@ async def setup_redis_session_data():
     for azure_user_account in many_azure_user_accounts:
         session_id = uuid4()
         sessions.append({session_id: {"microsoftAccount": azure_user_account}})
+        redis_key = f"session:{session_id}"
         redis_session_client.json().set(
-            f"session:{session_id}", ".", {"microsoftAccount": azure_user_account}
+            redis_key,
+            ".",
+            {
+                "microsoftAccount": encryption.encrypt(
+                    redis_key, "$.microsoftAccount", azure_user_account
+                )
+            },
         )
     yield sessions
     # Clean up after the test
     for session in sessions:
-        redis_session_client.json().delete(f"session:{session.keys()}")
+        redis_session_client.json().delete(f"session:{next(iter(session))}")
 
 
 async def register_entity_to_identity_type_link_table(

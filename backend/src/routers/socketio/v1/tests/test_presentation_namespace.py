@@ -6,6 +6,7 @@ from crud.presentation import PresentationCRUD
 from models.presentation import Presentation
 from tests.utils import (
     session_id_admin_read_write_socketio,
+    session_id_linkedin_socketio,
     session_id_user1_read_write_socketio,
 )
 from tests.utils_presentations import (
@@ -27,6 +28,31 @@ class TestPresentation(BaseSocketIOTest):
     _test_data_many = many_test_presentations
     _test_data_update = presentation_update_data
     _parent_model = None  # Presentation is standalone
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "session_ids", [[session_id_linkedin_socketio]], indirect=True
+    )
+    async def test_linkedin_connects_but_cannot_create_presentation(
+        self, socketio_test_client, session_ids
+    ):
+        """LinkedIn can join the read channel but writes stay Microsoft-only."""
+        connection = await socketio_test_client(
+            client_config=self.client_config(), session_id=session_ids[0]
+        )
+        await connection.connect()
+        await connection.client.emit(
+            "submit",
+            {"payload": {**self._test_data_single}},
+            namespace=self.namespace_path,
+        )
+        await connection.client.sleep(0.5)
+
+        assert {
+            "error": "access",
+            "code": "authorization-failed",
+        } in connection.responses("status", self.namespace_path)
+        await connection.client.disconnect()
 
     # Submit Create Tests
     @pytest.mark.anyio

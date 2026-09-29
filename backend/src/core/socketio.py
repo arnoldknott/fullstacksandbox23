@@ -42,6 +42,17 @@ socketio_server = AsyncServer(
 print("👍 🧦 Socket.IO started")
 
 
+async def disconnect_auth_sessions(session_ids: set[str]) -> None:
+    """Disconnect every socket joined with an invalidated application session."""
+    for namespace in tuple(socketio_server.namespace_handlers):
+        for session_id in session_ids:
+            participants = socketio_server.manager.get_participants(
+                namespace, f"auth-session:{session_id}"
+            )
+            for sid, _ in participants:
+                await socketio_server.disconnect(sid, namespace=namespace)
+
+
 # unnecessary?
 @socketio_server.event
 async def connect(sid):

@@ -10,6 +10,7 @@ from models.access import Action
 from models.quiz import Message, Numerical, Question
 from tests.utils import (
     session_id_admin_read_write_socketio,
+    session_id_linkedin_socketio,
     session_id_user1_read_write_socketio,
     session_id_user2_read_write_socketio,
 )
@@ -38,6 +39,31 @@ class TestQuestion(BaseSocketIOTest):
     _test_data_many = many_test_questions
     _test_data_update = question_update_data
     _parent_model = None  # Question is standalone
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "session_ids", [[session_id_linkedin_socketio]], indirect=True
+    )
+    async def test_linkedin_connects_but_cannot_create_question(
+        self, socketio_test_client, session_ids
+    ):
+        """LinkedIn can join the read channel but question creation stays Microsoft-only."""
+        connection = await socketio_test_client(
+            client_config=self.client_config(), session_id=session_ids[0]
+        )
+        await connection.connect()
+        await connection.client.emit(
+            "submit",
+            {"payload": {**self._test_data_single}},
+            namespace=self.namespace_path,
+        )
+        await connection.client.sleep(0.5)
+
+        assert {
+            "error": "access",
+            "code": "authorization-failed",
+        } in connection.responses("status", self.namespace_path)
+        await connection.client.disconnect()
 
     # Submit Create Tests
     @pytest.mark.anyio
@@ -355,6 +381,7 @@ class TestMessage(BaseSocketIOTest):
         [
             [session_id_admin_read_write_socketio],
             [session_id_user1_read_write_socketio],
+            [session_id_linkedin_socketio],
         ],
         indirect=True,
     )
@@ -576,7 +603,7 @@ class TestMessage(BaseSocketIOTest):
 
         assert len(status_data) == 1
         assert (
-            status_data[0]["error"] == "409: Only one public access policy is allowed."
+            status_data[0]["detail"] == "409: Only one public access policy is allowed."
         )
 
     @pytest.mark.anyio
@@ -986,6 +1013,7 @@ class TestMessage(BaseSocketIOTest):
         [
             [session_id_admin_read_write_socketio],
             [session_id_user1_read_write_socketio],
+            [session_id_linkedin_socketio],
         ],
         indirect=True,
     )
@@ -1011,6 +1039,7 @@ class TestMessage(BaseSocketIOTest):
         [
             [session_id_admin_read_write_socketio],
             [session_id_user1_read_write_socketio],
+            [session_id_linkedin_socketio],
         ],
         indirect=True,
     )
@@ -1036,6 +1065,7 @@ class TestMessage(BaseSocketIOTest):
         [
             [session_id_admin_read_write_socketio],
             [session_id_user1_read_write_socketio],
+            [session_id_linkedin_socketio],
         ],
         indirect=True,
     )
@@ -1521,6 +1551,7 @@ class TestNumerical(BaseSocketIOTest):
         [
             [session_id_admin_read_write_socketio],
             [session_id_user1_read_write_socketio],
+            [session_id_linkedin_socketio],
         ],
         indirect=True,
     )
@@ -1585,6 +1616,7 @@ class TestNumerical(BaseSocketIOTest):
         [
             [session_id_admin_read_write_socketio],
             [session_id_user1_read_write_socketio],
+            [session_id_linkedin_socketio],
         ],
         indirect=True,
     )
@@ -1610,6 +1642,7 @@ class TestNumerical(BaseSocketIOTest):
         [
             [session_id_admin_read_write_socketio],
             [session_id_user1_read_write_socketio],
+            [session_id_linkedin_socketio],
         ],
         indirect=True,
     )
@@ -1635,6 +1668,7 @@ class TestNumerical(BaseSocketIOTest):
         [
             [session_id_admin_read_write_socketio],
             [session_id_user1_read_write_socketio],
+            [session_id_linkedin_socketio],
         ],
         indirect=True,
     )

@@ -1,6 +1,7 @@
 import logging
 
-from core.types import EventGuard, GuardTypes
+from core.security import Guards, MicrosoftGuard
+from core.types import EventGuard
 
 from .base import BaseNamespace
 
@@ -21,7 +22,9 @@ logger = logging.getLogger(__name__)
 event_guards = [
     EventGuard(
         event="connect",
-        guards=GuardTypes(scopes=["socketio", "api.read"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.read"], roles=["User"])
+        )(),
     )
 ]
 

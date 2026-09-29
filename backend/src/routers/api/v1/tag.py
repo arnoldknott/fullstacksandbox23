@@ -3,7 +3,12 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends
 
-from core.security import Guards, get_http_access_token_payload
+from core.security import (
+    AllowAnonymous,
+    Guards,
+    MicrosoftGuard,
+    get_http_access_token_payload,
+)
 from core.types import GuardTypes
 from crud.tag import TagCRUD
 from models.tag import Tag, TagCreate, TagRead, TagUpdate
@@ -20,7 +25,9 @@ tag_view = BaseView(TagCRUD)
 async def post_tag(
     tag: TagCreate,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+    guards: GuardTypes = Depends(
+        Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"]))
+    ),
 ) -> Tag:
     """Creates a new tag."""
     return await tag_view.post_with_public_access(
@@ -33,17 +40,20 @@ async def post_tag(
 
 
 @router.get("/", status_code=200)
-async def get_tags() -> list[TagRead]:
+async def get_tags(
+    guards: GuardTypes = Depends(Guards(AllowAnonymous())),
+) -> list[TagRead]:
     """Returns all tags."""
-    return await tag_view.get()
+    return await tag_view.get(None, guards)
 
 
 @router.get("/{tag_id}", status_code=200)
 async def get_tag_by_id(
     tag_id: UUID,
+    guards: GuardTypes = Depends(Guards(AllowAnonymous())),
 ) -> TagRead:
     """Returns a tag."""
-    return await tag_view.get_by_id(tag_id)
+    return await tag_view.get_by_id(tag_id, None, guards)
 
 
 @router.put("/{tag_id}", status_code=200)
@@ -51,7 +61,9 @@ async def put_tag(
     tag_id: UUID,
     tag: TagUpdate,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+    guards: GuardTypes = Depends(
+        Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"]))
+    ),
 ) -> Tag:
     """Updates a tag."""
     return await tag_view.put(
@@ -68,7 +80,9 @@ async def put_tag(
 async def delete_tag(
     tag_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"], roles=["User"])),
+    guards: GuardTypes = Depends(
+        Guards(MicrosoftGuard(scopes=["api.write"], roles=["User"]))
+    ),
 ) -> None:  # Tag:
     """Deletes a tag."""
     return await tag_view.delete(

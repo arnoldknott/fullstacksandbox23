@@ -1,5 +1,8 @@
+from unittest.mock import AsyncMock
+
 import pytest
 import socketio
+from fastapi import HTTPException
 from socketio.exceptions import ConnectionError
 
 from core.socketio import socketio_server
@@ -38,11 +41,88 @@ async def test_on_connect_to_production_on_server_side_fails_unpatched_server():
         await DemoNamespace(server=socketio_server).on_connect(
             sid="123",
             environ={},
-            auth={"session-id": "fake-session-id"},
+            auth={"admission-ticket": "fake-ticket"},
         )
         raise Exception("This should have failed due unpatched server.")
     except ConnectionRefusedError as err:
-        assert str(err) == "Authorization failed."
+        assert err.args[0] == {
+            "error": "access",
+            "code": "authentication-expired",
+        }
+
+
+@pytest.mark.anyio
+async def test_on_connect_rejects_raw_application_session_reference():
+    with pytest.raises(ConnectionRefusedError) as error:
+        await DemoNamespace(server=socketio_server).on_connect(
+            sid="123",
+            environ={},
+            auth={"session-id": "reusable-session-reference"},
+        )
+
+    assert error.value.args[0] == {
+        "error": "access",
+        "code": "authentication-expired",
+    }
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "backend_error",
+    [
+        RuntimeError("Redis is unavailable."),
+        HTTPException(status_code=503, detail="Identity provider is unavailable."),
+    ],
+)
+async def test_on_connect_does_not_request_reauthentication_for_backend_failures(
+    monkeypatch, backend_error
+):
+    namespace = DemoNamespace(server=socketio_server)
+    monkeypatch.setattr(
+        namespace,
+        "_get_token_payload_if_authenticated",
+        AsyncMock(side_effect=backend_error),
+    )
+    monkeypatch.setattr(
+        "routers.socketio.v1.base.consume_socketio_admission_ticket",
+        lambda _: "existing-session",
+    )
+
+    with pytest.raises(ConnectionRefusedError) as error:
+        await namespace.on_connect(
+            sid="123",
+            environ={},
+            auth={"admission-ticket": "valid-ticket"},
+        )
+
+    assert error.value.args[0] == {
+        "error": "connection",
+        "code": "connection-failed",
+    }
+
+
+@pytest.mark.anyio
+async def test_idle_socket_is_disconnected_when_authentication_expires(monkeypatch):
+    server = AsyncMock()
+    namespace = DemoNamespace(server=server)
+    monkeypatch.setattr(namespace, "_expiry_delay", lambda *_: 0)
+    monkeypatch.setattr(
+        namespace,
+        "_get_token_payload_if_authenticated",
+        AsyncMock(side_effect=ConnectionRefusedError("expired")),
+    )
+
+    await namespace._watch_authentication_expiry("socket-1", "session-1", {"exp": 1})
+
+    server.emit.assert_awaited_once()
+    assert server.emit.await_args.args == (
+        "status",
+        {"error": "access", "code": "authentication-expired"},
+    )
+    assert "socket-1" in server.emit.await_args.kwargs["to"]
+    server.disconnect.assert_awaited_once_with(
+        "socket-1", namespace=namespace.namespace
+    )
 
 
 @pytest.mark.anyio
@@ -163,7 +243,7 @@ async def test_connection_to_production_server_fails_authorization(
             "http://127.0.0.1:80",
             socketio_path="socketio/v1",
             namespaces=["/demo-namespace"],
-            auth={"session-id": str(session_ids[0])},
+            auth={"admission-ticket": str(session_ids[0])},
         )
 
         response = None

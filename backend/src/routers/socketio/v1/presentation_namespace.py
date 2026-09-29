@@ -1,6 +1,7 @@
 import logging
 
-from core.types import EventGuard, GuardTypes
+from core.security import AllowAnonymous, Guards, LinkedInGuard, MicrosoftGuard
+from core.types import EventGuard
 from crud.presentation import PresentationCRUD
 from models.presentation import Presentation
 
@@ -9,22 +10,33 @@ from .base import BaseNamespace
 logger = logging.getLogger(__name__)
 
 guards = [
-    EventGuard(event="connect", guards=None),  # GuardTypes(),  # allow public access
+    EventGuard(
+        event="connect",
+        guards=Guards(MicrosoftGuard(), LinkedInGuard(), AllowAnonymous())(),
+    ),
     EventGuard(
         event="submit:create",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="submit:update",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="delete",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
     EventGuard(
         event="share",
-        guards=GuardTypes(scopes=["socketio", "api.write"], roles=["User"]),
+        guards=Guards(
+            MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"])
+        )(),
     ),
 ]
 

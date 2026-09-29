@@ -12,7 +12,7 @@ Use the package scripts from `frontend_svelte/package.json` when working directl
 - `bun lint`
 - `bun check`
 - `bun test:unit`
-- Single test file: `bun test:unit -- src/components/Guard.spec.ts`
+- Single test file: `bun test:unit -- src/components/Guard.test.ts`
 
 **Interactive shortcut for developers:** run `./scripts/enter_frontend_svelte_test.sh` from the repo root to build, start the test stack, and drop into the `frontend_svelte` container shell where you can run `bun lint`, `bun check`, `bun test:unit`, etc. directly.
 
@@ -22,7 +22,7 @@ To mirror the repository's containerized workflow non-interactively (used by CI 
 - Lint: `docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T frontend_svelte sh -lc "bun lint"`
 - Check: `docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T frontend_svelte sh -lc "bun check"`
 - Unit tests: `docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T frontend_svelte sh -lc "bun test:unit"`
-- Single test file: `docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T frontend_svelte sh -lc "bun test:unit -- src/components/Guard.spec.ts"`
+- Single test file: `docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T frontend_svelte sh -lc "bun test:unit -- src/components/Guard.test.ts"`
 - Build: `docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T frontend_svelte sh -lc "bun run build"`
 
 The `--env-file backend/src/tests/.env` flag is required; without it compose will not resolve the test-stack environment variables. The scripts under `scripts/` already pass this flag for you.
@@ -89,9 +89,9 @@ the Testing Library / Vitest / common JS conventions:
 
 Conventions:
 
-- Specs live next to the production code as `*.spec.ts` (component specs in
-  `src/components/`, library specs in `src/lib/`). Vitest is configured to
-  pick up `src/**/*.{test,spec}.{js,ts}`.
+- Tests live next to the production code. Name TypeScript test files
+  `*.test.ts`, or `*.svelte.test.ts` when the filename identifies a Svelte
+  component. Do not use `*.spec.ts`.
 - Provide Svelte context to a wrapper through Testing Library's `context`
   render option (`render(Wrapper, { context: new Map([...]) })`) instead of
   calling `setContext` inside the wrapper, so the wrapper stays minimal.

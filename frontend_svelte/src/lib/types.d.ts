@@ -5,6 +5,8 @@ import type {
 } from '@microsoft/microsoft-graph-types';
 
 import type { Action, IdentityType } from '$lib/accessHandler';
+import type { IdentityProvider } from '$lib/identityProvider';
+import type { AccountMergeState } from '$lib/server/oauth/accountLink';
 import type { SessionStatus } from '$lib/session';
 import type { Variant } from '$lib/theming';
 
@@ -20,17 +22,33 @@ export type BackendAPIConfiguration = {
 export type Session = {
 	loggedIn: boolean;
 	status?: SessionStatus;
+	welcomePending?: boolean;
+	sessionOwnerProvider?: IdentityProvider;
 	microsoftAccount?: AccountInfo;
-	microsoftProfile?: MicrosoftProfile;
+	microsoftBackendAccessToken?: { accessToken: string; expiresAt: number };
+	linkedinSubject?: string;
 	userAgent?: string;
 	currentUser?: Me;
+	accountMerge?: AccountMergeState;
 	sessionId: string;
 };
 
 export type ClientSession = {
 	loggedIn: boolean;
 	sessionId: string;
-	microsoftProfile: MicrosoftProfile;
+	sessionOwnerProvider?: IdentityProvider;
+	microsoftProfile?: MicrosoftProfile;
+	linkedinProfile?: LinkedInProfile;
+	currentUser?: Me;
+	status?: SessionStatus;
+};
+
+export type LinkedInProfile = {
+	sub: string;
+	name?: string;
+	given_name?: string;
+	family_name?: string;
+	picture?: string;
 };
 
 // Sidebar:
@@ -219,8 +237,9 @@ export type Identity = {
 
 export type User = {
 	id: string;
-	azure_user_id: string;
-	azure_tenant_id: string;
+	azure_user_id: string | null;
+	azure_tenant_id: string | null;
+	linkedin_user_id: string | null;
 	is_active: boolean;
 	azure_groups: AzureGroup[];
 	ueber_groups?: UeberGroup[]; // TBD: fix
@@ -254,7 +273,6 @@ export type Me = User & {
 type AzureGroup = {
 	id: string;
 	azure_tenant_id: string;
-	is_active: boolean;
 	azure_users: User[];
 };
 

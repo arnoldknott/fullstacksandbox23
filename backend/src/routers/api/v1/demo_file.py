@@ -5,7 +5,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, File, UploadFile
 from fastapi.responses import FileResponse
 
-from core.security import Guards, get_http_access_token_payload
+from core.security import Guards, MicrosoftGuard, get_http_access_token_payload
 from core.types import GuardTypes
 from crud.demo_file import DemoFileCRUD
 from models.demo_file import DemoFile, DemoFileUpdate
@@ -24,7 +24,7 @@ async def post_demo_file(
     demo_resource_id: UUID,
     files: List[UploadFile] = File(...),
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"])),
+    guards: GuardTypes = Depends(Guards(MicrosoftGuard(scopes=["api.write"]))),
 ) -> List[DemoFile]:
     """Creates a new demo file."""
     files_metadata = []
@@ -41,7 +41,7 @@ async def post_demo_file(
 async def get_demo_file_by_id(
     file_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.read"])),
+    guards: GuardTypes = Depends(Guards(MicrosoftGuard(scopes=["api.read"]))),
 ) -> FileResponse:
     """Retrieves a demo file by ID."""
     return await demo_file_view.get_file_by_id(file_id, token_payload, guards)
@@ -52,7 +52,6 @@ async def get_demo_file_by_id(
 # async def get_all_demo_files(
 #     file_ids: List[UUID] = None,
 #     token_payload=Depends(get_http_access_token_payload),
-#     guards: GuardTypes = Depends(Guards(scopes=["api.read"])),
 # ) -> List[DemoFile]:
 #     """Returns all demo files."""
 #     return await demo_file_view.get_files(token_payload, guards)
@@ -63,7 +62,7 @@ async def put_demo_file_by_id(
     file_id: UUID,
     files: UploadFile = File(...),
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"])),
+    guards: GuardTypes = Depends(Guards(MicrosoftGuard(scopes=["api.write"]))),
 ) -> DemoFile:
     """Updates a demo file by ID."""
     return await demo_file_view.put_file(file_id, files, token_payload, guards)
@@ -74,7 +73,7 @@ async def put_demo_file_metadata_by_id(
     file_id: UUID,
     demo_file: DemoFileUpdate,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"])),
+    guards: GuardTypes = Depends(Guards(MicrosoftGuard(scopes=["api.write"]))),
 ) -> DemoFile:
     """Updates a demo file by ID."""
     return await demo_file_view.put_file_metadata(
@@ -86,7 +85,7 @@ async def put_demo_file_metadata_by_id(
 async def delete_demo_file_by_id(
     file_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
-    guards: GuardTypes = Depends(Guards(scopes=["api.write"])),
+    guards: GuardTypes = Depends(Guards(MicrosoftGuard(scopes=["api.write"]))),
 ) -> None:
     """Deletes a demo file by ID."""
     return await demo_file_view.delete_file(file_id, token_payload, guards)
