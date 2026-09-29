@@ -11,7 +11,11 @@
 <section class="mb-8">
 	<Title id="microsoft">Microsoft</Title>
 	<div class="flex items-center gap-3">
-		<LoginOutButton loggedIn={authentication.microsoft} provider={IdentityProvider.MICROSOFT} />
+		<LoginOutButton
+			loggedIn={authentication.microsoft}
+			linkAccount={Boolean(session?.loggedIn && !session.currentUser?.azure_user_id)}
+			provider={IdentityProvider.MICROSOFT}
+		/>
 		{#if authentication.microsoft && page.data.preferredProvider === IdentityProvider.MICROSOFT}
 			<span
 				class="icon-[hugeicons--token-circle] text-primary size-6"
@@ -41,7 +45,11 @@
 <section>
 	<Title id="linkedIn">LinkedIn</Title>
 	<div class="flex items-center gap-3">
-		<LoginOutButton loggedIn={authentication.linkedin} provider={IdentityProvider.LINKEDIN} />
+		<LoginOutButton
+			loggedIn={authentication.linkedin}
+			linkAccount={Boolean(session?.loggedIn && !session.currentUser?.linkedin_user_id)}
+			provider={IdentityProvider.LINKEDIN}
+		/>
 		{#if authentication.linkedin && page.data.preferredProvider === IdentityProvider.LINKEDIN}
 			<span
 				class="icon-[hugeicons--token-circle] text-primary size-6"

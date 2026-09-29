@@ -17,7 +17,9 @@ export const load: PageServerLoad = async ({ url, request, cookies }) => {
 		? await redisCache.getSession<Session>(existingSessionId)
 		: undefined;
 	const sessionId = existingSession?.loggedIn ? existingSessionId! : v4();
-	const linkRequested = url.searchParams.get('intent') === 'link';
+	const linkRequested =
+		url.searchParams.get('intent') === 'link' ||
+		Boolean(existingSession?.loggedIn && !existingSession.currentUser?.linkedin_user_id);
 	if (linkRequested && (!existingSession?.loggedIn || !existingSession.currentUser?.id)) {
 		throw new Error('Account linking requires an established session.');
 	}
