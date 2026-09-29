@@ -518,17 +518,14 @@ async def test_session_candidate_loader_returns_all_valid_providers(monkeypatch)
 async def test_session_candidate_loader_treats_expired_linkedin_as_unavailable(
     monkeypatch,
 ):
-    session_values = {
+    values = {
         "$.microsoftAccount": {"username": "user@example.invalid"},
         "$.linkedinSubject": "linkedin-subject",
     }
-    monkeypatch.setattr(
-        "core.security.get_session_value",
-        lambda session_id, path: session_values[path],
-    )
+    monkeypatch.setattr("core.security.get_session_value", lambda _, path: values[path])
     monkeypatch.setattr(
         "core.security.get_protected_cache_value",
-        lambda key: {"idToken": "expired-linkedin-token"},
+        lambda _: {"idToken": "expired-linkedin-token"},
     )
     monkeypatch.setattr(
         "core.security.get_azure_token_from_cache",
@@ -542,11 +539,40 @@ async def test_session_candidate_loader_treats_expired_linkedin_as_unavailable(
         "core.security.linkedin.get_linkedin_token_payload",
         AsyncMock(side_effect=HTTPException(status_code=401)),
     )
-
     candidates = await load_session_provider_candidates("session")
-
     assert len(candidates) == 1
     assert candidates[0].provider == IdentityProvider.microsoft
+
+
+@pytest.mark.anyio
+async def test_session_candidate_loader_treats_invalid_microsoft_as_unavailable(
+    monkeypatch,
+):
+    values = {
+        "$.microsoftAccount": {"username": "user@example.invalid"},
+        "$.linkedinSubject": "linkedin-subject",
+    }
+    monkeypatch.setattr("core.security.get_session_value", lambda _, path: values[path])
+    monkeypatch.setattr(
+        "core.security.get_protected_cache_value",
+        lambda _: {"idToken": "linkedin-token"},
+    )
+    monkeypatch.setattr(
+        "core.security.get_azure_token_from_cache",
+        AsyncMock(return_value="microsoft-token"),
+    )
+    monkeypatch.setattr(
+        "core.security.azure.get_azure_token_payload",
+        AsyncMock(side_effect=jwt.InvalidSignatureError()),
+    )
+    monkeypatch.setattr(
+        "core.security.linkedin.get_linkedin_token_payload",
+        AsyncMock(return_value={"sub": "linkedin-subject"}),
+    )
+    candidates = await load_session_provider_candidates("session")
+    assert [candidate.provider for candidate in candidates] == [
+        IdentityProvider.linkedin
+    ]
 
 
 @pytest.mark.anyio

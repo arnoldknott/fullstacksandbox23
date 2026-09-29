@@ -1,5 +1,6 @@
 import json
 import logging
+import jwt
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
@@ -261,7 +262,9 @@ async def get_azure_token_from_cache(
     user_account: Dict[str, Any], scopes: List[str] | None = None
 ) -> str | None:
     """Gets the azure token from the cache"""
-    scopes = scopes or []
+    # A Microsoft guard without explicit scope requirements still needs an API
+    # audience when asking MSAL for a silent access token.
+    scopes = scopes or [f"api://{config.API_SCOPE}/api.read"]
     # Create the PersistentTokenCache
     cache = get_persistent_cache(user_account)
     msal_conf_client = ConfidentialClientApplication(
@@ -327,7 +330,7 @@ async def get_token_payload_from_cache(
 # region: GUARDS
 
 
-async def load_session_provider_candidates(
+async def load_session_provider_candidates(  # noqa: C901
     session_id: str, scopes: List[str] | None = None
 ) -> tuple[VerifiedIdentity, ...]:
     """Load every currently valid provider identity referenced by a session.
@@ -342,7 +345,12 @@ async def load_session_provider_candidates(
     if isinstance(user_account, dict):
         token = await get_azure_token_from_cache(user_account, scopes)
         if token:
-            payload = await azure.get_azure_token_payload(token)
+            try:
+                payload = await azure.get_azure_token_payload(token)
+            except (HTTPException, jwt.PyJWTError) as error:
+                if isinstance(error, HTTPException) and error.status_code != 401:
+                    raise
+                payload = None
             if payload is not None:
                 candidates.append(VerifiedIdentity(IdentityProvider.microsoft, payload))
 
