@@ -1,6 +1,6 @@
 # Multi-provider session authorization
 
-Status: in progress; stages A through D and the Stage E implementation are complete. Live staging verification remains. This plan replaces the previously implemented single-active-provider selection model for communication from the trusted frontend server to the backend. Account linking, provider credential acquisition, encrypted cache storage, and the existing inner access-control layer remain unchanged.
+Status: complete; stages A through E are implemented and verified. This plan replaces the previously implemented single-active-provider selection model for communication from the trusted frontend server to the backend. Account linking, provider credential acquisition, encrypted cache storage, and the existing inner access-control layer remain unchanged.
 
 ## 1. Outcome and terminology
 
@@ -155,4 +155,4 @@ Completion requires REST and Socket.IO to select from the same verified session 
 - [x] B: REST session-reference transport and direct bearer compatibility.
 - [x] C: Socket.IO per-event selection and room reconciliation.
 - [x] D: lifecycle, reauthentication, session-field, and providers-page cleanup.
-- [ ] E: deployment-boundary implementation and automated validation are complete; live staging verification remains.
+- [x] E: deployment boundary, automated validation, and live staging verification.
