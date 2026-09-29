@@ -1,14 +1,97 @@
 <script lang="ts">
 	import type { RevealApi } from 'reveal.js';
+	import { onDestroy, onMount } from 'svelte';
 
 	import RevealJs from '$components/RevealJS.svelte';
+	import { SocketIO } from '$lib/socketio.svelte';
+	import type { MessageExtended } from '$lib/types';
 
+	import type { PageData } from './$types';
 	import FramedSlide from './FramedSlide.svelte';
 	import Library from './Library.svelte';
+	import Map from './Map.svelte';
 	import Overview from './Overview.svelte';
 
+	let { data }: { data: PageData } = $props();
+
 	let revealInstance = $state<RevealApi | undefined>(undefined);
+
+	// let motivationQuestion = $derived(
+	// 	data.payload.questions.find((question) => question.question.includes('motivation'))
+	// );
+	let placesQuestion = $derived(
+		data.payload.questions.find((question) => question.question.includes('places'))
+	);
+	let commentsQuestion = $derived(
+		data.payload.questions.find((question) => question.question.includes('comments'))
+	);
+	// let socketioMotivation: SocketIO<NumericalExtended> = $state()!;
+	let socketioPlaces: SocketIO<MessageExtended> = $state()!;
+	let socketioComments: SocketIO<MessageExtended> = $state()!;
+	// let motivationAnswers = $derived(socketioMotivation?.entities ?? []);
+
+	onMount(() => {
+		// socketioMotivation = new SocketIO<NumericalExtended>(
+		// 	{
+		// 		namespace: '/numerical',
+		// 		parentId: motivationQuestion?.id
+		// 	},
+		// 	{
+		// 		snapshot: data.payload.motivationSnapshot
+		// 	}
+		// );
+		socketioPlaces = new SocketIO<MessageExtended>(
+			{
+				namespace: '/message',
+				parentId: placesQuestion?.id,
+				queryParams: { 'request-access-data': true }
+			},
+			{
+				snapshot: data.payload.placesSnapshot,
+				template: {
+					content: JSON.stringify({
+						emoji: '📍',
+						name: '',
+						text: '',
+						coords: { lat: 0, lng: 0 },
+						marker: undefined
+					}),
+					language: 'en'
+				}
+			}
+		);
+		socketioPlaces.createSortedSelection('sortedPlacesAnswers', 'creation_date', false);
+		socketioComments = new SocketIO<MessageExtended>(
+			{
+				namespace: '/message',
+				parentId: commentsQuestion?.id,
+				queryParams: { 'request-access-data': true }
+			},
+			{
+				snapshot: data.payload.commentsSnapshot,
+				template: { content: '', language: 'en' }
+			}
+		);
+		socketioComments.createSortedSelection('sortedCommentsAnswers', 'creation_date', false);
+	});
+
+	onDestroy(() => {
+		// socketioMotivation?.client.disconnect();
+		socketioPlaces?.client.disconnect();
+		socketioComments?.client.disconnect();
+	});
 </script>
+
+{#snippet interactiveElementNotAvailable(elementName: string)}
+	<div class="flex h-full w-full flex-col items-center justify-center gap-5 text-center">
+		<div class="text-6xl font-bold">⚠️</div>
+		<div class="text-2xl font-semibold">Interactive {elementName} is not available.</div>
+		<div class="text-base-content/70 text-lg">
+			This interactive element is not available in the current context.<br />
+			Please inform the presenter about it.
+		</div>
+	</div>
+{/snippet}
 
 <RevealJs bind:reveal={revealInstance}>
 	<section>
@@ -40,6 +123,13 @@
 				}
 			]}
 		/>
+	</FramedSlide>
+	<FramedSlide part="diversity" section="map" color="primary">
+		{#if placesQuestion}
+			<Map {revealInstance} socketio={socketioPlaces} />
+		{:else}
+			{@render interactiveElementNotAvailable('map')}
+		{/if}
 	</FramedSlide>
 	<!-- <FramedSlide>
 			<div
