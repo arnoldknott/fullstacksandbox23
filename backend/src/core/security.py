@@ -5,9 +5,6 @@ from typing import Annotated, Any, List, Optional, cast
 from uuid import UUID
 
 import jwt
-
-# from enum import Enum
-# import asyncio
 from fastapi import Depends, Header, HTTPException, Request
 from fastapi.security import OAuth2AuthorizationCodeBearer
 
