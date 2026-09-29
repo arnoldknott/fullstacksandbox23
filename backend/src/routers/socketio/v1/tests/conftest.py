@@ -80,18 +80,6 @@ async def mock_sessions(request):
             yield {"mock": mocked_sessions, "mocked_results": results}
 
 
-@pytest.fixture(scope="function")
-async def mock_get_user_account_from_session_cache():
-    """Returns a mocked token."""
-
-    with patch("core.security.get_user_account_from_session_cache") as mock:
-        mock.return_value = {
-            "userName": "testuser",
-            "homeAccountId": "testhometenantid.testhomeaccounid",
-        }
-        yield mock
-
-
 # Setting up socketio server side for testing
 
 
@@ -134,7 +122,12 @@ def load_test_sessions_into_redis():
                 {
                     "microsoftAccount": encryption.encrypt(
                         redis_key, "$.microsoftAccount", cast(Any, token_payload)
-                    )
+                    ),
+                    "microsoftBackendAccessToken": encryption.encrypt(
+                        redis_key,
+                        "$.microsoftBackendAccessToken",
+                        {"accessToken": token_payload},
+                    ),
                 },
             )
 
@@ -160,7 +153,7 @@ async def socketio_test_server(
         return mocked_token
 
     with (
-        patch("core.security.get_azure_token_from_cache") as mocked_user_account,
+        patch("core.security.azure.get_azure_token_payload") as mocked_user_account,
         patch(
             "core.authentication.linkedin.get_linkedin_token_payload"
         ) as mocked_linkedin_token,

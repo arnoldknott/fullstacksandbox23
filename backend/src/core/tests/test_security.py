@@ -7,13 +7,11 @@ from fastapi import Depends, FastAPI
 from httpx2 import AsyncClient
 
 from core.authentication.azure import get_azure_jwks
-from core.cache import encryption, redis_session_client
 from core.security import (
     CurrentAzureUserInDatabase,
     Guards,
     MicrosoftGuard,
     get_http_access_token_payload,
-    get_user_account_from_session_cache,
     provide_http_token_payload,
 )
 from core.types import Action, CurrentUserData, GuardOutcome
@@ -474,67 +472,6 @@ async def test_existing_user_logs_in(
 
 
 # endregion
-
-
-# region: Testing Session and Cache interaction
-
-
-@pytest.mark.anyio
-async def test_get_user_account_from_session_cache(setup_redis_session_data):
-    """Tests if the user account can be retrieved from the session cache."""
-    sessions = setup_redis_session_data
-
-    for session in sessions:
-        session_id = next(iter(session))
-        user_account = await get_user_account_from_session_cache(session_id)
-        mocked_microsoft_account = session[session_id]["microsoftAccount"]
-        assert (
-            user_account["homeAccountId"] == mocked_microsoft_account["homeAccountId"]
-        )
-        assert user_account["username"] == mocked_microsoft_account["username"]
-        assert user_account["environment"] == mocked_microsoft_account["environment"]
-        assert user_account["tenantId"] == mocked_microsoft_account["tenantId"]
-        assert (
-            user_account["localAccountId"] == mocked_microsoft_account["localAccountId"]
-        )
-        assert (
-            user_account["authorityType"] == mocked_microsoft_account["authorityType"]
-        )
-
-
-@pytest.mark.anyio
-async def test_get_user_account_from_encrypted_session_cache(setup_redis_session_data):
-    """The backend can use a Microsoft account encrypted by the frontend format."""
-    session = setup_redis_session_data[0]
-    session_id = next(iter(session))
-    redis_key = f"session:{session_id}"
-    microsoft_account = session[session_id]["microsoftAccount"]
-    encrypted_account = encryption.encrypt(
-        redis_key, "$.microsoftAccount", microsoft_account
-    )
-    redis_session_client.json().set(
-        redis_key, ".", {"microsoftAccount": encrypted_account}
-    )
-
-    assert microsoft_account["username"] not in str(encrypted_account)
-    assert await get_user_account_from_session_cache(session_id) == microsoft_account
-
-
-@pytest.mark.anyio
-async def test_get_user_account_from_session_cache_nonexistent():
-    session_id = "nonexistent_session_id"
-    try:
-        await get_user_account_from_session_cache(session_id)
-        raise Exception("This should have failed due to non-existent session.")
-    except ValueError as error:
-        assert str(error) == "User account not found in session."
-
-    # with pytest.raises(ValueError) as error:
-    #     await get_user_account_from_session_cache(session_id)
-    #     print("=== error ===")
-    #     print(error)
-    #     assert str(error) == f"Session with id {session_id} not found."
-    #     assert 0
 
 
 # endregion: Testing Session and Cache interaction

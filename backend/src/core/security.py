@@ -1,19 +1,15 @@
-import json
 import logging
-import jwt
 from collections.abc import Mapping
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
-from typing import Annotated, Any, Dict, List, Optional, cast
+from typing import Annotated, Any, List, Optional, cast
 from uuid import UUID
+
+import jwt
 
 # from enum import Enum
 # import asyncio
 from fastapi import Depends, Header, HTTPException, Request
 from fastapi.security import OAuth2AuthorizationCodeBearer
-from msal import ConfidentialClientApplication
-from msal_extensions.persistence import BasePersistence
-from msal_extensions.token_cache import PersistedTokenCache
 
 from core.authentication import azure, linkedin
 from core.authentication.base import (
@@ -24,8 +20,6 @@ from core.authentication.base import (
 from core.cache import (
     get_protected_cache_value,
     get_session_value,
-    redis_session_client,
-    set_protected_cache_value,
 )
 from core.config import config
 from core.types import AllowAnonymous  # noqa: F401 - public guard declaration interface
@@ -190,102 +184,6 @@ async def get_http_access_token_payload(
     return payload
 
 
-# raise Exception("Backend does not support saving tokens")
-
-# region: Token from Cache through Session
-
-
-class RedisPersistence(BasePersistence):
-    """Redis persistence class for the token cache"""
-
-    def __init__(self, user_account):
-        self.user_account = user_account
-
-    def save(self, content):  # type: ignore[override]
-        """Saves the token to the cache"""
-        # raise Exception("Backend does not support saving tokens")
-        result = set_protected_cache_value(self.get_location(), json.loads(content))
-        # print("===➡️ 🔑 token saved to cache in backend based on session_id ===")
-        return json.dumps(result)
-
-    def load(self):
-        """Loads the token from the cache"""
-        result = get_protected_cache_value(self.get_location())
-        # print("===⬅️ 🔑 token loaded from cache in backend based on session_id ===")
-        return json.dumps(result)
-
-    def get_location(self):
-        """Returns the location in the cache"""
-        location = f"msal:{self.user_account['homeAccountId']}"
-        return location
-
-    def time_last_modified(self):
-        """Returns the time the cache was last modified"""
-        try:
-            # `redis_session_client` is the sync client; `.object()` is typed as a
-            # `ResponseT` union to support the async client too. Narrow to int here.
-            idle_time = cast(
-                Optional[int],
-                redis_session_client.object("idletime", self.get_location()),
-            )
-            if idle_time:
-                last_accessed_time = datetime.now() - timedelta(seconds=idle_time)
-                return last_accessed_time.timestamp()
-            else:
-                return datetime.now().timestamp()
-        except Exception:
-            logger.error("🔑 Failed to get last modified time for cached token")
-            raise Exception("no modification time available")
-
-
-def get_persistent_cache(user_account):
-    """Returns the persistent cache for the user account"""
-    persistence = RedisPersistence(user_account)
-    persistedTokenCache = PersistedTokenCache(persistence)
-    return persistedTokenCache
-
-
-# TBD: write tests for this
-async def get_user_account_from_session_cache(session_id: str) -> Dict[str, Any]:
-    """Gets the user account from the cache"""
-    logger.info("🔑 Getting user account from cache")
-    user_account = cast(
-        Optional[Dict[str, Any]], get_session_value(session_id, "$.microsoftAccount")
-    )
-    if not user_account:
-        raise ValueError("User account not found in session.")
-    return user_account
-
-
-# TBD: write tests for this
-async def get_azure_token_from_cache(
-    user_account: Dict[str, Any], scopes: List[str] | None = None
-) -> str | None:
-    """Gets the azure token from the cache"""
-    # A Microsoft guard without explicit scope requirements still needs an API
-    # audience when asking MSAL for a silent access token.
-    scopes = scopes or [f"api://{config.API_SCOPE}/api.read"]
-    # Create the PersistentTokenCache
-    cache = get_persistent_cache(user_account)
-    msal_conf_client = ConfidentialClientApplication(
-        client_id=config.FRONTEND_SVELTE_CLIENT_ID,
-        client_credential=config.FRONTEND_SVELTE_CLIENT_SECRET,
-        authority=config.AZURE_AUTHORITY,
-        token_cache=cache,
-    )
-
-    accounts = msal_conf_client.get_accounts(user_account["username"])
-    for account in accounts:
-        # TBD: change into scopes:
-        # result = msal_conf_client.acquire_token_silent(["User.Read"], account=account)
-        result = msal_conf_client.acquire_token_silent(scopes, account=account)
-        if result and "access_token" in result:
-            # print("===🔑 azure access_token from cache - access-token ===")
-            # print(result["access_token"])
-            return result["access_token"]
-    return None
-
-
 async def get_token_payload_from_cache(
     session_id: str, scopes: List[str] | None = None
 ) -> VerifiedIdentity:
@@ -296,36 +194,6 @@ async def get_token_payload_from_cache(
         raise HTTPException(status_code=401, detail="No cached provider token found.")
     return candidates[0]
 
-    # # Create the PersistentTokenCache
-    # cache = get_persistent_cache(user_account)
-    # msal_conf_client = ConfidentialClientApplication(
-    #     client_id=config.FRONTEND_SVELTE_CLIENT_ID,
-    #     client_credential=config.FRONTEND_SVELTE_CLIENT_SECRET,
-    #     authority=config.AZURE_AUTHORITY,
-    #     token_cache=cache,
-    # )
-
-    # accounts = msal_conf_client.get_accounts(user_account["username"])
-    # for account in accounts:
-    #     # TBD: change into scopes:
-    #     # result = msal_conf_client.acquire_token_silent(["User.Read"], account=account)
-    #     result = msal_conf_client.acquire_token_silent(scopes, account=account)
-    #     if "access_token" in result:
-    #         print("===🔑 azure access_token from cache - access-token ===")
-    #         # print(result["access_token"])
-    #         return result["access_token"]
-    # return None
-
-
-# async def get_http_access_token_payload(
-#     payload: dict = Depends(provide_http_token_payload),
-# ) -> dict:
-#     """General function to get the access token payload"""
-#     # can later be used for customizing different identity service providers
-#     return payload
-
-
-# endregion: Token from Cache through Session
 
 # region: GUARDS
 
@@ -817,8 +685,7 @@ async def authorize_session_candidates(
             status_code=401,
             detail={
                 "error": "authentication",
-                "code": "provider-token-required",
-                "provider": missing_provider,
+                "code": f"{missing_provider}-token-required",
             },
         ) from error
     return selected, resolved[selected.provider] if selected is not None else None

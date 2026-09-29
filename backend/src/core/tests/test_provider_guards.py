@@ -1058,7 +1058,7 @@ async def test_socket_cache_selects_linkedin_identity_token(monkeypatch):
         ("linkedin:member-sub", None): encrypted_tokens,
     }.get((key, path), [])
     monkeypatch.setattr(
-        "core.security.redis_session_client.json", Mock(return_value=cache_json)
+        "core.cache.redis_session_client.json", Mock(return_value=cache_json)
     )
     validate = AsyncMock(
         return_value={
@@ -1102,7 +1102,7 @@ async def test_socket_cache_defaults_a_missing_provider_path_to_microsoft(monkey
 
     cache_json.get.side_effect = get_cached_value
     monkeypatch.setattr(
-        "core.security.redis_session_client.json", Mock(return_value=cache_json)
+        "core.cache.redis_session_client.json", Mock(return_value=cache_json)
     )
     validate = AsyncMock(return_value={"oid": "member", "tid": "tenant"})
     monkeypatch.setattr("core.security.azure.get_azure_token_payload", validate)

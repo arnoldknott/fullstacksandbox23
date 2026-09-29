@@ -64,8 +64,9 @@ class BackendAPI extends BaseAPI {
 			return response;
 		}
 		const detail = (body as { detail?: Record<string, unknown> }).detail;
-		if (detail?.code !== 'provider-token-required' || detail.provider !== 'microsoft')
+		if (detail?.error !== 'authentication' || detail.code !== 'microsoft-token-required') {
 			return response;
+		}
 		let refresh = this.providerRefreshes.get(sessionId);
 		if (!refresh) {
 			refresh = msalAuthProvider.getAccessToken(sessionId, [appConfig.api_scope_default]);
