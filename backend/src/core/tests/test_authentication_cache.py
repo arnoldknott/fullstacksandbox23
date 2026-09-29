@@ -165,3 +165,18 @@ async def test_azure_retains_one_refresh_retry(monkeypatch):
     assert await azure.get_azure_token_payload("synthetic-token") == {"oid": "subject"}
     assert loader.call_args_list == [call(), call(no_cache=True)]
     assert decoder.await_count == 2
+
+
+async def test_linkedin_expired_token_does_not_refresh_keys(monkeypatch):
+    loader = AsyncMock(return_value={"keys": []})
+    validator = Mock(side_effect=jwt.ExpiredSignatureError())
+    monkeypatch.setattr(linkedin, "get_linkedin_jwks", loader)
+    monkeypatch.setattr(linkedin, "validate_linkedin_identity_token", validator)
+
+    with pytest.raises(jwt.ExpiredSignatureError):
+        await linkedin.get_linkedin_token_payload(
+            "expired-token", client_id="synthetic-client"
+        )
+
+    loader.assert_awaited_once_with()
+    validator.assert_called_once()

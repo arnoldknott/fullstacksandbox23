@@ -23,6 +23,7 @@ import {
 	type OAuthIntent,
 	type OAuthProvider,
 	type OAuthTransaction,
+	OAuthTransactionUnavailableError,
 	redirectToReauthentication,
 	validateOAuthIntent,
 	validateOAuthTransaction
@@ -231,13 +232,14 @@ class MicrosoftAuthenticationProvider implements OAuthProvider {
 		if (!stateJSON.sessionId) throw new Error('OAuth transaction state is invalid.');
 		const value = await redisCache.getSession(stateJSON.sessionId, '$.microsoftAuthorization');
 		if (!value || typeof value !== 'object' || !('state' in value)) {
-			throw new Error('Microsoft authorization session was not found.');
+			throw new OAuthTransactionUnavailableError('Microsoft authorization session was not found.');
 		}
-		await redisCache.deleteSessionPath(stateJSON.sessionId, '$.microsoftAuthorization');
 		const authorization = validateOAuthTransaction(value as MicrosoftAuthorization, state);
 		const session = await redisCache.getSession<{ loggedIn?: boolean }>(stateJSON.sessionId);
-		if (!session) throw new Error('Microsoft authorization session was not found.');
+		if (!session)
+			throw new OAuthTransactionUnavailableError('Microsoft authorization session was not found.');
 		validateOAuthIntent(authorization.intent, session.loggedIn === true);
+		await redisCache.deleteSessionPath(stateJSON.sessionId, '$.microsoftAuthorization');
 		return authorization;
 	}
 

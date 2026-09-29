@@ -19,6 +19,14 @@ export type OAuthTransaction = {
 	initiatingProvider?: IdentityProvider;
 	initiatingUserId?: string;
 };
+export class OAuthTransactionUnavailableError extends Error {
+	constructor(
+		message: string,
+		public readonly transaction?: Pick<OAuthTransaction, 'intent' | 'targetUrl' | 'parentUrl'>
+	) {
+		super(message);
+	}
+}
 
 export function createOAuthTransaction(
 	state: string,
@@ -41,7 +49,7 @@ export function validateOAuthTransaction<T extends OAuthTransaction>(
 		throw new Error('OAuth transaction intent is invalid.');
 	}
 	if (!Number.isFinite(transaction.expiresAt) || transaction.expiresAt <= now) {
-		throw new Error('OAuth transaction expired.');
+		throw new OAuthTransactionUnavailableError('OAuth transaction expired.', transaction);
 	}
 	return transaction;
 }
