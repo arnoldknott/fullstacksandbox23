@@ -70,7 +70,7 @@
 		</div>
 		</FramedSlide> -->
 
-	<FramedSlide>Allan Watts - Chinese Farmer ?</FramedSlide>
+	<!-- <FramedSlide>Allan Watts - Chinese Farmer ?</FramedSlide> -->
 	<FramedSlide>Drawing from BusinessIllustrator - closed box</FramedSlide>
 	<FramedSlide>Course 2nd semester -> linearising</FramedSlide>
 	<FramedSlide>Course 2nd semester -> a bit closer to reality</FramedSlide>
