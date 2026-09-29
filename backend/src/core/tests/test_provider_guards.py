@@ -532,7 +532,7 @@ async def test_session_candidate_loader_treats_expired_linkedin_as_unavailable(
     )
     monkeypatch.setattr(
         "core.security.linkedin.get_linkedin_token_payload",
-        AsyncMock(side_effect=HTTPException(status_code=401)),
+        AsyncMock(side_effect=jwt.ExpiredSignatureError()),
     )
     candidates = await load_session_provider_candidates("session")
     assert len(candidates) == 1

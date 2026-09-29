@@ -232,8 +232,8 @@ async def load_session_provider_candidates(  # noqa: C901
                     token,
                     client_id=cast(str, config.LINKEDIN_CLIENT_ID),
                 )
-            except HTTPException as error:
-                if error.status_code != 401:
+            except (HTTPException, jwt.PyJWTError) as error:
+                if isinstance(error, HTTPException) and error.status_code != 401:
                     raise
             else:
                 if claims.get("sub") != subject:
