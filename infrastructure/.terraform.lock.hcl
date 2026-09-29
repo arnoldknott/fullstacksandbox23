@@ -4,6 +4,7 @@
 provider "registry.opentofu.org/hashicorp/azuread" {
   version = "3.10.0"
   hashes = [
+    "h1:m41Yi6NU4Gbzd5/SIpNyuvvfasYlk/3qWJDiGDkjTFs=",
     "h1:r7LkBzNMZkIO7SxwoTz66jINQDB8NYSXqygzFZYDivA=",
     "zh:15107b4c2ad39c05e35bd5adafaf72dd9d6e7ec493bfc823cc9fae58e8df36ff",
     "zh:1d5390da92013c4eb478579721957b8208c89faaa827a8d12f1cf32269a7e8c4",
