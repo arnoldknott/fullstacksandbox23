@@ -27,27 +27,26 @@ export const load: PageServerLoad = async ({ url }) => {
 			question.question.includes('comments')
 		);
 		// [payload.motivationSnapshot, payload.placesSnapshot, payload.commentsSnapshot] =
-		[payload.placesSnapshot, payload.commentsSnapshot] =
-			await Promise.all([
-				// motivationQuestion?.id
-				// 	? backendAPI.getSnapshot<NumericalExtended>(
-				// 			null,
-				// 			`/quiz/numerical/snapshot?parent-id=${encodeURIComponent(motivationQuestion?.id)}`
-				// 		)
-				// 	: Promise.resolve({ entities: [] as NumericalExtended[], cursor: 0 }),
-				placesQuestion?.id
-					? backendAPI.getSnapshot<MessageExtended>(
-							null,
-							`/quiz/message/snapshot?parent-id=${encodeURIComponent(placesQuestion?.id)}&include=creation-date&sort=creation-date&direction=desc`
-						)
-					: Promise.resolve({ entities: [] as MessageExtended[], cursor: 0 }),
-				commentsQuestion?.id
-					? backendAPI.getSnapshot<MessageExtended>(
-							null,
-							`/quiz/message/snapshot?parent-id=${encodeURIComponent(commentsQuestion?.id)}&include=creation-date&sort=creation-date&direction=desc`
-						)
-					: Promise.resolve({ entities: [] as MessageExtended[], cursor: 0 })
-			]);
+		[payload.placesSnapshot, payload.commentsSnapshot] = await Promise.all([
+			// motivationQuestion?.id
+			// 	? backendAPI.getSnapshot<NumericalExtended>(
+			// 			null,
+			// 			`/quiz/numerical/snapshot?parent-id=${encodeURIComponent(motivationQuestion?.id)}`
+			// 		)
+			// 	: Promise.resolve({ entities: [] as NumericalExtended[], cursor: 0 }),
+			placesQuestion?.id
+				? backendAPI.getSnapshot<MessageExtended>(
+						null,
+						`/quiz/message/snapshot?parent-id=${encodeURIComponent(placesQuestion?.id)}&include=creation-date&sort=creation-date&direction=desc`
+					)
+				: Promise.resolve({ entities: [] as MessageExtended[], cursor: 0 }),
+			commentsQuestion?.id
+				? backendAPI.getSnapshot<MessageExtended>(
+						null,
+						`/quiz/message/snapshot?parent-id=${encodeURIComponent(commentsQuestion?.id)}&include=creation-date&sort=creation-date&direction=desc`
+					)
+				: Promise.resolve({ entities: [] as MessageExtended[], cursor: 0 })
+		]);
 	} else {
 		// TBD: consider rising an error herem,
 		// so client side can react accordingly and not show the relevant elements

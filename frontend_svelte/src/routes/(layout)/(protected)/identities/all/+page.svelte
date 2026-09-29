@@ -293,7 +293,9 @@
 		{#snippet ueberGroupsActions()}
 			<div class="flex gap-2">
 				<a
-					href={resolve(`/(layout)/(protected)/identities/ueber-group/[ueberGroupId]`, {ueberGroupId: ueberGroup.id})}
+					href={resolve(`/(layout)/(protected)/identities/ueber-group/[ueberGroupId]`, {
+						ueberGroupId: ueberGroup.id
+					})}
 					aria-label="More information about {ueberGroup.name}"
 					><button
 						class="btn btn-info-container btn-gradient shadow-outline btn-circle shadow-sm"
