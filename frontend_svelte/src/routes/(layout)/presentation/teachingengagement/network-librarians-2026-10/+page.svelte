@@ -7,6 +7,7 @@
 	import type { MessageExtended } from '$lib/types';
 
 	import type { PageData } from './$types';
+	import Comments from './Comments.svelte';
 	import FramedSlide from './FramedSlide.svelte';
 	import Library from './Library.svelte';
 	import Map from './Map.svelte';
@@ -16,17 +17,42 @@
 
 	let revealInstance = $state<RevealApi | undefined>(undefined);
 
+	let returnToSlide = $state<string | undefined>(undefined);
+
+	// $effect(() => {
+	// 	preview = page.url.searchParams.get('preview') === 'true';
+	// });
+
+	$effect(() => {
+		const handleSlideChanged = (event: Event) => {
+			const { currentSlide, previousSlide } = event as Event & {
+				currentSlide?: HTMLElement;
+				previousSlide?: HTMLElement;
+			};
+			if (currentSlide?.id === 'terms-and-conditions' && previousSlide?.id) {
+				returnToSlide = previousSlide.id;
+			}
+		};
+		revealInstance?.on('slidechanged', (event: Event) => handleSlideChanged(event));
+		return () => revealInstance?.off('slidechanged', handleSlideChanged);
+	});
+
 	// let motivationQuestion = $derived(
 	// 	data.payload.questions.find((question) => question.question.includes('motivation'))
 	// );
 	let placesQuestion = $derived(
 		data.payload.questions.find((question) => question.question.includes('places'))
 	);
+	let booksQuestion = $derived(
+		data.payload.questions.find((question) => question.question.includes('books'))
+	);
 	let commentsQuestion = $derived(
 		data.payload.questions.find((question) => question.question.includes('comments'))
 	);
+	console.log(commentsQuestion?.id);
 	// let socketioMotivation: SocketIO<NumericalExtended> = $state()!;
 	let socketioPlaces: SocketIO<MessageExtended> = $state()!;
+	let socketioBooks: SocketIO<MessageExtended> = $state()!;
 	let socketioComments: SocketIO<MessageExtended> = $state()!;
 	// let motivationAnswers = $derived(socketioMotivation?.entities ?? []);
 
@@ -61,6 +87,18 @@
 			}
 		);
 		socketioPlaces.createSortedSelection('sortedPlacesAnswers', 'creation_date', false);
+		socketioBooks = new SocketIO<MessageExtended>(
+			{
+				namespace: '/message',
+				parentId: booksQuestion?.id,
+				queryParams: { 'request-access-data': true }
+			},
+			{
+				snapshot: data.payload.booksSnapshot,
+				template: { content: '', language: 'en' }
+			}
+		);
+		socketioBooks.createSortedSelection('sortedBooksAnswers', 'creation_date', false);
 		socketioComments = new SocketIO<MessageExtended>(
 			{
 				namespace: '/message',
@@ -78,6 +116,7 @@
 	onDestroy(() => {
 		// socketioMotivation?.client.disconnect();
 		socketioPlaces?.client.disconnect();
+		socketioBooks?.client.disconnect();
 		socketioComments?.client.disconnect();
 	});
 </script>
@@ -97,17 +136,28 @@
 	<section>
 		<div class="text-base-content-variant text-[200px] font-bold">Welcome</div>
 	</section>
-	<FramedSlide>Checkin - map Denmark</FramedSlide>
-	<FramedSlide>
+	<FramedSlide part="checkin" section="map" hideProgressBar={true}>
+		{#if placesQuestion}
+			<!-- <div class="text-secondary text-center text-7xl font-bold">Check in</div> -->
+			<Map {revealInstance} socketio={socketioPlaces} />
+		{:else}
+			{@render interactiveElementNotAvailable('map')}
+		{/if}
+	</FramedSlide>
+	<FramedSlide part="overview">
 		<Overview
 			items={[
 				{
 					icon: 'stash:circle-dot',
 					title: 'Context'
 				},
+				// {
+				// 	icon: 'vaadin:thumbs-up-o',
+				// 	title: 'Motivation'
+				// },
 				{
-					icon: 'vaadin:thumbs-up-o',
-					title: 'Motivation'
+					icon: 'glyphs:books-bold',
+					title: 'Inspiration'
 				},
 				{
 					icon: 'carbon:development',
@@ -116,74 +166,71 @@
 				{
 					icon: 'bi:bar-chart',
 					title: 'Results'
-				},
-				{
-					icon: 'glyphs:books-bold',
-					title: 'Inspiration'
 				}
 			]}
 		/>
 	</FramedSlide>
-	<FramedSlide part="diversity" section="map" color="primary">
-		{#if placesQuestion}
-			<Map {revealInstance} socketio={socketioPlaces} />
-		{:else}
-			{@render interactiveElementNotAvailable('map')}
-		{/if}
-	</FramedSlide>
-	<!-- <FramedSlide>
-			<div
-			class="r-stretch my-50 grid grid-cols-[1fr_max-content_1fr] items-center justify-between justify-items-start gap-12 text-7xl"
-			// class="r-stretch mx-auto my-20 grid w-fit grid-cols-[auto_max-content_auto] items-center gap-12 text-7xl"
-		>
-			<a href="#motivation" class="justify-self-end" aria-label="Motivation"
-				><span class="icon-[vaadin--thumbs-up-o] bg-primary"></span></a
-			>
-			<a href="#motivation" aria-label="Motivation"
-				><div class="text-primary font-bold">Motivation</div></a
-			>
-			<div></div>
-			<a href="#diversity" aria-label="Diversity" class="justify-self-end"
-				><span class="icon-[material-symbols--diversity-1-rounded] bg-primary"></span></a
-			>
-			<a href="#diversity" aria-label="Diversity"
-				><div class="text-primary font-bold">Diversity</div></a
-			>
-			<div></div>
-			<a href="#overview" aria-label="Overview" class="justify-self-end"
-				><span class="icon-[grommet-icons--overview] bg-primary"></span></a
-			>
-			<a href="#overview" aria-label="Overview"
-				><div class="text-primary font-bold">Overview</div></a
-			>
-			<div></div>
-		</div>
-		</FramedSlide> -->
 
-	<!-- <FramedSlide>Allan Watts - Chinese Farmer ?</FramedSlide> -->
-	<FramedSlide>Drawing from BusinessIllustrator - closed box</FramedSlide>
-	<FramedSlide>Course 2nd semester -> linearising</FramedSlide>
+	<FramedSlide part="context">Course 2nd semester -> linearising</FramedSlide>
 	<FramedSlide>Course 2nd semester -> a bit closer to reality</FramedSlide>
 	<FramedSlide>
 		Master level -> closely related to product design -> linearized models ain't no good any more
 	</FramedSlide>
-	<FramedSlide>Drawing from BusinessIllustrator - box opened</FramedSlide>
-	<FramedSlide>Self determintation theory</FramedSlide>
-	<FramedSlide>Principles - see wisdom seat</FramedSlide>
-	<FramedSlide>Start with nature pictures</FramedSlide>
+	<FramedSlide>Drawing from BusinessIllustrator - closed box -> open box</FramedSlide>
+	<FramedSlide>Allan Watts - Chinese Farmer ?</FramedSlide>
+	<FramedSlide part="inspiration">
+		<Library />
+	</FramedSlide>
+	<FramedSlide>Start with nature pictures here</FramedSlide>
+	<FramedSlide part="implementation">Principles - see wisdom seat</FramedSlide>
 	<FramedSlide>Learning reflections</FramedSlide>
-	<FramedSlide>Qualitative results</FramedSlide>
-	<FramedSlide>Quantitative results</FramedSlide>
-	<FramedSlide>Meditation</FramedSlide>
-	<FramedSlide>Qualitative results</FramedSlide>
-	<FramedSlide>Quantitative results</FramedSlide>
-	<FramedSlide>Questions / comments?</FramedSlide>
+	<FramedSlide part="results">Overview of results</FramedSlide>
+	<FramedSlide part="results" section="quantitative">
+		Quantitative results: learning, responsibility, meditation, sharing comments
+	</FramedSlide>
+	<FramedSlide part="results" section="qualitative">Qualitative results:</FramedSlide>
+	<FramedSlide part="comments-and-questions" hideProgressBar>
+		{#if commentsQuestion}
+			<Comments socketio={socketioComments} question={commentsQuestion} />
+		{:else}
+			{@render interactiveElementNotAvailable('comments and questions dialog')}
+		{/if}
+	</FramedSlide>
 	<FramedSlide>
 		planetary boundaries -> inner work -> trust<br />
 		stressed people -> stressed systems -> stressed planet (from regenerative leadership)
 	</FramedSlide>
-	<FramedSlide>
-		<Library />
-		Books -> clickable reflection
+
+	<FramedSlide part="terms-and-conditions">
+		<div class="text-5xl font-bold">Terms & Conditions</div>
+		<dl>
+			<dt>Data storage</dt>
+			<dd>
+				By entering your data, you acknowledge, that your data is stored in a database on the
+				Technical University of Denmark's tenant in Microsoft Azure.
+			</dd>
+		</dl>
+		<dl>
+			<dt>Visibility of data</dt>
+			<dd>
+				Currently these slides are under development, there is no login and hence everyone on the
+				internet with the link to the presentation can see what you have entered.
+			</dd>
+		</dl>
+		<dl>
+			<dt>Deletion of data</dt>
+			<dd>
+				In case you want any of your data deleted, please send a screenshot of what you want to have
+				deleted to Arnold.
+			</dd>
+		</dl>
+		{#if returnToSlide}
+			<div>
+				<span class="icon-[fa-regular--hand-point-right] mr-4 size-7"></span>Back to
+				<a href="#{returnToSlide}" class="link link-animated"
+					>{returnToSlide.replaceAll('-', ' ')}</a
+				>.
+			</div>
+		{/if}
 	</FramedSlide>
 </RevealJs>

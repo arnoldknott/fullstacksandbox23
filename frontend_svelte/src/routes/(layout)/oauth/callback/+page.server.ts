@@ -7,7 +7,7 @@ import { backendAPI } from '$lib/server/apis/backendApi';
 import { redisCache } from '$lib/server/cache';
 import AppConfig from '$lib/server/config';
 import { completeAccountLink } from '$lib/server/oauth/accountLink';
-import type { OAuthTransaction } from '$lib/server/oauth/base';
+import { type OAuthTransaction, OAuthTransactionUnavailableError } from '$lib/server/oauth/base';
 import { msalAuthProvider } from '$lib/server/oauth/microsoft';
 import { SessionStatus } from '$lib/session';
 
@@ -103,6 +103,15 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 			redirect(302, '/');
 		}
 	} catch (err) {
+		if (err instanceof OAuthTransactionUnavailableError) {
+			if (!err.transaction) redirect(302, '/');
+			const parameters = new URLSearchParams({
+				'target-url': safeTarget(err.transaction.targetUrl, url.origin)
+			});
+			if (err.transaction.parentUrl) parameters.set('parent-url', err.transaction.parentUrl);
+			if (err.transaction.intent === 'link') parameters.set('intent', 'link');
+			redirect(302, '/login/microsoft?' + parameters.toString());
+		}
 		console.error('oauth - callback - server - authenticateWithCode failed');
 		console.error(err);
 		throw err;
