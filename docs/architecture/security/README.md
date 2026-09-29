@@ -1,8 +1,17 @@
-# Security and OAuth
+# Security architecture
 
 ## Architecture and change boundary
 
 The definitions of the inner and outer security layers and the consultation requirement are in [AGENTS.md](../../../AGENTS.md#security-layers-and-change-boundaries).
+
+Security is enforced in two composed layers:
+
+1. The **outer security layer** authenticates a caller and decides whether the caller may enter an endpoint or event. Open Authorization (OAuth) 2.0 and OpenID Connect provider validation and guards implement this layer.
+2. The **inner security layer** decides which application resources that admitted caller may read, connect to, change, own, or share. Access policies, identity inheritance, resource inheritance, and public policies implement this layer.
+
+Passing the outer layer does not grant access to application data. Protected CRUD operations still apply the inner layer. Conversely, a public access policy does not bypass endpoint admission: an endpoint must explicitly allow an anonymous caller before the inner layer can evaluate public access.
+
+See [Inner access-control layer](inner-access-control.md) for the inner-layer data model, effective-access algorithm, inheritance directions, public sharing, enforcement points, and examples. This README remains the overview and owns the outer-layer and cross-cutting security contracts; the focused document owns the inner-layer contract.
 
 [Backend security](../../../backend/src/core/security.py) delegates provider-token validation to [authentication helpers](../../../backend/src/core/authentication/) and evaluates the alternatives configured by endpoint and Socket.IO guards. Endpoints retain `guards: GuardTypes = Depends(...)`; shared security resolves the internal user for the existing CRUD boundary. [Access enforcement](../../../backend/src/crud/access.py), including `filters_allowed()`, then applies resource permissions. Outer admission never replaces those checks. Preserve existing Microsoft administrator/group exceptions.
 
