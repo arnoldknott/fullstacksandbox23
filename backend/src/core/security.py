@@ -1,7 +1,7 @@
 import json
 import logging
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Annotated, Any, Dict, List, Optional, cast
 from uuid import UUID
@@ -118,11 +118,21 @@ def _provider_validators() -> dict[str, ProviderValidator]:
 SESSION_REFERENCE_HEADER = "X-Application-Session"
 
 
-@dataclass(frozen=True)
+@dataclass
 class SessionReferenceCredential:
     """An application session presented by the authenticated frontend service."""
 
     session_id: str
+    candidates: tuple[VerifiedIdentity, ...] | None = field(
+        default=None, repr=False, compare=False
+    )
+    loaded_scopes: frozenset[str] = field(
+        default_factory=frozenset, repr=False, compare=False
+    )
+    expected_user_id: UUID | None = field(default=None, repr=False, compare=False)
+    resolved_users: dict[IdentityProvider, CurrentUserData] = field(
+        default_factory=dict, repr=False, compare=False
+    )
 
 
 async def _verify_frontend_service_token(token: str) -> None:
@@ -384,6 +394,26 @@ async def load_session_provider_candidates(
     return tuple(candidates)
 
 
+async def load_session_credential_candidates(
+    credential: SessionReferenceCredential, scopes: List[str] | None = None
+) -> tuple[VerifiedIdentity, ...]:
+    """Load session candidates once per request and expand scopes only when required."""
+    requested_scopes = frozenset(scopes or ())
+    if (
+        credential.candidates is not None
+        and requested_scopes <= credential.loaded_scopes
+    ):
+        return credential.candidates
+
+    combined_scopes = sorted(credential.loaded_scopes | requested_scopes)
+    credential.candidates = await load_session_provider_candidates(
+        credential.session_id, combined_scopes
+    )
+    credential.loaded_scopes = frozenset(combined_scopes)
+    credential.resolved_users.clear()
+    return credential.candidates
+
+
 def microsoft_requirements_match(
     claims: Mapping[str, Any], guard: MicrosoftGuard
 ) -> bool:
@@ -482,8 +512,8 @@ class Guards:
                     raise HTTPException(
                         status_code=401, detail="Session user not found."
                     )
-                candidates = await load_session_provider_candidates(
-                    payload.session_id, microsoft_scopes_for_guards(self.policy)
+                candidates = await load_session_credential_candidates(
+                    payload, microsoft_scopes_for_guards(self.policy)
                 )
                 if len(candidates) != 1:
                     raise HTTPException(
@@ -495,8 +525,8 @@ class Guards:
                     if selected is not None
                     else GuardOutcome.ANONYMOUS
                 )
-            selected, _ = await authorize_session(
-                payload.session_id,
+            selected, _ = await authorize_session_credential(
+                payload,
                 self.policy,
                 microsoft_scopes_for_guards(self.policy),
             )
@@ -786,19 +816,50 @@ async def authorize_session_candidates(
     return selected, resolved[selected.provider] if selected is not None else None
 
 
+async def authorize_session_credential(
+    credential: SessionReferenceCredential,
+    guards: GuardTypes,
+    scopes: List[str] | None = None,
+) -> tuple[VerifiedIdentity | None, CurrentUserData | None]:
+    """Bind and select session credentials using request-scoped cached validation."""
+    if credential.expected_user_id is None:
+        credential.expected_user_id = require_session_user_id(credential.session_id)
+    candidates = await load_session_credential_candidates(credential, scopes)
+
+    for candidate in candidates:
+        if candidate.provider in credential.resolved_users:
+            continue
+        current_user = await resolve_session_identity(candidate)
+        if current_user.user_id != credential.expected_user_id:
+            raise HTTPException(
+                status_code=401, detail="Session provider identity mismatch."
+            )
+        credential.resolved_users[candidate.provider] = current_user
+
+    selected = select_provider_candidate(candidates, guards)
+    return (
+        selected,
+        credential.resolved_users[selected.provider] if selected is not None else None,
+    )
+
+
 async def authorize_session(
     session_id: str, guards: GuardTypes, scopes: List[str] | None = None
 ) -> tuple[VerifiedIdentity | None, CurrentUserData | None]:
     """Load, bind, and select session credentials for one guarded operation."""
-    require_session_user_id(session_id)
-    candidates = await load_session_provider_candidates(session_id, scopes)
-    return await authorize_session_candidates(session_id, candidates, guards)
+    return await authorize_session_credential(
+        SessionReferenceCredential(session_id), guards, scopes
+    )
 
 
 async def resolve_session_provider_identity(
-    session_id: str, excluded_provider: IdentityProvider | None = None
+    credential: SessionReferenceCredential | str,
+    excluded_provider: IdentityProvider | None = None,
 ) -> VerifiedIdentity:
     """Select an explicit provider proof for account link or unlink operations."""
+    if isinstance(credential, str):
+        credential = SessionReferenceCredential(credential)
+    session_id = credential.session_id
     active_provider = get_session_value(session_id, "$.identityProvider")
     scopes = [f"api://{config.API_SCOPE}/api.read"]
     if excluded_provider is None:
@@ -809,7 +870,7 @@ async def resolve_session_provider_identity(
                 status_code=401, detail="Session identity provider not found."
             ) from error
         expected_user_id = require_session_user_id(session_id)
-        candidates = await load_session_provider_candidates(session_id, scopes)
+        candidates = await load_session_credential_candidates(credential, scopes)
         identity = next(
             (candidate for candidate in candidates if candidate.provider == provider),
             None,
@@ -833,7 +894,7 @@ async def resolve_session_provider_identity(
         for provider in provider_order
     ]
     guards = GuardTypes(alternatives=tuple(alternatives))
-    identity, _ = await authorize_session(session_id, guards, scopes)
+    identity, _ = await authorize_session_credential(credential, guards, scopes)
     if identity is None:
         raise HTTPException(status_code=401, detail="Provider identity required.")
     return identity
@@ -847,12 +908,12 @@ async def check_token_against_guards_with_status(
     if isinstance(token_payload, SessionReferenceCredential):
         session_user = get_session_value(token_payload.session_id, "$.currentUser")
         if session_user is not None:
-            _, current_user = await authorize_session(
-                token_payload.session_id, guards, microsoft_scopes_for_guards(guards)
+            _, current_user = await authorize_session_credential(
+                token_payload, guards, microsoft_scopes_for_guards(guards)
             )
             return current_user, None
-        candidates = await load_session_provider_candidates(
-            token_payload.session_id, microsoft_scopes_for_guards(guards)
+        candidates = await load_session_credential_candidates(
+            token_payload, microsoft_scopes_for_guards(guards)
         )
         if len(candidates) != 1:
             raise HTTPException(status_code=401, detail="Invalid signup session.")
@@ -880,8 +941,8 @@ async def check_token_against_guards(
 ) -> Optional[CurrentUserData]:
     """Evaluate outer admission, then resolve the user for existing CRUD checks."""
     if isinstance(token_payload, SessionReferenceCredential):
-        _, current_user = await authorize_session(
-            token_payload.session_id, guards, microsoft_scopes_for_guards(guards)
+        _, current_user = await authorize_session_credential(
+            token_payload, guards, microsoft_scopes_for_guards(guards)
         )
         return current_user
     if isinstance(token_payload, VerifiedIdentity):

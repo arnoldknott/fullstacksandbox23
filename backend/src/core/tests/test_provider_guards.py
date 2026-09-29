@@ -32,10 +32,12 @@ from core.security import (
     MicrosoftGuard,
     SessionReferenceCredential,
     authorize_session_candidates,
+    check_token_against_guards_with_status,
     check_token_against_guards,
     evaluate_guards,
     get_token_payload_from_cache,
     load_session_provider_candidates,
+    get_http_access_token_payload,
     provide_http_token_payload,
     resolve_session_provider_identity,
     select_provider_candidate,
@@ -806,6 +808,202 @@ async def test_frontend_service_token_requires_app_only_expected_client(monkeypa
         with pytest.raises(HTTPException) as error:
             await _verify_frontend_service_token("service-token")
         assert error.value.status_code == 401
+
+
+def session_authentication_app(path: str = "/api/v1/user/me") -> FastAPI:
+    app = FastAPI()
+    router_guards = Guards(MicrosoftGuard(scopes=["api.read"]), LinkedInGuard())
+    endpoint_guards = Guards(MicrosoftGuard(roles=["User"]), LinkedInGuard())
+
+    @app.get(path, dependencies=[Depends(router_guards.check_http)])
+    async def endpoint(
+        token_payload=Depends(get_http_access_token_payload),
+        guards: GuardTypes = Depends(endpoint_guards),
+    ):
+        current_user, status_code = await check_token_against_guards_with_status(
+            token_payload, guards
+        )
+        return {
+            "credential": type(token_payload).__name__,
+            "user-id": str(current_user.user_id) if current_user else None,
+            "status-code": status_code,
+        }
+
+    return app
+
+
+async def test_http_session_request_reuses_candidate_load_and_user_binding(monkeypatch):
+    session_id = str(uuid4())
+    user_id = uuid4()
+    candidate = VerifiedIdentity(
+        IdentityProvider.microsoft,
+        {"scp": "api.read", "roles": ["User"]},
+    )
+    monkeypatch.setattr(
+        "core.security._validate_azure_token",
+        AsyncMock(
+            return_value={
+                "azp": config.FRONTEND_SVELTE_CLIENT_ID,
+                "idtyp": "app",
+            }
+        ),
+    )
+    monkeypatch.setattr(
+        "core.security.get_session_value",
+        lambda actual_session_id, path: {"id": str(user_id)},
+    )
+    loader = AsyncMock(return_value=(candidate,))
+    resolver = AsyncMock(return_value=CurrentUserData(user_id=user_id))
+    monkeypatch.setattr("core.security.load_session_provider_candidates", loader)
+    monkeypatch.setattr("core.security.resolve_session_identity", resolver)
+
+    async with AsyncClient(
+        transport=ASGITransport(app=session_authentication_app()),
+        base_url="http://test",
+    ) as client:
+        response = await client.get(
+            "/api/v1/user/me",
+            headers={
+                "Authorization": "Bearer frontend-service-token",
+                "X-Application-Session": session_id,
+            },
+        )
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "credential": "SessionReferenceCredential",
+        "user-id": str(user_id),
+        "status-code": None,
+    }
+    loader.assert_awaited_once_with(session_id, [f"api://{config.API_SCOPE}/api.read"])
+    resolver.assert_awaited_once_with(candidate)
+
+
+async def test_http_user_me_bootstrap_reuses_candidate_load(monkeypatch):
+    session_id = str(uuid4())
+    user_id = uuid4()
+    candidate = VerifiedIdentity(IdentityProvider.linkedin, {"sub": "member"})
+    monkeypatch.setattr(
+        "core.security._validate_azure_token",
+        AsyncMock(
+            return_value={
+                "azp": config.FRONTEND_SVELTE_CLIENT_ID,
+                "idtyp": "app",
+            }
+        ),
+    )
+    monkeypatch.setattr("core.security.get_session_value", lambda *args: None)
+    loader = AsyncMock(return_value=(candidate,))
+    signup = AsyncMock(return_value=(CurrentUserData(user_id=user_id), 201))
+    monkeypatch.setattr("core.security.load_session_provider_candidates", loader)
+    monkeypatch.setattr("core.security.resolve_verified_identity_with_status", signup)
+
+    async with AsyncClient(
+        transport=ASGITransport(app=session_authentication_app()),
+        base_url="http://test",
+    ) as client:
+        response = await client.get(
+            "/api/v1/user/me",
+            headers={
+                "Authorization": "Bearer frontend-service-token",
+                "X-Application-Session": session_id,
+            },
+        )
+
+    assert response.status_code == 200
+    assert response.json()["status-code"] == 201
+    loader.assert_awaited_once()
+    signup.assert_awaited_once_with(candidate)
+
+
+async def test_http_direct_provider_bearer_remains_compatible(monkeypatch):
+    user_id = uuid4()
+    identity = VerifiedIdentity(
+        IdentityProvider.microsoft,
+        {"scp": "api.read", "roles": ["User"]},
+    )
+    monkeypatch.setattr(
+        "core.security.verify_provider_token", AsyncMock(return_value=identity)
+    )
+    monkeypatch.setattr(
+        "core.security.resolve_verified_identity_with_status",
+        AsyncMock(return_value=(CurrentUserData(user_id=user_id), None)),
+    )
+
+    async with AsyncClient(
+        transport=ASGITransport(app=session_authentication_app()),
+        base_url="http://test",
+    ) as client:
+        response = await client.get(
+            "/api/v1/user/me", headers={"Authorization": "Bearer provider-token"}
+        )
+
+    assert response.status_code == 200
+    assert response.json()["credential"] == "VerifiedIdentity"
+
+
+@pytest.mark.parametrize(
+    "path,session_id",
+    [
+        ("/api/v1/user/me", "not-a-uuid"),
+        ("/api/v1/resource", str(uuid4())),
+    ],
+)
+async def test_http_invalid_session_never_falls_through_anonymous(
+    monkeypatch, path, session_id
+):
+    monkeypatch.setattr(
+        "core.security._validate_azure_token",
+        AsyncMock(
+            return_value={
+                "azp": config.FRONTEND_SVELTE_CLIENT_ID,
+                "idtyp": "app",
+            }
+        ),
+    )
+    monkeypatch.setattr("core.security.get_session_value", lambda *args: None)
+    app = session_authentication_app(path)
+
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
+        response = await client.get(
+            path,
+            headers={
+                "Authorization": "Bearer frontend-service-token",
+                "X-Application-Session": session_id,
+            },
+        )
+
+    assert response.status_code == 401
+
+
+async def test_http_session_rejects_delegated_frontend_bearer(monkeypatch):
+    monkeypatch.setattr(
+        "core.security._validate_azure_token",
+        AsyncMock(
+            return_value={
+                "azp": config.FRONTEND_SVELTE_CLIENT_ID,
+                "idtyp": "user",
+                "oid": "user-object-id",
+                "sub": "user-subject",
+            }
+        ),
+    )
+
+    async with AsyncClient(
+        transport=ASGITransport(app=session_authentication_app()),
+        base_url="http://test",
+    ) as client:
+        response = await client.get(
+            "/api/v1/user/me",
+            headers={
+                "Authorization": "Bearer delegated-provider-token",
+                "X-Application-Session": str(uuid4()),
+            },
+        )
+
+    assert response.status_code == 401
 
 
 @pytest.mark.anyio

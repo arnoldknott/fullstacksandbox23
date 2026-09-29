@@ -31,9 +31,7 @@ async def account_identity(
     excluded_provider: IdentityProvider | None = None,
 ) -> VerifiedIdentity:
     if isinstance(credential, SessionReferenceCredential):
-        return await resolve_session_provider_identity(
-            credential.session_id, excluded_provider
-        )
+        return await resolve_session_provider_identity(credential, excluded_provider)
     if not isinstance(credential, VerifiedIdentity):
         raise HTTPException(
             status_code=401, detail="Verified provider identity required."

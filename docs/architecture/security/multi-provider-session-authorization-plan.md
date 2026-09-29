@@ -51,7 +51,7 @@ Reject requests containing both a provider bearer token and a session reference.
 
 ### Dependency boundary
 
-Refactor credential extraction and guard evaluation together so the selected identity cannot differ between router-wide admission, endpoint dependencies, and `check_token_against_guards_with_status()`. A request-scoped authentication context should carry the selected `VerifiedIdentity`; selection must occur once per request and be reused. Avoid retries after a mutation has executed.
+Refactor credential extraction and guard evaluation together so router-wide admission, endpoint dependencies, and `check_token_against_guards_with_status()` use the same validated credential set. A request-scoped authentication context caches provider-candidate loading and same-user binding. Each guard declaration still selects from that shared set in its own declared order, so a narrower endpoint policy cannot inherit a broader router selection. Avoid retries after a mutation has executed.
 
 ## 4. Socket.IO contract
 
