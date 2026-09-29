@@ -598,6 +598,7 @@ async def test_socket_explicit_anonymous_rejects_missing_cached_token():
 @pytest.mark.anyio
 async def test_socket_protected_policy_rejects_missing_cached_token():
     namespace = namespace_with(Guards(MicrosoftGuard())())
+
     namespace._get_token_payload_if_authenticated = AsyncMock(
         side_effect=ValueError("No cached token")
     )
@@ -607,6 +608,27 @@ async def test_socket_protected_policy_rejects_missing_cached_token():
         await namespace._get_current_user_and_check_guard("socket", "read")
 
     namespace._end_expired_socket.assert_not_awaited()
+
+
+async def test_socket_session_provider_selection_follows_event_guard_order(monkeypatch):
+    microsoft = VerifiedIdentity(IdentityProvider.microsoft, {"oid": "ms"})
+    linkedin = VerifiedIdentity(IdentityProvider.linkedin, {"sub": "li"})
+    user_id = uuid4()
+    monkeypatch.setattr("core.security.require_session_user_id", lambda _: user_id)
+    monkeypatch.setattr(
+        "core.security.resolve_session_identity",
+        AsyncMock(side_effect=lambda identity: CurrentUserData(user_id=user_id)),
+    )
+    namespace = namespace_with(Guards(LinkedInGuard(), MicrosoftGuard())())
+    namespace._get_session_id = AsyncMock(return_value="session")
+    monkeypatch.setattr(
+        "routers.socketio.v1.base.load_session_provider_candidates",
+        AsyncMock(return_value=(microsoft, linkedin)),
+    )
+    selected = await namespace._get_token_payload_if_authenticated(
+        "session", Guards(LinkedInGuard(), MicrosoftGuard())()
+    )
+    assert selected is linkedin
 
 
 @pytest.mark.anyio

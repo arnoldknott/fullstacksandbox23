@@ -146,12 +146,13 @@ The deployment design must therefore provide an authenticated frontend-service i
 
 Completion requires REST and Socket.IO to select from the same verified session credential set using existing guard declarations, direct bearer clients to remain supported, mismatched identities to fail closed, and no provider token to traverse the trusted frontend-server→backend hop.
 
+- [x] C implementation: Socket.IO connection/event provider selection uses all valid session candidates in guard declaration order; expired providers are skipped and authorization loss removes protected rooms.
 ## 9. Tracking
 
 - [x] Select and document the Azure mechanism for authenticating the frontend service to the backend: Microsoft Entra client credentials with strict app-only-token validation and a frontend-client-ID ACL.
 - [ ] Select authenticated Socket.IO proxying or short-lived admission tickets; prohibit raw session references on public ingress.
 - [x] A: shared candidate loading, same-user binding, and guard-aware selection.
 - [x] B: REST session-reference transport and direct bearer compatibility.
-- [ ] C: Socket.IO per-event selection and room reconciliation.
+- [x] C: Socket.IO per-event selection and room reconciliation.
 - [ ] D: lifecycle, reauthentication, session-field, and providers-page cleanup.
 - [ ] E: deployment boundary, complete automated validation, and live staging verification.

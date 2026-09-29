@@ -1,4 +1,5 @@
 import asyncio
+import inspect
 import logging
 import time
 
@@ -29,8 +30,9 @@ from core.cache import redis_session_client
 from core.config import config
 from core.databases import get_async_session
 from core.security import (
+    select_provider_candidate,
     check_token_against_guards,
-    get_token_payload_from_cache,
+    load_session_provider_candidates,
 )
 from core.types import (
     Action,
@@ -200,16 +202,33 @@ class BaseNamespace(
         )
 
     async def _get_token_payload_if_authenticated(
-        self, session_id: str
+        self, session_id: str, guards: GuardTypes | None = None
     ) -> VerifiedIdentity | dict:
-        """Get the token payload from the cache if authenticated."""
+        """Get the guard-selected token payload from all valid session providers."""
         logger.info("🧦 Getting token payload from cache")
-        token_payload = await get_token_payload_from_cache(
+        guards = guards or getattr(self, "_connection_guards", None)
+        candidates = await load_session_provider_candidates(
             session_id, [f"api://{config.API_SCOPE}/socketio"]
         )
-        if not token_payload:
+        if not candidates:
             raise ConnectionRefusedError("Authorization failed.")
-        return token_payload
+        if guards is not None:
+            selected = select_provider_candidate(candidates, guards)
+            if selected is None:
+                return {}
+            return selected
+        return candidates[0]
+
+    async def _leave_protected_rooms(self, sid: str) -> None:
+        """Remove rooms whose authorization may have changed."""
+        protected_prefixes = ("resource:", "identity:", "parent:", "role:")
+        rooms = self.server.rooms(sid, self.namespace or "/")
+        if inspect.isawaitable(rooms):
+            rooms = await rooms
+        rooms = list(rooms)
+        for room in rooms:
+            if room.startswith(protected_prefixes):
+                await self.server.leave_room(sid, room, namespace=self.namespace)
 
     def _get_event_guards(self, event: str) -> GuardTypes:
         """Every admitted event must have a declared policy."""
@@ -285,12 +304,16 @@ class BaseNamespace(
                 return await check_token_against_guards(None, guards)
             raise SocketAuthenticationExpiredError("No session id.")
         try:
-            token_payload = await self._get_token_payload_if_authenticated(session_id)
+            token_payload = await self._get_token_payload_if_authenticated(
+                session_id, guards
+            )
         except Exception as error:
+            await self._leave_protected_rooms(sid)
             raise SocketAuthenticationExpiredError("Authentication expired.") from error
         try:
             return await check_token_against_guards(token_payload, guards)
         except HTTPException as error:
+            await self._leave_protected_rooms(sid)
             raise SocketAuthorizationFailedError("Authorization failed.") from error
 
     async def _get_all(  # noqa: C901
@@ -571,6 +594,7 @@ class BaseNamespace(
         guards = self._get_event_guards("connect")
         ### THis solution works for none-protected events, but a user is logged in anyways:
         current_user = None
+        self._connection_guards = guards
         session_data: SocketIoSessionData = {
             "user_name": "Anonymous",
             "query_strings": session_query_strings,
