@@ -1,6 +1,6 @@
 # Multi-provider session authorization
 
-Status: planned. This plan replaces the currently implemented single-active-provider selection model for communication from the trusted frontend server to the backend. Account linking, provider credential acquisition, encrypted cache storage, and the existing inner access-control layer remain unchanged until this plan is implemented.
+Status: in progress; stages A and B are implemented. This plan replaces the currently implemented single-active-provider selection model for communication from the trusted frontend server to the backend. Account linking, provider credential acquisition, encrypted cache storage, and the existing inner access-control layer remain unchanged until this plan is implemented.
 
 ## 1. Outcome and terminology
 
@@ -28,9 +28,9 @@ The most recently completed login does not globally select authorization for the
 
 ### Trusted frontend-server requests
 
-The frontend server sends an opaque application-session reference to the backend instead of acquiring and forwarding a provider token for every internal API request. Use an authorization-sensitive header that is excluded from logs and traces; never use a query parameter. The exact header scheme must be fixed during implementation and applied centrally in `BaseAPI`, not repeated by callers.
+The frontend server sends the opaque application-session reference in `X-Application-Session` instead of acquiring and forwarding a provider token for every internal API request. `BackendAPI` applies this header centrally; the generic `BaseAPI` and third-party API wrappers remain unaware of application sessions. Callers never put it in a query parameter or repeat it themselves. The accompanying `Authorization` bearer is the frontend application's client-credentials token for the backend audience, not a user's provider token.
 
-The backend accepts that session-reference credential only from the authenticated frontend service channel. Public and other direct backend clients must use `Authorization: Bearer <provider-token>`. Merely knowing the private header name or reaching the backend through its public ingress must not enable session-reference authentication.
+The backend accepts that session-reference credential only when the accompanying Microsoft Entra token is valid for the backend audience, is an app-only token, and identifies the configured frontend client through its `azp`/`appid` claim. This application-level Access Control List (ACL) does not require an Entra application-role assignment. Public and other direct backend clients continue to use `Authorization: Bearer <provider-token>`. Merely knowing the header name or reaching the backend through its public ingress does not enable session-reference authentication.
 
 The backend then:
 
@@ -108,7 +108,7 @@ The deployment design must therefore provide an authenticated frontend-service i
 
 ### B. REST session-reference mode
 
-- Add one centralized frontend-server session-reference transport in `BaseAPI`/`backendAPI`.
+- Add one centralized frontend-server session-reference transport in `BackendAPI` without coupling generic or third-party API wrappers to application sessions.
 - Add backend extraction and request-scoped authentication context while preserving direct bearer clients.
 - Migrate guards/endpoints without changing endpoint declarations or duplicating their requirements.
 - Reject ambiguous credential modes and ensure anonymous behavior remains explicit.
@@ -148,10 +148,10 @@ Completion requires REST and Socket.IO to select from the same verified session 
 
 ## 9. Tracking
 
-- [ ] Select and document the Azure mechanism for authenticating the frontend service to the backend.
+- [x] Select and document the Azure mechanism for authenticating the frontend service to the backend: Microsoft Entra client credentials with strict app-only-token validation and a frontend-client-ID ACL.
 - [ ] Select authenticated Socket.IO proxying or short-lived admission tickets; prohibit raw session references on public ingress.
 - [x] A: shared candidate loading, same-user binding, and guard-aware selection.
-- [ ] B: REST session-reference transport and direct bearer compatibility.
+- [x] B: REST session-reference transport and direct bearer compatibility.
 - [ ] C: Socket.IO per-event selection and room reconciliation.
 - [ ] D: lifecycle, reauthentication, session-field, and providers-page cleanup.
 - [ ] E: deployment boundary, complete automated validation, and live staging verification.

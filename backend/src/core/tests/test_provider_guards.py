@@ -23,18 +23,21 @@ from core.authentication.linkedin import (
     validate_linkedin_identity_token,
 )
 from core.cache import encryption
+from core.config import config
 from core.security import (
     AllowAnonymous,
     CurrentAccessToken,
     Guards,
     LinkedInGuard,
     MicrosoftGuard,
+    SessionReferenceCredential,
     authorize_session_candidates,
     check_token_against_guards,
     evaluate_guards,
     get_token_payload_from_cache,
     load_session_provider_candidates,
     provide_http_token_payload,
+    resolve_session_provider_identity,
     select_provider_candidate,
 )
 from core.types import (
@@ -450,6 +453,31 @@ async def test_session_candidate_user_mismatch_fails_closed(monkeypatch):
 
 
 @pytest.mark.anyio
+async def test_account_link_resolves_only_the_initiating_session_provider(monkeypatch):
+    session_user_id = uuid4()
+    microsoft = VerifiedIdentity(IdentityProvider.microsoft, {"oid": "survivor"})
+    linkedin = VerifiedIdentity(IdentityProvider.linkedin, {"sub": "merge-source"})
+    values = {
+        "$.identityProvider": IdentityProvider.microsoft.value,
+        "$.currentUser": {"id": str(session_user_id)},
+    }
+    monkeypatch.setattr(
+        "core.security.get_session_value", lambda session_id, path: values[path]
+    )
+    monkeypatch.setattr(
+        "core.security.load_session_provider_candidates",
+        AsyncMock(return_value=(microsoft, linkedin)),
+    )
+    resolver = AsyncMock(return_value=CurrentUserData(user_id=session_user_id))
+    monkeypatch.setattr("core.security.resolve_session_identity", resolver)
+
+    identity = await resolve_session_provider_identity("session")
+
+    assert identity is microsoft
+    resolver.assert_awaited_once_with(microsoft)
+
+
+@pytest.mark.anyio
 async def test_session_candidate_loader_returns_all_valid_providers(monkeypatch):
     account = {"homeAccountId": "account", "username": "user@example.invalid"}
     session_values = {
@@ -724,6 +752,60 @@ async def test_http_extraction_preserves_verified_linkedin_provider(monkeypatch)
 
     assert await provide_http_token_payload("signed-token") == expected
     verify.assert_awaited_once()
+
+
+@pytest.mark.anyio
+async def test_http_extraction_accepts_session_only_for_frontend_service(monkeypatch):
+    verify = AsyncMock()
+    monkeypatch.setattr("core.security._verify_frontend_service_token", verify)
+
+    session_id = str(uuid4())
+    credential = await provide_http_token_payload("service-token", session_id)
+
+    assert credential == SessionReferenceCredential(session_id)
+    verify.assert_awaited_once_with("service-token")
+
+
+@pytest.mark.anyio
+async def test_http_extraction_rejects_session_without_service_token():
+    with pytest.raises(HTTPException) as error:
+        await provide_http_token_payload(None, "session-reference")
+    assert error.value.status_code == 401
+
+
+@pytest.mark.anyio
+async def test_frontend_service_token_requires_app_only_expected_client(monkeypatch):
+    from core.security import _verify_frontend_service_token
+
+    validator = AsyncMock(
+        return_value={
+            "azp": config.FRONTEND_SVELTE_CLIENT_ID,
+            "idtyp": "app",
+        }
+    )
+    monkeypatch.setattr("core.security._validate_azure_token", validator)
+    await _verify_frontend_service_token("service-token")
+
+    validator.return_value = {
+        "appid": config.FRONTEND_SVELTE_CLIENT_ID,
+        "oid": "frontend-object-id",
+        "sub": "frontend-object-id",
+    }
+    await _verify_frontend_service_token("service-token")
+
+    for claims in [
+        {"azp": "another-client", "idtyp": "app"},
+        {"azp": config.FRONTEND_SVELTE_CLIENT_ID, "idtyp": "user"},
+        {
+            "azp": config.FRONTEND_SVELTE_CLIENT_ID,
+            "oid": "user-object-id",
+            "sub": "pairwise-user-subject",
+        },
+    ]:
+        validator.return_value = claims
+        with pytest.raises(HTTPException) as error:
+            await _verify_frontend_service_token("service-token")
+        assert error.value.status_code == 401
 
 
 @pytest.mark.anyio

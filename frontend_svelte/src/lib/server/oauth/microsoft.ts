@@ -128,6 +128,7 @@ class MicrosoftAuthenticationProvider implements OAuthProvider {
 	private msalCommonConfig;
 	private redisClientWrapper: RedisClientWrapper;
 	private cryptoProvider: CryptoProvider;
+	private applicationClient?: ConfidentialClientApplication;
 
 	constructor(redisClient: RedisClientType) {
 		// Common configuration for all users:
@@ -267,6 +268,17 @@ class MicrosoftAuthenticationProvider implements OAuthProvider {
 			console.error(error);
 			throw error;
 		}
+	}
+
+	public async getApplicationAccessToken(): Promise<string> {
+		this.applicationClient ??= new ConfidentialClientApplication(this.msalCommonConfig);
+		const response = await this.applicationClient.acquireTokenByClientCredential({
+			scopes: [appConfig.api_scope_default]
+		});
+		if (!response?.accessToken) {
+			throw new Error('Frontend service access token could not be acquired.');
+		}
+		return response.accessToken;
 	}
 
 	public async getAccessToken(

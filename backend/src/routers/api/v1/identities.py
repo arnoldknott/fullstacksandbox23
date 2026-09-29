@@ -4,7 +4,6 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response
 
-from core.authentication.base import VerifiedIdentity
 from core.security import (
     Guards,
     LinkedInGuard,
@@ -57,6 +56,7 @@ from models.identity import (
 )
 
 from .account_linking import (
+    account_identity,
     cleanup_unlinked_provider,
     complete_merge_cleanup,
     invalidate_merged_user_sessions,
@@ -191,14 +191,11 @@ async def delete_account_link(
     token_payload=Depends(get_http_access_token_payload),
 ) -> None:
     """Remove an inactive linked provider while retaining the current provider."""
-    if not isinstance(token_payload, VerifiedIdentity):
-        raise HTTPException(
-            status_code=401, detail="Verified provider identity required."
-        )
+    retained_identity = await account_identity(token_payload, provider)
     async with AccountMergeCRUD() as crud:
         try:
             user, identifier = await crud.prepare_provider_unlink(
-                token_payload.provider, token_payload.claims, provider
+                retained_identity.provider, retained_identity.claims, provider
             )
             if user.id is None:
                 raise HTTPException(status_code=409, detail="User is incomplete.")

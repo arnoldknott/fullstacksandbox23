@@ -1,13 +1,14 @@
 import json
 import logging
 from collections.abc import Mapping
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Annotated, Any, Dict, List, Optional, cast
 from uuid import UUID
 
 # from enum import Enum
 # import asyncio
-from fastapi import Depends, HTTPException
+from fastapi import Depends, Header, HTTPException, Request
 from fastapi.security import OAuth2AuthorizationCodeBearer
 from msal import ConfidentialClientApplication
 from msal_extensions.persistence import BasePersistence
@@ -114,10 +115,43 @@ def _provider_validators() -> dict[str, ProviderValidator]:
     }
 
 
+SESSION_REFERENCE_HEADER = "X-Application-Session"
+
+
+@dataclass(frozen=True)
+class SessionReferenceCredential:
+    """An application session presented by the authenticated frontend service."""
+
+    session_id: str
+
+
+async def _verify_frontend_service_token(token: str) -> None:
+    """Require an app-only backend token issued specifically to the frontend app."""
+    claims = await _validate_azure_token(token)
+    caller = claims.get("azp") or claims.get("appid")
+    app_only = claims.get("idtyp") == "app" or (
+        claims.get("oid") is not None and claims.get("oid") == claims.get("sub")
+    )
+    if not app_only or caller != config.FRONTEND_SVELTE_CLIENT_ID:
+        raise HTTPException(status_code=401, detail="Invalid frontend service token.")
+
+
 async def provide_http_token_payload(
     token: Annotated[Optional[str], Depends(oauth2_scheme_optional)],
-) -> Optional[VerifiedIdentity]:
-    """Extract and validate a credential from an allowlisted identity provider."""
+    x_application_session: Annotated[Optional[str], Header()] = None,
+) -> Optional[VerifiedIdentity | SessionReferenceCredential]:
+    """Extract and validate either a direct provider or trusted session credential."""
+    if x_application_session is not None:
+        if not x_application_session or token is None:
+            raise HTTPException(status_code=401, detail="Invalid session credential.")
+        try:
+            session_id = str(UUID(x_application_session))
+        except ValueError as error:
+            raise HTTPException(
+                status_code=401, detail="Invalid session credential."
+            ) from error
+        await _verify_frontend_service_token(token)
+        return SessionReferenceCredential(session_id)
     if token is None:
         return None
     try:
@@ -133,8 +167,10 @@ async def verify_access_token(token: str) -> VerifiedIdentity:
 
 
 async def get_http_access_token_payload(
-    payload: VerifiedIdentity | dict | None = Depends(provide_http_token_payload),
-) -> VerifiedIdentity | dict:
+    payload: VerifiedIdentity | SessionReferenceCredential | dict | None = Depends(
+        provide_http_token_payload
+    ),
+) -> VerifiedIdentity | SessionReferenceCredential | dict:
     """General function to get the access token payload"""
     # can later be used for customizing different identity service providers
     if payload is None:
@@ -386,6 +422,19 @@ def select_provider_candidate(
     raise HTTPException(status_code=401, detail="Invalid token.")
 
 
+def microsoft_scopes_for_guards(guards: GuardTypes) -> list[str]:
+    """Translate declared Microsoft guard scopes to the cached token audience."""
+    scopes: list[str] = []
+    for guard in guards.alternatives:
+        if not isinstance(guard, MicrosoftGuard):
+            continue
+        for scope in guard.scopes:
+            qualified = f"api://{config.API_SCOPE}/{scope}"
+            if qualified not in scopes:
+                scopes.append(qualified)
+    return scopes
+
+
 def evaluate_guards(
     identity: VerifiedIdentity | None, guards: GuardTypes
 ) -> GuardOutcome:
@@ -421,9 +470,41 @@ class Guards:
 
     async def check_http(
         self,
-        payload: VerifiedIdentity | dict | None = Depends(provide_http_token_payload),
+        request: Request,
+        payload: VerifiedIdentity | SessionReferenceCredential | dict | None = Depends(
+            provide_http_token_payload
+        ),
     ) -> GuardOutcome:
         """Enforce router-wide admission without resolving a database user."""
+        if isinstance(payload, SessionReferenceCredential):
+            if get_session_value(payload.session_id, "$.currentUser") is None:
+                if request.url.path.rstrip("/") != "/api/v1/user/me":
+                    raise HTTPException(
+                        status_code=401, detail="Session user not found."
+                    )
+                candidates = await load_session_provider_candidates(
+                    payload.session_id, microsoft_scopes_for_guards(self.policy)
+                )
+                if len(candidates) != 1:
+                    raise HTTPException(
+                        status_code=401, detail="Invalid signup session."
+                    )
+                selected = select_provider_candidate(candidates, self.policy)
+                return (
+                    GuardOutcome.AUTHENTICATED
+                    if selected is not None
+                    else GuardOutcome.ANONYMOUS
+                )
+            selected, _ = await authorize_session(
+                payload.session_id,
+                self.policy,
+                microsoft_scopes_for_guards(self.policy),
+            )
+            return (
+                GuardOutcome.AUTHENTICATED
+                if selected is not None
+                else GuardOutcome.ANONYMOUS
+            )
         identity = (
             payload
             if isinstance(payload, VerifiedIdentity)
@@ -672,20 +753,25 @@ async def resolve_session_identity(identity: VerifiedIdentity) -> CurrentUserDat
     raise HTTPException(status_code=401, detail="Unsupported identity provider.")
 
 
+def require_session_user_id(session_id: str) -> UUID:
+    """Validate session integrity before any authenticated or anonymous admission."""
+    session_user = get_session_value(session_id, "$.currentUser")
+    session_user_id = session_user.get("id") if isinstance(session_user, dict) else None
+    try:
+        return UUID(str(session_user_id))
+    except (TypeError, ValueError) as error:
+        raise HTTPException(
+            status_code=401, detail="Session user not found."
+        ) from error
+
+
 async def authorize_session_candidates(
     session_id: str,
     candidates: tuple[VerifiedIdentity, ...],
     guards: GuardTypes,
 ) -> tuple[VerifiedIdentity | None, CurrentUserData | None]:
     """Bind all valid session credentials to one user and select one for a policy."""
-    session_user = get_session_value(session_id, "$.currentUser")
-    session_user_id = session_user.get("id") if isinstance(session_user, dict) else None
-    try:
-        expected_user_id = UUID(str(session_user_id))
-    except (TypeError, ValueError) as error:
-        raise HTTPException(
-            status_code=401, detail="Session user not found."
-        ) from error
+    expected_user_id = require_session_user_id(session_id)
 
     resolved: dict[IdentityProvider, CurrentUserData] = {}
     for candidate in candidates:
@@ -704,14 +790,76 @@ async def authorize_session(
     session_id: str, guards: GuardTypes, scopes: List[str] | None = None
 ) -> tuple[VerifiedIdentity | None, CurrentUserData | None]:
     """Load, bind, and select session credentials for one guarded operation."""
+    require_session_user_id(session_id)
     candidates = await load_session_provider_candidates(session_id, scopes)
     return await authorize_session_candidates(session_id, candidates, guards)
 
 
+async def resolve_session_provider_identity(
+    session_id: str, excluded_provider: IdentityProvider | None = None
+) -> VerifiedIdentity:
+    """Select an explicit provider proof for account link or unlink operations."""
+    active_provider = get_session_value(session_id, "$.identityProvider")
+    scopes = [f"api://{config.API_SCOPE}/api.read"]
+    if excluded_provider is None:
+        try:
+            provider = IdentityProvider(str(active_provider))
+        except ValueError as error:
+            raise HTTPException(
+                status_code=401, detail="Session identity provider not found."
+            ) from error
+        expected_user_id = require_session_user_id(session_id)
+        candidates = await load_session_provider_candidates(session_id, scopes)
+        identity = next(
+            (candidate for candidate in candidates if candidate.provider == provider),
+            None,
+        )
+        if identity is None:
+            raise HTTPException(status_code=401, detail="Provider identity required.")
+        current_user = await resolve_session_identity(identity)
+        if current_user.user_id != expected_user_id:
+            raise HTTPException(
+                status_code=401, detail="Session provider identity mismatch."
+            )
+        return identity
+
+    provider_order = [
+        provider
+        for provider in [IdentityProvider.microsoft, IdentityProvider.linkedin]
+        if provider != excluded_provider
+    ]
+    alternatives: list[ProviderGuard] = [
+        MicrosoftGuard() if provider == IdentityProvider.microsoft else LinkedInGuard()
+        for provider in provider_order
+    ]
+    guards = GuardTypes(alternatives=tuple(alternatives))
+    identity, _ = await authorize_session(session_id, guards, scopes)
+    if identity is None:
+        raise HTTPException(status_code=401, detail="Provider identity required.")
+    return identity
+
+
 async def check_token_against_guards_with_status(
-    token_payload: Optional[dict] | VerifiedIdentity, guards: GuardTypes
+    token_payload: Optional[dict] | VerifiedIdentity | SessionReferenceCredential,
+    guards: GuardTypes,
 ) -> tuple[Optional[CurrentUserData], Optional[int]]:
     """Evaluate outer admission and resolve the user with signup status."""
+    if isinstance(token_payload, SessionReferenceCredential):
+        session_user = get_session_value(token_payload.session_id, "$.currentUser")
+        if session_user is not None:
+            _, current_user = await authorize_session(
+                token_payload.session_id, guards, microsoft_scopes_for_guards(guards)
+            )
+            return current_user, None
+        candidates = await load_session_provider_candidates(
+            token_payload.session_id, microsoft_scopes_for_guards(guards)
+        )
+        if len(candidates) != 1:
+            raise HTTPException(status_code=401, detail="Invalid signup session.")
+        identity = select_provider_candidate(candidates, guards)
+        if identity is None:
+            return None, None
+        return await resolve_verified_identity_with_status(identity)
     if isinstance(token_payload, VerifiedIdentity):
         identity = token_payload
     elif token_payload:
@@ -727,9 +875,15 @@ async def check_token_against_guards_with_status(
 
 
 async def check_token_against_guards(
-    token_payload: Optional[dict] | VerifiedIdentity, guards: GuardTypes
+    token_payload: Optional[dict] | VerifiedIdentity | SessionReferenceCredential,
+    guards: GuardTypes,
 ) -> Optional[CurrentUserData]:
     """Evaluate outer admission, then resolve the user for existing CRUD checks."""
+    if isinstance(token_payload, SessionReferenceCredential):
+        _, current_user = await authorize_session(
+            token_payload.session_id, guards, microsoft_scopes_for_guards(guards)
+        )
+        return current_user
     if isinstance(token_payload, VerifiedIdentity):
         identity = token_payload
     elif token_payload:

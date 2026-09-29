@@ -1,14 +1,8 @@
 import { error, fail } from '@sveltejs/kit';
 
 import { Action, IdentityType } from '$lib/accessHandler';
-import { IdentityProvider, preferredIdentityProvider } from '$lib/identityProvider';
-import { redisCache } from '$lib/server/cache';
 import AppConfig from '$lib/server/config';
-import { type OAuthProvider, redirectToReauthentication } from '$lib/server/oauth/base';
-import {
-	linkedinAuthProvider,
-	LinkedInReauthenticationRequiredError
-} from '$lib/server/oauth/linkedin';
+import type { OAuthProvider } from '$lib/server/oauth/base';
 import { msalAuthProvider } from '$lib/server/oauth/microsoft';
 import type {
 	AccessPolicy,
@@ -30,29 +24,8 @@ export type BackendEntitySnapshot<T> = {
 };
 
 class BackendAuthenticationProvider implements OAuthProvider {
-	async getAccessToken(sessionId: string, scopes: string[] = []): Promise<string> {
-		const provider = await redisCache.getSession<IdentityProvider>(sessionId, '$.identityProvider');
-		switch (provider) {
-			case IdentityProvider.LINKEDIN:
-				try {
-					return await linkedinAuthProvider.getIdentityToken(sessionId);
-				} catch (error) {
-					if (error instanceof LinkedInReauthenticationRequiredError) {
-						const currentUser = await redisCache.getSession<{
-							azure_user_id?: string | null;
-							linkedin_user_id?: string | null;
-						}>(sessionId, '$.currentUser');
-						redirectToReauthentication(
-							preferredIdentityProvider(currentUser ?? {}, IdentityProvider.LINKEDIN)
-						);
-					}
-					throw error;
-				}
-			case IdentityProvider.MICROSOFT:
-				return msalAuthProvider.getAccessToken(sessionId, scopes);
-			default:
-				throw new Error('The session has no supported active identity provider.');
-		}
+	async getAccessToken(_sessionId: string, _scopes: string[] = []): Promise<string> {
+		return msalAuthProvider.getApplicationAccessToken();
 	}
 }
 
@@ -67,6 +40,16 @@ class BackendAPI extends BaseAPI {
 		this.appConfig = appConfig;
 	}
 
+	private sessionHeaders(sessionId: string | null, headers: HeadersInit): Record<string, string> {
+		const sessionHeaders: Record<string, string> = {};
+		new Headers(headers).forEach((value, name) => {
+			sessionHeaders[name] = value;
+		});
+		delete sessionHeaders['x-application-session'];
+		if (sessionId) sessionHeaders['X-Application-Session'] = sessionId;
+		return sessionHeaders;
+	}
+
 	async post(
 		sessionId: string | null,
 		path: string,
@@ -75,7 +58,14 @@ class BackendAPI extends BaseAPI {
 		options: RequestInit = {},
 		headers: HeadersInit = {}
 	) {
-		return await super.post(sessionId, path, body, scopes, options, headers);
+		return await super.post(
+			sessionId,
+			path,
+			body,
+			scopes,
+			options,
+			this.sessionHeaders(sessionId, headers)
+		);
 	}
 
 	async get(
@@ -85,7 +75,13 @@ class BackendAPI extends BaseAPI {
 		options: RequestInit = {},
 		headers: HeadersInit = {}
 	) {
-		return await super.get(sessionId, path, scopes, options, headers);
+		return await super.get(
+			sessionId,
+			path,
+			scopes,
+			options,
+			this.sessionHeaders(sessionId, headers)
+		);
 	}
 
 	async getSnapshot<T>(sessionId: string | null, path: string): Promise<BackendEntitySnapshot<T>> {
@@ -111,7 +107,14 @@ class BackendAPI extends BaseAPI {
 		options: RequestInit = {},
 		headers: HeadersInit = {}
 	) {
-		return await super.put(sessionId, path, body, scopes, options, headers);
+		return await super.put(
+			sessionId,
+			path,
+			body,
+			scopes,
+			options,
+			this.sessionHeaders(sessionId, headers)
+		);
 	}
 
 	async delete(
@@ -121,7 +124,13 @@ class BackendAPI extends BaseAPI {
 		options: RequestInit = {},
 		headers: HeadersInit = {}
 	) {
-		return await super.delete(sessionId, path, scopes, options, headers);
+		return await super.delete(
+			sessionId,
+			path,
+			scopes,
+			options,
+			this.sessionHeaders(sessionId, headers)
+		);
 	}
 
 	async share(

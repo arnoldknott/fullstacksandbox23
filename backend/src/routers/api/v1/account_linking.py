@@ -10,7 +10,11 @@ from core.cache import (
     get_protected_cache_value,
     redis_session_client,
 )
-from core.security import verify_access_token
+from core.security import (
+    SessionReferenceCredential,
+    resolve_session_provider_identity,
+    verify_access_token,
+)
 from core.socketio import disconnect_auth_sessions
 from core.types import IdentityProvider
 
@@ -22,18 +26,30 @@ def _bearer_token(value: str) -> str:
     return token
 
 
-async def link_identities(
-    token_payload: VerifiedIdentity | dict,
-    link_authorization: str,
-) -> tuple[VerifiedIdentity, VerifiedIdentity]:
-    if not isinstance(token_payload, VerifiedIdentity):
+async def account_identity(
+    credential: VerifiedIdentity | SessionReferenceCredential | dict,
+    excluded_provider: IdentityProvider | None = None,
+) -> VerifiedIdentity:
+    if isinstance(credential, SessionReferenceCredential):
+        return await resolve_session_provider_identity(
+            credential.session_id, excluded_provider
+        )
+    if not isinstance(credential, VerifiedIdentity):
         raise HTTPException(
             status_code=401, detail="Verified provider identity required."
         )
+    return credential
+
+
+async def link_identities(
+    token_payload: VerifiedIdentity | SessionReferenceCredential | dict,
+    link_authorization: str,
+) -> tuple[VerifiedIdentity, VerifiedIdentity]:
+    survivor_identity = await account_identity(token_payload)
     linked_identity = await verify_access_token(_bearer_token(link_authorization))
-    if linked_identity.provider == token_payload.provider:
+    if linked_identity.provider == survivor_identity.provider:
         raise HTTPException(status_code=409, detail="A different provider is required.")
-    return token_payload, linked_identity
+    return survivor_identity, linked_identity
 
 
 async def invalidate_merged_user_sessions(user_ids: set[UUID], cleanup_id: str) -> None:
