@@ -34,6 +34,7 @@ export const backendAuthProvider = new BackendAuthenticationProvider();
 class BackendAPI extends BaseAPI {
 	appConfig: AppConfig;
 	static pathPrefix = '/api/v1';
+	private providerRefreshes = new Map<string, Promise<string>>();
 
 	constructor() {
 		super(backendAuthProvider, `${appConfig.backend_origin}${BackendAPI.pathPrefix}`);
@@ -50,6 +51,33 @@ class BackendAPI extends BaseAPI {
 		return sessionHeaders;
 	}
 
+	private async retryAfterProviderRefresh(
+		sessionId: string | null,
+		response: Response,
+		retry: () => Promise<Response>
+	): Promise<Response> {
+		if (!sessionId || response.status !== 401) return response;
+		let body: unknown;
+		try {
+			body = await response.clone().json();
+		} catch {
+			return response;
+		}
+		const detail = (body as { detail?: Record<string, unknown> }).detail;
+		if (
+			detail?.code !== 'provider-token-required' ||
+			detail.provider !== 'microsoft'
+		) return response;
+		let refresh = this.providerRefreshes.get(sessionId);
+		if (!refresh) {
+			refresh = msalAuthProvider.getAccessToken(sessionId, [appConfig.api_scope_default]);
+			this.providerRefreshes.set(sessionId, refresh);
+			refresh.finally(() => this.providerRefreshes.delete(sessionId));
+		}
+		await refresh;
+		return retry();
+	}
+
 	async post(
 		sessionId: string | null,
 		path: string,
@@ -58,7 +86,7 @@ class BackendAPI extends BaseAPI {
 		options: RequestInit = {},
 		headers: HeadersInit = {}
 	) {
-		return await super.post(
+		const request = () => super.post(
 			sessionId,
 			path,
 			body,
@@ -66,6 +94,7 @@ class BackendAPI extends BaseAPI {
 			options,
 			this.sessionHeaders(sessionId, headers)
 		);
+		return this.retryAfterProviderRefresh(sessionId, await request(), request);
 	}
 
 	async get(
@@ -75,13 +104,14 @@ class BackendAPI extends BaseAPI {
 		options: RequestInit = {},
 		headers: HeadersInit = {}
 	) {
-		return await super.get(
+		const request = () => super.get(
 			sessionId,
 			path,
 			scopes,
 			options,
 			this.sessionHeaders(sessionId, headers)
 		);
+		return this.retryAfterProviderRefresh(sessionId, await request(), request);
 	}
 
 	async getSnapshot<T>(sessionId: string | null, path: string): Promise<BackendEntitySnapshot<T>> {
@@ -107,7 +137,7 @@ class BackendAPI extends BaseAPI {
 		options: RequestInit = {},
 		headers: HeadersInit = {}
 	) {
-		return await super.put(
+		const request = () => super.put(
 			sessionId,
 			path,
 			body,
@@ -115,6 +145,7 @@ class BackendAPI extends BaseAPI {
 			options,
 			this.sessionHeaders(sessionId, headers)
 		);
+		return this.retryAfterProviderRefresh(sessionId, await request(), request);
 	}
 
 	async delete(
@@ -124,13 +155,14 @@ class BackendAPI extends BaseAPI {
 		options: RequestInit = {},
 		headers: HeadersInit = {}
 	) {
-		return await super.delete(
+		const request = () => super.delete(
 			sessionId,
 			path,
 			scopes,
 			options,
 			this.sessionHeaders(sessionId, headers)
 		);
+		return this.retryAfterProviderRefresh(sessionId, await request(), request);
 	}
 
 	async share(

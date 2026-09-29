@@ -17,6 +17,7 @@ encryption = Encryption(load_encryption_keyring())
 
 _WHOLE_PROTECTED_SESSION_ROOTS = {
     "microsoftAccount",
+    "microsoftBackendAccessToken",
     "microsoftAuthorization",
     "linkedinAuthorization",
     "accountMerge",

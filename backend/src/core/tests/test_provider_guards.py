@@ -484,6 +484,7 @@ async def test_session_candidate_loader_returns_all_valid_providers(monkeypatch)
     account = {"homeAccountId": "account", "username": "user@example.invalid"}
     session_values = {
         "$.microsoftAccount": account,
+        "$.microsoftBackendAccessToken": {"accessToken": "microsoft-token"},
         "$.linkedinSubject": "linkedin-subject",
     }
     monkeypatch.setattr(
@@ -494,10 +495,8 @@ async def test_session_candidate_loader_returns_all_valid_providers(monkeypatch)
         "core.security.get_protected_cache_value",
         lambda key: {"idToken": "linkedin-token"},
     )
-    microsoft_token = AsyncMock(return_value="microsoft-token")
     microsoft_claims = AsyncMock(return_value={"oid": "microsoft-subject"})
     linkedin_claims = AsyncMock(return_value={"sub": "linkedin-subject"})
-    monkeypatch.setattr("core.security.get_azure_token_from_cache", microsoft_token)
     monkeypatch.setattr("core.security.azure.get_azure_token_payload", microsoft_claims)
     monkeypatch.setattr(
         "core.security.linkedin.get_linkedin_token_payload", linkedin_claims
@@ -510,7 +509,6 @@ async def test_session_candidate_loader_returns_all_valid_providers(monkeypatch)
         IdentityProvider.microsoft,
         IdentityProvider.linkedin,
     ]
-    microsoft_token.assert_awaited_once_with(account, ["api.read"])
     linkedin_claims.assert_awaited_once_with("linkedin-token", client_id=CLIENT_ID)
 
 
@@ -520,16 +518,13 @@ async def test_session_candidate_loader_treats_expired_linkedin_as_unavailable(
 ):
     values = {
         "$.microsoftAccount": {"username": "user@example.invalid"},
+        "$.microsoftBackendAccessToken": {"accessToken": "microsoft-token"},
         "$.linkedinSubject": "linkedin-subject",
     }
     monkeypatch.setattr("core.security.get_session_value", lambda _, path: values[path])
     monkeypatch.setattr(
         "core.security.get_protected_cache_value",
         lambda _: {"idToken": "expired-linkedin-token"},
-    )
-    monkeypatch.setattr(
-        "core.security.get_azure_token_from_cache",
-        AsyncMock(return_value="microsoft-token"),
     )
     monkeypatch.setattr(
         "core.security.azure.get_azure_token_payload",
@@ -550,16 +545,13 @@ async def test_session_candidate_loader_treats_invalid_microsoft_as_unavailable(
 ):
     values = {
         "$.microsoftAccount": {"username": "user@example.invalid"},
+        "$.microsoftBackendAccessToken": {"accessToken": "microsoft-token"},
         "$.linkedinSubject": "linkedin-subject",
     }
     monkeypatch.setattr("core.security.get_session_value", lambda _, path: values[path])
     monkeypatch.setattr(
         "core.security.get_protected_cache_value",
         lambda _: {"idToken": "linkedin-token"},
-    )
-    monkeypatch.setattr(
-        "core.security.get_azure_token_from_cache",
-        AsyncMock(return_value="microsoft-token"),
     )
     monkeypatch.setattr(
         "core.security.azure.get_azure_token_payload",
@@ -1093,10 +1085,16 @@ async def test_socket_cache_defaults_a_missing_provider_path_to_microsoft(monkey
     encrypted_account = encryption.encrypt(
         "session:session", "$.microsoftAccount", account
     )
+    encrypted_token = encryption.encrypt(
+        "session:session",
+        "$.microsoftBackendAccessToken",
+        {"accessToken": "access-token"},
+    )
     cache_json = Mock()
     responses: dict[tuple[str, str], list[object]] = {
         ("session:session", "$.identityProvider"): [],
         ("session:session", "$.microsoftAccount"): [encrypted_account],
+        ("session:session", "$.microsoftBackendAccessToken"): [encrypted_token],
     }
 
     def get_cached_value(key: str, path: str) -> list[object]:
@@ -1106,14 +1104,11 @@ async def test_socket_cache_defaults_a_missing_provider_path_to_microsoft(monkey
     monkeypatch.setattr(
         "core.security.redis_session_client.json", Mock(return_value=cache_json)
     )
-    token = AsyncMock(return_value="access-token")
     validate = AsyncMock(return_value={"oid": "member", "tid": "tenant"})
-    monkeypatch.setattr("core.security.get_azure_token_from_cache", token)
     monkeypatch.setattr("core.security.azure.get_azure_token_payload", validate)
 
     identity = await get_token_payload_from_cache("session")
 
     assert identity.provider == IdentityProvider.microsoft
     assert identity.claims == {"oid": "member", "tid": "tenant"}
-    token.assert_awaited_once_with(account, None)
     validate.assert_awaited_once_with("access-token")

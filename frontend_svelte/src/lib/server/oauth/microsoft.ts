@@ -295,6 +295,16 @@ class MicrosoftAuthenticationProvider implements OAuthProvider {
 				account: account
 			});
 			const accessToken = response.accessToken;
+			if (scopes.includes(appConfig.api_scope_default)) {
+				await redisCache.setSession(
+					sessionId,
+					'$.microsoftBackendAccessToken',
+					JSON.stringify({
+						accessToken,
+						expiresAt: response.expiresOn?.getTime() ?? 0
+					})
+				);
+			}
 			return accessToken;
 		} catch (error) {
 			if (error instanceof InteractionRequiredAuthError) {

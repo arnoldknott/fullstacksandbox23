@@ -25,6 +25,7 @@ export type Session = {
 	welcomePending?: boolean;
 	identityProvider?: IdentityProvider;
 	microsoftAccount?: AccountInfo;
+	microsoftBackendAccessToken?: { accessToken: string; expiresAt: number };
 	linkedinSubject?: string;
 	userAgent?: string;
 	currentUser?: Me;

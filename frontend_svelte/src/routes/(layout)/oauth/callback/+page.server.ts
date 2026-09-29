@@ -64,6 +64,7 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 				'$.identityProvider',
 				JSON.stringify(IdentityProvider.MICROSOFT)
 			);
+			await msalAuthProvider.getAccessToken(sessionId, [appConfig.api_scope_default]);
 			const responseMe = await backendAPI.get(sessionId, '/user/me');
 			if (responseMe.status !== 200 && responseMe.status !== 201) {
 				throw new Error(`Backend Microsoft signup failed with status ${responseMe.status}.`);

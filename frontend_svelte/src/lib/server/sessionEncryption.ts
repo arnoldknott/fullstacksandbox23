@@ -2,6 +2,7 @@ import { Encryption } from './encryption';
 
 const wholeProtectedRoots = new Set([
 	'microsoftAccount',
+	'microsoftBackendAccessToken',
 	'microsoftAuthorization',
 	'linkedinAuthorization',
 	'accountMerge'

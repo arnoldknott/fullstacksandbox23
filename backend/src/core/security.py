@@ -343,8 +343,11 @@ async def load_session_provider_candidates(  # noqa: C901
 
     user_account = get_session_value(session_id, "$.microsoftAccount")
     if isinstance(user_account, dict):
-        token = await get_azure_token_from_cache(user_account, scopes)
-        if token:
+        cached_token = get_session_value(session_id, "$.microsoftBackendAccessToken")
+        token = (
+            cached_token.get("accessToken") if isinstance(cached_token, dict) else None
+        )
+        if isinstance(token, str):
             try:
                 payload = await azure.get_azure_token_payload(token)
             except (HTTPException, jwt.PyJWTError) as error:
@@ -795,7 +798,29 @@ async def authorize_session_candidates(
             )
         resolved[candidate.provider] = current_user
 
-    selected = select_provider_candidate(candidates, guards)
+    try:
+        selected = select_provider_candidate(candidates, guards)
+    except HTTPException as error:
+        available = {candidate.provider.value for candidate in candidates}
+        missing_provider = next(
+            (
+                guard.provider
+                for guard in guards.alternatives
+                if not isinstance(guard, AllowAnonymous)
+                and guard.provider not in available
+            ),
+            None,
+        )
+        if error.status_code != 401 or missing_provider is None:
+            raise
+        raise HTTPException(
+            status_code=401,
+            detail={
+                "error": "authentication",
+                "code": "provider-token-required",
+                "provider": missing_provider,
+            },
+        ) from error
     return selected, resolved[selected.provider] if selected is not None else None
 
 
