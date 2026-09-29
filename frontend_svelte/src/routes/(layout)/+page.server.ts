@@ -13,16 +13,8 @@ export const actions: Actions = {
 		const session = locals.sessionData;
 		const data = await request.formData();
 		const provider = data.get('provider');
-		if (
-			!session.loggedIn ||
-			!session.currentUser?.id ||
-			!session.sessionOwnerProvider ||
-			(provider !== IdentityProvider.MICROSOFT && provider !== IdentityProvider.LINKEDIN)
-		) {
+		if (!session.loggedIn || !session.currentUser?.id || provider !== IdentityProvider.LINKEDIN) {
 			return fail(400, { error: 'Invalid account unlink request.' });
-		}
-		if (provider === session.sessionOwnerProvider) {
-			return fail(409, { error: 'The active provider cannot be unlinked.' });
 		}
 		const response = await backendAPI.delete(session.sessionId, `/user/me/link/${provider}`);
 		if (!response.ok) {

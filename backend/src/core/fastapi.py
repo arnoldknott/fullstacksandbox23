@@ -9,6 +9,7 @@ from routers.api.v1.core import router as core_router
 from routers.api.v1.demo_file import router as demo_file_router
 from routers.api.v1.demo_resource import router as demo_resource_router
 from routers.api.v1.identities import (
+    account_link_router,
     group_router,
     sub_group_router,
     sub_sub_group_router,
@@ -60,6 +61,11 @@ def mount_rest_api_routes(app: FastAPI, api_prefix: str, ws_prefix: str):
     # TBD: no using underscores in routes - slashes instead, so nested routers. Or dashes. no uppercase letters either!
     # app.include_router(oauth_router, tags=["OAuth"])
     app.include_router(core_router, prefix=f"{api_prefix}/core", tags=["Core"])
+    app.include_router(
+        account_link_router,
+        prefix=f"{api_prefix}/user",
+        tags=["User"],
+    )
     app.include_router(
         user_router,
         prefix=f"{api_prefix}/user",
