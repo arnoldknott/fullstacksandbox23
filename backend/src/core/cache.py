@@ -1,3 +1,7 @@
+import hashlib
+import json
+import secrets
+
 import redis
 
 from core.config import config, load_encryption_keyring
@@ -22,6 +26,8 @@ _WHOLE_PROTECTED_SESSION_ROOTS = {
     "linkedinAuthorization",
     "accountMerge",
 }
+
+SOCKETIO_TICKET_TTL_SECONDS = 30
 
 
 def decrypt_session_value(redis_key: str, path: str, value):
@@ -67,6 +73,38 @@ def get_protected_cache_value(redis_key: str, purpose: str = "$"):
 def set_protected_cache_value(redis_key: str, value, purpose: str = "$"):
     encrypted = encryption.encrypt(redis_key, purpose, value)
     return redis_session_client.json().set(redis_key, ".", encrypted)
+
+
+def create_socketio_admission_ticket(session_id: str) -> str:
+    """Create a short-lived, one-time reference to an existing application session."""
+    if get_session_value(session_id) is None:
+        raise ValueError("Application session not found.")
+    ticket = secrets.token_urlsafe(32)
+    redis_key = f"session:socketio-ticket:{hashlib.sha256(ticket.encode()).hexdigest()}"
+    protected = encryption.encrypt(redis_key, "$", {"sessionId": session_id})
+    redis_session_client.set(
+        redis_key,
+        json.dumps(protected),
+        ex=SOCKETIO_TICKET_TTL_SECONDS,
+    )
+    return ticket
+
+
+def consume_socketio_admission_ticket(ticket: str) -> str | None:
+    """Redeem a ticket once and return its still-existing application session."""
+    redis_key = f"session:socketio-ticket:{hashlib.sha256(ticket.encode()).hexdigest()}"
+    raw = redis_session_client.getdel(redis_key)
+    if raw is None:
+        return None
+    try:
+        protected = json.loads(raw)
+        value = encryption.decrypt(redis_key, "$", protected)
+        session_id = value.get("sessionId") if isinstance(value, dict) else None
+    except TypeError, ValueError, json.JSONDecodeError:
+        return None
+    if not isinstance(session_id, str) or get_session_value(session_id) is None:
+        return None
+    return session_id
 
 
 # print("=== cache.py finished ===")

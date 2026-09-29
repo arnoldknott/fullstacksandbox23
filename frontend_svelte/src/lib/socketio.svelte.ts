@@ -116,7 +116,23 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 
 		this.client = io(socketioServerUrl + connection.namespace, {
 			path: backendAPIConfiguration.socketIOPath,
-			auth: { 'session-id': connection.sessionId },
+			auth: async (callback) => {
+				if (!connection.sessionId) {
+					callback({});
+					return;
+				}
+				try {
+					const response = await fetch('/api/v1/socketio-ticket', { method: 'POST' });
+					if (!response.ok) {
+						callback({});
+						return;
+					}
+					const { ticket } = (await response.json()) as { ticket: string };
+					callback({ 'admission-ticket': ticket });
+				} catch {
+					callback({});
+				}
+			},
 			query: queryParams,
 			forceNew: true,
 			...connection.overrides

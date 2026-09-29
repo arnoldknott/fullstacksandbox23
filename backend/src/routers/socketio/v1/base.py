@@ -26,7 +26,7 @@ from sqlmodel import SQLModel, col, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from core.authentication.base import VerifiedIdentity
-from core.cache import redis_session_client
+from core.cache import consume_socketio_admission_ticket, redis_session_client
 from core.config import config
 from core.databases import get_async_session
 from core.security import (
@@ -213,7 +213,10 @@ class BaseNamespace(
         if not candidates:
             raise ConnectionRefusedError("Authorization failed.")
         if guards is not None:
-            selected = select_provider_candidate(candidates, guards)
+            try:
+                selected = select_provider_candidate(candidates, guards)
+            except HTTPException as error:
+                raise SocketAuthorizationFailedError("Authorization failed.") from error
             if selected is None:
                 return {}
             return selected
@@ -307,6 +310,9 @@ class BaseNamespace(
             token_payload = await self._get_token_payload_if_authenticated(
                 session_id, guards
             )
+        except SocketAuthorizationFailedError:
+            await self._leave_protected_rooms(sid)
+            raise
         except Exception as error:
             await self._leave_protected_rooms(sid)
             raise SocketAuthenticationExpiredError("Authentication expired.") from error
@@ -601,7 +607,12 @@ class BaseNamespace(
         }
         auth_rejected = False
         token_payload: VerifiedIdentity | dict | None = None
-        auth_session_id = auth["session-id"] if auth else None
+        admission_ticket = auth.get("admission-ticket") if auth else None
+        auth_session_id = environ.get("application-session-id")
+        if auth_session_id is None and isinstance(admission_ticket, str):
+            auth_session_id = consume_socketio_admission_ticket(admission_ticket)
+            if auth_session_id is not None:
+                environ["application-session-id"] = auth_session_id
         try:
             if auth_session_id is not None:
                 authentication_error: Exception | None = None
@@ -626,6 +637,19 @@ class BaseNamespace(
                         ) from err
                 except (jwt.PyJWTError, ConnectionRefusedError) as err:
                     authentication_error = err
+                except SocketAuthorizationFailedError as err:
+                    auth_rejected = True
+                    logger.info(
+                        "🧦 Client %s is not authorized for namespace %s.",
+                        sid,
+                        self.namespace,
+                    )
+                    raise ConnectionRefusedError(
+                        {
+                            "error": "access",
+                            "code": "authorization-failed",
+                        }
+                    ) from err
                 except Exception as err:
                     auth_rejected = True
                     logger.exception(

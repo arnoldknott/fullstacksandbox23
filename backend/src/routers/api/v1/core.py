@@ -1,14 +1,18 @@
 import logging
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
+from core.cache import create_socketio_admission_ticket
 from core.config import config
 from core.security import (
     Guards,
+    LinkedInGuard,
     MicrosoftGuard,
+    SessionReferenceCredential,
     check_token_against_guards,
     get_http_access_token_payload,
+    provide_http_token_payload,
 )
 from core.types import GuardTypes
 from jobs.demo.tasks import demo_task
@@ -22,6 +26,23 @@ async def get_health():
     """Returns a 200 OK."""
     logger.info("Health check")
     return {"status": "ok"}
+
+
+@router.post("/socketio-ticket")
+async def create_socketio_ticket(
+    credential=Depends(provide_http_token_payload),
+    _=Depends(Guards(MicrosoftGuard(), LinkedInGuard()).check_http),
+):
+    """Exchange a trusted frontend session reference for a browser admission ticket."""
+    if not isinstance(credential, SessionReferenceCredential):
+        raise HTTPException(status_code=401, detail="Application session required.")
+    try:
+        ticket = create_socketio_admission_ticket(credential.session_id)
+    except ValueError as error:
+        raise HTTPException(
+            status_code=401, detail="Invalid application session."
+        ) from error
+    return {"ticket": ticket}
 
 
 # @router.get("/version")

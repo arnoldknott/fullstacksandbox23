@@ -1,6 +1,6 @@
 # Multi-provider session authorization
 
-Status: in progress; stages A through D are implemented. This plan replaces the previously implemented single-active-provider selection model for communication from the trusted frontend server to the backend. Account linking, provider credential acquisition, encrypted cache storage, and the existing inner access-control layer remain unchanged.
+Status: in progress; stages A through D and the Stage E implementation are complete. Live staging verification remains. This plan replaces the previously implemented single-active-provider selection model for communication from the trusted frontend server to the backend. Account linking, provider credential acquisition, encrypted cache storage, and the existing inner access-control layer remain unchanged.
 
 ## 1. Outcome and terminology
 
@@ -62,7 +62,7 @@ Use one of these deployments while retaining the same backend candidate loader u
 1. Proxy the Socket.IO connection through the authenticated frontend-service channel without exposing the reusable session reference to the browser-to-backend hop.
 2. Let the authenticated frontend service exchange the application session for a short-lived, audience-bound, backend-verifiable Socket.IO admission ticket. The ticket must have a narrow lifetime, must not be accepted by REST endpoints, and must be invalid after application-session revocation. Prefer one-time use when reconnect behavior can support it.
 
-Select the deployment-compatible option during implementation. A raw session-reference fallback on public Socket.IO ingress is not permitted.
+The implementation uses option 2. The trusted frontend exchanges its authenticated session-reference request for a cryptographically random, 30-second, one-time Socket.IO admission ticket. Redis stores the ticket hash in the key and the encrypted application-session reference in its value. Socket.IO accepts the ticket only in its handshake, atomically consumes it, verifies that the referenced session still exists, and binds the session to that Engine.IO connection so its additional namespaces do not redeem the ticket again. Reconnects obtain a fresh ticket. A raw session-reference fallback on public Socket.IO ingress is not permitted.
 
 - Connect and event guards select a provider independently from their declared alternatives.
 - Cache validated candidate identities only for the lifetime and context in which their credentials remain valid; do not treat connection-time validation as permanent authorization.
@@ -150,9 +150,9 @@ Completion requires REST and Socket.IO to select from the same verified session 
 ## 9. Tracking
 
 - [x] Select and document the Azure mechanism for authenticating the frontend service to the backend: Microsoft Entra client credentials with strict app-only-token validation and a frontend-client-ID ACL.
-- [ ] Select authenticated Socket.IO proxying or short-lived admission tickets; prohibit raw session references on public ingress.
+- [x] Use short-lived, one-time Socket.IO admission tickets and prohibit raw session references on public ingress.
 - [x] A: shared candidate loading, same-user binding, and guard-aware selection.
 - [x] B: REST session-reference transport and direct bearer compatibility.
 - [x] C: Socket.IO per-event selection and room reconciliation.
 - [x] D: lifecycle, reauthentication, session-field, and providers-page cleanup.
-- [ ] E: deployment boundary, complete automated validation, and live staging verification.
+- [ ] E: deployment-boundary implementation and automated validation are complete; live staging verification remains.
