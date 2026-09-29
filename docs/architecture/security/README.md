@@ -1,8 +1,17 @@
-# Security and OAuth
+# Security architecture
 
 ## Architecture and change boundary
 
 The definitions of the inner and outer security layers and the consultation requirement are in [AGENTS.md](../../../AGENTS.md#security-layers-and-change-boundaries).
+
+Security is enforced in two composed layers:
+
+1. The **outer security layer** authenticates a caller and decides whether the caller may enter an endpoint or event. Open Authorization (OAuth) 2.0 and OpenID Connect provider validation and guards implement this layer.
+2. The **inner security layer** decides which application resources that admitted caller may read, connect to, change, own, or share. Access policies, identity inheritance, resource inheritance, and public policies implement this layer.
+
+Passing the outer layer does not grant access to application data. Protected CRUD operations still apply the inner layer. Conversely, a public access policy does not bypass endpoint admission: an endpoint must explicitly allow an anonymous caller before the inner layer can evaluate public access.
+
+See [Inner access-control layer](inner-access-control.md) for the inner-layer data model, effective-access algorithm, inheritance directions, public sharing, enforcement points, and examples. This README remains the overview and owns the outer-layer and cross-cutting security contracts; the focused document owns the inner-layer contract.
 
 [Backend security](../../../backend/src/core/security.py) delegates provider-token validation to [authentication helpers](../../../backend/src/core/authentication/) and evaluates the alternatives configured by endpoint and Socket.IO guards. Endpoints retain `guards: GuardTypes = Depends(...)`; shared security resolves the internal user for the existing CRUD boundary. [Access enforcement](../../../backend/src/crud/access.py), including `filters_allowed()`, then applies resource permissions. Outer admission never replaces those checks. Preserve existing Microsoft administrator/group exceptions.
 
@@ -28,6 +37,22 @@ See [public signing-key caching](../../redis/README.md#public-signing-key-cachin
 The frontend `OAuthProvider` contract in `frontend_svelte/src/lib/server/oauth/base.ts` is deliberately narrow: shared API wrappers need only provider-independent access-token acquisition. Microsoft keeps its separate Microsoft Authentication Library (MSAL) implementation. Do not pre-emptively turn LinkedIn's `openid-client` implementation into a configurable provider framework.
 
 When adding the next OpenID Connect provider through `openid-client`, first implement its working provider-specific flow. Compare that implementation with LinkedIn, then extract an `OpenIdConnectProvider` base around code that is actually identical. Keep discovery, authorization transactions, callback validation, token storage/refresh and subject checks in the shared base only where both providers have the same behavior; retain provider-specific scopes, client authentication, nonce or Proof Key for Code Exchange requirements, error handling and protocol quirks in their provider modules. This evidence-based extraction should avoid provider switches and unused configuration hooks.
+
+## Authentication and REST authorization flow
+
+1. The user starts Microsoft or LinkedIn authentication. The frontend creates a random application-session Universally Unique Identifier (UUID), stores it in the browser's `session_id` cookie, and uses the same identifier for Redis key `session:<session-id>`.
+2. The provider authenticates the user and returns to the frontend callback. The frontend validates the OAuth/OpenID Connect transaction and stores the resulting protected provider credential or account reference in Redis. Provider credentials remain server-side and are never exposed through page data.
+3. The frontend calls `GET /api/v1/user/me` to bootstrap the application user. This is the only frontend session-reference request that may proceed before `session.currentUser` exists. The backend loads exactly one valid provider identity and resolves or creates the internal user; the frontend then stores the returned user as `session.currentUser`.
+4. For every subsequent protected REST request, the backend loads the session's currently valid provider identities, verifies that they belong to `session.currentUser`, and selects the first identity satisfying the endpoint's declared guard order. Claims from different providers are never combined. If no provider satisfies the guards, access is rejected unless the endpoint explicitly allows anonymous access.
+
+Steps 3 and 4 use two independent frontend-to-backend credentials:
+
+- `Authorization: Bearer <frontend-application-token>` proves that the caller is the trusted SvelteKit server. The server obtains this Microsoft Entra app-only token through the client-credentials flow. The backend validates its signature, issuer, tenant, audience and expiry, requires an app-only identity, and accepts only the configured frontend client through an application-level Access Control List (ACL) check of `azp`/`appid`. The application token is never exposed to browser code or page data.
+- `X-Application-Session: <session-id>` identifies the user session for which the trusted frontend is acting. It contains the same UUID as the browser cookie and Redis session, not a second backend session.
+
+The application token authenticates the calling service; the session reference supplies the user context. A session reference presented without the valid frontend application token is rejected at public backend ingress. `BackendAPI` owns this transport; generic `BaseAPI` and third-party wrappers for Microsoft Graph, LinkedIn, or future providers remain unaware of application sessions. Direct backend clients continue to authenticate with a provider bearer token and cannot nominate an application session.
+
+For Socket.IO, the browser never sends the reusable application-session reference to the public backend. Before each initial connection or reconnect, it calls the protected same-origin frontend endpoint `POST /api/v1/socketio-ticket`. The trusted frontend server uses the same application token and `X-Application-Session` pair to request a ticket from `POST /api/v1/core/socketio-ticket`. The backend returns a cryptographically random ticket with a 30-second lifetime. Redis stores only its hash as part of the key and an encrypted session reference as its value. The Socket.IO handshake redeems the ticket atomically once and binds the resulting session only to that Engine.IO connection; additional namespaces on the same transport reuse the server-side binding. Raw session references, expired/replayed tickets on another connection, and tickets whose application session has been deleted are rejected. After admission, connection and event guards load and select the session's provider identities independently in declared guard order.
 
 ## Registration session state
 
@@ -92,6 +117,7 @@ Encryption is mandatory and has no runtime disable switch. There is no plaintext
 - [LinkedIn authentication and credential encryption](linkedin-account-linking-plan.md) — provider/guard contracts, endpoint matrix, code mappings, stages, and validation.
 - [Authentication session lifecycle and Socket.IO expiry recovery](authentication-session-lifecycle-plan.md) — sliding Redis/cookie renewal, one-session reauthentication, established-connection expiry enforcement, compact status events, and reconnect/replay.
 - [Account linking and merge](linkedin-azure-account-merge-plan.md) — verified attachment, settings choices, reference reconciliation, and transactional merging across providers.
+- [Multi-provider session authorization](multi-provider-session-authorization-plan.md) — guard-driven credential selection across linked providers, session-reference REST transport, Socket.IO parity, and the frontend/backend trust boundary.
 
 The [Redis README](../../redis/README.md) owns Redis partitions, protected cache/session boundaries, and Redis-specific performance measurements. This document owns the application-wide encryption and key-rotation contract. The plans describe implementation work; they do not imply that planned features are already deployed.
 

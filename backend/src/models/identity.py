@@ -54,7 +54,6 @@ class AzureGroupCreate(SQLModel):
     id: uuid.UUID
     # enables multi-tenancy, if None, then it's the internal tenant:
     azure_tenant_id: Optional[uuid.UUID] = uuid.UUID(config.AZURE_TENANT_ID)
-    is_active: bool = True
 
 
 class AzureGroupRead(AzureGroupCreate):
@@ -78,7 +77,6 @@ class AzureGroup(AzureGroupCreate, BaseSQLModel, table=True):
         description="Identical to the uuid for this group from Azure.",
     )
     created_at: datetime = Field(default=datetime.now())
-    is_active: Optional[bool] = Field(default=True)  # type: ignore[assignment]
 
     users: Optional[List["User"]] = Relationship(
         back_populates="azure_groups",
@@ -96,8 +94,6 @@ class AzureGroup(AzureGroupCreate, BaseSQLModel, table=True):
 
 class AzureGroupUpdate(AzureGroupCreate):
     """Schema for updating a group."""
-
-    is_active: Optional[bool] = None  # type: ignore[assignment]
 
 
 # endregion AzureGroup
@@ -419,12 +415,6 @@ class AccountMergeConfirm(SQLModel):
     model_config = ConfigDict(extra="forbid")  # type: ignore[assignment]
     preview_hash: str
     choices: dict[str, Literal["survivor", "source"]] = Field(default_factory=dict)
-
-
-class AccountMergeResult(SQLModel):
-    """Successful destructive merge result."""
-
-    result: Literal["merged"] = "merged"
 
 
 class UserUpdate(SQLModel):

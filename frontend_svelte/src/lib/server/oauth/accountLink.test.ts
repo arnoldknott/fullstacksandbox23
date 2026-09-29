@@ -34,7 +34,7 @@ describe('completeAccountLink', () => {
 		vi.clearAllMocks();
 		mocks.getSession.mockResolvedValue({
 			loggedIn: true,
-			identityProvider: IdentityProvider.LINKEDIN,
+			sessionOwnerProvider: IdentityProvider.LINKEDIN,
 			currentUser: { id: 'surviving-user' }
 		});
 		mocks.getMicrosoftToken.mockResolvedValue('microsoft-proof');

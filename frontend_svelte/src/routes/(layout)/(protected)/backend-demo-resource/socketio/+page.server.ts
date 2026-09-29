@@ -33,14 +33,16 @@ export const load: PageServerLoad = async ({ locals }) => {
 	payload.entities = snapshot.entities;
 	payload.cursor = snapshot.cursor;
 
-	const myTeamsIdentities = await microsoftGraph.getAttachedTeamsAsIdentities(
-		sessionId,
-		locals.sessionData.currentUser?.azure_token_groups
-	);
+	const [myTeamsIdentities, allIdentities] = await Promise.all([
+		microsoftGraph.getAttachedTeamsAsIdentities(
+			sessionId,
+			locals.sessionData.currentUser?.azure_token_groups
+		),
+		backendAPI.getAllIdentities(sessionId)
+	]);
 	// all linked teams identities:
 	payload.identities.push(...myTeamsIdentities);
 	// all app internal identities (users, ueber-groups, groups, sub-groups, sub-sub-groups):
-	const allIdentities = await backendAPI.getAllIdentities(sessionId);
 	payload.identities.push(...allIdentities);
 	// one public identity:
 	payload.identities.push({

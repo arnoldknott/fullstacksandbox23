@@ -149,6 +149,55 @@ async def test_disabled_initialized_user_stays_disabled(
     assert stored.is_active is False
 
 
+async def test_existing_provider_resolution_is_read_only(get_async_test_session):
+    user, _ = await signup("existing-session-sub")
+    before = len((await get_async_test_session.exec(select(User))).unique().all())
+
+    async with UserCRUD() as crud:
+        resolved = await crud.resolve_existing_provider_user(
+            linkedin_user_id="existing-session-sub"
+        )
+        with pytest.raises(HTTPException) as error:
+            await crud.resolve_existing_provider_user(
+                linkedin_user_id="unknown-session-sub"
+            )
+
+    assert resolved.id == user.id
+    assert error.value.status_code == 401
+    assert (
+        len((await get_async_test_session.exec(select(User))).unique().all()) == before
+    )
+
+
+async def test_existing_microsoft_resolution_checks_tenant_and_active_state(
+    get_async_test_session,
+):
+    oid = uuid4()
+    tenant = UUID(config.AZURE_TENANT_ID)
+    async with UserCRUD() as crud:
+        user, _ = await crud.azure_user_self_sign_up(oid, tenant, [])
+        resolved = await crud.resolve_existing_provider_user(
+            azure_user_id=oid, azure_tenant_id=tenant
+        )
+        with pytest.raises(HTTPException) as tenant_error:
+            await crud.resolve_existing_provider_user(
+                azure_user_id=oid, azure_tenant_id=uuid4()
+            )
+    assert resolved.id == user.id
+    assert tenant_error.value.status_code == 401
+
+    stored = await get_async_test_session.get(User, user.id)
+    assert stored is not None
+    stored.is_active = False
+    await get_async_test_session.commit()
+    async with UserCRUD() as crud:
+        with pytest.raises(HTTPException) as disabled_error:
+            await crud.resolve_existing_provider_user(
+                azure_user_id=oid, azure_tenant_id=tenant
+            )
+    assert disabled_error.value.status_code == 403
+
+
 async def test_invitation_activates_and_wrong_tenant_cannot_claim_it():
     owner, _ = await signup("inviter")
     current = CurrentUserData(

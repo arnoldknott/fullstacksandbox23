@@ -53,7 +53,7 @@ describe('LinkedIn login route', () => {
 		mocks.getSession.mockResolvedValue({
 			sessionId: 'existing-session',
 			loggedIn: true,
-			identityProvider: 'microsoft',
+			sessionOwnerProvider: 'microsoft',
 			currentUser: { id: 'internal-user-id' }
 		});
 		mocks.signIn.mockResolvedValue('https://linkedin.example/authorize');

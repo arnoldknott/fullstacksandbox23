@@ -148,27 +148,30 @@ describe('application encryption', () => {
 		).toThrow('contiguous indices');
 	});
 
-	test('encrypts session data at its existing whole and leaf boundaries', () => {
+	test('encrypts only security-sensitive session subdocuments', () => {
 		const crypt = encryption();
 		const session = {
 			sessionId: 'fixture',
 			loggedIn: true,
 			linkedinSubject: 'subject',
+			userAgent: 'Example Browser',
 			microsoftAccount: { homeAccountId: 'account', username: 'person@example.invalid' },
 			currentUser: { id: 'user-id', settings: { locale: 'en' }, roles: ['user'] }
 		};
 		const stored = encryptSessionValue(crypt, 'session:fixture', '$', session) as typeof session;
-		expect(JSON.stringify(stored)).not.toMatch(/person@example.invalid|user-id/);
+		expect(JSON.stringify(stored)).not.toContain('person@example.invalid');
+		expect(JSON.stringify(stored)).toContain('user-id');
 		expect(stored.sessionId).toBe('fixture');
 		expect(stored.linkedinSubject).toBe('subject');
+		expect(stored.userAgent).toBe('Example Browser');
+		expect(stored.currentUser).toEqual(session.currentUser);
 		expect(decryptSessionValue(crypt, 'session:fixture', '$', stored)).toEqual(session);
 		expect(
 			decryptSessionValue(crypt, 'session:fixture', '$.microsoftAccount', stored.microsoftAccount)
 		).toEqual(session.microsoftAccount);
-		const encryptedId = (stored.currentUser as unknown as { id: EncryptionEnvelope }).id;
-		expect(decryptSessionValue(crypt, 'session:fixture', '$.currentUser.id', encryptedId)).toBe(
-			'user-id'
-		);
+		expect(
+			decryptSessionValue(crypt, 'session:fixture', '$.currentUser.id', stored.currentUser.id)
+		).toBe('user-id');
 	});
 
 	test('rejects deeper access beneath a whole encrypted subdocument', () => {

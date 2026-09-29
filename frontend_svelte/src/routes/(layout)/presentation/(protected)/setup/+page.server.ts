@@ -28,13 +28,15 @@ export const load: PageServerLoad = async ({ locals }) => {
 	payload.presentations = presentations;
 	payload.cursor = snapshot.cursor;
 	// add all linked Microsoft Teams identities:
-	const myTeamsIdentities = await microsoftGraph.getAttachedTeamsAsIdentities(
-		sessionId,
-		locals.sessionData.currentUser?.azure_token_groups
-	);
+	const [myTeamsIdentities, allIdentities] = await Promise.all([
+		microsoftGraph.getAttachedTeamsAsIdentities(
+			sessionId,
+			locals.sessionData.currentUser?.azure_token_groups
+		),
+		backendAPI.getAllIdentities(sessionId)
+	]);
 	payload.identities.push(...myTeamsIdentities);
 	// add all app internal identities (users, ueber-groups, groups, sub-groups, sub-sub-groups):
-	const allIdentities = await backendAPI.getAllIdentities(sessionId);
 	payload.identities.push(...allIdentities);
 	// add one public identity:
 	payload.identities.push({

@@ -1,12 +1,12 @@
 import { describe, expect, test, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
-	getAccessToken: vi.fn(),
+	getBackend: vi.fn(),
 	renewSessionIfNeeded: vi.fn()
 }));
 
 vi.mock('$lib/server/apis/backendApi', () => ({
-	backendAuthProvider: { getAccessToken: mocks.getAccessToken }
+	backendAPI: { get: mocks.getBackend }
 }));
 vi.mock('$lib/server/cache', () => ({
 	redisCache: { renewSessionIfNeeded: mocks.renewSessionIfNeeded }
@@ -25,7 +25,7 @@ import { POST } from './+server';
 
 describe('POST /session/touch', () => {
 	test('renews the same session and synchronizes its cookie', async () => {
-		mocks.getAccessToken.mockResolvedValue('token');
+		mocks.getBackend.mockResolvedValue(new Response('{}', { status: 200 }));
 		mocks.renewSessionIfNeeded.mockResolvedValue('renewed');
 		const cookies = { set: vi.fn() };
 
@@ -35,6 +35,7 @@ describe('POST /session/touch', () => {
 		} as never);
 
 		expect(response.status).toBe(204);
+		expect(mocks.getBackend).toHaveBeenCalledWith('session-1', '/user/me');
 		expect(mocks.renewSessionIfNeeded).toHaveBeenCalledWith('session-1');
 		expect(cookies.set).toHaveBeenCalledWith('session_id', 'session-1', {
 			path: '/',
@@ -44,7 +45,7 @@ describe('POST /session/touch', () => {
 	});
 
 	test('does not revive a missing session or set a cookie', async () => {
-		mocks.getAccessToken.mockResolvedValue('token');
+		mocks.getBackend.mockResolvedValue(new Response('{}', { status: 200 }));
 		mocks.renewSessionIfNeeded.mockResolvedValue('missing');
 		const cookies = { set: vi.fn() };
 

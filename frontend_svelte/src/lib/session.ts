@@ -45,7 +45,7 @@ export class SessionLifecycle {
 		if (this.reauthenticationStarted) return;
 		const provider = preferredIdentityProvider(
 			page.data.session?.currentUser ?? {},
-			page.data.session?.identityProvider
+			page.data.session?.sessionOwnerProvider
 		);
 		if (!provider) {
 			throw new Error('Reauthentication required, but no suitable identity provider found.');

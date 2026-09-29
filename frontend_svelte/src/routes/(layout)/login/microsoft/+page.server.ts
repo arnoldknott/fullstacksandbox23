@@ -22,7 +22,7 @@ export const load: PageServerLoad = async ({ url, request, cookies }) => {
 	if (linkRequested && (!existingSession?.loggedIn || !existingSession.currentUser?.id)) {
 		throw new Error('Account linking requires an established session.');
 	}
-	if (linkRequested && existingSession?.identityProvider === IdentityProvider.MICROSOFT) {
+	if (linkRequested && existingSession?.sessionOwnerProvider === IdentityProvider.MICROSOFT) {
 		throw new Error('Choose a different identity provider to link.');
 	}
 	try {
@@ -31,7 +31,7 @@ export const load: PageServerLoad = async ({ url, request, cookies }) => {
 			const sessionData: Session = {
 				status: SessionStatus.AUTHENTICATION_PENDING,
 				loggedIn: false,
-				identityProvider: IdentityProvider.MICROSOFT,
+				sessionOwnerProvider: IdentityProvider.MICROSOFT,
 				userAgent: request.headers.get('user-agent') || '',
 				sessionId
 			};
@@ -53,7 +53,7 @@ export const load: PageServerLoad = async ({ url, request, cookies }) => {
 			linkRequested ? 'link' : existingSession?.loggedIn ? 'reauthentication' : 'login',
 			linkRequested
 				? {
-						initiatingProvider: existingSession!.identityProvider!,
+						initiatingProvider: existingSession!.sessionOwnerProvider!,
 						initiatingUserId: existingSession!.currentUser!.id
 					}
 				: undefined

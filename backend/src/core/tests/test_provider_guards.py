@@ -23,16 +23,24 @@ from core.authentication.linkedin import (
     validate_linkedin_identity_token,
 )
 from core.cache import encryption
+from core.config import config
 from core.security import (
     AllowAnonymous,
     CurrentAccessToken,
     Guards,
     LinkedInGuard,
     MicrosoftGuard,
+    SessionReferenceCredential,
+    authorize_session_candidates,
+    check_token_against_guards_with_status,
     check_token_against_guards,
     evaluate_guards,
     get_token_payload_from_cache,
+    load_session_provider_candidates,
+    get_http_access_token_payload,
     provide_http_token_payload,
+    resolve_session_provider_identity,
+    select_provider_candidate,
 )
 from core.types import (
     CurrentUserData,
@@ -305,10 +313,12 @@ async def test_linkedin_cannot_satisfy_microsoft_admin_guard():
         IdentityProvider.linkedin,
         {"roles": ["Admin"], "scp": "api.read", "provider": "microsoft"},
     )
-    with pytest.raises(HTTPException):
+    assert (
         evaluate_guards(
             identity, Guards(MicrosoftGuard(roles=["Admin"]), AllowAnonymous())()
         )
+        is GuardOutcome.ANONYMOUS
+    )
     assert (
         evaluate_guards(
             identity, Guards(MicrosoftGuard(roles=["Admin"]), LinkedInGuard())()
@@ -317,7 +327,7 @@ async def test_linkedin_cannot_satisfy_microsoft_admin_guard():
     )
 
 
-async def test_anonymous_requires_explicit_branch_and_never_keeps_failed_claims():
+async def test_anonymous_is_the_final_explicit_fallback_without_claims():
     assert (
         evaluate_guards(None, Guards(MicrosoftGuard(), AllowAnonymous())())
         is GuardOutcome.ANONYMOUS
@@ -327,10 +337,234 @@ async def test_anonymous_requires_explicit_branch_and_never_keeps_failed_claims(
     identity = VerifiedIdentity(
         IdentityProvider.microsoft, {"scp": "api.read", "roles": []}
     )
-    with pytest.raises(HTTPException):
+    assert (
         evaluate_guards(
-            identity, Guards(MicrosoftGuard(roles=["User"]), AllowAnonymous())()
+            identity, Guards(AllowAnonymous(), MicrosoftGuard(roles=["User"]))()
         )
+        is GuardOutcome.ANONYMOUS
+    )
+
+
+async def test_session_candidate_selection_prefers_eligible_microsoft():
+    microsoft = VerifiedIdentity(
+        IdentityProvider.microsoft, {"scp": "api.read", "roles": ["User"]}
+    )
+    linkedin = VerifiedIdentity(IdentityProvider.linkedin, {"sub": "member"})
+    selected = select_provider_candidate(
+        (linkedin, microsoft),
+        Guards(MicrosoftGuard(scopes=["api.read"]), LinkedInGuard())(),
+    )
+    assert selected is microsoft
+
+
+async def test_session_candidate_selection_falls_back_only_to_declared_provider():
+    microsoft = VerifiedIdentity(
+        IdentityProvider.microsoft, {"scp": "api.read", "roles": []}
+    )
+    linkedin = VerifiedIdentity(IdentityProvider.linkedin, {"sub": "member"})
+    assert (
+        select_provider_candidate(
+            (microsoft, linkedin),
+            Guards(MicrosoftGuard(roles=["User"]), LinkedInGuard())(),
+        )
+        is linkedin
+    )
+    with pytest.raises(HTTPException):
+        select_provider_candidate(
+            (microsoft, linkedin), Guards(MicrosoftGuard(roles=["User"]))()
+        )
+
+
+async def test_session_candidate_selection_uses_guard_order():
+    microsoft = VerifiedIdentity(
+        IdentityProvider.microsoft, {"scp": "api.read", "roles": ["User"]}
+    )
+    linkedin = VerifiedIdentity(IdentityProvider.linkedin, {"sub": "member"})
+    assert (
+        select_provider_candidate(
+            (microsoft, linkedin), Guards(LinkedInGuard(), MicrosoftGuard())()
+        )
+        is linkedin
+    )
+
+
+async def test_session_candidate_selection_uses_anonymous_as_final_fallback():
+    microsoft = VerifiedIdentity(IdentityProvider.microsoft, {"roles": []})
+    assert (
+        select_provider_candidate(
+            (microsoft,),
+            Guards(AllowAnonymous(), MicrosoftGuard(roles=["User"]))(),
+        )
+        is None
+    )
+    assert (
+        select_provider_candidate((), Guards(MicrosoftGuard(), AllowAnonymous())())
+        is None
+    )
+
+
+@pytest.mark.anyio
+async def test_session_candidates_must_all_resolve_to_session_user(monkeypatch):
+    session_user_id = uuid4()
+    microsoft = VerifiedIdentity(IdentityProvider.microsoft, {"roles": ["User"]})
+    linkedin = VerifiedIdentity(IdentityProvider.linkedin, {"sub": "member"})
+    resolved = {
+        IdentityProvider.microsoft: CurrentUserData(user_id=session_user_id),
+        IdentityProvider.linkedin: CurrentUserData(user_id=session_user_id),
+    }
+    resolver = AsyncMock(side_effect=lambda identity: resolved[identity.provider])
+    monkeypatch.setattr(
+        "core.security.get_session_value",
+        lambda session_id, path: {"id": str(session_user_id)},
+    )
+    monkeypatch.setattr("core.security.resolve_session_identity", resolver)
+    selected, current_user = await authorize_session_candidates(
+        "session",
+        (linkedin, microsoft),
+        Guards(MicrosoftGuard(roles=["User"]), LinkedInGuard())(),
+    )
+    assert selected is microsoft
+    assert current_user == resolved[IdentityProvider.microsoft]
+    assert resolver.await_count == 2
+
+
+@pytest.mark.anyio
+async def test_session_candidate_user_mismatch_fails_closed(monkeypatch):
+    session_user_id = uuid4()
+    microsoft = VerifiedIdentity(IdentityProvider.microsoft, {"roles": ["User"]})
+    linkedin = VerifiedIdentity(IdentityProvider.linkedin, {"sub": "member"})
+    resolver = AsyncMock(
+        side_effect=[
+            CurrentUserData(user_id=session_user_id),
+            CurrentUserData(user_id=uuid4()),
+        ]
+    )
+    monkeypatch.setattr(
+        "core.security.get_session_value",
+        lambda session_id, path: {"id": str(session_user_id)},
+    )
+    monkeypatch.setattr("core.security.resolve_session_identity", resolver)
+    with pytest.raises(HTTPException) as error:
+        await authorize_session_candidates(
+            "session",
+            (microsoft, linkedin),
+            Guards(MicrosoftGuard(roles=["User"]), LinkedInGuard())(),
+        )
+    assert error.value.status_code == 401
+    assert error.value.detail == "Session provider identity mismatch."
+
+
+@pytest.mark.anyio
+async def test_account_link_resolves_only_the_initiating_session_provider(monkeypatch):
+    session_user_id = uuid4()
+    microsoft = VerifiedIdentity(IdentityProvider.microsoft, {"oid": "survivor"})
+    linkedin = VerifiedIdentity(IdentityProvider.linkedin, {"sub": "merge-source"})
+    values = {
+        "$.sessionOwnerProvider": IdentityProvider.microsoft.value,
+        "$.currentUser": {"id": str(session_user_id)},
+    }
+    monkeypatch.setattr(
+        "core.security.get_session_value", lambda session_id, path: values[path]
+    )
+    monkeypatch.setattr(
+        "core.security.load_session_provider_candidates",
+        AsyncMock(return_value=(microsoft, linkedin)),
+    )
+    resolver = AsyncMock(return_value=CurrentUserData(user_id=session_user_id))
+    monkeypatch.setattr("core.security.resolve_session_identity", resolver)
+
+    identity = await resolve_session_provider_identity("session")
+
+    assert identity is microsoft
+    resolver.assert_awaited_once_with(microsoft)
+
+
+@pytest.mark.anyio
+async def test_session_candidate_loader_returns_all_valid_providers(monkeypatch):
+    account = {"homeAccountId": "account", "username": "user@example.invalid"}
+    session_values = {
+        "$.microsoftAccount": account,
+        "$.microsoftBackendAccessToken": {"accessToken": "microsoft-token"},
+        "$.linkedinSubject": "linkedin-subject",
+    }
+    monkeypatch.setattr(
+        "core.security.get_session_value",
+        lambda session_id, path: session_values[path],
+    )
+    monkeypatch.setattr(
+        "core.security.get_protected_cache_value",
+        lambda key: {"idToken": "linkedin-token"},
+    )
+    microsoft_claims = AsyncMock(return_value={"oid": "microsoft-subject"})
+    linkedin_claims = AsyncMock(return_value={"sub": "linkedin-subject"})
+    monkeypatch.setattr("core.security.azure.get_azure_token_payload", microsoft_claims)
+    monkeypatch.setattr(
+        "core.security.linkedin.get_linkedin_token_payload", linkedin_claims
+    )
+    monkeypatch.setattr("core.security.config.LINKEDIN_CLIENT_ID", CLIENT_ID)
+
+    candidates = await load_session_provider_candidates("session", ["api.read"])
+
+    assert [candidate.provider for candidate in candidates] == [
+        IdentityProvider.microsoft,
+        IdentityProvider.linkedin,
+    ]
+    linkedin_claims.assert_awaited_once_with("linkedin-token", client_id=CLIENT_ID)
+
+
+@pytest.mark.anyio
+async def test_session_candidate_loader_treats_expired_linkedin_as_unavailable(
+    monkeypatch,
+):
+    values = {
+        "$.microsoftAccount": {"username": "user@example.invalid"},
+        "$.microsoftBackendAccessToken": {"accessToken": "microsoft-token"},
+        "$.linkedinSubject": "linkedin-subject",
+    }
+    monkeypatch.setattr("core.security.get_session_value", lambda _, path: values[path])
+    monkeypatch.setattr(
+        "core.security.get_protected_cache_value",
+        lambda _: {"idToken": "expired-linkedin-token"},
+    )
+    monkeypatch.setattr(
+        "core.security.azure.get_azure_token_payload",
+        AsyncMock(return_value={"oid": "microsoft-subject"}),
+    )
+    monkeypatch.setattr(
+        "core.security.linkedin.get_linkedin_token_payload",
+        AsyncMock(side_effect=HTTPException(status_code=401)),
+    )
+    candidates = await load_session_provider_candidates("session")
+    assert len(candidates) == 1
+    assert candidates[0].provider == IdentityProvider.microsoft
+
+
+@pytest.mark.anyio
+async def test_session_candidate_loader_treats_invalid_microsoft_as_unavailable(
+    monkeypatch,
+):
+    values = {
+        "$.microsoftAccount": {"username": "user@example.invalid"},
+        "$.microsoftBackendAccessToken": {"accessToken": "microsoft-token"},
+        "$.linkedinSubject": "linkedin-subject",
+    }
+    monkeypatch.setattr("core.security.get_session_value", lambda _, path: values[path])
+    monkeypatch.setattr(
+        "core.security.get_protected_cache_value",
+        lambda _: {"idToken": "linkedin-token"},
+    )
+    monkeypatch.setattr(
+        "core.security.azure.get_azure_token_payload",
+        AsyncMock(side_effect=jwt.InvalidSignatureError()),
+    )
+    monkeypatch.setattr(
+        "core.security.linkedin.get_linkedin_token_payload",
+        AsyncMock(return_value={"sub": "linkedin-subject"}),
+    )
+    candidates = await load_session_provider_candidates("session")
+    assert [candidate.provider for candidate in candidates] == [
+        IdentityProvider.linkedin
+    ]
 
 
 @pytest.mark.anyio
@@ -382,6 +616,7 @@ async def test_socket_explicit_anonymous_rejects_missing_cached_token():
 @pytest.mark.anyio
 async def test_socket_protected_policy_rejects_missing_cached_token():
     namespace = namespace_with(Guards(MicrosoftGuard())())
+
     namespace._get_token_payload_if_authenticated = AsyncMock(
         side_effect=ValueError("No cached token")
     )
@@ -393,8 +628,29 @@ async def test_socket_protected_policy_rejects_missing_cached_token():
     namespace._end_expired_socket.assert_not_awaited()
 
 
+async def test_socket_session_provider_selection_follows_event_guard_order(monkeypatch):
+    microsoft = VerifiedIdentity(IdentityProvider.microsoft, {"oid": "ms"})
+    linkedin = VerifiedIdentity(IdentityProvider.linkedin, {"sub": "li"})
+    user_id = uuid4()
+    monkeypatch.setattr("core.security.require_session_user_id", lambda _: user_id)
+    monkeypatch.setattr(
+        "core.security.resolve_session_identity",
+        AsyncMock(side_effect=lambda identity: CurrentUserData(user_id=user_id)),
+    )
+    namespace = namespace_with(Guards(LinkedInGuard(), MicrosoftGuard())())
+    namespace._get_session_id = AsyncMock(return_value="session")
+    monkeypatch.setattr(
+        "routers.socketio.v1.base.load_session_provider_candidates",
+        AsyncMock(return_value=(microsoft, linkedin)),
+    )
+    selected = await namespace._get_token_payload_if_authenticated(
+        "session", Guards(LinkedInGuard(), MicrosoftGuard())()
+    )
+    assert selected is linkedin
+
+
 @pytest.mark.anyio
-async def test_socket_does_not_downgrade_failed_provider_requirements():
+async def test_socket_uses_anonymous_after_provider_requirements_fail():
     namespace = namespace_with(
         Guards(MicrosoftGuard(roles=["User"]), AllowAnonymous())()
     )
@@ -403,9 +659,7 @@ async def test_socket_does_not_downgrade_failed_provider_requirements():
     )
     namespace._emit_status = AsyncMock()
 
-    with pytest.raises(SocketAuthorizationFailedError):
-        await namespace._get_current_user_and_check_guard("socket", "read")
-
+    assert await namespace._get_current_user_and_check_guard("socket", "read") is None
     namespace._emit_status.assert_not_awaited()
 
 
@@ -543,18 +797,268 @@ async def test_http_extraction_preserves_verified_linkedin_provider(monkeypatch)
 
 
 @pytest.mark.anyio
+async def test_http_extraction_accepts_session_only_for_frontend_service(monkeypatch):
+    verify = AsyncMock()
+    monkeypatch.setattr("core.security._verify_frontend_service_token", verify)
+
+    session_id = str(uuid4())
+    credential = await provide_http_token_payload("service-token", session_id)
+
+    assert credential == SessionReferenceCredential(session_id)
+    verify.assert_awaited_once_with("service-token")
+
+
+@pytest.mark.anyio
+async def test_http_extraction_rejects_session_without_service_token():
+    with pytest.raises(HTTPException) as error:
+        await provide_http_token_payload(None, "session-reference")
+    assert error.value.status_code == 401
+
+
+@pytest.mark.anyio
+async def test_frontend_service_token_requires_app_only_expected_client(monkeypatch):
+    from core.security import _verify_frontend_service_token
+
+    validator = AsyncMock(
+        return_value={
+            "azp": config.FRONTEND_SVELTE_CLIENT_ID,
+            "idtyp": "app",
+        }
+    )
+    monkeypatch.setattr("core.security._validate_azure_token", validator)
+    await _verify_frontend_service_token("service-token")
+
+    validator.return_value = {
+        "appid": config.FRONTEND_SVELTE_CLIENT_ID,
+        "oid": "frontend-object-id",
+        "sub": "frontend-object-id",
+    }
+    await _verify_frontend_service_token("service-token")
+
+    for claims in [
+        {"azp": "another-client", "idtyp": "app"},
+        {"azp": config.FRONTEND_SVELTE_CLIENT_ID, "idtyp": "user"},
+        {
+            "azp": config.FRONTEND_SVELTE_CLIENT_ID,
+            "oid": "user-object-id",
+            "sub": "pairwise-user-subject",
+        },
+    ]:
+        validator.return_value = claims
+        with pytest.raises(HTTPException) as error:
+            await _verify_frontend_service_token("service-token")
+        assert error.value.status_code == 401
+
+
+def session_authentication_app(path: str = "/api/v1/user/me") -> FastAPI:
+    app = FastAPI()
+    router_guards = Guards(MicrosoftGuard(scopes=["api.read"]), LinkedInGuard())
+    endpoint_guards = Guards(MicrosoftGuard(roles=["User"]), LinkedInGuard())
+
+    @app.get(path, dependencies=[Depends(router_guards.check_http)])
+    async def endpoint(
+        token_payload=Depends(get_http_access_token_payload),
+        guards: GuardTypes = Depends(endpoint_guards),
+    ):
+        current_user, status_code = await check_token_against_guards_with_status(
+            token_payload, guards
+        )
+        return {
+            "credential": type(token_payload).__name__,
+            "user-id": str(current_user.user_id) if current_user else None,
+            "status-code": status_code,
+        }
+
+    return app
+
+
+async def test_http_session_request_reuses_candidate_load_and_user_binding(monkeypatch):
+    session_id = str(uuid4())
+    user_id = uuid4()
+    candidate = VerifiedIdentity(
+        IdentityProvider.microsoft,
+        {"scp": "api.read", "roles": ["User"]},
+    )
+    monkeypatch.setattr(
+        "core.security._validate_azure_token",
+        AsyncMock(
+            return_value={
+                "azp": config.FRONTEND_SVELTE_CLIENT_ID,
+                "idtyp": "app",
+            }
+        ),
+    )
+    monkeypatch.setattr(
+        "core.security.get_session_value",
+        lambda actual_session_id, path: {"id": str(user_id)},
+    )
+    loader = AsyncMock(return_value=(candidate,))
+    resolver = AsyncMock(return_value=CurrentUserData(user_id=user_id))
+    monkeypatch.setattr("core.security.load_session_provider_candidates", loader)
+    monkeypatch.setattr("core.security.resolve_session_identity", resolver)
+
+    async with AsyncClient(
+        transport=ASGITransport(app=session_authentication_app()),
+        base_url="http://test",
+    ) as client:
+        response = await client.get(
+            "/api/v1/user/me",
+            headers={
+                "Authorization": "Bearer frontend-service-token",
+                "X-Application-Session": session_id,
+            },
+        )
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "credential": "SessionReferenceCredential",
+        "user-id": str(user_id),
+        "status-code": None,
+    }
+    loader.assert_awaited_once_with(session_id, [f"api://{config.API_SCOPE}/api.read"])
+    resolver.assert_awaited_once_with(candidate)
+
+
+async def test_http_user_me_bootstrap_reuses_candidate_load(monkeypatch):
+    session_id = str(uuid4())
+    user_id = uuid4()
+    candidate = VerifiedIdentity(IdentityProvider.linkedin, {"sub": "member"})
+    monkeypatch.setattr(
+        "core.security._validate_azure_token",
+        AsyncMock(
+            return_value={
+                "azp": config.FRONTEND_SVELTE_CLIENT_ID,
+                "idtyp": "app",
+            }
+        ),
+    )
+    monkeypatch.setattr("core.security.get_session_value", lambda *args: None)
+    loader = AsyncMock(return_value=(candidate,))
+    signup = AsyncMock(return_value=(CurrentUserData(user_id=user_id), 201))
+    monkeypatch.setattr("core.security.load_session_provider_candidates", loader)
+    monkeypatch.setattr("core.security.resolve_verified_identity_with_status", signup)
+
+    async with AsyncClient(
+        transport=ASGITransport(app=session_authentication_app()),
+        base_url="http://test",
+    ) as client:
+        response = await client.get(
+            "/api/v1/user/me",
+            headers={
+                "Authorization": "Bearer frontend-service-token",
+                "X-Application-Session": session_id,
+            },
+        )
+
+    assert response.status_code == 200
+    assert response.json()["status-code"] == 201
+    loader.assert_awaited_once()
+    signup.assert_awaited_once_with(candidate)
+
+
+async def test_http_direct_provider_bearer_remains_compatible(monkeypatch):
+    user_id = uuid4()
+    identity = VerifiedIdentity(
+        IdentityProvider.microsoft,
+        {"scp": "api.read", "roles": ["User"]},
+    )
+    monkeypatch.setattr(
+        "core.security.verify_provider_token", AsyncMock(return_value=identity)
+    )
+    monkeypatch.setattr(
+        "core.security.resolve_verified_identity_with_status",
+        AsyncMock(return_value=(CurrentUserData(user_id=user_id), None)),
+    )
+
+    async with AsyncClient(
+        transport=ASGITransport(app=session_authentication_app()),
+        base_url="http://test",
+    ) as client:
+        response = await client.get(
+            "/api/v1/user/me", headers={"Authorization": "Bearer provider-token"}
+        )
+
+    assert response.status_code == 200
+    assert response.json()["credential"] == "VerifiedIdentity"
+
+
+@pytest.mark.parametrize(
+    "path,session_id",
+    [
+        ("/api/v1/user/me", "not-a-uuid"),
+        ("/api/v1/resource", str(uuid4())),
+    ],
+)
+async def test_http_invalid_session_never_falls_through_anonymous(
+    monkeypatch, path, session_id
+):
+    monkeypatch.setattr(
+        "core.security._validate_azure_token",
+        AsyncMock(
+            return_value={
+                "azp": config.FRONTEND_SVELTE_CLIENT_ID,
+                "idtyp": "app",
+            }
+        ),
+    )
+    monkeypatch.setattr("core.security.get_session_value", lambda *args: None)
+    app = session_authentication_app(path)
+
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
+        response = await client.get(
+            path,
+            headers={
+                "Authorization": "Bearer frontend-service-token",
+                "X-Application-Session": session_id,
+            },
+        )
+
+    assert response.status_code == 401
+
+
+async def test_http_session_rejects_delegated_frontend_bearer(monkeypatch):
+    monkeypatch.setattr(
+        "core.security._validate_azure_token",
+        AsyncMock(
+            return_value={
+                "azp": config.FRONTEND_SVELTE_CLIENT_ID,
+                "idtyp": "user",
+                "oid": "user-object-id",
+                "sub": "user-subject",
+            }
+        ),
+    )
+
+    async with AsyncClient(
+        transport=ASGITransport(app=session_authentication_app()),
+        base_url="http://test",
+    ) as client:
+        response = await client.get(
+            "/api/v1/user/me",
+            headers={
+                "Authorization": "Bearer delegated-provider-token",
+                "X-Application-Session": str(uuid4()),
+            },
+        )
+
+    assert response.status_code == 401
+
+
+@pytest.mark.anyio
 async def test_socket_cache_selects_linkedin_identity_token(monkeypatch):
     encrypted_tokens = encryption.encrypt(
         "linkedin:member-sub", "$", {"idToken": "identity-token"}
     )
     cache_json = Mock()
     cache_json.get.side_effect = lambda key, path=None: {
-        ("session:session", "$.identityProvider"): ["linkedin"],
+        ("session:session", "$.sessionOwnerProvider"): ["linkedin"],
         ("session:session", "$.linkedinSubject"): ["member-sub"],
         ("linkedin:member-sub", None): encrypted_tokens,
-    }[(key, path)]
+    }.get((key, path), [])
     monkeypatch.setattr(
-        "core.security.redis_session_client.json", Mock(return_value=cache_json)
+        "core.cache.redis_session_client.json", Mock(return_value=cache_json)
     )
     validate = AsyncMock(
         return_value={
@@ -581,27 +1085,30 @@ async def test_socket_cache_defaults_a_missing_provider_path_to_microsoft(monkey
     encrypted_account = encryption.encrypt(
         "session:session", "$.microsoftAccount", account
     )
+    encrypted_token = encryption.encrypt(
+        "session:session",
+        "$.microsoftBackendAccessToken",
+        {"accessToken": "access-token"},
+    )
     cache_json = Mock()
     responses: dict[tuple[str, str], list[object]] = {
-        ("session:session", "$.identityProvider"): [],
+        ("session:session", "$.sessionOwnerProvider"): [],
         ("session:session", "$.microsoftAccount"): [encrypted_account],
+        ("session:session", "$.microsoftBackendAccessToken"): [encrypted_token],
     }
 
     def get_cached_value(key: str, path: str) -> list[object]:
-        return responses[(key, path)]
+        return responses.get((key, path), [])
 
     cache_json.get.side_effect = get_cached_value
     monkeypatch.setattr(
-        "core.security.redis_session_client.json", Mock(return_value=cache_json)
+        "core.cache.redis_session_client.json", Mock(return_value=cache_json)
     )
-    token = AsyncMock(return_value="access-token")
     validate = AsyncMock(return_value={"oid": "member", "tid": "tenant"})
-    monkeypatch.setattr("core.security.get_azure_token_from_cache", token)
     monkeypatch.setattr("core.security.azure.get_azure_token_payload", validate)
 
     identity = await get_token_payload_from_cache("session")
 
     assert identity.provider == IdentityProvider.microsoft
     assert identity.claims == {"oid": "member", "tid": "tenant"}
-    token.assert_awaited_once_with(account, None)
     validate.assert_awaited_once_with("access-token")

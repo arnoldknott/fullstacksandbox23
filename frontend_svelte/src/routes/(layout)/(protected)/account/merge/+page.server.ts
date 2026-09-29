@@ -74,7 +74,7 @@ export const actions: Actions = {
 			{ 'X-Account-Link-Authorization': `Bearer ${linkedToken}` }
 		);
 		if (!response.ok) return fail(response.status, { error: await response.text() });
-		const provider = locals.sessionData.identityProvider ?? IdentityProvider.MICROSOFT;
+		const provider = locals.sessionData.sessionOwnerProvider ?? IdentityProvider.MICROSOFT;
 		cookies.delete('session_id', { path: '/' });
 		redirect(303, `/login/${provider}?target-url=${encodeURIComponent(state.targetUrl || '/')}`);
 	},

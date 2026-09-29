@@ -173,11 +173,26 @@ set +e
 # docker compose cp ./ssh_key.pub tofu:$local_public_ssh_key_path
 docker compose run --rm -e "WORKSPACE=${WORKSPACE}" --entrypoint '/bin/sh -c' tofu 'cp -fR .azure/ ~/.azure &&
 case "$WORKSPACE" in
-  dev)   export DTU_CAMPUSAI_API_KEY="$DTU_CAMPUSAI_API_KEY_DEV" ;;
-  stage) export DTU_CAMPUSAI_API_KEY="$DTU_CAMPUSAI_API_KEY_STAGE" ;;
-  prod)  export DTU_CAMPUSAI_API_KEY="$DTU_CAMPUSAI_API_KEY_PROD" ;;
+  dev)
+    export DTU_CAMPUSAI_API_KEY="$DTU_CAMPUSAI_API_KEY_DEV"
+    export LINKEDIN_CLIENT_ID="$LINKEDIN_CLIENT_ID_DEV"
+    export LINKEDIN_CLIENT_SECRET="$LINKEDIN_CLIENT_SECRET_DEV"
+    ;;
+  stage)
+    export DTU_CAMPUSAI_API_KEY="$DTU_CAMPUSAI_API_KEY_STAGE"
+    export LINKEDIN_CLIENT_ID="$LINKEDIN_CLIENT_ID_STAGE"
+    export LINKEDIN_CLIENT_SECRET="$LINKEDIN_CLIENT_SECRET_STAGE"
+    ;;
+  prod)
+    export DTU_CAMPUSAI_API_KEY="$DTU_CAMPUSAI_API_KEY_PROD"
+    export LINKEDIN_CLIENT_ID="$LINKEDIN_CLIENT_ID_PROD"
+    export LINKEDIN_CLIENT_SECRET="$LINKEDIN_CLIENT_SECRET_PROD"
+    ;;
   *) echo "Unknown WORKSPACE: $WORKSPACE"; exit 1 ;;
 esac &&
+: "${DTU_CAMPUSAI_API_KEY:?DTU Campus AI API key is missing for $WORKSPACE}" &&
+: "${LINKEDIN_CLIENT_ID:?LinkedIn client ID is missing for $WORKSPACE}" &&
+: "${LINKEDIN_CLIENT_SECRET:?LinkedIn client secret is missing for $WORKSPACE}" &&
 ARM_CLIENT_SECRET=$AZURE_CLIENT_SECRET &&
 tofu plan -out=${WORKSPACE}.tfplan \
         -detailed-exitcode \
@@ -198,6 +213,8 @@ tofu plan -out=${WORKSPACE}.tfplan \
         -var "redis_port=${REDIS_PORT}" \
         -var "redis_insight_port=${REDIS_INSIGHT_PORT}" \
         -var "encryption_rotation_revision=${ENCRYPTION_ROTATION_REVISION:-1}" \
+        -var "linkedin_client_id=${LINKEDIN_CLIENT_ID}" \
+        -var "linkedin_client_secret=${LINKEDIN_CLIENT_SECRET}" \
         -var "dtu_campusai_api_key=${DTU_CAMPUSAI_API_KEY}"'
 # -var "public_ssh_key_path=${PUBLIC_SSH_KEY_PATH}"'
 

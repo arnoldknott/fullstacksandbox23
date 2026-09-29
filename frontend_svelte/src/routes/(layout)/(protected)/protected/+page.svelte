@@ -47,11 +47,6 @@
 			description:
 				'Session data including userprofile stores in $page data: contains json data of the logged in user',
 			url: '/sessiondata'
-		},
-		{
-			name: 'On behalf of user acceess',
-			description: 'TBD: On behalf of user access to the Microsoft Graph API',
-			url: '/onbehalfof'
 		}
 	];
 </script>

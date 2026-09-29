@@ -16,11 +16,13 @@ The backend caches JSON Web Key Sets (JWKS), used to verify provider signatures,
 | --- | --- |
 | `msal:<homeAccountId>` and `linkedin:<sub>` values | Encrypt each complete provider-cache value, including all tokens and provider authentication information |
 | Session `$.microsoftAccount` | Retain the account data needed by Microsoft Authentication Library (MSAL) token retrieval; encrypt the entire subdocument |
-| Other retained user-identifiable data, including first-party session subdocuments | Encrypt at the field/subdocument granularity used by existing consumers |
-| Standalone `homeAccountId`, `sub`, and `sessionId`, including Redis key names and `$.sessionId` | May remain plaintext by the user's explicit decision; no opaque-key redesign is required |
+| Session `$.microsoftAuthorization`, `$.linkedinAuthorization`, and `$.accountMerge` | Encrypt each complete subdocument because it contains short-lived authentication or account-operation state |
+| Session `$.currentUser`, including internal IDs, roles, groups, and settings | Keep plaintext under the project's accepted risk boundary; these values are pseudonymized or first-party authorization state and do not grant provider access by themselves |
+| Session `$.userAgent` | Keep plaintext and retain it for planned session functionality; treat it as personal data when it can be associated with a user |
+| Standalone `homeAccountId`, `sub`, `sessionId`, and provider references, including Redis key names and `$.sessionId` | Keep plaintext under the project's accepted pseudonymization boundary; no opaque-key redesign is required |
 | Non-sensitive operational fields, such as status/boolean flags | May remain plaintext; inspect contents before treating an entire object this way |
 
-The identifier exception is the project's accepted pseudonymization boundary for this encryption work. It does not permit plaintext access, refresh, or identity tokens. An identifier inside an otherwise encrypted object stays inside that object's envelope; do not split `$.microsoftAccount` merely to expose a plaintext pointer. Keep existing session/authentication checks regardless of storage format.
+Pseudonymized values can still be personal data. Their plaintext treatment here is an explicit risk-based engineering decision, not an exemption from data-protection obligations. It does not permit plaintext access, refresh, or identity tokens. An identifier inside an otherwise encrypted object stays inside that object's envelope; do not split `$.microsoftAccount` merely to expose a plaintext pointer. Keep existing session/authentication checks regardless of storage format.
 
 Retain the `homeAccountId` used by `RedisPartitionManager`, the account object required by frontend silent acquisition, and the `username` currently used by backend token lookup. Remove unrelated authentication-derived fields only after checking all consumers; never enrich the account object with third-party resource responses.
 
@@ -28,7 +30,9 @@ Retain the `homeAccountId` used by `RedisPartitionManager`, the account object r
 
 Keep `msal:<homeAccountId>`, `linkedin:<sub>`, and `session:<id>` names. The client identifier is application configuration, not part of each LinkedIn partition key. This assumes environment/cache isolation and one LinkedIn application per namespace; changing the application registration requires invalidating its old cache. Server sessions reference provider partitions for frontend requests and backend Socket.IO lookup. Track identity/access token expirations independently; retain refresh tokens only when issued and needed. Cache retention cannot extend token validity.
 
-Preserve Redis JavaScript Object Notation (JSON) session path operations. Encrypt/decrypt each protected field or subdocument at its existing access boundary; selective reads need not decrypt the whole session. Whole-session readers decode protected units too. Audit deeper-path reads/writes before placing a parent behind an envelope. Preserve caller-facing object shapes, cache expiry, and concurrent writes; do not persist decrypted duplicates.
+Preserve Redis JavaScript Object Notation (JSON) session path operations. Encrypt/decrypt only the protected whole subdocuments at their existing access boundaries; selective reads need not decrypt the whole session. Whole-session readers decode protected units too. Audit deeper-path reads/writes before placing a parent behind an envelope. Preserve caller-facing object shapes, cache expiry, and concurrent writes; do not persist decrypted duplicates.
+
+The implementation has no compatibility reader for the previously encrypted `currentUser` leaves or `userAgent` value. Invalidate pre-change `session:*` records during rollout, or deploy only after they have expired. The encrypted provider credential partitions are unaffected.
 
 MSAL adapters read/write complete serialized caches: decrypt before deserialization and encrypt after serialization, without depending on the library's internal token-field schema. Frontend wrappers and backend direct Redis consumers must agree on both whole-record and subdocument handling.
 

@@ -43,7 +43,6 @@ const scopesMsGraph = [
 	'User.ReadBasic.All',
 	'Team.ReadBasic.All'
 ];
-const scopesAzure = ['https://management.azure.com/user_impersonation']; // for onbehalfof workflow
 
 class RedisClientWrapper implements ICacheClient {
 	private redisClient: RedisClientType;
@@ -128,6 +127,7 @@ class MicrosoftAuthenticationProvider implements OAuthProvider {
 	private msalCommonConfig;
 	private redisClientWrapper: RedisClientWrapper;
 	private cryptoProvider: CryptoProvider;
+	private applicationClient?: ConfidentialClientApplication;
 
 	constructor(redisClient: RedisClientType) {
 		// Common configuration for all users:
@@ -183,7 +183,7 @@ class MicrosoftAuthenticationProvider implements OAuthProvider {
 		parentUrl: string | undefined = undefined,
 		intent: OAuthIntent = 'login',
 		initiator?: Pick<OAuthTransaction, 'initiatingProvider' | 'initiatingUserId'>,
-		scopes: string[] = [...scopesBackend, ...scopesMsGraph, ...scopesAzure]
+		scopes: string[] = [...scopesBackend, ...scopesMsGraph]
 	): Promise<string> {
 		try {
 			// console.log('🔑 oauth - Authentication - signIn ');
@@ -269,6 +269,17 @@ class MicrosoftAuthenticationProvider implements OAuthProvider {
 		}
 	}
 
+	public async getApplicationAccessToken(): Promise<string> {
+		this.applicationClient ??= new ConfidentialClientApplication(this.msalCommonConfig);
+		const response = await this.applicationClient.acquireTokenByClientCredential({
+			scopes: [appConfig.api_scope_default]
+		});
+		if (!response?.accessToken) {
+			throw new Error('Frontend service access token could not be acquired.');
+		}
+		return response.accessToken;
+	}
+
 	public async getAccessToken(
 		sessionId: string,
 		scopes: string[] = [appConfig.api_scope_default]
@@ -283,6 +294,16 @@ class MicrosoftAuthenticationProvider implements OAuthProvider {
 				account: account
 			});
 			const accessToken = response.accessToken;
+			if (scopes.includes(appConfig.api_scope_default)) {
+				await redisCache.setSession(
+					sessionId,
+					'$.microsoftBackendAccessToken',
+					JSON.stringify({
+						accessToken,
+						expiresAt: response.expiresOn?.getTime() ?? 0
+					})
+				);
+			}
 			return accessToken;
 		} catch (error) {
 			if (error instanceof InteractionRequiredAuthError) {

@@ -1,6 +1,6 @@
-import { isRedirect, json, type RequestHandler } from '@sveltejs/kit';
+import { json, type RequestHandler } from '@sveltejs/kit';
 
-import { backendAuthProvider } from '$lib/server/apis/backendApi';
+import { backendAPI } from '$lib/server/apis/backendApi';
 import { redisCache } from '$lib/server/cache';
 import AppConfig from '$lib/server/config';
 
@@ -10,10 +10,12 @@ export const POST: RequestHandler = async ({ locals, cookies }) => {
 	const sessionId = locals.sessionData?.loggedIn ? locals.sessionData.sessionId : undefined;
 	if (!sessionId) return json({ success: false }, { status: 401 });
 	try {
-		await backendAuthProvider.getAccessToken(sessionId, [`${appConfig.api_scope}/api.read`]);
-	} catch (error) {
-		if (!isRedirect(error)) return json({ success: false }, { status: 503 });
-		return json({ success: false }, { status: 401 });
+		const response = await backendAPI.get(sessionId, '/user/me');
+		if (!response.ok) {
+			return json({ success: false }, { status: response.status >= 500 ? 503 : 401 });
+		}
+	} catch {
+		return json({ success: false }, { status: 503 });
 	}
 	const renewal = await redisCache.renewSessionIfNeeded(sessionId);
 	if (renewal === 'missing') return json({ success: false }, { status: 401 });

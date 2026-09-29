@@ -33,7 +33,7 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 	}
 	await redisCache.setSession(
 		sessionId,
-		'$.identityProvider',
+		'$.sessionOwnerProvider',
 		JSON.stringify(IdentityProvider.LINKEDIN)
 	);
 

@@ -1,4 +1,5 @@
 import asyncio
+import inspect
 import logging
 import time
 
@@ -25,12 +26,13 @@ from sqlmodel import SQLModel, col, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from core.authentication.base import VerifiedIdentity
-from core.cache import redis_session_client
+from core.cache import consume_socketio_admission_ticket, redis_session_client
 from core.config import config
 from core.databases import get_async_session
 from core.security import (
+    select_provider_candidate,
     check_token_against_guards,
-    get_token_payload_from_cache,
+    load_session_provider_candidates,
 )
 from core.types import (
     Action,
@@ -200,16 +202,36 @@ class BaseNamespace(
         )
 
     async def _get_token_payload_if_authenticated(
-        self, session_id: str
+        self, session_id: str, guards: GuardTypes | None = None
     ) -> VerifiedIdentity | dict:
-        """Get the token payload from the cache if authenticated."""
+        """Get the guard-selected token payload from all valid session providers."""
         logger.info("🧦 Getting token payload from cache")
-        token_payload = await get_token_payload_from_cache(
+        guards = guards or getattr(self, "_connection_guards", None)
+        candidates = await load_session_provider_candidates(
             session_id, [f"api://{config.API_SCOPE}/socketio"]
         )
-        if not token_payload:
+        if not candidates:
             raise ConnectionRefusedError("Authorization failed.")
-        return token_payload
+        if guards is not None:
+            try:
+                selected = select_provider_candidate(candidates, guards)
+            except HTTPException as error:
+                raise SocketAuthorizationFailedError("Authorization failed.") from error
+            if selected is None:
+                return {}
+            return selected
+        return candidates[0]
+
+    async def _leave_protected_rooms(self, sid: str) -> None:
+        """Remove rooms whose authorization may have changed."""
+        protected_prefixes = ("resource:", "identity:", "parent:", "role:")
+        rooms = self.server.rooms(sid, self.namespace or "/")
+        if inspect.isawaitable(rooms):
+            rooms = await rooms
+        rooms = list(rooms)
+        for room in rooms:
+            if room.startswith(protected_prefixes):
+                await self.server.leave_room(sid, room, namespace=self.namespace)
 
     def _get_event_guards(self, event: str) -> GuardTypes:
         """Every admitted event must have a declared policy."""
@@ -285,12 +307,19 @@ class BaseNamespace(
                 return await check_token_against_guards(None, guards)
             raise SocketAuthenticationExpiredError("No session id.")
         try:
-            token_payload = await self._get_token_payload_if_authenticated(session_id)
+            token_payload = await self._get_token_payload_if_authenticated(
+                session_id, guards
+            )
+        except SocketAuthorizationFailedError:
+            await self._leave_protected_rooms(sid)
+            raise
         except Exception as error:
+            await self._leave_protected_rooms(sid)
             raise SocketAuthenticationExpiredError("Authentication expired.") from error
         try:
             return await check_token_against_guards(token_payload, guards)
         except HTTPException as error:
+            await self._leave_protected_rooms(sid)
             raise SocketAuthorizationFailedError("Authorization failed.") from error
 
     async def _get_all(  # noqa: C901
@@ -571,13 +600,19 @@ class BaseNamespace(
         guards = self._get_event_guards("connect")
         ### THis solution works for none-protected events, but a user is logged in anyways:
         current_user = None
+        self._connection_guards = guards
         session_data: SocketIoSessionData = {
             "user_name": "Anonymous",
             "query_strings": session_query_strings,
         }
         auth_rejected = False
         token_payload: VerifiedIdentity | dict | None = None
-        auth_session_id = auth["session-id"] if auth else None
+        admission_ticket = auth.get("admission-ticket") if auth else None
+        auth_session_id = environ.get("application-session-id")
+        if auth_session_id is None and isinstance(admission_ticket, str):
+            auth_session_id = consume_socketio_admission_ticket(admission_ticket)
+            if auth_session_id is not None:
+                environ["application-session-id"] = auth_session_id
         try:
             if auth_session_id is not None:
                 authentication_error: Exception | None = None
@@ -602,6 +637,19 @@ class BaseNamespace(
                         ) from err
                 except (jwt.PyJWTError, ConnectionRefusedError) as err:
                     authentication_error = err
+                except SocketAuthorizationFailedError as err:
+                    auth_rejected = True
+                    logger.info(
+                        "🧦 Client %s is not authorized for namespace %s.",
+                        sid,
+                        self.namespace,
+                    )
+                    raise ConnectionRefusedError(
+                        {
+                            "error": "access",
+                            "code": "authorization-failed",
+                        }
+                    ) from err
                 except Exception as err:
                     auth_rejected = True
                     logger.exception(

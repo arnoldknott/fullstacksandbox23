@@ -31,7 +31,7 @@ vi.mock('$app/state', () => ({
 	page: {
 		data: {
 			session: {
-				identityProvider: 'linkedin',
+				sessionOwnerProvider: 'linkedin',
 				currentUser: {
 					azure_user_id: 'azure-id',
 					linkedin_user_id: 'linkedin-id'

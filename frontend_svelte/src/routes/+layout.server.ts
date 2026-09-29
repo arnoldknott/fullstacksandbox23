@@ -38,10 +38,10 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 		let microsoftProfile: MicrosoftProfile | undefined;
 		let linkedinProfile: LinkedInProfile | undefined;
 		try {
-			if (locals.sessionData.identityProvider === IdentityProvider.MICROSOFT) {
+			if (locals.sessionData.sessionOwnerProvider === IdentityProvider.MICROSOFT) {
 				const response = await microsoftGraph.get(locals.sessionData.sessionId, '/me');
 				if (response.ok) microsoftProfile = (await response.json()) as MicrosoftProfile;
-			} else if (locals.sessionData.identityProvider === IdentityProvider.LINKEDIN) {
+			} else if (locals.sessionData.sessionOwnerProvider === IdentityProvider.LINKEDIN) {
 				linkedinProfile = await linkedInAPI.getUserInfo(locals.sessionData.sessionId);
 			}
 		} catch (error) {
@@ -49,7 +49,7 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 				redirectToReauthentication(
 					preferredIdentityProvider(
 						locals.sessionData.currentUser ?? {},
-						locals.sessionData.identityProvider
+						locals.sessionData.sessionOwnerProvider
 					)
 				);
 			}
@@ -62,7 +62,7 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 			session: {
 				loggedIn: locals.sessionData.loggedIn,
 				status: locals.sessionData.status,
-				identityProvider: locals.sessionData.identityProvider,
+				sessionOwnerProvider: locals.sessionData.sessionOwnerProvider,
 				microsoftProfile,
 				linkedinProfile,
 				sessionId: locals.sessionData.sessionId,

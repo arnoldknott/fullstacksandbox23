@@ -143,7 +143,7 @@
 	}
 
 	onMount(() => {
-		if (data.session?.identityProvider === IdentityProvider.MICROSOFT) loadAvatar();
+		if (data.session?.sessionOwnerProvider === IdentityProvider.MICROSOFT) loadAvatar();
 
 		return () => {
 			if (avatarUrl) URL.revokeObjectURL(avatarUrl);

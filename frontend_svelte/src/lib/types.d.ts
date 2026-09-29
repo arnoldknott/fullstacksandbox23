@@ -23,8 +23,9 @@ export type Session = {
 	loggedIn: boolean;
 	status?: SessionStatus;
 	welcomePending?: boolean;
-	identityProvider?: IdentityProvider;
+	sessionOwnerProvider?: IdentityProvider;
 	microsoftAccount?: AccountInfo;
+	microsoftBackendAccessToken?: { accessToken: string; expiresAt: number };
 	linkedinSubject?: string;
 	userAgent?: string;
 	currentUser?: Me;
@@ -35,7 +36,7 @@ export type Session = {
 export type ClientSession = {
 	loggedIn: boolean;
 	sessionId: string;
-	identityProvider?: IdentityProvider;
+	sessionOwnerProvider?: IdentityProvider;
 	microsoftProfile?: MicrosoftProfile;
 	linkedinProfile?: LinkedInProfile;
 	currentUser?: Me;
@@ -272,7 +273,6 @@ export type Me = User & {
 type AzureGroup = {
 	id: string;
 	azure_tenant_id: string;
-	is_active: boolean;
 	azure_users: User[];
 };
 
