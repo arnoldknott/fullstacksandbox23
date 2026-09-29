@@ -23,7 +23,7 @@ export type Session = {
 	loggedIn: boolean;
 	status?: SessionStatus;
 	welcomePending?: boolean;
-	identityProvider?: IdentityProvider;
+	sessionOwnerProvider?: IdentityProvider;
 	microsoftAccount?: AccountInfo;
 	microsoftBackendAccessToken?: { accessToken: string; expiresAt: number };
 	linkedinSubject?: string;
@@ -36,7 +36,7 @@ export type Session = {
 export type ClientSession = {
 	loggedIn: boolean;
 	sessionId: string;
-	identityProvider?: IdentityProvider;
+	sessionOwnerProvider?: IdentityProvider;
 	microsoftProfile?: MicrosoftProfile;
 	linkedinProfile?: LinkedInProfile;
 	currentUser?: Me;

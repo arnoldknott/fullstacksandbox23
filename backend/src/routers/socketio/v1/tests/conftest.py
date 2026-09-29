@@ -103,7 +103,7 @@ def load_test_sessions_into_redis():
                 f"session:{session['session_id']}",
                 ".",
                 {
-                    "identityProvider": IdentityProvider.linkedin.value,
+                    "sessionOwnerProvider": IdentityProvider.linkedin.value,
                     "linkedinSubject": linkedin_subject,
                 },
             )

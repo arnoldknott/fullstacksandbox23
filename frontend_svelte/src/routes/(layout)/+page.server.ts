@@ -16,12 +16,12 @@ export const actions: Actions = {
 		if (
 			!session.loggedIn ||
 			!session.currentUser?.id ||
-			!session.identityProvider ||
+			!session.sessionOwnerProvider ||
 			(provider !== IdentityProvider.MICROSOFT && provider !== IdentityProvider.LINKEDIN)
 		) {
 			return fail(400, { error: 'Invalid account unlink request.' });
 		}
-		if (provider === session.identityProvider) {
+		if (provider === session.sessionOwnerProvider) {
 			return fail(409, { error: 'The active provider cannot be unlinked.' });
 		}
 		const response = await backendAPI.delete(session.sessionId, `/user/me/link/${provider}`);

@@ -141,7 +141,7 @@ def _provider_session_cleanup_targets(
         ):
             continue
         matching_session_keys.add(key)
-        if session.get("identityProvider") == provider.value:
+        if session.get("sessionOwnerProvider") == provider.value:
             session_ids.add(key.removeprefix("session:"))
         microsoft_account = session.get("microsoftAccount")
         if isinstance(microsoft_account, dict):

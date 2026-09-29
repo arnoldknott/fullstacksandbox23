@@ -11,7 +11,7 @@ An application session may hold independently validated credentials for multiple
 - **Preferred provider:** the first suitable provider in the interface's guard declaration order.
 - **Linked provider:** a persistent provider identifier attached to the internal user. Linking alone does not make a credential available.
 
-The most recently completed login does not globally select authorization for the session. `identityProvider` must no longer be interpreted as a session-wide active provider. Remove it where it becomes redundant or retain it only as explicitly named login/diagnostic history; it must not drive REST or Socket.IO authorization.
+The most recently completed login does not globally select authorization for the session. `sessionOwnerProvider` must no longer be interpreted as a session-wide active provider. Remove it where it becomes redundant or retain it only as explicitly named login/diagnostic history; it must not drive REST or Socket.IO authorization.
 
 ## 2. Authorization invariants
 
@@ -121,7 +121,7 @@ The deployment design must therefore provide an authenticated frontend-service i
 
 ### D. Lifecycle and interface cleanup
 
-- Remove authorization dependence on session `identityProvider` and rename/remove the field according to its remaining diagnostic purpose.
+- Remove authorization dependence on session `sessionOwnerProvider` and rename/remove the field according to its remaining diagnostic purpose.
 - Align reauthentication with the provider required by the failed interface.
 - Update `/oauth/providers` from active-provider display to usable/preferred-provider display.
 - Retain global logout and explicit account-link/unlink proof semantics.

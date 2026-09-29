@@ -7,7 +7,7 @@ import { SessionLifecycle } from './session';
 const session = vi.hoisted(() => ({
 	loggedIn: true,
 	sessionId: 'session-1',
-	identityProvider: 'linkedin',
+	sessionOwnerProvider: 'linkedin',
 	currentUser: { linkedin_user_id: 'linkedin-1' }
 }));
 

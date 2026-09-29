@@ -735,11 +735,11 @@ async def resolve_session_provider_identity(
     if isinstance(credential, str):
         credential = SessionReferenceCredential(credential)
     session_id = credential.session_id
-    active_provider = get_session_value(session_id, "$.identityProvider")
+    session_owner_provider = get_session_value(session_id, "$.sessionOwnerProvider")
     scopes = [f"api://{config.API_SCOPE}/api.read"]
     if excluded_provider is None:
         try:
-            provider = IdentityProvider(str(active_provider))
+            provider = IdentityProvider(str(session_owner_provider))
         except ValueError as error:
             raise HTTPException(
                 status_code=401, detail="Session identity provider not found."

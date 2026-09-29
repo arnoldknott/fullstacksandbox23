@@ -8,7 +8,7 @@
 
 	const userProfile = $derived(data.session?.linkedinProfile);
 	const authentication = $derived({
-		identityProvider: data.session?.identityProvider,
+		sessionOwnerProvider: data.session?.sessionOwnerProvider,
 		subject: data.session?.linkedinProfile?.sub
 	});
 </script>

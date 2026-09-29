@@ -46,9 +46,9 @@ export async function completeAccountLink(
 	if (
 		!session?.loggedIn ||
 		!transaction.initiatingProvider ||
-		transaction.initiatingProvider !== session.identityProvider ||
+		transaction.initiatingProvider !== session.sessionOwnerProvider ||
 		transaction.initiatingUserId !== session.currentUser?.id ||
-		linkedProvider === session.identityProvider
+		linkedProvider === session.sessionOwnerProvider
 	) {
 		throw new Error('Account link transaction no longer matches the initiating session.');
 	}

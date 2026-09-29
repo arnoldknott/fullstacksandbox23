@@ -460,7 +460,7 @@ async def test_account_link_resolves_only_the_initiating_session_provider(monkey
     microsoft = VerifiedIdentity(IdentityProvider.microsoft, {"oid": "survivor"})
     linkedin = VerifiedIdentity(IdentityProvider.linkedin, {"sub": "merge-source"})
     values = {
-        "$.identityProvider": IdentityProvider.microsoft.value,
+        "$.sessionOwnerProvider": IdentityProvider.microsoft.value,
         "$.currentUser": {"id": str(session_user_id)},
     }
     monkeypatch.setattr(
@@ -1053,7 +1053,7 @@ async def test_socket_cache_selects_linkedin_identity_token(monkeypatch):
     )
     cache_json = Mock()
     cache_json.get.side_effect = lambda key, path=None: {
-        ("session:session", "$.identityProvider"): ["linkedin"],
+        ("session:session", "$.sessionOwnerProvider"): ["linkedin"],
         ("session:session", "$.linkedinSubject"): ["member-sub"],
         ("linkedin:member-sub", None): encrypted_tokens,
     }.get((key, path), [])
@@ -1092,7 +1092,7 @@ async def test_socket_cache_defaults_a_missing_provider_path_to_microsoft(monkey
     )
     cache_json = Mock()
     responses: dict[tuple[str, str], list[object]] = {
-        ("session:session", "$.identityProvider"): [],
+        ("session:session", "$.sessionOwnerProvider"): [],
         ("session:session", "$.microsoftAccount"): [encrypted_account],
         ("session:session", "$.microsoftBackendAccessToken"): [encrypted_token],
     }

@@ -15,7 +15,7 @@ function event(provider: IdentityProvider, activeProvider = IdentityProvider.LIN
 			sessionData: {
 				sessionId: 'test-session',
 				loggedIn: true,
-				identityProvider: activeProvider,
+				sessionOwnerProvider: activeProvider,
 				currentUser: {
 					id: 'internal-user',
 					azure_user_id: 'microsoft-user',

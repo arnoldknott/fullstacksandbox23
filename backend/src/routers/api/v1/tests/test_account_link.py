@@ -285,7 +285,7 @@ async def test_unlink_cleanup_invalidates_removed_provider_sessions_only(
                 key,
                 ".",
                 {
-                    "identityProvider": provider.value,
+                    "sessionOwnerProvider": provider.value,
                     "linkedinSubject": subject,
                     "currentUser": {"id": str(user_id)},
                 },

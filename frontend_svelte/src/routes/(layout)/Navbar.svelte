@@ -191,9 +191,9 @@
 						</a>
 					</li>
 				{/if}
-				{#if loggedIn && page.data.session?.currentUser?.linkedin_user_id && page.data.session?.currentUser?.azure_user_id && page.data.session?.identityProvider}
+				{#if loggedIn && page.data.session?.currentUser?.linkedin_user_id && page.data.session?.currentUser?.azure_user_id && page.data.session?.sessionOwnerProvider}
 					{@const provider =
-						page.data.session.identityProvider === IdentityProvider.MICROSOFT
+						page.data.session.sessionOwnerProvider === IdentityProvider.MICROSOFT
 							? IdentityProvider.LINKEDIN
 							: IdentityProvider.MICROSOFT}
 					<li>
