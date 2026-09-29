@@ -24,7 +24,9 @@ describe('LinkedIn login route', () => {
 		mocks.getSession.mockResolvedValue({
 			sessionId: 'existing-session',
 			loggedIn: true,
-			status: 'registered'
+			status: 'registered',
+			sessionOwnerProvider: 'linkedin',
+			currentUser: { id: 'internal-user-id', linkedin_user_id: 'linkedin-subject' }
 		});
 		mocks.signIn.mockResolvedValue('https://linkedin.example/authorize');
 
@@ -49,6 +51,34 @@ describe('LinkedIn login route', () => {
 		);
 	});
 
+	test('treats an unlinked provider login in an established session as account linking', async () => {
+		mocks.getSession.mockResolvedValue({
+			sessionId: 'existing-session',
+			loggedIn: true,
+			sessionOwnerProvider: 'microsoft',
+			currentUser: { id: 'internal-user-id', azure_user_id: 'microsoft-user-id' }
+		});
+		mocks.signIn.mockResolvedValue('https://linkedin.example/authorize');
+
+		await load({
+			url: new URL('https://app.example/login/linkedin'),
+			request: new Request('https://app.example/login/linkedin'),
+			cookies: { get: () => 'existing-session' }
+		} as never);
+
+		expect(mocks.setSession).not.toHaveBeenCalled();
+		expect(mocks.signIn).toHaveBeenCalledWith(
+			'existing-session',
+			'https://app.example',
+			undefined,
+			undefined,
+			'link',
+			{
+				initiatingProvider: 'microsoft',
+				initiatingUserId: 'internal-user-id'
+			}
+		);
+	});
 	test('binds a link transaction to the established user and provider', async () => {
 		mocks.getSession.mockResolvedValue({
 			sessionId: 'existing-session',

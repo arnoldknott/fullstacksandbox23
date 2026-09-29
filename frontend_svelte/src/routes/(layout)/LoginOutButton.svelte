@@ -3,18 +3,27 @@
 
 	let {
 		loggedIn,
+		linkAccount = false,
 		parentUrl,
 		provider = IdentityProvider.MICROSOFT
-	}: { loggedIn: boolean; parentUrl?: string; provider?: IdentityProvider } = $props();
+	}: {
+		loggedIn: boolean;
+		linkAccount?: boolean;
+		parentUrl?: string;
+		provider?: IdentityProvider;
+	} = $props();
+
+	let loginQuery = $derived(
+		new URLSearchParams({
+			...(linkAccount ? { intent: 'link' } : {}),
+			...(parentUrl ? { 'parent-url': parentUrl } : {})
+		}).toString()
+	);
 </script>
 
 {#if !loggedIn}
 	<button class="btn btn-neutral shadow-neutral ml-2 rounded-full shadow-sm" aria-label="Log In">
-		{#if parentUrl}
-			<a href={`/login/${provider}?parent-url=${encodeURIComponent(parentUrl)}`}>Log in</a>
-		{:else}
-			<a href={`/login/${provider}`}>Log in</a>
-		{/if}
+		<a href={`/login/${provider}${loginQuery ? `?${loginQuery}` : ''}`}>Log in</a>
 	</button>
 {:else}
 	<button
