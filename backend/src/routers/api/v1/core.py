@@ -1,9 +1,7 @@
 import logging
 from typing import Annotated
 
-import httpx2
-from fastapi import APIRouter, Depends, Header, Query
-from msal import ConfidentialClientApplication
+from fastapi import APIRouter, Depends, Query
 
 from core.config import config
 from core.security import (
@@ -17,37 +15,6 @@ from jobs.demo.tasks import demo_task
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
-
-
-confClientApp = ConfidentialClientApplication(
-    config.BACKEND_API_CLIENT_ID,
-    authority=f"https://login.microsoftonline.com/{config.AZURE_TENANT_ID}",
-    client_credential=config.BACK_CLIENT_SECRET,
-)
-
-
-# TBD: refactor to use dependency injection
-# might require a working on-behalf-of workflow?
-def get_users_groups_ms_graph(access_token: str):
-    """Dummy function to try if access token works from backend: getting transistiveMemberOf"""
-    # response = httpx2.get("https://graph.microsoft.com/v1.0/me/transitiveMemberOf", headers = {"Authorization": f"Bearer {access_token}"})
-    response = httpx2.get(
-        "https://graph.microsoft.com/v1.0/me/transitiveMemberOf",
-        headers={"Authorization": f"Bearer {access_token}"},
-    )
-    groups = response.json()
-
-    return groups
-
-
-def get_me_ms_graph(access_token: str):
-    """Dummy function to try if access token works from backend"""
-    # response = httpx.get("https://graph.microsoft.com/v1.0/me/transitiveMemberOf", headers = {"Authorization": f"Bearer {access_token}"})
-    response = httpx2.get(
-        "https://graph.microsoft.com/v1.0/me",
-        headers={"Authorization": f"Bearer {access_token}"},
-    )
-    return response.json()
 
 
 @router.get("/health")
@@ -119,46 +86,3 @@ async def read_token_payload(
     token_payload: Annotated[dict, Depends(get_token_payload)],
 ):
     return token_payload
-
-
-# Note: this one is protected under the scope "user_impersonization"" from https://management.azure.com
-# Cannot scopes from other audiences, like this backendAPI.
-@router.get("/onbehalfof")
-async def get_onbehalfof(
-    token_payload: Annotated[dict, Depends(get_token_payload)],
-    guards: GuardTypes = Depends(
-        Guards(MicrosoftGuard(scopes=["api.read"], roles=["User"]))
-    ),
-    authorization: Annotated[str | None, Header()] = None,
-):
-    """Access Microsoft Graph as downstream API on behalf of the user."""
-    await check_token_against_guards(token_payload, guards)
-    # print("=== header ===")
-    # print(authorization)
-    assert authorization is not None, "Authorization header is missing"
-    token = authorization.split("Bearer ")[1]
-    # token = get_token_from_header(authorization)
-    logger.info("🔑 Acquiring token on behalf of")
-    print("=== getting token on behalf of ===")
-    result = confClientApp.acquire_token_on_behalf_of(
-        token,
-        scopes=["User.Read"],
-        # scopes=[".default"],
-        # scopes=[
-        #     "api.read"
-        # ],  # ["User.Read", "https://management.azure.com/user_impersonation"],
-    )
-    # print("=== token from on-behalf-of ===")
-    # print(result)
-    try:
-        if "access_token" in result:
-            logger.info("🔑 Getting user information on behalf of")
-            on_behalf_of_token = result["access_token"]
-            # Seems to work:
-            # response = get_users_groups_ms_graph(on_behalf_of_token)
-            response = get_me_ms_graph(on_behalf_of_token)
-            logger.info("On behalf of access to Microsoft Graph")
-            return response
-    except Exception as err:
-        logger.error("🔑 Failed to fetch user groups from Microsoft Graph.")
-        raise err

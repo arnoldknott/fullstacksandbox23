@@ -43,7 +43,6 @@ const scopesMsGraph = [
 	'User.ReadBasic.All',
 	'Team.ReadBasic.All'
 ];
-const scopesAzure = ['https://management.azure.com/user_impersonation']; // for onbehalfof workflow
 
 class RedisClientWrapper implements ICacheClient {
 	private redisClient: RedisClientType;
@@ -184,7 +183,7 @@ class MicrosoftAuthenticationProvider implements OAuthProvider {
 		parentUrl: string | undefined = undefined,
 		intent: OAuthIntent = 'login',
 		initiator?: Pick<OAuthTransaction, 'initiatingProvider' | 'initiatingUserId'>,
-		scopes: string[] = [...scopesBackend, ...scopesMsGraph, ...scopesAzure]
+		scopes: string[] = [...scopesBackend, ...scopesMsGraph]
 	): Promise<string> {
 		try {
 			// console.log('🔑 oauth - Authentication - signIn ');

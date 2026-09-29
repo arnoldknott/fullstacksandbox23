@@ -81,9 +81,7 @@ class Config(BaseSettings):
     AZURE_ISSUER_URL: Optional[str] = (
         f"https://login.microsoftonline.com/{AZURE_TENANT_ID}/v2.0"
     )
-    BACKEND_API_CLIENT_ID: Optional[str] = get_variable("BACKEND_API_CLIENT_ID")
     API_SCOPE: Optional[str] = get_variable("API_SCOPE")
-    BACK_CLIENT_SECRET: Optional[str] = get_variable("BACK_CLIENT_SECRET")
 
     # Frontend_svelte configuration:
     FRONTEND_SVELTE_ORIGIN: Optional[str] = os.getenv("FRONTEND_SVELTE_ORIGIN")
