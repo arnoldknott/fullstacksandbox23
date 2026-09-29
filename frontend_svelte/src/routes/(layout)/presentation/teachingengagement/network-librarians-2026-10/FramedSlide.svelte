@@ -1,14 +1,17 @@
 <script lang="ts">
+	import Icon from '@iconify/svelte';
 	import { type Snippet } from 'svelte';
+
 	// import { SvelteMap } from 'svelte/reactivity';
 
 	let {
 		children,
 		part,
-		color,
+		color = 'secondary',
 		section,
 		// title,
 		coloring,
+		hideProgressBar = false,
 		footer,
 		debug
 	}: {
@@ -19,76 +22,77 @@
 		// title?: string;
 		coloring?: { background: string; text: string };
 		footer?: Snippet;
+		hideProgressBar?: boolean;
 		debug?: boolean;
 	} = $props();
-	// let color = $derived(symbol === 'history' ? 'info' : symbol === '' ? 'secondary' : 'success');
-	// let icon = $derived(
-	// 	section === 'old'
-	// 		? 'icon-[game-icons--greek-temple]'
-	// 		: section === 'new'
-	// 			? 'icon-[healthicons--i-exam-multiple-choice-outline]'
-	// 			: ''
-	// );
-	// let color = $derived(section === 'old' ? 'secondary' : section === 'new' ? 'primary' : 'info');
-	// let content = new SvelteMap([
-	// 	['context', 'icon-[stash--circle-dot]'],
-	// 	['tension', 'icon-[mingcute--lightning-fill]'],
-	// 	['stories', 'icon-[f7--chat-bubble-2-fill]']
-	// ]);
+
 	type ContentItem = {
 		part: string;
-		icon: string;
+		icon?: string;
 		title: string;
 	};
 	let content: ContentItem[] = [
-		// {
-		// 	part: 'motivation',
-		// 	icon: 'icon-[vaadin--thumbs-up-o]',
-		// 	title: 'Motivation'
-		// },
-		// {
-		// 	part: 'diversity',
-		// 	icon: 'icon-[material-symbols--diversity-1-rounded]',
-		// 	title: 'Diversity'
-		// },
-		// {
-		// 	part: 'overview',
-		// 	icon: 'icon-[grommet-icons--overview]',
-		// 	title: 'Overview'
-		// }
+		{
+			part: 'checkin',
+			// icon: 'akar-icons:map',
+			title: 'Check in'
+		},
+		{
+			part: 'overview',
+			// icon: 'akar-icons:map',
+			title: 'Overview'
+		},
+		{
+			part: 'context',
+			icon: 'stash:circle-dot',
+			title: 'Context'
+		},
+		{
+			part: 'inspiration',
+			icon: 'glyphs:books-bold',
+			title: 'Inspiration'
+		},
+		{
+			part: 'implementation',
+			icon: 'carbon:development',
+			title: 'Implementation'
+		},
+		{
+			part: 'results',
+			icon: 'bi:bar-chart',
+			title: 'Results'
+		},
+		{
+			part: 'comments-and-questions',
+			title: 'Comments / Questions?'
+		}
 	];
 	const thisContent = content.findIndex((item) => item.part === part);
-	// let contentColor = new SvelteMap([
-	// 	['context', 'error'],
-	// 	['tension', 'warning'],
-	// 	['stories', 'neutral']
-	// ]);
 
+	// TBD: should no longer be necessary after swichting to iconify/icon?
 	// Tailwind safelist: border-primary border-primary-container border-secondary border-secondary-container border-accent border-accent-container border-warning border-warning-container border-error border-error-container border-success border-success-container border border-info border-info-container border-neutral border-neutral-container
 </script>
 
 {#snippet progressBar()}
 	<div class="fixed-progress-header flex w-full items-center gap-4 px-10">
 		{#each content as item, index (index)}
-			<div class="flex items-center gap-4 {index < content!.length - 1 ? 'grow' : ''}">
-				<a href={'#' + item.part} aria-label={item.title}>
-					<div
-						class="border-{color} shadow-base-shadow flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-full border-4 bg-transparent shadow-lg"
-					>
-						<!-- {#if index < content!.length - 1} -->
-						<!-- {#if index < thisContent + 1} -->
-						<!-- <span class="text-{color}-content font-bold">{item}</span> -->
-						<!-- <span class="{content.get(item)} size-14 bg-{color}"></span> -->
-						<span
-							class="{item.icon} size-10 bg-{color} {index < thisContent + 1 ? '' : 'opacity-20'}"
-						></span>
-						<!-- {/if} -->
-					</div>
-				</a>
-				{#if index < content!.length - 1}
-					<div class="bg-{color} shadow-{color} h-2 grow rounded shadow-lg"></div>
-				{/if}
-			</div>
+			{#if item.icon}
+				<div class="flex items-center gap-4 {index < content!.length - 1 ? 'grow' : ''}">
+					<a href={'#' + item.part} aria-label={item.title}>
+						<div
+							class="border-{color} shadow-base-shadow flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-full border-4 bg-transparent shadow-lg"
+						>
+							<Icon
+								class="text-{color} {index < thisContent + 1 ? '' : 'opacity-20'}"
+								icon={item.icon}
+							/>
+						</div>
+					</a>
+					{#if index < content!.length - 1}
+						<div class="bg-{color} shadow-{color} h-2 grow rounded shadow-lg"></div>
+					{/if}
+				</div>
+			{/if}
 		{/each}
 	</div>
 {/snippet}
@@ -106,21 +110,22 @@
 				: ''} p-3"
 		>
 			{#if thisContent >= 0}
-				<div class="absolute h-[100px] w-[600px] {debug ? 'border-4 border-red-400' : ''}">
-					{@render progressBar()}
-				</div>
-				<!-- {/if}
-			{#if title} -->
 				<div
-					class="relative ml-[600px] h-[100px] flex-shrink-0 text-7xl {debug
+					class="relative mr-[800px] h-[100px] flex-shrink-0 text-7xl {debug
 						? 'border-4 border-blue-800'
 						: ''} p-1"
 				>
-					<!-- <span class="{icon} size-22 bg-{color}"></span> -->
 					<div class="text-{color} text-left font-bold">
 						{content.find((item) => item.part === part)?.title}
 					</div>
 				</div>
+				{#if !hideProgressBar}
+					<div
+						class="absolute right-0 h-[100px] w-[800px] {debug ? 'border-4 border-red-400' : ''}"
+					>
+						{@render progressBar()}
+					</div>
+				{/if}
 			{/if}
 
 			<div
