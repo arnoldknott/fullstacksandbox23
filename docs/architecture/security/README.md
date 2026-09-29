@@ -29,6 +29,22 @@ The frontend `OAuthProvider` contract in `frontend_svelte/src/lib/server/oauth/b
 
 When adding the next OpenID Connect provider through `openid-client`, first implement its working provider-specific flow. Compare that implementation with LinkedIn, then extract an `OpenIdConnectProvider` base around code that is actually identical. Keep discovery, authorization transactions, callback validation, token storage/refresh and subject checks in the shared base only where both providers have the same behavior; retain provider-specific scopes, client authentication, nonce or Proof Key for Code Exchange requirements, error handling and protocol quirks in their provider modules. This evidence-based extraction should avoid provider switches and unused configuration hooks.
 
+## Authentication and REST authorization flow
+
+1. The user starts Microsoft or LinkedIn authentication. The frontend creates a random application-session Universally Unique Identifier (UUID), stores it in the browser's `session_id` cookie, and uses the same identifier for Redis key `session:<session-id>`.
+2. The provider authenticates the user and returns to the frontend callback. The frontend validates the OAuth/OpenID Connect transaction and stores the resulting protected provider credential or account reference in Redis. Provider credentials remain server-side and are never exposed through page data.
+3. The frontend calls `GET /api/v1/user/me` to bootstrap the application user. This is the only frontend session-reference request that may proceed before `session.currentUser` exists. The backend loads exactly one valid provider identity and resolves or creates the internal user; the frontend then stores the returned user as `session.currentUser`.
+4. For every subsequent protected REST request, the backend loads the session's currently valid provider identities, verifies that they belong to `session.currentUser`, and selects the first identity satisfying the endpoint's declared guard order. Claims from different providers are never combined. If no provider satisfies the guards, access is rejected unless the endpoint explicitly allows anonymous access.
+
+Steps 3 and 4 use two independent frontend-to-backend credentials:
+
+- `Authorization: Bearer <frontend-application-token>` proves that the caller is the trusted SvelteKit server. The server obtains this Microsoft Entra app-only token through the client-credentials flow. The backend validates its signature, issuer, tenant, audience and expiry, requires an app-only identity, and accepts only the configured frontend client through an application-level Access Control List (ACL) check of `azp`/`appid`. The application token is never exposed to browser code or page data.
+- `X-Application-Session: <session-id>` identifies the user session for which the trusted frontend is acting. It contains the same UUID as the browser cookie and Redis session, not a second backend session.
+
+The application token authenticates the calling service; the session reference supplies the user context. A session reference presented without the valid frontend application token is rejected at public backend ingress. `BackendAPI` owns this transport; generic `BaseAPI` and third-party wrappers for Microsoft Graph, LinkedIn, or future providers remain unaware of application sessions. Direct backend clients continue to authenticate with a provider bearer token and cannot nominate an application session.
+
+Socket.IO does not yet use this REST transport. Its migration to per-event provider selection and a safe frontend/backend admission boundary remains tracked as Stage C of the [multi-provider session authorization plan](multi-provider-session-authorization-plan.md).
+
 ## Registration session state
 
 The OAuth callback sets `SessionStatus.REGISTRATION_PENDING` when the backend creates a user during login. This status is durable: it remains pending until the user submits the welcome profile form. The form submission is the registration-completion boundary and is intended to include acceptance of terms and conditions later; terms handling is not implemented yet.
