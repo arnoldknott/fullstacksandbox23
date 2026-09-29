@@ -2,9 +2,6 @@
 	import Icon from '@iconify/svelte';
 
 	let { items }: { items: { icon: string; title: string }[] } = $props();
-	$effect(() => {
-		console.log(items);
-	});
 </script>
 
 {#snippet itemLine(item: { icon: string; title: string })}
@@ -17,10 +14,13 @@
 	<div></div>
 {/snippet}
 
-<div
-	class="r-stretch my-50 grid grid-cols-[1fr_max-content_1fr] items-center justify-between justify-items-start gap-16 text-7xl"
->
-	{#each items as item, index (index)}
-		{@render itemLine(item)}
-	{/each}
+<div class="r-stretch text-7xl font-bold">
+	<!-- <div class="text-secondary text-centerfont-bold">Overview</div> -->
+	<div
+		class="my-50 grid grid-cols-[1fr_max-content_1fr] items-center justify-between justify-items-start gap-16"
+	>
+		{#each items as item, index (index)}
+			{@render itemLine(item)}
+		{/each}
+	</div>
 </div>

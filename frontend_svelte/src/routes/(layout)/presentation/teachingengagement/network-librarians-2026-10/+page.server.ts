@@ -11,6 +11,7 @@ export const load: PageServerLoad = async ({ url }) => {
 		questions: [] as Question[],
 		// motivationSnapshot: { entities: [] as NumericalExtended[], cursor: 0 },
 		placesSnapshot: { entities: [] as MessageExtended[], cursor: 0 },
+		booksSnapshot: { entities: [] as MessageExtended[], cursor: 0 },
 		commentsSnapshot: { entities: [] as MessageExtended[], cursor: 0 }
 	};
 	if (presentationResponse.status === 200) {
@@ -23,11 +24,14 @@ export const load: PageServerLoad = async ({ url }) => {
 		const placesQuestion = payload.questions.find((question) =>
 			question.question.includes('places')
 		);
+		const booksQuestion = payload.questions.find((question) =>
+			question.question.includes('books')
+		);
 		const commentsQuestion = payload.questions.find((question) =>
 			question.question.includes('comments')
 		);
 		// [payload.motivationSnapshot, payload.placesSnapshot, payload.commentsSnapshot] =
-		[payload.placesSnapshot, payload.commentsSnapshot] = await Promise.all([
+		[payload.placesSnapshot, payload.booksSnapshot, payload.commentsSnapshot] = await Promise.all([
 			// motivationQuestion?.id
 			// 	? backendAPI.getSnapshot<NumericalExtended>(
 			// 			null,
@@ -38,6 +42,12 @@ export const load: PageServerLoad = async ({ url }) => {
 				? backendAPI.getSnapshot<MessageExtended>(
 						null,
 						`/quiz/message/snapshot?parent-id=${encodeURIComponent(placesQuestion?.id)}&include=creation-date&sort=creation-date&direction=desc`
+					)
+				: Promise.resolve({ entities: [] as MessageExtended[], cursor: 0 }),
+			booksQuestion?.id
+				? backendAPI.getSnapshot<MessageExtended>(
+						null,
+						`/quiz/message/snapshot?parent-id=${encodeURIComponent(booksQuestion?.id)}&include=creation-date&sort=creation-date&direction=desc`
 					)
 				: Promise.resolve({ entities: [] as MessageExtended[], cursor: 0 }),
 			commentsQuestion?.id

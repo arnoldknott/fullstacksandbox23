@@ -79,6 +79,8 @@ async def get_linkedin_token_payload(token: str, *, client_id: str) -> dict[str,
     jwks = await get_linkedin_jwks()
     try:
         return validate_linkedin_identity_token(token, jwks, client_id=client_id)
+    except jwt.ExpiredSignatureError:
+        raise
     except jwt.PyJWTError:
         jwks = await get_linkedin_jwks(no_cache=True)
         return validate_linkedin_identity_token(token, jwks, client_id=client_id)

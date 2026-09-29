@@ -1,66 +1,174 @@
 <script lang="ts">
+	// const books = Array(8).fill(0);
+	type Book = {
+		title: string;
+		author: string;
+		comments?: string;
+		link: string;
+		image: string;
+		alt: string;
+	};
+	const books: Book[] = [
+		{
+			title: 'Selvbestemmel-sesteorien',
+			author: 'Ib Ravn',
+			link: '#',
+			image: '#',
+			alt: 'Add full reference'
+		},
+		{
+			title: 'Mærk Verden',
+			author: 'Tore Nørretranders',
+			link: '#',
+			image: '#',
+			alt: 'Add full reference'
+		},
+		{
+			title: 'Flow',
+			author: 'Mihaly Csikszentmihalyi',
+			comments: 'A book about achieving flow in life.',
+			link: '#',
+			image: '#',
+			alt: 'Add full reference'
+		},
+		{
+			title: 'Pseudoarbejde',
+			author: 'Denis Nørmark & Anders Fogh Jensen',
+			link: '#',
+			image: '#',
+			alt: 'Add full reference'
+		},
+		{
+			title: 'Tilbage på arbejde',
+			author: 'Denis Nørmark',
+			link: '#',
+			image: '#',
+			alt: 'Add full reference'
+		},
+		{
+			title: 'Bullshit Jobs',
+			author: 'David Graeber',
+			link: '#',
+			image: '#',
+			alt: 'Add full reference'
+		},
+		{
+			title: 'Atlas of the Heart',
+			author: 'Brene Brown',
+			link: '#',
+			image: '#',
+			alt: 'Add full reference'
+		},
+		{
+			title: 'Følelsernes Bog',
+			author: 'Torben Sangild',
+			link: '#',
+			image: '#',
+			alt: 'Add full reference'
+		},
+		{
+			title: 'Loving what is',
+			author: 'Byron Katie',
+			link: '#',
+			image: '#',
+			alt: 'Add full reference'
+		},
+		{
+			title: 'Nonviolent Communication',
+			author: 'Marshall B. Rosenberg',
+			link: '#',
+			image: '#',
+			alt: 'Add full reference'
+		},
+		{
+			title: 'Radical Honesty',
+			author: 'Brad Blanton',
+			link: '#',
+			image: '#',
+			alt: 'Add full reference'
+		},
+		{
+			title: 'Homo Sapiens',
+			author: 'Yuval Noah Harari',
+			link: '#',
+			image: '#',
+			alt: 'Add full reference'
+		},
+		{
+			title: 'Homo Deus',
+			author: 'Yuval Noah Harari',
+			link: '#',
+			image: '#',
+			alt: 'Add full reference'
+		},
+		{
+			title: 'Regenerative Leadership',
+			author: 'Giles Hutchins & Laura Storm',
+			link: '#',
+			image: '#',
+			alt: 'Add full reference'
+		},
+		{
+			title: 'Doughnut economics',
+			author: 'Kate Raworth',
+			link: '#',
+			image: '#',
+			alt: 'Add full reference'
+		},
+		{
+			title: 'Nok',
+			author: 'Toke Haunstrup',
+			link: '#',
+			image: '#',
+			alt: 'Add full reference'
+		},
+		{
+			title: 'Underskud',
+			author: 'Emma Holten',
+			link: '#',
+			image: '#',
+			alt: 'Add full reference'
+		},
+		{
+			title: 'Coming Home to Who you Are',
+			author: 'Mark Vandeneijnde & M. Aurelius Higgs',
+			link: '#',
+			image: '#',
+			alt: 'Add full reference'
+		},
+		{
+			title: 'Theory U',
+			author: 'Otto Scharmer',
+			link: '#',
+			image: '#',
+			alt: 'Add full reference'
+		},
+		{
+			title: 'Braiding Sweetgrass',
+			author: 'Robin Wall Kimmerer',
+			link: '#',
+			image: '#',
+			alt: 'Add full reference'
+		},
+		{
+			title: 'Hospicing Modernity',
+			author: 'Vanesa Machado de Oliveira',
+			link: '#',
+			image: '#',
+			alt: 'Add full reference'
+		}
+	];
 </script>
 
 <div
-	id="library"
-	data-carousel={'{"loadingClasses":"opacity-0","isCentered":true,"slidesQty":{"xs":1,"lg":2}}'}
-	class="relative w-full"
+	class="grid h-full w-full grid-cols-4 items-center justify-center justify-items-center gap-6 overflow-auto p-10"
 >
-	<div class="carousel h-80">
-		<div class="carousel-body h-full opacity-0">
-			<!-- Slide 1 -->
-			<div class="carousel-slide px-1">
-				<div class="bg-base-200/50 flex h-full justify-center p-6">
-					<span class="self-center text-lg">First slide</span>
-				</div>
-			</div>
-			<!-- Slide 2 -->
-			<div class="carousel-slide px-1">
-				<div class="bg-base-200 flex h-full justify-center p-6">
-					<span class="self-center text-lg">Second slide</span>
-				</div>
-			</div>
-			<!-- Slide 3 -->
-			<div class="carousel-slide px-1">
-				<div class="bg-base-200 flex h-full justify-center p-6">
-					<span class="self-center text-lg">Third slide</span>
-				</div>
-			</div>
-			<!-- Slide 4 -->
-			<div class="carousel-slide px-1">
-				<div class="bg-base-200/50 flex h-full justify-center p-6">
-					<span class="self-center text-lg">Fourth slide</span>
-				</div>
-			</div>
-			<!-- Slide 5 -->
-			<div class="carousel-slide px-1">
-				<div class="bg-base-200 flex h-full justify-center p-6">
-					<span class="self-center text-lg">Fifth slide</span>
-				</div>
-			</div>
-			<!-- Slide 6 -->
-			<div class="carousel-slide px-1">
-				<div class="bg-base-200 flex h-full justify-center p-6">
-					<span class="self-center text-lg">Sixth slide</span>
-				</div>
-			</div>
+	{#each books as book, index (index)}
+		<div
+			class="bg-primary-container text-primary-container-content shadow-base-shadow h-100 w-80 rounded-3xl shadow-lg"
+		>
+			<div class="text-wrap">{book.title}</div>
+			<div class="text-3xl text-wrap">{book.author}</div>
 		</div>
-	</div>
-
-	<!-- Previous Slide -->
-	<button
-		type="button"
-		class="carousel-prev carousel-disabled:opacity-50 bg-base-100 shadow-base-300/20 start-5 flex size-9.5 items-center justify-center rounded-full shadow-sm max-sm:start-3"
-	>
-		<span class="icon-[tabler--chevron-left] size-5 cursor-pointer"></span>
-		<span class="sr-only">Previous</span>
-	</button>
-	<!-- Next Slide -->
-	<button
-		type="button"
-		class="carousel-next carousel-disabled:opacity-50 bg-base-100 shadow-base-300/20 end-5 flex size-9.5 items-center justify-center rounded-full shadow-sm max-sm:end-3"
-	>
-		<span class="icon-[tabler--chevron-right] size-5"></span>
-		<span class="sr-only">Next</span>
-	</button>
+	{/each}
 </div>
