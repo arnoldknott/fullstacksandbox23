@@ -13,6 +13,8 @@ Passing the outer layer does not grant access to application data. Protected CRU
 
 See [Inner access-control layer](inner-access-control.md) for the inner-layer data model, effective-access algorithm, inheritance directions, public sharing, enforcement points, and examples. This README remains the overview and owns the outer-layer and cross-cutting security contracts; the focused document owns the inner-layer contract.
 
+See [Collection child-loading and access filtering](collection-child-loading.md) for how `BaseCRUD.read` loads hierarchy children and applies per-child access control on reads.
+
 [Backend security](../../../backend/src/core/security.py) delegates provider-token validation to [authentication helpers](../../../backend/src/core/authentication/) and evaluates the alternatives configured by endpoint and Socket.IO guards. Endpoints retain `guards: GuardTypes = Depends(...)`; shared security resolves the internal user for the existing CRUD boundary. [Access enforcement](../../../backend/src/crud/access.py), including `filters_allowed()`, then applies resource permissions. Outer admission never replaces those checks. Preserve existing Microsoft administrator/group exceptions.
 
 If tests reveal a necessary inner-layer change outside the agreed merge scope, report the concrete issue and proposed change to the user before implementing it; continue unaffected work. Ordinary resource/group operations under existing policies do not constitute a change to the security architecture.
