@@ -1,9 +1,11 @@
 """Tests for Quiz, Question, Message and Numerical API endpoints."""
 
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import pytest
 
+from core.databases import get_async_session
+from core.encryption import is_encryption_envelope
 from crud.quiz import MessageCRUD, NumericalCRUD, QuestionCRUD
 from models.presentation import Presentation
 from models.quiz import Message, Numerical, Question
@@ -433,6 +435,106 @@ class TestMessage(BaseTest):
         deleted = await self.async_client.delete(f"{self.router_path}{resource_id}")
         assert updated.status_code == 200
         assert deleted.status_code == 200
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "mocked_provide_http_token_payload", [token_admin_read_write], indirect=True
+    )
+    async def test_confidential_stored_encrypted_and_read_plaintext(
+        self, mocked_provide_http_token_payload, add_one_test_access_policy
+    ):
+        """The confidential field is an envelope at rest and plaintext over the API."""
+        parent_id = uuid4()
+        await add_one_test_access_policy(
+            {"resource_id": str(parent_id), "action": "connect", "public": True},
+            model=Question,
+        )
+
+        created = await self.async_client.post(
+            f"/api/v1/quiz/question/{parent_id}/message/",
+            json={"content": "public answer", "confidential": "top secret"},
+        )
+        assert created.status_code == 201
+        resource_id = created.json()["id"]
+        assert created.json()["confidential"] == "top secret"
+
+        async with await get_async_session() as session:
+            stored = await session.get(Message, UUID(resource_id))
+            assert stored is not None
+            stored_confidential = getattr(stored, "confidential")
+            assert is_encryption_envelope(stored_confidential)
+            assert "top secret" not in str(stored_confidential)
+
+        by_id = await self.async_client.get(f"{self.router_path}{resource_id}")
+        assert by_id.status_code == 200
+        assert by_id.json()["confidential"] == "top secret"
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "mocked_provide_http_token_payload", [token_admin_read_write], indirect=True
+    )
+    async def test_confidential_absent_stays_null(
+        self, mocked_provide_http_token_payload, add_one_test_access_policy
+    ):
+        """A message without a confidential value stores SQL NULL and reads back None."""
+        parent_id = uuid4()
+        await add_one_test_access_policy(
+            {"resource_id": str(parent_id), "action": "connect", "public": True},
+            model=Question,
+        )
+
+        created = await self.async_client.post(
+            f"/api/v1/quiz/question/{parent_id}/message/",
+            json={"content": "answer without a secret"},
+        )
+        assert created.status_code == 201
+        resource_id = created.json()["id"]
+        assert created.json()["confidential"] is None
+
+        async with await get_async_session() as session:
+            stored = await session.get(Message, UUID(resource_id))
+            assert stored is not None
+            assert getattr(stored, "confidential") is None
+
+        by_id = await self.async_client.get(f"{self.router_path}{resource_id}")
+        assert by_id.status_code == 200
+        assert by_id.json()["confidential"] is None
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "mocked_provide_http_token_payload", [token_admin_read_write], indirect=True
+    )
+    async def test_confidential_tampered_envelope_fails_closed(
+        self, mocked_provide_http_token_payload, add_one_test_access_policy
+    ):
+        """A tampered stored envelope is rejected instead of returning plaintext."""
+        parent_id = uuid4()
+        await add_one_test_access_policy(
+            {"resource_id": str(parent_id), "action": "connect", "public": True},
+            model=Question,
+        )
+
+        created = await self.async_client.post(
+            f"/api/v1/quiz/question/{parent_id}/message/",
+            json={"content": "answer", "confidential": "classified"},
+        )
+        assert created.status_code == 201
+        resource_id = created.json()["id"]
+
+        async with await get_async_session() as session:
+            stored = await session.get(Message, UUID(resource_id))
+            assert stored is not None
+            envelope = dict(getattr(stored, "confidential"))
+            ciphertext = envelope["ciphertext"]
+            envelope["ciphertext"] = (
+                "A" if ciphertext[0] != "A" else "B"
+            ) + ciphertext[1:]
+            setattr(stored, "confidential", envelope)
+            session.add(stored)
+            await session.commit()
+
+        response = await self.async_client.get(f"{self.router_path}{resource_id}")
+        assert response.status_code == 404
 
     # POST tests
     @pytest.mark.anyio
