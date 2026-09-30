@@ -825,7 +825,7 @@
 				{#if hideNewNumericalAnswerCard || !numericalSocketio?.pendingEntities[0]}
 					<button
 						transition:fade={{ duration: 600 }}
-						class="btn btn-primary-container btn-gradient label btn shadow-outline mx-4 rounded-full shadow-sm"
+						class="btn btn-primary-container btn-gradient label shadow-outline mx-4 rounded-full shadow-sm"
 						aria-label="Add new question"
 						onclick={() => (hideNewNumericalAnswerCard = false)}
 					>
