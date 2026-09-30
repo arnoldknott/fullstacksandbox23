@@ -439,7 +439,7 @@
 			/>
 			<img
 				src="https://multimediaserver.gyldendal.dk/GyldendalDk/CoverFace/W200/9788702180602"
-				alt="Self determination theory - book cover"
+				alt="Mærk Verden - book cover"
 				class="shadow-primary fragment h-full w-fit rounded-4xl object-contain shadow-lg"
 			/>
 		</div>
