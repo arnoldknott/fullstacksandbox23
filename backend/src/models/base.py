@@ -261,15 +261,27 @@ def _build_hierarchy_relationship(
             f"{related_entity_name}.id == foreign({hierarchy_name}.parent_id)"
         )
 
+    sa_relationship_kwargs: dict[str, Any] = {
+        "lazy": "noload",
+        "viewonly": True,
+        "primaryjoin": primary_join,
+        "secondaryjoin": secondary_join,
+    }
+    # Preserve the previous eager-load ordering under selectinload: a parent orders its
+    # children by the ResourceHierarchy `order` column (the only hierarchy with one),
+    # every other direction orders by the related entity's own id.
+    if (
+        rel_spec.hierarchy_type == RelationshipHierarchyType.parent
+        and hierarchy_name == "ResourceHierarchy"
+    ):
+        sa_relationship_kwargs["order_by"] = f"{hierarchy_name}.order"
+    else:
+        sa_relationship_kwargs["order_by"] = f"{related_entity_name}.id"
+
     return SQLModelRelationship(
         back_populates=rel_spec.back_populates,
         link_model=hierarchy_model,
-        sa_relationship_kwargs={
-            "lazy": "noload",
-            "viewonly": True,
-            "primaryjoin": primary_join,
-            "secondaryjoin": secondary_join,
-        },
+        sa_relationship_kwargs=sa_relationship_kwargs,
     )
 
 

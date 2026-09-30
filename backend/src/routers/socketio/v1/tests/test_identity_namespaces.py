@@ -1144,10 +1144,17 @@ async def test_user_unlinks_group_from_ueber_group(
         transferred_data_client1[3]["description"]
         == existing_ueber_groups[1].description
     )
-    assert UUID(transferred_data_client1[0]["groups"][0]["id"]) == existing_groups[2].id
-    assert transferred_data_client1[0]["groups"][0]["name"] == existing_groups[2].name
+    # The connect snapshot orders parents by their own id, so locate the linked
+    # ueber-group by id rather than by position.
+    ueber_group_with_child = next(
+        payload
+        for payload in transferred_data_client1
+        if UUID(payload["id"]) == existing_ueber_groups[1].id and payload["groups"]
+    )
+    assert UUID(ueber_group_with_child["groups"][0]["id"]) == existing_groups[2].id
+    assert ueber_group_with_child["groups"][0]["name"] == existing_groups[2].name
     assert (
-        transferred_data_client1[0]["groups"][0]["description"]
+        ueber_group_with_child["groups"][0]["description"]
         == existing_groups[2].description
     )
 
