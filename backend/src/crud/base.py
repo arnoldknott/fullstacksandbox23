@@ -17,8 +17,8 @@ from typing import (
 from fastapi import HTTPException, UploadFile
 from fastapi.responses import FileResponse
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy.orm import aliased, class_mapper, contains_eager, foreign, noload
-from sqlmodel import SQLModel, asc, col, delete, desc, func, or_, select
+from sqlalchemy.orm import aliased, class_mapper, selectinload, with_loader_criteria
+from sqlmodel import SQLModel, asc, col, delete, desc, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from core.databases import get_async_session
@@ -546,88 +546,40 @@ class BaseCRUD(
             )
 
             # query relationships:
+            # Load each hierarchy child collection in its own access-filtered query so
+            # sibling collections add rows instead of multiplying (cartesian) them. The
+            # `with_loader_criteria` applies `filters_allowed` to the child entity so
+            # reading a parent never grants access to children the user cannot read.
             for relationship in class_mapper(self.model).relationships:
-                # Determine the related model, the relevant hierarchy and relations based on self.entity_type
                 related_model = self.type.get_model(relationship.mapper.class_.__name__)
                 related_attribute = getattr(self.model, relationship.key)
                 related_type = self.type(related_model.__name__)
 
                 # Skip relationships that are not part of the configured hierarchy
-                # (e.g. direct-FK side tables like User.user_profile / User.user_account).
-                # Their access is governed by access to the parent model, and adding a
-                # WHERE on `related_model.id` here without a corresponding join causes
-                # cartesian-product SAWarnings; let their declared `lazy=` strategy load them.
+                # (e.g. direct-FK side tables like User.user_profile / User.user_account);
+                # their access is governed by access to the parent model.
                 is_hierarchy_relationship = any(
                     (self.entity_type == parent and related_type in children)
                     or (self.entity_type in children and related_type == parent)
                     for parent, children in self.relations.items()
                 )
-                if is_hierarchy_relationship:
-                    related_statement = select(related_model.id)
-                    # related_statement = self.policy_CRUD.filters_allowed(
-                    related_statement = self.policy_crud.filters_allowed(
-                        related_statement,
-                        action=Action.read,
-                        model=related_model,
-                        current_user=current_user,
-                    )
+                if not is_hierarchy_relationship:
+                    continue
 
-                    # Check if self.entity_type is a key in relations, i.e. the model is a parent in the hierarchy
-                    aliased_hierarchy = aliased(self.hierarchy)
-                    for parent, children in self.relations.items():
-                        if self.entity_type == parent and related_type in children:
-                            # self.model is a parent, join on parent_id
-                            statement = statement.outerjoin(
-                                aliased_hierarchy,
-                                col(self.model.id)
-                                == foreign(col(aliased_hierarchy.parent_id)),
-                            )
-                            statement = statement.outerjoin(
-                                related_model,
-                                col(related_model.id)
-                                == foreign(col(aliased_hierarchy.child_id)),
-                            )
-                            if self.hierarchy is ResourceHierarchy:
-                                # `aliased_hierarchy` was built from `self.hierarchy`, so in
-                                # this branch its underlying class is ResourceHierarchy and
-                                # therefore has an `order` column. Pyright cannot follow this
-                                # correlation across the `aliased(...)` call.
-                                statement = statement.order_by(asc(col(aliased_hierarchy.order)))  # type: ignore[attr-defined]
-                            else:
-                                statement = statement.order_by(
-                                    asc(col(related_model.id))
-                                )
-                        elif self.entity_type in children and related_type == parent:
-                            # self.model is a child, join on child_id
-                            statement = statement.outerjoin(
-                                aliased_hierarchy,
-                                col(self.model.id)
-                                == foreign(col(aliased_hierarchy.child_id)),
-                            )
-                            statement = statement.outerjoin(
-                                related_model,
-                                col(related_model.id)
-                                == foreign(col(aliased_hierarchy.parent_id)),
-                            )
-                            # here no ordering, as parents don't have an order seen from the child:
-                            statement = statement.order_by(asc(col(related_model.id)))
-
-                    count_related_statement = select(func.count()).select_from(
-                        related_statement.alias()
-                    )
-                    related_count = await self.session.exec(count_related_statement)
-                    count = related_count.one()
-
-                    if count == 0:
-                        statement = statement.options(noload(related_attribute))
-                    else:
-                        statement = statement.where(
-                            or_(
-                                related_model.id
-                                == None,  # noqa E711: comparison to None should be 'if cond is None:'
-                                related_model.id.in_(related_statement),
-                            )
-                        ).options(contains_eager(related_attribute))
+                access_ids = self.policy_crud.filters_allowed(
+                    select(related_model.id),
+                    action=Action.read,
+                    model=related_model,
+                    current_user=current_user,
+                )
+                statement = statement.options(
+                    selectinload(related_attribute),
+                    with_loader_criteria(
+                        related_model,
+                        related_model.id.in_(access_ids),
+                        include_aliases=True,
+                    ),
+                )
 
             if joins:
                 for join in joins:

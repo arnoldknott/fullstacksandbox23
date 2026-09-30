@@ -49,11 +49,13 @@ change small and contained to one method, leaving `filters_allowed()` untouched.
 
 ## Decision: child ordering
 
-Children are user-visible in order, so ordering must be preserved. The current code orders
-a parent's children by `ResourceHierarchy.order`. Because `order` lives on the association table and
-`selectinload` orders by the child query, the parent-side hierarchy relationships must declare an
-`order_by` on the association `order` column. This is added in `_build_hierarchy_relationship` for
-parent-type relationships only (child-side relationships have no meaningful order from the child).
+Children are user-visible in order, so ordering must be preserved. The previous eager load ordered a
+resource parent's children by `ResourceHierarchy.order` and ordered every other direction by the
+related entity's `id`. Because `order` lives on the association table and `selectinload` orders by the
+child query, this ordering is declared as `order_by` on each hierarchy relationship in
+`_build_hierarchy_relationship`: resource parents use `ResourceHierarchy.order`, and all other
+directions (identity parents, and the child-to-parent direction) use the related entity's `id`.
+`IdentityHierarchy` has no `order` column.
 
 ## Phase 1 — primary fix (contained to `BaseCRUD.read`)
 
@@ -103,10 +105,11 @@ for relationship in class_mapper(self.model).relationships:
 
 ### Ordering change
 
-In `_build_hierarchy_relationship`, for `RelationshipHierarchyType.parent` relationships, add
-`order_by` on the association `order` column so `selectinload` returns children in hierarchy order,
-matching the previous `contains_eager` behaviour. Child-side relationships are left unordered as
-before.
+In `_build_hierarchy_relationship`, add `order_by` to every hierarchy relationship so
+`selectinload` reproduces the previous `contains_eager` ordering. A resource parent orders its
+children by the `ResourceHierarchy.order` column (the only hierarchy that carries one); every other
+direction — identity parents and the child-to-parent direction — orders by the related entity's own
+`id`, matching the prior behaviour.
 
 ## Preserved semantics (must not regress)
 
@@ -116,7 +119,8 @@ before.
 - Anonymous/public path and Microsoft administrator/group short-circuits in `filters_allowed`
   (see [`backend/src/crud/access.py`](../../../backend/src/crud/access.py)) are unchanged.
 - Only direct children are loaded (one level), exactly as today.
-- Child ordering by `ResourceHierarchy.order` is preserved via the added `order_by`.
+- Ordering is preserved: resource parents by `ResourceHierarchy.order`, all other directions by the
+  related entity's `id` (`IdentityHierarchy` has no `order` column).
 
 ## Deferred phases (only if measurement still shows cost after Phase 1)
 
