@@ -73,7 +73,10 @@
 	const progressBarItems: ProgressBarItem[] = content.filter(
 		(item): item is ProgressBarItem => item.icon !== undefined
 	);
-	const thisContent = progressBarItems.findIndex((item) => item.part === part);
+	// svelte-ignore state_referenced_locally
+	const thisContent = !hideProgressBar
+		? progressBarItems.findIndex((item) => item.part === part)
+		: content.findIndex((item) => item.part === part);
 
 	// TBD: should no longer be necessary after swichting to iconify/icon?
 	// Tailwind safelist: border-primary border-primary-container border-secondary border-secondary-container border-accent border-accent-container border-warning border-warning-container border-error border-error-container border-success border-success-container border border-info border-info-container border-neutral border-neutral-container
