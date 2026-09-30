@@ -122,6 +122,17 @@ direction — identity parents and the child-to-parent direction — orders by t
 - Ordering is preserved: resource parents by `ResourceHierarchy.order`, all other directions by the
   related entity's `id` (`IdentityHierarchy` has no `order` column).
 
+### Behaviour note: parent-collection ordering
+
+One intentional behaviour change: the previous multi-join appended the child `order_by` to the
+*parent* query, so an unordered collection read (e.g. the Socket.IO connect snapshot via `read()` with
+no `order_by`) incidentally ordered parents by their children's ids. With `selectinload` the child
+ordering no longer touches the parent query, so parents now order by their own `id` — deterministic and
+independent of their children. Callers that need a specific parent order must pass an explicit
+`order_by`. A positional assertion in
+`src/routers/socketio/v1/tests/test_identity_namespaces.py::test_user_unlinks_group_from_ueber_group`
+depended on the old incidental order and was updated to locate the entity by id.
+
 ## Deferred phases (only if measurement still shows cost after Phase 1)
 
 These touch the inner security layer more deeply and require explicit sign-off before implementation.
