@@ -96,6 +96,10 @@ Message = create_model(
         # Sourece is the location fo the source code
         Attribute(name="content", type=str),
         Attribute(name="language", type=LanguageAlpha2, field_value="en"),
+        # Optional confidential text, independent of `content`; encrypted at rest.
+        Attribute(
+            name="confidential", type=Optional[str], field_value=None, encrypt=True
+        ),
     ],
     relationships=[
         # Turn into one-to-many; there si only one question per answer!

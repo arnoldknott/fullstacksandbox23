@@ -24,9 +24,7 @@ export const load: PageServerLoad = async ({ url }) => {
 		const placesQuestion = payload.questions.find((question) =>
 			question.question.includes('places')
 		);
-		const booksQuestion = payload.questions.find((question) =>
-			question.question.includes('books')
-		);
+		const booksQuestion = payload.questions.find((question) => question.question.includes('books'));
 		const commentsQuestion = payload.questions.find((question) =>
 			question.question.includes('comments')
 		);

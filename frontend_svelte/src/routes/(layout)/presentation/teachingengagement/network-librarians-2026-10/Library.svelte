@@ -17,6 +17,13 @@
 			alt: 'Add full reference'
 		},
 		{
+			title: 'Skole uden prøver og karakterer',
+			author: 'Noemi Katznelson, et al.',
+			link: '#',
+			image: '#',
+			alt: 'Add full reference'
+		},
+		{
 			title: 'Mærk Verden',
 			author: 'Tore Nørretranders',
 			link: '#',

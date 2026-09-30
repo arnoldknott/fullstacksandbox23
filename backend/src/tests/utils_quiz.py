@@ -59,12 +59,14 @@ question_update_data = {
 one_test_message = {
     "content": "Paris",
     "language": "en",
+    "confidential": "grading rubric: only exact match counts",
 }
 
 many_test_messages = [
     {
         "content": "4",
         "language": "en",
+        "confidential": "accepted variants: four, IV",
     },
     {
         "content": "Jupiter",
@@ -73,12 +75,14 @@ many_test_messages = [
     {
         "content": "Madrid",
         "language": "es",
+        "confidential": "clave de corrección",
     },
 ]
 
 message_update_data = {
     "content": "Berlin",
     "language": "de",
+    "confidential": "updated grading note",
 }
 
 wrong_test_messages = [

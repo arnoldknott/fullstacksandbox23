@@ -13,6 +13,8 @@ Passing the outer layer does not grant access to application data. Protected CRU
 
 See [Inner access-control layer](inner-access-control.md) for the inner-layer data model, effective-access algorithm, inheritance directions, public sharing, enforcement points, and examples. This README remains the overview and owns the outer-layer and cross-cutting security contracts; the focused document owns the inner-layer contract.
 
+See [Collection child-loading and access filtering](collection-child-loading.md) for how `BaseCRUD.read` loads hierarchy children and applies per-child access control on reads.
+
 [Backend security](../../../backend/src/core/security.py) delegates provider-token validation to [authentication helpers](../../../backend/src/core/authentication/) and evaluates the alternatives configured by endpoint and Socket.IO guards. Endpoints retain `guards: GuardTypes = Depends(...)`; shared security resolves the internal user for the existing CRUD boundary. [Access enforcement](../../../backend/src/crud/access.py), including `filters_allowed()`, then applies resource permissions. Outer admission never replaces those checks. Preserve existing Microsoft administrator/group exceptions.
 
 If tests reveal a necessary inner-layer change outside the agreed merge scope, report the concrete issue and proposed change to the user before implementing it; continue unaffected work. Ordinary resource/group operations under existing policies do not constitute a change to the security architecture.
@@ -87,9 +89,13 @@ Use Advanced Encryption Standard in Galois/Counter Mode with a 256-bit key (AES-
 | `ciphertext` | Encrypted data |
 | `tag` | Mandatory 16-byte authentication tag |
 
-Bind the stable storage location, canonical field/path purpose, envelope version, and key version through consistently encoded associated data. Redis callers use the full Redis key and JSON path; future database callers must use a stable database-specific location and field purpose. This prevents valid ciphertext from being moved between accounts, records, or protected fields.
+Bind the stable storage location, canonical field/path purpose, envelope version, and key version through consistently encoded associated data. Redis callers use the full Redis key and JSON path; database callers use a per-row location and the field name as purpose (for example `message:{id}` with purpose `confidential`). This prevents valid ciphertext from being moved between accounts, records, or protected fields.
 
 Verify the authentication tag before consuming plaintext. Wrong keys, modified ciphertext, malformed envelopes, or changed associated data fail closed. Keys remain in server memory and never appear in stored envelopes or browser-visible data. Cross-runtime tests maintain Python/TypeScript compatibility.
+
+### Database field encryption
+
+A model attribute marked `encrypt=True` in the [`create_model` factory](../../../backend/src/models/base.py) is stored as an AES-256-GCM envelope in a JSONB column while remaining a plaintext string in the generated `Create`, `Read`, `Update`, and `Extended` schemas. [`BaseCRUD`](../../../backend/src/crud/base.py) encrypts marked fields on create and update and decrypts them on read, binding each ciphertext to its row and field name as associated data. Decryption also covers encrypted children loaded through a parent relationship, and detaches rows before replacing envelopes so plaintext is never flushed back to the database. Callers therefore send and receive plaintext over the REST and Socket.IO interfaces; only the database holds the envelope. This is encryption at rest, not end-to-end encryption, and plaintext must never be logged.
 
 ### Keyring and startup
 

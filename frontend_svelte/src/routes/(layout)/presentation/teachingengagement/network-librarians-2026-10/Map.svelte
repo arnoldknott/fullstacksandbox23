@@ -115,7 +115,7 @@
 		leafletModule = await import('leaflet');
 		// import('leaflet').then((module) => {
 		// leafletModule = module;
-		map = leafletModule.map('diversityMap', { center: [55.803042, 12.466789], zoom: 3 });
+		map = leafletModule.map('diversityMap', { center: [55.803042, 12.466789], zoom: 5 });
 
 		leafletModule
 			.tileLayer(
