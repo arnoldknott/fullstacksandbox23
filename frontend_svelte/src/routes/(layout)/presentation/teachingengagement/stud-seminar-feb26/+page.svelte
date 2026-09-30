@@ -374,14 +374,14 @@
 			<li>2023: webpresentation II</li>
 		</ul>
 	</FramedSlide>
-	<FramedSlide section="old" content={['automation', 'design']}>
+	<!-- <FramedSlide section="old" content={['automation', 'design']}>
 		<iframe
 			title="Teaching Adventures - Design"
 			src="/teachingengagement/teaching-adventures-2023-06.pdf"
 			class="shadow-error h-full w-full rounded-4xl object-contain shadow-lg"
 		>
 		</iframe>
-	</FramedSlide>
+	</FramedSlide> -->
 	<FramedSlide section="old" content={['automation', 'design']}>
 		<SlideTitle color="secondary"
 			>Compared to other courses at DTU, how do you like the setup in this course inside DTU Learn?</SlideTitle
