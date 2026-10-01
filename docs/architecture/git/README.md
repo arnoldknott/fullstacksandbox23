@@ -1,3 +1,11 @@
 # Git
 
-Feature and fix branches merge into `dev`, then changes are promoted through `stage` to `main` for production. Local hook examples live in [hooks](../../../hooks/), while continuous integration and deployment workflows live in [.github/workflows](../../../.github/workflows/); the authoritative branch and environment rules are in [AGENTS.md](../../../AGENTS.md).
+Feature and fix branches start from `dev` and merge back into `dev`. Promote changes in order from `dev` to `stage`, then from `stage` to `main` after staging verification.
+
+| Branch | Deployment environments |
+| --- | --- |
+| `dev` | `dev` and `test` |
+| `stage` | `stage` |
+| `main` | `prod` |
+
+Local hook examples live in [hooks](../../../hooks/), and automation workflows live in [.github/workflows](../../../.github/workflows/). The root [AGENTS.md](../../../AGENTS.md#branch-and-environment-model) is authoritative for branch and environment policy; infrastructure work additionally follows its [workspace deployment flow](../../infrastructure/README.md#deployment-flow) and requires plan review before apply.

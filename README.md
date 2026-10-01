@@ -1,68 +1,53 @@
-# Purpose
+# Full-Stack Sandbox
 
-Sandbox to experiment with a full stack applications using
-- Svelte for frontend
-- FastAPI for backend
-- Postgres for database
-- Redis for caching
-- docker compose for containerization
-- github actions for CI/CD
+This repository is a Docker Compose-based sandbox for a SvelteKit frontend, a FastAPI backend, PostgreSQL, Redis, and supporting services. GitHub Actions provides continuous integration and deployment. See the [documentation index](docs/README.md) for component guides and architecture references.
 
-# Documentation
+## Start developing
 
-See the [repository documentation](docs/README.md) for component and architecture references.
-
-# License
-
-see [license file](LICENSE)
-
-# Contributing
-
-## Development:
-
-The repository root [versions.env](versions.env) is committed and only stores shared build-tool version pins for Docker and the devcontainer.
-
-Use app-local `.env` files for the environment variables in development. If you specify a variable `AZURE_KEYVAULT_HOST`, the application will retrieve all variables from there. Make sure your app has access to this keyvault then from the host you are running the development containers on. You might still need to specify the necessary variables to start the postgres container.
-Feel free to ask the repository owner for an example of the `.env` file.
-
-Here's how you run the application locally in development:
-
+The default Codespaces and VS Code workspace uses the root devcontainer at [.devcontainer/devcontainer.json](.devcontainer/devcontainer.json). From the repository root, start the development stack with:
 
 ```bash
 docker compose build
-docker compose up
+docker compose up -d
 ```
 
-The default Codespaces and VS Code devcontainer entry point is the root devcontainer in [.devcontainer/devcontainer.json](.devcontainer/devcontainer.json). Its initialize step links `.env` to [versions.env](versions.env) so Docker Compose interpolation and build arguments use the same pinned Python, Node, Bun, Alpine, and `uv` values as the app containers.
+Development uses app-local `.env` files. See [backend/src/.env.example](backend/src/.env.example) for the backend environment-variable surface; coordinate with the repository owner for any local values not represented there. If `AZURE_KEYVAULT_HOST` is set, the application loads configured values from that Key Vault, and the host running the development containers must have the required access. PostgreSQL container startup may also require local environment values.
 
-Use this file only for shared image/tool version pins. Do not put secrets there.
+The committed root [versions.env](versions.env) contains shared build-tool version pins for Docker and the devcontainer. The devcontainer initialize step links it as the root `.env` used for Compose interpolation. Keep secrets in app-local environment files or the configured secret store, never in `versions.env`.
 
-## Devcontainer modes
+The devcontainer is the primary workspace for the full Compose stack, shared scripts, and infrastructure tasks. It aligns the editor toolchain with the application container versions; the app containers remain the runtime source of truth. For the supported workspace setup, see [VS Code guidance](docs/architecture/vscode/README.md).
 
-This repository uses a single primary devcontainer entry point [.devcontainer/devcontainer.json](.devcontainer/devcontainer.json).
+## Develop and validate
 
-### What it is for
+Use the development stack for interactive work. For automated validation, use the separate test Compose stack, not the development containers or host environment. The repository scripts provide convenient entry points:
 
-- The devcontainer is intended to control the full Docker Compose stack, shared scripts, and infrastructure-oriented tasks.
-- It keeps the editor toolchain aligned with the app container versions while leaving the app containers themselves as the runtime source of truth.
+| Task | Command |
+| --- | --- |
+| Build the test stack | `./scripts/build_test.sh` |
+| Enter the backend test container | `./scripts/enter_backend_test.sh` |
+| Enter the frontend test container | `./scripts/enter_frontend_svelte_test.sh` |
+| Stop the test stack when validation is complete | `./scripts/stop_test.sh` |
+| Enter the development backend or frontend | `./scripts/enter_backend_dev.sh` or `./scripts/enter_frontend_svelte_dev.sh` |
+| Stop the development stack | `./scripts/stop_dev.sh` |
 
-### Working with it
+Test-container entry scripts start the test environment and open an interactive shell. Run the relevant formatter, linter, type check, or tests from that container. See [backend guidance](backend/AGENTS.md) and [frontend guidance](frontend_svelte/AGENTS.md) for exact commands and single-test examples. Do not stop a test stack that was already running before your work.
 
-Use the devcontainer as the primary workspace and open additional windows only when needed:
+For infrastructure changes, use the dedicated OpenTofu container workflow in [infrastructure guidance](infrastructure/AGENTS.md); do not run infrastructure tooling directly on the host. Review the plan before any apply operation.
 
-1. Open the repository in a Dev Container and select the devcontainer configuration.
-2. Start the Compose stack manually in the first window with `docker compose up`.
-3. Open additional VS Code windows for other branches, worktrees, or focused edits when needed.
-4. Keep the running stack in the first window if you want real-time logs and manual control over startup and shutdown.
+## Repository guidance
 
+[AGENTS.md](AGENTS.md) is the shared source of truth for repository conventions, security boundaries, and environment workflow. Nested `AGENTS.md` files provide backend, frontend, and infrastructure details. The [documentation index](docs/README.md) links to the current architecture and component references.
 
-## Testing:
+## Hooks and CI
 
-use a local `.env` file for the environment variables in testing.
-See the [pre commit hooks](hooks/pre-commit) to get inspiration on how to run code formating, linting and testing manually.
+To install the example local hooks, run this from `.git/hooks`:
 
-## Use hooks
+```bash
+ln -s -f ../../hooks/* .
+```
 
-In your `.git/hooks directory`, run `ln -s -f ../../hooks/* .` to install the hooks for your local repository.
+GitHub Actions also runs repository validation in CI. Local hooks are a convenience and do not replace the required test-environment checks.
 
-The github actions workflow will run those things as well on commits.
+## License
+
+See the [license](LICENSE).
