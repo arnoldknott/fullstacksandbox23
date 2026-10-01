@@ -4,7 +4,7 @@ Applies to everything under `backend/`.
 
 See the repository root `AGENTS.md` for shared conventions (branching, test-environment lifecycle, cross-app integration contracts).
 
-## Validation: format, linttest, and test commands
+## Validation: format, lint, and test commands
 
 There are no backend package scripts. The backend uses Docker Compose.
 
