@@ -93,9 +93,9 @@
 	});
 </script>
 
-<div class="chat-bubble-wrapper" style="--bubble-max-width: {maxWidth};" {...rest}>
+<div class="chat-bubble-wrapper {rest.class}" style="--bubble-max-width: {maxWidth};" {...rest}>
 	<div
-		class={`bubble-oval ${shadow ? `shadow-${variant} shadow-lg` : ''} ` +
+		class={`bubble-oval ${shadow ? `shadow-base-shadow shadow-lg` : ''} ` +
 			`bg-${variant} text-${variant}-content`}
 		bind:clientWidth={ovalWidth}
 		bind:clientHeight={ovalHeight}

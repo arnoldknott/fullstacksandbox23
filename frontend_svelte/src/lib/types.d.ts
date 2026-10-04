@@ -203,6 +203,8 @@ export interface Message {
 	id: string;
 	content: string;
 	language: string;
+	// Plaintext at the API boundary; stored encrypted at rest by the backend. Not used yet.
+	confidential?: string | null;
 }
 
 export interface Numerical {

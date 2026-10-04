@@ -16,11 +16,13 @@ from typing import (
 
 from fastapi import HTTPException, UploadFile
 from fastapi.responses import FileResponse
+from sqlalchemy import inspect as sa_inspect
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import aliased, class_mapper, selectinload, with_loader_criteria
 from sqlmodel import SQLModel, asc, col, delete, desc, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
+from core.cache import encryption
 from core.databases import get_async_session
 from crud import registry_CRUDs
 from crud.access import (
@@ -102,6 +104,7 @@ class BaseCRUD(
         self.allow_standalone = allow_standalone
         self.allow_public_create = allow_public_create
         self.extended_model = extended_model or getattr(base_model, "Extended", None)
+        self.encrypted_fields = getattr(base_model, "__encrypted_fields__", frozenset())
         if base_model.__name__ in ResourceType.list():
             self.entity_type = ResourceType(self.model.__name__)
             self.type = ResourceType
@@ -148,6 +151,50 @@ class BaseCRUD(
         self.policy_crud = AccessPolicyCRUD(session=session)
         self.logging_crud = AccessLoggingCRUD(session=session)
         self._owns_session = False
+
+    def _encryption_location(self, object_id: uuid.UUID) -> str:
+        """Binds an encrypted field's ciphertext to its table row."""
+        return f"{self.model.__tablename__}:{object_id}"
+
+    def _decrypt_in_place(  # noqa: C901
+        self, instance, _seen: Optional[set[int]] = None
+    ) -> None:
+        """Replace encryption envelopes with plaintext on a row and its loaded children.
+
+        Encrypted children reached through a parent relationship (for example a
+        question's answers) never pass through their own CRUD read, so decrypt
+        them here. Detaching first ensures a later commit cannot flush plaintext
+        back into an encrypted column. `_seen` guards against relationship cycles.
+        """
+        if instance is None:
+            return
+        _seen = _seen if _seen is not None else set()
+        if id(instance) in _seen:
+            return
+        _seen.add(id(instance))
+        for relationship in class_mapper(type(instance)).relationships:
+            if relationship.key not in instance.__dict__:
+                continue
+            related = instance.__dict__.get(relationship.key)
+            if related is None:
+                continue
+            children = related if isinstance(related, (list, tuple, set)) else [related]
+            for child in children:
+                self._decrypt_in_place(child, _seen)
+        encrypted_fields = getattr(type(instance), "__encrypted_fields__", frozenset())
+        if not encrypted_fields:
+            return
+        if sa_inspect(instance).persistent:
+            self.session.expunge(instance)
+        location = f"{type(instance).__tablename__}:{instance.id}"
+        for field in encrypted_fields:
+            envelope = getattr(instance, field, None)
+            if envelope is not None:
+                setattr(
+                    instance,
+                    field,
+                    encryption.decrypt(location, field, envelope),
+                )
 
     # async def _write_policy(
     #     self,
@@ -313,9 +360,31 @@ class BaseCRUD(
                 )
 
             # Create and add database object
-            database_object = self.model.model_validate(object)
+            if self.encrypted_fields:
+                validation_source = (
+                    dict(object) if isinstance(object, dict) else object.model_dump()
+                )
+                encrypted_plaintext = {
+                    field: validation_source[field]
+                    for field in self.encrypted_fields
+                    if validation_source.get(field) is not None
+                }
+                for field in self.encrypted_fields:
+                    validation_source.pop(field, None)
+            else:
+                validation_source = object
+                encrypted_plaintext = {}
+            database_object = self.model.model_validate(validation_source)
             # `id` is populated by `default_factory=uuid.uuid4` on the model field.
             assert database_object.id is not None
+            for field, plaintext in encrypted_plaintext.items():
+                setattr(
+                    database_object,
+                    field,
+                    encryption.encrypt(
+                        self._encryption_location(database_object.id), field, plaintext
+                    ),
+                )
             await self._write_identifier_type_link(database_object.id)
             self.session.add(database_object)
 
@@ -380,6 +449,8 @@ class BaseCRUD(
                     allow_override=True,  # Always True - public policies don't need authorization
                 )
 
+            # Return plaintext to the caller; the envelope stays only in the database.
+            self._decrypt_in_place(database_object)
             return database_object
 
         except Exception as e:
@@ -627,6 +698,13 @@ class BaseCRUD(
             ]
             await self.logging_crud.create_many(access_logs)
 
+            # Replace encryption envelopes with plaintext on the rows and any
+            # loaded encrypted children, detaching them so a later commit cannot
+            # flush the plaintext back into an encrypted column.
+            if not select_args:
+                for result in results:
+                    self._decrypt_in_place(result)
+
             return results
         except Exception as err:
             failed_resource_id = failed_result.id if failed_result is not None else None
@@ -721,6 +799,10 @@ class BaseCRUD(
                 )
             updated = new.model_dump(exclude_unset=True)
             for key, value in updated.items():
+                if key in self.encrypted_fields and value is not None:
+                    value = encryption.encrypt(
+                        self._encryption_location(object_id), key, value
+                    )
                 setattr(current, key, value)
             session.add(current)
             assert current.id is not None
@@ -733,6 +815,7 @@ class BaseCRUD(
             await self.logging_crud.create(access_log)
             await session.commit()
             await session.refresh(current)
+            self._decrypt_in_place(current)
             return current
         except Exception as e:
             await session.rollback()

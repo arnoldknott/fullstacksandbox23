@@ -72,6 +72,8 @@ from typing import (
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel
+from sqlalchemy import Column
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlmodel import Field
 from sqlmodel import Relationship as SQLModelRelationship
 from sqlmodel import SQLModel
@@ -122,6 +124,8 @@ class GeneratedSQLModel(BaseSQLModel):
     Read: ClassVar[Type[BaseReadSQLModel]]
     Update: ClassVar[Type[SQLModel]]
     Extended: ClassVar[Type[BaseExtendedSQLModel]]
+    # Names of attributes stored encrypted at rest; plaintext at the API boundary.
+    __encrypted_fields__: ClassVar[frozenset[str]] = frozenset()
 
 
 class AccessRightsMixin(SQLModel):
@@ -203,6 +207,8 @@ class Attribute(BaseModel):
     type: Any  # Actual Python type, e.g., str, Optional[str], int
     field_value: Any = None  # Can be a Field(...) or a default value or None
     exclude: Set[ModelTypes] = set()  # Set of schema types to exclude from
+    # Plaintext in the API schemas; stored as an encryption envelope in a JSONB column.
+    encrypt: bool = False
 
 
 class Relationship(BaseModel):
@@ -527,6 +533,14 @@ def create_model(
             primary_key=True,
         )
 
+        # Store encrypted attributes as a JSONB envelope column instead of the schema type.
+        encrypted_field_names = {attr.name for attr in attributes if attr.encrypt}
+        for attr_name in encrypted_field_names:
+            table_annotations[attr_name] = Any
+            table_fields[attr_name] = Field(
+                default=None, sa_column=Column(JSONB, nullable=True)
+            )
+
         # Add relationships to table model
         for rel in relationships:
             rel_name = rel.name or rel.related_entity.name
@@ -552,6 +566,7 @@ def create_model(
         TableModel.Read = Read
         TableModel.Update = Update
         TableModel.Extended = Extended
+        TableModel.__encrypted_fields__ = frozenset(encrypted_field_names)
 
         # # Add type annotations so type checkers understand these are types
         # if not hasattr(TableModel, '__annotations__'):

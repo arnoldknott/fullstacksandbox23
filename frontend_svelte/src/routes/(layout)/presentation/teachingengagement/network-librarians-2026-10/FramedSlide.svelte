@@ -9,7 +9,7 @@
 		part,
 		color = 'secondary',
 		section,
-		// title,
+		title,
 		coloring,
 		hideProgressBar = false,
 		footer,
@@ -19,7 +19,7 @@
 		part?: string;
 		color?: string;
 		section?: string;
-		// title?: string;
+		title?: string;
 		coloring?: { background: string; text: string };
 		footer?: Snippet;
 		hideProgressBar?: boolean;
@@ -30,6 +30,9 @@
 		part: string;
 		icon?: string;
 		title: string;
+	};
+	type ProgressBarItem = ContentItem & {
+		icon: string;
 	};
 	let content: ContentItem[] = [
 		{
@@ -67,7 +70,13 @@
 			title: 'Comments / Questions?'
 		}
 	];
-	const thisContent = content.findIndex((item) => item.part === part);
+	const progressBarItems: ProgressBarItem[] = content.filter(
+		(item): item is ProgressBarItem => item.icon !== undefined
+	);
+	// svelte-ignore state_referenced_locally
+	const thisContent = !hideProgressBar
+		? progressBarItems.findIndex((item) => item.part === part)
+		: content.findIndex((item) => item.part === part);
 
 	// TBD: should no longer be necessary after swichting to iconify/icon?
 	// Tailwind safelist: border-primary border-primary-container border-secondary border-secondary-container border-accent border-accent-container border-warning border-warning-container border-error border-error-container border-success border-success-container border border-info border-info-container border-neutral border-neutral-container
@@ -75,24 +84,22 @@
 
 {#snippet progressBar()}
 	<div class="fixed-progress-header flex w-full items-center gap-4 px-10">
-		{#each content as item, index (index)}
-			{#if item.icon}
-				<div class="flex items-center gap-4 {index < content!.length - 1 ? 'grow' : ''}">
-					<a href={'#' + item.part} aria-label={item.title}>
-						<div
-							class="border-{color} shadow-base-shadow flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-full border-4 bg-transparent shadow-lg"
-						>
-							<Icon
-								class="text-{color} {index < thisContent + 1 ? '' : 'opacity-20'}"
-								icon={item.icon}
-							/>
-						</div>
-					</a>
-					{#if index < content!.length - 1}
-						<div class="bg-{color} shadow-{color} h-2 grow rounded shadow-lg"></div>
-					{/if}
-				</div>
-			{/if}
+		{#each progressBarItems as item, index (index)}
+			<div class="flex items-center gap-4 {index < progressBarItems.length - 1 ? 'grow' : ''}">
+				<a href={'#' + item.part} aria-label={item.title}>
+					<div
+						class="border-{color} shadow-base-shadow flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-full border-4 bg-transparent shadow-lg"
+					>
+						<Icon
+							class="text-{color} {index < thisContent + 1 ? '' : 'opacity-20'}"
+							icon={item.icon}
+						/>
+					</div>
+				</a>
+				{#if index < progressBarItems.length - 1}
+					<div class="bg-{color} shadow-{color} h-2 grow rounded shadow-lg"></div>
+				{/if}
+			</div>
 		{/each}
 	</div>
 {/snippet}
@@ -116,7 +123,7 @@
 						: ''} p-1"
 				>
 					<div class="text-{color} text-left font-bold">
-						{content.find((item) => item.part === part)?.title}
+						{title || content.find((item) => item.part === part)?.title}
 					</div>
 				</div>
 				{#if !hideProgressBar}
