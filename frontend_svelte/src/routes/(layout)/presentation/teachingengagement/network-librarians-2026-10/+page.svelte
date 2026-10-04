@@ -4,13 +4,14 @@
 	import { onDestroy, onMount } from 'svelte';
 
 	import ChatBubble from '$components/ChatBubble.svelte';
-	import RevealJs from '$components/RevealJS.svelte';
+	import RevealJs, { toggleOnFragment } from '$components/RevealJS.svelte';
 	import { SocketIO } from '$lib/socketio.svelte';
 	import type { MessageExtended } from '$lib/types';
 
 	import type { PageData } from './$types';
 	import CardOverlay from './CardOverlay.svelte';
 	import Comments from './Comments.svelte';
+	import DivergingStackedChart from './DivergingStackedChart.svelte';
 	import FramedSlide from './FramedSlide.svelte';
 	import Library from './Library.svelte';
 	import Map from './Map.svelte';
@@ -138,6 +139,112 @@
 					!hideModules[key as keyof typeof hideModules];
 			}
 		});
+	};
+
+	let circularItems: Record<string, HTMLDivElement | undefined> = $state({});
+	let connectorLines: Record<string, HTMLDivElement | undefined> = $state({});
+	type NoExamEntry = {
+		year: number;
+		course?: string;
+		learnedMore: number[];
+		takeMoreResponsibility: number[];
+		moreMotivated: number[];
+		meditation?: number[];
+	};
+
+	const categoriesNoExam: [string, string, string, string, string] = [
+		'totally disagree',
+		'disagree',
+		'same',
+		'agree',
+		'fully agree'
+	];
+
+	const noExamData: NoExamEntry[] = [
+		{
+			year: 2024,
+			course: 'Master',
+			learnedMore: [4, 9, 33, 11, 9],
+			takeMoreResponsibility: [1, 7, 13, 28, 17],
+			moreMotivated: [4, 15, 16, 18, 13]
+		},
+		{
+			year: 2025,
+			course: '2nd semester',
+			learnedMore: [5, 29, 45, 22, 8],
+			takeMoreResponsibility: [3, 23, 37, 30, 15],
+			moreMotivated: [7, 28, 37, 23, 14]
+		},
+		{
+			year: 2025,
+			course: '4th semester',
+			learnedMore: [7, 37, 58, 26, 9],
+			takeMoreResponsibility: [6, 24, 34, 52, 21],
+			moreMotivated: [7, 31, 46, 38, 14]
+		},
+		{
+			year: 2025,
+			course: 'Master',
+			learnedMore: [1, 6, 28, 13, 9],
+			takeMoreResponsibility: [1, 4, 17, 22, 13],
+			moreMotivated: [2, 10, 18, 19, 8],
+			meditation: [18, 0, 31] // from mentimeter - maybe was not an option here!
+		},
+		{
+			year: 2026,
+			course: '2nd semester', // includes 34603.
+			learnedMore: [7, 22, 41, 21, 12],
+			takeMoreResponsibility: [4, 20, 34, 28, 17],
+			moreMotivated: [7, 22, 25, 29, 18],
+			meditation: [25, 41, 57]
+		},
+		{
+			year: 2026,
+			course: '4th semester',
+			learnedMore: [2, 16, 41, 30, 4],
+			takeMoreResponsibility: [1, 16, 26, 42, 7],
+			moreMotivated: [2, 23, 33, 23, 11],
+			meditation: [28, 24, 46]
+		}
+	];
+
+	const meditationData = noExamData.map((entry) => ({
+		year: entry.year,
+		course: entry.course,
+		values: entry.meditation ?? []
+	}));
+
+	const learnedMoreData = noExamData.map((entry) => ({
+		year: entry.year,
+		course: entry.course,
+		values: entry.learnedMore
+	}));
+
+	const moreResponsibilityData = noExamData.map((entry) => ({
+		year: entry.year,
+		course: entry.course,
+		values: entry.takeMoreResponsibility
+	}));
+
+	const moreMotivatedData = noExamData.map((entry) => ({
+		year: entry.year,
+		course: entry.course,
+		values: entry.moreMotivated
+	}));
+
+	const sentimentColors = {
+		'much better': 'bg-success-container',
+		better: 'bg-success',
+		same: 'bg-warning',
+		worse: 'bg-error',
+		'much worse': 'bg-error-container',
+		'fully agree': 'bg-success-content/70',
+		agree: 'bg-success-container',
+		disagree: 'bg-error-container',
+		'totally disagree': 'bg-error-content/70',
+		yes: 'bg-success-container',
+		maybe: 'bg-warning',
+		no: 'bg-error-container'
 	};
 </script>
 
@@ -455,19 +562,19 @@
 		<div class="mt-10 grid h-full grid-cols-2 gap-10">
 			<div class="flex flex-col items-center gap-15">
 				<button
-					class="btn btn-xl btn-gradient btn-secondary h-30 w-150 justify-center rounded-full p-10 text-5xl font-semibold shadow-inner"
+					class="btn btn-xl btn-gradient btn-primary-container h-30 w-150 justify-center rounded-full p-10 text-5xl font-semibold shadow-inner"
 					onclick={() => hideAllToggleOne('reflections')}
 				>
 					Learning Reflections
 				</button>
 				<button
-					class="btn btn-xl btn-gradient btn-secondary h-30 w-150 justify-center rounded-full p-10 text-5xl font-semibold shadow-inner"
+					class="btn btn-xl btn-gradient btn-primary-container h-30 w-150 justify-center rounded-full p-10 text-5xl font-semibold shadow-inner"
 					onclick={() => hideAllToggleOne('closedQuestions')}
 				>
 					Quantitative Questions
 				</button>
 				<button
-					class="btn btn-xl btn-gradient btn-secondary h-30 w-150 justify-center rounded-full p-10 text-5xl font-semibold shadow-inner"
+					class="btn btn-xl btn-gradient btn-primary-container h-30 w-150 justify-center rounded-full p-10 text-5xl font-semibold shadow-inner"
 					onclick={() => hideAllToggleOne('openQuestions')}
 				>
 					Qualitative Questions
@@ -475,7 +582,7 @@
 			</div>
 			<div class="flex flex-col items-center gap-10" bind:this={modulesContentColumn}>
 				<CardOverlay
-					class="bg-primary-container text-primary-container-content z-50 pt-6 text-4xl"
+					class="bg-primary text-primary-content z-50 pt-6 text-4xl"
 					bind:hidden={hideModules.reflections}
 				>
 					{#snippet header()}
@@ -483,70 +590,85 @@
 					{/snippet}
 					<dl>
 						<dt>Course segementation</dt>
-						<dd>4 Modules in each course</dd>
+						<dd>4 modules in each course</dd>
 						<dd>~ 2 - 4 weeks per module</dd>
+						<dd>one learning reflection per module</dd>
 					</dl>
 					<dl class="pt-5">
 						<dt>Question</dt>
-						<dd>What have you learned in the last module?</dd>
-						<dd>only mandatory sharing from the students</dd>
+						<dd class="italic">What have you learned in the last module?</dd>
+						<dd>as the only mandatory sharing from the students</dd>
+						<dd>only technical question</dd>
 					</dl>
 
-					<dl class="pt-5">
+					<!-- <dl class="pt-5">
 						<dt>Implementation</dt>
 						<dd>via Microsoft Forms</dd>
 						<dd>logged in user transferred automatically</dd>
 						<dd>multiple hand-ins possible</dd>
-					</dl>
+					</dl> -->
 				</CardOverlay>
 				<CardOverlay
-					class="bg-primary-container text-primary-container-content z-50 pt-6 text-4xl"
+					class="bg-primary text-primary-content z-50 pt-6 text-4xl"
 					bind:hidden={hideModules.closedQuestions}
 				>
 					{#snippet header()}
 						<div class="text-5xl font-bold">Quantitative Questions</div>
 					{/snippet}
 					<dl>
-						<dt>Course segementation</dt>
-						<dd>4 Modules in each course</dd>
-						<dd>~ 2 - 4 weeks per module</dd>
-					</dl>
-					<dl class="pt-5">
-						<dt>Question</dt>
-						<dd>What have you learned in the last module?</dd>
-						<dd>only mandatory sharing from the students</dd>
+						<dt>~ 30 quantitative questions per course</dt>
+						<dd>x out of 5 rating</dd>
+						<dd>some multiple choice</dd>
+						<dd>some yes / no / maybe</dd>
 					</dl>
 
 					<dl class="pt-5">
-						<dt>Implementation</dt>
-						<dd>via Microsoft Forms</dd>
-						<dd>logged in user transferred automatically</dd>
-						<dd>multiple hand-ins possible</dd>
+						<dt>Content</dt>
+						<dd>
+							wellbeing<br />
+							<ul>
+								<li>responsibility</li>
+								<li>fullfilment of needs</li>
+								<li>motivation</li>
+								<li>getting enough feedback</li>
+								<li>distraction</li>
+								<li>dicipline</li>
+							</ul>
+						</dd>
+						<dd>use of teaching material and artificial intelligence</dd>
 					</dl>
 				</CardOverlay>
 				<CardOverlay
-					class="bg-primary-container text-primary-container-content z-50 pt-6 text-4xl"
+					class="bg-primary text-primary-content z-50 pt-6 text-4xl"
 					bind:hidden={hideModules.openQuestions}
 				>
 					{#snippet header()}
 						<div class="text-5xl font-bold">Qualitative Questions</div>
 					{/snippet}
 					<dl>
-						<dt>Course segementation</dt>
-						<dd>4 Modules in each course</dd>
-						<dd>~ 2 - 4 weeks per module</dd>
+						<dt>~10 open questions per course</dt>
+						<dd>free text</dd>
+						<dd>always one text field for <span class="italic">any comments</span></dd>
 					</dl>
 					<dl class="pt-5">
-						<dt>Question</dt>
-						<dd>What have you learned in the last module?</dd>
-						<dd>only mandatory sharing from the students</dd>
-					</dl>
-
-					<dl class="pt-5">
-						<dt>Implementation</dt>
-						<dd>via Microsoft Forms</dd>
-						<dd>logged in user transferred automatically</dd>
-						<dd>multiple hand-ins possible</dd>
+						<dt>Content</dt>
+						<dd>use of teaching material and artificial intelligence</dd>
+						<dd>
+							motivation<br />
+							<ul>
+								<li>sense of belonging</li>
+								<li>autonomy</li>
+								<li>competence</li>
+							</ul>
+						</dd>
+						<dd>
+							exam<br />
+							<ul>
+								<li class="italic">
+									What was good / bad about learning reflections instead of exams?
+								</li>
+							</ul>
+						</dd>
 					</dl>
 				</CardOverlay>
 			</div>
@@ -559,12 +681,217 @@
 			class="shadow-base-shadow h-fit w-3/4 self-center rounded-4xl shadow-lg"
 		/>
 	</FramedSlide>
-	<FramedSlide part="results">Overview of results? So far anchor page only</FramedSlide>
-	<FramedSlide part="results" section="master-course">Results from 34654 - E25</FramedSlide>
-	<FramedSlide part="results" section="quantitative">
-		Quantitative results: learning, responsibility, meditation, sharing comments
+	<FramedSlide part="results" section="master-course" title="Results: technical">
+		<div class="flex w-full items-center gap-4 px-10 pb-32">
+			{#snippet circularIcon(label: string)}
+				<div
+					bind:this={circularItems[label]}
+					class="fragment relative h-15 w-15 shrink-0"
+					{@attach toggleOnFragment(
+						revealInstance!,
+						() => connectorLines[label],
+						'opacity-0',
+						true
+					)}
+				>
+					<div
+						class="border-primary shadow-base-shadow flex h-15 w-15 flex-shrink-0 shrink items-center justify-center rounded-full border-4 bg-transparent shadow-lg"
+					>
+						<Icon
+							class="text-primary-container  size-8"
+							icon="fluent-emoji-high-contrast:thinking-face"
+						/>
+					</div>
+					<div class="absolute top-full left-1/2 mt-2 w-56 -translate-x-1/2 text-center">
+						{label}
+					</div>
+				</div>
+			{/snippet}
+			{@render circularIcon('Start')}
+			<div
+				bind:this={connectorLines['Learning Reflection 1']}
+				class="bg-primary shadow-base-shadow h-2 grow rounded opacity-0 shadow-lg transition-opacity"
+			></div>
+			{@render circularIcon('Learning Reflection 1')}
+			<div
+				bind:this={connectorLines['Learning Reflection 2']}
+				class="bg-primary shadow-base-shadow h-2 grow rounded opacity-0 shadow-lg transition-opacity"
+			></div>
+			{@render circularIcon('Learning Reflection 2')}
+			<div
+				bind:this={connectorLines['Learning Reflection 3']}
+				class="bg-primary shadow-base-shadow h-2 grow rounded opacity-0 shadow-lg transition-opacity"
+			></div>
+			{@render circularIcon('Learning Reflection 3')}
+			<div
+				bind:this={connectorLines['Learning Reflection 4']}
+				class="bg-primary shadow-base-shadow h-2 grow rounded opacity-0 shadow-lg transition-opacity"
+			></div>
+			{@render circularIcon('Learning Reflection 4')}
+			<div
+				bind:this={connectorLines.Closing}
+				class="bg-primary shadow-base-shadow h-2 grow rounded opacity-0 shadow-lg transition-opacity"
+			></div>
+			{@render circularIcon('Closing')}
+		</div>
+		<div class="grid h-3/4">
+			<div class="fragment fade-in-then-out col-start-1 row-start-1 mt-30">
+				<ChatBubble variant="secondary" tailAngle={160} tailLength={35} tailBase={15}>
+					<div class="text-4xl font-bold">No "deadlines" ☠️<br />only "living lines" 🌱.</div>
+				</ChatBubble>
+			</div>
+			<div class="fragment col-start-1 row-start-1">
+				<CardOverlay
+					class="bg-primary fragment text-primary-content z-50 pt-6 text-4xl"
+					hidden={false}
+					// bind:hidden={hideModules.openQuestions}
+				>
+					{#snippet header()}
+						<div class="text-5xl font-bold">Closing: Master Course - Fall 2025</div>
+					{/snippet}
+					<dl>
+						<dt>3 out of 4 learning reflections <span class="italic">mandatory</span></dt>
+					</dl>
+					<dl>
+						<dt>Last lecture</dt>
+						<dd>Only 8 out of 74 students missing to hand at least 3.</dd>
+					</dl>
+					<dl>
+						<dt>Reminder</dt>
+						<dd>Personal to the 8 missing: asking how much more time they need.</dd>
+						<dd>Announcement to all, that those emails were sent.</dd>
+						<dd>3 days after all missing mandatory reflections shared.</dd>
+					</dl>
+
+					<dl class="pt-5">
+						<dt>One week after reminder</dt>
+						<dd>70 % handed in all 4 learning reflections.</dd>
+					</dl>
+				</CardOverlay>
+			</div>
+			<!-- <CardOverlay
+				class="bg-primary-container text-primary-container-content z-50 pt-6 text-4xl"
+				hidden={false}
+				// bind:hidden={hideModules.openQuestions}
+			>
+				{#snippet header()}
+					<div class="text-5xl font-bold">Learning Reflection 1</div>
+				{/snippet}
+				<dl>
+					<dt>What have you learned about module 1?</dt>
+				</dl>
+				<dl class="pt-5">
+					<dt>Questions on Meditation</dt>
+					<dd>More mediations: yes / no / maybe</dd>
+					<dd>How was it to start the lecture with a meditation?</dd>
+				</dl>
+			</CardOverlay> -->
+		</div>
+		<!-- <div class="flex w-full items-center gap-4 px-10">
+			{#snippet courseParts(labels: string[])}
+				{#each labels as label, index (index)}
+					<div class="flex items-center gap-4 {index < labels.length - 1 ? 'grow' : ''}">
+						<div class="grid grid-cols-1 items-center gap-2">
+							<div
+								class="border-secondary shadow-base-shadow flex h-15 w-15 flex-shrink-0 items-center justify-center rounded-full border-4 bg-transparent shadow-lg"
+							>
+								<Icon
+									class="text-secondary-container fragement size-8"
+									icon="fluent-emoji-high-contrast:thinking-face"
+								/>
+							</div>
+							{label}
+						</div>
+						{#if index < labels.length - 1}
+							<div class="bg-secondary shadow-secondary h-2 grow rounded shadow-lg"></div>
+						{/if}
+					</div>
+				{/each}
+			{/snippet}
+			{@render courseParts([
+				'Start',
+				'Learning Reflection 1',
+				'Learning Reflection 2',
+				'Learning Reflection 3',
+				'Learning Reflection 4',
+				'Reminder'
+			])}
+		</div> -->
 	</FramedSlide>
-	<FramedSlide part="results" section="qualitative">Qualitative results</FramedSlide>
+	<FramedSlide part="results" section="meditation" title="Results: meditation">
+		<div>Would you like to have more meditations?<br />&nbsp;</div>
+		<DivergingStackedChart
+			data={meditationData}
+			categories={['no', 'maybe', 'yes']}
+			colorClasses={sentimentColors}
+			color="primary"
+		/>
+	</FramedSlide>
+	<FramedSlide part="results" section="learning-more" title="Results: learning more">
+		<div>Reflecting on my own learning,<br /> I learn more, than in a course with exam...</div>
+		<DivergingStackedChart
+			data={learnedMoreData}
+			categories={categoriesNoExam}
+			colorClasses={sentimentColors}
+			color="primary"
+		/>
+	</FramedSlide>
+	<FramedSlide part="results" section="responsibility" title="Results: responsibility">
+		<div>
+			Reflecting on my own learning, <br />I take more <span class="italic">responsibility</span> for
+			my own learning, than in a course with exam
+		</div>
+		<DivergingStackedChart
+			data={moreResponsibilityData}
+			categories={categoriesNoExam}
+			colorClasses={sentimentColors}
+			color="primary"
+		/>
+	</FramedSlide>
+	<FramedSlide part="results" section="motivation" title="Results: motivation">
+		<div>
+			Reflecting on my own learning, <br />I can stay more <span class="italic">motivated</span>,
+			than in a course with exam
+		</div>
+		<DivergingStackedChart
+			data={moreMotivatedData}
+			categories={categoriesNoExam}
+			colorClasses={sentimentColors}
+			color="primary"
+		/>
+	</FramedSlide>
+	<!-- <FramedSlide part="results" section="quantitative">
+		Quantitative results: learning, responsibility, meditation, sharing comments
+	</FramedSlide> -->
+	<FramedSlide part="results" section="qualitative" title="Results: qualitative">
+		<CardOverlay
+			class="bg-primary fragment text-primary-content z-50 pt-6 text-4xl"
+			hidden={false}
+			// bind:hidden={hideModules.openQuestions}
+		>
+			{#snippet header()}
+				<div class="text-5xl font-bold">Closing: Master Course - Fall 2025</div>
+			{/snippet}
+			<dl>
+				<dt>3 out of 4 learning reflections <span class="italic">mandatory</span></dt>
+			</dl>
+			<dl>
+				<dt>Last lecture</dt>
+				<dd>Only 8 out of 74 students missing to hand at least 3.</dd>
+			</dl>
+			<dl>
+				<dt>Reminder</dt>
+				<dd>Personal to the 8 missing: asking how much more time they need.</dd>
+				<dd>Announcement to all, that those emails were sent.</dd>
+				<dd>3 days after all missing mandatory reflections shared.</dd>
+			</dl>
+
+			<dl class="pt-5">
+				<dt>One week after reminder</dt>
+				<dd>70 % handed in all 4 learning reflections.</dd>
+			</dl>
+		</CardOverlay>
+	</FramedSlide>
 	<FramedSlide part="results" section="qualitative">Emotional results</FramedSlide>
 	<FramedSlide part="comments-and-questions" hideProgressBar>
 		{#if commentsQuestion}
@@ -573,10 +900,10 @@
 			{@render interactiveElementNotAvailable('comments and questions dialog')}
 		{/if}
 	</FramedSlide>
-	<FramedSlide>
+	<!-- <FramedSlide>
 		planetary boundaries -> inner work -> trust<br />
 		stressed people -> stressed systems -> stressed planet (from regenerative leadership)
-	</FramedSlide>
+	</FramedSlide> -->
 	<FramedSlide>
 		<img
 			src="/sunset-vejlesoen.jpg"
