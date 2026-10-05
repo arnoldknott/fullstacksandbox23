@@ -1,3 +1,5 @@
+import '@testing-library/jest-dom/vitest';
+
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest';
 
