@@ -15,6 +15,7 @@
 	import FramedSlide from './FramedSlide.svelte';
 	import Library from './Library.svelte';
 	import Map from './Map.svelte';
+	import MotivationTable from './MotivationTable.svelte';
 	import Overview from './Overview.svelte';
 	import QualitativeFeedback from './QualitativeFeedback.svelte';
 
@@ -507,7 +508,43 @@
 	<FramedSlide part="inspiration">
 		<Library />
 	</FramedSlide>
-	<FramedSlide>Motivation?</FramedSlide>
+	<FramedSlide part="inspiration" section="motivation" title="Motivation">
+		<div class="mx-5 grid grid-cols-3 gap-10">
+			<CardOverlay class="bg-primary text-primary-content z-50 pt-6 text-4xl" hidden={false}>
+				<div class="mb-10 text-7xl font-bold">Relatedness</div>
+				<div class="mb-6 pl-4 text-left text-5xl">Sense of belonging</div>
+				<div class="mb-6 pl-4 text-left text-5xl">Community</div>
+				<div class="mb-6 pl-4 text-left text-5xl">Connection</div>
+				<div class="mb-6 pl-4 text-left text-5xl">Feeling cared for</div>
+				<div class="mb-6 pl-4 text-left text-5xl">Ability to care for others</div>
+			</CardOverlay>
+			<CardOverlay
+				class="bg-primary fragment fade-in text-primary-content z-50 pt-6 text-4xl"
+				hidden={false}
+			>
+				<div class="mb-10 text-7xl font-bold">Autonomy</div>
+				<div class="mb-6 pl-4 text-left text-5xl">Making your own decisions</div>
+				<div class="mb-6 pl-4 text-left text-5xl">Be in the driver seat of your life</div>
+				<div class="mb-6 pl-4 text-left text-5xl">Reflection</div>
+			</CardOverlay>
+			<CardOverlay
+				class="bg-primary fragment fade-in text-primary-content z-50 pt-6 text-4xl"
+				hidden={false}
+			>
+				<div class="mb-10 text-7xl font-bold">Competence</div>
+				<div class="mb-6 pl-4 text-left text-5xl">Gaining mastery</div>
+				<div class="mb-6 pl-4 text-left text-5xl">Being in flow</div>
+				<div class="mb-6 pl-4 text-left text-5xl">Making an impact</div>
+				<div class="mb-6 pl-4 text-left text-5xl">Build self-esteem</div>
+			</CardOverlay>
+		</div>
+		{#snippet footer()}
+			<div>📖 Ib Ravn: Selvbestemmelsesteorien</div>
+		{/snippet}
+	</FramedSlide>
+	<FramedSlide part="inspiration" section="motivation-examples" title="Motivation: Examples">
+		<MotivationTable color="secondary" />
+	</FramedSlide>
 	<FramedSlide>
 		<img
 			src="/snow-lake.jpg"
