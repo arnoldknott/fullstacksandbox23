@@ -495,7 +495,7 @@
 			</a>
 		{/snippet}
 	</FramedSlide>
-	<FramedSlide>Allan Watts - Chinese Farmer? and/or Sir Francis Bacon</FramedSlide>
+	<!-- <FramedSlide>Allan Watts - Chinese Farmer? and/or Sir Francis Bacon</FramedSlide> -->
 	<FramedSlide>
 		<img
 			src="/flower.jpg"
