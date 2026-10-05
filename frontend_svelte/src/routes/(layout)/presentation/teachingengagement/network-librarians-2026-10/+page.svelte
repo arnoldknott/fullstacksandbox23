@@ -231,30 +231,6 @@
 		course: entry.course,
 		values: entry.moreMotivated
 	}));
-
-	const sentimentColors = {
-		'much better': 'bg-success-container',
-		better: 'bg-success',
-		// same: 'bg-warning',
-		same: 'bg-[#F4BA8C]',
-		worse: 'bg-error',
-		'much worse': 'bg-error-container',
-		// 'fully agree': 'bg-success-content/70',
-		'fully agree': 'bg-[#1A3327]',
-		// agree: 'bg-success-container',
-		agree: 'bg-[#215136]',
-		// 'agree': 'bg-[#215136]',
-		// disagree: 'bg-error-container',
-		disagree: 'bg-[#861915]',
-		// 'totally disagree': 'bg-error-content/70',
-		'totally disagree': 'bg-[#4D1313]',
-		// yes: 'bg-success-container',
-		// maybe: 'bg-warning',
-		// no: 'bg-error-container'
-		yes: 'bg-[#215136]',
-		maybe: 'bg-[#F4BA8C]',
-		no: 'bg-[#861915]'
-	};
 </script>
 
 {#snippet interactiveElementNotAvailable(elementName: string)}
@@ -832,18 +808,12 @@
 		<DivergingStackedChart
 			data={meditationData}
 			categories={['no', 'maybe', 'yes']}
-			colorClasses={sentimentColors}
 			color="primary"
 		/>
 	</FramedSlide>
 	<FramedSlide part="results" section="learning-more" title="Results: learning more">
 		<div>Reflecting on my own learning,<br /> I learn more, than in a course with exam...</div>
-		<DivergingStackedChart
-			data={learnedMoreData}
-			categories={categoriesNoExam}
-			colorClasses={sentimentColors}
-			color="primary"
-		/>
+		<DivergingStackedChart data={learnedMoreData} categories={categoriesNoExam} color="primary" />
 	</FramedSlide>
 	<FramedSlide part="results" section="responsibility" title="Results: responsibility">
 		<div>
@@ -853,7 +823,6 @@
 		<DivergingStackedChart
 			data={moreResponsibilityData}
 			categories={categoriesNoExam}
-			colorClasses={sentimentColors}
 			color="primary"
 		/>
 	</FramedSlide>
@@ -862,12 +831,7 @@
 			Reflecting on my own learning, <br />I can stay more <span class="italic">motivated</span>,
 			than in a course with exam
 		</div>
-		<DivergingStackedChart
-			data={moreMotivatedData}
-			categories={categoriesNoExam}
-			colorClasses={sentimentColors}
-			color="primary"
-		/>
+		<DivergingStackedChart data={moreMotivatedData} categories={categoriesNoExam} color="primary" />
 	</FramedSlide>
 	<!-- <FramedSlide part="results" section="quantitative">
 		Quantitative results: learning, responsibility, meditation, sharing comments
