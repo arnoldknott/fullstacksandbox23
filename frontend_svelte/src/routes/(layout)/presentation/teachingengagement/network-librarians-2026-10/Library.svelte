@@ -230,8 +230,7 @@
 		booksAnswersSorted.flatMap((answer) => {
 			try {
 				const content: { bookdid?: unknown; comment?: unknown } | null = JSON.parse(answer.content);
-				return typeof content?.bookdid === 'string' &&
-					typeof content.comment === 'string'
+				return typeof content?.bookdid === 'string' && typeof content.comment === 'string'
 					? [{ ...answer, bookId: content.bookdid, content: content.comment }]
 					: [];
 			} catch {

@@ -124,17 +124,23 @@ describe('Library comments', () => {
 		]);
 		const flowButton = screen.getByRole('button', { name: /Csikszentmihalyi/ });
 		const flow = flowButton.parentElement!;
-		const pseudoarbejde = screen.getByRole('button', { name: /Nørmark, Dennis, & Jensen/ }).parentElement!;
+		const pseudoarbejde = screen.getByRole('button', {
+			name: /Nørmark, Dennis, & Jensen/
+		}).parentElement!;
 		const noComments = screen.getByRole('button', { name: /Ravn, Ib/ }).parentElement!;
 		expect(flow).toHaveClass('indicator');
 		expect(within(flow).getByLabelText('2 comments')).toHaveTextContent('2');
-		expect(within(flow).getByLabelText('2 comments')).toHaveClass('indicator-item', 'badge-accent-container');
+		expect(within(flow).getByLabelText('2 comments')).toHaveClass('indicator-item', 'badge');
 		expect(within(flowButton).queryByLabelText('2 comments')).not.toBeInTheDocument();
 		expect(within(pseudoarbejde).getByLabelText('1 comment')).toHaveTextContent('1');
 		expect(within(noComments).queryByLabelText(/comments?/)).not.toBeInTheDocument();
 
 		socketio.getSelectedEntities.mockReturnValue([
-			{ id: 'updated', content: JSON.stringify({ bookdid: 'flow', comment: 'Remaining' }), confidential: '' }
+			{
+				id: 'updated',
+				content: JSON.stringify({ bookdid: 'flow', comment: 'Remaining' }),
+				confidential: ''
+			}
 		]);
 		await rerender({ socketio: { ...socketio } as unknown as SocketIO<MessageExtended> });
 		expect(within(flow).getByLabelText('1 comment')).toHaveTextContent('1');
