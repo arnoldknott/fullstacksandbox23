@@ -12,9 +12,19 @@
 
 <script lang="ts">
 	import Icon from '@iconify/svelte';
+	import { flip } from 'svelte/animate';
+
+	import { Action } from '$lib/accessHandler';
+	import type { SocketIO } from '$lib/socketio.svelte';
+	import type { MessageExtended } from '$lib/types';
 
 	import Book from './Book.svelte';
 	import CardOverlay from './CardOverlay.svelte';
+
+	let { socketio, questionid }: { socketio?: SocketIO<MessageExtended>; questionid?: string } =
+		$props();
+
+	let booksAnswersSorted = $derived(socketio?.getSelectedEntities('sortedBooksAnswers') ?? []);
 
 	const providedBooks: BookType[] = [
 		{
@@ -229,9 +239,11 @@
 	</button> -->
 </div>
 
-<div class="fixed top-1/2 left-1/2 z-50 w-3/4 -translate-x-1/2 -translate-y-1/2">
+<div
+	class="fixed top-1/2 left-1/2 z-50 max-h-3/4 w-3/4 -translate-x-1/2 -translate-y-1/2 overflow-y-auto"
+>
 	<CardOverlay
-		class="bg-primary-container text-primary-container-contant rounded-3xl"
+		class="bg-primary-container text-primary-container-content  rounded-3xl"
 		bind:hidden={
 			() => visibleModule === '',
 			(hidden) => {
@@ -268,6 +280,89 @@
 			</dt>
 			<dd>{bookInModal?.alt}</dd>
 		</dl>
+		<dl class="text-left text-3xl">
+			<dt class="inline-flex items-center gap-2 whitespace-nowrap">
+				<Icon icon="fa7-regular:comments" /> Comments:
+			</dt>
+			<dd>
+				{#snippet messageAnswer(text: string, date: Date | undefined, index: number)}
+					<div class="chat chat-receiver w-full">
+						<div
+							class="chat-bubble w-[90%]! max-w-none! text-left text-3xl text-wrap break-words {index %
+							2
+								? 'chat-bubble-accent'
+								: 'chat-bubble-primary'}"
+						>
+							{text}
+							<div class="label text-right">
+								{date
+									? new Date(date).toLocaleString(undefined, {
+											dateStyle: 'short',
+											timeStyle: 'short'
+										})
+									: 'Thanks for your contribution 🙏'}
+							</div>
+						</div>
+					</div>
+				{/snippet}
+				<div class="max-h-[600px] w-full overflow-y-auto">
+					{#each booksAnswersSorted as answer, index (answer.id)}
+						<div animate:flip={{ duration: 300 }}>
+							{@render messageAnswer(answer.content, answer.creation_date, index)}
+						</div>
+					{/each}
+				</div>
+				<div class="text-left">
+					{#if socketio?.pendingEntities[0]}
+						<div
+							class="mt-4 grid w-[90%]! grid-cols-[max-content_minmax(0,1fr)] items-center gap-4 md:grid-cols-[max-content_minmax(0,8rem)_minmax(0,1fr)]"
+						>
+							<label class="text-3xl whitespace-nowrap" for="sharer_name"> Your Name: </label>
+							<input
+								type="text"
+								placeholder="Name"
+								id="sharer_name"
+								class="input input-md bg-secondary-container text-secondary-container-content w-full min-w-0 placeholder:text-2xl placeholder:italic"
+								name="name"
+								onblur={() => {}}
+								value=""
+							/>
+							<label class="col-span-2 min-w-0 text-3xl md:col-span-1" for="sharing">
+								📖 What's your take on this book?
+							</label>
+							<textarea
+								class="bg-secondary-container text-secondary-container-content col-span-3 w-full resize-none rounded-2xl border p-2 text-2xl shadow-inner placeholder:text-2xl placeholder:italic"
+								placeholder="Please type here - sharing is caring 🫶 - Press Enter to send."
+								id="sharing"
+								bind:value={socketio.pendingEntities[0].content}
+								onkeydown={(event) => {
+									if (event.key === 'Enter' && !event.shiftKey) {
+										event.preventDefault();
+										socketio.addPendingAccessPolicy(socketio.pendingEntities[0].id, {
+											public: true,
+											action: Action.READ
+										});
+										socketio.submitEntity(socketio.pendingEntities[0], questionid, true);
+										socketio.createPending();
+									}
+								}}></textarea>
+						</div>
+					{:else}
+						<div class="label text-error">
+							<span class="icon-[svg-spinners--12-dots-scale-rotate] size-6"></span>connecting ...
+						</div>
+					{/if}
+				</div>
+			</dd>
+		</dl>
+
 		<!-- {/if} -->
 	</CardOverlay>
+</div>
+
+<div class="col-span-12 mr-20 text-right text-xl">
+	By entering your text here, you agree to the <a
+		href="#terms-and-conditions"
+		class="link link-animated">terms and conditions</a
+	>.
 </div>

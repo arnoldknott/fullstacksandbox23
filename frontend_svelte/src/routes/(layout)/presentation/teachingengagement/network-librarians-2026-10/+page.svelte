@@ -506,7 +506,7 @@
 		/>
 	</FramedSlide>
 	<FramedSlide part="inspiration">
-		<Library />
+		<Library socketio={socketioBooks} questionid={booksQuestion?.id} />
 	</FramedSlide>
 	<FramedSlide part="inspiration" section="motivation" title="Motivation">
 		<div class="mx-5 grid grid-cols-3 gap-10">
