@@ -8,7 +8,7 @@ See the repository root `AGENTS.md` for shared conventions (branching, environme
 
 This directory manages infrastructure with OpenTofu and Azure Command-Line Interface.
 
-Important: infrastructure work in this repository is also expected to run in its own dedicated Docker container. Always use the docker container and use the `tofu` service from `infrastructure/compose.yml` instead of running OpenTofu or Azure Command-Line Interface directly on the host machine. For debug conection to azure, the command line tool az is available on the host.
+Important: infrastructure work in this repository is also expected to run in its own dedicated Docker container. Always use the docker container and use the `tofu` service from `infrastructure/compose.yml` instead of running OpenTofu or Azure Command-Line Interface directly on the host machine. For Azure connection troubleshooting, the Azure Command-Line Interface (`az`) is also available on the host.
 
 **Interactive shortcut for developers:** run `./scripts/enter_infrastructure.sh` from the repo root to build the infra image and drop into an interactive shell where you can run `tofu fmt`, `tofu init`, `tofu plan`, etc. directly.
 

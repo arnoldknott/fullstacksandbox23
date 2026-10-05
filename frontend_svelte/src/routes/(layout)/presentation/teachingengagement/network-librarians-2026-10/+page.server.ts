@@ -12,7 +12,8 @@ export const load: PageServerLoad = async ({ url }) => {
 		// motivationSnapshot: { entities: [] as NumericalExtended[], cursor: 0 },
 		placesSnapshot: { entities: [] as MessageExtended[], cursor: 0 },
 		booksSnapshot: { entities: [] as MessageExtended[], cursor: 0 },
-		commentsSnapshot: { entities: [] as MessageExtended[], cursor: 0 }
+		commentsSnapshot: { entities: [] as MessageExtended[], cursor: 0 },
+		qualitativeFeedbackSnapshot: { entities: [] as MessageExtended[], cursor: 0 }
 	};
 	if (presentationResponse.status === 200) {
 		const presentationData = (await presentationResponse.json()) as Presentation;
@@ -28,8 +29,16 @@ export const load: PageServerLoad = async ({ url }) => {
 		const commentsQuestion = payload.questions.find((question) =>
 			question.question.includes('comments')
 		);
+		const qualitativeFeedbackQuestion = payload.questions.find((question) =>
+			question.question.includes('qualitative-feedback')
+		);
 		// [payload.motivationSnapshot, payload.placesSnapshot, payload.commentsSnapshot] =
-		[payload.placesSnapshot, payload.booksSnapshot, payload.commentsSnapshot] = await Promise.all([
+		[
+			payload.placesSnapshot,
+			payload.booksSnapshot,
+			payload.commentsSnapshot,
+			payload.qualitativeFeedbackSnapshot
+		] = await Promise.all([
 			// motivationQuestion?.id
 			// 	? backendAPI.getSnapshot<NumericalExtended>(
 			// 			null,
@@ -52,6 +61,12 @@ export const load: PageServerLoad = async ({ url }) => {
 				? backendAPI.getSnapshot<MessageExtended>(
 						null,
 						`/quiz/message/snapshot?parent-id=${encodeURIComponent(commentsQuestion?.id)}&include=creation-date&sort=creation-date&direction=desc`
+					)
+				: Promise.resolve({ entities: [] as MessageExtended[], cursor: 0 }),
+			qualitativeFeedbackQuestion?.id
+				? backendAPI.getSnapshot<MessageExtended>(
+						null,
+						`/quiz/message/snapshot?parent-id=${encodeURIComponent(qualitativeFeedbackQuestion?.id)}&include=creation-date&sort=creation-date&direction=asc`
 					)
 				: Promise.resolve({ entities: [] as MessageExtended[], cursor: 0 })
 		]);

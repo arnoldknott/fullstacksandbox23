@@ -1,3 +1,63 @@
+<script lang="ts" module>
+	import type { Attachment } from 'svelte/attachments';
+	/** Reveal.js adds `.fragment` and `.fragments` to the `fragmentshown` / `fragmenthidden` events. */
+	type FragmentEvent = Event & { fragment?: HTMLElement; fragments?: HTMLElement[] };
+
+	// TBD: move the logic into $lib/userInterface.svelte.ts
+	// and import it here, so that it can be reused in other presentations
+	/**
+	 * Attachment for a Reveal.js fragment (the trigger). While that fragment is
+	 * shown the given classes are added to the target element; when it is hidden
+	 * they are removed again. The target is resolved from a CSS selector, so no
+	 * `bind:this` on the target is required.
+	 *
+	 * Usage:
+	 * ```svelte
+	 * <div id="goal" class="transition-all duration-1000">Some Text</div>
+	 * <div class="fragment fade-in" {@attach toggleOnFragment(reveal, '#goal', 'text-error', 'mr-100')}>
+	 *   Some more Text
+	 * </div>
+	 * ```
+	 */
+	export const toggleOnFragment = (
+		revealInstance: RevealApi,
+		targetElement: HTMLElement | (() => HTMLElement | undefined),
+		classes: string,
+		invert = false
+	): Attachment<HTMLElement> => {
+		return (node) => {
+			const resolveTarget = () =>
+				typeof targetElement === 'function' ? targetElement() : targetElement;
+			const show = (event: FragmentEvent) => {
+				if (event.fragment === node) resolveTarget()?.classList.add(...classes.split(' '));
+			};
+			const hide = (event: FragmentEvent) => {
+				if (event.fragment === node) resolveTarget()?.classList.remove(...classes.split(' '));
+			};
+
+			revealInstance?.on(
+				'fragmentshown',
+				!invert ? (show as EventListener) : (hide as EventListener)
+			);
+			revealInstance?.on(
+				'fragmenthidden',
+				!invert ? (hide as EventListener) : (show as EventListener)
+			);
+
+			return () => {
+				revealInstance?.off(
+					'fragmentshown',
+					!invert ? (show as EventListener) : (hide as EventListener)
+				);
+				revealInstance?.off(
+					'fragmenthidden',
+					!invert ? (hide as EventListener) : (show as EventListener)
+				);
+			};
+		};
+	};
+</script>
+
 <script lang="ts">
 	import 'reveal.js/reveal.css';
 	// TBD: investigate where the color scheme is per default loaded for black,
