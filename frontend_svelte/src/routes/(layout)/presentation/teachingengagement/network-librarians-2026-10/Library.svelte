@@ -224,6 +224,37 @@
 	// const hideBookModals = $state(providedBooks.map((book) => ({ id: book.id, hidden: false })));
 	let visibleModule = $state('');
 	let bookInModal = $derived(providedBooks.find((book) => book.id === visibleModule));
+	let comment = $state('');
+	let sharerName = $state('');
+	let bookComments = $derived(
+		booksAnswersSorted.flatMap((answer) => {
+			try {
+				const content: { bookdid?: unknown; comment?: unknown } | null = JSON.parse(answer.content);
+				return bookInModal &&
+					content?.bookdid === bookInModal.id &&
+					typeof content.comment === 'string'
+					? [{ ...answer, content: content.comment }]
+					: [];
+			} catch {
+				return [];
+			}
+		})
+	);
+
+	const submitComment = () => {
+		const pending = socketio?.pendingEntities[0];
+		if (!socketio || !pending || !bookInModal || !comment.trim()) return;
+
+		pending.content = JSON.stringify({ bookdid: bookInModal.id, comment });
+		pending.confidential = sharerName.trim() || 'Anonymous';
+		socketio.addPendingAccessPolicy(pending.id, {
+			public: true,
+			action: Action.READ
+		});
+		socketio.submitEntity(pending, questionid, true);
+		socketio.createPending();
+		comment = '';
+	};
 </script>
 
 <div
@@ -240,7 +271,7 @@
 </div>
 
 <div
-	class="fixed top-1/2 left-1/2 z-50 max-h-3/4 w-3/4 -translate-x-1/2 -translate-y-1/2 overflow-y-auto"
+	class="fixed top-1/2 left-1/2 z-50 max-h-4/5 w-3/4 -translate-x-1/2 -translate-y-1/2 overflow-y-auto"
 >
 	<CardOverlay
 		class="bg-primary-container text-primary-container-content  rounded-3xl"
@@ -285,7 +316,7 @@
 				<Icon icon="fa7-regular:comments" /> Comments:
 			</dt>
 			<dd>
-				{#snippet messageAnswer(text: string, date: Date | undefined, index: number)}
+				{#snippet messageAnswer(name: string, text: string, date: Date | undefined, index: number)}
 					<div class="chat chat-receiver w-full">
 						<div
 							class="chat-bubble w-[90%]! max-w-none! text-left text-3xl text-wrap break-words {index %
@@ -293,7 +324,10 @@
 								? 'chat-bubble-accent'
 								: 'chat-bubble-primary'}"
 						>
-							{text}
+							<dl>
+								<dt class="italic">{name}:</dt>
+								<dd>{text}</dd>
+							</dl>
 							<div class="label text-right">
 								{date
 									? new Date(date).toLocaleString(undefined, {
@@ -306,9 +340,14 @@
 					</div>
 				{/snippet}
 				<div class="max-h-[600px] w-full overflow-y-auto">
-					{#each booksAnswersSorted as answer, index (answer.id)}
+					{#each bookComments as answer, index (answer.id)}
 						<div animate:flip={{ duration: 300 }}>
-							{@render messageAnswer(answer.content, answer.creation_date, index)}
+							{@render messageAnswer(
+								answer.confidential || 'Anonymous',
+								answer.content,
+								answer.creation_date,
+								index
+							)}
 						</div>
 					{/each}
 				</div>
@@ -322,10 +361,9 @@
 								type="text"
 								placeholder="Name"
 								id="sharer_name"
-								class="input input-md bg-secondary-container text-secondary-container-content w-full min-w-0 placeholder:text-2xl placeholder:italic"
+								class="input input-md bg-secondary-container text-secondary-container-content w-full min-w-0 rounded-xl border placeholder:text-2xl placeholder:italic"
 								name="name"
-								onblur={() => {}}
-								value=""
+								bind:value={sharerName}
 							/>
 							<label class="col-span-2 min-w-0 text-3xl md:col-span-1" for="sharing">
 								📖 What's your take on this book?
@@ -334,16 +372,12 @@
 								class="bg-secondary-container text-secondary-container-content col-span-3 w-full resize-none rounded-2xl border p-2 text-2xl shadow-inner placeholder:text-2xl placeholder:italic"
 								placeholder="Please type here - sharing is caring 🫶 - Press Enter to send."
 								id="sharing"
-								bind:value={socketio.pendingEntities[0].content}
+								required
+								bind:value={comment}
 								onkeydown={(event) => {
-									if (event.key === 'Enter' && !event.shiftKey) {
+									if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
 										event.preventDefault();
-										socketio.addPendingAccessPolicy(socketio.pendingEntities[0].id, {
-											public: true,
-											action: Action.READ
-										});
-										socketio.submitEntity(socketio.pendingEntities[0], questionid, true);
-										socketio.createPending();
+										submitComment();
 									}
 								}}></textarea>
 						</div>
