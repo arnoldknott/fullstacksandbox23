@@ -7,7 +7,7 @@
 </script>
 
 <CardOverlay
-	class="bg-primary  markdown-comment   text-primary-content z-50 pt-6 text-6xl "
+	class="bg-primary markdown-comment text-primary-content z-50 pt-6 text-6xl"
 	hidden={false}
 	// bind:hidden={hideModules.openQuestions}
 >

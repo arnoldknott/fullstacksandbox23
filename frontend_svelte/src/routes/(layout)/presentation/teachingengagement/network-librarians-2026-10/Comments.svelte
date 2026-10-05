@@ -17,7 +17,9 @@
 <div class="r-stretch mx-10 mt-10">
 	<div class="text-left">
 		{#if socketio?.pendingEntities[0]}
-			<label class="heading text-6xl" for="sharing"> Do you have comments or questions? 🤔 </label>
+			<label class="heading text-6xl" for="sharing">
+				⁉️ Do you have comments or questions? <br />📚 Which books do you want me to read?</label
+			>
 			<textarea
 				class="heading placeholder:title-large w-[90%] resize-none border border-2 p-2 shadow-inner placeholder:italic"
 				placeholder="Please type here - sharing is caring 🫶 - Press Enter to send."

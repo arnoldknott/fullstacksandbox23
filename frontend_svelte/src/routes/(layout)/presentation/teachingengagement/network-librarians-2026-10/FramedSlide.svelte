@@ -67,7 +67,7 @@
 		},
 		{
 			part: 'comments-and-questions',
-			title: 'Comments / Questions?'
+			title: 'Thank you 🙏'
 		}
 	];
 	const progressBarItems: ProgressBarItem[] = content.filter(

@@ -506,7 +506,7 @@
 		/>
 	</FramedSlide>
 	<FramedSlide part="inspiration">
-		<Library />
+		<Library socketio={socketioBooks} questionid={booksQuestion?.id} />
 	</FramedSlide>
 	<FramedSlide part="inspiration" section="motivation" title="Motivation">
 		<div class="mx-5 grid grid-cols-3 gap-10">
@@ -853,6 +853,13 @@
 		<div>Reflecting on my own learning,<br /> I learn more, than in a course with exam...</div>
 		<DivergingStackedChart data={learnedMoreData} categories={categoriesNoExam} color="primary" />
 	</FramedSlide>
+	<FramedSlide part="results" section="motivation" title="Results: motivation">
+		<div>
+			Reflecting on my own learning, <br />I can stay more <span class="italic">motivated</span>,
+			than in a course with exam
+		</div>
+		<DivergingStackedChart data={moreMotivatedData} categories={categoriesNoExam} color="primary" />
+	</FramedSlide>
 	<FramedSlide part="results" section="responsibility" title="Results: responsibility">
 		<div>
 			Reflecting on my own learning, <br />I take more <span class="italic">responsibility</span> for
@@ -863,13 +870,6 @@
 			categories={categoriesNoExam}
 			color="primary"
 		/>
-	</FramedSlide>
-	<FramedSlide part="results" section="motivation" title="Results: motivation">
-		<div>
-			Reflecting on my own learning, <br />I can stay more <span class="italic">motivated</span>,
-			than in a course with exam
-		</div>
-		<DivergingStackedChart data={moreMotivatedData} categories={categoriesNoExam} color="primary" />
 	</FramedSlide>
 	<!-- <FramedSlide part="results" section="quantitative">
 		Quantitative results: learning, responsibility, meditation, sharing comments
