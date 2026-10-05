@@ -679,7 +679,7 @@
 						<dt>Content</dt>
 						<dd>use of teaching material and artificial intelligence</dd>
 						<dd>
-							motivation<br />
+							motivation:<br />
 							<ul>
 								<li>sense of belonging</li>
 								<li>autonomy</li>
@@ -687,7 +687,7 @@
 							</ul>
 						</dd>
 						<dd>
-							exam<br />
+							exam:<br />
 							<ul>
 								<li class="italic">
 									What was good / bad about learning reflections instead of exams?
@@ -772,7 +772,7 @@
 					// bind:hidden={hideModules.openQuestions}
 				>
 					{#snippet header()}
-						<div class="text-5xl font-bold">Closing: Master Course - Fall 2025</div>
+						<div class="text-5xl font-bold">Story: Closing of Master Course - Fall 2025</div>
 					{/snippet}
 					<dl>
 						<dt>3 out of 4 learning reflections <span class="italic">mandatory</span></dt>
@@ -884,7 +884,7 @@
 		/>
 	</FramedSlide>
 	{/each}
-	<FramedSlide part="results" section="qualitative">Emotional results</FramedSlide>
+	<FramedSlide part="results" section="emotional" title="Results: emotional"><div class="text-[600px]">🫶</div></FramedSlide>
 	<FramedSlide part="comments-and-questions" hideProgressBar>
 		{#if commentsQuestion}
 			<Comments socketio={socketioComments} question={commentsQuestion} />

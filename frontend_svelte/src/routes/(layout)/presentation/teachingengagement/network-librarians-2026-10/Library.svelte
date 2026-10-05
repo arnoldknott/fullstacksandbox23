@@ -126,57 +126,71 @@
 		{
 			title: 'Nok',
 			author: 'Toke Haunstrup',
-			link: '#',
-			image: '#',
+			link: 'https://www.saxo.com/dk/nok_bog_9788797628607?srsltid=AU7gw4VrcT_NmDNQAEyUvyamqGJj11OVOApXceIgjmaRKnOvAOjM3fNL',
+			image: 'https://imgcdn.saxo.com/_9788797628607',
 			alt: 'Add full reference'
 		},
 		{
 			title: 'Underskud',
 			author: 'Emma Holten',
-			link: '#',
-			image: '#',
+			link: 'https://www.saxo.com/dk/underskud_bog_9788740074130?srsltid=AU7gw4UvKQkoGobVtD8L6YfckWtBok4iftl5wepJxuQZM2Rg2e1Nnffd',
+			image: 'https://imgcdn.saxo.com/_9788740074130',
 			alt: 'Add full reference'
 		},
 		{
-			title: 'Coming Home to Who you Are',
+			title: 'Coming Home to Who you Are - Education Reenlightened',
 			author: 'Mark Vandeneijnde & M. Aurelius Higgs',
-			link: '#',
-			image: '#',
+			link: 'https://www.amazon.com/Coming-Home-Who-You-ReEnlightened/dp/B0DYNQ1KVP',
+			image: 'https://m.media-amazon.com/images/I/71SS3cQY-ZL._SY466_.jpg',
 			alt: 'Add full reference'
 		},
 		{
 			title: 'Theory U',
 			author: 'Otto Scharmer',
-			link: '#',
-			image: '#',
+			link: 'https://www.saxo.com/dk/theory-u-leading-from-the-future-as-it-emerges_c-otto-scharmer_hardback_9781626567986?srsltid=AU7gw4XUTtrxNmVromaIR8Tlh-1Blun7aoDREghU7HRXwOfgaJowri1k',
+			image: 'https://imgcdn.saxo.com/_9781626567986',
 			alt: 'Add full reference'
 		},
 		{
 			title: 'Braiding Sweetgrass',
 			author: 'Robin Wall Kimmerer',
-			link: '#',
-			image: '#',
+			link: 'https://www.amazon.com/Braiding-Sweetgrass-Indigenous-Scientific-Knowledge/dp/1571313567',
+			image: 'https://m.media-amazon.com/images/I/71OgjPcg6-L._SY466_.jpg',
 			alt: 'Add full reference'
 		},
 		{
 			title: 'Hospicing Modernity',
 			author: 'Vanesa Machado de Oliveira',
-			link: '#',
-			image: '#',
+			link: 'https://www.northatlanticbooks.com/shop/hospicing-modernity/',
+			image: 'https://www.northatlanticbooks.com/wp-content/uploads/books/hospicing-modernity.png',
 			alt: 'Add full reference'
-		}
+		},
+		{
+			title: 'The Art of Regenerative Educatorship',
+			author: 'Mieke Lopes Cardozo, Koen Wessels, Bas van den Berg',
+			link: 'https://www.routledge.com/The-Art-of-Regenerative-Educatorship-A-Developmental-Guide/LopesCardozo-Wessels-Berg/p/book/9789048570522',
+			image: 'https://images.routledge.com/common/jackets/crclarge/978904857/9789048570522.jpg',
+			alt: 'Add full reference'
+		},
+		{
+			title: 'Learning as if Life Depended on It',
+			author: 'Olli-Pekka Heinonen',
+			link: 'https://www.penguinrandomhouse.com/books/821963/learning-as-if-life-depended-on-it-by-olli-pekka-heinonen/',
+			image: 'https://images3.penguinrandomhouse.com/cover/9781914568077',
+			alt: 'Add full reference'
+		},
 	];
 </script>
 
 <div
-	class="grid h-full w-full grid-cols-4 items-center justify-center justify-items-center gap-6 overflow-auto p-10"
+	class="grid h-full w-full grid-cols-5 items-center justify-center justify-items-center gap-x-6 gap-y-10 overflow-auto p-10"
 >
 	{#each books as book, index (index)}
 		<div
-			class=" bg-primary-container text-primary-container-content shadow-base-shadow h-100 w-80 overflow-hidden rounded-3xl shadow-lg"
+			class=" bg-primary-container text-primary-container-content shadow-base-shadow h-90 w-65 overflow-hidden rounded-3xl shadow-lg"
 		>
 			{#if book.image !== '#'}
-				<img src={book.image} alt={book.alt} class=" book-cover h-100 w-full rounded-t-3xl" />
+				<img src={book.image} alt={book.alt} class="book-cover h-100 w-full rounded-t-3xl object-stretch" />
 			{:else}
 				<div class="text-wrap">{book.title}</div>
 				<div class="text-3xl text-wrap">{book.author}</div>

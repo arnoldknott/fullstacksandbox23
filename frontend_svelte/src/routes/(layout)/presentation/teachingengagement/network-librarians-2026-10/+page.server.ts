@@ -61,7 +61,7 @@ export const load: PageServerLoad = async ({ url }) => {
 			qualitativeFeedbackQuestion?.id
 				? backendAPI.getSnapshot<MessageExtended>(
 						null,
-						`/quiz/message/snapshot?parent-id=${encodeURIComponent(qualitativeFeedbackQuestion?.id)}&include=creation-date&sort=creation-date&direction=desc`
+						`/quiz/message/snapshot?parent-id=${encodeURIComponent(qualitativeFeedbackQuestion?.id)}&include=creation-date&sort=creation-date&direction=asc`
 					)
 				: Promise.resolve({ entities: [] as MessageExtended[], cursor: 0 })
 		]);
