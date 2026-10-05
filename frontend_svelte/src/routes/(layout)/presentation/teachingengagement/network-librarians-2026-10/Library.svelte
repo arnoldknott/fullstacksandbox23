@@ -244,14 +244,18 @@
 		{/snippet}
 		<!-- {#if bookInModal} -->
 		<dl class="text-left text-3xl">
-			<dt>Author:</dt>
+			<dt class="inline-flex items-center gap-2 whitespace-nowrap">
+				<Icon icon="fa-solid:pen-fancy" />Author:
+			</dt>
 			<dd>{bookInModal?.author}</dd>
 		</dl>
 		<dl class="text-left text-3xl">
-			<dt>Source:</dt>
+			<dt class="inline-flex items-center gap-2 whitespace-nowrap">
+				<Icon icon="akar-icons:link-chain" />Source:
+			</dt>
 			<dd>
 				<a
-					class="link link-animated"
+					class="link link-animated break-all whitespace-normal"
 					href={bookInModal?.link}
 					target="_blank"
 					rel="noopener noreferrer">{bookInModal?.link}</a
@@ -259,7 +263,9 @@
 			</dd>
 		</dl>
 		<dl class="text-left text-3xl">
-			<dt>Reference:</dt>
+			<dt class="inline-flex items-center gap-2 whitespace-nowrap">
+				<Icon icon="si:quote-line" /> Reference:
+			</dt>
 			<dd>{bookInModal?.alt}</dd>
 		</dl>
 		<!-- {/if} -->
