@@ -226,20 +226,29 @@
 	let bookInModal = $derived(providedBooks.find((book) => book.id === visibleModule));
 	let comment = $state('');
 	let sharerName = $state('');
-	let bookComments = $derived(
+	let parsedBookComments = $derived(
 		booksAnswersSorted.flatMap((answer) => {
 			try {
 				const content: { bookdid?: unknown; comment?: unknown } | null = JSON.parse(answer.content);
-				return bookInModal &&
-					content?.bookdid === bookInModal.id &&
+				return typeof content?.bookdid === 'string' &&
 					typeof content.comment === 'string'
-					? [{ ...answer, content: content.comment }]
+					? [{ ...answer, bookId: content.bookdid, content: content.comment }]
 					: [];
 			} catch {
 				return [];
 			}
 		})
 	);
+	let bookComments = $derived(
+		parsedBookComments.filter((answer) => answer.bookId === bookInModal?.id)
+	);
+	let commentCounts = $derived.by(() => {
+		const counts = new Map<string, number>();
+		for (const answer of parsedBookComments) {
+			counts.set(answer.bookId, (counts.get(answer.bookId) ?? 0) + 1);
+		}
+		return counts;
+	});
 
 	const submitComment = () => {
 		const pending = socketio?.pendingEntities[0];
@@ -261,7 +270,7 @@
 	class="grid h-full w-full grid-cols-5 items-center justify-center justify-items-center gap-x-6 gap-y-10 overflow-auto p-10"
 >
 	{#each providedBooks as book, index (index)}
-		<Book {book} bind:showModal={visibleModule} />
+		<Book {book} commentCount={commentCounts.get(book.id) ?? 0} bind:showModal={visibleModule} />
 	{/each}
 	<!-- <button
 		class="btn btn-secondary-container shadow-base-shadow flex h-90 w-65 items-center justify-center rounded-3xl align-middle shadow-lg"

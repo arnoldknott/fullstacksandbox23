@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/svelte';
+import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest';
 
 import { Action } from '$lib/accessHandler';
@@ -36,11 +36,11 @@ function renderLibrary(contents: string[] = [], names: string[] = []) {
 		submitEntity: vi.fn(),
 		createPending: vi.fn()
 	};
-	render(Library, {
+	const view = render(Library, {
 		socketio: socketio as unknown as SocketIO<MessageExtended>,
 		questionid: 'books-question'
 	});
-	return { socketio, pending };
+	return { socketio, pending, rerender: view.rerender };
 }
 
 async function openFlow() {
@@ -99,7 +99,7 @@ describe('Library comments', () => {
 		);
 		await openFlow();
 		expect(screen.getByText('Flow comment')).toBeInTheDocument();
-		const name = screen.getByText('Alex');
+		const name = screen.getByText('Alex:');
 		expect(name.tagName).toBe('DT');
 		expect(name).toHaveClass('italic');
 		expect(name.parentElement?.tagName).toBe('DL');
@@ -110,7 +110,34 @@ describe('Library comments', () => {
 
 		await fireEvent.click(screen.getByRole('button', { name: /Nørmark, Dennis, & Jensen/ }));
 		expect(screen.getByText('Pseudoarbejde comment')).toBeInTheDocument();
-		expect(screen.getByText('Anonymous').tagName).toBe('DT');
+		expect(screen.getByText('Anonymous:').tagName).toBe('DT');
 		expect(screen.queryByText('Flow comment')).not.toBeInTheDocument();
+	});
+
+	test('shows reactive comment counts only for books with valid comments', async () => {
+		const { socketio, rerender } = renderLibrary([
+			JSON.stringify({ bookdid: 'flow', comment: 'First comment' }),
+			JSON.stringify({ bookdid: 'flow', comment: 'Second comment' }),
+			JSON.stringify({ bookdid: 'pseudoarbejde', comment: 'Another book' }),
+			JSON.stringify({ bookdid: 'flow', comment: 42 }),
+			'Invalid content'
+		]);
+		const flowButton = screen.getByRole('button', { name: /Csikszentmihalyi/ });
+		const flow = flowButton.parentElement!;
+		const pseudoarbejde = screen.getByRole('button', { name: /Nørmark, Dennis, & Jensen/ }).parentElement!;
+		const noComments = screen.getByRole('button', { name: /Ravn, Ib/ }).parentElement!;
+		expect(flow).toHaveClass('indicator');
+		expect(within(flow).getByLabelText('2 comments')).toHaveTextContent('2');
+		expect(within(flow).getByLabelText('2 comments')).toHaveClass('indicator-item', 'badge-accent-container');
+		expect(within(flowButton).queryByLabelText('2 comments')).not.toBeInTheDocument();
+		expect(within(pseudoarbejde).getByLabelText('1 comment')).toHaveTextContent('1');
+		expect(within(noComments).queryByLabelText(/comments?/)).not.toBeInTheDocument();
+
+		socketio.getSelectedEntities.mockReturnValue([
+			{ id: 'updated', content: JSON.stringify({ bookdid: 'flow', comment: 'Remaining' }), confidential: '' }
+		]);
+		await rerender({ socketio: { ...socketio } as unknown as SocketIO<MessageExtended> });
+		expect(within(flow).getByLabelText('1 comment')).toHaveTextContent('1');
+		expect(within(pseudoarbejde).queryByLabelText(/comments?/)).not.toBeInTheDocument();
 	});
 });
