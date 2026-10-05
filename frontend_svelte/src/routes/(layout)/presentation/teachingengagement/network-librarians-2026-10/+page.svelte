@@ -16,6 +16,7 @@
 	import Library from './Library.svelte';
 	import Map from './Map.svelte';
 	import Overview from './Overview.svelte';
+	import QualitativeFeedback from './QualitativeFeedback.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -837,33 +838,10 @@
 		Quantitative results: learning, responsibility, meditation, sharing comments
 	</FramedSlide> -->
 	<FramedSlide part="results" section="qualitative" title="Results: qualitative">
-		<CardOverlay
-			class="bg-primary fragment text-primary-content z-50 pt-6 text-4xl"
-			hidden={false}
-			// bind:hidden={hideModules.openQuestions}
-		>
-			{#snippet header()}
-				<div class="text-5xl font-bold">Closing: Master Course - Fall 2025</div>
-			{/snippet}
-			<dl>
-				<dt>3 out of 4 learning reflections <span class="italic">mandatory</span></dt>
-			</dl>
-			<dl>
-				<dt>Last lecture</dt>
-				<dd>Only 8 out of 74 students missing to hand at least 3.</dd>
-			</dl>
-			<dl>
-				<dt>Reminder</dt>
-				<dd>Personal to the 8 missing: asking how much more time they need.</dd>
-				<dd>Announcement to all, that those emails were sent.</dd>
-				<dd>3 days after all missing mandatory reflections shared.</dd>
-			</dl>
-
-			<dl class="pt-5">
-				<dt>One week after reminder</dt>
-				<dd>70 % handed in all 4 learning reflections.</dd>
-			</dl>
-		</CardOverlay>
+		<div>Summary from 2000+ answers</div>
+		<QualitativeFeedback
+			content={data.payload.qualitativeFeedbackSnapshot.entities.map((entity) => entity.content)}
+		/>
 	</FramedSlide>
 	<FramedSlide part="results" section="qualitative">Emotional results</FramedSlide>
 	<FramedSlide part="comments-and-questions" hideProgressBar>
