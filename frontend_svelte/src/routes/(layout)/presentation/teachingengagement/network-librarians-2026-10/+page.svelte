@@ -15,7 +15,9 @@
 	import FramedSlide from './FramedSlide.svelte';
 	import Library from './Library.svelte';
 	import Map from './Map.svelte';
+	import MotivationTable from './MotivationTable.svelte';
 	import Overview from './Overview.svelte';
+	import QualitativeFeedback from './QualitativeFeedback.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -231,21 +233,6 @@
 		course: entry.course,
 		values: entry.moreMotivated
 	}));
-
-	const sentimentColors = {
-		'much better': 'bg-success-container',
-		better: 'bg-success',
-		same: 'bg-warning',
-		worse: 'bg-error',
-		'much worse': 'bg-error-container',
-		'fully agree': 'bg-success-content/70',
-		agree: 'bg-success-container',
-		disagree: 'bg-error-container',
-		'totally disagree': 'bg-error-content/70',
-		yes: 'bg-success-container',
-		maybe: 'bg-warning',
-		no: 'bg-error-container'
-	};
 </script>
 
 {#snippet interactiveElementNotAvailable(elementName: string)}
@@ -510,7 +497,7 @@
 			</a>
 		{/snippet}
 	</FramedSlide>
-	<FramedSlide>Allan Watts - Chinese Farmer? and/or Sir Francis Bacon</FramedSlide>
+	<!-- <FramedSlide>Allan Watts - Chinese Farmer? and/or Sir Francis Bacon</FramedSlide> -->
 	<FramedSlide>
 		<img
 			src="/flower.jpg"
@@ -521,7 +508,43 @@
 	<FramedSlide part="inspiration">
 		<Library />
 	</FramedSlide>
-	<FramedSlide>Motivation?</FramedSlide>
+	<FramedSlide part="inspiration" section="motivation" title="Motivation">
+		<div class="mx-5 grid grid-cols-3 gap-10">
+			<CardOverlay class="bg-primary text-primary-content z-50 pt-6 text-4xl" hidden={false}>
+				<div class="mb-10 text-7xl font-bold">Relatedness</div>
+				<div class="mb-6 pl-4 text-left text-5xl">Sense of belonging</div>
+				<div class="mb-6 pl-4 text-left text-5xl">Community</div>
+				<div class="mb-6 pl-4 text-left text-5xl">Connection</div>
+				<div class="mb-6 pl-4 text-left text-5xl">Feeling cared for</div>
+				<div class="mb-6 pl-4 text-left text-5xl">Ability to care for others</div>
+			</CardOverlay>
+			<CardOverlay
+				class="bg-primary fragment fade-in text-primary-content z-50 pt-6 text-4xl"
+				hidden={false}
+			>
+				<div class="mb-10 text-7xl font-bold">Autonomy</div>
+				<div class="mb-6 pl-4 text-left text-5xl">Making your own decisions</div>
+				<div class="mb-6 pl-4 text-left text-5xl">Be in the driver seat of your life</div>
+				<div class="mb-6 pl-4 text-left text-5xl">Reflection</div>
+			</CardOverlay>
+			<CardOverlay
+				class="bg-primary fragment fade-in text-primary-content z-50 pt-6 text-4xl"
+				hidden={false}
+			>
+				<div class="mb-10 text-7xl font-bold">Competence</div>
+				<div class="mb-6 pl-4 text-left text-5xl">Gaining mastery</div>
+				<div class="mb-6 pl-4 text-left text-5xl">Being in flow</div>
+				<div class="mb-6 pl-4 text-left text-5xl">Making an impact</div>
+				<div class="mb-6 pl-4 text-left text-5xl">Build self-esteem</div>
+			</CardOverlay>
+		</div>
+		{#snippet footer()}
+			<div>📖 Ib Ravn: Selvbestemmelsesteorien</div>
+		{/snippet}
+	</FramedSlide>
+	<FramedSlide part="inspiration" section="motivation-examples" title="Motivation: Examples">
+		<MotivationTable color="secondary" />
+	</FramedSlide>
 	<FramedSlide>
 		<img
 			src="/snow-lake.jpg"
@@ -654,7 +677,7 @@
 						<dt>Content</dt>
 						<dd>use of teaching material and artificial intelligence</dd>
 						<dd>
-							motivation<br />
+							motivation:<br />
 							<ul>
 								<li>sense of belonging</li>
 								<li>autonomy</li>
@@ -662,7 +685,7 @@
 							</ul>
 						</dd>
 						<dd>
-							exam<br />
+							exam:<br />
 							<ul>
 								<li class="italic">
 									What was good / bad about learning reflections instead of exams?
@@ -747,7 +770,7 @@
 					// bind:hidden={hideModules.openQuestions}
 				>
 					{#snippet header()}
-						<div class="text-5xl font-bold">Closing: Master Course - Fall 2025</div>
+						<div class="text-5xl font-bold">Story: Closing of Master Course - Fall 2025</div>
 					{/snippet}
 					<dl>
 						<dt>3 out of 4 learning reflections <span class="italic">mandatory</span></dt>
@@ -823,18 +846,12 @@
 		<DivergingStackedChart
 			data={meditationData}
 			categories={['no', 'maybe', 'yes']}
-			colorClasses={sentimentColors}
 			color="primary"
 		/>
 	</FramedSlide>
 	<FramedSlide part="results" section="learning-more" title="Results: learning more">
 		<div>Reflecting on my own learning,<br /> I learn more, than in a course with exam...</div>
-		<DivergingStackedChart
-			data={learnedMoreData}
-			categories={categoriesNoExam}
-			colorClasses={sentimentColors}
-			color="primary"
-		/>
+		<DivergingStackedChart data={learnedMoreData} categories={categoriesNoExam} color="primary" />
 	</FramedSlide>
 	<FramedSlide part="results" section="responsibility" title="Results: responsibility">
 		<div>
@@ -844,7 +861,6 @@
 		<DivergingStackedChart
 			data={moreResponsibilityData}
 			categories={categoriesNoExam}
-			colorClasses={sentimentColors}
 			color="primary"
 		/>
 	</FramedSlide>
@@ -853,46 +869,20 @@
 			Reflecting on my own learning, <br />I can stay more <span class="italic">motivated</span>,
 			than in a course with exam
 		</div>
-		<DivergingStackedChart
-			data={moreMotivatedData}
-			categories={categoriesNoExam}
-			colorClasses={sentimentColors}
-			color="primary"
-		/>
+		<DivergingStackedChart data={moreMotivatedData} categories={categoriesNoExam} color="primary" />
 	</FramedSlide>
 	<!-- <FramedSlide part="results" section="quantitative">
 		Quantitative results: learning, responsibility, meditation, sharing comments
 	</FramedSlide> -->
-	<FramedSlide part="results" section="qualitative" title="Results: qualitative">
-		<CardOverlay
-			class="bg-primary fragment text-primary-content z-50 pt-6 text-4xl"
-			hidden={false}
-			// bind:hidden={hideModules.openQuestions}
-		>
-			{#snippet header()}
-				<div class="text-5xl font-bold">Closing: Master Course - Fall 2025</div>
-			{/snippet}
-			<dl>
-				<dt>3 out of 4 learning reflections <span class="italic">mandatory</span></dt>
-			</dl>
-			<dl>
-				<dt>Last lecture</dt>
-				<dd>Only 8 out of 74 students missing to hand at least 3.</dd>
-			</dl>
-			<dl>
-				<dt>Reminder</dt>
-				<dd>Personal to the 8 missing: asking how much more time they need.</dd>
-				<dd>Announcement to all, that those emails were sent.</dd>
-				<dd>3 days after all missing mandatory reflections shared.</dd>
-			</dl>
-
-			<dl class="pt-5">
-				<dt>One week after reminder</dt>
-				<dd>70 % handed in all 4 learning reflections.</dd>
-			</dl>
-		</CardOverlay>
-	</FramedSlide>
-	<FramedSlide part="results" section="qualitative">Emotional results</FramedSlide>
+	<!-- <div>Summary from 2000+ answers</div> -->
+	{#each data.payload.qualitativeFeedbackSnapshot.entities as feedback, idx (idx)}
+		<FramedSlide part="results" section={`qualitative-${idx}`} title="Results: qualitative">
+			<QualitativeFeedback content={feedback.content} />
+		</FramedSlide>
+	{/each}
+	<FramedSlide part="results" section="emotional" title="Results: emotional"
+		><div class="text-[600px]">🫶</div></FramedSlide
+	>
 	<FramedSlide part="comments-and-questions" hideProgressBar>
 		{#if commentsQuestion}
 			<Comments socketio={socketioComments} question={commentsQuestion} />
