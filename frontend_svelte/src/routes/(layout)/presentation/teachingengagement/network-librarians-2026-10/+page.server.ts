@@ -33,7 +33,12 @@ export const load: PageServerLoad = async ({ url }) => {
 			question.question.includes('qualitative-feedback')
 		);
 		// [payload.motivationSnapshot, payload.placesSnapshot, payload.commentsSnapshot] =
-		[payload.placesSnapshot, payload.booksSnapshot, payload.commentsSnapshot, payload.qualitativeFeedbackSnapshot] = await Promise.all([
+		[
+			payload.placesSnapshot,
+			payload.booksSnapshot,
+			payload.commentsSnapshot,
+			payload.qualitativeFeedbackSnapshot
+		] = await Promise.all([
 			// motivationQuestion?.id
 			// 	? backendAPI.getSnapshot<NumericalExtended>(
 			// 			null,

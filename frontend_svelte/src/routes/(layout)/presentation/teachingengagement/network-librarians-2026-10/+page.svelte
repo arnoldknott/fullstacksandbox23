@@ -234,7 +234,7 @@
 		values: entry.moreMotivated
 	}));
 
-	console.log(data.payload.qualitativeFeedbackSnapshot)
+	console.log(data.payload.qualitativeFeedbackSnapshot);
 </script>
 
 {#snippet interactiveElementNotAvailable(elementName: string)}
@@ -878,13 +878,13 @@
 	</FramedSlide> -->
 	<!-- <div>Summary from 2000+ answers</div> -->
 	{#each data.payload.qualitativeFeedbackSnapshot.entities as feedback, idx (idx)}
-	<FramedSlide part="results" section={`qualitative-${idx}`} title="Results: qualitative">
-		<QualitativeFeedback
-			content={feedback.content}
-		/>
-	</FramedSlide>
+		<FramedSlide part="results" section={`qualitative-${idx}`} title="Results: qualitative">
+			<QualitativeFeedback content={feedback.content} />
+		</FramedSlide>
 	{/each}
-	<FramedSlide part="results" section="emotional" title="Results: emotional"><div class="text-[600px]">🫶</div></FramedSlide>
+	<FramedSlide part="results" section="emotional" title="Results: emotional"
+		><div class="text-[600px]">🫶</div></FramedSlide
+	>
 	<FramedSlide part="comments-and-questions" hideProgressBar>
 		{#if commentsQuestion}
 			<Comments socketio={socketioComments} question={commentsQuestion} />

@@ -178,7 +178,7 @@
 			link: 'https://www.penguinrandomhouse.com/books/821963/learning-as-if-life-depended-on-it-by-olli-pekka-heinonen/',
 			image: 'https://images3.penguinrandomhouse.com/cover/9781914568077',
 			alt: 'Add full reference'
-		},
+		}
 	];
 </script>
 
@@ -190,7 +190,11 @@
 			class=" bg-primary-container text-primary-container-content shadow-base-shadow h-90 w-65 overflow-hidden rounded-3xl shadow-lg"
 		>
 			{#if book.image !== '#'}
-				<img src={book.image} alt={book.alt} class="book-cover h-100 w-full rounded-t-3xl object-stretch" />
+				<img
+					src={book.image}
+					alt={book.alt}
+					class="book-cover object-stretch h-100 w-full rounded-t-3xl"
+				/>
 			{:else}
 				<div class="text-wrap">{book.title}</div>
 				<div class="text-3xl text-wrap">{book.author}</div>
