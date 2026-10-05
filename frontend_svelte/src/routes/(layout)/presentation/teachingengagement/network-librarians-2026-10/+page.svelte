@@ -233,6 +233,8 @@
 		course: entry.course,
 		values: entry.moreMotivated
 	}));
+
+	console.log(data.payload.qualitativeFeedbackSnapshot)
 </script>
 
 {#snippet interactiveElementNotAvailable(elementName: string)}
@@ -874,12 +876,14 @@
 	<!-- <FramedSlide part="results" section="quantitative">
 		Quantitative results: learning, responsibility, meditation, sharing comments
 	</FramedSlide> -->
-	<FramedSlide part="results" section="qualitative" title="Results: qualitative">
-		<div>Summary from 2000+ answers</div>
+	<!-- <div>Summary from 2000+ answers</div> -->
+	{#each data.payload.qualitativeFeedbackSnapshot.entities as feedback, idx (idx)}
+	<FramedSlide part="results" section={`qualitative-${idx}`} title="Results: qualitative">
 		<QualitativeFeedback
-			content={data.payload.qualitativeFeedbackSnapshot.entities.map((entity) => entity.content)}
+			content={feedback.content}
 		/>
 	</FramedSlide>
+	{/each}
 	<FramedSlide part="results" section="qualitative">Emotional results</FramedSlide>
 	<FramedSlide part="comments-and-questions" hideProgressBar>
 		{#if commentsQuestion}

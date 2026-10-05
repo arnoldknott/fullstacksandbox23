@@ -12,7 +12,7 @@
 	// bind:hidden={hideModules.openQuestions}
 >
 	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-	{@html marked.parse(content[0], {
+	{@html marked.parse(content, {
 		async: false
 	})}
 </CardOverlay>
