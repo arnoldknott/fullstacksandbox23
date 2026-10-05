@@ -235,16 +235,25 @@
 	const sentimentColors = {
 		'much better': 'bg-success-container',
 		better: 'bg-success',
-		same: 'bg-warning',
+		// same: 'bg-warning',
+		same: 'bg-[#F4BA8C]',
 		worse: 'bg-error',
 		'much worse': 'bg-error-container',
-		'fully agree': 'bg-success-content/70',
-		agree: 'bg-success-container',
-		disagree: 'bg-error-container',
-		'totally disagree': 'bg-error-content/70',
-		yes: 'bg-success-container',
-		maybe: 'bg-warning',
-		no: 'bg-error-container'
+		// 'fully agree': 'bg-success-content/70',
+		'fully agree': 'bg-[#1A3327]',
+		// agree: 'bg-success-container',
+		agree: 'bg-[#215136]',
+		// 'agree': 'bg-[#215136]',
+		// disagree: 'bg-error-container',
+		disagree: 'bg-[#861915]',
+		// 'totally disagree': 'bg-error-content/70',
+		'totally disagree': 'bg-[#4D1313]',
+		// yes: 'bg-success-container',
+		// maybe: 'bg-warning',
+		// no: 'bg-error-container'
+		yes: 'bg-[#215136]',
+		maybe: 'bg-[#F4BA8C]',
+		no: 'bg-[#861915]'
 	};
 </script>
 
