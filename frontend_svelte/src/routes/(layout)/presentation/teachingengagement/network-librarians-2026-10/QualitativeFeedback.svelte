@@ -3,7 +3,7 @@
 
 	import CardOverlay from './CardOverlay.svelte';
 
-	let { content }: { content: string[] } = $props();
+	let { content }: { content: string } = $props();
 </script>
 
 <CardOverlay

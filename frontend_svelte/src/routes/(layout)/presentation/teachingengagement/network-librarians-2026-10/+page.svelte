@@ -233,8 +233,6 @@
 		course: entry.course,
 		values: entry.moreMotivated
 	}));
-
-	console.log(data.payload.qualitativeFeedbackSnapshot);
 </script>
 
 {#snippet interactiveElementNotAvailable(elementName: string)}
