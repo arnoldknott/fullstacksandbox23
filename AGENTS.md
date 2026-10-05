@@ -21,14 +21,14 @@ Keep edits focused, preserve existing patterns, and prefer small changes over br
 - `compose.yml` plus override files: main local development and test orchestration
 - `.devcontainer/`: devcontainer configuration for local and Codespaces development.
   Entrypoint: `.devcontainer/devcontainer.json`
-- `.github/workflows`: Continuous Intgration / Continuous Deployment pipelines via github actions
+- `.github/workflows`: Continuous Integration / Continuous Deployment pipelines via GitHub Actions
 - `hooks/`: local git hook examples used as guidance for formatting, linting, and testing
 
 ## How To Work In This Repo
 
 - Before making non-trivial changes in an app directory, read the nearest nested `AGENTS.md` for path-specific commands and conventions.
 - When a change affects shared contracts such as auth, sessions, REST endpoints, websockets, or environment variables, review both frontend and backend impact instead of treating one side in isolation.
-- Use the existing tooling and command surfaces already used by the repo rather than introducing new scripts or alternate workflows. Ask for permisson to create new scripts and workflows.
+- Use the existing tooling and command surfaces already used by the repo rather than introducing new scripts or alternate workflows. Ask for permission to create new scripts and workflows.
 
 ## General Guidelines
 

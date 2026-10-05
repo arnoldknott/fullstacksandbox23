@@ -12,44 +12,45 @@
 		{
 			title: 'Selvbestemmel-sesteorien',
 			author: 'Ib Ravn',
-			link: '#',
-			image: '#',
+			link: 'https://hansreitzel.dk/products/selvbestemmelsesteorien-bog-49710-9788741274461',
+			image:
+				'https://hansreitzel.dk/-/media/images/external.png?ei=https://multimediaserver.gyldendal.dk/HansReitzelred/CoverFace/WH_Original/9788741274461&w=320',
 			alt: 'Add full reference'
 		},
 		{
 			title: 'Skole uden prøver og karakterer',
 			author: 'Noemi Katznelson, et al.',
-			link: '#',
-			image: '#',
+			link: 'https://www.saxo.com/dk/skole-uden-proever-og-karakterer_bog_9788775730445?_gl=1*1tvsang*_up*MQ..*_gs*MQ..&gclid=Cj0KCQiAp-zLBhDkARIsABcYc6v8Pz2H8tcM748_yKdYMBgHaVga9otB487_Pmu33rScQfFyW1fiMekaAiqGEALw_wcB&gbraid=0AAAAAD_rHDWlJnzb1wXel1FABDAtPL3bR',
+			image: 'https://imgcdn.saxo.com/_9788775730445',
 			alt: 'Add full reference'
 		},
 		{
 			title: 'Mærk Verden',
 			author: 'Tore Nørretranders',
-			link: '#',
-			image: '#',
+			link: 'https://www.saxo.com/dk/maerk-verden_tor-noerretranders_epub_9788702178524?srsltid=AU7gw4Uye4R2kILCoBZhaQ3Mtw9Q6sUEWN_uMv40z2kEGKyRnYwnYxoQ',
+			image: 'https://imgcdn.saxo.com/_9788702178524',
 			alt: 'Add full reference'
 		},
 		{
 			title: 'Flow',
 			author: 'Mihaly Csikszentmihalyi',
 			comments: 'A book about achieving flow in life.',
-			link: '#',
-			image: '#',
+			link: 'https://www.saxo.com/dk/flow-the-psychology-of-optimal-experience_paperback_9780061339202?srsltid=AU7gw4UFubHWIq065m_SWREZCULtPcHXLgG4p-aQ3-Z3yQo8b8mqmk71',
+			image: 'https://imgcdn.saxo.com/_9780061339202',
 			alt: 'Add full reference'
 		},
 		{
 			title: 'Pseudoarbejde',
 			author: 'Denis Nørmark & Anders Fogh Jensen',
-			link: '#',
-			image: '#',
+			link: 'https://www.saxo.com/dk/pseudoarbejde_dennis-noermarkanders-fogh-jensen_haeftet_9788702245325?srsltid=AU7gw4XM3QbofIsKRSuAj_PE3UTQGFshjNhdBbQoscEbviDvHgHGH-jO',
+			image: 'https://imgcdn.saxo.com/_9788702245325',
 			alt: 'Add full reference'
 		},
 		{
 			title: 'Tilbage på arbejde',
 			author: 'Denis Nørmark',
-			link: '#',
-			image: '#',
+			link: 'https://www.saxo.com/dk/tilbage-til-arbejdet_dennis-noermark_haeftet_9788702303612',
+			image: 'https://imgcdn.saxo.com/_9788702303612',
 			alt: 'Add full reference'
 		},
 		{
@@ -172,10 +173,24 @@
 >
 	{#each books as book, index (index)}
 		<div
-			class="bg-primary-container text-primary-container-content shadow-base-shadow h-100 w-80 rounded-3xl shadow-lg"
+			class=" bg-primary-container text-primary-container-content shadow-base-shadow h-100 w-80 overflow-hidden rounded-3xl shadow-lg"
 		>
-			<div class="text-wrap">{book.title}</div>
-			<div class="text-3xl text-wrap">{book.author}</div>
+			{#if book.image !== '#'}
+				<img src={book.image} alt={book.alt} class=" book-cover h-100 w-full rounded-t-3xl" />
+			{:else}
+				<div class="text-wrap">{book.title}</div>
+				<div class="text-3xl text-wrap">{book.author}</div>
+			{/if}
 		</div>
 	{/each}
 </div>
+
+<style>
+	.book-cover {
+		max-width: none;
+		max-height: none;
+		margin: 0;
+		border: 0;
+		display: block;
+	}
+</style>

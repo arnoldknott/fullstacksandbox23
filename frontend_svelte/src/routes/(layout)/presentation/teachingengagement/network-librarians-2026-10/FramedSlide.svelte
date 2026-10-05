@@ -83,7 +83,7 @@
 </script>
 
 {#snippet progressBar()}
-	<div class="fixed-progress-header flex w-full items-center gap-4 px-10">
+	<div class="flex w-full items-center gap-4 px-10">
 		{#each progressBarItems as item, index (index)}
 			<div class="flex items-center gap-4 {index < progressBarItems.length - 1 ? 'grow' : ''}">
 				<a href={'#' + item.part} aria-label={item.title}>
