@@ -963,9 +963,18 @@ class BaseNamespace(
             ]
             if active_ids:
                 model_columns = cast(Any, crud.model)
+                filters = [col(model_columns.id).in_(active_ids)]
+                parent_id = await self._get_session_query_string(sid, "parent_id")
+                if parent_id is not None:
+                    hierarchy_crud = crud.hierarchy_CRUD(session=crud.session)
+                    hierarchies = await hierarchy_crud.read(
+                        current_user=current_user, parent_id=UUID(parent_id)
+                    )
+                    child_ids = [hierarchy.child_id for hierarchy in hierarchies]
+                    filters.append(col(model_columns.id).in_(child_ids))
                 entities = await crud.read(
                     current_user=current_user,
-                    filters=[col(model_columns.id).in_(active_ids)],
+                    filters=filters,
                 )
                 entity_ids = [cast(Any, entity).id for entity in entities]
                 metadata = await crud.logging_crud.read_entity_metadata(entity_ids)
