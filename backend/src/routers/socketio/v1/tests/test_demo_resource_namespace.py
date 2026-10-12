@@ -1265,6 +1265,7 @@ async def test_user_updates_access_to_owned_resource_for_a_group_identity(
     # First user owns the resources:
     token_user1 = connection1.token_payload()
     token_user2 = connection2.token_payload()
+    token_user3 = connection3.token_payload()
 
     current_user1 = await connection1.current_user()
     current_user2 = await connection2.current_user()
@@ -1313,10 +1314,14 @@ async def test_user_updates_access_to_owned_resource_for_a_group_identity(
     status_data3 = connection3.responses("status")
     assert status_data1 == [{"success": "shared", "id": str(resources[1].id)}]
     assert status_data2 == [{"success": "shared", "id": str(resources[1].id)}]
-    # Even the third user is admin, share events don't get emitted automatically to admin,
-    # Anyways can see everything!
-    # Unless the admin also has the team in the groups from token.
-    assert status_data3 == []
+    # The admin read the resource and joined its resource room, so it receives
+    # policy updates even without membership in the affected group. Ordinary
+    # users outside the group have no resource access and receive no update.
+    assert status_data3 == (
+        [{"success": "shared", "id": str(resources[1].id)}]
+        if "Admin" in token_user3["roles"]
+        else []
+    )
 
     transfer_data1 = connection1.responses("transferred")
     transfer_data2 = connection2.responses("transferred")
