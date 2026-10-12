@@ -90,13 +90,16 @@ get_presentation_by_id_guards = Guards(
 @router.get("/{resource_id}", status_code=200)
 async def get_presentation_by_id(
     resource_id: UUID,
+    response: Response,
     token_payload: Annotated[
         Optional[dict], Depends(provide_http_token_payload)
     ] = None,
     guards: GuardTypes = Depends(get_presentation_by_id_guards),
 ) -> PresentationRead:
     """Returns a presentation by resource_id."""
-    return await presentation_view.get_by_id(resource_id, token_payload, guards=guards)
+    return await presentation_view.get_by_id(
+        resource_id, token_payload, guards=guards, response=response
+    )
 
 
 get_presentation_by_path_guards = Guards(

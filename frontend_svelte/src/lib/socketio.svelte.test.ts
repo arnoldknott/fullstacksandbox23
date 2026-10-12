@@ -14,7 +14,7 @@ import {
 	type SocketioConnection,
 	type SocketioStatus
 } from './socketio.svelte';
-import type { AccessPolicy, AnyEntityExtended, DemoResource } from './types';
+import type { AccessPolicy, AnyEntityExtended, DemoResource, DemoResourceExtended } from './types';
 
 // #region: Setup Test Socketio Server
 
@@ -266,7 +266,7 @@ describe('SocketIO for DemoResources', () => {
 				identity_id: 'group-1',
 				action: Action.READ
 			};
-			const clientHandler = await SocketioClientHandler.create<DemoResource>(
+			const clientHandler = await SocketioClientHandler.create<DemoResourceExtended>(
 				{
 					namespace: '/demo-resource',
 					sessionId: 'session-123',

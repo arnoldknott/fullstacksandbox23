@@ -1,5 +1,7 @@
 import logging
 
+from fastapi import Response
+
 from core.security import check_token_against_guards  # CurrentAccessToken
 from core.types import CollectionSort, GuardTypes, SortDirection
 from crud import register_crud
@@ -119,11 +121,18 @@ class BaseView:
         id,
         token_payload,
         guards: GuardTypes,
+        response: Response | None = None,
     ):
         logger.info("GET by id view to retrieve specific object from read CRUD")
         current_user = await check_token_against_guards(token_payload, guards)
         async with self.crud() as crud:
+            # Capture before reading so subscription replay covers concurrent changes.
+            cursor = (
+                await crud.logging_crud.read_cursor() if response is not None else None
+            )
             object = await crud.read_by_id(id, current_user)
+        if response is not None:
+            response.headers["X-Entity-Cursor"] = str(cursor)
         return object
 
     async def get_file_by_id(

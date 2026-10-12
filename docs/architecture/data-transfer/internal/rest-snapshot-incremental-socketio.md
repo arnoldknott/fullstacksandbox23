@@ -19,6 +19,10 @@ Snapshot endpoints currently exist for Presentation, Question, Message, Numerica
 
 The SvelteKit server uses [backendAPI.getSnapshot<T>()](../../../../frontend_svelte/src/lib/server/apis/backendApi.ts) to return `{ entities, cursor }` to pages. [SocketIO](../../../../frontend_svelte/src/lib/socketio.svelte.ts) seeds `EntityContainer` state from that object, including available access rights, policies, and hierarchies.
 
+## Single-presentation setup
+
+The presentation detail setup page reads `GET /presentation/{resource_id}`, `GET /access/policy/resource/{resource_id}`, and `GET /access/right/resource/{resource_id}` instead of loading the presentation collection. The by-id response keeps its existing presentation body and includes `X-Entity-Cursor`, captured before the authorized entity read. Access data is fetched after that response, ensuring its reads occur after the replay cursor. The frontend seeds a one-entity subscription with this cursor; question snapshots keep their own cursor. Reconnection uses the same subscription and replay path.
+
 ## Socket.IO subscriptions
 
 After connection, the frontend emits `subscribe` events sequentially and waits for each acknowledgement. Each event contains `entity_ids` and may contain `cursor`; batches contain at most 500 identifiers, and the frontend sends the cursor with the final batch. The acknowledgement contains `subscribed` and `rejected` identifier lists, or an `error`.

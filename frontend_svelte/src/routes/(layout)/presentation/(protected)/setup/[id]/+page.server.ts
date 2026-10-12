@@ -23,37 +23,42 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		identities: [] as Identity[]
 	};
 	const presentationId = params.id;
-	const [
-		presentationSnapshot,
-		questionSnapshot,
-		policiesResponse,
-		hierarchiesResponse,
-		presentationPoliciesResponse
-	] = await Promise.all([
-		backendAPI.getSnapshot<PresentationExtended>(
-			sessionId,
-			'/presentation/snapshot?include=access-right'
-		),
-		backendAPI.getSnapshot<QuestionExtended>(
-			sessionId,
-			'/quiz/question/snapshot?include=creation-date&include=last-modified-date&include=access-right&sort=creation-date&direction=desc&parent-id=' +
-				presentationId
-		),
-		backendAPI.get(sessionId, '/access/policy/resource/type/Question'),
-		backendAPI.get(sessionId, '/access/hierarchies?parent-id=' + presentationId),
-		backendAPI.get(sessionId, '/access/policy/resource/type/Presentation')
+	const [presentationResponse, questionSnapshot, policiesResponse, hierarchiesResponse] =
+		await Promise.all([
+			backendAPI.get(sessionId, '/presentation/' + presentationId),
+			backendAPI.getSnapshot<QuestionExtended>(
+				sessionId,
+				'/quiz/question/snapshot?include=creation-date&include=last-modified-date&include=access-right&sort=creation-date&direction=desc&parent-id=' +
+					presentationId
+			),
+			backendAPI.get(sessionId, '/access/policy/resource/type/Question'),
+			backendAPI.get(sessionId, '/access/hierarchies?parent-id=' + presentationId)
+		]);
+	if (!presentationResponse.ok) {
+		error(presentationResponse.status, 'Presentation could not be loaded');
+	}
+	const rawCursor = presentationResponse.headers.get('X-Entity-Cursor');
+	if (rawCursor === null) error(502, 'Presentation did not include a cursor');
+	const presentationCursor = Number(rawCursor);
+	if (!Number.isSafeInteger(presentationCursor) || presentationCursor < 0) {
+		error(502, 'Presentation included an invalid cursor');
+	}
+	const presentation: PresentationExtended = await presentationResponse.json();
+	// Read access data after the presentation cursor is captured so replay covers concurrent changes.
+	const [presentationPoliciesResponse, presentationRightResponse] = await Promise.all([
+		backendAPI.get(sessionId, '/access/policy/resource/' + presentationId),
+		backendAPI.get(sessionId, '/access/right/resource/' + presentationId)
 	]);
-	const presentation = presentationSnapshot.entities.find((entity) => entity.id === presentationId);
-	if (!presentation) error(404, 'Presentation could not be loaded');
 	if (!presentationPoliciesResponse.ok) {
 		error(presentationPoliciesResponse.status, 'Presentation access policies could not be loaded');
 	}
-	const presentationPolicies: AccessPolicy[] = await presentationPoliciesResponse.json();
-	presentation.access_policies = presentationPolicies.filter(
-		(policy) => policy.resource_id === presentationId
-	);
+	if (!presentationRightResponse.ok) {
+		error(presentationRightResponse.status, 'Presentation access right could not be loaded');
+	}
+	presentation.access_policies = await presentationPoliciesResponse.json();
+	presentation.access_right = await presentationRightResponse.json();
 	payload.presentation = presentation;
-	payload.presentationCursor = presentationSnapshot.cursor;
+	payload.presentationCursor = presentationCursor;
 	if (!policiesResponse.ok) {
 		error(policiesResponse.status, 'Question access policies could not be loaded');
 	}
