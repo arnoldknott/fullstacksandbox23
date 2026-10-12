@@ -1088,11 +1088,15 @@ async def test_user_shares_owned_resource_with_groups_in_azure_token(
 
     assert status_data1 == [{"success": "shared", "id": str(resources[0].id)}]
     assert status_data2 == [{"success": "shared", "id": str(resources[0].id)}]
-    # Even one user is admin, share events don't get emitted automatically to admin,
-    # Admin needs to subscribe in query paramenter with "join-admin-room = True" to get all events.
-    # Anyways can see everything!
-    # Unless the admin also has the team in the groups from token.
-    assert status_data3 == []
+    # Existing authorized resource subscribers receive policy change notifications.
+    assert status_data3 == (
+        [{"success": "shared", "id": str(resources[0].id)}]
+        if any(
+            item["id"] == str(resources[0].id)
+            for item in connection3.responses("transferred")
+        )
+        else []
+    )
 
     transfer_data1 = connection1.responses("transferred")
     transfer_data2 = connection2.responses("transferred")
@@ -1561,10 +1565,15 @@ async def test_user_removes_share_with_group(
                 "id": str(resources[1].id),
             }
         ]
-    # Even the third user is admin, share events don't get emitted automatically to admin,
-    # Anyways can see everything!
-    # Unless the admin also has the team in the groups from token.
-    assert status_data3 == []
+    # Existing authorized resource subscribers receive policy change notifications.
+    assert status_data3 == (
+        [{"success": "unshared", "id": str(resources[1].id)}]
+        if any(
+            item["id"] == str(resources[1].id)
+            for item in connection3.responses("transferred")
+        )
+        else []
+    )
 
     # user one gets the resource again after the unshare event
     # still has access from own access policy:

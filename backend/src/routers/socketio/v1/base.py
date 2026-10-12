@@ -1389,7 +1389,8 @@ class BaseNamespace(
                                 "public"
                                 if public
                                 else [
-                                    f"identity:{str(access_policy_delete.identity_id)}"
+                                    f"identity:{str(access_policy_delete.identity_id)}",
+                                    f"resource:{str(access_policy_delete.resource_id)}",
                                 ]
                             ),
                         )
@@ -1421,7 +1422,10 @@ class BaseNamespace(
                         rooms=(
                             "public"
                             if public
-                            else [f"identity:{str(identity_id_value)}"]
+                            else [
+                                f"identity:{str(identity_id_value)}",
+                                f"resource:{str(resource_id_value)}",
+                            ]
                         ),
                     )
             finally:

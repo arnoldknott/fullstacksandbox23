@@ -3,36 +3,57 @@ import { error } from '@sveltejs/kit';
 import { IdentityType, PUBLIC_IDENTITY_ID } from '$lib/accessHandler';
 import { backendAPI } from '$lib/server/apis/backendApi';
 import { microsoftGraph } from '$lib/server/apis/msgraph';
-import type { AccessPolicy, Hierarchy, Identity, Presentation, QuestionExtended } from '$lib/types';
+import type {
+	AccessPolicy,
+	Hierarchy,
+	Identity,
+	PresentationExtended,
+	QuestionExtended
+} from '$lib/types';
 
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ url, locals }) => {
+export const load: PageServerLoad = async ({ params, locals }) => {
 	const sessionId = locals.sessionData.sessionId;
 	const payload = {
-		presentation: {} as Presentation,
+		presentation: {} as PresentationExtended,
+		presentationCursor: 0,
 		questions: [] as QuestionExtended[],
 		cursor: 0,
 		identities: [] as Identity[]
 	};
-	const presentationId = url.pathname.split('/presentation/setup/')[1];
-	const [presentationResponse, questionSnapshot, policiesResponse, hierarchiesResponse] =
-		await Promise.all([
-			backendAPI.get(sessionId, '/presentation/' + presentationId),
-			backendAPI.getSnapshot<QuestionExtended>(
-				sessionId,
-				'/quiz/question/snapshot?include=creation-date&include=last-modified-date&include=access-right&sort=creation-date&direction=desc&parent-id=' +
-					presentationId
-			),
-			backendAPI.get(sessionId, '/access/policy/resource/type/Question'),
-			backendAPI.get(sessionId, '/access/hierarchies?parent-id=' + presentationId)
-		]);
-	if (presentationResponse.status === 200) {
-		const presentationData = await presentationResponse.json();
-		payload.presentation = presentationData;
-	} else {
-		console.error(404, 'presentationData could not be loaded');
+	const presentationId = params.id;
+	const [
+		presentationSnapshot,
+		questionSnapshot,
+		policiesResponse,
+		hierarchiesResponse,
+		presentationPoliciesResponse
+	] = await Promise.all([
+		backendAPI.getSnapshot<PresentationExtended>(
+			sessionId,
+			'/presentation/snapshot?include=access-right'
+		),
+		backendAPI.getSnapshot<QuestionExtended>(
+			sessionId,
+			'/quiz/question/snapshot?include=creation-date&include=last-modified-date&include=access-right&sort=creation-date&direction=desc&parent-id=' +
+				presentationId
+		),
+		backendAPI.get(sessionId, '/access/policy/resource/type/Question'),
+		backendAPI.get(sessionId, '/access/hierarchies?parent-id=' + presentationId),
+		backendAPI.get(sessionId, '/access/policy/resource/type/Presentation')
+	]);
+	const presentation = presentationSnapshot.entities.find((entity) => entity.id === presentationId);
+	if (!presentation) error(404, 'Presentation could not be loaded');
+	if (!presentationPoliciesResponse.ok) {
+		error(presentationPoliciesResponse.status, 'Presentation access policies could not be loaded');
 	}
+	const presentationPolicies: AccessPolicy[] = await presentationPoliciesResponse.json();
+	presentation.access_policies = presentationPolicies.filter(
+		(policy) => policy.resource_id === presentationId
+	);
+	payload.presentation = presentation;
+	payload.presentationCursor = presentationSnapshot.cursor;
 	if (!policiesResponse.ok) {
 		error(policiesResponse.status, 'Question access policies could not be loaded');
 	}
