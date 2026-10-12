@@ -59,11 +59,12 @@ async def post_protected_resource(
 
 @router.get("/resource/", status_code=200)
 async def get_protected_resources(
+    response: Response,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
 ) -> list[ProtectedResourceRead]:
     """Returns all protected resources."""
-    return await protected_resource_view.get(token_payload, guards)
+    return await protected_resource_view.get(token_payload, guards, response=response)
 
 
 @router.get("/resource/snapshot", status_code=200)
@@ -77,20 +78,22 @@ async def get_protected_resource_entity_snapshot(
 ) -> list[ProtectedResourceExtended]:  # pyright: ignore[reportInvalidTypeForm]
     """Returns an optionally enriched protected-resource entity snapshot."""
     snapshot = await protected_resource_view.get_entity_snapshot(
-        token_payload, guards, include, sort, direction
+        token_payload, guards, include, sort, direction, response=response
     )
-    response.headers["X-Entity-Cursor"] = str(snapshot.cursor)
     return cast(list[ProtectedResourceExtended], snapshot.items)
 
 
 @router.get("/resource/{resource_id}", status_code=200)
 async def get_protected_resource_by_id(
+    response: Response,
     resource_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
 ) -> ProtectedResourceRead:
     """Returns a protected resource."""
-    return await protected_resource_view.get_by_id(resource_id, token_payload, guards)
+    return await protected_resource_view.get_by_id(
+        resource_id, token_payload, guards, response=response
+    )
 
 
 @router.put("/resource/{resource_id}", status_code=200)
@@ -146,11 +149,12 @@ async def post_protected_child(
 
 @router.get("/child/", status_code=200)
 async def get_protected_child(
+    response: Response,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
 ) -> list[ProtectedChildRead]:
     """Returns all protected child resources."""
-    return await protected_child_view.get(token_payload, guards)
+    return await protected_child_view.get(token_payload, guards, response=response)
 
 
 @router.get("/child/snapshot", status_code=200)
@@ -164,20 +168,22 @@ async def get_protected_child_entity_snapshot(
 ) -> list[ProtectedChildExtended]:  # pyright: ignore[reportInvalidTypeForm]
     """Returns an optionally enriched protected-child entity snapshot."""
     snapshot = await protected_child_view.get_entity_snapshot(
-        token_payload, guards, include, sort, direction
+        token_payload, guards, include, sort, direction, response=response
     )
-    response.headers["X-Entity-Cursor"] = str(snapshot.cursor)
     return cast(list[ProtectedChildExtended], snapshot.items)
 
 
 @router.get("/child/{resource_id}", status_code=200)
 async def get_protected_child_by_id(
+    response: Response,
     resource_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
 ) -> ProtectedChildRead:
     """Returns a protected child resource."""
-    return await protected_child_view.get_by_id(resource_id, token_payload, guards)
+    return await protected_child_view.get_by_id(
+        resource_id, token_payload, guards, response=response
+    )
 
 
 @router.put("/child/{resource_id}", status_code=200)
@@ -233,11 +239,14 @@ async def post_protected_grandchild(
 
 @router.get("/grandchild/", status_code=200)
 async def get_protected_grandchild(
+    response: Response,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
 ) -> list[ProtectedGrandChildRead]:
     """Returns all protected grandchild resources."""
-    return await protected_grand_child_view.get(token_payload, guards)
+    return await protected_grand_child_view.get(
+        token_payload, guards, response=response
+    )
 
 
 @router.get("/grandchild/snapshot", status_code=200)
@@ -251,21 +260,21 @@ async def get_protected_grandchild_entity_snapshot(
 ) -> list[ProtectedGrandChildExtended]:  # pyright: ignore[reportInvalidTypeForm]
     """Returns an optionally enriched protected-grandchild entity snapshot."""
     snapshot = await protected_grand_child_view.get_entity_snapshot(
-        token_payload, guards, include, sort, direction
+        token_payload, guards, include, sort, direction, response=response
     )
-    response.headers["X-Entity-Cursor"] = str(snapshot.cursor)
     return cast(list[ProtectedGrandChildExtended], snapshot.items)
 
 
 @router.get("/grandchild/{resource_id}", status_code=200)
 async def get_protected_grandchild_by_id(
+    response: Response,
     resource_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
 ) -> ProtectedGrandChildRead:
     """Returns a protected grandchild resource."""
     return await protected_grand_child_view.get_by_id(
-        resource_id, token_payload, guards
+        resource_id, token_payload, guards, response=response
     )
 
 

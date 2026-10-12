@@ -50,13 +50,14 @@ async def post_presentation(
 
 @router.get("/", status_code=200)
 async def get_presentations(
+    response: Response,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(
         Guards(MicrosoftGuard(scopes=["api.read"], roles=["User"]), LinkedInGuard())
     ),
 ) -> list[PresentationRead]:
     """Returns all presentations."""
-    return await presentation_view.get(token_payload, guards)
+    return await presentation_view.get(token_payload, guards, response=response)
 
 
 @router.get("/snapshot", status_code=200)
@@ -77,8 +78,8 @@ async def get_presentation_entity_snapshot(
         includes=include,
         sort=sort,
         direction=direction,
+        response=response,
     )
-    response.headers["X-Entity-Cursor"] = str(snapshot.cursor)
     return cast(list[PresentationExtended], snapshot.items)
 
 
@@ -109,6 +110,7 @@ get_presentation_by_path_guards = Guards(
 
 @router.get("/path/{path:path}", status_code=200)
 async def get_presentation_by_path(
+    response: Response,
     path: str,
     token_payload: Annotated[
         Optional[dict], Depends(provide_http_token_payload)
@@ -121,7 +123,10 @@ async def get_presentation_by_path(
     # Normalize to leading slash so "/a/b" and "a/b" resolve consistently.
     normalized_path = path if path.startswith("/") else f"/{path}"
 
-    async with PresentationCRUD() as crud:
+    async with (
+        PresentationCRUD() as crud,
+        presentation_view.entity_response(crud, response),
+    ):
         validated_path = validate_endpoint_path(normalized_path)
         presentation_path = cast(Any, getattr(Presentation, "path"))
         by_path = await crud.read(

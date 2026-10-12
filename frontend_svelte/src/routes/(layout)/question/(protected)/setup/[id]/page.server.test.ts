@@ -2,13 +2,15 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
 	get: vi.fn(),
-	getSnapshot: vi.fn()
+	getSnapshot: vi.fn(),
+	getAccessPolicies: vi.fn()
 }));
 
 vi.mock('$lib/server/apis/backendApi', () => ({
 	backendAPI: {
 		get: mocks.get,
-		getSnapshot: mocks.getSnapshot
+		getSnapshot: mocks.getSnapshot,
+		getAccessPolicies: mocks.getAccessPolicies
 	}
 }));
 
@@ -23,6 +25,10 @@ const response = (body: unknown, status = 200) =>
 describe('question setup snapshot', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		mocks.getAccessPolicies.mockResolvedValue([
+			{ id: 1, resource_id: 'message-1', action: 'own', public: false },
+			{ id: 2, resource_id: 'numerical-1', action: 'write', public: false }
+		]);
 		mocks.getSnapshot.mockImplementation((_sessionId: string, path: string) => {
 			if (path.startsWith('/quiz/message/snapshot')) {
 				return Promise.resolve({
@@ -38,16 +44,6 @@ describe('question setup snapshot', () => {
 		mocks.get.mockImplementation((_sessionId: string, path: string) => {
 			if (path === '/quiz/question/question-1') {
 				return Promise.resolve(response({ id: 'question-1' }));
-			}
-			if (path === '/access/policy/resource/type/Message') {
-				return Promise.resolve(
-					response([{ id: 1, resource_id: 'message-1', action: 'own', public: false }])
-				);
-			}
-			if (path === '/access/policy/resource/type/Numerical') {
-				return Promise.resolve(
-					response([{ id: 2, resource_id: 'numerical-1', action: 'write', public: false }])
-				);
 			}
 			return Promise.resolve(
 				response([
@@ -71,6 +67,7 @@ describe('question setup snapshot', () => {
 				'include=creation-date&include=last-modified-date&include=access-right'
 			)
 		);
+		expect(mocks.getAccessPolicies).toHaveBeenCalledWith('session-1', ['message-1', 'numerical-1']);
 		expect(result.questionsData.messages[0]).toMatchObject({
 			id: 'message-1',
 			access_right: 'own',

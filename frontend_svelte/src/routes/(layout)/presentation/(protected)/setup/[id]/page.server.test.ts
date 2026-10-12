@@ -1,6 +1,11 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
-const mocks = vi.hoisted(() => ({ get: vi.fn(), getSnapshot: vi.fn() }));
+const mocks = vi.hoisted(() => ({
+	get: vi.fn(),
+	getSnapshot: vi.fn(),
+	getEntity: vi.fn(),
+	getAccessPolicies: vi.fn()
+}));
 
 vi.mock('$lib/server/apis/backendApi', () => ({
 	backendAPI: { ...mocks, getAllIdentities: vi.fn().mockResolvedValue([]) }
@@ -20,18 +25,18 @@ const event = {
 	locals: { sessionData: { sessionId: 'session-1' } }
 };
 
-const presentationResponse = (cursor: string | null = '21') =>
-	Response.json(
-		{ id: 'presentation-1', path: '/example' },
-		{ headers: cursor === null ? {} : { 'X-Entity-Cursor': cursor } }
-	);
+const presentationResult = () => ({
+	entity: { id: 'presentation-1', path: '/example' },
+	cursor: 21
+});
 
 describe('presentation setup resource-specific loading', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		mocks.getEntity.mockResolvedValue(presentationResult());
+		mocks.getAccessPolicies.mockResolvedValue([]);
 		mocks.getSnapshot.mockResolvedValue({ entities: [{ id: 'question-1' }], cursor: 42 });
 		mocks.get.mockImplementation((_sessionId: string, path: string) => {
-			if (path === presentationPath) return Promise.resolve(presentationResponse());
 			if (path === policiesPath) return Promise.resolve(Response.json([policy]));
 			if (path === rightPath) return Promise.resolve(Response.json('own'));
 			return Promise.resolve(Response.json([]));
@@ -46,10 +51,12 @@ describe('presentation setup resource-specific loading', () => {
 			access_right: 'own',
 			access_policies: [policy]
 		});
+		expect(mocks.getEntity).toHaveBeenCalledWith('session-1', presentationPath);
+		expect(mocks.getAccessPolicies).toHaveBeenCalledWith('session-1', ['question-1']);
 		expect(result.payload.presentationCursor).toBe(21);
 		expect(result.payload.cursor).toBe(42);
 		expect(result.payload.questions[0].access_policies).toEqual([]);
-		for (const path of [presentationPath, policiesPath, rightPath]) {
+		for (const path of [policiesPath, rightPath]) {
 			expect(mocks.get).toHaveBeenCalledWith('session-1', path);
 		}
 		expect(mocks.getSnapshot).toHaveBeenCalledTimes(1);
@@ -63,7 +70,7 @@ describe('presentation setup resource-specific loading', () => {
 		);
 	});
 
-	test.each([presentationPath, policiesPath, rightPath])(
+	test.each([policiesPath, rightPath])(
 		'propagates a failed resource-specific request: %s',
 		async (failedPath) => {
 			const successfulGet = mocks.get.getMockImplementation()!;
@@ -77,29 +84,18 @@ describe('presentation setup resource-specific loading', () => {
 	);
 
 	test('preserves presentation not-found responses', async () => {
-		mocks.get.mockResolvedValue(new Response(null, { status: 404 }));
+		mocks.getEntity.mockRejectedValue({ status: 404 });
 		await expect(load(event as never)).rejects.toMatchObject({ status: 404 });
 	});
 
-	test.each([null, '-1', 'not-a-cursor', '1.5', '9007199254740992'])(
-		'rejects a missing or invalid replay cursor: %s',
-		async (cursor) => {
-			mocks.get.mockResolvedValue(presentationResponse(cursor));
-			await expect(load(event as never)).rejects.toMatchObject({ status: 502 });
-		}
-	);
-
 	test('loads access data only after the presentation read has captured its replay cursor', async () => {
-		let resolvePresentation!: (response: Response) => void;
-		const successfulGet = mocks.get.getMockImplementation()!;
-		mocks.get.mockImplementation((sessionId: string, path: string) =>
-			path === presentationPath
-				? new Promise<Response>((resolve) => (resolvePresentation = resolve))
-				: successfulGet(sessionId, path)
+		let resolvePresentation!: (value: ReturnType<typeof presentationResult>) => void;
+		mocks.getEntity.mockImplementation(
+			() => new Promise((resolve) => (resolvePresentation = resolve))
 		);
 		const loading = load(event as never);
 		expect(mocks.get).not.toHaveBeenCalledWith('session-1', policiesPath);
-		resolvePresentation(presentationResponse());
+		resolvePresentation(presentationResult());
 		await loading;
 		expect(mocks.get).toHaveBeenCalledWith('session-1', policiesPath);
 	});

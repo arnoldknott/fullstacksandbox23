@@ -25,17 +25,25 @@ export const load: PageServerLoad = async ({ parent, locals, params }) => {
 	const snapshotQuery =
 		'?include=creation-date&include=access-right&sort=creation-date&direction=desc';
 	const [ueberGroupSnapshot, groupSnapshot, hierarchiesResponse] = await Promise.all([
-		backendAPI.getSnapshot<UeberGroupExtended>(sessionId, '/uebergroup/snapshot' + snapshotQuery),
+		backendAPI.getEntity<UeberGroupExtended>(sessionId, '/uebergroup/' + params.ueberGroupId),
 		backendAPI.getSnapshot<GroupExtended>(sessionId, '/group/snapshot' + snapshotQuery),
 		backendAPI.get(sessionId, '/access/hierarchies?parent-id=' + params.ueberGroupId)
 	]);
 	if (!hierarchiesResponse.ok) {
 		error(502, 'Identity snapshots could not be loaded');
 	}
-	const thisUeberGroup = ueberGroupSnapshot.entities.find(
-		(group) => group.id === params.ueberGroupId
-	);
-	if (!thisUeberGroup) error(404, 'Ueber group could not be loaded');
+	const thisUeberGroup = ueberGroupSnapshot.entity;
+	const [rightResponse, createdResponse] = await Promise.all([
+		backendAPI.get(sessionId, '/access/right/resource/' + params.ueberGroupId),
+		backendAPI.get(sessionId, '/access/log/' + params.ueberGroupId + '/created')
+	]);
+	if (!rightResponse.ok)
+		error(rightResponse.status, 'Ueber group access right could not be loaded');
+	if (!createdResponse.ok && createdResponse.status !== 404) {
+		error(createdResponse.status, 'Ueber group creation date could not be loaded');
+	}
+	thisUeberGroup.access_right = await rightResponse.json();
+	thisUeberGroup.creation_date = createdResponse.ok ? await createdResponse.json() : undefined;
 	const hierarchies = (await hierarchiesResponse.json()) as Hierarchy[];
 	const hierarchiesByGroup = Object.groupBy(hierarchies, (hierarchy) => hierarchy.child_id);
 	for (const group of groupSnapshot.entities) {

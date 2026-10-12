@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from typing import List
 
 import pytest
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from httpx2 import AsyncClient
 from sqlmodel import select
 
@@ -189,7 +189,10 @@ async def test_admin_posts_user(
 
     # Verify that the user was created in the database
     db_user = await get_user_by_id(
-        created_user.id, mocked_provide_http_token_payload, mock_guards(roles=["User"])  # type: ignore[arg-type]
+        Response(),
+        created_user.id,
+        mocked_provide_http_token_payload,
+        mock_guards(roles=["User"]),  # type: ignore[arg-type]
     )
     assert db_user is not None
     assert db_user.id is not None
@@ -254,7 +257,10 @@ async def test_post_user_with_integer_user_id(
 
     # Verify that the user was created in the database
     db_user = await get_user_by_id(
-        created_user.id, mocked_provide_http_token_payload, mock_guards(roles=["User"])  # type: ignore[arg-type]
+        Response(),
+        created_user.id,
+        mocked_provide_http_token_payload,
+        mock_guards(roles=["User"]),  # type: ignore[arg-type]
     )
     assert db_user.id == uuid.UUID(created_user.id)  # type: ignore[arg-type]
     assert db_user.id != 1
@@ -320,7 +326,10 @@ async def test_post_user_with_uuid_user_id(
 
     # Verify that the user was created in the database
     db_user = await get_user_by_id(
-        created_user.id, mocked_provide_http_token_payload, mock_guards(roles=["User"])  # type: ignore[arg-type]
+        Response(),
+        created_user.id,
+        mocked_provide_http_token_payload,
+        mock_guards(roles=["User"]),  # type: ignore[arg-type]
     )
     assert db_user.id == uuid.UUID(created_user.id)  # type: ignore[arg-type]
     assert db_user.id != uuid.UUID(test_uuid)
@@ -1972,6 +1981,7 @@ async def test_put_user_from_admin(
     existing_user = await add_one_azure_test_user(2)  # type: ignore[call-arg]
 
     existing_db_user = await get_user_by_id(
+        Response(),
         str(existing_user.id),  # type: ignore[arg-type]
         mocked_provide_http_token_payload,
         mock_guards(roles=["User"]),
@@ -2032,6 +2042,7 @@ async def test_put_user_with_integer_user_id(
     _ = app_override_provide_http_token_payload
     existing_user = await add_one_azure_test_user(0)  # type: ignore[call-arg]
     existing_db_user = await get_user_by_id(
+        Response(),
         str(existing_user.id),  # type: ignore[arg-type]
         mocked_provide_http_token_payload,
         mock_guards(roles=["User"]),
@@ -2101,6 +2112,7 @@ async def test_admin_put_user_with_uuid_user_id(
     existing_user = await add_one_azure_test_user(0)  # type: ignore[call-arg]
 
     existing_db_user = await get_user_by_id(
+        Response(),
         str(existing_user.id),  # type: ignore[arg-type]
         mocked_provide_http_token_payload,
         mock_guards(roles=["User"]),
@@ -2190,7 +2202,10 @@ async def test_put_user_invalid_token(
     existing_user = await add_one_azure_test_user(0)  # type: ignore[call-arg]
 
     existing_db_user = await get_user_by_id(
-        str(existing_user.id), token_admin_read, mock_guards(roles=["User"])  # type: ignore[arg-type]
+        Response(),
+        str(existing_user.id),
+        token_admin_read,
+        mock_guards(roles=["User"]),  # type: ignore[arg-type]
     )
     assert existing_db_user.azure_user_id == existing_user.azure_user_id
     assert existing_db_user.id is not None
@@ -2224,7 +2239,10 @@ async def test_user_puts_another_user(
     existing_user = await add_one_azure_test_user(1)  # type: ignore[call-arg]
 
     existing_db_user = await get_user_by_id(
-        str(existing_user.id), token_admin_read, mock_guards(roles=["User"])  # type: ignore[arg-type]
+        Response(),
+        str(existing_user.id),
+        token_admin_read,
+        mock_guards(roles=["User"]),  # type: ignore[arg-type]
     )
     assert existing_db_user.is_active is True
 
@@ -2261,7 +2279,10 @@ async def test_user_deletes_itself(
     _ = app_override_provide_http_token_payload
     existing_user = await add_one_azure_test_user(0)  # type: ignore[call-arg]
     existing_db_user = await get_user_by_id(
-        str(existing_user.id), token_admin_read, mock_guards(roles=["User"])  # type: ignore[arg-type]
+        Response(),
+        str(existing_user.id),
+        token_admin_read,
+        mock_guards(roles=["User"]),  # type: ignore[arg-type]
     )
     assert existing_db_user.azure_user_id == existing_user.azure_user_id
     assert existing_db_user.id is not None
@@ -2312,6 +2333,7 @@ async def test_admin_deletes_user(
     existing_user = await add_one_azure_test_user(0)  # type: ignore[call-arg]
 
     existing_db_user = await get_user_by_id(
+        Response(),
         str(existing_user.id),  # type: ignore[arg-type]
         mocked_provide_http_token_payload,
         mock_guards(roles=["User"]),
@@ -2374,6 +2396,7 @@ async def test_delete_user_invalid_token(
     existing_user = await add_one_azure_test_user(2)  # type: ignore[call-arg]
 
     existing_db_user = await get_user_by_id(
+        Response(),
         str(existing_user.id),  # type: ignore[arg-type]
         token_admin_read,
         mock_guards(roles=["User"]),
@@ -2391,6 +2414,7 @@ async def test_delete_user_invalid_token(
 
     # check if user is still there:
     existing_db_user = await get_user_by_id(
+        Response(),
         str(existing_user.id),  # type: ignore[arg-type]
         token_admin_read,
         mock_guards(roles=["User"]),
@@ -2420,7 +2444,10 @@ async def test_user_deletes_another_user(
     existing_user = await add_one_azure_test_user(2)  # type: ignore[call-arg]
 
     existing_db_user = await get_user_by_id(
-        str(existing_user.id), token_admin_read, mock_guards(roles=["User"])  # type: ignore[arg-type]
+        Response(),
+        str(existing_user.id),
+        token_admin_read,
+        mock_guards(roles=["User"]),  # type: ignore[arg-type]
     )
     assert existing_db_user.azure_user_id == existing_user.azure_user_id
     assert existing_db_user.id is not None
@@ -2435,7 +2462,10 @@ async def test_user_deletes_another_user(
 
     # check if user is still there:
     existing_db_user = await get_user_by_id(
-        str(existing_user.id), token_admin_read, mock_guards(roles=["User"])  # type: ignore[arg-type]
+        Response(),
+        str(existing_user.id),
+        token_admin_read,
+        mock_guards(roles=["User"]),  # type: ignore[arg-type]
     )
     assert existing_db_user.azure_user_id == existing_user.azure_user_id
     assert existing_db_user.id is not None

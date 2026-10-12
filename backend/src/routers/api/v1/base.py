@@ -1,4 +1,5 @@
 import logging
+from contextlib import asynccontextmanager
 
 from fastapi import Response
 
@@ -23,6 +24,15 @@ class BaseView:
     def __init__(self, crud):
         self.crud = crud
         register_crud(crud)
+
+    @staticmethod
+    @asynccontextmanager
+    async def entity_response(crud, response: Response | None):
+        """Attach one handoff cursor captured before a successful entity read."""
+        cursor = await crud.logging_crud.read_cursor() if response is not None else None
+        yield
+        if response is not None:
+            response.headers["X-Entity-Cursor"] = str(cursor)
 
     # TBD: In a similar manner
     # - implement rate limiting
@@ -88,10 +98,11 @@ class BaseView:
         # get operation does not need a token_payload, if the resource is public
         token_payload,
         guards: GuardTypes,
+        response: Response | None = None,
     ):
         logger.info("GET view to retrieve all objects from read CRUD")
         current_user = await check_token_against_guards(token_payload, guards)
-        async with self.crud() as crud:
+        async with self.crud() as crud, self.entity_response(crud, response):
             objects = await crud.read(current_user)
 
         return objects
@@ -104,17 +115,21 @@ class BaseView:
         sort: CollectionSort | None = None,
         direction: SortDirection = SortDirection.ascending,
         parent_id=None,
+        response: Response | None = None,
     ):
         """Returns an enriched entity collection and its mutation cursor."""
         current_user = await check_token_against_guards(token_payload, guards)
         async with self.crud() as crud:
-            return await crud.read_entity_snapshot(
+            snapshot = await crud.read_entity_snapshot(
                 current_user=current_user,
                 includes=set(includes or []),
                 sort=sort,
                 direction=direction,
                 parent_id=parent_id,
             )
+        if response is not None:
+            response.headers["X-Entity-Cursor"] = str(snapshot.cursor)
+        return snapshot
 
     async def get_by_id(
         self,
@@ -125,14 +140,8 @@ class BaseView:
     ):
         logger.info("GET by id view to retrieve specific object from read CRUD")
         current_user = await check_token_against_guards(token_payload, guards)
-        async with self.crud() as crud:
-            # Capture before reading so subscription replay covers concurrent changes.
-            cursor = (
-                await crud.logging_crud.read_cursor() if response is not None else None
-            )
+        async with self.crud() as crud, self.entity_response(crud, response):
             object = await crud.read_by_id(id, current_user)
-        if response is not None:
-            response.headers["X-Entity-Cursor"] = str(cursor)
         return object
 
     async def get_file_by_id(
