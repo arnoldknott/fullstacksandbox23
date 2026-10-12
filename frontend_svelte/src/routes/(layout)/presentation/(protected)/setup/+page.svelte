@@ -110,24 +110,6 @@
 	access.
 {/snippet}
 
-{#snippet newPresentationFooter()}
-	<div class="ml-5 flex flex-row justify-end gap-4">
-		<button
-			class="btn btn-secondary-container btn-gradient shadow-outline rounded-full shadow"
-			aria-label="Cancel"
-			onclick={() => {
-				hideNewPresentationCard = true;
-			}}><span class="icon-[tabler--x] size-5"></span>Cancel</button
-		>
-		<button
-			class="btn btn-primary-container btn-gradient shadow-outline rounded-full shadow"
-			aria-label="Save new presentation"
-			onclick={() => submitPresentation()}
-			><span class="icon-[tabler--send-2] size-5"></span>Save</button
-		>
-	</div>
-{/snippet}
-
 {#snippet warning()}
 	<span class="icon-[fluent-color--warning-24] size-4"></span>
 {/snippet}
@@ -138,7 +120,6 @@
 	<Card
 		id={socketioPresentations.pendingEntities[0].id}
 		title="New presentation"
-		footer={newPresentationFooter}
 		closeButton
 		bind:hidden={hideNewPresentationCard}
 	>
@@ -200,6 +181,23 @@
 				</ul>
 			</FormElement>
 		</div>
+		{#snippet footer()}
+			<div class="ml-5 flex flex-row justify-end gap-4">
+				<button
+					class="btn btn-secondary-container btn-gradient shadow-outline rounded-full shadow"
+					aria-label="Cancel"
+					onclick={() => {
+						hideNewPresentationCard = true;
+					}}><span class="icon-[tabler--x] size-5"></span>Cancel</button
+				>
+				<button
+					class="btn btn-primary-container btn-gradient shadow-outline rounded-full shadow"
+					aria-label="Save new presentation"
+					onclick={() => submitPresentation()}
+					><span class="icon-[tabler--send-2] size-5"></span>Save</button
+				>
+			</div>
+		{/snippet}
 	</Card>
 {:else if !socketioPresentations?.pendingEntities[0] && !hideNewPresentationCard}
 	<div class="label text-error" transition:slide={{ duration: 600 }}>
