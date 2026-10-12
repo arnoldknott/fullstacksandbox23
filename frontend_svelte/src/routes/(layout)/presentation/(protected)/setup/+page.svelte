@@ -85,31 +85,6 @@
 
 <Display id="overview-presentations">Presentations</Display>
 
-{#snippet slugDescription()}
-	This is the endpoint added for user access. It is not mandatory, as the presentation is always
-	accessible via its id in place of the slug. <span class="text-accent"
-		>Add a few words on allowed characters and uniqueness.</span
-	>
-{/snippet}
-
-{#snippet sourceDescription()}
-	Where is the source code for this presentation stored? For example, intern - as part of the source
-	code of this platform - a github or gitlab repository. <span class="text-accent"
-		>Consider adding the option for a staging environemnt.</span
-	>
-{/snippet}
-
-{#snippet accessDescription()}
-	Who has which access to this presentation?
-	<br />
-	Default is public <span class="icon-[gis--globe-earth-alt] size-4"></span>
-	and have read
-	<span
-		class={`${AccessHandler.rightsIcon(Action.READ)} ${AccessHandler.rightsIconColor(Action.READ)} size-4`}
-	></span>
-	access.
-{/snippet}
-
 {#snippet warning()}
 	<span class="icon-[fluent-color--warning-24] size-4"></span>
 {/snippet}
@@ -125,7 +100,13 @@
 	>
 		<div class="flex w-full flex-wrap gap-6">
 			<div class="grow">
-				<FormElement title="Slug" description={slugDescription} extraClasses="w-full">
+				<FormElement title="Slug" extraClasses="w-full">
+					{#snippet description()}
+						This is the endpoint added for user access. It is not mandatory, as the presentation is
+						always accessible via its id in place of the slug. <span class="text-accent"
+							>Add a few words on allowed characters and uniqueness.</span
+						>
+					{/snippet}
 					<div class="md:flex-cols-2 wrap flex gap-2">
 						<code class="mt-5 shrink">{page.url.origin}/presentation/</code>
 						<div class="input-filled input-primary w-full">
@@ -142,7 +123,13 @@
 						</div>
 					</div>
 				</FormElement>
-				<FormElement title="Source" description={sourceDescription} extraClasses="max-w-300">
+				<FormElement title="Source" extraClasses="max-w-300">
+					{#snippet description()}
+						Where is the source code for this presentation stored? For example, intern - as part of
+						the source code of this platform - a github or gitlab repository. <span
+							class="text-accent">Consider adding the option for a staging environemnt.</span
+						>
+					{/snippet}
 					{@render warning()} For now, all presentations are <IdBadge id="intern" />, e.g. hosted
 					with the source code of this platform. ON the long run, <IdBadge id="Github" />, <IdBadge
 						id="Gitlab"
@@ -166,7 +153,17 @@
 				</FormElement>
 			</div>
 
-			<FormElement title="Access" description={accessDescription} extraClasses="max-w-100">
+			<FormElement title="Access" extraClasses="max-w-100">
+				{#snippet description()}
+					Who has which access to this presentation?
+					<br />
+					Default is public <span class="icon-[gis--globe-earth-alt] size-4"></span>
+					and have read
+					<span
+						class={`${AccessHandler.rightsIcon(Action.READ)} ${AccessHandler.rightsIconColor(Action.READ)} size-4`}
+					></span>
+					access.
+				{/snippet}
 				<ul class="bg-base-150 shadow-base-shadow overflow-y-auto rounded-lg p-2 shadow-inner">
 					{#each shareOptionsForNewPresentation, i (i)}
 						<ShareItem
