@@ -207,6 +207,14 @@
 			takeMoreResponsibility: [1, 16, 26, 42, 7],
 			moreMotivated: [2, 23, 33, 23, 11],
 			meditation: [28, 24, 46]
+		},
+		{
+			year: 2026,
+			course: 'Master',
+			learnedMore: [],
+			takeMoreResponsibility: [],
+			moreMotivated: [],
+			meditation: [8, 9, 23]
 		}
 	];
 
