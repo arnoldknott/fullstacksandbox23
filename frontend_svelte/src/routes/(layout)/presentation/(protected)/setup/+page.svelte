@@ -9,15 +9,14 @@
 	import JsonData from '$components/JsonData.svelte';
 	import Table, { countIcon, snippet, text, value } from '$components/Table.svelte';
 	import Title from '$components/Title.svelte';
-	import { AccessHandler, Action } from '$lib/accessHandler';
+	import { Action } from '$lib/accessHandler';
 	import { SocketIO } from '$lib/socketio.svelte';
-	import type { AccessShareOption, PresentationExtended } from '$lib/types';
+	import type { PresentationExtended } from '$lib/types';
 
 	import IdBadge from '../../../(protected)/IdBadge.svelte';
-	import ShareItem from '../../../playground/components/ShareItem.svelte';
 	import type { PageData } from './$types';
 	import ActionButtons from './ActionButtons.svelte';
-	import FormElement from './FormElement.svelte';
+	import PresentationFormCard from './PresentationFormCard.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -63,36 +62,17 @@
 
 	let hideNewPresentationCard: boolean = $state(!(page.url.searchParams.get('new') === 'true'));
 
-	const submitPresentation = () => {
-		const newPath = socketioPresentations.pendingEntities[0].path?.trim() ?? '';
-		socketioPresentations.pendingEntities[0].path =
-			newPath && !newPath.startsWith('/') ? `/${newPath}` : newPath;
-		socketioPresentations.submitEntity();
-		hideNewPresentationCard = true;
-	};
-
-	// TBD: move this calculation to EntityContainer (or AccessHandler) class!
-	let shareOptionsForNewPresentation: AccessShareOption[] = $derived(
-		AccessHandler.createShareOptions(
-			socketioPresentations.identities,
-			socketioPresentations.accessPolicies[socketioPresentations.pendingEntities[0].id]
-		) || []
-	);
-
 	// For showing existing presentations:
 	let viewMode = $state<'preview' | 'grid' | 'list' | 'table'>('table');
 </script>
 
 <Display id="overview-presentations">Presentations</Display>
 
-{#snippet warning()}
-	<span class="icon-[fluent-color--warning-24] size-4"></span>
-{/snippet}
-
 <!-- <JsonData data={data.payload.identities} /> -->
 
 {#if socketioPresentations?.pendingEntities[0]}
-	<Card
+	<PresentationFormCard socketio={socketioPresentations} bind:hidden={hideNewPresentationCard} />
+	<!-- <Card
 		id={socketioPresentations.pendingEntities[0].id}
 		title="New presentation"
 		closeButton
@@ -195,7 +175,7 @@
 				>
 			</div>
 		{/snippet}
-	</Card>
+	</Card> -->
 {:else if !socketioPresentations?.pendingEntities[0] && !hideNewPresentationCard}
 	<div class="label text-error" transition:slide={{ duration: 600 }}>
 		<span class="icon-[svg-spinners--12-dots-scale-rotate] size-6"></span>connecting ...
