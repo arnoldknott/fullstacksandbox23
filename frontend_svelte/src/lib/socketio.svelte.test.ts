@@ -14,7 +14,7 @@ import {
 	type SocketioConnection,
 	type SocketioStatus
 } from './socketio.svelte';
-import type { AccessPolicy, AnyEntityExtended, DemoResource } from './types';
+import type { AccessPolicy, AnyEntityExtended, DemoResource, DemoResourceExtended } from './types';
 
 // #region: Setup Test Socketio Server
 
@@ -257,6 +257,41 @@ describe('SocketIO for DemoResources', () => {
 
 		clientHandler.disconnect();
 	});
+
+	test.each(['shared', 'unshared'] as const)(
+		'reconciles snapshot policies after a %s confirmation',
+		async (success) => {
+			const initialPolicy: AccessPolicy = {
+				resource_id: 'seed',
+				identity_id: 'group-1',
+				action: Action.READ
+			};
+			const clientHandler = await SocketioClientHandler.create<DemoResourceExtended>(
+				{
+					namespace: '/demo-resource',
+					sessionId: 'session-123',
+					queryParams: { 'request-access-data': true }
+				},
+				{
+					snapshot: {
+						entities: [{ id: 'seed', name: 'seed', access_policies: [initialPolicy] }],
+						cursor: 42
+					}
+				}
+			);
+			const client = clientHandler.socketioClient;
+			expect(client.accessPolicies.seed).toEqual([initialPolicy]);
+			const policies = success === 'shared' ? [{ ...initialPolicy, action: Action.WRITE }] : [];
+			serverSocket.once('read', (id: string) => {
+				serverSocket.emit('transferred', { id, access_policies: policies });
+			});
+			serverSocket.emit('status', { success, id: 'seed' });
+			await vi.waitFor(() => {
+				expect(client.accessPolicies.seed).toEqual(policies);
+			});
+			clientHandler.disconnect();
+		}
+	);
 
 	test('reports entity ids rejected by the subscription acknowledgement', async () => {
 		const rejectedId = '00000000-0000-4000-8000-000000000001';

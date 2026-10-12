@@ -170,13 +170,14 @@ async def post_question_numerical(
 
 @router.get("/question/", status_code=200)
 async def get_questions(
+    response: Response,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(
         Guards(MicrosoftGuard(scopes=["api.read"], roles=["User"]), LinkedInGuard())
     ),
 ) -> list[QuestionRead]:
     """Returns all questions."""
-    return await question_view.get(token_payload, guards)
+    return await question_view.get(token_payload, guards, response=response)
 
 
 get_question_entity_snapshot_guards = Guards(
@@ -205,8 +206,8 @@ async def get_question_entity_snapshot(
         sort,
         direction,
         parent_id,
+        response=response,
     )
-    response.headers["X-Entity-Cursor"] = str(snapshot.cursor)
     return snapshot.items
 
 
@@ -215,6 +216,7 @@ get_question_by_id_guards = Guards(MicrosoftGuard(), LinkedInGuard(), AllowAnony
 
 @router.get("/question/{resource_id}", status_code=200)
 async def get_question_by_id(
+    response: Response,
     resource_id: UUID,
     token_payload: Annotated[
         Optional[dict], Depends(provide_http_token_payload)
@@ -222,7 +224,9 @@ async def get_question_by_id(
     guards: GuardTypes = Depends(get_question_by_id_guards),
 ) -> QuestionRead:
     """Returns a question."""
-    return await question_view.get_by_id(resource_id, token_payload, guards=guards)
+    return await question_view.get_by_id(
+        resource_id, token_payload, guards=guards, response=response
+    )
 
 
 @router.put("/question/{resource_id}", status_code=200)
@@ -272,13 +276,14 @@ async def post_message(
 
 @router.get("/message/", status_code=200)
 async def get_messages(
+    response: Response,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(
         Guards(MicrosoftGuard(scopes=["api.read"], roles=["User"]), LinkedInGuard())
     ),
 ) -> list[MessageRead]:
     """Returns all messages."""
-    return await message_view.get(token_payload, guards)
+    return await message_view.get(token_payload, guards, response=response)
 
 
 get_message_entity_snapshot_guards = Guards(
@@ -307,8 +312,8 @@ async def get_message_entity_snapshot(
         sort,
         direction,
         parent_id,
+        response=response,
     )
-    response.headers["X-Entity-Cursor"] = str(snapshot.cursor)
     return snapshot.items
 
 
@@ -317,6 +322,7 @@ get_message_by_id_guards = Guards(MicrosoftGuard(), LinkedInGuard(), AllowAnonym
 
 @router.get("/message/{resource_id}", status_code=200)
 async def get_message_by_id(
+    response: Response,
     resource_id: UUID,
     token_payload: Annotated[
         Optional[dict], Depends(provide_http_token_payload)
@@ -324,7 +330,9 @@ async def get_message_by_id(
     guards: GuardTypes = Depends(get_message_by_id_guards),
 ) -> MessageRead:
     """Returns a message."""
-    return await message_view.get_by_id(resource_id, token_payload, guards=guards)
+    return await message_view.get_by_id(
+        resource_id, token_payload, guards=guards, response=response
+    )
 
 
 @router.put("/message/{resource_id}", status_code=200)
@@ -376,13 +384,14 @@ async def delete_message(
 
 @router.get("/numerical/", status_code=200)
 async def get_numericals(
+    response: Response,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(
         Guards(MicrosoftGuard(scopes=["api.read"], roles=["User"]), LinkedInGuard())
     ),
 ) -> list[NumericalRead]:
     """Returns all numerical answers."""
-    return await numerical_view.get(token_payload, guards)
+    return await numerical_view.get(token_payload, guards, response=response)
 
 
 get_numerical_entity_snapshot_guards = Guards(
@@ -411,8 +420,8 @@ async def get_numerical_entity_snapshot(
         sort,
         direction,
         parent_id,
+        response=response,
     )
-    response.headers["X-Entity-Cursor"] = str(snapshot.cursor)
     return snapshot.items
 
 
@@ -421,6 +430,7 @@ get_numerical_by_id_guards = Guards(MicrosoftGuard(), LinkedInGuard(), AllowAnon
 
 @router.get("/numerical/{resource_id}", status_code=200)
 async def get_numerical_by_id(
+    response: Response,
     resource_id: UUID,
     token_payload: Annotated[
         Optional[dict], Depends(provide_http_token_payload)
@@ -428,7 +438,9 @@ async def get_numerical_by_id(
     guards: GuardTypes = Depends(get_numerical_by_id_guards),
 ) -> NumericalRead:
     """Returns a numerical answer."""
-    return await numerical_view.get_by_id(resource_id, token_payload, guards=guards)
+    return await numerical_view.get_by_id(
+        resource_id, token_payload, guards=guards, response=response
+    )
 
 
 @router.put("/numerical/{resource_id}", status_code=200)

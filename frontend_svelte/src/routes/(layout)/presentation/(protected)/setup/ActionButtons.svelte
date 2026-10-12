@@ -37,7 +37,7 @@
 			Action.OWN
 				? 'rounded-l-full'
 				: 'rounded-full'} shadow-sm"
-			aria-label="Edit Button"
+			aria-label="Edit"
 			// TBD: pass setup page as a parameter to the component, so that it can be used here
 			onclick={() =>
 				goto(resolve('/(layout)/presentation/(protected)/setup/[id]', { id: resourceId }))}
@@ -93,7 +93,7 @@
 			</div>
 			<button
 				class="btn btn-error-container btn-gradient btn-sm bg-error-container/70 hover:bg-error-container/50 focus:bg-error-container/50 text-error-container-content join-item shadow-outline rounded-r-full border-0 shadow-sm"
-				aria-label="Delete Button"
+				aria-label="Delete"
 				name="id"
 				onclick={() => !resourceId || socketio.deleteEntity(resourceId)}
 			>

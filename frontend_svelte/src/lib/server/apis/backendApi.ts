@@ -102,19 +102,45 @@ class BackendAPI extends BaseAPI {
 		return this.retryAfterProviderRefresh(sessionId, await request(), request);
 	}
 
+	private entityCursor(response: Response): number {
+		const rawCursor = response.headers.get('X-Entity-Cursor');
+		if (rawCursor === null || !/^\d+$/.test(rawCursor)) {
+			error(502, 'Entity response did not include a valid cursor');
+		}
+		const cursor = Number(rawCursor);
+		if (!Number.isSafeInteger(cursor)) error(502, 'Entity response included an invalid cursor');
+		return cursor;
+	}
+
+	async getEntity<T>(
+		sessionId: string | null,
+		path: string
+	): Promise<{ entity: T; cursor: number }> {
+		const response = await this.get(sessionId, path);
+		if (!response.ok) error(response.status, 'Entity could not be loaded');
+		const cursor = this.entityCursor(response);
+		return { entity: (await response.json()) as T, cursor };
+	}
+
 	async getSnapshot<T>(sessionId: string | null, path: string): Promise<BackendEntitySnapshot<T>> {
 		const response = await this.get(sessionId, path);
 		if (!response.ok) error(response.status, 'Entity snapshot could not be loaded');
-		const rawCursor = response.headers.get('X-Entity-Cursor');
-		if (rawCursor === null) error(502, 'Entity snapshot did not include a cursor');
-		const cursor = Number.parseInt(rawCursor);
-		if (!Number.isSafeInteger(cursor) || cursor < 0) {
-			error(502, 'Entity snapshot included an invalid cursor');
-		}
-		return {
-			entities: (await response.json()) as T[],
-			cursor
-		};
+		const cursor = this.entityCursor(response);
+		return { entities: (await response.json()) as T[], cursor };
+	}
+
+	async getAccessPolicies(
+		sessionId: string | null,
+		resourceIds: string[]
+	): Promise<AccessPolicy[]> {
+		if (resourceIds.length === 0) return [];
+		const response = await this.post(
+			sessionId,
+			'/access/policy/resources',
+			JSON.stringify([...new Set(resourceIds)])
+		);
+		if (!response.ok) error(response.status, 'Access policies could not be loaded');
+		return (await response.json()) as AccessPolicy[];
 	}
 
 	async put(

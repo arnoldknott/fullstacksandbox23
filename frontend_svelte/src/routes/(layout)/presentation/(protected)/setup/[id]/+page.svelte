@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
+	import { slide } from 'svelte/transition';
 
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import Card from '$components/Card.svelte';
 	import Display from '$components/Display.svelte';
@@ -10,6 +13,7 @@
 	import { SocketIO } from '$lib/socketio.svelte';
 	import type { Presentation } from '$lib/types';
 
+	import PresentationFormCard from '../PresentationFormCard.svelte';
 	import type { PageData } from './$types';
 	import QuestionSection from './QuestionsSection.svelte';
 
@@ -37,10 +41,17 @@
 			{
 				snapshot: {
 					entities: [data.payload.presentation],
-					cursor: data.payload.cursor
+					cursor: data.payload.presentationCursor
 				}
 			}
 		);
+		socketioPresentation.identities = data.payload.identities;
+		socketioPresentation.client.on('deleted', (deletedId) => {
+			if (deletedId === page.params.id) {
+				console.log('Presentation deleted:', deletedId);
+				goto(resolve('/(layout)/presentation/(protected)/setup'));
+			}
+		});
 	});
 	onDestroy(() => {
 		socketioPresentation?.client.disconnect();
@@ -81,7 +92,28 @@
 			/message,(uuid),data</code
 		>
 	</p>
+	{#if debug}
+		{#if socketioPresentation?.entities?.length > 0}
+			<JsonData data={socketioPresentation.entities} />
+		{:else}
+			<p>No presentation data available.</p>
+		{/if}
+	{/if}
 </Card>
+
+{#if socketioPresentation?.entities?.length > 0}
+	<!-- <JsonData data={socketioPresentation.entities} />
+	{page.params.id} -->
+	<PresentationFormCard
+		socketio={socketioPresentation}
+		presentationId={page.params.id}
+		hidden={false}
+	/>
+{:else}
+	<div class="label text-error" transition:slide={{ duration: 600 }}>
+		<span class="icon-[svg-spinners--12-dots-scale-rotate] size-6"></span>connecting ...
+	</div>
+{/if}
 
 <Heading id="source" sideBarEntry="Source">Source</Heading>
 <Card

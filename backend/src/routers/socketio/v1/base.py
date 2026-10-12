@@ -2,7 +2,6 @@ import asyncio
 import inspect
 import logging
 import time
-
 from typing import (
     Any,
     Dict,
@@ -30,9 +29,9 @@ from core.cache import consume_socketio_admission_ticket, redis_session_client
 from core.config import config
 from core.databases import get_async_session
 from core.security import (
-    select_provider_candidate,
     check_token_against_guards,
     load_session_provider_candidates,
+    select_provider_candidate,
 )
 from core.types import (
     Action,
@@ -963,9 +962,18 @@ class BaseNamespace(
             ]
             if active_ids:
                 model_columns = cast(Any, crud.model)
+                filters = [col(model_columns.id).in_(active_ids)]
+                parent_id = await self._get_session_query_string(sid, "parent_id")
+                if parent_id is not None:
+                    hierarchy_crud = crud.hierarchy_CRUD(session=crud.session)
+                    hierarchies = await hierarchy_crud.read(
+                        current_user=current_user, parent_id=UUID(parent_id)
+                    )
+                    child_ids = [hierarchy.child_id for hierarchy in hierarchies]
+                    filters.append(col(model_columns.id).in_(child_ids))
                 entities = await crud.read(
                     current_user=current_user,
-                    filters=[col(model_columns.id).in_(active_ids)],
+                    filters=filters,
                 )
                 entity_ids = [cast(Any, entity).id for entity in entities]
                 metadata = await crud.logging_crud.read_entity_metadata(entity_ids)
@@ -1381,7 +1389,8 @@ class BaseNamespace(
                                 "public"
                                 if public
                                 else [
-                                    f"identity:{str(access_policy_delete.identity_id)}"
+                                    f"identity:{str(access_policy_delete.identity_id)}",
+                                    f"resource:{str(access_policy_delete.resource_id)}",
                                 ]
                             ),
                         )
@@ -1413,7 +1422,10 @@ class BaseNamespace(
                         rooms=(
                             "public"
                             if public
-                            else [f"identity:{str(identity_id_value)}"]
+                            else [
+                                f"identity:{str(identity_id_value)}",
+                                f"resource:{str(resource_id_value)}",
+                            ]
                         ),
                     )
             finally:

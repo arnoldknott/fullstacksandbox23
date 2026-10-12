@@ -1088,11 +1088,15 @@ async def test_user_shares_owned_resource_with_groups_in_azure_token(
 
     assert status_data1 == [{"success": "shared", "id": str(resources[0].id)}]
     assert status_data2 == [{"success": "shared", "id": str(resources[0].id)}]
-    # Even one user is admin, share events don't get emitted automatically to admin,
-    # Admin needs to subscribe in query paramenter with "join-admin-room = True" to get all events.
-    # Anyways can see everything!
-    # Unless the admin also has the team in the groups from token.
-    assert status_data3 == []
+    # Existing authorized resource subscribers receive policy change notifications.
+    assert status_data3 == (
+        [{"success": "shared", "id": str(resources[0].id)}]
+        if any(
+            item["id"] == str(resources[0].id)
+            for item in connection3.responses("transferred")
+        )
+        else []
+    )
 
     transfer_data1 = connection1.responses("transferred")
     transfer_data2 = connection2.responses("transferred")
@@ -1261,6 +1265,7 @@ async def test_user_updates_access_to_owned_resource_for_a_group_identity(
     # First user owns the resources:
     token_user1 = connection1.token_payload()
     token_user2 = connection2.token_payload()
+    token_user3 = connection3.token_payload()
 
     current_user1 = await connection1.current_user()
     current_user2 = await connection2.current_user()
@@ -1309,10 +1314,14 @@ async def test_user_updates_access_to_owned_resource_for_a_group_identity(
     status_data3 = connection3.responses("status")
     assert status_data1 == [{"success": "shared", "id": str(resources[1].id)}]
     assert status_data2 == [{"success": "shared", "id": str(resources[1].id)}]
-    # Even the third user is admin, share events don't get emitted automatically to admin,
-    # Anyways can see everything!
-    # Unless the admin also has the team in the groups from token.
-    assert status_data3 == []
+    # The admin read the resource and joined its resource room, so it receives
+    # policy updates even without membership in the affected group. Ordinary
+    # users outside the group have no resource access and receive no update.
+    assert status_data3 == (
+        [{"success": "shared", "id": str(resources[1].id)}]
+        if "Admin" in token_user3["roles"]
+        else []
+    )
 
     transfer_data1 = connection1.responses("transferred")
     transfer_data2 = connection2.responses("transferred")
@@ -1561,10 +1570,15 @@ async def test_user_removes_share_with_group(
                 "id": str(resources[1].id),
             }
         ]
-    # Even the third user is admin, share events don't get emitted automatically to admin,
-    # Anyways can see everything!
-    # Unless the admin also has the team in the groups from token.
-    assert status_data3 == []
+    # Existing authorized resource subscribers receive policy change notifications.
+    assert status_data3 == (
+        [{"success": "unshared", "id": str(resources[1].id)}]
+        if any(
+            item["id"] == str(resources[1].id)
+            for item in connection3.responses("transferred")
+        )
+        else []
+    )
 
     # user one gets the resource again after the unshare event
     # still has access from own access policy:
