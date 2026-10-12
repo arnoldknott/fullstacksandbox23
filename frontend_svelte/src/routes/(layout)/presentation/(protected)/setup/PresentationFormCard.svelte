@@ -3,31 +3,42 @@
 	import Card from '$components/Card.svelte';
 	import { AccessHandler, Action } from '$lib/accessHandler';
 	import { SocketIO } from '$lib/socketio.svelte';
-	import type { AccessShareOption, PresentationExtended } from '$lib/types';
+	import type { AccessShareOption, Presentation, PresentationExtended } from '$lib/types';
 
 	import IdBadge from '../../../(protected)/IdBadge.svelte';
 	import ShareItem from '../../../playground/components/ShareItem.svelte';
 	import FormElement from './FormElement.svelte';
 	let {
 		socketio,
+		presentationId = socketio.pendingEntities[0].id,
 		hidden = $bindable()
-	}: { socketio: SocketIO<PresentationExtended>; hidden: boolean } = $props();
+	}: {
+		socketio: SocketIO<PresentationExtended>;
+		presentationId?: string;
+		hidden: boolean;
+	} = $props();
+
+	let presentation: Presentation = $derived(
+		presentationId === socketio.pendingEntities[0].id
+			? socketio.pendingEntities[0]
+			: socketio.entities.find((entity) => entity.id === presentationId)!
+	);
 
 	const submitPresentation = () => {
-		const newPath = socketio.pendingEntities[0].path?.trim() ?? '';
-		socketio.pendingEntities[0].path =
-			newPath && !newPath.startsWith('/') ? `/${newPath}` : newPath;
-		socketio.submitEntity();
+		const newPath = presentation.path?.trim() ?? '';
+		presentation.path = newPath && !newPath.startsWith('/') ? `/${newPath}` : newPath;
+		socketio.submitEntity(presentation);
+		socketio.createPending();
 		hidden = true;
 	};
 
 	// TBD: move this calculation to EntityContainer (or AccessHandler) class!
 	// Is it moved already or shold the caller be simplified to a new caller:
-	// entityContainer.shareOptions(socketioPresentations.pendingEntities[0].id)?
+	// entityContainer.shareOptions(presentationId)?
 	let shareOptions: AccessShareOption[] = $derived(
 		AccessHandler.createShareOptions(
 			socketio.identities,
-			socketio.accessPolicies[socketio.pendingEntities[0].id]
+			socketio.accessPolicies[presentationId]
 		) || []
 	);
 </script>
@@ -36,7 +47,12 @@
 	<span class="icon-[fluent-color--warning-24] size-4"></span>
 {/snippet}
 
-<Card id={socketio.pendingEntities[0].id} title="New presentation" closeButton bind:hidden>
+<Card
+	id={presentation.id}
+	title={presentation.path ? presentation.path : 'New presentation'}
+	closeButton
+	bind:hidden
+>
 	<div class="flex w-full flex-wrap gap-6">
 		<div class="grow">
 			<FormElement title="Slug" extraClasses="w-full">
@@ -54,7 +70,7 @@
 							placeholder=""
 							class="input"
 							id="slugInput"
-							bind:value={socketio.pendingEntities[0].path}
+							bind:value={presentation.path}
 						/>
 						<label class="input-filled-label" for="slugInput"
 							>[add the path to your presentation here]</label
@@ -106,7 +122,7 @@
 			<ul class="bg-base-150 shadow-base-shadow overflow-y-auto rounded-lg p-2 shadow-inner">
 				{#each shareOptions, i (i)}
 					<ShareItem
-						resourceId={socketio.pendingEntities[0].id}
+						resourceId={presentationId}
 						// No need to bind, as it is anyways handled through the entityContainer's methods and the socketio's submitEntity method.
 						shareOption={shareOptions[i]}
 						{socketio}
