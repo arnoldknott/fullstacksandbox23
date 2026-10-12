@@ -2,6 +2,8 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
 
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import Card from '$components/Card.svelte';
 	import Display from '$components/Display.svelte';
@@ -44,6 +46,12 @@
 			}
 		);
 		socketioPresentation.identities = data.payload.identities;
+		socketioPresentation.client.on('deleted', (deletedId) => {
+			if (deletedId === page.params.id) {
+				console.log('Presentation deleted:', deletedId);
+				goto(resolve('/(layout)/presentation/(protected)/setup'));
+			}
+		});
 	});
 	onDestroy(() => {
 		socketioPresentation?.client.disconnect();
