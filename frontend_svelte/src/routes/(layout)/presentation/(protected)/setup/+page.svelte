@@ -205,71 +205,70 @@
 	</div>
 {/if}
 
-{#snippet existingPresentationsHeader()}
-	<div class="flex justify-between">
-		<Title id="existingPresentations" class="grow">Overview</Title>
-		<div class="flex flex-row items-center justify-center">
-			{#if hideNewPresentationCard || !socketioPresentations?.pendingEntities[0]}
-				<button
-					transition:fade={{ duration: 600 }}
-					class="btn btn-primary-container btn-gradient label btn shadow-outline mx-4 rounded-full shadow-sm"
-					aria-label="Add new presentation"
-					onclick={() => (hideNewPresentationCard = false)}
-				>
-					<!-- onclick={() => goto(resolve('/(layout)/presentation/(protected)/setup/new'))} -->
-					<span class="icon-[fa6-solid--plus] size-5"></span>
-					<!-- <span class="hidden ">Add</span> -->
-					<span class="hidden sm:inline">Add new</span>
-					<span class="hidden md:inline">presentation</span>
-				</button>
-			{/if}
-			<div class="join shadow-outline rounded-full shadow-sm">
-				<button
-					aria-label="Preview"
-					class="btn join-item btn-secondary btn-gradient btn-sm rounded-l-full py-4 {viewMode !==
-					'preview'
-						? 'opacity-60'
-						: ''}"
-					onclick={() => (viewMode = 'preview')}
-				>
-					<span class="icon-[material-symbols--preview-outline] size-5"></span>
-				</button>
-				<button
-					aria-label="Grid"
-					class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline py-4 shadow {viewMode !==
-					'grid'
-						? 'opacity-60'
-						: ''}"
-					onclick={() => (viewMode = 'grid')}
-				>
-					<span class="icon-[gridicons--grid] size-5"></span>
-				</button>
-				<button
-					aria-label="List"
-					class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline py-4 shadow {viewMode !==
-					'list'
-						? 'opacity-60'
-						: ''}"
-					onclick={() => (viewMode = 'list')}
-				>
-					<span class="icon-[material-symbols--view-list-outline] size-5"></span>
-				</button>
-				<button
-					aria-label="Table"
-					class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline rounded-r-full py-4 shadow {viewMode !==
-					'table'
-						? 'opacity-60'
-						: ''}"
-					onclick={() => (viewMode = 'table')}
-				>
-					<span class="icon-[material-symbols--table-outline] size-5"></span>
-				</button>
+<Card id="existing-presentations" extraClasses="mt-6">
+	{#snippet header()}
+		<div class="flex justify-between">
+			<Title id="existingPresentations" class="grow">Overview</Title>
+			<div class="flex flex-row items-center justify-center">
+				{#if hideNewPresentationCard || !socketioPresentations?.pendingEntities[0]}
+					<button
+						transition:fade={{ duration: 600 }}
+						class="btn btn-primary-container btn-gradient label btn shadow-outline mx-4 rounded-full shadow-sm"
+						aria-label="Add new presentation"
+						onclick={() => (hideNewPresentationCard = false)}
+					>
+						<!-- onclick={() => goto(resolve('/(layout)/presentation/(protected)/setup/new'))} -->
+						<span class="icon-[fa6-solid--plus] size-5"></span>
+						<!-- <span class="hidden ">Add</span> -->
+						<span class="hidden sm:inline">Add new</span>
+						<span class="hidden md:inline">presentation</span>
+					</button>
+				{/if}
+				<div class="join shadow-outline rounded-full shadow-sm">
+					<button
+						aria-label="Preview"
+						class="btn join-item btn-secondary btn-gradient btn-sm rounded-l-full py-4 {viewMode !==
+						'preview'
+							? 'opacity-60'
+							: ''}"
+						onclick={() => (viewMode = 'preview')}
+					>
+						<span class="icon-[material-symbols--preview-outline] size-5"></span>
+					</button>
+					<button
+						aria-label="Grid"
+						class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline py-4 shadow {viewMode !==
+						'grid'
+							? 'opacity-60'
+							: ''}"
+						onclick={() => (viewMode = 'grid')}
+					>
+						<span class="icon-[gridicons--grid] size-5"></span>
+					</button>
+					<button
+						aria-label="List"
+						class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline py-4 shadow {viewMode !==
+						'list'
+							? 'opacity-60'
+							: ''}"
+						onclick={() => (viewMode = 'list')}
+					>
+						<span class="icon-[material-symbols--view-list-outline] size-5"></span>
+					</button>
+					<button
+						aria-label="Table"
+						class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline rounded-r-full py-4 shadow {viewMode !==
+						'table'
+							? 'opacity-60'
+							: ''}"
+						onclick={() => (viewMode = 'table')}
+					>
+						<span class="icon-[material-symbols--table-outline] size-5"></span>
+					</button>
+				</div>
 			</div>
 		</div>
-	</div>
-{/snippet}
-
-<Card id="existing-presentations" header={existingPresentationsHeader} extraClasses="mt-6">
+	{/snippet}
 	<div class="w-full overflow-x-auto {viewMode !== 'preview' ? 'hidden' : ''}">
 		<p class="bg-warning text-warning-content rounded-lg p-4">Preview mode is not developed yet</p>
 	</div>
