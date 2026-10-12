@@ -2,7 +2,6 @@ import asyncio
 import inspect
 import logging
 import time
-
 from typing import (
     Any,
     Dict,
@@ -30,9 +29,9 @@ from core.cache import consume_socketio_admission_ticket, redis_session_client
 from core.config import config
 from core.databases import get_async_session
 from core.security import (
-    select_provider_candidate,
     check_token_against_guards,
     load_session_provider_candidates,
+    select_provider_candidate,
 )
 from core.types import (
     Action,
