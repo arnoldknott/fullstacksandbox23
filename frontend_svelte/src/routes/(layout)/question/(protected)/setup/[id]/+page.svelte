@@ -556,6 +556,12 @@
 					cellClass: 'max-w-0'
 				},
 				{
+					header: text('Confidential'),
+					cell: field<MessageExtended>('confidential'),
+					headerClass: 'text-center',
+					cellClass: 'text-left'
+				},
+				{
 					header: icon('tabler:language'),
 					cell: snippet(languageCell),
 					headerClass: 'text-center',
