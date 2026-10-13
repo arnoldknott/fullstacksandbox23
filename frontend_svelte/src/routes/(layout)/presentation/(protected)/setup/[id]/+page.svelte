@@ -91,7 +91,15 @@
 			>bun run test:stage:load -- --users=200 --hold=30 /numerical,(uuid) /message,(uuid),data
 			/message,(uuid),data</code
 		> -->
+		<br />
 		<code>./scripts/socketio_load.sh --users=200 --hold=30 --ramp=30 --timeout=120</code>
+		<br />
+		or
+		<br />
+		<code
+			>bun run test:stage:load -- [--users=N] [--ramp=SECONDS] [--hold=SECONDS] [--timeout=SECONDS]
+			[--backend-only | --frontend-only]</code
+		>
 	</p>
 	{#if debug}
 		{#if socketioPresentation?.entities?.length > 0}
