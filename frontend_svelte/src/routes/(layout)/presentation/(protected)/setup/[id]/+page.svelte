@@ -87,10 +87,11 @@
 	<p>
 		Add a little accordion/dropdown (by default hidden) copy-and-paste-able command for testing the
 		loading of this presentation, is user is Admin, for example:
-		<code
+		<!-- <code
 			>bun run test:stage:load -- --users=200 --hold=30 /numerical,(uuid) /message,(uuid),data
 			/message,(uuid),data</code
-		>
+		> -->
+		<code>./scripts/socketio_load.sh --users=200 --hold=30 --ramp=30 --timeout=120</code>
 	</p>
 	{#if debug}
 		{#if socketioPresentation?.entities?.length > 0}
