@@ -22,15 +22,13 @@ export const load: PageServerLoad = async ({ url }) => {
 		// const motivationQuestion = payload.questions.find((question) =>
 		// 	question.question.includes('motivation')
 		// );
-		const placesQuestion = payload.questions.find((question) =>
-			question.question === 'cbs-places'
-		);
+		const placesQuestion = payload.questions.find((question) => question.question === 'cbs-places');
 		const booksQuestion = payload.questions.find((question) => question.question === 'cbs-books');
-		const commentsQuestion = payload.questions.find((question) =>
-			question.question === 'cbs-comments'
+		const commentsQuestion = payload.questions.find(
+			(question) => question.question === 'cbs-comments'
 		);
-		const qualitativeFeedbackQuestion = payload.questions.find((question) =>
-			question.question === 'cbs-qualitative-feedback'
+		const qualitativeFeedbackQuestion = payload.questions.find(
+			(question) => question.question === 'cbs-qualitative-feedback'
 		);
 		// [payload.motivationSnapshot, payload.placesSnapshot, payload.commentsSnapshot] =
 		[
