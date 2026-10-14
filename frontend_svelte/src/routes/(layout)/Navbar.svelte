@@ -41,6 +41,9 @@
 
 	let artificialIntelligenceForm = $state<HTMLFormElement | null>(null);
 
+	console.log('=== avatarUrl ===');
+	console.log(avatarUrl);
+
 	/* Retained while the unlink interaction is tested on /oauth/providers.
 	const unlinkAccount: SubmitFunction = ({ formData, cancel }) => {
 		const provider = formData.get('provider');
@@ -125,26 +128,24 @@
 			class="dropdown flex items-center [--auto-close:inside] rtl:[--placement:bottom-end]"
 			{@attach initDropdown}
 		>
-			<span
+			<button
 				id="dropdown-menu-icon-user"
-				class="dropdown-toggle {!loggedIn ? 'icon-[fa6-solid--user] bg-secondary size-5' : ''}"
-				role="button"
+				type="button"
+				class="dropdown-toggle btn btn-sm btn-text btn-circle md:ml-2"
 				aria-haspopup="menu"
 				aria-expanded="false"
 				aria-label="User Menu"
 			>
-				{#if loggedIn}
-					{#if avatarUrl}
-						<img
-							src={avatarUrl}
-							alt="your profile"
-							class="not-hover:mask-radial-t-0% h-10 min-w-10 rounded-full object-cover not-hover:mask-radial-from-40%"
-						/>
-					{:else}
-						<span class="icon-[fa6-solid--user] bg-secondary size-5 h-10 w-10 rounded-full"></span>
-					{/if}
+				{#if loggedIn && avatarUrl}
+					<img
+						src={avatarUrl}
+						alt="your profile"
+						class="not-hover:mask-radial-t-0% h-10 min-w-10 rounded-full object-cover not-hover:mask-radial-from-40%"
+					/>
+				{:else}
+					<span class="icon-[fa6-solid--user] bg-secondary size-5"></span>
 				{/if}
-			</span>
+			</button>
 			<ul
 				class="dropdown-menu bg-base-200 text-secondary shadow-base-shadow dropdown-open:opacity-100 hidden"
 				role="menu"
