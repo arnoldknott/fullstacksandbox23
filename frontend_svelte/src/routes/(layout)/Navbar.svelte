@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Icon from '@iconify/svelte';
 	import { type SubmitFunction } from '@sveltejs/kit';
 
 	import { page } from '$app/state';
@@ -143,7 +144,7 @@
 						class="not-hover:mask-radial-t-0% h-10 min-w-10 rounded-full object-cover not-hover:mask-radial-from-40%"
 					/>
 				{:else}
-					<span class="icon-[fa6-solid--user] bg-secondary size-5"></span>
+					<Icon icon="fa6-solid:user" class="text-secondary size-5" />
 				{/if}
 			</button>
 			<ul
