@@ -33,7 +33,9 @@
 			<p>Generating QR code…</p>
 		{:then qrCodeDataUrl}
 			<img src={qrCodeDataUrl} alt="QR Code for {url}" />
-			{url}
+			<a class="link link-animated text-left" href={url} target="_blank" rel="noopener noreferrer"
+				>{url}</a
+			>
 		{:catch}
 			<p>Unable to generate QR code.</p>
 		{/await}
