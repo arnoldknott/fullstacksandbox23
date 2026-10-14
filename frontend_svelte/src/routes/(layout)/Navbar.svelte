@@ -118,10 +118,10 @@
 			class="btn btn-sm btn-text btn-circle text-primary size-8.5 md:hidden"
 			aria-label="Search"
 		>
-			<span class="icon-[tabler--search] size-5"></span>
+			<Icon icon="tabler:search" class="size-5" />
 		</button>
 		<div class="input bg-base-150 mx-2 max-w-56 rounded-full max-md:hidden">
-			<span class="icon-[tabler--search] text-base-content/80 my-auto me-3 size-5 shrink-0"></span>
+			<Icon icon="tabler:search" class="text-base-content/80 my-auto me-3 size-5 shrink-0" />
 			<label class="sr-only" for="searchInput">Search</label>
 			<input type="search" class="grow" placeholder="Search" id="searchInput" />
 		</div>
