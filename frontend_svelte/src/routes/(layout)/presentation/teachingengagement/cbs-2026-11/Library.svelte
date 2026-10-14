@@ -8,25 +8,8 @@
 		alt: string;
 		comments?: string[];
 	};
-</script>
 
-<script lang="ts">
-	import Icon from '@iconify/svelte';
-	import { flip } from 'svelte/animate';
-
-	import { Action } from '$lib/accessHandler';
-	import type { SocketIO } from '$lib/socketio.svelte';
-	import type { MessageExtended } from '$lib/types';
-
-	import Book from './Book.svelte';
-	import CardOverlay from './CardOverlay.svelte';
-
-	let { socketio, questionid }: { socketio?: SocketIO<MessageExtended>; questionid?: string } =
-		$props();
-
-	let booksAnswersSorted = $derived(socketio?.getSelectedEntities('sortedBooksAnswers') ?? []);
-
-	const providedBooks: BookType[] = [
+	export const providedBooks: BookType[] = [
 		{
 			id: 'selvbestemmelsesteorien',
 			title: 'Selvbestemmelsesteorien',
@@ -221,6 +204,21 @@
 			alt: 'Heinonen, Olli-Pekka (2025). Learning as if Life Depended on It: Why We Must See the World Anew, and Figure Out What Follows. Perspectiva. ISBN: 9781914568077.'
 		}
 	];
+</script>
+
+<script lang="ts">
+	import Icon from '@iconify/svelte';
+	import { flip } from 'svelte/animate';
+
+	import type { SocketIO } from '$lib/socketio.svelte';
+	import type { MessageExtended } from '$lib/types';
+
+	import Book from './Book.svelte';
+	import CardOverlay from './CardOverlay.svelte';
+	import CommentInput from './CommentInput.svelte';
+
+	let { socketio }: { socketio?: SocketIO<MessageExtended> } = $props();
+	let booksAnswersSorted = $derived(socketio?.getSelectedEntities('sortedBooksAnswers') ?? []);
 	// const hideBookModals = $state(providedBooks.map((book) => ({ id: book.id, hidden: false })));
 	let visibleModal = $state('');
 	let bookInModal = $derived(providedBooks.find((book) => book.id === visibleModal));
@@ -248,21 +246,6 @@
 		}
 		return counts;
 	});
-
-	const submitComment = () => {
-		const pending = socketio?.pendingEntities[0];
-		if (!socketio || !pending || !bookInModal || !comment.trim()) return;
-
-		pending.content = JSON.stringify({ bookdid: bookInModal.id, comment });
-		pending.confidential = sharerName.trim() || 'Anonymous';
-		socketio.addPendingAccessPolicy(pending.id, {
-			public: true,
-			action: Action.READ
-		});
-		socketio.submitEntity(pending, questionid, true);
-		socketio.createPending();
-		comment = '';
-	};
 </script>
 
 <div
@@ -361,33 +344,14 @@
 				</div>
 				<div class="text-left">
 					{#if socketio?.pendingEntities[0]}
-						<div
-							class="mt-4 grid w-[90%]! grid-cols-[max-content_minmax(0,1fr)] items-center gap-4 md:grid-cols-[max-content_minmax(0,8rem)_minmax(0,1fr)]"
-						>
-							<label class="text-3xl whitespace-nowrap" for="sharer_name"> Your Name: </label>
-							<input
-								type="text"
-								placeholder="Name"
-								id="sharer_name"
-								class="input input-md bg-secondary-container text-secondary-container-content w-full min-w-0 rounded-xl border placeholder:text-2xl placeholder:italic"
-								name="name"
-								bind:value={sharerName}
+						<div class="mt-4 w-[90%]">
+							<CommentInput
+								{socketio}
+								bookId={bookInModal?.id}
+								bind:name={sharerName}
+								bind:text={comment}
+								label="What's your take on this book?"
 							/>
-							<label class="col-span-2 min-w-0 text-3xl md:col-span-1" for="sharing">
-								📖 What's your take on this book?
-							</label>
-							<textarea
-								class="bg-secondary-container text-secondary-container-content col-span-3 w-full resize-none rounded-2xl border p-2 text-2xl shadow-inner placeholder:text-2xl placeholder:italic"
-								placeholder="Please type here - sharing is caring 🫶 - Press Enter to send."
-								id="sharing"
-								required
-								bind:value={comment}
-								onkeydown={(event) => {
-									if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
-										event.preventDefault();
-										submitComment();
-									}
-								}}></textarea>
 						</div>
 					{:else}
 						<div class="label text-error">

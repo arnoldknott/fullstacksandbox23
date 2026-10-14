@@ -7,6 +7,7 @@ import { Action } from '$lib/accessHandler';
 import type { SocketIO } from '$lib/socketio.svelte';
 import type { MessageExtended } from '$lib/types';
 
+import CommentInput from './CommentInput.svelte';
 import Library from './Library.svelte';
 
 vi.mock('svelte/transition', () => ({ slide: () => ({ duration: 0 }) }));
@@ -26,6 +27,7 @@ afterAll(() => {
 function renderLibrary(contents: string[] = [], names: string[] = []) {
 	const pending = { id: 'new_comment', content: '', confidential: '' };
 	const socketio = {
+		parentId: 'books-question',
 		pendingEntities: [pending],
 		getSelectedEntities: vi.fn(() =>
 			contents.map((content, index) => ({
@@ -39,8 +41,7 @@ function renderLibrary(contents: string[] = [], names: string[] = []) {
 		createPending: vi.fn()
 	};
 	const view = render(Library, {
-		socketio: socketio as unknown as SocketIO<MessageExtended>,
-		questionid: 'books-question'
+		socketio: socketio as unknown as SocketIO<MessageExtended>
 	});
 	return { socketio, pending, rerender: view.rerender };
 }
@@ -50,10 +51,48 @@ async function openFlow() {
 }
 
 describe('Library comments', () => {
+	test('an explicit parent overrides the socket parent and clearing it restores the fallback', async () => {
+		const pending = { id: 'new_comment', content: '', confidential: '' };
+		const socketio = {
+			parentId: 'socket-question',
+			pendingEntities: [pending],
+			addPendingAccessPolicy: vi.fn(),
+			submitEntity: vi.fn(),
+			createPending: vi.fn()
+		};
+		const view = render(CommentInput, {
+			socketio: socketio as unknown as SocketIO<MessageExtended>,
+			parentId: 'override-question',
+			text: 'First contribution'
+		});
+		await fireEvent.click(screen.getByRole('button', { name: 'Send' }));
+		expect(socketio.submitEntity).toHaveBeenLastCalledWith(pending, 'override-question', true);
+		await view.rerender({ parentId: undefined, text: 'Second contribution' });
+		await fireEvent.click(screen.getByRole('button', { name: 'Send' }));
+		expect(socketio.submitEntity).toHaveBeenLastCalledWith(pending, 'socket-question', true);
+	});
+
+	test('enables submission when a parent-configured socket arrives after mount', async () => {
+		const view = render(CommentInput, { text: 'My contribution' });
+		expect(screen.getByRole('button', { name: 'Send' })).toBeDisabled();
+		const pending = { id: 'new_comment', content: '', confidential: '' };
+		const socketio = {
+			parentId: 'socket-question',
+			pendingEntities: [pending],
+			addPendingAccessPolicy: vi.fn(),
+			submitEntity: vi.fn(),
+			createPending: vi.fn()
+		};
+		await view.rerender({ socketio: socketio as unknown as SocketIO<MessageExtended> });
+		expect(screen.getByRole('button', { name: 'Send' })).toBeEnabled();
+		await fireEvent.click(screen.getByRole('button', { name: 'Send' }));
+		expect(socketio.submitEntity).toHaveBeenCalledWith(pending, 'socket-question', true);
+	});
+
 	test('submits the selected book, comment and name, then clears the comment', async () => {
 		const { socketio, pending } = renderLibrary();
 		await openFlow();
-		await fireEvent.input(screen.getByLabelText('Your Name:'), { target: { value: 'Alex' } });
+		await fireEvent.input(screen.getByLabelText('Name:'), { target: { value: 'Alex' } });
 		const textarea = screen.getByRole('textbox', { name: /What's your take/ });
 		await fireEvent.input(textarea, { target: { value: 'A thoughtful book' } });
 		await fireEvent.keyDown(textarea, { key: 'Enter' });
@@ -79,13 +118,45 @@ describe('Library comments', () => {
 		await fireEvent.keyDown(textarea, { key: 'Enter' });
 		expect(socketio.submitEntity).not.toHaveBeenCalled();
 
-		await fireEvent.input(screen.getByLabelText('Your Name:'), { target: { value: '   ' } });
+		await fireEvent.input(screen.getByLabelText('Name:'), { target: { value: '   ' } });
 		await fireEvent.input(textarea, { target: { value: 'Worth reading' } });
 		await fireEvent.keyDown(textarea, { key: 'Enter', shiftKey: true });
 		expect(socketio.submitEntity).not.toHaveBeenCalled();
 		await fireEvent.keyDown(textarea, { key: 'Enter' });
 		expect(pending.confidential).toBe('Anonymous');
 		expect(socketio.submitEntity).toHaveBeenCalledOnce();
+	});
+
+	test('uses the name alone to switch between named and anonymous submissions', async () => {
+		const pending = { id: 'new_comment', content: '', confidential: '' };
+		const socketio = {
+			pendingEntities: [pending],
+			addPendingAccessPolicy: vi.fn(),
+			submitEntity: vi.fn(),
+			createPending: vi.fn()
+		};
+		render(CommentInput, {
+			socketio: socketio as unknown as SocketIO<MessageExtended>,
+			parentId: 'comments-question',
+			name: 'Alex'
+		});
+		expect(screen.getByLabelText('Name:')).toHaveValue('Alex');
+		const textarea = screen.getByRole('textbox', { name: /comments or questions/ });
+		await fireEvent.input(textarea, { target: { value: 'My named comment' } });
+		await fireEvent.click(screen.getByRole('button', { name: 'Send' }));
+		expect(pending.content).toBe('My named comment');
+		expect(pending.confidential).toBe('Alex');
+		await fireEvent.input(screen.getByLabelText('Name:'), { target: { value: '   ' } });
+		await fireEvent.input(textarea, { target: { value: 'My anonymous comment' } });
+		await fireEvent.click(screen.getByRole('button', { name: 'Send' }));
+		expect(pending.content).toBe('My anonymous comment');
+		expect(pending.confidential).toBe('Anonymous');
+		await fireEvent.input(screen.getByLabelText('Name:'), { target: { value: 'Sam' } });
+		await fireEvent.input(textarea, { target: { value: 'Now with my name' } });
+		await fireEvent.click(screen.getByRole('button', { name: 'Send' }));
+		expect(pending.content).toBe('Now with my name');
+		expect(pending.confidential).toBe('Sam');
+		expect(socketio.submitEntity).toHaveBeenLastCalledWith(pending, 'comments-question', true);
 	});
 
 	test('reactively filters comments by book and ignores invalid content', async () => {

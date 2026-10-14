@@ -1,0 +1,257 @@
+import '@testing-library/jest-dom/vitest';
+
+import { fireEvent, render, screen } from '@testing-library/svelte';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+
+import { goto } from '$app/navigation';
+import { page } from '$app/state';
+import type { QuestionExtended } from '$lib/types';
+
+import InputsPage from './+page.svelte';
+import type { PageData } from './$types';
+
+const mock = vi.hoisted(() => ({
+	state: undefined as { entities: QuestionExtended[] } | undefined,
+	configurations: [] as Array<{ submitOnly?: boolean; snapshot?: unknown }>,
+	submitted: vi.fn()
+}));
+
+vi.mock('$app/state', async () => {
+	const { SvelteURL } = await import('svelte/reactivity');
+	return {
+		page: {
+			url: new SvelteURL(
+				'https://example.org/presentation/test/inputs?input=cbs-comments&debug=true'
+			)
+		}
+	};
+});
+vi.mock('$app/navigation', () => ({
+	goto: vi.fn(async (url: URL) => {
+		const { page } = await import('$app/state');
+		page.url.href = url.href;
+	})
+}));
+vi.mock('svelte/transition', () => ({
+	fly: () => ({ duration: 0 }),
+	slide: () => ({ duration: 0 })
+}));
+vi.mock('svelte/animate', () => ({ flip: () => ({ duration: 0 }) }));
+vi.mock('$lib/userInterface', () => ({ initTooltip: vi.fn() }));
+vi.mock('emoji-picker-element', () => ({}));
+vi.mock('$lib/socketio.svelte', () => ({
+	SocketIO: class {
+		entities = $state<QuestionExtended[]>([]);
+		pendingEntities = [{ id: 'new_message', content: '', confidential: '' }];
+		client = { on: vi.fn(), disconnect: vi.fn() };
+		constructor(
+			connection: { namespace: string },
+			configuration: { snapshot?: { entities: QuestionExtended[] }; submitOnly?: boolean }
+		) {
+			mock.configurations.push(configuration);
+			this.entities = configuration.snapshot?.entities ?? [];
+			if (connection.namespace === '/question') mock.state = this;
+		}
+		addPendingAccessPolicy = vi.fn();
+		submitEntity(pending: { content: string; confidential: string }, parentId: string) {
+			mock.submitted({ ...pending }, parentId);
+		}
+		createPending() {
+			this.pendingEntities = [{ id: 'new_message', content: '', confidential: '' }];
+		}
+	}
+}));
+
+function renderInputs(stateQuestion = 'cbs-presentation-state-comments') {
+	const question = {
+		id: 'state-question',
+		question: stateQuestion,
+		language: 'en'
+	} as QuestionExtended;
+	return render(InputsPage, {
+		data: {
+			presentationUrl: '/presentation/test',
+			inputQuestions: {
+				'cbs-names': 'names-question',
+				'cbs-places': 'map-question',
+				'cbs-books': 'books-question',
+				'cbs-comments': 'comments-question'
+			},
+			stateSnapshot: { entities: [question], cursor: 42 }
+		} as unknown as PageData
+	});
+}
+
+beforeEach(() => {
+	mock.state = undefined;
+	mock.configurations = [];
+	mock.submitted.mockClear();
+	vi.mocked(goto).mockClear();
+	page.url.href = 'https://example.org/presentation/test/inputs?input=cbs-comments&debug=true';
+	Object.defineProperty(Element.prototype, 'getAnimations', {
+		configurable: true,
+		value: () => []
+	});
+	vi.stubGlobal(
+		'ResizeObserver',
+		class {
+			observe() {}
+			disconnect() {}
+		}
+	);
+});
+
+afterEach(() => vi.unstubAllGlobals());
+
+describe('Mobile inputs page', () => {
+	test('submits a name once to cbs-names, only in the confidential attribute', async () => {
+		page.url.searchParams.set('input', 'cbs-names');
+		renderInputs('cbs-presentation-state-names');
+		await fireEvent.input(screen.getByLabelText('Name:'), { target: { value: ' Alex ' } });
+		await fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+		expect(mock.submitted).toHaveBeenCalledExactlyOnceWith(
+			expect.objectContaining({ content: '', confidential: 'Alex' }),
+			'names-question'
+		);
+		expect(screen.queryByRole('button', { name: 'Continue' })).not.toBeInTheDocument();
+		expect(screen.getByRole('button', { name: 'Next input' })).toBeDisabled();
+		await fireEvent.click(screen.getByRole('button', { name: 'Change your name' }));
+		expect(screen.getByLabelText('Name:')).toHaveValue(' Alex ');
+		await fireEvent.click(screen.getByRole('button', { name: 'Change your name' }));
+		expect(screen.queryByRole('button', { name: 'Continue' })).not.toBeInTheDocument();
+		await fireEvent.click(screen.getByRole('button', { name: 'Change your name' }));
+		await fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+		expect(mock.submitted).toHaveBeenCalledOnce();
+	});
+
+	test('anonymous participants skip the names answer on the initial names step', async () => {
+		page.url.searchParams.set('input', 'cbs-names');
+		renderInputs('cbs-presentation-state-names');
+		await fireEvent.input(screen.getByLabelText('Name:'), { target: { value: '   ' } });
+		expect(screen.queryByRole('checkbox', { name: 'Anonymous' })).not.toBeInTheDocument();
+		await fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+		expect(mock.submitted).not.toHaveBeenCalled();
+		expect(screen.getByText(/\bAnonymous$/)).toBeInTheDocument();
+		expect(screen.queryByRole('button', { name: 'Continue' })).not.toBeInTheDocument();
+	});
+
+	test('opens the real map popup and submits a place with its name only in confidential', async () => {
+		page.url.searchParams.set('input', 'cbs-places');
+		const view = renderInputs();
+		await fireEvent.input(screen.getByLabelText('Name:'), { target: { value: 'Alex' } });
+		await fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+		await vi.waitFor(() =>
+			expect(view.container.querySelector('.leaflet-container')).not.toBeNull()
+		);
+		await fireEvent.click(view.container.querySelector('.leaflet-container')!, {
+			clientX: 100,
+			clientY: 100
+		});
+		const textarea = await screen.findByLabelText('What connects you to this place?');
+		expect(screen.getByLabelText('Name:')).toHaveValue('Alex');
+		await fireEvent.input(textarea, { target: { value: 'My home town' } });
+		await fireEvent.click(screen.getByRole('button', { name: 'Send' }));
+		expect(mock.submitted).toHaveBeenLastCalledWith(
+			expect.objectContaining({ confidential: 'Alex' }),
+			'map-question'
+		);
+		const content = JSON.parse(mock.submitted.mock.lastCall![0].content);
+		expect(content).toEqual({
+			emoji: '📍',
+			text: 'My home town',
+			coords: { lat: expect.any(Number), lng: expect.any(Number) }
+		});
+		expect(content).not.toHaveProperty('name');
+		expect(content).not.toHaveProperty('marker');
+	});
+
+	test('asks once and reuses the name across comment and book submissions', async () => {
+		renderInputs();
+		await fireEvent.input(screen.getByLabelText('Name:'), { target: { value: 'Alex' } });
+		await fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+		expect(screen.queryByRole('button', { name: 'Continue' })).not.toBeInTheDocument();
+		await fireEvent.input(screen.getByRole('textbox', { name: /comments or questions/ }), {
+			target: { value: 'My question' }
+		});
+		await fireEvent.click(screen.getByRole('button', { name: 'Send' }));
+		expect(mock.submitted).toHaveBeenLastCalledWith(
+			expect.objectContaining({ content: 'My question', confidential: 'Alex' }),
+			'comments-question'
+		);
+		await fireEvent.click(screen.getByRole('button', { name: 'Previous input' }));
+		await vi.waitFor(() => expect(page.url.searchParams.get('input')).toBe('cbs-books'));
+		expect(screen.getByLabelText('Name:')).toHaveValue('Alex');
+		await fireEvent.input(screen.getByRole('textbox', { name: /take on this book/ }), {
+			target: { value: 'My take' }
+		});
+		await fireEvent.click(screen.getByRole('button', { name: 'Send' }));
+		expect(mock.submitted).toHaveBeenLastCalledWith(
+			expect.objectContaining({
+				confidential: 'Alex',
+				content: JSON.stringify({ bookdid: 'selvbestemmelsesteorien', comment: 'My take' })
+			}),
+			'books-question'
+		);
+		expect(
+			mock.configurations.find((configuration) => configuration.submitOnly)
+		).not.toHaveProperty('snapshot');
+		await fireEvent.click(screen.getByRole('button', { name: 'Change your name' }));
+		await fireEvent.input(screen.getByLabelText('Name:'), { target: { value: '' } });
+		await fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+		expect(screen.getByLabelText('Name:')).toHaveValue('');
+	});
+
+	test('anonymous choice stops prompting and can be changed from the user icon', async () => {
+		renderInputs();
+		expect(screen.queryByRole('checkbox', { name: 'Anonymous' })).not.toBeInTheDocument();
+		expect(screen.getByLabelText('Name:')).toHaveValue('');
+		await fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+		expect(mock.submitted).not.toHaveBeenCalled();
+		await fireEvent.input(screen.getByRole('textbox', { name: /comments or questions/ }), {
+			target: { value: 'Anonymous comment' }
+		});
+		await fireEvent.click(screen.getByRole('button', { name: 'Send' }));
+		expect(mock.submitted).toHaveBeenLastCalledWith(
+			expect.objectContaining({ confidential: 'Anonymous' }),
+			'comments-question'
+		);
+		await fireEvent.click(screen.getByRole('button', { name: 'Change your name' }));
+		await fireEvent.input(screen.getByLabelText('Name:'), { target: { value: 'Sam' } });
+		await fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+		expect(screen.getByLabelText('Name:')).toHaveValue('Sam');
+	});
+
+	test('live state changes update the query while preserving other parameters', async () => {
+		renderInputs();
+		await vi.waitFor(() => expect(mock.state).toBeDefined());
+		mock.state!.entities = [
+			{ ...mock.state!.entities[0], question: 'cbs-presentation-state-books' }
+		];
+		await vi.waitFor(() => expect(page.url.searchParams.get('input')).toBe('cbs-books'));
+		expect(page.url.searchParams.get('debug')).toBe('true');
+		expect(goto).toHaveBeenCalledWith(expect.any(URL), {
+			replaceState: true,
+			noScroll: true,
+			keepFocus: true
+		});
+		expect(screen.getByText('Book', { selector: '.title' })).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: 'Next input' })).toBeDisabled();
+		mock.state!.entities = [
+			{ ...mock.state!.entities[0], question: 'cbs-presentation-state-comments' }
+		];
+		await vi.waitFor(() => expect(page.url.searchParams.get('input')).toBe('cbs-comments'));
+		expect(screen.getByRole('button', { name: 'Next input' })).toBeDisabled();
+		await fireEvent.click(screen.getByRole('button', { name: 'Next input' }));
+		expect(page.url.searchParams.get('input')).toBe('cbs-comments');
+	});
+
+	test('replaces an obsolete link selection with the current input and keeps the footer link', async () => {
+		page.url.searchParams.set('input', 'link');
+		renderInputs();
+		await vi.waitFor(() => expect(page.url.searchParams.get('input')).toBe('cbs-comments'));
+		expect(screen.getByRole('link', { name: /Presentation/ })).toHaveAttribute(
+			'href',
+			'/presentation/test'
+		);
+	});
+});

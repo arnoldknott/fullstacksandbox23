@@ -3,9 +3,10 @@
 	import type { RevealApi } from 'reveal.js';
 	import { onDestroy, onMount } from 'svelte';
 
+	import { page } from '$app/state';
 	import RevealJs, { toggleOnFragment } from '$components/RevealJS.svelte';
 	import { SocketIO } from '$lib/socketio.svelte';
-	import type { MessageExtended } from '$lib/types';
+	import type { MessageExtended, QuestionExtended } from '$lib/types';
 
 	import type { PageData } from './$types';
 	import CardOverlay from './CardOverlay.svelte';
@@ -13,31 +14,50 @@
 	import Comments from './Comments.svelte';
 	import DivergingStackedChart from './DivergingStackedChart.svelte';
 	import FramedSlide from './FramedSlide.svelte';
+	import { getInputsUrl } from './inputs';
 	import Library from './Library.svelte';
-	import Map from './Map.svelte';
+	import MapAnnotation from './MapAnnotation.svelte';
 	import MotivationTable from './MotivationTable.svelte';
+	import NameCloud from './NameCloud.svelte';
 	import Overview from './Overview.svelte';
+	import PresenterControls from './PresenterControls.svelte';
 	import QrCode from './QrCode.svelte';
 	import QualitativeFeedback from './QualitativeFeedback.svelte';
+	import TermsAndConditions from './TermsAndConditions.svelte';
 
 	let { data }: { data: PageData } = $props();
 
 	let revealInstance = $state<RevealApi | undefined>(undefined);
+	let namesQuestion = $derived(
+		data.payload.questions.find((question) => question.question === 'cbs-names')
+	);
 
 	let placesQuestion = $derived(
-		data.payload.questions.find((question) => question.question.includes('places'))
+		data.payload.questions.find((question) => question.question === 'cbs-places')
 	);
 	let booksQuestion = $derived(
-		data.payload.questions.find((question) => question.question.includes('books'))
+		data.payload.questions.find((question) => question.question === 'cbs-books')
 	);
 	let commentsQuestion = $derived(
-		data.payload.questions.find((question) => question.question.includes('comments'))
+		data.payload.questions.find((question) => question.question === 'cbs-comments')
 	);
+	let socketioNames: SocketIO<MessageExtended> = $state()!;
 	let socketioPlaces: SocketIO<MessageExtended> = $state()!;
 	let socketioBooks: SocketIO<MessageExtended> = $state()!;
 	let socketioComments: SocketIO<MessageExtended> = $state()!;
+	let socketioPresenterState = $state<SocketIO<QuestionExtended>>();
 
 	onMount(() => {
+		if (data.payload.presenterStateSnapshot.entities.length) {
+			socketioPresenterState = new SocketIO<QuestionExtended>(
+				{
+					namespace: '/question',
+					sessionId: page.data.session?.sessionId,
+					queryParams: { 'request-access-data': true }
+				},
+				{ snapshot: data.payload.presenterStateSnapshot }
+			);
+		}
 		// socketioMotivation = new SocketIO<NumericalExtended>(
 		// 	{
 		// 		namespace: '/numerical',
@@ -47,6 +67,24 @@
 		// 		snapshot: data.payload.motivationSnapshot
 		// 	}
 		// );
+		socketioNames = new SocketIO<MessageExtended>(
+			{
+				namespace: '/message',
+				parentId: namesQuestion?.id,
+				queryParams: { 'request-access-data': true }
+			},
+			{
+				snapshot: data.payload.namesSnapshot,
+				template: {
+					content: JSON.stringify({
+						emoji: '📍',
+						text: '',
+						coords: { lat: 0, lng: 0 }
+					}),
+					language: 'en'
+				}
+			}
+		);
 		socketioPlaces = new SocketIO<MessageExtended>(
 			{
 				namespace: '/message',
@@ -58,10 +96,8 @@
 				template: {
 					content: JSON.stringify({
 						emoji: '📍',
-						name: '',
 						text: '',
-						coords: { lat: 0, lng: 0 },
-						marker: undefined
+						coords: { lat: 0, lng: 0 }
 					}),
 					language: 'en'
 				}
@@ -95,14 +131,17 @@
 	});
 
 	onDestroy(() => {
+		socketioPresenterState?.client.disconnect();
 		// socketioMotivation?.client.disconnect();
 		socketioPlaces?.client.disconnect();
+		socketioNames?.client.disconnect();
 		socketioBooks?.client.disconnect();
 		socketioComments?.client.disconnect();
 	});
 
 	let qrCodeModalsHidden: Record<string, boolean> = $state({
-		map: false, // TBD: change to false after developing
+		names: true,
+		map: true, // TBD: change to false after developing
 		books: true,
 		comments: true
 	});
@@ -253,19 +292,57 @@
 {/snippet}
 
 <RevealJs bind:reveal={revealInstance}>
-	<section>
-		<div class="text-base-content-variant text-[200px] font-bold">Welcome</div>
-	</section>
-	<FramedSlide part="checkin" section="map" hideProgressBar={true}>
+	<FramedSlide part="welcome" hideProgressBar>
+		<div
+			class="text-base-content-variant flex h-full items-center justify-center text-[200px] font-bold"
+		>
+			Welcome
+		</div>
+		{#each socketioNames?.entities as entity (entity.id)}
+			{#if entity.confidential}
+				<NameCloud text={entity.confidential} />
+			{/if}
+		{/each}
+		{#snippet footerRight()}
+			<PresenterControls {revealInstance} socketio={socketioPresenterState} />
+		{/snippet}
+		<!-- <div class="absolute right-0 bottom-0 z-50 flex items-center gap-2 p-4">
+			<PresenterControls {revealInstance} socketio={socketioPresenterState} />
+		</div> -->
+		<!-- {#if namesQuestion}
+			<div class="mt-8 flex justify-start">
+				<QrCode url={getInputsUrl(page.url, 'cbs-names')} bind:modalHidden={qrCodeModalsHidden.names} />
+			</div>
+		{/if} -->
+	</FramedSlide>
+	<!-- <section id="welcome" class="h-full">
+		<div
+			class="text-base-content-variant flex h-full items-center justify-center text-[200px] font-bold"
+		>
+			Welcome
+		</div>
+		<div class="absolute right-0 bottom-0 z-50 flex items-center gap-2 p-4">
+			<PresenterControls {revealInstance} socketio={socketioPresenterState} />
+		</div> -->
+	<!-- {#if namesQuestion}
+			<div class="mt-8 flex justify-start">
+				<QrCode url={getInputsUrl(page.url, 'cbs-names')} bind:modalHidden={qrCodeModalsHidden.names} />
+			</div>
+		{/if} -->
+	<!-- </section> -->
+	<FramedSlide part="checkin" section="map" hideProgressBar>
 		{#if placesQuestion}
 			<!-- <div class="text-secondary text-center text-7xl font-bold">Check in</div> -->
-			<Map {revealInstance} socketio={socketioPlaces} />
+			<MapAnnotation {revealInstance} socketio={socketioPlaces} />
 		{:else}
 			{@render interactiveElementNotAvailable('map')}
 		{/if}
 		{#snippet footerLeft()}
 			{#if placesQuestion}
-				<QrCode url="https://example.com/qr-code" modalHidden={qrCodeModalsHidden.map} />
+				<QrCode
+					url={getInputsUrl(page.url, 'cbs-places')}
+					bind:modalHidden={qrCodeModalsHidden.map}
+				/>
 				<!-- <button
 					class="btn btn-info-container btn-gradient label btn shadow-outline relative z-[1000] mx-4 h-20 w-20 rounded-full shadow-sm"
 					aria-label="QR Code"
@@ -552,8 +629,14 @@
 			class="shadow-base-shadow h-fit w-3/4 self-center rounded-4xl shadow-lg"
 		/>
 	</FramedSlide>
-	<FramedSlide part="inspiration">
-		<Library socketio={socketioBooks} questionid={booksQuestion?.id} />
+	<FramedSlide part="inspiration" section="books">
+		<Library socketio={socketioBooks} />
+		{#snippet footerLeft()}
+			{#if booksQuestion}<QrCode
+					url={getInputsUrl(page.url, 'cbs-books')}
+					bind:modalHidden={qrCodeModalsHidden.books}
+				/>{/if}
+		{/snippet}
 	</FramedSlide>
 	<FramedSlide part="inspiration" section="motivation" title="Motivation">
 		<div class="mx-5 grid grid-cols-3 gap-10">
@@ -932,10 +1015,16 @@
 	>
 	<FramedSlide part="comments-and-questions" hideProgressBar>
 		{#if commentsQuestion}
-			<Comments socketio={socketioComments} question={commentsQuestion} />
+			<Comments socketio={socketioComments} />
 		{:else}
 			{@render interactiveElementNotAvailable('comments and questions dialog')}
 		{/if}
+		{#snippet footerLeft()}
+			{#if commentsQuestion}<QrCode
+					url={getInputsUrl(page.url, 'cbs-comments')}
+					bind:modalHidden={qrCodeModalsHidden.comments}
+				/>{/if}
+		{/snippet}
 	</FramedSlide>
 	<!-- <FramedSlide>
 		planetary boundaries -> inner work -> trust<br />
@@ -949,28 +1038,7 @@
 		/>
 	</FramedSlide>
 	<FramedSlide part="terms-and-conditions">
-		<div class="text-5xl font-bold">Terms & Conditions</div>
-		<dl>
-			<dt>Data storage</dt>
-			<dd>
-				By entering your data, you acknowledge, that your data is stored in a database on the
-				Technical University of Denmark's tenant in Microsoft Azure.
-			</dd>
-		</dl>
-		<dl>
-			<dt>Visibility of data</dt>
-			<dd>
-				Currently these slides are under development, there is no login and hence everyone on the
-				internet with the link to the presentation can see what you have entered.
-			</dd>
-		</dl>
-		<dl>
-			<dt>Deletion of data</dt>
-			<dd>
-				In case you want any of your data deleted, please send a screenshot of what you want to have
-				deleted to Arnold.
-			</dd>
-		</dl>
+		<TermsAndConditions presentationMode />
 		{#if returnToSlide}
 			<div>
 				<span class="icon-[fa-regular--hand-point-right] mr-4 size-7"></span>Back to
