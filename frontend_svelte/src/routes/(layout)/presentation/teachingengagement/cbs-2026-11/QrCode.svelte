@@ -17,7 +17,7 @@
 	<Icon icon="bi:qr-code" class="size-8" />
 </button>
 <div
-	class="fixed top-1/2 left-1/2 z-[1000] h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2"
+	class="fixed top-1/2 left-1/2 z-[1000] h-fit w-[600px] -translate-x-1/2 -translate-y-1/2"
 	class:hidden={modalHidden}
 >
 	<CardOverlay
@@ -33,6 +33,7 @@
 			<p>Generating QR code…</p>
 		{:then qrCodeDataUrl}
 			<img src={qrCodeDataUrl} alt="QR Code for {url}" />
+			{url}
 		{:catch}
 			<p>Unable to generate QR code.</p>
 		{/await}
