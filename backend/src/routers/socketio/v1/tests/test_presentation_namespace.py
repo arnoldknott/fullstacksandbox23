@@ -235,7 +235,7 @@ class TestPresentation(BaseSocketIOTest):
         await register_one_identity(group.id, Group)
         resource_id = str(resource.id)
         identity_id = str(group.id)
-        query = {"snapshot-subscription": "true", "request-access-data": "true"}
+        query = {"data-on-connect": "false", "request-access-data": "true"}
         await sender.connect(query_parameters=query)
         await observer.connect(query_parameters=query)
         await unsubscribed.connect(query_parameters=query)

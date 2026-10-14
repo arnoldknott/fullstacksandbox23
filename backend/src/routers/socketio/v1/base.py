@@ -80,7 +80,7 @@ BaseSchemaTypeExtended = TypeVar("BaseSchemaTypeExtended", bound=BaseExtendedSQL
 
 class QueryStrings(TypedDict, total=False):
     request_access_data: bool
-    snapshot_subscription: bool
+    data_on_connect: bool
     identity_ids: Optional[List[str]]
     resource_ids: Optional[List[str]]
     parent_id: Optional[str]
@@ -531,9 +531,9 @@ class BaseNamespace(
             or request_access_data
             else False
         )
-        snapshot_subscription = (
-            parse_qs(query_strings).get("snapshot-subscription", [""])[0].lower()
-            == "true"
+        data_on_connect = (
+            parse_qs(query_strings).get("data-on-connect", ["true"])[0].lower()
+            != "false"
         )
         identity_ids = (
             parse_qs(query_strings).get("identity-ids", [""])[0].split(",")
@@ -563,7 +563,7 @@ class BaseNamespace(
         )
         session_query_strings: QueryStrings = {
             "request_access_data": request_access_data,
-            "snapshot_subscription": snapshot_subscription,
+            "data_on_connect": data_on_connect,
             "identity_ids": identity_ids,
             "resource_ids": resource_ids,
             "join_admin_room": join_admin_room,
@@ -800,7 +800,7 @@ class BaseNamespace(
                     )
         if auth_session_id is not None and token_payload is not None:
             self._schedule_authentication_expiry(sid, auth_session_id, token_payload)
-        if self.callback_on_connect is not None and not snapshot_subscription:
+        if self.callback_on_connect is not None and data_on_connect:
             await self.callback_on_connect(
                 sid,
                 current_user=current_user,

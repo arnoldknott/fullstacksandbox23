@@ -182,7 +182,7 @@ const preloadBackendData = async (userIndex) => {
 
 const openSocket = ({ namespace, parentId, requestAccessData }, snapshot, userIndex) => {
 	const connectionStartedAt = performance.now();
-	const query = { 'parent-id': parentId, 'snapshot-subscription': 'true' };
+	const query = { 'parent-id': parentId, 'data-on-connect': 'false' };
 	if (requestAccessData) query['request-access-data'] = 'true';
 
 	const socket = io(backendUrl + namespace, {

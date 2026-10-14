@@ -2,7 +2,9 @@
 
 ## Current contract
 
-Initial collection state is loaded through REST snapshot endpoints. The frontend seeds its entity containers from those responses, then Socket.IO subscribes to the returned entity identifiers and handles cursor replay and subsequent mutations. Snapshot-aware connections set `snapshot-subscription=true`, which suppresses namespace collection transfer during connection.
+Initial collection state is loaded through REST snapshot endpoints. The frontend seeds its entity containers from those responses, then Socket.IO subscribes to the returned entity identifiers and handles cursor replay and subsequent mutations. Snapshot-aware connections set `data-on-connect=false`, which suppresses namespace collection transfer during connection. The parameter defaults to `true` when omitted and controls only the initial transfer; explicit reads, subscriptions, and cursor replay remain available.
+
+Submit-only connections also set `data-on-connect=false`, omit `parent-id`, and do not emit `subscribe`. They disable incoming entity handlers but retain submission status events. The submission itself specifies its parent identifier, and normal authentication and authorization checks still apply.
 
 ## REST snapshots
 
@@ -51,7 +53,7 @@ First-party query parameter names and serialized values use kebab-case. Python a
 
 ## Load-test protocol
 
-The stage load test in [socketio-load.mjs](../../../../frontend_svelte/tests/stage-stress/socketio-load.mjs) models the production sequence: fetch REST snapshots, read entity identifiers and `X-Entity-Cursor`, connect with `snapshot-subscription=true`, subscribe in batches, wait for acknowledgements, hold connections, and report latency percentiles. It accepts `--users`, `--ramp`, `--hold`, `--timeout`, `--frontend-only`, and `--backend-only`.
+The stage load test in [socketio-load.mjs](../../../../frontend_svelte/tests/stage-stress/socketio-load.mjs) models the production sequence: fetch REST snapshots, read entity identifiers and `X-Entity-Cursor`, connect with `data-on-connect=false`, subscribe in batches, wait for acknowledgements, hold connections, and report latency percentiles. It accepts `--users`, `--ramp`, `--hold`, `--timeout`, `--frontend-only`, and `--backend-only`.
 
 It targets the public `34654/e26/introduction` presentation and therefore exercises anonymous snapshot and Socket.IO subscription behavior. It does not authenticate a user or test Socket.IO admission-ticket issuance.
 

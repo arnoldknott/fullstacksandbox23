@@ -23,7 +23,7 @@ type QueryParameters = {
 	'identity-ids'?: string;
 	'resource-ids'?: string;
 	'parent-id'?: string;
-	'snapshot-subscription'?: 'true';
+	'data-on-connect'?: 'false';
 	'join-admin-room'?: boolean;
 };
 
@@ -34,7 +34,7 @@ export type SocketioConnection = {
 	namespace?: string;
 	sessionId?: string;
 	parentId?: string;
-	queryParams?: Omit<QueryParameters, 'parent-id' | 'snapshot-subscription'>;
+	queryParams?: Omit<QueryParameters, 'parent-id' | 'data-on-connect'>;
 	overrides?: Partial<ManagerOptions & SocketOptions>;
 };
 
@@ -74,6 +74,7 @@ export type SocketioConfiguration<T extends AnyEntityExtended = AnyEntityExtende
 	Omit<EntityContainerConfiguration<T>, 'parentId'> & SocketioHandlers<T>
 > & {
 	snapshot?: EntitySnapshot<T>;
+	submitOnly?: boolean;
 };
 
 export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
@@ -88,6 +89,10 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 		super({ parentId: connection.parentId, ...configuration });
 		this.sessionLifecycle = getSessionLifecycleContext();
 		if (configuration.snapshot) this.seedSnapshot(configuration.snapshot);
+		configuration = {
+			...configuration,
+			...(configuration.submitOnly ? { transferred: false, deleted: false } : {})
+		};
 		const backendAPIConfiguration: BackendAPIConfiguration = getContext('backendAPIConfiguration');
 		const backendFqdn = backendAPIConfiguration.backendFqdn;
 		const socketioServerUrl = backendFqdn.startsWith('localhost')
@@ -108,11 +113,12 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 				.filter((identityId) => identityId !== PUBLIC_IDENTITY_ID)
 				.join(',');
 		}
-		if (connection.parentId) {
+		if (connection.parentId && !configuration.submitOnly) {
 			queryParams['parent-id'] = connection.parentId;
 		}
 
-		if (configuration.snapshot) queryParams['snapshot-subscription'] = 'true';
+		if (configuration.snapshot || configuration.submitOnly)
+			queryParams['data-on-connect'] = 'false';
 
 		this.client = io(socketioServerUrl + connection.namespace, {
 			path: backendAPIConfiguration.socketIOPath,
@@ -147,7 +153,7 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 		});
 		this.client.on('connect', () => {
 			void this.sessionLifecycle.touchIfDue(this.client);
-			if (configuration.snapshot) {
+			if (configuration.snapshot && !configuration.submitOnly) {
 				void this.subscribeToSnapshot(configuration.snapshot, configuration.status);
 			}
 		});

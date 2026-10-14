@@ -11,7 +11,7 @@ from models.demo_resource import DemoResource, DemoResourceExtended, DemoResourc
 from routers.socketio.v1.base import BaseNamespace
 from routers.socketio.v1.demo_resource import DemoResourceNamespace
 from routers.socketio.v1.presentation_namespace import PresentationNamespace
-from routers.socketio.v1.quiz_namespace import QuestionNamespace
+from routers.socketio.v1.quiz_namespace import MessageNamespace, QuestionNamespace
 
 
 class FakeResult:
@@ -43,6 +43,36 @@ async def test_demo_resource_namespace_has_no_connect_time_collection_replay():
     namespace = DemoResourceNamespace(server=SimpleNamespace())
 
     assert namespace.callback_on_connect is None
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "query_string, data_on_connect",
+    [
+        ("", True),
+        ("data-on-connect=true", True),
+        ("data-on-connect=false", False),
+        ("data-on-connect=False", False),
+    ],
+)
+async def test_data_on_connect_controls_initial_message_collection_transfer(
+    query_string, data_on_connect
+):
+    server: Any = SimpleNamespace(enter_room=AsyncMock(), save_session=AsyncMock())
+    namespace = MessageNamespace(server=server)
+    namespace._get_event_guards = Mock(
+        return_value=SimpleNamespace(allows_anonymous=True)
+    )
+    namespace._get_all = AsyncMock()
+
+    await namespace.on_connect("sid", {"QUERY_STRING": query_string})
+
+    session_data = server.save_session.call_args.args[1]
+    assert session_data["query_strings"]["data_on_connect"] is data_on_connect
+    if data_on_connect:
+        namespace._get_all.assert_awaited_once_with("sid", None, False, parent_id=None)
+    else:
+        namespace._get_all.assert_not_awaited()
 
 
 @pytest.mark.anyio
