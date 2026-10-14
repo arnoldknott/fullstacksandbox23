@@ -28,5 +28,5 @@ export const GET: RequestHandler = async ({ locals, url, setHeaders }): Promise<
 		console.error('apiproxies - msgraph - GET - failed');
 		throw error(500, 'Getting data from Microsoft Graph failed');
 	}
-	return new Response('Getting data from Microsoft Graph failed');
+	return new Response('Getting data from Microsoft Graph failed', { status: 502 });
 };

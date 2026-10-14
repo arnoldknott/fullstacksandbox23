@@ -135,6 +135,9 @@
 			}
 
 			const blob = await response.blob();
+			if (!blob.type.startsWith('image/')) {
+				throw new Error(`Avatar response is not an image: ${blob.type}`);
+			}
 			avatarUrl = URL.createObjectURL(blob);
 		} catch (err) {
 			console.error('Avatar load failed', err);
