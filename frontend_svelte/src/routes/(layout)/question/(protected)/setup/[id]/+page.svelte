@@ -584,7 +584,7 @@
 			displaySelection="sortedMessageAnswers"
 		>
 			{#snippet menu()}
-				<th colspan={3}></th>
+				<th colspan={4}></th>
 				<th class="text-end"><SelectionActionButtons socketio={messageSocketio} /></th>
 			{/snippet}
 		</Table>
