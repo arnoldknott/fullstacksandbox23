@@ -556,6 +556,12 @@
 					cellClass: 'max-w-0'
 				},
 				{
+					header: text('Confidential'),
+					cell: field<MessageExtended>('confidential'),
+					headerClass: 'text-center',
+					cellClass: 'text-left'
+				},
+				{
 					header: icon('tabler:language'),
 					cell: snippet(languageCell),
 					headerClass: 'text-center',
@@ -578,7 +584,7 @@
 			displaySelection="sortedMessageAnswers"
 		>
 			{#snippet menu()}
-				<th colspan={3}></th>
+				<th colspan={4}></th>
 				<th class="text-end"><SelectionActionButtons socketio={messageSocketio} /></th>
 			{/snippet}
 		</Table>
