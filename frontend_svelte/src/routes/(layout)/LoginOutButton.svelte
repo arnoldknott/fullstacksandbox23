@@ -5,17 +5,20 @@
 		loggedIn,
 		linkAccount = false,
 		parentUrl,
+		targetUrl,
 		provider = IdentityProvider.MICROSOFT
 	}: {
 		loggedIn: boolean;
 		linkAccount?: boolean;
 		parentUrl?: string;
+		targetUrl?: string;
 		provider?: IdentityProvider;
 	} = $props();
 
 	let loginQuery = $derived(
 		new URLSearchParams({
 			...(linkAccount ? { intent: 'link' } : {}),
+			...(targetUrl ? { 'target-url': targetUrl } : {}),
 			...(parentUrl ? { 'parent-url': parentUrl } : {})
 		}).toString()
 	);
