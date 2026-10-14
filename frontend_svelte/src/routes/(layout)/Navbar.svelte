@@ -42,9 +42,6 @@
 
 	let artificialIntelligenceForm = $state<HTMLFormElement | null>(null);
 
-	console.log('=== avatarUrl ===');
-	console.log(avatarUrl);
-
 	/* Retained while the unlink interaction is tested on /oauth/providers.
 	const unlinkAccount: SubmitFunction = ({ formData, cancel }) => {
 		const provider = formData.get('provider');
