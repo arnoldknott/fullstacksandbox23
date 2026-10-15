@@ -27,6 +27,7 @@
 
 	let { data }: { data: PageData } = $props();
 
+	let presenterMode = $derived(page.url.searchParams.get('presenter') === 'true');
 	let revealInstance = $state<RevealApi | undefined>(undefined);
 	let namesQuestion = $derived(
 		data.payload.questions.find((question) => question.question === 'cbs-names')
@@ -163,21 +164,34 @@
 
 	let modulesContentColumn: HTMLDivElement | undefined = $state();
 
-	let hideModules = $state({
+	let aboutMe = $state({
+		studies: true,
+		industry: true,
+		phd: true,
+		research: true,
+		sabbatical: true,
+		teaching: true
+	});
+	let showExplodingHead = $state(false);
+
+	let outerChange = $state({
 		reflections: true,
 		closedQuestions: true,
 		openQuestions: true
 	});
 
-	const hideAllToggleOne = (toggleKey: string) => {
-		Object.keys(hideModules).forEach((key) => {
-			if (key !== toggleKey) {
-				hideModules[key as keyof typeof hideModules] = true;
-			} else {
-				hideModules[key as keyof typeof hideModules] =
-					!hideModules[key as keyof typeof hideModules];
-			}
-		});
+	const hideAllToggleOne = <K extends string>(toggleKey: K, list: Record<K, boolean>): void => {
+		for (const key in list) {
+			list[key] = key === toggleKey ? !list[key] : true;
+		}
+	};
+	const toggleAboutMe = (buttonText: string) => {
+		if (!aboutMe.research) showExplodingHead = true;
+		hideAllToggleOne(buttonText.replaceAll('.', '').toLowerCase(), aboutMe);
+	};
+	const setResearchOverlayHidden = (hidden: boolean) => {
+		if (hidden && !aboutMe.research) showExplodingHead = true;
+		aboutMe.research = hidden;
 	};
 
 	let circularItems: Record<string, HTMLDivElement | undefined> = $state({});
@@ -291,6 +305,29 @@
 	</div>
 {/snippet}
 
+{#snippet timeLineRow(from: string, to: string, icons: string[], buttonText: string, text: string)}
+	<div class="label self-center align-middle text-5xl">{from}</div>
+	<div class="label self-center text-5xl">-</div>
+	<div class="label self-center text-5xl">{to}</div>
+	<div class="flex justify-center gap-2 self-center">
+		{#each icons as icon, idx (icon)}
+			<Icon icon="emojione-v1:flag-for-{icon}" class="inline-block size-10" />
+			{#if idx < icons.length - 1}
+				<Icon icon="streamline:ampersand-solid" class="inline-block size-6 self-center" />
+			{/if}
+		{/each}
+	</div>
+	<button
+		class="btn btn-xl btn-gradient btn-secondary-container shadow-base-shadow rounded-full text-5xl font-semibold shadow"
+		onclick={() => toggleAboutMe(buttonText)}
+	>
+		{buttonText}
+	</button>
+	<div class="label self-center text-left text-5xl">
+		{text}
+	</div>
+{/snippet}
+
 <RevealJs bind:reveal={revealInstance}>
 	<FramedSlide part="welcome" hideProgressBar>
 		<div
@@ -304,7 +341,9 @@
 			{/if}
 		{/each}
 		{#snippet footerRight()}
-			<PresenterControls {revealInstance} socketio={socketioPresenterState} />
+			{#if presenterMode}
+				<PresenterControls {revealInstance} socketio={socketioPresenterState} />
+			{/if}
 		{/snippet}
 		<!-- <div class="absolute right-0 bottom-0 z-50 flex items-center gap-2 p-4">
 			<PresenterControls {revealInstance} socketio={socketioPresenterState} />
@@ -330,6 +369,220 @@
 			</div>
 		{/if} -->
 	<!-- </section> -->
+	<FramedSlide part="checkin" section="aboutme" title="About Me">
+		<div
+			class="mx-10 grid grid-cols-[minmax(0,1fr)_10px_minmax(0,1fr)_120px_270px_minmax(0,8fr)] gap-8 gap-y-12"
+		>
+			{@render timeLineRow('2000', '2004', ['germany'], 'Studies', 'Electrical Engineering')}
+			{@render timeLineRow(
+				'2004',
+				'2009',
+				['germany', 'united-states'],
+				'Industry',
+				'Automotive Sound Systems'
+			)}
+			{@render timeLineRow(
+				'2007',
+				'2010',
+				['denmark', 'germany'],
+				'Ph.D.',
+				'Power Electronics at DTU'
+			)}
+			{@render timeLineRow('2010', '2018', ['denmark'], 'Research', 'Miniaturising Power Supplies')}
+			{#if showExplodingHead}
+				<Icon
+					icon="fluent-emoji-flat:exploding-head"
+					class="col-span-full justify-self-center text-7xl"
+				/>
+			{/if}
+			{@render timeLineRow('2018', '2018', ['white-flag'], 'Sabbatical', 'Dirtbacking')}
+			{@render timeLineRow('2019', '2026', ['denmark'], 'Teaching', 'Focus on Teaching')}
+		</div>
+		<CardOverlay
+			class="bg-base-250 text-base-content absolute top-1/2 left-1/2 z-50 w-fit -translate-x-1/2 -translate-y-1/2 pt-6 text-4xl"
+			bind:hidden={aboutMe.studies}
+		>
+			{#snippet header()}
+				<div class="text-5xl font-bold">Studies</div>
+			{/snippet}
+			<dl class="text-5xl">
+				<dt class="mb-4 font-bold text-nowrap">
+					<Icon icon="fluent-emoji-flat:school" class="mr-2 inline-block" /> Diplom engineer for Electrical
+					Engineering
+				</dt>
+				<dd class="mb-4 pl-4">General Electronics and</dd>
+				<dd class="mb-4 pl-4">Semiconductor Electronics</dd>
+				<dd class="mb-4 pl-4">
+					<a href="https://www.th-deg.de/" class="link link-animated" target="_blank"
+						>Deggendorf Institute of Technology</a
+					>
+				</dd>
+			</dl>
+		</CardOverlay>
+		<CardOverlay
+			class="bg-base-250 text-base-content absolute top-1/2 left-1/2 z-50 w-fit -translate-x-1/2 -translate-y-1/2 pt-6 text-4xl"
+			bind:hidden={aboutMe.industry}
+		>
+			{#snippet header()}
+				<div class="text-7xl font-bold">Industry</div>
+			{/snippet}
+			<dl class="text-5xl">
+				<dt class="mb-4 font-bold text-nowrap">
+					<Icon icon="emojione-v1:flag-for-germany" class="mr-2 inline-block" /> Harman/Becker Automotive
+					Systems GmbH
+				</dt>
+				<dd class="mb-4 pl-4">(now Samsung)</dd>
+				<dd class="mb-4 pl-4">research and pre-development</dd>
+				<dd class="mb-4 pl-4">for automotive sound systems</dd>
+			</dl>
+			<dl class="text-5xl">
+				<dt class="mt-5 mb-4 font-bold text-nowrap">
+					<Icon icon="emojione-v1:flag-for-united-states" class="mr-2 inline-block" /> At sister company
+					in USA
+				</dt>
+				<dd class="mb-4 pl-4">for 1.5 years</dd>
+			</dl>
+			<dl
+				class="bg-warning-container text-warning-container-content shadow-base-shadow rounded-2xl text-5xl shadow"
+			>
+				<dt class="mt-5 mb-4 font-bold text-nowrap">
+					<Icon icon="fluent-color:warning-28" class="mr-2 inline-block" /> Fun job
+				</dt>
+				<dd class="mb-4 pl-4">worked around many hours a week</dd>
+			</dl>
+		</CardOverlay>
+		<CardOverlay
+			class="bg-base-250 text-base-content absolute top-1/2 left-1/2 z-50 w-fit -translate-x-1/2 -translate-y-1/2 pt-6 text-4xl"
+			bind:hidden={aboutMe.phd}
+		>
+			{#snippet header()}
+				<div class="text-5xl font-bold">Ph.d. student</div>
+			{/snippet}
+			<dl class="text-5xl">
+				<dt class="mb-4 font-bold text-nowrap">
+					<Icon icon="emojione-v1:flag-for-denmark" class="mr-2 inline-block" /> Technical University
+					of Denmark (DTU)
+				</dt>
+				<dd class="mb-4 pl-4">Power Electronics and Sound Systems</dd>
+				<dd class="mb-4 pl-4">Highly energy efficient electronics</dd>
+				<!-- <dd class="mb-4 pl-4">Amplifiers</dd> -->
+			</dl>
+			<dl class="text-5xl">
+				<dt class="mt-5 mb-4 font-bold text-nowrap">
+					<Icon icon="emojione-v1:flag-for-germany" class="mr-2 inline-block" /> overlap with industry
+					job
+				</dt>
+			</dl>
+			<!-- <dl class="text-5xl">
+				<dt class="mt-5 mb-4 font-bold text-nowrap">
+					<Icon icon="fluent-emoji-flat:glowing-star" class="mr-2 inline-block" /> Hobbies
+				</dt>
+				<dd class="mb-4 pl-4">Learning Danish</dd>
+			</dl> -->
+			<dl class="text-5xl">
+				<dt class="mt-5 mb-4 font-bold text-nowrap">
+					<Icon icon="emojione:rocket" class="mr-2 inline-block" /> Venture Cup
+				</dt>
+				<dd class="mb-4 pl-4">good time at CBS!</dd>
+				<dd class="mb-4 pl-4">won 3rd price</dd>
+			</dl>
+			<dl
+				class="bg-warning-container text-warning-container-content shadow-base-shadow rounded-2xl text-5xl shadow"
+			>
+				<dt class="mt-5 mb-4 font-bold text-nowrap">
+					<Icon icon="fluent-color:warning-28" class="mr-2 inline-block" /> Two part time contracts
+				</dt>
+				<dd class="mb-4 pl-4">Two time 3/4 of full time</dd>
+			</dl>
+		</CardOverlay>
+		<CardOverlay
+			class="bg-base-250 text-base-content absolute top-1/2 left-1/2 z-50 w-fit -translate-x-1/2 -translate-y-1/2 pt-6 text-4xl"
+			bind:hidden={() => aboutMe.research, (hidden) => setResearchOverlayHidden(hidden)}
+		>
+			{#snippet header()}
+				<div class="text-5xl font-bold">Focus on Research</div>
+			{/snippet}
+			<dl class="text-5xl">
+				<dt class="mb-4 font-bold text-nowrap">
+					<Icon icon="fluent-emoji-flat:green-heart" class="mr-2 inline-block" /> Intention
+				</dt>
+				<dd class="mb-4 pl-4">using less material to provide same energy</dd>
+			</dl>
+			<dl class="text-5xl">
+				<dt class="mt-5 mb-4 font-bold text-nowrap">
+					<Icon icon="fluent-color:lightbulb-32" class="mr-2 inline-block" /> Research & Teaching
+				</dt>
+				<dd class="mb-4 pl-4">3 research projects with industry</dd>
+				<dd class="mb-4 pl-4">4 start-up companies</dd>
+				<dd class="mb-4 pl-4">2 courses</dd>
+			</dl>
+			<dl
+				class="bg-warning-container text-warning-container-content shadow-base-shadow rounded-2xl text-5xl shadow"
+			>
+				<dt class="mt-5 mb-4 font-bold text-nowrap">
+					<Icon icon="fluent-color:warning-28" class="mr-2 inline-block" /> Meetings / Courses / Supervision
+				</dt>
+			</dl>
+		</CardOverlay>
+		<!-- TBD: make it a bang here? -->
+		<CardOverlay
+			class="bg-base-250 text-base-content absolute top-1/2 left-1/2 z-50 w-fit -translate-x-1/2 -translate-y-1/2 pt-6 text-4xl"
+			bind:hidden={aboutMe.sabbatical}
+		>
+			{#snippet header()}
+				<div class="text-5xl font-bold">Sabatical</div>
+			{/snippet}
+			<dl class="text-5xl">
+				<dt class="mb-4 font-bold text-nowrap">
+					<Icon icon="noto:hiking-boot" class="mr-2 inline-block" /> Being nature
+				</dt>
+				<dd class="mb-4 pl-4">5.5 months in nature</dd>
+				<dd class="mb-4 pl-4">Hiking and outdoor activities</dd>
+				<!-- <dd class="mb-4 pl-4">Amplifiers</dd> -->
+			</dl>
+
+			<dl
+				class="bg-success-container text-success-container-content shadow-base-shadow rounded-2xl text-5xl shadow"
+			>
+				<dt class="mt-5 mb-4 font-bold text-nowrap">
+					<Icon icon="fluent-color:checkmark-circle-32" class="mr-2 inline-block" /> Batteries refilled
+				</dt>
+			</dl>
+		</CardOverlay>
+		<CardOverlay
+			class="bg-base-250 text-base-content absolute top-1/2 left-1/2 z-50 w-fit -translate-x-1/2 -translate-y-1/2 pt-6 text-4xl"
+			bind:hidden={aboutMe.teaching}
+		>
+			{#snippet header()}
+				<div class="text-5xl font-bold">Teaching</div>
+			{/snippet}
+			<dl class="text-5xl">
+				<dt class="mb-4 font-bold text-nowrap">
+					<Icon icon="fluent-emoji-flat:teacher-medium" class="mr-2 inline-block" /> 3 courses
+				</dt>
+				<dd class="mb-4 pl-4">2nd semester mandatory B.Sc.</dd>
+				<dd class="mb-4 pl-4">4th semester elective B.Sc</dd>
+				<dd class="mb-4 pl-4">Master course</dd>
+				<dd class="mb-4 pl-4">in total 300 students per year</dd>
+				<!-- <dd class="mb-4 pl-4">Amplifiers</dd> -->
+			</dl>
+			<dl class="text-5xl">
+				<dt class="mb-4 font-bold text-nowrap">
+					<Icon icon="streamline-stickies-color:programming" class="mr-2 inline-block" /> Programming
+				</dt>
+				<dd class="mb-4 pl-4">For example this presentation</dd>
+			</dl>
+			<dl
+				class="bg-success-container text-success-container-content shadow-base-shadow rounded-2xl text-5xl shadow"
+			>
+				<dt class="mt-5 mb-4 font-bold text-nowrap">
+					<Icon icon="fluent-color:checkmark-circle-32" class="mr-2 inline-block" /> Working as hard as
+					20 years ago
+				</dt>
+				<dd class="mb-4 pl-4">and taking really good care of myself</dd>
+			</dl>
+		</CardOverlay>
+	</FramedSlide>
 	<FramedSlide part="checkin" section="map" hideProgressBar>
 		{#if placesQuestion}
 			<!-- <div class="text-secondary text-center text-7xl font-bold">Check in</div> -->
@@ -338,7 +591,7 @@
 			{@render interactiveElementNotAvailable('map')}
 		{/if}
 		{#snippet footerLeft()}
-			{#if placesQuestion}
+			{#if placesQuestion && presenterMode}
 				<QrCode
 					url={getInputsUrl(page.url, 'cbs-places')}
 					bind:modalHidden={qrCodeModalsHidden.map}
@@ -632,7 +885,7 @@
 	<FramedSlide part="inspiration" section="books">
 		<Library socketio={socketioBooks} />
 		{#snippet footerLeft()}
-			{#if booksQuestion}<QrCode
+			{#if booksQuestion && presenterMode}<QrCode
 					url={getInputsUrl(page.url, 'cbs-books')}
 					bind:modalHidden={qrCodeModalsHidden.books}
 				/>{/if}
@@ -712,23 +965,23 @@
 		</div>
 	</FramedSlide>
 	<FramedSlide part="implementation" section="practical" title="Outer change">
-		<div class="mt-10 grid h-full grid-cols-2 gap-10">
+		<div class="mt-10 grid h-full grid-cols-2 gap-10 overflow-scroll">
 			<div class="flex flex-col items-center gap-15">
 				<button
 					class="btn btn-xl btn-gradient btn-primary-container h-30 w-150 justify-center rounded-full p-10 text-5xl font-semibold shadow-inner"
-					onclick={() => hideAllToggleOne('reflections')}
+					onclick={() => hideAllToggleOne('reflections', outerChange)}
 				>
 					Learning Reflections
 				</button>
 				<button
 					class="btn btn-xl btn-gradient btn-primary-container h-30 w-150 justify-center rounded-full p-10 text-5xl font-semibold shadow-inner"
-					onclick={() => hideAllToggleOne('closedQuestions')}
+					onclick={() => hideAllToggleOne('closedQuestions', outerChange)}
 				>
 					Quantitative Questions
 				</button>
 				<button
 					class="btn btn-xl btn-gradient btn-primary-container h-30 w-150 justify-center rounded-full p-10 text-5xl font-semibold shadow-inner"
-					onclick={() => hideAllToggleOne('openQuestions')}
+					onclick={() => hideAllToggleOne('openQuestions', outerChange)}
 				>
 					Qualitative Questions
 				</button>
@@ -736,7 +989,7 @@
 			<div class="flex flex-col items-center gap-10" bind:this={modulesContentColumn}>
 				<CardOverlay
 					class="bg-primary text-primary-content z-50 pt-6 text-4xl"
-					bind:hidden={hideModules.reflections}
+					bind:hidden={outerChange.reflections}
 				>
 					{#snippet header()}
 						<div class="text-5xl font-bold">Learning Reflections</div>
@@ -763,7 +1016,7 @@
 				</CardOverlay>
 				<CardOverlay
 					class="bg-primary text-primary-content z-50 pt-6 text-4xl"
-					bind:hidden={hideModules.closedQuestions}
+					bind:hidden={outerChange.closedQuestions}
 				>
 					{#snippet header()}
 						<div class="text-5xl font-bold">Quantitative Questions</div>
@@ -793,7 +1046,7 @@
 				</CardOverlay>
 				<CardOverlay
 					class="bg-primary text-primary-content z-50 pt-6 text-4xl"
-					bind:hidden={hideModules.openQuestions}
+					bind:hidden={outerChange.openQuestions}
 				>
 					{#snippet header()}
 						<div class="text-5xl font-bold">Qualitative Questions</div>
@@ -1020,7 +1273,7 @@
 			{@render interactiveElementNotAvailable('comments and questions dialog')}
 		{/if}
 		{#snippet footerLeft()}
-			{#if commentsQuestion}<QrCode
+			{#if commentsQuestion && presenterMode}<QrCode
 					url={getInputsUrl(page.url, 'cbs-comments')}
 					bind:modalHidden={qrCodeModalsHidden.comments}
 				/>{/if}
@@ -1049,3 +1302,15 @@
 		{/if}
 	</FramedSlide>
 </RevealJs>
+
+<style>
+	dl {
+		margin-left: 10px !important;
+		margin-right: 10px !important;
+		padding-left: 30px !important;
+		padding-right: 30px !important;
+	}
+	dt {
+		font-style: italic;
+	}
+</style>
