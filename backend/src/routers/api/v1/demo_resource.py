@@ -51,10 +51,13 @@ async def post_demo_resource(
 
 @router.get("/", status_code=200)
 async def get_all_demo_resources(
+    response: Response,
     token_payload=Depends(get_http_access_token_payload),
 ) -> list[DemoResourceRead]:
     """Returns all demo resources resources."""
-    return await demo_resource_view.get(token_payload, Guards(MicrosoftGuard())())
+    return await demo_resource_view.get(
+        token_payload, Guards(MicrosoftGuard())(), response=response
+    )
 
 
 @router.get("/snapshot", status_code=200)
@@ -72,19 +75,20 @@ async def get_demo_resource_entity_snapshot(
         includes=include,
         sort=sort,
         direction=direction,
+        response=response,
     )
-    response.headers["X-Entity-Cursor"] = str(snapshot.cursor)
     return cast(list[DemoResourceExtended], snapshot.items)
 
 
 @router.get("/{demo_resource_id}", status_code=200)
 async def get_demo_resource_by_id(
+    response: Response,
     demo_resource_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
 ) -> DemoResourceRead:
     """Returns a demo resource by id."""
     return await demo_resource_view.get_by_id(
-        demo_resource_id, token_payload, Guards(MicrosoftGuard())()
+        demo_resource_id, token_payload, Guards(MicrosoftGuard())(), response=response
     )
 
 

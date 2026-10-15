@@ -2,7 +2,9 @@
 
 ## Current contract
 
-Initial collection state is loaded through REST snapshot endpoints. The frontend seeds its entity containers from those responses, then Socket.IO subscribes to the returned entity identifiers and handles cursor replay and subsequent mutations. Snapshot-aware connections set `snapshot-subscription=true`, which suppresses namespace collection transfer during connection.
+Initial collection state is loaded through REST snapshot endpoints. The frontend seeds its entity containers from those responses, then Socket.IO subscribes to the returned entity identifiers and handles cursor replay and subsequent mutations. Snapshot-aware connections set `data-on-connect=false`, which suppresses namespace collection transfer during connection. The parameter defaults to `true` when omitted and controls only the initial transfer; explicit reads, subscriptions, and cursor replay remain available.
+
+Submit-only connections also set `data-on-connect=false`, omit `parent-id`, and do not emit `subscribe`. They disable incoming entity handlers but retain submission status events. The submission itself specifies its parent identifier, and normal authentication and authorization checks still apply.
 
 ## REST snapshots
 
@@ -19,11 +21,27 @@ Snapshot endpoints currently exist for Presentation, Question, Message, Numerica
 
 The SvelteKit server uses [backendAPI.getSnapshot<T>()](../../../../frontend_svelte/src/lib/server/apis/backendApi.ts) to return `{ entities, cursor }` to pages. [SocketIO](../../../../frontend_svelte/src/lib/socketio.svelte.ts) seeds `EntityContainer` state from that object, including available access rights, policies, and hierarchies.
 
+## Entity read cursors
+
+Replay-capable entity collection and by-identifier reads expose `X-Entity-Cursor` without changing their response bodies. This covers Presentation, Question, Message, Numerical, DemoResource, ProtectedResource, ProtectedChild, ProtectedGrandChild, User, UeberGroup, Group, SubGroup, and SubSubGroup, including presentation path and user Azure-identifier lookups.
+
+The view layer captures the cursor before reading entities. Each response requires one access-log maximum query; snapshot views reuse the cursor already captured by `read_entity_snapshot()` and do not query it again. Socket.IO and other direct create/read/update/delete (CRUD) callers do not incur this header query. Failed reads do not advertise a cursor.
+
+Excluded reads are authentication/session data (including `/user/me`), access-policy/right/log/hierarchy helpers, health checks, files, categories, tags, and the legacy public-resource implementation, whose mutations do not populate the replay log. Category/tag-filtered demo-resource reads are also excluded because replay does not reproduce those collection filters. Adding a header to an unsupported scope would not make its handoff replayable.
+
+The server-side `backendAPI.getEntity<T>()` helper returns `{ entity, cursor }`; it and `getSnapshot<T>()` reject missing or malformed cursors. Cursors are replay positions, not response versions or cache validators.
+
+## Detail-page loading
+
+The presentation detail setup page reads `GET /presentation/{resource_id}`, `GET /access/policy/resource/{resource_id}`, and `GET /access/right/resource/{resource_id}` instead of loading the presentation collection. The by-id response keeps its existing presentation body and includes `X-Entity-Cursor`, captured before the authorized entity read. Access data is fetched after that response, ensuring its reads occur after the replay cursor. The frontend seeds a one-entity subscription with this cursor; question snapshots keep their own cursor. Reconnection uses the same subscription and replay path.
+
+Question policies in presentation setup and answer policies in question setup are fetched through `POST /access/policy/resources`, restricted to the identifiers in their parent-filtered snapshots. Empty collections need no policy request. Ueber-group detail loads its selected identity by identifier, then reads its access right and creation date. Its group collection remains a snapshot because the page also offers other groups for linking.
+
 ## Socket.IO subscriptions
 
 After connection, the frontend emits `subscribe` events sequentially and waits for each acknowledgement. Each event contains `entity_ids` and may contain `cursor`; batches contain at most 500 identifiers, and the frontend sends the cursor with the final batch. The acknowledgement contains `subscribed` and `rejected` identifier lists, or an `error`.
 
-The backend validates identifiers, filters the requested entity query through the same read authorization used by CRUD operations, and enters only authorized `resource:<UUID>` rooms. When a cursor is supplied, mutation logs newer than that cursor are read for the namespace entity type. Active authorized entities are emitted through `transferred`; snapshot entities deleted after the cursor are emitted through `deleted`. Normal create, update, delete, share, link, and unlink events continue over Socket.IO after subscription.
+The backend validates identifiers, filters the requested entity query through the same read authorization used by CRUD operations, and enters only authorized `resource:<UUID>` rooms. When a cursor is supplied, mutation logs newer than that cursor are read for the namespace entity type. Replay on a connection with `parent-id` is limited to that parent's access-controlled children, matching the REST snapshot collection; other parents' entities are neither transferred nor added to resource rooms by replay. Active authorized entities are emitted through `transferred`; snapshot entities deleted after the cursor are emitted through `deleted`. Normal create, update, delete, share, link, and unlink events continue over Socket.IO after subscription.
 
 Authentication expiry, protected-room removal, reauthentication, and reconnect are specified in the [authentication session lifecycle plan](../../security/authentication-session-lifecycle-plan.md). After successful reauthentication, reconnection reuses this document's authorized subscription and cursor-replay path; it does not introduce full collection transfer or a separate recovery stream.
 
@@ -35,7 +53,7 @@ First-party query parameter names and serialized values use kebab-case. Python a
 
 ## Load-test protocol
 
-The stage load test in [socketio-load.mjs](../../../../frontend_svelte/tests/stage-stress/socketio-load.mjs) models the production sequence: fetch REST snapshots, read entity identifiers and `X-Entity-Cursor`, connect with `snapshot-subscription=true`, subscribe in batches, wait for acknowledgements, hold connections, and report latency percentiles. It accepts `--users`, `--ramp`, `--hold`, `--timeout`, `--frontend-only`, and `--backend-only`.
+The stage load test in [socketio-load.mjs](../../../../frontend_svelte/tests/stage-stress/socketio-load.mjs) models the production sequence: fetch REST snapshots, read entity identifiers and `X-Entity-Cursor`, connect with `data-on-connect=false`, subscribe in batches, wait for acknowledgements, hold connections, and report latency percentiles. It accepts `--users`, `--ramp`, `--hold`, `--timeout`, `--frontend-only`, and `--backend-only`.
 
 It targets the public `34654/e26/introduction` presentation and therefore exercises anonymous snapshot and Socket.IO subscription behavior. It does not authenticate a user or test Socket.IO admission-ticket issuance.
 

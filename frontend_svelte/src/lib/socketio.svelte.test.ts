@@ -14,7 +14,7 @@ import {
 	type SocketioConnection,
 	type SocketioStatus
 } from './socketio.svelte';
-import type { AccessPolicy, AnyEntityExtended, DemoResource } from './types';
+import type { AccessPolicy, AnyEntityExtended, DemoResource, DemoResourceExtended } from './types';
 
 // #region: Setup Test Socketio Server
 
@@ -196,6 +196,56 @@ describe('SocketIO for DemoResources', () => {
 
 	test('establishes a connection to the test server', async () => {
 		expect(serverSocket.connected).toBe(true);
+		expect(serverSocket.handshake.query['data-on-connect']).toBeUndefined();
+	});
+
+	test('submit-only connections skip answer transfer and subscriptions but can submit', async () => {
+		const clientHandler = await SocketioClientHandler.create<DemoResource>(
+			{ namespace: '/demo-resource', parentId },
+			{ submitOnly: true, template: { name: '' } }
+		);
+		try {
+			const client = clientHandler.socketioClient;
+			expect(serverSocket.handshake.query['data-on-connect']).toBe('false');
+			expect(serverSocket.handshake.query['parent-id']).toBeUndefined();
+			expect(client.client.listeners('transferred')).toHaveLength(0);
+			expect(client.client.listeners('deleted')).toHaveLength(0);
+			expect(serverMessages.filter((message) => message.event === 'subscribe')).toHaveLength(0);
+			const pending = client.pendingEntities[0];
+			pending.name = 'My contribution';
+			client.submitEntity(pending, parentId, true);
+			await vi.waitFor(() =>
+				expect(serverMessages).toContainEqual({
+					event: 'submit',
+					data: [
+						expect.objectContaining({
+							parent_id: parentId,
+							payload: expect.objectContaining({ name: 'My contribution' })
+						})
+					]
+				})
+			);
+		} finally {
+			clientHandler.disconnect();
+		}
+	});
+
+	test('submit-only normalization leaves a frozen caller configuration unchanged', async () => {
+		const transferred = vi.fn();
+		const deleted = vi.fn();
+		const configuration = Object.freeze({ submitOnly: true, transferred, deleted });
+		const clientHandler = await SocketioClientHandler.create<DemoResource>(
+			{ namespace: '/demo-resource' },
+			configuration
+		);
+		try {
+			expect(configuration.transferred).toBe(transferred);
+			expect(configuration.deleted).toBe(deleted);
+			expect(clientHandler.socketioClient.client.listeners('transferred')).toHaveLength(0);
+			expect(clientHandler.socketioClient.client.listeners('deleted')).toHaveLength(0);
+		} finally {
+			clientHandler.disconnect();
+		}
 	});
 
 	test('redirects through provider-aware login when socket authentication must be renewed', async () => {
@@ -242,6 +292,7 @@ describe('SocketIO for DemoResources', () => {
 		);
 
 		expect(clientHandler.socketioClient.entities).toEqual(entities);
+		expect(serverSocket.handshake.query['data-on-connect']).toBe('false');
 		expect(clientHandler.socketioClient.accessRights[entities[0].id]).toBe(Action.OWN);
 		await vi.waitFor(() => {
 			const subscriptions = serverMessages.filter((message) => message.event === 'subscribe');
@@ -257,6 +308,41 @@ describe('SocketIO for DemoResources', () => {
 
 		clientHandler.disconnect();
 	});
+
+	test.each(['shared', 'unshared'] as const)(
+		'reconciles snapshot policies after a %s confirmation',
+		async (success) => {
+			const initialPolicy: AccessPolicy = {
+				resource_id: 'seed',
+				identity_id: 'group-1',
+				action: Action.READ
+			};
+			const clientHandler = await SocketioClientHandler.create<DemoResourceExtended>(
+				{
+					namespace: '/demo-resource',
+					sessionId: 'session-123',
+					queryParams: { 'request-access-data': true }
+				},
+				{
+					snapshot: {
+						entities: [{ id: 'seed', name: 'seed', access_policies: [initialPolicy] }],
+						cursor: 42
+					}
+				}
+			);
+			const client = clientHandler.socketioClient;
+			expect(client.accessPolicies.seed).toEqual([initialPolicy]);
+			const policies = success === 'shared' ? [{ ...initialPolicy, action: Action.WRITE }] : [];
+			serverSocket.once('read', (id: string) => {
+				serverSocket.emit('transferred', { id, access_policies: policies });
+			});
+			serverSocket.emit('status', { success, id: 'seed' });
+			await vi.waitFor(() => {
+				expect(client.accessPolicies.seed).toEqual(policies);
+			});
+			clientHandler.disconnect();
+		}
+	);
 
 	test('reports entity ids rejected by the subscription acknowledgement', async () => {
 		const rejectedId = '00000000-0000-4000-8000-000000000001';

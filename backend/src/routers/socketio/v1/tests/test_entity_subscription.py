@@ -11,7 +11,7 @@ from models.demo_resource import DemoResource, DemoResourceExtended, DemoResourc
 from routers.socketio.v1.base import BaseNamespace
 from routers.socketio.v1.demo_resource import DemoResourceNamespace
 from routers.socketio.v1.presentation_namespace import PresentationNamespace
-from routers.socketio.v1.quiz_namespace import QuestionNamespace
+from routers.socketio.v1.quiz_namespace import MessageNamespace, QuestionNamespace
 
 
 class FakeResult:
@@ -43,6 +43,36 @@ async def test_demo_resource_namespace_has_no_connect_time_collection_replay():
     namespace = DemoResourceNamespace(server=SimpleNamespace())
 
     assert namespace.callback_on_connect is None
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "query_string, data_on_connect",
+    [
+        ("", True),
+        ("data-on-connect=true", True),
+        ("data-on-connect=false", False),
+        ("data-on-connect=False", False),
+    ],
+)
+async def test_data_on_connect_controls_initial_message_collection_transfer(
+    query_string, data_on_connect
+):
+    server: Any = SimpleNamespace(enter_room=AsyncMock(), save_session=AsyncMock())
+    namespace = MessageNamespace(server=server)
+    namespace._get_event_guards = Mock(
+        return_value=SimpleNamespace(allows_anonymous=True)
+    )
+    namespace._get_all = AsyncMock()
+
+    await namespace.on_connect("sid", {"QUERY_STRING": query_string})
+
+    session_data = server.save_session.call_args.args[1]
+    assert session_data["query_strings"]["data_on_connect"] is data_on_connect
+    if data_on_connect:
+        namespace._get_all.assert_awaited_once_with("sid", None, False, parent_id=None)
+    else:
+        namespace._get_all.assert_not_awaited()
 
 
 @pytest.mark.anyio
@@ -137,15 +167,19 @@ async def test_subscribe_replays_cursor_after_accumulating_snapshot_batches():
 
 
 @pytest.mark.anyio
-async def test_replay_emits_extended_upserts_and_snapshot_deletes():
+@pytest.mark.parametrize("parent_scoped", [False, True])
+async def test_replay_emits_extended_upserts_and_snapshot_deletes(parent_scoped):
     updated_id = uuid4()
     deleted_id = uuid4()
+    unrelated_id = uuid4()
+    parent_id = uuid4()
     created_at = datetime(2026, 9, 5, 12, 0)
     logging_crud = SimpleNamespace(
         read_entity_mutations_after=AsyncMock(
             return_value=[
                 {"cursor": 11, "entity_id": updated_id, "kind": "updated"},
                 {"cursor": 12, "entity_id": deleted_id, "kind": "deleted"},
+                {"cursor": 13, "entity_id": unrelated_id, "kind": "created"},
             ]
         ),
         read_entity_metadata=AsyncMock(
@@ -160,12 +194,29 @@ async def test_replay_emits_extended_upserts_and_snapshot_deletes():
     policy_crud = SimpleNamespace(
         read_access_rights=AsyncMock(return_value={updated_id: Action.write})
     )
+    hierarchy_crud = SimpleNamespace(
+        read=AsyncMock(return_value=[SimpleNamespace(child_id=updated_id)])
+    )
+
+    async def read_entities(*, current_user, filters):
+        entities = [
+            DemoResourceRead(id=updated_id, name="updated"),
+            DemoResourceRead(id=unrelated_id, name="another question's answer"),
+        ]
+        return [
+            entity
+            for entity in entities
+            if all(entity.id in criterion.right.value for criterion in filters)
+        ]
+
     crud = SimpleNamespace(
         entity_type=ResourceType.demo_resource,
         logging_crud=logging_crud,
         policy_crud=policy_crud,
+        hierarchy_CRUD=Mock(return_value=hierarchy_crud),
+        session=SimpleNamespace(),
         model=DemoResource,
-        read=AsyncMock(return_value=[DemoResourceRead(id=updated_id, name="updated")]),
+        read=AsyncMock(side_effect=read_entities),
     )
 
     class CRUDContext:
@@ -175,7 +226,15 @@ async def test_replay_emits_extended_upserts_and_snapshot_deletes():
         async def __aexit__(self, exc_type, exc_val, exc_tb):
             return None
 
-    server: Any = SimpleNamespace(enter_room=AsyncMock(), emit=AsyncMock())
+    server: Any = SimpleNamespace(
+        enter_room=AsyncMock(),
+        emit=AsyncMock(),
+        get_session=AsyncMock(
+            return_value={
+                "query_strings": {"parent_id": str(parent_id)} if parent_scoped else {}
+            }
+        ),
+    )
     namespace = BaseNamespace(
         server=server,
         namespace="/test",
@@ -190,13 +249,26 @@ async def test_replay_emits_extended_upserts_and_snapshot_deletes():
         snapshot_entity_ids={str(updated_id), str(deleted_id)},
     )
 
-    server.enter_room.assert_awaited_once_with(
-        "sid", f"resource:{updated_id}", namespace="/test"
-    )
-    transferred_call, deleted_call = server.emit.await_args_list
+    expected_rooms = [call("sid", f"resource:{updated_id}", namespace="/test")]
+    if parent_scoped:
+        hierarchy_crud.read.assert_awaited_once_with(
+            current_user=None, parent_id=parent_id
+        )
+    else:
+        hierarchy_crud.read.assert_not_awaited()
+        expected_rooms.append(
+            call("sid", f"resource:{unrelated_id}", namespace="/test")
+        )
+    assert server.enter_room.await_args_list == expected_rooms
+    transferred_call, deleted_call, *remaining_calls = server.emit.await_args_list
     assert transferred_call.args[0] == "transferred"
     assert transferred_call.args[1]["id"] == str(updated_id)
     assert transferred_call.args[1]["access_right"] == "write"
     assert transferred_call.args[1]["creation_date"] == created_at.isoformat()
     assert transferred_call.kwargs == {"namespace": "/test", "to": "sid"}
     assert deleted_call == call("deleted", str(deleted_id), namespace="/test", to="sid")
+    if parent_scoped:
+        assert remaining_calls == []
+    else:
+        assert remaining_calls[0].args[0] == "transferred"
+        assert remaining_calls[0].args[1]["id"] == str(unrelated_id)

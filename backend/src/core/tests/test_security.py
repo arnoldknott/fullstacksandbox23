@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from typing import Annotated, Any, Awaitable, Callable, Optional
 
 import pytest
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, Response
 from httpx2 import AsyncClient
 
 from core.authentication.azure import get_azure_jwks
@@ -161,7 +161,10 @@ async def test_azure_user_self_signup(
 
     # To verify that the user is in the database, calling the endpoint to get the user by id with admin token:
     db_user = await get_user_by_id(
-        current_user["id"], token_admin_read, mock_guards(roles=["User"])
+        response=Response(),
+        user_id=uuid.UUID(current_user["id"]),
+        token_payload=token_admin_read,
+        guards=mock_guards(roles=["User"]),
     )
     assert db_user is not None
     assert db_user.azure_user_id == uuid.UUID(many_test_azure_users[0]["azure_user_id"])
@@ -237,7 +240,10 @@ async def test_existing_azure_user_has_new_group_in_token(
     existing_user = await add_one_azure_test_user(0)
     assert existing_user.id is not None
     existing_db_user = await get_user_by_id(
-        existing_user.id, token_admin_read, mock_guards(roles=["User"])
+        response=Response(),
+        user_id=existing_user.id,
+        token_payload=token_admin_read,
+        guards=mock_guards(roles=["User"]),
     )
 
     assert existing_db_user.azure_groups is not None
@@ -267,7 +273,10 @@ async def test_existing_azure_user_has_new_group_in_token(
 
     # Verify that the user now has the new group in the database
     db_user = await get_user_by_id(
-        existing_user.id, token_admin_read, mock_guards(roles=["User"])
+        response=Response(),
+        user_id=existing_user.id,
+        token_payload=token_admin_read,
+        guards=mock_guards(roles=["User"]),
     )
     assert db_user is not None
     assert db_user.azure_user_id == uuid.UUID(many_test_azure_users[0]["azure_user_id"])
@@ -328,7 +337,10 @@ async def test_existing_azure_user_got_group_removed_in_token(
     existing_user = await add_one_azure_test_user(0)
     assert existing_user.id is not None
     existing_db_user = await get_user_by_id(
-        existing_user.id, token_admin_read, mock_guards(roles=["User"])
+        response=Response(),
+        user_id=existing_user.id,
+        token_payload=token_admin_read,
+        guards=mock_guards(roles=["User"]),
     )
 
     assert existing_db_user.azure_groups is not None
@@ -372,7 +384,10 @@ async def test_existing_azure_user_got_group_removed_in_token(
 
     # Verify that the user has only the remaining groups in the database but not the deleted group any more
     db_user = await get_user_by_id(
-        existing_user.id, token_admin_read, mock_guards(roles=["User"])
+        response=Response(),
+        user_id=existing_user.id,
+        token_payload=token_admin_read,
+        guards=mock_guards(roles=["User"]),
     )
     assert db_user is not None
     assert db_user.azure_user_id == uuid.UUID(many_test_azure_users[0]["azure_user_id"])

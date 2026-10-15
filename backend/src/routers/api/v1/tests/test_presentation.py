@@ -212,6 +212,38 @@ class TestPresentation(BaseTest):
 
     @pytest.mark.anyio
     @pytest.mark.parametrize(
+        "mocked_provide_http_token_payload",
+        [token_admin_read_write, token_user1_read_write],
+        indirect=True,
+    )
+    async def test_get_by_id_returns_replay_cursor_before_reading_entity(
+        self, added_resources, mocked_provide_http_token_payload, monkeypatch
+    ):
+        """A targeted read supplies a cursor without loading the presentation collection."""
+        resources = await added_resources()
+        resource_id = resources[0].id
+        cursors_before_mutation = []
+        original_read_by_id = PresentationCRUD.read_by_id
+
+        async def read_by_id(crud, id, current_user):
+            # A mutation during the read must remain newer than the response cursor.
+            cursors_before_mutation.append(await crud.logging_crud.read_cursor())
+            await crud.update(
+                current_user, id, self.model.Update(**self._test_data_update)
+            )
+            return await original_read_by_id(crud, id, current_user)
+
+        monkeypatch.setattr(PresentationCRUD, "read_by_id", read_by_id)
+        response = await self.async_client.get(f"{self.router_path}{resource_id}")
+        assert response.status_code == 200
+        assert response.json()["id"] == str(resource_id)
+        assert len(cursors_before_mutation) == 1
+        assert int(response.headers["X-Entity-Cursor"]) == cursors_before_mutation[0]
+        async with PresentationCRUD() as crud:
+            assert await crud.logging_crud.read_cursor() > cursors_before_mutation[0]
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
         "mocked_provide_http_token_payload", [token_admin_read_write], indirect=True
     )
     async def test_get_by_id_not_found(self, mocked_provide_http_token_payload):

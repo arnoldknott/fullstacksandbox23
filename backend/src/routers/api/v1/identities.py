@@ -209,15 +209,17 @@ async def delete_account_link(
 
 @user_router.get("/", status_code=200)
 async def get_all_users(
+    response: Response,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["Admin"]))),
 ) -> list[UserRead]:
     """Returns all users."""
-    return await user_view.get(token_payload, guards)
+    return await user_view.get(token_payload, guards, response=response)
 
 
 @user_router.get("/azure/{azure_user_id}", status_code=200)
 async def get_user_by_azure_user_id(
+    response: Response,
     azure_user_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
@@ -227,23 +229,20 @@ async def get_user_by_azure_user_id(
     current_user = await check_token_against_guards(token_payload, guards)
     if current_user is None:
         raise HTTPException(status_code=401, detail="Authentication required.")
-    async with user_view.crud() as crud:
+    async with user_view.crud() as crud, user_view.entity_response(crud, response):
         user = await crud.read_by_azure_user_id(azure_user_id, current_user)
     return user
 
 
 @user_router.get("/{user_id}", status_code=200)
 async def get_user_by_id(
+    response: Response,
     user_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
     guards=Depends(Guards(MicrosoftGuard(roles=["User"]))),
 ) -> UserRead:
     """Returns a user with a specific user_id."""
-    return await user_view.get_by_id(
-        user_id,
-        token_payload,
-        guards,
-    )
+    return await user_view.get_by_id(user_id, token_payload, guards, response=response)
 
 
 @user_router.put("/me", status_code=200)
@@ -336,11 +335,12 @@ async def post_group_to_uebergroup(
 
 @ueber_group_router.get("/", status_code=200)
 async def get_all_ueber_groups(
+    response: Response,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
 ) -> list[UeberGroupRead]:
     """Returns all ueber_groups."""
-    return await ueber_group_view.get(token_payload, guards)
+    return await ueber_group_view.get(token_payload, guards, response=response)
 
 
 @ueber_group_router.get("/snapshot", status_code=200)
@@ -354,23 +354,21 @@ async def get_ueber_group_entity_snapshot(
 ) -> list[UeberGroupExtended]:  # type: ignore[valid-type]
     """Returns an optionally enriched ueber-group snapshot."""
     snapshot = await ueber_group_view.get_entity_snapshot(
-        token_payload, guards, include, sort, direction
+        token_payload, guards, include, sort, direction, response=response
     )
-    response.headers["X-Entity-Cursor"] = str(snapshot.cursor)
     return cast(list[UeberGroupExtended], snapshot.items)
 
 
 @ueber_group_router.get("/{ueber_group_id}", status_code=200)
 async def get_ueber_group_by_id(
+    response: Response,
     ueber_group_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
     guards=Depends(Guards(MicrosoftGuard(roles=["User"]))),
 ) -> UeberGroupRead:
     """Returns an ueber_group with a specific ueber_group_id."""
     return await ueber_group_view.get_by_id(
-        ueber_group_id,
-        token_payload,
-        guards,
+        ueber_group_id, token_payload, guards, response=response
     )
 
 
@@ -445,11 +443,12 @@ async def post_sub_group_to_group(
 
 @group_router.get("/", status_code=200)
 async def get_all_groups(
+    response: Response,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
 ) -> list[GroupRead]:
     """Returns all groups."""
-    return await group_view.get(token_payload, guards)
+    return await group_view.get(token_payload, guards, response=response)
 
 
 @group_router.get("/snapshot", status_code=200)
@@ -463,23 +462,21 @@ async def get_group_entity_snapshot(
 ) -> list[GroupExtended]:  # type: ignore[valid-type]
     """Returns an optionally enriched group snapshot."""
     snapshot = await group_view.get_entity_snapshot(
-        token_payload, guards, include, sort, direction
+        token_payload, guards, include, sort, direction, response=response
     )
-    response.headers["X-Entity-Cursor"] = str(snapshot.cursor)
     return cast(list[GroupExtended], snapshot.items)
 
 
 @group_router.get("/{group_id}", status_code=200)
 async def get_group_by_id(
+    response: Response,
     group_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
     guards=Depends(Guards(MicrosoftGuard(roles=["User"]))),
 ) -> GroupRead:
     """Returns a group with a specific group_id."""
     return await group_view.get_by_id(
-        group_id,
-        token_payload,
-        guards,
+        group_id, token_payload, guards, response=response
     )
 
 
@@ -553,11 +550,12 @@ async def post_sub_sub_group_to_sub_group(
 
 @sub_group_router.get("/", status_code=200)
 async def get_all_sub_groups(
+    response: Response,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["User"]))),
 ) -> list[SubGroupRead]:
     """Returns all sub_groups."""
-    return await sub_group_view.get(token_payload, guards)
+    return await sub_group_view.get(token_payload, guards, response=response)
 
 
 @sub_group_router.get("/snapshot", status_code=200)
@@ -571,23 +569,21 @@ async def get_sub_group_entity_snapshot(
 ) -> list[SubGroupExtended]:  # type: ignore[valid-type]
     """Returns an optionally enriched sub-group snapshot."""
     snapshot = await sub_group_view.get_entity_snapshot(
-        token_payload, guards, include, sort, direction
+        token_payload, guards, include, sort, direction, response=response
     )
-    response.headers["X-Entity-Cursor"] = str(snapshot.cursor)
     return cast(list[SubGroupExtended], snapshot.items)
 
 
 @sub_group_router.get("/{sub_group_id}", status_code=200)
 async def get_sub_group_by_id(
+    response: Response,
     sub_group_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
     guards=Depends(Guards(MicrosoftGuard(roles=["User"]))),
 ) -> SubGroupRead:
     """Returns a sub_group with a specific sub_group_id."""
     return await sub_group_view.get_by_id(
-        sub_group_id,
-        token_payload,
-        guards,
+        sub_group_id, token_payload, guards, response=response
     )
 
 
@@ -644,11 +640,12 @@ sub_sub_group_view = BaseView(SubSubGroupCRUD)
 
 @sub_sub_group_router.get("/", status_code=200)
 async def get_all_sub_sub_groups(
+    response: Response,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(Guards(MicrosoftGuard(roles=["Admin"]))),
 ) -> list[SubGroupRead]:
     """Returns all sub_sub_groups."""
-    return await sub_sub_group_view.get(token_payload, guards)
+    return await sub_sub_group_view.get(token_payload, guards, response=response)
 
 
 @sub_sub_group_router.get("/snapshot", status_code=200)
@@ -662,23 +659,21 @@ async def get_sub_sub_group_entity_snapshot(
 ) -> list[SubSubGroupExtended]:  # type: ignore[valid-type]
     """Returns an optionally enriched sub-sub-group snapshot."""
     snapshot = await sub_sub_group_view.get_entity_snapshot(
-        token_payload, guards, include, sort, direction
+        token_payload, guards, include, sort, direction, response=response
     )
-    response.headers["X-Entity-Cursor"] = str(snapshot.cursor)
     return cast(list[SubSubGroupExtended], snapshot.items)
 
 
 @sub_sub_group_router.get("/{sub_sub_group_id}", status_code=200)
 async def get_sub_sub_group_by_id(
+    response: Response,
     sub_sub_group_id: UUID,
     token_payload=Depends(get_http_access_token_payload),
     guards=Depends(Guards(MicrosoftGuard(roles=["User"]))),
 ) -> SubGroupRead:
     """Returns a sub_sub_group with a specific sub_sub_group_id."""
     return await sub_sub_group_view.get_by_id(
-        sub_sub_group_id,
-        token_payload,
-        guards,
+        sub_sub_group_id, token_payload, guards, response=response
     )
 
 

@@ -222,7 +222,9 @@
 								{#if 'snippet' in column.cell}
 									{@render column.cell.snippet(entity)}
 								{:else if 'field' in column.cell}
-									{String(entity[column.cell.field] ?? '')}
+									<div class="text-wrap">
+										{String(entity[column.cell.field] ?? '')}
+									</div>
 								{:else}
 									{column.cell.value(entity) ?? ''}
 								{/if}

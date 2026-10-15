@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Icon from '@iconify/svelte';
 	import { type SubmitFunction } from '@sveltejs/kit';
 
 	import { page } from '$app/state';
@@ -114,10 +115,10 @@
 			class="btn btn-sm btn-text btn-circle text-primary size-8.5 md:hidden"
 			aria-label="Search"
 		>
-			<span class="icon-[tabler--search] size-5"></span>
+			<Icon icon="tabler:search" class="size-5" />
 		</button>
 		<div class="input bg-base-150 mx-2 max-w-56 rounded-full max-md:hidden">
-			<span class="icon-[tabler--search] text-base-content/80 my-auto me-3 size-5 shrink-0"></span>
+			<Icon icon="tabler:search" class="text-base-content/80 my-auto me-3 size-5 shrink-0" />
 			<label class="sr-only" for="searchInput">Search</label>
 			<input type="search" class="grow" placeholder="Search" id="searchInput" />
 		</div>
@@ -125,26 +126,24 @@
 			class="dropdown flex items-center [--auto-close:inside] rtl:[--placement:bottom-end]"
 			{@attach initDropdown}
 		>
-			<span
+			<button
 				id="dropdown-menu-icon-user"
-				class="dropdown-toggle {!loggedIn ? 'icon-[fa6-solid--user] bg-secondary size-5' : ''}"
-				role="button"
+				type="button"
+				class="dropdown-toggle btn btn-sm btn-text btn-circle md:ml-2"
 				aria-haspopup="menu"
 				aria-expanded="false"
 				aria-label="User Menu"
 			>
-				{#if loggedIn}
-					{#if avatarUrl}
-						<img
-							src={avatarUrl}
-							alt="your profile"
-							class="not-hover:mask-radial-t-0% h-10 min-w-10 rounded-full object-cover not-hover:mask-radial-from-40%"
-						/>
-					{:else}
-						<span class="icon-[fa6-solid--user] bg-secondary size-5 h-10 w-10 rounded-full"></span>
-					{/if}
+				{#if loggedIn && avatarUrl}
+					<img
+						src={avatarUrl}
+						alt="your profile"
+						class="not-hover:mask-radial-t-0% h-10 min-w-10 rounded-full object-cover not-hover:mask-radial-from-40%"
+					/>
+				{:else}
+					<Icon icon="fa6-solid:user" class="text-secondary size-5" />
 				{/if}
-			</span>
+			</button>
 			<ul
 				class="dropdown-menu bg-base-200 text-secondary shadow-base-shadow dropdown-open:opacity-100 hidden"
 				role="menu"

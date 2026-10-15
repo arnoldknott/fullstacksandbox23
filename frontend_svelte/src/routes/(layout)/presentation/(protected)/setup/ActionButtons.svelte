@@ -11,11 +11,13 @@
 		resourceId,
 		accessRight,
 		socketio,
+		entityType,
 		actions = [Action.OWN, Action.WRITE, Action.CONNECT, Action.READ, undefined]
 	}: {
 		resourceId: string;
 		accessRight: Action | undefined;
 		socketio: SocketIO;
+		entityType?: 'presentation' | 'question';
 		actions?: (Action | undefined)[];
 	} = $props();
 
@@ -32,21 +34,23 @@
 		> -->
 	<!-- TBD: hide the buttons, where the access_right for the logged in user are not enough to execute the action -->
 	{#if accessRight === Action.OWN || accessRight === Action.WRITE}
-		<button
-			class="btn btn-secondary-container btn-gradient btn-sm text-secondary-container-content join-item shadow-outline {accessRight ===
-			Action.OWN
-				? 'rounded-l-full'
-				: 'rounded-full'} shadow-sm"
-			aria-label="Edit Button"
-			// TBD: pass setup page as a parameter to the component, so that it can be used here
-			onclick={() =>
-				goto(resolve('/(layout)/presentation/(protected)/setup/[id]', { id: resourceId }))}
-		>
-			<span class="icon-[tabler--settings] size-4"></span>
-			<!-- <span
+		{#if entityType}
+			<button
+				class="btn btn-secondary-container btn-gradient btn-sm text-secondary-container-content join-item shadow-outline {accessRight ===
+				Action.OWN
+					? 'rounded-l-full'
+					: 'rounded-full'} shadow-sm"
+				aria-label="Edit"
+				// TBD: pass setup page as a parameter to the component, so that it can be used here
+				onclick={() =>
+					goto(resolve(`/(layout)/${entityType}/(protected)/setup/[id]`, { id: resourceId }))}
+			>
+				<span class="icon-[tabler--settings] size-4"></span>
+				<!-- <span
 					class="hidden 2xl:block">Edit</span
 				> -->
-		</button>
+			</button>
+		{/if}
 
 		<!-- </a> -->
 		{#if accessRight === Action.OWN}
@@ -57,7 +61,9 @@
 			>
 				<button
 					id="action-share"
-					class="dropdown-toggle btn btn-secondary-container btn-gradient btn-sm text-secondary-container-content shadow-outline w-full rounded-none shadow-sm"
+					class="dropdown-toggle btn btn-secondary-container btn-gradient btn-sm text-secondary-container-content shadow-outline w-full shadow-sm"
+					class:rounded-none={entityType}
+					class:rounded-l-full={!entityType}
 					aria-haspopup="menu"
 					aria-expanded="false"
 					aria-label="Share with"
@@ -93,7 +99,7 @@
 			</div>
 			<button
 				class="btn btn-error-container btn-gradient btn-sm bg-error-container/70 hover:bg-error-container/50 focus:bg-error-container/50 text-error-container-content join-item shadow-outline rounded-r-full border-0 shadow-sm"
-				aria-label="Delete Button"
+				aria-label="Delete"
 				name="id"
 				onclick={() => !resourceId || socketio.deleteEntity(resourceId)}
 			>

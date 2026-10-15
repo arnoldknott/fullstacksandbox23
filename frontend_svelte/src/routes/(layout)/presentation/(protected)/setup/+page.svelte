@@ -9,15 +9,14 @@
 	import JsonData from '$components/JsonData.svelte';
 	import Table, { countIcon, snippet, text, value } from '$components/Table.svelte';
 	import Title from '$components/Title.svelte';
-	import { AccessHandler, Action } from '$lib/accessHandler';
+	import { Action } from '$lib/accessHandler';
 	import { SocketIO } from '$lib/socketio.svelte';
-	import type { AccessShareOption, PresentationExtended } from '$lib/types';
+	import type { PresentationExtended } from '$lib/types';
 
 	import IdBadge from '../../../(protected)/IdBadge.svelte';
-	import ShareItem from '../../../playground/components/ShareItem.svelte';
 	import type { PageData } from './$types';
 	import ActionButtons from './ActionButtons.svelte';
-	import FormElement from './FormElement.svelte';
+	import PresentationFormCard from './PresentationFormCard.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -63,88 +62,31 @@
 
 	let hideNewPresentationCard: boolean = $state(!(page.url.searchParams.get('new') === 'true'));
 
-	const submitPresentation = () => {
-		const newPath = socketioPresentations.pendingEntities[0].path?.trim() ?? '';
-		socketioPresentations.pendingEntities[0].path =
-			newPath && !newPath.startsWith('/') ? `/${newPath}` : newPath;
-		socketioPresentations.submitEntity();
-		hideNewPresentationCard = true;
-	};
-
-	// TBD: move this calculation to EntityContainer (or AccessHandler) class!
-	let shareOptionsForNewPresentation: AccessShareOption[] = $derived(
-		AccessHandler.createShareOptions(
-			socketioPresentations.identities,
-			socketioPresentations.accessPolicies[socketioPresentations.pendingEntities[0].id]
-		) || []
-	);
-
 	// For showing existing presentations:
 	let viewMode = $state<'preview' | 'grid' | 'list' | 'table'>('table');
 </script>
 
 <Display id="overview-presentations">Presentations</Display>
 
-{#snippet slugDescription()}
-	This is the endpoint added for user access. It is not mandatory, as the presentation is always
-	accessible via its id in place of the slug. <span class="text-accent"
-		>Add a few words on allowed characters and uniqueness.</span
-	>
-{/snippet}
-
-{#snippet sourceDescription()}
-	Where is the source code for this presentation stored? For example, intern - as part of the source
-	code of this platform - a github or gitlab repository. <span class="text-accent"
-		>Consider adding the option for a staging environemnt.</span
-	>
-{/snippet}
-
-{#snippet accessDescription()}
-	Who has which access to this presentation?
-	<br />
-	Default is public <span class="icon-[gis--globe-earth-alt] size-4"></span>
-	and have read
-	<span
-		class={`${AccessHandler.rightsIcon(Action.READ)} ${AccessHandler.rightsIconColor(Action.READ)} size-4`}
-	></span>
-	access.
-{/snippet}
-
-{#snippet newPresentationFooter()}
-	<div class="ml-5 flex flex-row justify-end gap-4">
-		<button
-			class="btn btn-secondary-container btn-gradient shadow-outline rounded-full shadow"
-			aria-label="Cancel"
-			onclick={() => {
-				hideNewPresentationCard = true;
-			}}><span class="icon-[tabler--x] size-5"></span>Cancel</button
-		>
-		<button
-			class="btn btn-primary-container btn-gradient shadow-outline rounded-full shadow"
-			aria-label="Save new presentation"
-			onclick={() => submitPresentation()}
-			><span class="icon-[tabler--send-2] size-5"></span>Save</button
-		>
-	</div>
-{/snippet}
-
-{#snippet warning()}
-	<span class="icon-[fluent-color--warning-24] size-4"></span>
-{/snippet}
-
 <!-- <JsonData data={data.payload.identities} /> -->
 
 {#if socketioPresentations?.pendingEntities[0]}
-	<Card
+	<PresentationFormCard socketio={socketioPresentations} bind:hidden={hideNewPresentationCard} />
+	<!-- <Card
 		id={socketioPresentations.pendingEntities[0].id}
 		title="New presentation"
-		footer={newPresentationFooter}
 		closeButton
 		bind:hidden={hideNewPresentationCard}
 	>
 		<div class="flex w-full flex-wrap gap-6">
 			<div class="grow">
-				<FormElement title="Slug" description={slugDescription} extraClasses="w-full">
+				<FormElement title="Slug" extraClasses="w-full">
+					{#snippet description()}
+						This is the endpoint added for user access. It is not mandatory, as the presentation is
+						always accessible via its id in place of the slug. <span class="text-accent"
+							>Add a few words on allowed characters and uniqueness.</span
+						>
+					{/snippet}
 					<div class="md:flex-cols-2 wrap flex gap-2">
 						<code class="mt-5 shrink">{page.url.origin}/presentation/</code>
 						<div class="input-filled input-primary w-full">
@@ -161,7 +103,13 @@
 						</div>
 					</div>
 				</FormElement>
-				<FormElement title="Source" description={sourceDescription} extraClasses="max-w-300">
+				<FormElement title="Source" extraClasses="max-w-300">
+					{#snippet description()}
+						Where is the source code for this presentation stored? For example, intern - as part of
+						the source code of this platform - a github or gitlab repository. <span
+							class="text-accent">Consider adding the option for a staging environemnt.</span
+						>
+					{/snippet}
 					{@render warning()} For now, all presentations are <IdBadge id="intern" />, e.g. hosted
 					with the source code of this platform. ON the long run, <IdBadge id="Github" />, <IdBadge
 						id="Gitlab"
@@ -185,7 +133,17 @@
 				</FormElement>
 			</div>
 
-			<FormElement title="Access" description={accessDescription} extraClasses="max-w-100">
+			<FormElement title="Access" extraClasses="max-w-100">
+				{#snippet description()}
+					Who has which access to this presentation?
+					<br />
+					Default is public <span class="icon-[gis--globe-earth-alt] size-4"></span>
+					and have read
+					<span
+						class={`${AccessHandler.rightsIcon(Action.READ)} ${AccessHandler.rightsIconColor(Action.READ)} size-4`}
+					></span>
+					access.
+				{/snippet}
 				<ul class="bg-base-150 shadow-base-shadow overflow-y-auto rounded-lg p-2 shadow-inner">
 					{#each shareOptionsForNewPresentation, i (i)}
 						<ShareItem
@@ -200,78 +158,94 @@
 				</ul>
 			</FormElement>
 		</div>
-	</Card>
+		{#snippet footer()}
+			<div class="ml-5 flex flex-row justify-end gap-4">
+				<button
+					class="btn btn-secondary-container btn-gradient shadow-outline rounded-full shadow"
+					aria-label="Cancel"
+					onclick={() => {
+						hideNewPresentationCard = true;
+					}}><span class="icon-[tabler--x] size-5"></span>Cancel</button
+				>
+				<button
+					class="btn btn-primary-container btn-gradient shadow-outline rounded-full shadow"
+					aria-label="Save new presentation"
+					onclick={() => submitPresentation()}
+					><span class="icon-[tabler--send-2] size-5"></span>Save</button
+				>
+			</div>
+		{/snippet}
+	</Card> -->
 {:else if !socketioPresentations?.pendingEntities[0] && !hideNewPresentationCard}
 	<div class="label text-error" transition:slide={{ duration: 600 }}>
 		<span class="icon-[svg-spinners--12-dots-scale-rotate] size-6"></span>connecting ...
 	</div>
 {/if}
 
-{#snippet existingPresentationsHeader()}
-	<div class="flex justify-between">
-		<Title id="existingPresentations" class="grow">Overview</Title>
-		<div class="flex flex-row items-center justify-center">
-			{#if hideNewPresentationCard || !socketioPresentations?.pendingEntities[0]}
-				<button
-					transition:fade={{ duration: 600 }}
-					class="btn btn-primary-container btn-gradient label btn shadow-outline mx-4 rounded-full shadow-sm"
-					aria-label="Add new presentation"
-					onclick={() => (hideNewPresentationCard = false)}
-				>
-					<!-- onclick={() => goto(resolve('/(layout)/presentation/(protected)/setup/new'))} -->
-					<span class="icon-[fa6-solid--plus] size-5"></span>
-					<!-- <span class="hidden ">Add</span> -->
-					<span class="hidden sm:inline">Add new</span>
-					<span class="hidden md:inline">presentation</span>
-				</button>
-			{/if}
-			<div class="join shadow-outline rounded-full shadow-sm">
-				<button
-					aria-label="Preview"
-					class="btn join-item btn-secondary btn-gradient btn-sm rounded-l-full py-4 {viewMode !==
-					'preview'
-						? 'opacity-60'
-						: ''}"
-					onclick={() => (viewMode = 'preview')}
-				>
-					<span class="icon-[material-symbols--preview-outline] size-5"></span>
-				</button>
-				<button
-					aria-label="Grid"
-					class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline py-4 shadow {viewMode !==
-					'grid'
-						? 'opacity-60'
-						: ''}"
-					onclick={() => (viewMode = 'grid')}
-				>
-					<span class="icon-[gridicons--grid] size-5"></span>
-				</button>
-				<button
-					aria-label="List"
-					class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline py-4 shadow {viewMode !==
-					'list'
-						? 'opacity-60'
-						: ''}"
-					onclick={() => (viewMode = 'list')}
-				>
-					<span class="icon-[material-symbols--view-list-outline] size-5"></span>
-				</button>
-				<button
-					aria-label="Table"
-					class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline rounded-r-full py-4 shadow {viewMode !==
-					'table'
-						? 'opacity-60'
-						: ''}"
-					onclick={() => (viewMode = 'table')}
-				>
-					<span class="icon-[material-symbols--table-outline] size-5"></span>
-				</button>
+<Card id="existing-presentations" extraClasses="mt-6">
+	{#snippet header()}
+		<div class="flex justify-between">
+			<Title id="existingPresentations" class="grow">Overview</Title>
+			<div class="flex flex-row items-center justify-center">
+				{#if hideNewPresentationCard || !socketioPresentations?.pendingEntities[0]}
+					<button
+						transition:fade={{ duration: 600 }}
+						class="btn btn-primary-container btn-gradient label btn shadow-outline mx-4 rounded-full shadow-sm"
+						aria-label="Add new presentation"
+						onclick={() => (hideNewPresentationCard = false)}
+					>
+						<!-- onclick={() => goto(resolve('/(layout)/presentation/(protected)/setup/new'))} -->
+						<span class="icon-[fa6-solid--plus] size-5"></span>
+						<!-- <span class="hidden ">Add</span> -->
+						<span class="hidden sm:inline">Add new</span>
+						<span class="hidden md:inline">presentation</span>
+					</button>
+				{/if}
+				<div class="join shadow-outline rounded-full shadow-sm">
+					<button
+						aria-label="Preview"
+						class="btn join-item btn-secondary btn-gradient btn-sm rounded-l-full py-4 {viewMode !==
+						'preview'
+							? 'opacity-60'
+							: ''}"
+						onclick={() => (viewMode = 'preview')}
+					>
+						<span class="icon-[material-symbols--preview-outline] size-5"></span>
+					</button>
+					<button
+						aria-label="Grid"
+						class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline py-4 shadow {viewMode !==
+						'grid'
+							? 'opacity-60'
+							: ''}"
+						onclick={() => (viewMode = 'grid')}
+					>
+						<span class="icon-[gridicons--grid] size-5"></span>
+					</button>
+					<button
+						aria-label="List"
+						class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline py-4 shadow {viewMode !==
+						'list'
+							? 'opacity-60'
+							: ''}"
+						onclick={() => (viewMode = 'list')}
+					>
+						<span class="icon-[material-symbols--view-list-outline] size-5"></span>
+					</button>
+					<button
+						aria-label="Table"
+						class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline rounded-r-full py-4 shadow {viewMode !==
+						'table'
+							? 'opacity-60'
+							: ''}"
+						onclick={() => (viewMode = 'table')}
+					>
+						<span class="icon-[material-symbols--table-outline] size-5"></span>
+					</button>
+				</div>
 			</div>
 		</div>
-	</div>
-{/snippet}
-
-<Card id="existing-presentations" header={existingPresentationsHeader} extraClasses="mt-6">
+	{/snippet}
 	<div class="w-full overflow-x-auto {viewMode !== 'preview' ? 'hidden' : ''}">
 		<p class="bg-warning text-warning-content rounded-lg p-4">Preview mode is not developed yet</p>
 	</div>
@@ -308,6 +282,7 @@
 				resourceId={presentation.id}
 				accessRight={socketioPresentations?.accessRights[presentation.id]}
 				socketio={socketioPresentations}
+				entityType="presentation"
 			/>
 		{/snippet}
 		<Table
