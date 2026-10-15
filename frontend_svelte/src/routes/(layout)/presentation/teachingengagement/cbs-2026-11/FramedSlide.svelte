@@ -128,7 +128,7 @@
 				? 'border-4 border-orange-400'
 				: ''} p-3"
 		>
-			{#if thisContent >= 0}
+			{#if thisContent >= 0 || title}
 				<div
 					class="relative mr-[800px] h-[100px] flex-shrink-0 text-7xl {debug
 						? 'border-4 border-blue-800'
@@ -138,7 +138,7 @@
 						{title || content.find((item) => item.part === part)?.title}
 					</div>
 				</div>
-				{#if !hideProgressBar}
+				{#if !hideProgressBar && thisContent >= 0}
 					<div
 						class="absolute right-0 h-[100px] w-[800px] {debug ? 'border-4 border-red-400' : ''}"
 					>
