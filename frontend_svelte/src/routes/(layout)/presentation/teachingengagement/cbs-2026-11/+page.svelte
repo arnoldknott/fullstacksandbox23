@@ -391,10 +391,13 @@
 				<div class="text-5xl font-bold">Studies</div>
 			{/snippet}
 			<dl class="text-5xl">
-				<dt class="mb-4 font-bold text-nowrap">Diplom engineer for Electrical Engineering</dt>
-				<dd class="mb-6 pl-4">General Electronics and</dd>
-				<dd class="mb-6 pl-4">Semiconductor Electronics</dd>
-				<dd class="mb-6 pl-4">
+				<dt class="mb-4 font-bold text-nowrap">
+					<Icon icon="fluent-emoji-flat:school" class="mr-2 inline-block" /> Diplom engineer for Electrical
+					Engineering
+				</dt>
+				<dd class="mb-4 pl-4">General Electronics and</dd>
+				<dd class="mb-4 pl-4">Semiconductor Electronics</dd>
+				<dd class="mb-4 pl-4">
 					<a href="https://www.th-deg.de/" class="link link-animated" target="_blank"
 						>Deggendorf Institute of Technology</a
 					>
@@ -413,16 +416,24 @@
 					<Icon icon="emojione-v1:flag-for-germany" class="mr-2 inline-block" /> Harman/Becker Automotive
 					Systems GmbH
 				</dt>
-				<dd class="mb-6 pl-4">(now Samsung)</dd>
-				<dd class="mb-6 pl-4">research and pre-development</dd>
-				<dd class="mb-6 pl-4">for automotive sound systems</dd>
+				<dd class="mb-4 pl-4">(now Samsung)</dd>
+				<dd class="mb-4 pl-4">research and pre-development</dd>
+				<dd class="mb-4 pl-4">for automotive sound systems</dd>
 			</dl>
 			<dl class="text-5xl">
 				<dt class="mt-5 mb-4 font-bold text-nowrap">
 					<Icon icon="emojione-v1:flag-for-united-states" class="mr-2 inline-block" /> At sister company
 					in USA
 				</dt>
-				<dd class="mb-6 pl-4">for 1.5 years</dd>
+				<dd class="mb-4 pl-4">for 1.5 years</dd>
+			</dl>
+			<dl
+				class="bg-warning-container text-warning-container-content shadow-base-shadow rounded-2xl text-5xl shadow"
+			>
+				<dt class="mt-5 mb-4 font-bold text-nowrap">
+					<Icon icon="fluent-color:warning-28" class="mr-2 inline-block" /> Fun job
+				</dt>
+				<dd class="mb-4 pl-4">worked around many hours a week</dd>
 			</dl>
 		</CardOverlay>
 		<CardOverlay
@@ -437,9 +448,9 @@
 					<Icon icon="emojione-v1:flag-for-denmark" class="mr-2 inline-block" /> Technical University
 					of Denmark (DTU)
 				</dt>
-				<dd class="mb-6 pl-4">Power Electronics and Sound Systems</dd>
-				<dd class="mb-6 pl-4">Highly energy efficient electronics</dd>
-				<dd class="mb-6 pl-4">Amplifiers</dd>
+				<dd class="mb-4 pl-4">Power Electronics and Sound Systems</dd>
+				<dd class="mb-4 pl-4">Highly energy efficient electronics</dd>
+				<!-- <dd class="mb-4 pl-4">Amplifiers</dd> -->
 			</dl>
 			<dl class="text-5xl">
 				<dt class="mt-5 mb-4 font-bold text-nowrap">
@@ -447,11 +458,58 @@
 					job
 				</dt>
 			</dl>
+			<!-- <dl class="text-5xl">
+				<dt class="mt-5 mb-4 font-bold text-nowrap">
+					<Icon icon="fluent-emoji-flat:glowing-star" class="mr-2 inline-block" /> Hobbies
+				</dt>
+				<dd class="mb-4 pl-4">Learning Danish</dd>
+			</dl> -->
 			<dl class="text-5xl">
-				<dt class="mt-5 mb-4 font-bold text-nowrap">Hobbies</dt>
-				<dd class="mb-6 pl-4">Learning Danish</dd>
+				<dt class="mt-5 mb-4 font-bold text-nowrap">
+					<Icon icon="emojione:rocket" class="mr-2 inline-block" /> Venture Cup
+				</dt>
+				<dd class="mb-4 pl-4">good time at CBS!</dd>
+				<dd class="mb-4 pl-4">won 3rd price</dd>
+			</dl>
+			<dl
+				class="bg-warning-container text-warning-container-content shadow-base-shadow rounded-2xl text-5xl shadow"
+			>
+				<dt class="mt-5 mb-4 font-bold text-nowrap">
+					<Icon icon="fluent-color:warning-28" class="mr-2 inline-block" /> Two part time contracts
+				</dt>
+				<dd class="mb-4 pl-4">Two time 3/4 of full time</dd>
 			</dl>
 		</CardOverlay>
+		<CardOverlay
+			class="bg-base-250 text-base-content absolute top-1/2 left-1/2 z-50 w-fit -translate-x-1/2 -translate-y-1/2 pt-6 text-4xl"
+			bind:hidden={aboutMe.research}
+		>
+			{#snippet header()}
+				<div class="text-5xl font-bold">Focus on Research</div>
+			{/snippet}
+			<dl class="text-5xl">
+				<dt class="mb-4 font-bold text-nowrap">
+					<Icon icon="fluent-emoji-flat:green-heart" class="mr-2 inline-block" /> Intention
+				</dt>
+				<dd class="mb-4 pl-4">using less material to provide same energy</dd>
+			</dl>
+			<dl class="text-5xl">
+				<dt class="mt-5 mb-4 font-bold text-nowrap">
+					<Icon icon="fluent-color:lightbulb-32" class="mr-2 inline-block" /> Research & Teaching
+				</dt>
+				<dd class="mb-4 pl-4">3 research projects with industry</dd>
+				<dd class="mb-4 pl-4">4 start-up companies</dd>
+				<dd class="mb-4 pl-4">2 courses</dd>
+			</dl>
+			<dl
+				class="bg-warning-container text-warning-container-content shadow-base-shadow rounded-2xl text-5xl shadow"
+			>
+				<dt class="mt-5 mb-4 font-bold text-nowrap">
+					<Icon icon="fluent-color:warning-28" class="mr-2 inline-block" /> Meetings / Courses / Supervision
+				</dt>
+			</dl>
+		</CardOverlay>
+		<!-- TBD: make it a bang here? -->
 	</FramedSlide>
 	<FramedSlide part="checkin" section="map" hideProgressBar>
 		{#if placesQuestion}
@@ -1174,6 +1232,12 @@
 </RevealJs>
 
 <style>
+	dl {
+		margin-left: 10px !important;
+		margin-right: 10px !important;
+		padding-left: 30px !important;
+		padding-right: 30px !important;
+	}
 	dt {
 		font-style: italic;
 	}
