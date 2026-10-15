@@ -15,13 +15,10 @@
 		revealInstance,
 		socketio
 	}: { revealInstance?: RevealApi; socketio?: SocketIO<QuestionExtended> } = $props();
-	let presenterMode = $derived(page.url.searchParams.get('presenter') === 'true');
 	let loggedIn = $derived(Boolean(page.data.session?.loggedIn && page.data.session.sessionId));
 	let question = $derived(socketio?.entities[0]);
 	let canPublish = $derived(
-		presenterMode &&
-			loggedIn &&
-			(question?.access_right === Action.WRITE || question?.access_right === Action.OWN)
+		loggedIn && (question?.access_right === Action.WRITE || question?.access_right === Action.OWN)
 	);
 	let lastRequestedState: string | undefined;
 
@@ -82,7 +79,7 @@
 	});
 </script>
 
-{#if presenterMode && (!loggedIn || canPublish)}
+{#if !loggedIn || canPublish}
 	{#if currentInput(question?.question) && question?.question !== presentationStatePrefix}
 		<button
 			class="btn btn-warning-container shadow-base-shadow ml-2 rounded-full shadow"

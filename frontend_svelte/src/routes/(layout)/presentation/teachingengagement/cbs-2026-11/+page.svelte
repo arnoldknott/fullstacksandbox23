@@ -27,6 +27,7 @@
 
 	let { data }: { data: PageData } = $props();
 
+	let presenterMode = $derived(page.url.searchParams.get('presenter') === 'true');
 	let revealInstance = $state<RevealApi | undefined>(undefined);
 	let namesQuestion = $derived(
 		data.payload.questions.find((question) => question.question === 'cbs-names')
@@ -304,7 +305,9 @@
 			{/if}
 		{/each}
 		{#snippet footerRight()}
-			<PresenterControls {revealInstance} socketio={socketioPresenterState} />
+			{#if presenterMode}
+				<PresenterControls {revealInstance} socketio={socketioPresenterState} />
+			{/if}
 		{/snippet}
 		<!-- <div class="absolute right-0 bottom-0 z-50 flex items-center gap-2 p-4">
 			<PresenterControls {revealInstance} socketio={socketioPresenterState} />
@@ -338,7 +341,7 @@
 			{@render interactiveElementNotAvailable('map')}
 		{/if}
 		{#snippet footerLeft()}
-			{#if placesQuestion}
+			{#if placesQuestion && presenterMode}
 				<QrCode
 					url={getInputsUrl(page.url, 'cbs-places')}
 					bind:modalHidden={qrCodeModalsHidden.map}
@@ -632,7 +635,7 @@
 	<FramedSlide part="inspiration" section="books">
 		<Library socketio={socketioBooks} />
 		{#snippet footerLeft()}
-			{#if booksQuestion}<QrCode
+			{#if booksQuestion && presenterMode}<QrCode
 					url={getInputsUrl(page.url, 'cbs-books')}
 					bind:modalHidden={qrCodeModalsHidden.books}
 				/>{/if}
@@ -1020,7 +1023,7 @@
 			{@render interactiveElementNotAvailable('comments and questions dialog')}
 		{/if}
 		{#snippet footerLeft()}
-			{#if commentsQuestion}<QrCode
+			{#if commentsQuestion && presenterMode}<QrCode
 					url={getInputsUrl(page.url, 'cbs-comments')}
 					bind:modalHidden={qrCodeModalsHidden.comments}
 				/>{/if}
