@@ -18,15 +18,16 @@
 	} & HTMLAttributes<HTMLElement> = $props();
 
 	const closeOnEscape = (close: () => void): Attachment<HTMLElement> => {
-		return () => {
+		return (element) => {
 			const onKeyDown = (event: KeyboardEvent) => {
-				if (event.key === 'Escape') {
-					event.preventDefault();
-					event.stopPropagation();
-					event.stopImmediatePropagation();
-					close();
-				}
+				if (event.key !== 'Escape' || hidden) return;
+				if (!element.closest('section.present')) return;
+
+				event.preventDefault();
+				event.stopImmediatePropagation();
+				close();
 			};
+
 			return on(document, 'keydown', onKeyDown, { capture: true });
 		};
 	};
