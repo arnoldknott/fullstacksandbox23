@@ -170,8 +170,9 @@
 		phd: true,
 		research: true,
 		sabbatical: true,
-		education: true
+		teaching: true
 	});
+	let showExplodingHead = $state(false);
 
 	let outerChange = $state({
 		reflections: true,
@@ -183,6 +184,14 @@
 		for (const key in list) {
 			list[key] = key === toggleKey ? !list[key] : true;
 		}
+	};
+	const toggleAboutMe = (buttonText: string) => {
+		if (!aboutMe.research) showExplodingHead = true;
+		hideAllToggleOne(buttonText.replaceAll('.', '').toLowerCase(), aboutMe);
+	};
+	const setResearchOverlayHidden = (hidden: boolean) => {
+		if (hidden && !aboutMe.research) showExplodingHead = true;
+		aboutMe.research = hidden;
 	};
 
 	let circularItems: Record<string, HTMLDivElement | undefined> = $state({});
@@ -309,8 +318,8 @@
 		{/each}
 	</div>
 	<button
-		class="btn btn-xl btn-gradient btn-secondary-container rounded-full text-5xl font-semibold shadow-inner"
-		onclick={() => hideAllToggleOne(buttonText.replaceAll('.', '').toLowerCase(), aboutMe)}
+		class="btn btn-xl btn-gradient btn-secondary-container shadow-base-shadow rounded-full text-5xl font-semibold shadow"
+		onclick={() => toggleAboutMe(buttonText)}
 	>
 		{buttonText}
 	</button>
@@ -362,7 +371,7 @@
 	<!-- </section> -->
 	<FramedSlide part="checkin" section="aboutme" title="About Me">
 		<div
-			class="mx-10 grid grid-cols-[minmax(0,1fr)_10px_minmax(0,1fr)_120px_240px_minmax(0,8fr)] gap-8 gap-y-12"
+			class="mx-10 grid grid-cols-[minmax(0,1fr)_10px_minmax(0,1fr)_120px_270px_minmax(0,8fr)] gap-8 gap-y-12"
 		>
 			{@render timeLineRow('2000', '2004', ['germany'], 'Studies', 'Electrical Engineering')}
 			{@render timeLineRow(
@@ -380,7 +389,13 @@
 				'Power Electronics at DTU'
 			)}
 			{@render timeLineRow('2010', '2018', ['denmark'], 'Research', 'Miniaturising Power Supplies')}
-			{@render timeLineRow('2018', '2018', ['white-flag'], 'Sabatical', 'Dirtbacking')}
+			{#if showExplodingHead}
+				<Icon
+					icon="fluent-emoji-flat:exploding-head"
+					class="col-span-full justify-self-center text-7xl"
+				/>
+			{/if}
+			{@render timeLineRow('2018', '2018', ['white-flag'], 'Sabbatical', 'Dirtbacking')}
 			{@render timeLineRow('2019', '2026', ['denmark'], 'Teaching', 'Focus on Teaching')}
 		</div>
 		<CardOverlay
@@ -482,7 +497,7 @@
 		</CardOverlay>
 		<CardOverlay
 			class="bg-base-250 text-base-content absolute top-1/2 left-1/2 z-50 w-fit -translate-x-1/2 -translate-y-1/2 pt-6 text-4xl"
-			bind:hidden={aboutMe.research}
+			bind:hidden={() => aboutMe.research, (hidden) => setResearchOverlayHidden(hidden)}
 		>
 			{#snippet header()}
 				<div class="text-5xl font-bold">Focus on Research</div>
@@ -510,6 +525,63 @@
 			</dl>
 		</CardOverlay>
 		<!-- TBD: make it a bang here? -->
+		<CardOverlay
+			class="bg-base-250 text-base-content absolute top-1/2 left-1/2 z-50 w-fit -translate-x-1/2 -translate-y-1/2 pt-6 text-4xl"
+			bind:hidden={aboutMe.sabbatical}
+		>
+			{#snippet header()}
+				<div class="text-5xl font-bold">Sabatical</div>
+			{/snippet}
+			<dl class="text-5xl">
+				<dt class="mb-4 font-bold text-nowrap">
+					<Icon icon="noto:hiking-boot" class="mr-2 inline-block" /> Being nature
+				</dt>
+				<dd class="mb-4 pl-4">5.5 months in nature</dd>
+				<dd class="mb-4 pl-4">Hiking and outdoor activities</dd>
+				<!-- <dd class="mb-4 pl-4">Amplifiers</dd> -->
+			</dl>
+
+			<dl
+				class="bg-success-container text-success-container-content shadow-base-shadow rounded-2xl text-5xl shadow"
+			>
+				<dt class="mt-5 mb-4 font-bold text-nowrap">
+					<Icon icon="fluent-color:checkmark-circle-32" class="mr-2 inline-block" /> Batteries refilled
+				</dt>
+			</dl>
+		</CardOverlay>
+		<CardOverlay
+			class="bg-base-250 text-base-content absolute top-1/2 left-1/2 z-50 w-fit -translate-x-1/2 -translate-y-1/2 pt-6 text-4xl"
+			bind:hidden={aboutMe.teaching}
+		>
+			{#snippet header()}
+				<div class="text-5xl font-bold">Teaching</div>
+			{/snippet}
+			<dl class="text-5xl">
+				<dt class="mb-4 font-bold text-nowrap">
+					<Icon icon="fluent-emoji-flat:teacher-medium" class="mr-2 inline-block" /> 3 courses
+				</dt>
+				<dd class="mb-4 pl-4">2nd semester mandatory B.Sc.</dd>
+				<dd class="mb-4 pl-4">4th semester elective B.Sc</dd>
+				<dd class="mb-4 pl-4">Master course</dd>
+				<dd class="mb-4 pl-4">in total 300 students per year</dd>
+				<!-- <dd class="mb-4 pl-4">Amplifiers</dd> -->
+			</dl>
+			<dl class="text-5xl">
+				<dt class="mb-4 font-bold text-nowrap">
+					<Icon icon="streamline-stickies-color:programming" class="mr-2 inline-block" /> Programming
+				</dt>
+				<dd class="mb-4 pl-4">For example this presentation</dd>
+			</dl>
+			<dl
+				class="bg-success-container text-success-container-content shadow-base-shadow rounded-2xl text-5xl shadow"
+			>
+				<dt class="mt-5 mb-4 font-bold text-nowrap">
+					<Icon icon="fluent-color:checkmark-circle-32" class="mr-2 inline-block" /> Working as hard as
+					20 years ago
+				</dt>
+				<dd class="mb-4 pl-4">and taking really good care of myself</dd>
+			</dl>
+		</CardOverlay>
 	</FramedSlide>
 	<FramedSlide part="checkin" section="map" hideProgressBar>
 		{#if placesQuestion}
