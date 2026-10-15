@@ -164,21 +164,25 @@
 
 	let modulesContentColumn: HTMLDivElement | undefined = $state();
 
-	let hideModules = $state({
+	let aboutMe = $state({
+		studies: true,
+		industry: true,
+		phd: true,
+		research: true,
+		sabbatical: true,
+		education: true
+	});
+
+	let outerChange = $state({
 		reflections: true,
 		closedQuestions: true,
 		openQuestions: true
 	});
 
-	const hideAllToggleOne = (toggleKey: string) => {
-		Object.keys(hideModules).forEach((key) => {
-			if (key !== toggleKey) {
-				hideModules[key as keyof typeof hideModules] = true;
-			} else {
-				hideModules[key as keyof typeof hideModules] =
-					!hideModules[key as keyof typeof hideModules];
-			}
-		});
+	const hideAllToggleOne = <K extends string>(toggleKey: K, list: Record<K, boolean>): void => {
+		for (const key in list) {
+			list[key] = key === toggleKey ? !list[key] : true;
+		}
 	};
 
 	let circularItems: Record<string, HTMLDivElement | undefined> = $state({});
@@ -292,6 +296,29 @@
 	</div>
 {/snippet}
 
+{#snippet timeLineRow(from: string, to: string, icons: string[], buttonText: string, text: string)}
+	<div class="label self-center align-middle text-5xl">{from}</div>
+	<div class="label self-center text-5xl">-</div>
+	<div class="label self-center text-5xl">{to}</div>
+	<div class="flex justify-center gap-2 self-center">
+		{#each icons as icon, idx (icon)}
+			<Icon icon="emojione-v1:flag-for-{icon}" class="inline-block size-10" />
+			{#if idx < icons.length - 1}
+				<Icon icon="streamline:ampersand-solid" class="inline-block size-6 self-center" />
+			{/if}
+		{/each}
+	</div>
+	<button
+		class="btn btn-xl btn-gradient btn-secondary-container rounded-full text-5xl font-semibold shadow-inner"
+		onclick={() => hideAllToggleOne(buttonText.replaceAll('.', '').toLowerCase(), aboutMe)}
+	>
+		{buttonText}
+	</button>
+	<div class="label self-center text-left text-5xl">
+		{text}
+	</div>
+{/snippet}
+
 <RevealJs bind:reveal={revealInstance}>
 	<FramedSlide part="welcome" hideProgressBar>
 		<div
@@ -333,6 +360,99 @@
 			</div>
 		{/if} -->
 	<!-- </section> -->
+	<FramedSlide part="checkin" section="aboutme" title="About Me">
+		<div
+			class="mx-10 grid grid-cols-[minmax(0,1fr)_10px_minmax(0,1fr)_120px_240px_minmax(0,8fr)] gap-8 gap-y-12"
+		>
+			{@render timeLineRow('2000', '2004', ['germany'], 'Studies', 'Electrical Engineering')}
+			{@render timeLineRow(
+				'2004',
+				'2009',
+				['germany', 'united-states'],
+				'Industry',
+				'Automotive Sound Systems'
+			)}
+			{@render timeLineRow(
+				'2007',
+				'2010',
+				['denmark', 'germany'],
+				'Ph.D.',
+				'Power Electronics at DTU'
+			)}
+			{@render timeLineRow('2010', '2018', ['denmark'], 'Research', 'Miniaturising Power Supplies')}
+			{@render timeLineRow('2018', '2018', ['white-flag'], 'Sabatical', 'Dirtbacking')}
+			{@render timeLineRow('2019', '2026', ['denmark'], 'Teaching', 'Focus on Teaching')}
+		</div>
+		<CardOverlay
+			class="bg-base-250 text-base-content absolute top-1/2 left-1/2 z-50 w-fit -translate-x-1/2 -translate-y-1/2 pt-6 text-4xl"
+			bind:hidden={aboutMe.studies}
+		>
+			{#snippet header()}
+				<div class="text-5xl font-bold">Studies</div>
+			{/snippet}
+			<dl class="text-5xl">
+				<dt class="mb-4 font-bold text-nowrap">Diplom engineer for Electrical Engineering</dt>
+				<dd class="mb-6 pl-4">General Electronics and</dd>
+				<dd class="mb-6 pl-4">Semiconductor Electronics</dd>
+				<dd class="mb-6 pl-4">
+					<a href="https://www.th-deg.de/" class="link link-animated" target="_blank"
+						>Deggendorf Institute of Technology</a
+					>
+				</dd>
+			</dl>
+		</CardOverlay>
+		<CardOverlay
+			class="bg-base-250 text-base-content absolute top-1/2 left-1/2 z-50 w-fit -translate-x-1/2 -translate-y-1/2 pt-6 text-4xl"
+			bind:hidden={aboutMe.industry}
+		>
+			{#snippet header()}
+				<div class="text-7xl font-bold">Industry</div>
+			{/snippet}
+			<dl class="text-5xl">
+				<dt class="mb-4 font-bold text-nowrap">
+					<Icon icon="emojione-v1:flag-for-germany" class="mr-2 inline-block" /> Harman/Becker Automotive
+					Systems GmbH
+				</dt>
+				<dd class="mb-6 pl-4">(now Samsung)</dd>
+				<dd class="mb-6 pl-4">research and pre-development</dd>
+				<dd class="mb-6 pl-4">for automotive sound systems</dd>
+			</dl>
+			<dl class="text-5xl">
+				<dt class="mt-5 mb-4 font-bold text-nowrap">
+					<Icon icon="emojione-v1:flag-for-united-states" class="mr-2 inline-block" /> At sister company
+					in USA
+				</dt>
+				<dd class="mb-6 pl-4">for 1.5 years</dd>
+			</dl>
+		</CardOverlay>
+		<CardOverlay
+			class="bg-base-250 text-base-content absolute top-1/2 left-1/2 z-50 w-fit -translate-x-1/2 -translate-y-1/2 pt-6 text-4xl"
+			bind:hidden={aboutMe.phd}
+		>
+			{#snippet header()}
+				<div class="text-5xl font-bold">Ph.d. student</div>
+			{/snippet}
+			<dl class="text-5xl">
+				<dt class="mb-4 font-bold text-nowrap">
+					<Icon icon="emojione-v1:flag-for-denmark" class="mr-2 inline-block" /> Technical University
+					of Denmark (DTU)
+				</dt>
+				<dd class="mb-6 pl-4">Power Electronics and Sound Systems</dd>
+				<dd class="mb-6 pl-4">Highly energy efficient electronics</dd>
+				<dd class="mb-6 pl-4">Amplifiers</dd>
+			</dl>
+			<dl class="text-5xl">
+				<dt class="mt-5 mb-4 font-bold text-nowrap">
+					<Icon icon="emojione-v1:flag-for-germany" class="mr-2 inline-block" /> overlap with industry
+					job
+				</dt>
+			</dl>
+			<dl class="text-5xl">
+				<dt class="mt-5 mb-4 font-bold text-nowrap">Hobbies</dt>
+				<dd class="mb-6 pl-4">Learning Danish</dd>
+			</dl>
+		</CardOverlay>
+	</FramedSlide>
 	<FramedSlide part="checkin" section="map" hideProgressBar>
 		{#if placesQuestion}
 			<!-- <div class="text-secondary text-center text-7xl font-bold">Check in</div> -->
@@ -715,23 +835,23 @@
 		</div>
 	</FramedSlide>
 	<FramedSlide part="implementation" section="practical" title="Outer change">
-		<div class="mt-10 grid h-full grid-cols-2 gap-10">
+		<div class="mt-10 grid h-full grid-cols-2 gap-10 overflow-scroll">
 			<div class="flex flex-col items-center gap-15">
 				<button
 					class="btn btn-xl btn-gradient btn-primary-container h-30 w-150 justify-center rounded-full p-10 text-5xl font-semibold shadow-inner"
-					onclick={() => hideAllToggleOne('reflections')}
+					onclick={() => hideAllToggleOne('reflections', outerChange)}
 				>
 					Learning Reflections
 				</button>
 				<button
 					class="btn btn-xl btn-gradient btn-primary-container h-30 w-150 justify-center rounded-full p-10 text-5xl font-semibold shadow-inner"
-					onclick={() => hideAllToggleOne('closedQuestions')}
+					onclick={() => hideAllToggleOne('closedQuestions', outerChange)}
 				>
 					Quantitative Questions
 				</button>
 				<button
 					class="btn btn-xl btn-gradient btn-primary-container h-30 w-150 justify-center rounded-full p-10 text-5xl font-semibold shadow-inner"
-					onclick={() => hideAllToggleOne('openQuestions')}
+					onclick={() => hideAllToggleOne('openQuestions', outerChange)}
 				>
 					Qualitative Questions
 				</button>
@@ -739,7 +859,7 @@
 			<div class="flex flex-col items-center gap-10" bind:this={modulesContentColumn}>
 				<CardOverlay
 					class="bg-primary text-primary-content z-50 pt-6 text-4xl"
-					bind:hidden={hideModules.reflections}
+					bind:hidden={outerChange.reflections}
 				>
 					{#snippet header()}
 						<div class="text-5xl font-bold">Learning Reflections</div>
@@ -766,7 +886,7 @@
 				</CardOverlay>
 				<CardOverlay
 					class="bg-primary text-primary-content z-50 pt-6 text-4xl"
-					bind:hidden={hideModules.closedQuestions}
+					bind:hidden={outerChange.closedQuestions}
 				>
 					{#snippet header()}
 						<div class="text-5xl font-bold">Quantitative Questions</div>
@@ -796,7 +916,7 @@
 				</CardOverlay>
 				<CardOverlay
 					class="bg-primary text-primary-content z-50 pt-6 text-4xl"
-					bind:hidden={hideModules.openQuestions}
+					bind:hidden={outerChange.openQuestions}
 				>
 					{#snippet header()}
 						<div class="text-5xl font-bold">Qualitative Questions</div>
@@ -1052,3 +1172,9 @@
 		{/if}
 	</FramedSlide>
 </RevealJs>
+
+<style>
+	dt {
+		font-style: italic;
+	}
+</style>
