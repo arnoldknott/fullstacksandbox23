@@ -101,14 +101,14 @@
 			class="btn btn-secondary-container btn-gradient btn-sm shadow-outline rounded-full shadow-sm"
 			onclick={onclose}
 		>
-			<Icon icon="tabler:x" class="size-4" />Cancel
+			<Icon icon="tabler:x" class="z-0! size-4" />Cancel
 		</button>
 		<button
 			class="btn btn-primary-container btn-gradient btn-sm shadow-outline rounded-full shadow-sm"
 			disabled={!socketio?.pendingEntities[0] || !parentId}
 			onclick={submit}
 		>
-			<Icon icon="tabler:send" class="size-5" />Send
+			<Icon icon="tabler:send" class="z-0! size-4" />Send
 		</button>
 	</div>
 </div>
