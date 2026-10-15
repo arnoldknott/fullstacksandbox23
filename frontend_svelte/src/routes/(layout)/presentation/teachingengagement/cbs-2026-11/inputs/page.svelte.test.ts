@@ -178,7 +178,7 @@ describe('Mobile inputs page', () => {
 			clientX: 100,
 			clientY: 100
 		});
-		const textarea = await screen.findByLabelText('What connects you to this place?');
+		const textarea = await screen.findByLabelText('How do you connect to this place?');
 		const emojiButton = screen.getByRole('button', { name: 'Emoji Picker' });
 		const popover = document.getElementById(emojiButton.getAttribute('popovertarget')!)!;
 		expect(popover).toHaveAttribute('popover', 'auto');
