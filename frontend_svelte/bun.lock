@@ -8,6 +8,7 @@
         "@azure/identity": "^4.13.1",
         "@azure/keyvault-secrets": "^4.11.2",
         "@azure/msal-node": "^5.4.3",
+        "@floating-ui/dom": "^1.7.6",
         "@iconify/svelte": "^5.2.2",
         "@material/material-color-utilities": "0.3.0",
         "colorjs.io": "^0.7.1",
