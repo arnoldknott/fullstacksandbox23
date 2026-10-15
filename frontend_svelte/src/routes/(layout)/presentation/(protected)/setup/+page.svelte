@@ -282,6 +282,7 @@
 				resourceId={presentation.id}
 				accessRight={socketioPresentations?.accessRights[presentation.id]}
 				socketio={socketioPresentations}
+				entityType="presentation"
 			/>
 		{/snippet}
 		<Table
