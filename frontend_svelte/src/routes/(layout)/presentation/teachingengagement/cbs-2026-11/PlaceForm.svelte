@@ -1,12 +1,12 @@
 <script lang="ts">
+	import { autoUpdate, computePosition, flip, offset, shift } from '@floating-ui/dom';
 	import Icon from '@iconify/svelte';
 	import type L from 'leaflet';
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 
 	import { Action } from '$lib/accessHandler';
 	import type { SocketIO } from '$lib/socketio.svelte';
 	import type { MessageExtended } from '$lib/types';
-	import { initTooltip } from '$lib/userInterface';
 
 	import type { Place } from './Map.svelte';
 	import NameInput from './NameInput.svelte';
@@ -29,16 +29,50 @@
 	const inputId = $props.id();
 	let emoji = $state('📍');
 	let text = $state('');
-	let emojiPickerTooltip: HTMLDivElement;
+	let emojiPickerButton: HTMLButtonElement;
+	let emojiPickerPopover: HTMLDivElement;
+	let emojiPickerPositioned = $state(false);
+	let stopPositioning: (() => void) | undefined;
 
-	// Picker events must not reach Leaflet, Reveal, or FlyonUI's outside-click closer.
+	const positionPicker = (event: ToggleEvent) => {
+		stopPositioning?.();
+		stopPositioning = undefined;
+		emojiPickerPositioned = false;
+		if (event.newState !== 'open') return;
+		let active = true;
+		const cleanup = autoUpdate(
+			emojiPickerButton,
+			emojiPickerPopover,
+			() => {
+				void computePosition(emojiPickerButton, emojiPickerPopover, {
+					placement: 'bottom-start',
+					strategy: 'fixed',
+					middleware: [offset(8), flip({ padding: 8 }), shift({ padding: 8 })]
+				}).then(({ x, y }) => {
+					if (!active) return;
+					emojiPickerPopover.style.left = `${x}px`;
+					emojiPickerPopover.style.top = `${y}px`;
+					emojiPickerPositioned = true;
+				});
+			},
+			{ animationFrame: true }
+		);
+		stopPositioning = () => {
+			active = false;
+			cleanup();
+		};
+	};
+
+	onDestroy(() => stopPositioning?.());
+
+	// Picker events must not reach Leaflet or Reveal's keyboard shortcuts.
 	const emojiField = (node: HTMLElement) => {
 		const swallowed = ['keydown', 'keyup', 'keypress', 'click', 'mousedown', 'dblclick'];
 		const stop = (event: Event) => event.stopPropagation();
 		const handleSelect = (event: Event) => {
 			event.stopPropagation();
 			emoji = (event as CustomEvent<{ unicode: string }>).detail.unicode;
-			window.HSTooltip.hide(emojiPickerTooltip);
+			emojiPickerPopover.hidePopover();
 		};
 		swallowed.forEach((type) => node.addEventListener(type, stop));
 		node.addEventListener('emoji-click', handleSelect);
@@ -70,30 +104,32 @@
 <div
 	class="bg-secondary-container text-secondary-container-content grid w-full min-w-61 grid-cols-[2.5rem_minmax(0,1fr)] gap-2 rounded-lg p-4 pr-8"
 >
-	<div
-		bind:this={emojiPickerTooltip}
-		class="tooltip [--interaction:true] [--placement:right-start] [--trigger:click]"
-		{@attach initTooltip}
+	<button
+		bind:this={emojiPickerButton}
+		type="button"
+		class="btn btn-secondary btn-circle shadow-base-shadow mt-1 text-2xl shadow"
+		aria-label="Emoji Picker"
+		popovertarget={`${inputId}-emoji-picker`}>{emoji}</button
 	>
-		<div class="tooltip-toggle">
-			<button
-				class="btn btn-secondary btn-circle shadow-base-shadow mt-1 text-2xl shadow"
-				aria-label="Emoji Picker">{emoji}</button
-			>
-			<div class="tooltip-content tooltip-shown:visible tooltip-shown:opacity-100">
-				<div
-					class="tooltip-body bg-base-150 shadow-base-shadow max-w-xs rounded-lg p-2 text-start shadow-inner"
-				>
-					<emoji-picker use:emojiField></emoji-picker>
-				</div>
-			</div>
-		</div>
+	<div
+		id={`${inputId}-emoji-picker`}
+		bind:this={emojiPickerPopover}
+		popover="auto"
+		ontoggle={positionPicker}
+		aria-label="Choose an emoji"
+		class="bg-base-250 text-base-content shadow-base-shadow fixed inset-auto m-0 max-h-[calc(100dvh-2rem)] w-[249px] max-w-[calc(100dvw-2rem)] rounded-lg border-0 p-2 shadow-lg"
+		class:invisible={!emojiPickerPositioned}
+	>
+		<emoji-picker
+			class="flex h-[min(300px,calc(100dvh-3rem))] w-full [--background:var(--color-base-250)] [--border-size:0px]"
+			use:emojiField
+		></emoji-picker>
 	</div>
 	<div class="min-w-0"><NameInput bind:name /></div>
 	<div class="textarea-filled textarea-base-content col-span-2 w-full">
 		<textarea class="textarea" placeholder="" id={inputId} bind:value={text} name="text"></textarea>
 		<label class="textarea-filled-label text-sm whitespace-normal" for={inputId}
-			>What connects you to this place?</label
+			>How do you connect to this place?</label
 		>
 	</div>
 	<div class="col-span-2 flex flex-wrap justify-end gap-2">
@@ -101,23 +137,14 @@
 			class="btn btn-secondary-container btn-gradient btn-sm shadow-outline rounded-full shadow-sm"
 			onclick={onclose}
 		>
-			<Icon icon="tabler:x" class="size-4" />Cancel
+			<Icon icon="tabler:x" class="z-0! size-4" />Cancel
 		</button>
 		<button
 			class="btn btn-primary-container btn-gradient btn-sm shadow-outline rounded-full shadow-sm"
 			disabled={!socketio?.pendingEntities[0] || !parentId}
 			onclick={submit}
 		>
-			<Icon icon="tabler:send" class="size-5" />Send
+			<Icon icon="tabler:send" class="z-0! size-4" />Send
 		</button>
 	</div>
 </div>
-
-<style>
-	:global(emoji-picker) {
-		width: 233px;
-		height: 300px;
-		--background: var(--base-150);
-		--border-size: 0px;
-	}
-</style>

@@ -451,6 +451,7 @@ https://svelte.dev/e/transition_slide_display
 				resourceId={question.id}
 				accessRight={socketioQuestions?.accessRights[question.id]}
 				socketio={socketioQuestions}
+				entityType="question"
 			/>
 		{/snippet}
 		<Table

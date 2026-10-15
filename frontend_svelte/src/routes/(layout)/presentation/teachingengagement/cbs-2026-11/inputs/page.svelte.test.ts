@@ -15,6 +15,11 @@ const mock = vi.hoisted(() => ({
 	configurations: [] as Array<{ submitOnly?: boolean; snapshot?: unknown }>,
 	submitted: vi.fn()
 }));
+const floatingMock = vi.hoisted(() => ({
+	resolvePosition: undefined as ((position: { x: number; y: number }) => void) | undefined,
+	cleanup: vi.fn(),
+	options: undefined as { animationFrame?: boolean } | undefined
+}));
 
 vi.mock('$app/state', async () => {
 	const { SvelteURL } = await import('svelte/reactivity');
@@ -39,6 +44,29 @@ vi.mock('svelte/transition', () => ({
 vi.mock('svelte/animate', () => ({ flip: () => ({ duration: 0 }) }));
 vi.mock('$lib/userInterface', () => ({ initTooltip: vi.fn() }));
 vi.mock('emoji-picker-element', () => ({}));
+vi.mock('@floating-ui/dom', () => ({
+	autoUpdate: vi.fn(
+		(
+			_reference: Element,
+			_floating: Element,
+			update: () => void,
+			options: { animationFrame?: boolean }
+		) => {
+			floatingMock.options = options;
+			update();
+			return floatingMock.cleanup;
+		}
+	),
+	computePosition: vi.fn(
+		() =>
+			new Promise<{ x: number; y: number }>((resolve) => {
+				floatingMock.resolvePosition = resolve;
+			})
+	),
+	flip: vi.fn(() => ({})),
+	offset: vi.fn(() => ({})),
+	shift: vi.fn(() => ({}))
+}));
 vi.mock('$lib/socketio.svelte', () => ({
 	SocketIO: class {
 		entities = $state<QuestionExtended[]>([]);
@@ -86,6 +114,9 @@ beforeEach(() => {
 	mock.state = undefined;
 	mock.configurations = [];
 	mock.submitted.mockClear();
+	floatingMock.resolvePosition = undefined;
+	floatingMock.cleanup.mockClear();
+	floatingMock.options = undefined;
 	vi.mocked(goto).mockClear();
 	page.url.href = 'https://example.org/presentation/test/inputs?input=cbs-comments&debug=true';
 	Object.defineProperty(Element.prototype, 'getAnimations', {
@@ -147,7 +178,31 @@ describe('Mobile inputs page', () => {
 			clientX: 100,
 			clientY: 100
 		});
-		const textarea = await screen.findByLabelText('What connects you to this place?');
+		const textarea = await screen.findByLabelText('How do you connect to this place?');
+		const emojiButton = screen.getByRole('button', { name: 'Emoji Picker' });
+		const popover = document.getElementById(emojiButton.getAttribute('popovertarget')!)!;
+		expect(popover).toHaveAttribute('popover', 'auto');
+		expect(emojiButton).toHaveAttribute('type', 'button');
+		expect(popover).toHaveClass('invisible');
+		const toggleEvent = new Event('toggle');
+		Object.defineProperty(toggleEvent, 'newState', { value: 'open' });
+		popover.dispatchEvent(toggleEvent);
+		expect(floatingMock.options).toEqual({ animationFrame: true });
+		expect(popover).toHaveClass('invisible');
+		floatingMock.resolvePosition?.({ x: 123, y: 234 });
+		await vi.waitFor(() => expect(popover).not.toHaveClass('invisible'));
+		expect(popover.style.left).toBe('123px');
+		expect(popover.style.top).toBe('234px');
+		const hidePopover = vi.fn();
+		Object.defineProperty(popover, 'hidePopover', { value: hidePopover, configurable: true });
+		popover.querySelector('emoji-picker')!.dispatchEvent(
+			new CustomEvent('emoji-click', {
+				bubbles: true,
+				detail: { unicode: '🌍' }
+			})
+		);
+		await vi.waitFor(() => expect(emojiButton).toHaveTextContent('🌍'));
+		expect(hidePopover).toHaveBeenCalledOnce();
 		expect(screen.getByLabelText('Name:')).toHaveValue('Alex');
 		await fireEvent.input(textarea, { target: { value: 'My home town' } });
 		await fireEvent.click(screen.getByRole('button', { name: 'Send' }));
@@ -157,7 +212,7 @@ describe('Mobile inputs page', () => {
 		);
 		const content = JSON.parse(mock.submitted.mock.lastCall![0].content);
 		expect(content).toEqual({
-			emoji: '📍',
+			emoji: '🌍',
 			text: 'My home town',
 			coords: { lat: expect.any(Number), lng: expect.any(Number) }
 		});

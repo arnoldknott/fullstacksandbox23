@@ -105,7 +105,7 @@
 				if (destroyed || !leafletMap) return;
 				leaflet
 					.popup({
-						minWidth: mobile ? Math.min(240, Math.max(180, mapElement.clientWidth - 48)) : 350,
+						minWidth: mobile ? Math.min(300, Math.max(180, mapElement.clientWidth - 48)) : 350,
 						maxWidth: mobile ? Math.max(200, mapElement.clientWidth - 48) : 500,
 						className: 'place-popup'
 					})
