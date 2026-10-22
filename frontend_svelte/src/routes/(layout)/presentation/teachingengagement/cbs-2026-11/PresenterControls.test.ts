@@ -102,13 +102,18 @@ describe('Presenter controls', () => {
 		}
 	);
 
-	test.each(['', '?presenter=false'])('does not publish without presenter=true (%s)', (query) => {
-		browser.url = `https://example.org/presentation/test${query}`;
-		const { socketio, reveal } = renderControls({ slideId: 'checkin-map' });
-		expect(socketio.submitEntity).not.toHaveBeenCalled();
-		expect(reveal.on).not.toHaveBeenCalled();
-		expect(screen.queryByRole('button')).not.toBeInTheDocument();
-	});
+	test.each(['', '?presenter=false'])(
+		'delegates presenter-mode gating to the page when mounted (%s)',
+		(query) => {
+			browser.url = `https://example.org/presentation/test${query}`;
+			const { socketio, reveal } = renderControls({ slideId: 'checkin-map' });
+			expect(socketio.submitEntity).toHaveBeenCalledExactlyOnceWith(
+				expect.objectContaining({ question: 'cbs-presentation-state-places' })
+			);
+			expect(reveal.on).toHaveBeenCalledWith('slidechanged', expect.any(Function));
+			expect(screen.getByRole('button', { name: 'Reset' })).toBeEnabled();
+		}
+	);
 
 	test('logged-out presenter mode shows Login, disables Reset and never publishes', () => {
 		browser.session = undefined;
