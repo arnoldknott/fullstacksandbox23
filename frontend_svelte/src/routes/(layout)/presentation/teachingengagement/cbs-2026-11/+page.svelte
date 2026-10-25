@@ -435,8 +435,8 @@
 					icon="fluent-emoji-flat:exploding-head"
 					class="col-span-full justify-self-center text-7xl"
 				/>
+				{@render timeLineRow('2018', '2018', ['white-flag'], 'Sabbatical', 'Dirtbacking')}
 			{/if}
-			{@render timeLineRow('2018', '2018', ['white-flag'], 'Sabbatical', 'Dirtbacking')}
 			{@render timeLineRow('2019', '2026', ['denmark'], 'Teaching', 'Focus on Teaching')}
 		</div>
 		<CardOverlay
@@ -867,7 +867,7 @@
 			4 start-ups<br />
 			Example: LED lighting leads Rebound effect
 		</FramedSlide>
-		<FramedSlide part="context" section="cheese" title="Chese or holes?">
+		<FramedSlide part="context" section="cheese" title="Cheese or holes?">
 			I was trained to see the wholes in the cheese<br />
 			Mindset of scarcity<br />
 			Only growth can move us on.<br />
@@ -920,9 +920,6 @@
 		Do you want to see change in the world?<br />
 		Results of change
 	</FramedSlide>
-	<FramedSlide part="context" section="change-citation" title="Colleague Compliment">
-		citations about change in 10 years
-	</FramedSlide>
 	<FramedSlide>
 		<img
 			src="/flower.jpg"
@@ -967,13 +964,13 @@
 	<FramedSlide part="implementation" section="motivation-examples" title="Motivation: Examples">
 		<MotivationTable color="secondary" />
 	</FramedSlide>
-	<FramedSlide>
+	<!-- <FramedSlide>
 		<img
 			src="/snow-lake.jpg"
 			alt="Snow Lake"
 			class="shadow-base-shadow h-fit w-3/4 self-center rounded-4xl shadow-lg"
 		/>
-	</FramedSlide>
+	</FramedSlide> -->
 	<FramedSlide part="implementation" title="Inner change">
 		<div class="flex flex-wrap justify-center gap-8">
 			<ChatBubble variant="secondary" tailAngle={100} tailLength={20} tailBase={10}>
@@ -1300,7 +1297,6 @@
 	<FramedSlide part="results" section="qualitative" title="Results: qualitative">
 		Remember to add data to qualitative feedback question
 	</FramedSlide>
-
 	{#each data.payload.qualitativeFeedbackSnapshot.entities as feedback, idx (idx)}
 		<FramedSlide part="results" section={`qualitative-${idx}`} title="Results: qualitative">
 			<QualitativeFeedback content={feedback.content} />
@@ -1309,14 +1305,17 @@
 	<FramedSlide part="results" section="emotional" title="Results: emotional">
 		<div class="text-[600px]">🫶</div>
 	</FramedSlide>
+	<FramedSlide part="context" section="change-citation" title="Colleague Compliment">
+		citations about change in 10 years
+	</FramedSlide>
 	<FramedSlide part="results" section="colleagues" title="Results: colleagues">
 		6 courses: no degradation <br />
 		1 colleague went to press <br />
 		Citation of encouragement: keep getting hit - because you are shaking the coconut tree
 	</FramedSlide>
-	<FramedSlide part="results" section="inner-development" title="Results: myself">
+	<FramedSlide part="results" section="inner-development" title="Results: reflection">
 		integrity, meaningful, inner growth, strength, resilience, connectedness to nature and lots of
-		power
+		power; consider removing - or put up in a way of story telling.
 	</FramedSlide>
 	<FramedSlide>
 		<img
