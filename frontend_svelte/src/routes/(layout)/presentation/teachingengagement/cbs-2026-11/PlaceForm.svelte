@@ -107,7 +107,7 @@
 	<button
 		bind:this={emojiPickerButton}
 		type="button"
-		class="btn btn-secondary btn-circle shadow-base-shadow mt-1 text-2xl shadow"
+		class="btn btn-primary-container btn-circle shadow-base-shadow mt-1 text-2xl shadow"
 		aria-label="Emoji Picker"
 		popovertarget={`${inputId}-emoji-picker`}>{emoji}</button
 	>

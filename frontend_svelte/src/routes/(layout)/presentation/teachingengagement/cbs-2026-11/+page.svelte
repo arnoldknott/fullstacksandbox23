@@ -27,6 +27,7 @@
 
 	let { data }: { data: PageData } = $props();
 
+	let presenterMode = $derived(page.url.searchParams.get('presenter') === 'true');
 	let revealInstance = $state<RevealApi | undefined>(undefined);
 	let namesQuestion = $derived(
 		data.payload.questions.find((question) => question.question === 'cbs-names')
@@ -163,21 +164,34 @@
 
 	let modulesContentColumn: HTMLDivElement | undefined = $state();
 
-	let hideModules = $state({
+	let aboutMe = $state({
+		studies: true,
+		industry: true,
+		phd: true,
+		research: true,
+		sabbatical: true,
+		teaching: true
+	});
+	let showExplodingHead = $state(false);
+
+	let outerChange = $state({
 		reflections: true,
 		closedQuestions: true,
 		openQuestions: true
 	});
 
-	const hideAllToggleOne = (toggleKey: string) => {
-		Object.keys(hideModules).forEach((key) => {
-			if (key !== toggleKey) {
-				hideModules[key as keyof typeof hideModules] = true;
-			} else {
-				hideModules[key as keyof typeof hideModules] =
-					!hideModules[key as keyof typeof hideModules];
-			}
-		});
+	const hideAllToggleOne = <K extends string>(toggleKey: K, list: Record<K, boolean>): void => {
+		for (const key in list) {
+			list[key] = key === toggleKey ? !list[key] : true;
+		}
+	};
+	const toggleAboutMe = (buttonText: string) => {
+		if (!aboutMe.research) showExplodingHead = true;
+		hideAllToggleOne(buttonText.replaceAll('.', '').toLowerCase(), aboutMe);
+	};
+	const setResearchOverlayHidden = (hidden: boolean) => {
+		if (hidden && !aboutMe.research) showExplodingHead = true;
+		aboutMe.research = hidden;
 	};
 
 	let circularItems: Record<string, HTMLDivElement | undefined> = $state({});
@@ -291,6 +305,29 @@
 	</div>
 {/snippet}
 
+{#snippet timeLineRow(from: string, to: string, icons: string[], buttonText: string, text: string)}
+	<div class="label self-center align-middle text-5xl">{from}</div>
+	<div class="label self-center text-5xl">-</div>
+	<div class="label self-center text-5xl">{to}</div>
+	<div class="flex justify-center gap-2 self-center">
+		{#each icons as icon, idx (icon)}
+			<Icon icon="emojione-v1:flag-for-{icon}" class="inline-block size-10" />
+			{#if idx < icons.length - 1}
+				<Icon icon="streamline:ampersand-solid" class="inline-block size-6 self-center" />
+			{/if}
+		{/each}
+	</div>
+	<button
+		class="btn btn-xl btn-gradient btn-secondary-container shadow-base-shadow rounded-full text-5xl font-semibold shadow"
+		onclick={() => toggleAboutMe(buttonText)}
+	>
+		{buttonText}
+	</button>
+	<div class="label self-center text-left text-5xl">
+		{text}
+	</div>
+{/snippet}
+
 <RevealJs bind:reveal={revealInstance}>
 	<FramedSlide part="welcome" hideProgressBar>
 		<div
@@ -304,7 +341,9 @@
 			{/if}
 		{/each}
 		{#snippet footerRight()}
-			<PresenterControls {revealInstance} socketio={socketioPresenterState} />
+			{#if presenterMode}
+				<PresenterControls {revealInstance} socketio={socketioPresenterState} />
+			{/if}
 		{/snippet}
 		<!-- <div class="absolute right-0 bottom-0 z-50 flex items-center gap-2 p-4">
 			<PresenterControls {revealInstance} socketio={socketioPresenterState} />
@@ -330,7 +369,262 @@
 			</div>
 		{/if} -->
 	<!-- </section> -->
-	<FramedSlide part="checkin" section="map" hideProgressBar>
+	<FramedSlide part="overview" hideProgressBar={true}>
+		<Overview
+			items={[
+				// {
+				// 	icon: 'fluent-emoji-flat:construction',
+				// 	title: 'TBD: think of new structure!'
+				// }
+				{
+					icon: 'stash:circle-dot',
+					title: 'Context'
+				},
+				// // {
+				// // 	icon: 'vaadin:thumbs-up-o',
+				// // 	title: 'Motivation'
+				// // },
+				// {
+				// 	icon: 'game-icons:ancient-ruins',
+				// 	title: 'Before'
+				// },
+				{
+					icon: 'carbon:development',
+					title: 'Implementation'
+				},
+				{
+					icon: 'bi:bar-chart',
+					title: 'Results'
+				}
+				// {
+				// 	icon: 'ci:star',
+				// 	title: 'Present Moment'
+				// },
+				// {
+				// 	icon: 'glyphs:books-bold',
+				// 	title: 'Inspiration'
+				// }
+			]}
+		/>
+		<!-- <div class="absolute top-0 right-0 h-[100px] w-[800px]">
+			<div class="h-full w-full border-4 border-red-400">progress</div>
+		</div> -->
+	</FramedSlide>
+	<FramedSlide part="context" title="About me">
+		<div
+			class="mx-10 grid grid-cols-[minmax(0,1fr)_10px_minmax(0,1fr)_120px_270px_minmax(0,8fr)] gap-8 gap-y-12"
+		>
+			{@render timeLineRow('2000', '2004', ['germany'], 'Studies', 'Electrical Engineering')}
+			{@render timeLineRow(
+				'2004',
+				'2009',
+				['germany', 'united-states'],
+				'Industry',
+				'Automotive Sound Systems'
+			)}
+			{@render timeLineRow(
+				'2007',
+				'2010',
+				['denmark', 'germany'],
+				'Ph.D.',
+				'Power Electronics at DTU'
+			)}
+			{@render timeLineRow('2010', '2018', ['denmark'], 'Research', 'Miniaturising Power Supplies')}
+			{#if showExplodingHead}
+				<Icon
+					icon="fluent-emoji-flat:exploding-head"
+					class="col-span-full justify-self-center text-7xl"
+				/>
+				{@render timeLineRow('2018', '2018', ['white-flag'], 'Sabbatical', 'Dirtbacking')}
+			{/if}
+			{@render timeLineRow('2019', '2026', ['denmark'], 'Teaching', 'Focus on Teaching')}
+		</div>
+		<CardOverlay
+			class="bg-base-250 text-base-content absolute top-1/2 left-1/2 z-50 w-fit -translate-x-1/2 -translate-y-1/2 pt-6 text-4xl"
+			bind:hidden={aboutMe.studies}
+		>
+			{#snippet header()}
+				<div class="text-5xl font-bold">Studies</div>
+			{/snippet}
+			<dl class="text-5xl">
+				<dt class="mb-4 font-bold text-nowrap">
+					<Icon icon="fluent-emoji-flat:school" class="mr-2 inline-block" /> Diplom engineer for Electrical
+					Engineering
+				</dt>
+				<dd class="mb-4 pl-4">General Electronics and</dd>
+				<dd class="mb-4 pl-4">Semiconductor Electronics</dd>
+				<dd class="mb-4 pl-4">
+					<a href="https://www.th-deg.de/" class="link link-animated" target="_blank"
+						>Deggendorf Institute of Technology</a
+					>
+				</dd>
+			</dl>
+		</CardOverlay>
+		<CardOverlay
+			class="bg-base-250 text-base-content absolute top-1/2 left-1/2 z-50 w-fit -translate-x-1/2 -translate-y-1/2 pt-6 text-4xl"
+			bind:hidden={aboutMe.industry}
+		>
+			{#snippet header()}
+				<div class="text-7xl font-bold">Industry</div>
+			{/snippet}
+			<dl class="text-5xl">
+				<dt class="mb-4 font-bold text-nowrap">
+					<Icon icon="emojione-v1:flag-for-germany" class="mr-2 inline-block" /> Harman/Becker Automotive
+					Systems GmbH
+				</dt>
+				<dd class="mb-4 pl-4">(now Samsung)</dd>
+				<dd class="mb-4 pl-4">research and pre-development</dd>
+				<dd class="mb-4 pl-4">for automotive sound systems</dd>
+			</dl>
+			<dl class="text-5xl">
+				<dt class="mt-5 mb-4 font-bold text-nowrap">
+					<Icon icon="emojione-v1:flag-for-united-states" class="mr-2 inline-block" /> At sister company
+					in USA
+				</dt>
+				<dd class="mb-4 pl-4">for 1.5 years</dd>
+			</dl>
+			<dl
+				class="bg-warning-container text-warning-container-content shadow-base-shadow rounded-2xl text-5xl shadow"
+			>
+				<dt class="mt-5 mb-4 font-bold text-nowrap">
+					<Icon icon="fluent-color:warning-28" class="mr-2 inline-block" /> Fun job
+				</dt>
+				<dd class="mb-4 pl-4">worked many hours a week</dd>
+			</dl>
+		</CardOverlay>
+		<CardOverlay
+			class="bg-base-250 text-base-content absolute top-1/2 left-1/2 z-50 w-fit -translate-x-1/2 -translate-y-1/2 pt-6 text-4xl"
+			bind:hidden={aboutMe.phd}
+		>
+			{#snippet header()}
+				<div class="text-5xl font-bold">Ph.d. student</div>
+			{/snippet}
+			<dl class="text-5xl">
+				<dt class="mb-4 font-bold text-nowrap">
+					<Icon icon="emojione-v1:flag-for-denmark" class="mr-2 inline-block" /> Technical University
+					of Denmark (DTU)
+				</dt>
+				<dd class="mb-4 pl-4">Power Electronics and Sound Systems</dd>
+				<dd class="mb-4 pl-4">Highly energy efficient electronics</dd>
+				<!-- <dd class="mb-4 pl-4">Amplifiers</dd> -->
+			</dl>
+			<dl class="text-5xl">
+				<dt class="mt-5 mb-4 font-bold text-nowrap">
+					<Icon icon="emojione-v1:flag-for-germany" class="mr-2 inline-block" /> overlap with industry
+					job
+				</dt>
+			</dl>
+			<!-- <dl class="text-5xl">
+				<dt class="mt-5 mb-4 font-bold text-nowrap">
+					<Icon icon="fluent-emoji-flat:glowing-star" class="mr-2 inline-block" /> Hobbies
+				</dt>
+				<dd class="mb-4 pl-4">Learning Danish</dd>
+			</dl> -->
+			<dl class="text-5xl">
+				<dt class="mt-5 mb-4 font-bold text-nowrap">
+					<Icon icon="emojione:rocket" class="mr-2 inline-block" /> Venture Cup
+				</dt>
+				<dd class="mb-4 pl-4">good time at CBS!</dd>
+				<dd class="mb-4 pl-4">won a prize</dd>
+			</dl>
+			<dl
+				class="bg-warning-container text-warning-container-content shadow-base-shadow rounded-2xl text-5xl shadow"
+			>
+				<dt class="mt-5 mb-4 font-bold text-nowrap">
+					<Icon icon="fluent-color:warning-28" class="mr-2 inline-block" /> Two part time contracts
+				</dt>
+				<dd class="mb-4 pl-4">Two times 3/4 of full time</dd>
+			</dl>
+		</CardOverlay>
+		<CardOverlay
+			class="bg-base-250 text-base-content absolute top-1/2 left-1/2 z-50 w-fit -translate-x-1/2 -translate-y-1/2 pt-6 text-4xl"
+			bind:hidden={() => aboutMe.research, (hidden) => setResearchOverlayHidden(hidden)}
+		>
+			{#snippet header()}
+				<div class="text-5xl font-bold">Focus on Research</div>
+			{/snippet}
+			<dl class="text-5xl">
+				<dt class="mb-4 font-bold text-nowrap">
+					<Icon icon="fluent-emoji-flat:green-heart" class="mr-2 inline-block" /> Intention
+				</dt>
+				<dd class="mb-4 pl-4">using less material to provide same energy</dd>
+			</dl>
+			<dl class="text-5xl">
+				<dt class="mt-5 mb-4 font-bold text-nowrap">
+					<Icon icon="fluent-color:lightbulb-32" class="mr-2 inline-block" /> Research & Teaching
+				</dt>
+				<dd class="mb-4 pl-4">3 research projects with industry</dd>
+				<dd class="mb-4 pl-4">4 start-up companies</dd>
+				<dd class="mb-4 pl-4">2 courses</dd>
+			</dl>
+			<dl
+				class="bg-warning-container text-warning-container-content shadow-base-shadow rounded-2xl text-5xl shadow"
+			>
+				<dt class="mt-5 mb-4 font-bold text-nowrap">
+					<Icon icon="fluent-color:warning-28" class="mr-2 inline-block" /> Meetings / Courses / Supervision
+				</dt>
+			</dl>
+		</CardOverlay>
+		<!-- TBD: make it a bang here? -->
+		<CardOverlay
+			class="bg-base-250 text-base-content absolute top-1/2 left-1/2 z-50 w-fit -translate-x-1/2 -translate-y-1/2 pt-6 text-4xl"
+			bind:hidden={aboutMe.sabbatical}
+		>
+			{#snippet header()}
+				<div class="text-5xl font-bold">Sabatical</div>
+			{/snippet}
+			<dl class="text-5xl">
+				<dt class="mb-4 font-bold text-nowrap">
+					<Icon icon="noto:hiking-boot" class="mr-2 inline-block" /> Being nature
+				</dt>
+				<dd class="mb-4 pl-4">5.5 months in nature</dd>
+				<dd class="mb-4 pl-4">Hiking and outdoor activities</dd>
+				<!-- <dd class="mb-4 pl-4">Amplifiers</dd> -->
+			</dl>
+
+			<dl
+				class="bg-success-container text-success-container-content shadow-base-shadow rounded-2xl text-5xl shadow"
+			>
+				<dt class="mt-5 mb-4 font-bold text-nowrap">
+					<Icon icon="fluent-color:checkmark-circle-32" class="mr-2 inline-block" /> Batteries refilled
+				</dt>
+			</dl>
+		</CardOverlay>
+		<CardOverlay
+			class="bg-base-250 text-base-content absolute top-1/2 left-1/2 z-50 w-fit -translate-x-1/2 -translate-y-1/2 pt-6 text-4xl"
+			bind:hidden={aboutMe.teaching}
+		>
+			{#snippet header()}
+				<div class="text-5xl font-bold">Teaching</div>
+			{/snippet}
+			<dl class="text-5xl">
+				<dt class="mb-4 font-bold text-nowrap">
+					<Icon icon="fluent-emoji-flat:teacher-medium" class="mr-2 inline-block" /> 3 courses
+				</dt>
+				<dd class="mb-4 pl-4">2nd semester mandatory B.Sc.</dd>
+				<dd class="mb-4 pl-4">4th semester elective B.Sc</dd>
+				<dd class="mb-4 pl-4">Master course</dd>
+				<dd class="mb-4 pl-4">in total 300 students per year</dd>
+				<!-- <dd class="mb-4 pl-4">Amplifiers</dd> -->
+			</dl>
+			<dl class="text-5xl">
+				<dt class="mb-4 font-bold text-nowrap">
+					<Icon icon="streamline-stickies-color:programming" class="mr-2 inline-block" /> Programming
+				</dt>
+				<dd class="mb-4 pl-4">For example this presentation</dd>
+			</dl>
+			<!-- <dl
+				class="bg-success-container text-success-container-content shadow-base-shadow rounded-2xl text-5xl shadow"
+			>
+				<dt class="mt-5 mb-4 font-bold text-nowrap">
+					<Icon icon="fluent-color:checkmark-circle-32" class="mr-2 inline-block" /> Working as hard as
+					20 years ago
+				</dt>
+				<dd class="mb-4 pl-4">and taking really good care of myself</dd>
+			</dl> -->
+		</CardOverlay>
+	</FramedSlide>
+	<FramedSlide part="context" section="map" hideProgressBar title="About you?">
 		{#if placesQuestion}
 			<!-- <div class="text-secondary text-center text-7xl font-bold">Check in</div> -->
 			<MapAnnotation {revealInstance} socketio={socketioPlaces} />
@@ -338,7 +632,7 @@
 			{@render interactiveElementNotAvailable('map')}
 		{/if}
 		{#snippet footerLeft()}
-			{#if placesQuestion}
+			{#if placesQuestion && presenterMode}
 				<QrCode
 					url={getInputsUrl(page.url, 'cbs-places')}
 					bind:modalHidden={qrCodeModalsHidden.map}
@@ -366,262 +660,266 @@
 			{/if}
 		{/snippet}
 	</FramedSlide>
-	<FramedSlide part="overview" hideProgressBar={true}>
-		<Overview
-			items={[
-				{
-					icon: 'fluent-emoji-flat:construction',
-					title: 'TBD: think of new structure!'
-				}
-				// {
-				// 	icon: 'stash:circle-dot',
-				// 	title: 'Context'
-				// },
-				// // {
-				// // 	icon: 'vaadin:thumbs-up-o',
-				// // 	title: 'Motivation'
-				// // },
-				// {
-				// 	icon: 'game-icons:ancient-ruins',
-				// 	title: 'Before'
-				// },
-				// {
-				// 	icon: 'carbon:development',
-				// 	title: 'Implementation'
-				// },
-				// {
-				// 	icon: 'bi:bar-chart',
-				// 	title: 'Results'
-				// },
-				// {
-				// 	icon: 'ci:star',
-				// 	title: 'Present Moment'
-				// },
-				// {
-				// 	icon: 'glyphs:books-bold',
-				// 	title: 'Inspiration'
-				// }
-			]}
-		/>
-		<!-- <div class="absolute top-0 right-0 h-[100px] w-[800px]">
-			<div class="h-full w-full border-4 border-red-400">progress</div>
-		</div> -->
-	</FramedSlide>
-	<FramedSlide part="context" section="courses" title="Courses">
-		<div class="text-6xl font-bold">⚠️</div>
-		Compress course information into one slide and provide vertical slides for the detailed current course
-		overviews
-	</FramedSlide>
-	<FramedSlide part="context" section="2nd-semester" title="Course: 2nd semester">
-		<div class="grid grid-cols-2 gap-6">
-			<div
-				class="bg-secondary text-secondary-content shadow-base-shadow flex h-fit flex-col gap-2 rounded-4xl p-6 shadow-inner"
-			>
-				<div class="text-center text-5xl font-bold">Outer Ecosystem</div>
-				<ul class="list-disc">
-					<li>core competences in<br />electrical engineering</li>
-					<li>mandatory for two study lines</li>
-					<li>~ 10 different study lines</li>
-					<li>~ 120 participants</li>
-					<li>fundamental and mathematical</li>
-					<li>intense and challenging content</li>
-					<li>in parallel with 3 other tough and intense courses: math, physics and programming</li>
-				</ul>
-			</div>
-			<div
-				class="bg-primary fragment text-primary-content shadow-base-shadow flex h-fit flex-col gap-2 rounded-4xl p-6 shadow-inner"
-			>
-				<div class="text-center text-5xl font-bold">Inner Ecosystem</div>
+	<section>
+		<FramedSlide part="context" section="2nd-semester" title="Course: 2nd semester">
+			<div class="grid h-full grid-cols-2 gap-6">
+				<div
+					class="bg-secondary text-secondary-content shadow-base-shadow flex h-fit flex-col gap-2 rounded-4xl p-6 shadow-inner"
+				>
+					<div class="text-center text-5xl font-bold">Outer Ecosystem</div>
+					<ul class="list-disc">
+						<li>core competences in<br />electrical engineering</li>
+						<li>mandatory for two study lines</li>
+						<li>~ 10 different study lines</li>
+						<li>~ 120 participants</li>
+						<li>fundamental and mathematical</li>
+						<li>intense and challenging content</li>
+						<li>
+							in parallel with 3 other tough and intense courses: math, physics and programming
+						</li>
+					</ul>
+				</div>
+				<div
+					class="bg-primary fragment text-primary-content shadow-base-shadow flex h-fit flex-col gap-2 rounded-4xl p-6 shadow-inner"
+				>
+					<div class="text-center text-5xl font-bold">Inner Ecosystem</div>
 
-				<div class="flex justify-between gap-4 py-4">
-					<div class="w-full">
-						<iframe
-							title="Electric circuits slides"
-							src="/teachingengagement/presentation-electric-circuits.pdf"
-							class="shadow-base-shadow m-0! h-full w-full rounded-4xl object-contain shadow-lg"
+					<div class="flex justify-between gap-4 py-4">
+						<div class="w-full">
+							<iframe
+								title="Electric circuits slides"
+								src="/teachingengagement/presentation-electric-circuits.pdf"
+								class="shadow-base-shadow m-0! h-full w-full rounded-4xl object-contain shadow-lg"
+							>
+							</iframe>
+						</div>
+						<a
+							href="https://www.saxo.com/dk/the-analysis-and-design-of-linear-circuits_bog_9781119913023?srsltid=AU7gw4UBKmyh8Tol04cqWmnOr-5fRqaOctZY3i1baqk6wsAwpZfHKPj2"
+							target="_blank"
+							rel="noopener noreferrer"
+							class="h-full"
 						>
-						</iframe>
+							<img
+								src="https://imgcdn.saxo.com/_9781119913023"
+								alt="The analysis and design of linear circuits - book cover"
+								class="shadow-base-shadow mt-0! h-full w-fit rounded-4xl object-contain shadow-lg"
+							/>
+						</a>
 					</div>
-					<a
-						href="https://www.saxo.com/dk/the-analysis-and-design-of-linear-circuits_bog_9781119913023?srsltid=AU7gw4UBKmyh8Tol04cqWmnOr-5fRqaOctZY3i1baqk6wsAwpZfHKPj2"
-						target="_blank"
-						rel="noopener noreferrer"
-						class="h-full"
-					>
-						<img
-							src="https://imgcdn.saxo.com/_9781119913023"
-							alt="The analysis and design of linear circuits - book cover"
-							class="shadow-base-shadow mt-0! h-full w-fit rounded-4xl object-contain shadow-lg"
-						/>
-					</a>
+					<div class="flex justify-between gap-4 py-4">
+						<a
+							class="btn btn-primary-container text-primary-container-content! btn-gradient shadow-base-shadow btn-xl w-[220px] shrink-0 rounded-full text-3xl shadow-lg"
+							href="https://www.youtube.com/@electriccircuitswithaltern7204"
+						>
+							<Icon icon="fa6-brands:youtube" /> YouTube
+						</a>
+						<a
+							class="btn btn-primary-container text-primary-container-content! btn-gradient shadow-base-shadow btn-xl w-[220px] shrink-0 rounded-full text-3xl shadow-lg"
+							href="https://chatgpt.com/g/g-69774f07058c8191bd88f547d1c740c9-electric-circuits-with-alternating-currents"
+						>
+							<Icon icon="bi:openai" /> ChatGPT
+						</a>
+						<a
+							class="btn btn-primary-container text-primary-container-content! btn-gradient shadow-base-shadow btn-xl w-[220px] shrink-0 rounded-full text-3xl shadow-lg"
+							href="https://gemini.google.com/gem/1j9s5Oe6boPCqdOAGOUMKZmFWr5O6cWuT?usp=sharing"
+						>
+							<Icon icon="codicon:google-gemini" /> Gemini
+						</a>
+					</div>
+					<ul class="list-disc">
+						<li>3 x laboratory group work</li>
+						<li>~50 calculation exercises</li>
+						<li>~30 knowledge checks (former exam)</li>
+					</ul>
 				</div>
-				<div class="flex justify-between gap-4 py-4">
-					<a
-						class="btn btn-primary-container text-primary-container-content! btn-gradient shadow-base-shadow btn-xl w-[220px] shrink-0 rounded-full text-3xl shadow-lg"
-						href="https://www.youtube.com/@electriccircuitswithaltern7204"
-					>
-						<Icon icon="fa6-brands:youtube" /> YouTube
-					</a>
-					<a
-						class="btn btn-primary-container text-primary-container-content! btn-gradient shadow-base-shadow btn-xl w-[220px] shrink-0 rounded-full text-3xl shadow-lg"
-						href="https://chatgpt.com/g/g-69774f07058c8191bd88f547d1c740c9-electric-circuits-with-alternating-currents"
-					>
-						<Icon icon="bi:openai" /> ChatGPT
-					</a>
-					<a
-						class="btn btn-primary-container text-primary-container-content! btn-gradient shadow-base-shadow btn-xl w-[220px] shrink-0 rounded-full text-3xl shadow-lg"
-						href="https://gemini.google.com/gem/1j9s5Oe6boPCqdOAGOUMKZmFWr5O6cWuT?usp=sharing"
-					>
-						<Icon icon="codicon:google-gemini" /> Gemini
-					</a>
+			</div>
+		</FramedSlide>
+		<FramedSlide part="context" section="4th-semester" title="Course: 4th semester">
+			<div class="grid h-full grid-cols-2 gap-6">
+				<div
+					class="bg-secondary text-secondary-content shadow-base-shadow flex h-fit flex-col gap-2 rounded-4xl p-6 shadow-inner"
+				>
+					<div class="text-center text-5xl font-bold">Outer Ecosystem</div>
+					<ul class="list-disc">
+						<li>introduction to<br />specialisation</li>
+						<li>recommended / electable course</li>
+						<li>online and physical</li>
+						<li>remote participants</li>
+						<li>~10 different study lines</li>
+						<li>~100 participants</li>
+						<li>closes to applications</li>
+					</ul>
 				</div>
-				<ul class="list-disc">
-					<li>3 x laboratory group work</li>
-					<li>~50 calculation exercises</li>
-					<li>~30 knowledge checks (former exam)</li>
-				</ul>
-			</div>
-		</div>
-	</FramedSlide>
-	<FramedSlide part="context" section="4th-semester" title="Course: 4th semester">
-		<div class="grid grid-cols-2 gap-6">
-			<div
-				class="bg-secondary text-secondary-content shadow-base-shadow flex h-fit flex-col gap-2 rounded-4xl p-6 shadow-inner"
-			>
-				<div class="text-center text-5xl font-bold">Outer Ecosystem</div>
-				<ul class="list-disc">
-					<li>introduction to<br />specialisation</li>
-					<li>recommended / electable course</li>
-					<li>online and physical</li>
-					<li>remote participants</li>
-					<li>~10 different study lines</li>
-					<li>~100 participants</li>
-					<li>closes to applications</li>
-				</ul>
-			</div>
-			<div
-				class="bg-primary fragment text-primary-content shadow-base-shadow flex h-fit flex-col gap-2 rounded-4xl p-6 shadow-inner"
-			>
-				<div class="text-center text-5xl font-bold">Inner Ecosystem</div>
+				<div
+					class="bg-primary fragment text-primary-content shadow-base-shadow flex h-fit flex-col gap-2 rounded-4xl p-6 shadow-inner"
+				>
+					<div class="text-center text-5xl font-bold">Inner Ecosystem</div>
 
-				<div class="flex justify-between gap-4 py-4">
-					<div class="w-full">
-						<iframe
-							title="Basic Power Electronics slides"
-							src="/teachingengagement/presentation-basic-power.pdf"
-							class="shadow-base-shadow m-0! h-full w-full rounded-4xl object-contain shadow-lg"
+					<div class="flex justify-between gap-4 py-4">
+						<div class="w-full">
+							<iframe
+								title="Basic Power Electronics slides"
+								src="/teachingengagement/presentation-basic-power.pdf"
+								class="shadow-base-shadow m-0! h-full w-full rounded-4xl object-contain shadow-lg"
+							>
+							</iframe>
+						</div>
+						<a
+							href="https://www.amazon.com/Power-Electronics-Course-Ned-Mohan/dp/1118074807"
+							target="_blank"
+							rel="noopener noreferrer"
+							class="h-full"
 						>
-						</iframe>
+							<img
+								src="https://m.media-amazon.com/images/I/61+7f4Xr0DL._SY425_.jpg"
+								alt="Power Electronics: A first course - book cover"
+								class="shadow-base-shadow mt-0! h-full w-fit rounded-4xl object-contain shadow-lg"
+							/>
+						</a>
 					</div>
-					<a
-						href="https://www.amazon.com/Power-Electronics-Course-Ned-Mohan/dp/1118074807"
-						target="_blank"
-						rel="noopener noreferrer"
-						class="h-full"
-					>
-						<img
-							src="https://m.media-amazon.com/images/I/61+7f4Xr0DL._SY425_.jpg"
-							alt="Power Electronics: A first course - book cover"
-							class="shadow-base-shadow mt-0! h-full w-fit rounded-4xl object-contain shadow-lg"
-						/>
-					</a>
+					<div class="flex justify-between gap-4 py-4">
+						<a
+							class="btn btn-primary-container text-primary-container-content! btn-gradient shadow-base-shadow btn-xl w-[220px] shrink-0 rounded-full text-3xl shadow-lg"
+							href="https://www.youtube.com/@basicpowerelectronics3928"
+						>
+							<Icon icon="fa6-brands:youtube" /> YouTube
+						</a>
+						<a
+							class="btn btn-primary-container text-primary-container-content! btn-gradient shadow-base-shadow btn-xl w-[220px] shrink-0 rounded-full text-3xl shadow-lg"
+							href="https://chatgpt.com/g/g-69776f22b96481918cfa94db0b1e1a7b-basic-power-electronics"
+						>
+							<Icon icon="bi:openai" /> ChatGPT
+						</a>
+						<a
+							class="btn btn-primary-container text-primary-container-content! btn-gradient shadow-base-shadow btn-xl w-[220px] shrink-0 rounded-full text-3xl shadow-lg"
+							href="https://gemini.google.com/gem/18nuFlRpN0CqvK7etCPk8mS3qKdFFcfCk?usp=sharing"
+						>
+							<Icon icon="codicon:google-gemini" /> Gemini
+						</a>
+					</div>
+					<ul class="list-disc">
+						<li>6 x laboratory group work</li>
+						<li>2 x industry guest lecture</li>
+						<li>~30 calculation exercises</li>
+						<li>~30 knowledge checks (former exam)</li>
+					</ul>
 				</div>
-				<div class="flex justify-between gap-4 py-4">
-					<a
-						class="btn btn-primary-container text-primary-container-content! btn-gradient shadow-base-shadow btn-xl w-[220px] shrink-0 rounded-full text-3xl shadow-lg"
-						href="https://www.youtube.com/@basicpowerelectronics3928"
-					>
-						<Icon icon="fa6-brands:youtube" /> YouTube
-					</a>
-					<a
-						class="btn btn-primary-container text-primary-container-content! btn-gradient shadow-base-shadow btn-xl w-[220px] shrink-0 rounded-full text-3xl shadow-lg"
-						href="https://chatgpt.com/g/g-69776f22b96481918cfa94db0b1e1a7b-basic-power-electronics"
-					>
-						<Icon icon="bi:openai" /> ChatGPT
-					</a>
-					<a
-						class="btn btn-primary-container text-primary-container-content! btn-gradient shadow-base-shadow btn-xl w-[220px] shrink-0 rounded-full text-3xl shadow-lg"
-						href="https://gemini.google.com/gem/18nuFlRpN0CqvK7etCPk8mS3qKdFFcfCk?usp=sharing"
-					>
-						<Icon icon="codicon:google-gemini" /> Gemini
-					</a>
+			</div>
+		</FramedSlide>
+		<FramedSlide part="context" section="master-level" title="Course: Master level">
+			<div class="grid h-full grid-cols-2 gap-6">
+				<div
+					class="bg-secondary text-secondary-content shadow-base-shadow flex h-fit flex-col gap-2 rounded-4xl p-6 shadow-inner"
+				>
+					<div class="text-center text-5xl font-bold">Outer Ecosystem</div>
+					<ul class="list-disc">
+						<li>electable course</li>
+						<li>
+							high diversity
+							<ul>
+								<li>Danish / international</li>
+								<li>Bachelor / Master</li>
+								<li>Different backgrounds</li>
+							</ul>
+						</li>
+						<li>remote participants</li>
+						<li>~12 different study lines</li>
+						<li>~100 participants</li>
+						<li>close to industrial work experience</li>
+					</ul>
 				</div>
-				<ul class="list-disc">
-					<li>6 x laboratory group work</li>
-					<li>2 x industry guest lecture</li>
-					<li>~30 calculation exercises</li>
-					<li>~30 knowledge checks (former exam)</li>
-				</ul>
-			</div>
-		</div>
-	</FramedSlide>
-	<FramedSlide part="context" section="master-level" title="Course: Master level">
-		<div class="grid grid-cols-2 gap-6">
-			<div
-				class="bg-secondary text-secondary-content shadow-base-shadow flex h-fit flex-col gap-2 rounded-4xl p-6 shadow-inner"
-			>
-				<div class="text-center text-5xl font-bold">Outer Ecosystem</div>
-				<ul class="list-disc">
-					<li>electable course</li>
-					<li>
-						high diversity
-						<ul>
-							<li>Danish / international</li>
-							<li>Bachelor / Master</li>
-							<li>Different backgrounds</li>
-						</ul>
-					</li>
-					<li>remote participants</li>
-					<li>~12 different study lines</li>
-					<li>~100 participants</li>
-					<li>close to industrial work experience</li>
-				</ul>
-			</div>
-			<div
-				class="bg-primary fragment text-primary-content shadow-base-shadow flex h-fit flex-col gap-2 rounded-4xl p-6 shadow-inner"
-			>
-				<div class="text-center text-5xl font-bold">Inner Ecosystem</div>
-				<div class="flex justify-between gap-4 py-4">
-					<a
-						class="btn btn-primary-container text-primary-container-content! btn-gradient shadow-base-shadow btn-xl w-[220px] shrink-0 rounded-full text-3xl shadow-lg"
-						href="https://www.youtube.com/@circuittechnologyandemc7315"
-					>
-						<Icon icon="fa6-brands:youtube" /> YouTube
-					</a>
+				<div
+					class="bg-primary fragment text-primary-content shadow-base-shadow flex h-fit flex-col gap-2 rounded-4xl p-6 shadow-inner"
+				>
+					<div class="text-center text-5xl font-bold">Inner Ecosystem</div>
+					<div class="flex justify-between gap-4 py-4">
+						<a
+							class="btn btn-primary-container text-primary-container-content! btn-gradient shadow-base-shadow btn-xl w-[220px] shrink-0 rounded-full text-3xl shadow-lg"
+							href="https://www.youtube.com/@circuittechnologyandemc7315"
+						>
+							<Icon icon="fa6-brands:youtube" /> YouTube
+						</a>
+					</div>
+					<ul class="list-disc">
+						<li>3 teachers</li>
+						<li>
+							methods
+							<ul>
+								<li>lectures</li>
+								<li>flipped classroom</li>
+								<li>group work</li>
+							</ul>
+						</li>
+						<li>4 x projects as group work</li>
+						<li>4 x industry guest lecture</li>
+					</ul>
 				</div>
-				<ul class="list-disc">
-					<li>3 teachers</li>
-					<li>
-						methods
-						<ul>
-							<li>lectures</li>
-							<li>flipped classroom</li>
-							<li>group work</li>
-						</ul>
-					</li>
-					<li>4 x projects as group work</li>
-					<li>4 x industry guest lecture</li>
-				</ul>
 			</div>
-		</div>
-	</FramedSlide>
-	<FramedSlide part="context" section="complexity">
+		</FramedSlide>
+	</section>
+	<section>
+		<FramedSlide part="context" section="applications" title="Applications">
+			Sound, power supplies, renewable Energies, LED lighting
+		</FramedSlide>
+		<FramedSlide part="context" section="research" title="Research">
+			Hypothesis: smaller, lighter, use less material, some energy efficiency<br />
+			3 industrial research projects<br />
+			4 start-ups<br />
+			Example: LED lighting leads Rebound effect
+		</FramedSlide>
+		<FramedSlide part="context" section="cheese" title="Cheese or holes?">
+			I was trained to see the wholes in the cheese<br />
+			Mindset of scarcity<br />
+			Only growth can move us on.<br />
+		</FramedSlide>
+		<FramedSlide part="context" section="research-methodology" title="Base of research methodology">
+			Sir Francis Bacon?<br />
+			Find the paper!
+		</FramedSlide>
+		<FramedSlide part="context" section="planetary-boundaries" title="Planetary Boundaries">
+			Planetary Boundaries - Stockholm Resilience Centre<br />
+			Use from Johan Rockström
+		</FramedSlide>
+		<FramedSlide part="context" section="stress" title="Regenerative approach">
+			Inner, Outer and Greater ecosystem<br />
+			Use from Laura!
+		</FramedSlide>
+	</section>
+	<FramedSlide part="context" section="complexity" title="Complexity">
 		<img
 			src="https://www.businessillustrator.com/wp-content/uploads/2025/12/complexity-outside-linear-cube-cartoon_businessillustrator.com_1200px-600x314.png.webp"
 			alt="Reality strikes back - cartoon"
-			class="shadow-base-shadow h-fit w-3/5 self-center rounded-4xl shadow-lg"
+			class="shadow-base-shadow h-fit w-4/5 self-center rounded-4xl shadow-lg"
 		/>
+		<iframe
+			class="shadow-base-shadow w-4/5 self-center rounded-4xl shadow-lg"
+			title="The Story of the Chinese Farmer - Allan Watts"
+			data-testid="embed-iframe"
+			style="border-radius:12px"
+			src="https://open.spotify.com/embed/track/5QTIGUgV4eFrg0o3k8lGTp?utm_source=generator&si=7bc38a38196f43c5"
+			width="100%"
+			height="352"
+			frameBorder="0"
+			allowfullscreen={false}
+			allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+			loading="lazy"
+		></iframe>
 		{#snippet footerRight()}
-			Cartoon by
-			<a href="mailto:Virpi@businessillustrator.com" class="link link-animated mt-30">
-				📧 Virpi@businessillustrator.com
-			</a><br />
-			<a href="https://www.businessillustrator.com/blog" class="link link-animated">
-				🌐 www.businessillustrator.com/blog
-			</a>
+			<div class="text-right text-xl">
+				Cartoon by
+				<a href="mailto:Virpi@businessillustrator.com" class="link link-animated mt-15">
+					📧 Virpi@businessillustrator.com
+				</a>,
+				<a href="https://www.businessillustrator.com/blog" class="link link-animated">
+					🌐 www.businessillustrator.com/blog
+				</a>
+			</div>
 		{/snippet}
 	</FramedSlide>
-	<!-- <FramedSlide>Allan Watts - Chinese Farmer? and/or Sir Francis Bacon</FramedSlide> -->
+	<FramedSlide part="context" section="change" title="Change?">
+		Do you want to see change in the world?<br />
+		Results of change
+	</FramedSlide>
 	<FramedSlide>
 		<img
 			src="/flower.jpg"
@@ -629,16 +927,7 @@
 			class="shadow-base-shadow h-fit w-3/4 self-center rounded-4xl shadow-lg"
 		/>
 	</FramedSlide>
-	<FramedSlide part="inspiration" section="books">
-		<Library socketio={socketioBooks} />
-		{#snippet footerLeft()}
-			{#if booksQuestion}<QrCode
-					url={getInputsUrl(page.url, 'cbs-books')}
-					bind:modalHidden={qrCodeModalsHidden.books}
-				/>{/if}
-		{/snippet}
-	</FramedSlide>
-	<FramedSlide part="inspiration" section="motivation" title="Motivation">
+	<FramedSlide part="implementation" title="Motivation">
 		<div class="mx-5 grid grid-cols-3 gap-10">
 			<CardOverlay class="bg-primary text-primary-content z-50 pt-6 text-4xl" hidden={false}>
 				<div class="mb-10 text-7xl font-bold">Relatedness</div>
@@ -669,19 +958,19 @@
 			</CardOverlay>
 		</div>
 		{#snippet footerRight()}
-			<div>📖 Ib Ravn: Selvbestemmelsesteorien</div>
+			<div class="text-right text-xl">📖 Ib Ravn: Selvbestemmelsesteorien</div>
 		{/snippet}
 	</FramedSlide>
-	<FramedSlide part="inspiration" section="motivation-examples" title="Motivation: Examples">
+	<FramedSlide part="implementation" section="motivation-examples" title="Motivation: Examples">
 		<MotivationTable color="secondary" />
 	</FramedSlide>
-	<FramedSlide>
+	<!-- <FramedSlide>
 		<img
 			src="/snow-lake.jpg"
 			alt="Snow Lake"
 			class="shadow-base-shadow h-fit w-3/4 self-center rounded-4xl shadow-lg"
 		/>
-	</FramedSlide>
+	</FramedSlide> -->
 	<FramedSlide part="implementation" title="Inner change">
 		<div class="flex flex-wrap justify-center gap-8">
 			<ChatBubble variant="secondary" tailAngle={100} tailLength={20} tailBase={10}>
@@ -698,7 +987,7 @@
 				<div class="text-4xl font-bold">No ambitions on <br />other peoples behalf!</div>
 			</ChatBubble>
 			<ChatBubble variant="secondary" tailAngle={160} tailLength={20} tailBase={10}>
-				<div class="text-4xl font-bold">No "deadlines" ☠️<br />only "life lines" 🌱.</div>
+				<div class="text-4xl font-bold">No "deadlines" ☠️<br />only "living lines" 🌱.</div>
 			</ChatBubble>
 			<div class="w-[300px]"></div>
 			<ChatBubble variant="secondary" tailAngle={130} tailLength={20} tailBase={10}>
@@ -712,23 +1001,23 @@
 		</div>
 	</FramedSlide>
 	<FramedSlide part="implementation" section="practical" title="Outer change">
-		<div class="mt-10 grid h-full grid-cols-2 gap-10">
+		<div class="mt-10 grid h-full grid-cols-2 gap-10 overflow-scroll">
 			<div class="flex flex-col items-center gap-15">
 				<button
 					class="btn btn-xl btn-gradient btn-primary-container h-30 w-150 justify-center rounded-full p-10 text-5xl font-semibold shadow-inner"
-					onclick={() => hideAllToggleOne('reflections')}
+					onclick={() => hideAllToggleOne('reflections', outerChange)}
 				>
 					Learning Reflections
 				</button>
 				<button
 					class="btn btn-xl btn-gradient btn-primary-container h-30 w-150 justify-center rounded-full p-10 text-5xl font-semibold shadow-inner"
-					onclick={() => hideAllToggleOne('closedQuestions')}
+					onclick={() => hideAllToggleOne('closedQuestions', outerChange)}
 				>
 					Quantitative Questions
 				</button>
 				<button
 					class="btn btn-xl btn-gradient btn-primary-container h-30 w-150 justify-center rounded-full p-10 text-5xl font-semibold shadow-inner"
-					onclick={() => hideAllToggleOne('openQuestions')}
+					onclick={() => hideAllToggleOne('openQuestions', outerChange)}
 				>
 					Qualitative Questions
 				</button>
@@ -736,7 +1025,7 @@
 			<div class="flex flex-col items-center gap-10" bind:this={modulesContentColumn}>
 				<CardOverlay
 					class="bg-primary text-primary-content z-50 pt-6 text-4xl"
-					bind:hidden={hideModules.reflections}
+					bind:hidden={outerChange.reflections}
 				>
 					{#snippet header()}
 						<div class="text-5xl font-bold">Learning Reflections</div>
@@ -763,7 +1052,7 @@
 				</CardOverlay>
 				<CardOverlay
 					class="bg-primary text-primary-content z-50 pt-6 text-4xl"
-					bind:hidden={hideModules.closedQuestions}
+					bind:hidden={outerChange.closedQuestions}
 				>
 					{#snippet header()}
 						<div class="text-5xl font-bold">Quantitative Questions</div>
@@ -793,7 +1082,7 @@
 				</CardOverlay>
 				<CardOverlay
 					class="bg-primary text-primary-content z-50 pt-6 text-4xl"
-					bind:hidden={hideModules.openQuestions}
+					bind:hidden={outerChange.openQuestions}
 				>
 					{#snippet header()}
 						<div class="text-5xl font-bold">Qualitative Questions</div>
@@ -1005,14 +1294,52 @@
 		Quantitative results: learning, responsibility, meditation, sharing comments
 	</FramedSlide> -->
 	<!-- <div>Summary from 2000+ answers</div> -->
+	<FramedSlide part="results" section="qualitative" title="Results: qualitative">
+		Remember to add data to qualitative feedback question
+	</FramedSlide>
 	{#each data.payload.qualitativeFeedbackSnapshot.entities as feedback, idx (idx)}
 		<FramedSlide part="results" section={`qualitative-${idx}`} title="Results: qualitative">
 			<QualitativeFeedback content={feedback.content} />
 		</FramedSlide>
 	{/each}
-	<FramedSlide part="results" section="emotional" title="Results: emotional"
-		><div class="text-[600px]">🫶</div></FramedSlide
-	>
+	<FramedSlide part="results" section="emotional" title="Results: emotional">
+		<div class="text-[600px]">🫶</div>
+	</FramedSlide>
+	<FramedSlide part="context" section="change-citation" title="Colleague Compliment">
+		citations about change in 10 years
+	</FramedSlide>
+	<FramedSlide part="results" section="colleagues" title="Results: colleagues">
+		6 courses: no degradation <br />
+		1 colleague went to press <br />
+		Citation of encouragement: keep getting hit - because you are shaking the coconut tree
+	</FramedSlide>
+	<FramedSlide part="results" section="inner-development" title="Results: reflection">
+		integrity, meaningful, inner growth, strength, resilience, connectedness to nature and lots of
+		power; consider removing - or put up in a way of story telling.
+	</FramedSlide>
+	<FramedSlide>
+		<img
+			src="/clouds-jotunheimen.jpg"
+			alt="Clouds Jotunheimen"
+			class="shadow-base-shadow h-fit w-3/4 self-center rounded-4xl shadow-lg"
+		/>
+	</FramedSlide>
+	<FramedSlide part="inspiration">
+		<Library socketio={socketioBooks} />
+		{#snippet footerLeft()}
+			{#if booksQuestion && presenterMode}<QrCode
+					url={getInputsUrl(page.url, 'cbs-books')}
+					bind:modalHidden={qrCodeModalsHidden.books}
+				/>{/if}
+		{/snippet}
+	</FramedSlide>
+	<FramedSlide part="inspiration" section="change" title="Change?">
+		Who wants (to) change?<br />
+		Yes / no here.<br />
+		Invitation for doing it as homework - and I'd be happy to hold space for what come sup in you<br
+		/>
+		Session around bonfire!
+	</FramedSlide>
 	<FramedSlide part="comments-and-questions" hideProgressBar>
 		{#if commentsQuestion}
 			<Comments socketio={socketioComments} />
@@ -1020,7 +1347,7 @@
 			{@render interactiveElementNotAvailable('comments and questions dialog')}
 		{/if}
 		{#snippet footerLeft()}
-			{#if commentsQuestion}<QrCode
+			{#if commentsQuestion && presenterMode}<QrCode
 					url={getInputsUrl(page.url, 'cbs-comments')}
 					bind:modalHidden={qrCodeModalsHidden.comments}
 				/>{/if}
@@ -1049,3 +1376,15 @@
 		{/if}
 	</FramedSlide>
 </RevealJs>
+
+<style>
+	dl {
+		margin-left: 10px !important;
+		margin-right: 10px !important;
+		padding-left: 30px !important;
+		padding-right: 30px !important;
+	}
+	dt {
+		font-style: italic;
+	}
+</style>
