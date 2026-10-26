@@ -140,6 +140,14 @@
 			alt: 'Raworth, Kate (2018). Doughnut Economics: Seven Ways to Think Like a 21st-Century Economist. Random House Business Books. ISBN: 9781847941398.'
 		},
 		{
+			id: 'reinventing-organizations',
+			title: 'Reinventing Organizations',
+			author: 'Frederic Laloux',
+			link: 'https://www.saxo.com/dk/_frederic-laloux_9782960133509?utm_source=google&utm_medium=cpc&pm_source=google&pm_campaign_id=24382217710&pm_adgroup_id=202235852118&pm_ad_id=828627736714&pmg=EAIaIQobChMI4PHHiKrSlwMV4syxBx163yP2EAQYASABEgIZTPD_BwE&gad_source=5&gad_campaignid=24382217710&gclid=EAIaIQobChMI4PHHiKrSlwMV4syxBx163yP2EAQYASABEgIZTPD_BwE',
+			image: 'https://imgcdn.saxo.com/_9782960133509',
+			alt: 'Laloux, Frederic (2014). Reinventing Organizations: A Guide to Creating Organizations Inspired by the Next Stage of Human Consciousness. Nelson Parker. ISBN: 9782960133509.'
+		},
+		{
 			id: 'nok',
 			title: 'Nok',
 			author: 'Toke Haunstrup',

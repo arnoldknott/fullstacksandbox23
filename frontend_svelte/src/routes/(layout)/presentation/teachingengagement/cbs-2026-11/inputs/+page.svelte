@@ -49,7 +49,6 @@
 	);
 	let current = $derived(currentInput(stateQuestion?.question));
 	let selected = $derived(selectedInput(page.url.searchParams.get('input'), current));
-	// const selected = 'cbs-books';
 	let selectedIndex = $derived(inputOptions.findIndex((option) => option.question === selected));
 	let book = $derived(providedBooks[bookIndex]);
 	let previous = $derived(
