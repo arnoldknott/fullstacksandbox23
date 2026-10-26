@@ -876,13 +876,41 @@
 			Sir Francis Bacon?<br />
 			Find the paper!
 		</FramedSlide>
+		<FramedSlide part="context" section="grades" title="Invention of Grades">
+			Yale - see the happiness lab podcast
+		</FramedSlide>
 		<FramedSlide part="context" section="planetary-boundaries" title="Planetary Boundaries">
-			Planetary Boundaries - Stockholm Resilience Centre<br />
-			Use from Johan Rockström
+			<img
+				src="https://www.stockholmresilience.org/images/200.1283cdff1a0ad97c666a37/1790600427312/PB_2026.png"
+				alt="Planetary Boundaries"
+				class="shadow-base-shadow h-fit w-fit self-center rounded-4xl shadow-lg"
+			/>
+			{#snippet footerRight()}
+				<div class="text-right text-xl">
+					Link:
+					<a
+						href="https://www.stockholmresilience.org/research/planetary-boundaries.html"
+						class="link link-animated"
+					>
+						🌐 https://www.stockholmresilience.org
+					</a>
+				</div>
+			{/snippet}
 		</FramedSlide>
 		<FramedSlide part="context" section="stress" title="Regenerative approach">
-			Inner, Outer and Greater ecosystem<br />
-			Use from Laura!
+			<img
+				src="/teachingengagement/stress-interconnection.png"
+				alt="Interconnection of Stress"
+				class="shadow-base-shadow h-fit w-3/4 self-center rounded-4xl shadow-lg"
+			/>
+			{#snippet footerRight()}
+				<div class="text-right text-xl">
+					Link:
+					<a href="https://www.regenerators.co" class="link link-animated">
+						🌐 Regenerators Academy, Laura Storm
+					</a>
+				</div>
+			{/snippet}
 		</FramedSlide>
 	</section>
 	<FramedSlide part="context" section="complexity" title="Complexity">
@@ -1332,6 +1360,10 @@
 					bind:modalHidden={qrCodeModalsHidden.books}
 				/>{/if}
 		{/snippet}
+	</FramedSlide>
+	<FramedSlide part="inspiration" section="others" title="What are others doing?">
+		Tobias at ETH<br />
+		Regnerative Educatorship in The Netherlands<br />
 	</FramedSlide>
 	<FramedSlide part="inspiration" section="change" title="Change?">
 		Who wants (to) change?<br />
