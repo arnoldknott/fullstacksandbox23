@@ -141,7 +141,7 @@ describe('Library comments', () => {
 			name: 'Alex'
 		});
 		expect(screen.getByLabelText('Name:')).toHaveValue('Alex');
-		const textarea = screen.getByRole('textbox', { name: /comments or questions/ });
+		const textarea = screen.getByRole('textbox', { name: /Type your inputs here/ });
 		await fireEvent.input(textarea, { target: { value: 'My named comment' } });
 		await fireEvent.click(screen.getByRole('button', { name: 'Send' }));
 		expect(pending.content).toBe('My named comment');

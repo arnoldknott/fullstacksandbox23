@@ -247,7 +247,7 @@ describe('Mobile inputs page', () => {
 		await fireEvent.input(screen.getByLabelText('Name:'), { target: { value: 'Alex' } });
 		await fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
 		expect(screen.queryByRole('button', { name: 'Continue' })).not.toBeInTheDocument();
-		await fireEvent.input(screen.getByRole('textbox', { name: /comments or questions/ }), {
+		await fireEvent.input(screen.getByRole('textbox', { name: /Type your inputs here/ }), {
 			target: { value: 'My question' }
 		});
 		await fireEvent.click(screen.getByRole('button', { name: 'Send' }));
@@ -284,7 +284,7 @@ describe('Mobile inputs page', () => {
 		expect(screen.getByLabelText('Name:')).toHaveValue('');
 		await fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
 		expect(mock.submitted).not.toHaveBeenCalled();
-		await fireEvent.input(screen.getByRole('textbox', { name: /comments or questions/ }), {
+		await fireEvent.input(screen.getByRole('textbox', { name: /Type your inputs here/ }), {
 			target: { value: 'Anonymous comment' }
 		});
 		await fireEvent.click(screen.getByRole('button', { name: 'Send' }));
@@ -312,7 +312,7 @@ describe('Mobile inputs page', () => {
 				screen.getByRole('button', { name: 'Ask a question or leave a comment' })
 			);
 			expect(screen.queryByRole('main')).not.toBeInTheDocument();
-			const commentInput = screen.getByRole('textbox', { name: /comments or questions/ });
+			const commentInput = screen.getByRole('textbox', { name: /Type your inputs here/ });
 			await fireEvent.input(commentInput, { target: { value: 'My draft question' } });
 			expect(screen.getByRole('button', { name: 'Cancel' })).toHaveAttribute('type', 'button');
 			await fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
@@ -324,7 +324,7 @@ describe('Mobile inputs page', () => {
 			await fireEvent.click(
 				screen.getByRole('button', { name: 'Ask a question or leave a comment' })
 			);
-			expect(screen.getByRole('textbox', { name: /comments or questions/ })).toHaveValue(
+			expect(screen.getByRole('textbox', { name: /Type your inputs here/ })).toHaveValue(
 				'My draft question'
 			);
 			await fireEvent.click(
@@ -346,7 +346,7 @@ describe('Mobile inputs page', () => {
 		);
 		expect(screen.getByLabelText('Name:')).toHaveValue('Alex');
 		expect(screen.getByRole('button', { name: 'Send' })).toBeDisabled();
-		await fireEvent.input(screen.getByRole('textbox', { name: /comments or questions/ }), {
+		await fireEvent.input(screen.getByRole('textbox', { name: /Type your inputs here/ }), {
 			target: { value: 'My early question' }
 		});
 		await fireEvent.click(screen.getByRole('button', { name: 'Send' }));
@@ -354,7 +354,7 @@ describe('Mobile inputs page', () => {
 			expect.objectContaining({ content: 'My early question', confidential: 'Alex' }),
 			'comments-question'
 		);
-		expect(screen.getByRole('textbox', { name: /comments or questions/ })).toHaveValue('');
+		expect(screen.getByRole('textbox', { name: /Type your inputs here/ })).toHaveValue('');
 		expect(screen.getByRole('status')).toHaveTextContent('Sending...');
 		await fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
 		expect(screen.getByRole('textbox', { name: /take on this book/ })).toBeInTheDocument();
@@ -369,24 +369,24 @@ describe('Mobile inputs page', () => {
 		);
 		expect(screen.getByRole('button', { name: 'Continue' })).toBeInTheDocument();
 		expect(
-			screen.queryByRole('textbox', { name: /comments or questions/ })
+			screen.queryByRole('textbox', { name: /Type your inputs here/ })
 		).not.toBeInTheDocument();
 		expect(screen.queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument();
 		await fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
-		await fireEvent.input(screen.getByRole('textbox', { name: /comments or questions/ }), {
+		await fireEvent.input(screen.getByRole('textbox', { name: /Type your inputs here/ }), {
 			target: { value: 'My draft question' }
 		});
 
 		await fireEvent.click(screen.getByRole('button', { name: 'Change your name' }));
 		expect(screen.getByRole('button', { name: 'Continue' })).toBeInTheDocument();
 		expect(
-			screen.queryByRole('textbox', { name: /comments or questions/ })
+			screen.queryByRole('textbox', { name: /Type your inputs here/ })
 		).not.toBeInTheDocument();
 		expect(screen.queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument();
 		await fireEvent.input(screen.getByLabelText('Name:'), { target: { value: 'Sam' } });
 		await fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
 		expect(screen.getByLabelText('Name:')).toHaveValue('Sam');
-		expect(screen.getByRole('textbox', { name: /comments or questions/ })).toHaveValue(
+		expect(screen.getByRole('textbox', { name: /Type your inputs here/ })).toHaveValue(
 			'My draft question'
 		);
 		expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
@@ -401,20 +401,20 @@ describe('Mobile inputs page', () => {
 		await fireEvent.click(
 			screen.getByRole('button', { name: 'Ask a question or leave a comment' })
 		);
-		await fireEvent.input(screen.getByRole('textbox', { name: /comments or questions/ }), {
+		await fireEvent.input(screen.getByRole('textbox', { name: /Type your inputs here/ }), {
 			target: { value: 'My draft question' }
 		});
 		mock.state!.entities = [
 			{ ...mock.state!.entities[0], question: 'cbs-presentation-state-comments' }
 		];
 		await vi.waitFor(() => expect(page.url.searchParams.get('input')).toBe('cbs-comments'));
-		expect(screen.getByRole('textbox', { name: /comments or questions/ })).toHaveValue(
+		expect(screen.getByRole('textbox', { name: /Type your inputs here/ })).toHaveValue(
 			'My draft question'
 		);
 		expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
 		await fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
 		expect(screen.getByRole('main')).toBeInTheDocument();
-		expect(screen.getByRole('textbox', { name: /comments or questions/ })).toHaveValue(
+		expect(screen.getByRole('textbox', { name: /Type your inputs here/ })).toHaveValue(
 			'My draft question'
 		);
 		expect(screen.queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument();
@@ -453,13 +453,13 @@ describe('Mobile inputs page', () => {
 			expect(screen.getByText(comment.content)).toBeInTheDocument();
 			expect(screen.getByText('Alex:')).toBeInTheDocument();
 			expect(
-				screen.getByText(
+				screen.queryByText(
 					comment.creation_date!.toLocaleString(undefined, {
 						dateStyle: 'short',
 						timeStyle: 'short'
 					})
 				)
-			).toBeInTheDocument();
+			).not.toBeInTheDocument();
 
 			mock.comments!.entities = [
 				{ id: 'live-comment', content: 'A new anonymous question', language: 'en' },
