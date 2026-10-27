@@ -5,14 +5,17 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
-import type { QuestionExtended } from '$lib/types';
+import type { MessageExtended, QuestionExtended } from '$lib/types';
 
 import InputsPage from './+page.svelte';
 import type { PageData } from './$types';
 
 const mock = vi.hoisted(() => ({
-	state: undefined as { entities: QuestionExtended[] } | undefined,
+	state: undefined as { entities: (QuestionExtended | MessageExtended)[] } | undefined,
+	comments: undefined as { entities: (QuestionExtended | MessageExtended)[] } | undefined,
 	configurations: [] as Array<{ submitOnly?: boolean; snapshot?: unknown }>,
+	createSortedSelection: vi.fn(),
+	getSelectedEntities: vi.fn(),
 	submitted: vi.fn()
 }));
 const floatingMock = vi.hoisted(() => ({
@@ -69,16 +72,25 @@ vi.mock('@floating-ui/dom', () => ({
 }));
 vi.mock('$lib/socketio.svelte', () => ({
 	SocketIO: class {
-		entities = $state<QuestionExtended[]>([]);
+		entities = $state<(QuestionExtended | MessageExtended)[]>([]);
 		pendingEntities = [{ id: 'new_message', content: '', confidential: '' }];
 		client = { on: vi.fn(), disconnect: vi.fn() };
 		constructor(
-			connection: { namespace: string },
-			configuration: { snapshot?: { entities: QuestionExtended[] }; submitOnly?: boolean }
+			connection: { namespace: string; parentId?: string },
+			configuration: {
+				snapshot?: { entities: (QuestionExtended | MessageExtended)[] };
+				submitOnly?: boolean;
+			}
 		) {
 			mock.configurations.push(configuration);
 			this.entities = configuration.snapshot?.entities ?? [];
 			if (connection.namespace === '/question') mock.state = this;
+			if (connection.parentId === 'comments-question') mock.comments = this;
+		}
+		createSortedSelection = mock.createSortedSelection;
+		getSelectedEntities(selection: string) {
+			mock.getSelectedEntities(selection);
+			return this.entities;
 		}
 		addPendingAccessPolicy = vi.fn();
 		submitEntity(pending: { content: string; confidential: string }, parentId: string) {
@@ -90,7 +102,10 @@ vi.mock('$lib/socketio.svelte', () => ({
 	}
 }));
 
-function renderInputs(stateQuestion = 'cbs-presentation-state-comments') {
+function renderInputs(
+	stateQuestion = 'cbs-presentation-state-comments',
+	comments: MessageExtended[] = []
+) {
 	const question = {
 		id: 'state-question',
 		question: stateQuestion,
@@ -105,14 +120,18 @@ function renderInputs(stateQuestion = 'cbs-presentation-state-comments') {
 				'cbs-books': 'books-question',
 				'cbs-comments': 'comments-question'
 			},
-			stateSnapshot: { entities: [question], cursor: 42 }
+			stateSnapshot: { entities: [question], cursor: 42 },
+			commentsSnapshot: { entities: comments, cursor: 43 }
 		} as unknown as PageData
 	});
 }
 
 beforeEach(() => {
 	mock.state = undefined;
+	mock.comments = undefined;
 	mock.configurations = [];
+	mock.createSortedSelection.mockClear();
+	mock.getSelectedEntities.mockClear();
 	mock.submitted.mockClear();
 	floatingMock.resolvePosition = undefined;
 	floatingMock.cleanup.mockClear();
@@ -401,6 +420,58 @@ describe('Mobile inputs page', () => {
 		expect(screen.queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument();
 		expect(mock.submitted).not.toHaveBeenCalled();
 	});
+
+	test.each([false, true])(
+		'renders comment history and live updates when manually opened is %s',
+		async (manuallyOpened) => {
+			const comment: MessageExtended = {
+				id: 'existing-comment',
+				content: 'An existing question',
+				confidential: 'Alex',
+				language: 'en',
+				creation_date: new Date('2026-10-27T12:00:00Z')
+			};
+			renderInputs('cbs-presentation-state-comments', [comment]);
+			expect(mock.configurations).toContainEqual(
+				expect.objectContaining({
+					snapshot: { entities: [comment], cursor: 43 }
+				})
+			);
+			expect(mock.createSortedSelection).toHaveBeenCalledExactlyOnceWith(
+				'sortedCommentsAnswers',
+				'creation_date',
+				false
+			);
+			expect(screen.queryByText(comment.content)).not.toBeInTheDocument();
+			await fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+			if (manuallyOpened) {
+				await fireEvent.click(
+					screen.getByRole('button', { name: 'Ask a question or leave a comment' })
+				);
+			}
+			expect(mock.getSelectedEntities).toHaveBeenCalledWith('sortedCommentsAnswers');
+			expect(screen.getByText(comment.content)).toBeInTheDocument();
+			expect(screen.getByText('Alex:')).toBeInTheDocument();
+			expect(
+				screen.getByText(
+					comment.creation_date!.toLocaleString(undefined, {
+						dateStyle: 'short',
+						timeStyle: 'short'
+					})
+				)
+			).toBeInTheDocument();
+
+			mock.comments!.entities = [
+				{ id: 'live-comment', content: 'A new anonymous question', language: 'en' },
+				{ ...comment, content: 'An updated question' }
+			];
+			expect(await screen.findByText('A new anonymous question')).toBeInTheDocument();
+			expect(screen.getByText('Anonymous:')).toBeInTheDocument();
+			expect(screen.getByText('An updated question')).toBeInTheDocument();
+			expect(screen.queryByText(comment.content)).not.toBeInTheDocument();
+			expect(mock.submitted).not.toHaveBeenCalled();
+		}
+	);
 
 	test('live state changes update the query while preserving other parameters', async () => {
 		renderInputs();
