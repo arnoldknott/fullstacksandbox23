@@ -11,7 +11,7 @@
 
 <div class="chat chat-receiver w-full">
 	<div
-		class="chat-bubble w-full! text-left text-wrap break-words {index % 2
+		class="chat-bubble w-full! max-w-full! text-left text-wrap break-words {index % 2
 			? 'chat-bubble-accent'
 			: 'chat-bubble-primary'}"
 	>
