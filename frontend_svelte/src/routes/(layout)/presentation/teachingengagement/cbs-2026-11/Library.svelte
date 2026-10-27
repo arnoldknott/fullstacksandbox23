@@ -84,6 +84,14 @@
 			alt: 'Sangild, Torben (2024). Følelsernes bog. Zetland Bøger. ISBN: 9788793761513.'
 		},
 		{
+			id: 'factfulness',
+			title: 'Factfulness',
+			author: 'Hans Rosling',
+			link: 'https://www.saxo.com/dk/factfulness_hans-rosling_paperback_9781473637467?srsltid=AU7gw4VUMGLlJwDFGpm9CB0BqwfhpbGGh32d2SVGPz0rieyHDQ9KdeuT',
+			image: 'https://imgcdn.saxo.com/_9781473637467',
+			alt: "Rosling, Hans, & Rosling, Ola, & Rönnlund, Anna (2018). Factfulness: Ten Reasons We're Wrong About the World – and Why Things Are Better Than You Think. Flatiron Books. ISBN: 9781473637467."
+		},
+		{
 			id: 'loving-what-is',
 			title: 'Loving what is',
 			author: 'Byron Katie',
@@ -138,6 +146,22 @@
 			link: 'https://www.saxo.com/dk/doughnut-economics-seven-ways-to-think-like-a-21st-century-economist-pb-b-format_paperback_9781847941398?srsltid=AU7gw4WNqUOvOxQOT6E9Cgs9YWFY7L7y7I4CPGx7Awz11UULEPPeA_Z-',
 			image: 'https://imgcdn.saxo.com/_9781847941398',
 			alt: 'Raworth, Kate (2018). Doughnut Economics: Seven Ways to Think Like a 21st-Century Economist. Random House Business Books. ISBN: 9781847941398.'
+		},
+		{
+			id: 'in-love-with-future',
+			title: 'How to fall in love with the future',
+			author: 'Rob Hopkins',
+			link: 'https://www.saxo.com/dk/how-to-fall-in-love-with-the-future_bog_9781915294517?srsltid=AYCX9vIWJ2kb4SoNryya8xXIlKdDV7M-d9iLKS2Sx3S2pR7UfT52WJD0',
+			image: 'https://imgcdn.saxo.com/_9781915294517',
+			alt: "Hopkins, Rob (2025). How to Fall in Love with the Future: A Time Traveller's Guide to Changing the World. Chelsea Green Publishing UK. ISBN: 9781915294517."
+		},
+		{
+			id: 'five-love-languages',
+			title: 'The 5 Love Languages',
+			author: 'Gary Chapman',
+			link: 'https://www.saxo.com/dk/the-5-love-languages-hardcover-special-edition_bog_9780802438461?srsltid=AYCX9vJmVNGZvdqxpwRSsURRwXEujU0w9uEcKbrbBWsgi8RmChx4D2lV',
+			image: 'https://imgcdn.saxo.com/_9780802438461',
+			alt: 'Chapman, Gary (1995). The 5 Love Languages: The Secret to Love that Lasts. Northfield Publishing. ISBN: 9780802438461.'
 		},
 		{
 			id: 'reinventing-organizations',

@@ -1,18 +1,21 @@
 import '@testing-library/jest-dom/vitest';
 
-import { fireEvent, render, screen } from '@testing-library/svelte';
+import { cleanup, fireEvent, render, screen } from '@testing-library/svelte';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
-import type { QuestionExtended } from '$lib/types';
+import type { MessageExtended, QuestionExtended } from '$lib/types';
 
 import InputsPage from './+page.svelte';
 import type { PageData } from './$types';
 
 const mock = vi.hoisted(() => ({
-	state: undefined as { entities: QuestionExtended[] } | undefined,
+	state: undefined as { entities: (QuestionExtended | MessageExtended)[] } | undefined,
+	comments: undefined as { entities: (QuestionExtended | MessageExtended)[] } | undefined,
 	configurations: [] as Array<{ submitOnly?: boolean; snapshot?: unknown }>,
+	createSortedSelection: vi.fn(),
+	getSelectedEntities: vi.fn(),
 	submitted: vi.fn()
 }));
 const floatingMock = vi.hoisted(() => ({
@@ -69,16 +72,25 @@ vi.mock('@floating-ui/dom', () => ({
 }));
 vi.mock('$lib/socketio.svelte', () => ({
 	SocketIO: class {
-		entities = $state<QuestionExtended[]>([]);
+		entities = $state<(QuestionExtended | MessageExtended)[]>([]);
 		pendingEntities = [{ id: 'new_message', content: '', confidential: '' }];
 		client = { on: vi.fn(), disconnect: vi.fn() };
 		constructor(
-			connection: { namespace: string },
-			configuration: { snapshot?: { entities: QuestionExtended[] }; submitOnly?: boolean }
+			connection: { namespace: string; parentId?: string },
+			configuration: {
+				snapshot?: { entities: (QuestionExtended | MessageExtended)[] };
+				submitOnly?: boolean;
+			}
 		) {
 			mock.configurations.push(configuration);
 			this.entities = configuration.snapshot?.entities ?? [];
 			if (connection.namespace === '/question') mock.state = this;
+			if (connection.parentId === 'comments-question') mock.comments = this;
+		}
+		createSortedSelection = mock.createSortedSelection;
+		getSelectedEntities(selection: string) {
+			mock.getSelectedEntities(selection);
+			return this.entities;
 		}
 		addPendingAccessPolicy = vi.fn();
 		submitEntity(pending: { content: string; confidential: string }, parentId: string) {
@@ -90,7 +102,10 @@ vi.mock('$lib/socketio.svelte', () => ({
 	}
 }));
 
-function renderInputs(stateQuestion = 'cbs-presentation-state-comments') {
+function renderInputs(
+	stateQuestion = 'cbs-presentation-state-comments',
+	comments: MessageExtended[] = []
+) {
 	const question = {
 		id: 'state-question',
 		question: stateQuestion,
@@ -105,14 +120,18 @@ function renderInputs(stateQuestion = 'cbs-presentation-state-comments') {
 				'cbs-books': 'books-question',
 				'cbs-comments': 'comments-question'
 			},
-			stateSnapshot: { entities: [question], cursor: 42 }
+			stateSnapshot: { entities: [question], cursor: 42 },
+			commentsSnapshot: { entities: comments, cursor: 43 }
 		} as unknown as PageData
 	});
 }
 
 beforeEach(() => {
 	mock.state = undefined;
+	mock.comments = undefined;
 	mock.configurations = [];
+	mock.createSortedSelection.mockClear();
+	mock.getSelectedEntities.mockClear();
 	mock.submitted.mockClear();
 	floatingMock.resolvePosition = undefined;
 	floatingMock.cleanup.mockClear();
@@ -132,7 +151,10 @@ beforeEach(() => {
 	);
 });
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+	cleanup();
+	vi.unstubAllGlobals();
+});
 
 describe('Mobile inputs page', () => {
 	test('submits a name once to cbs-names, only in the confidential attribute', async () => {
@@ -225,7 +247,7 @@ describe('Mobile inputs page', () => {
 		await fireEvent.input(screen.getByLabelText('Name:'), { target: { value: 'Alex' } });
 		await fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
 		expect(screen.queryByRole('button', { name: 'Continue' })).not.toBeInTheDocument();
-		await fireEvent.input(screen.getByRole('textbox', { name: /comments or questions/ }), {
+		await fireEvent.input(screen.getByRole('textbox', { name: /Type your inputs here/ }), {
 			target: { value: 'My question' }
 		});
 		await fireEvent.click(screen.getByRole('button', { name: 'Send' }));
@@ -262,7 +284,7 @@ describe('Mobile inputs page', () => {
 		expect(screen.getByLabelText('Name:')).toHaveValue('');
 		await fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
 		expect(mock.submitted).not.toHaveBeenCalled();
-		await fireEvent.input(screen.getByRole('textbox', { name: /comments or questions/ }), {
+		await fireEvent.input(screen.getByRole('textbox', { name: /Type your inputs here/ }), {
 			target: { value: 'Anonymous comment' }
 		});
 		await fireEvent.click(screen.getByRole('button', { name: 'Send' }));
@@ -275,6 +297,181 @@ describe('Mobile inputs page', () => {
 		await fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
 		expect(screen.getByLabelText('Name:')).toHaveValue('Sam');
 	});
+
+	test.each(['names', 'places', 'books', 'comments'])(
+		'opens comments manually during the %s step and cancels without submitting or navigating',
+		async (step) => {
+			page.url.searchParams.set('input', `cbs-${step}`);
+			renderInputs(`cbs-presentation-state-${step}`);
+			await fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+			const originalUrl = page.url.href;
+			expect(screen.getByRole('main')).toBeInTheDocument();
+			expect(screen.queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument();
+
+			await fireEvent.click(
+				screen.getByRole('button', { name: 'Ask a question or leave a comment' })
+			);
+			expect(screen.queryByRole('main')).not.toBeInTheDocument();
+			const commentInput = screen.getByRole('textbox', { name: /Type your inputs here/ });
+			await fireEvent.input(commentInput, { target: { value: 'My draft question' } });
+			expect(screen.getByRole('button', { name: 'Cancel' })).toHaveAttribute('type', 'button');
+			await fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+
+			expect(screen.getByRole('main')).toBeInTheDocument();
+			expect(screen.queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument();
+			expect(mock.submitted).not.toHaveBeenCalled();
+			expect(page.url.href).toBe(originalUrl);
+			await fireEvent.click(
+				screen.getByRole('button', { name: 'Ask a question or leave a comment' })
+			);
+			expect(screen.getByRole('textbox', { name: /Type your inputs here/ })).toHaveValue(
+				'My draft question'
+			);
+			await fireEvent.click(
+				screen.getByRole('button', { name: 'Ask a question or leave a comment' })
+			);
+			expect(screen.getByRole('main')).toBeInTheDocument();
+			expect(screen.queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument();
+		}
+	);
+
+	test('submits a manual question before the comments step using the participant name', async () => {
+		page.url.searchParams.set('input', 'cbs-books');
+		renderInputs('cbs-presentation-state-books');
+		await fireEvent.input(screen.getByLabelText('Name:'), { target: { value: 'Alex' } });
+		await fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+		mock.submitted.mockClear();
+		await fireEvent.click(
+			screen.getByRole('button', { name: 'Ask a question or leave a comment' })
+		);
+		expect(screen.getByLabelText('Name:')).toHaveValue('Alex');
+		expect(screen.getByRole('button', { name: 'Send' })).toBeDisabled();
+		await fireEvent.input(screen.getByRole('textbox', { name: /Type your inputs here/ }), {
+			target: { value: 'My early question' }
+		});
+		await fireEvent.click(screen.getByRole('button', { name: 'Send' }));
+		expect(mock.submitted).toHaveBeenCalledExactlyOnceWith(
+			expect.objectContaining({ content: 'My early question', confidential: 'Alex' }),
+			'comments-question'
+		);
+		expect(screen.getByRole('textbox', { name: /Type your inputs here/ })).toHaveValue('');
+		expect(screen.getByRole('status')).toHaveTextContent('Sending...');
+		await fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+		expect(screen.getByRole('textbox', { name: /take on this book/ })).toBeInTheDocument();
+		expect(page.url.searchParams.get('input')).toBe('cbs-books');
+	});
+
+	test('the initial and reopened name forms take precedence over manual comments', async () => {
+		page.url.searchParams.set('input', 'cbs-names');
+		renderInputs('cbs-presentation-state-names');
+		await fireEvent.click(
+			screen.getByRole('button', { name: 'Ask a question or leave a comment' })
+		);
+		expect(screen.getByRole('button', { name: 'Continue' })).toBeInTheDocument();
+		expect(
+			screen.queryByRole('textbox', { name: /Type your inputs here/ })
+		).not.toBeInTheDocument();
+		expect(screen.queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument();
+		await fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+		await fireEvent.input(screen.getByRole('textbox', { name: /Type your inputs here/ }), {
+			target: { value: 'My draft question' }
+		});
+
+		await fireEvent.click(screen.getByRole('button', { name: 'Change your name' }));
+		expect(screen.getByRole('button', { name: 'Continue' })).toBeInTheDocument();
+		expect(
+			screen.queryByRole('textbox', { name: /Type your inputs here/ })
+		).not.toBeInTheDocument();
+		expect(screen.queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument();
+		await fireEvent.input(screen.getByLabelText('Name:'), { target: { value: 'Sam' } });
+		await fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+		expect(screen.getByLabelText('Name:')).toHaveValue('Sam');
+		expect(screen.getByRole('textbox', { name: /Type your inputs here/ })).toHaveValue(
+			'My draft question'
+		);
+		expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
+		await fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+		expect(screen.getByText('Welcome Sam')).toBeInTheDocument();
+	});
+
+	test('manual comments stay open during live state changes and cancel returns to the current step', async () => {
+		page.url.searchParams.set('input', 'cbs-names');
+		renderInputs('cbs-presentation-state-names');
+		await fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+		await fireEvent.click(
+			screen.getByRole('button', { name: 'Ask a question or leave a comment' })
+		);
+		await fireEvent.input(screen.getByRole('textbox', { name: /Type your inputs here/ }), {
+			target: { value: 'My draft question' }
+		});
+		mock.state!.entities = [
+			{ ...mock.state!.entities[0], question: 'cbs-presentation-state-comments' }
+		];
+		await vi.waitFor(() => expect(page.url.searchParams.get('input')).toBe('cbs-comments'));
+		expect(screen.getByRole('textbox', { name: /Type your inputs here/ })).toHaveValue(
+			'My draft question'
+		);
+		expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
+		await fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+		expect(screen.getByRole('main')).toBeInTheDocument();
+		expect(screen.getByRole('textbox', { name: /Type your inputs here/ })).toHaveValue(
+			'My draft question'
+		);
+		expect(screen.queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument();
+		expect(mock.submitted).not.toHaveBeenCalled();
+	});
+
+	test.each([false, true])(
+		'renders comment history and live updates when manually opened is %s',
+		async (manuallyOpened) => {
+			const comment: MessageExtended = {
+				id: 'existing-comment',
+				content: 'An existing question',
+				confidential: 'Alex',
+				language: 'en',
+				creation_date: new Date('2026-10-27T12:00:00Z')
+			};
+			renderInputs('cbs-presentation-state-comments', [comment]);
+			expect(mock.configurations).toContainEqual(
+				expect.objectContaining({
+					snapshot: { entities: [comment], cursor: 43 }
+				})
+			);
+			expect(mock.createSortedSelection).toHaveBeenCalledExactlyOnceWith(
+				'sortedCommentsAnswers',
+				'creation_date',
+				false
+			);
+			expect(screen.queryByText(comment.content)).not.toBeInTheDocument();
+			await fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+			if (manuallyOpened) {
+				await fireEvent.click(
+					screen.getByRole('button', { name: 'Ask a question or leave a comment' })
+				);
+			}
+			expect(mock.getSelectedEntities).toHaveBeenCalledWith('sortedCommentsAnswers');
+			expect(screen.getByText(comment.content)).toBeInTheDocument();
+			expect(screen.getByText('Alex:')).toBeInTheDocument();
+			expect(
+				screen.queryByText(
+					comment.creation_date!.toLocaleString(undefined, {
+						dateStyle: 'short',
+						timeStyle: 'short'
+					})
+				)
+			).not.toBeInTheDocument();
+
+			mock.comments!.entities = [
+				{ id: 'live-comment', content: 'A new anonymous question', language: 'en' },
+				{ ...comment, content: 'An updated question' }
+			];
+			expect(await screen.findByText('A new anonymous question')).toBeInTheDocument();
+			expect(screen.getByText('Anonymous:')).toBeInTheDocument();
+			expect(screen.getByText('An updated question')).toBeInTheDocument();
+			expect(screen.queryByText(comment.content)).not.toBeInTheDocument();
+			expect(mock.submitted).not.toHaveBeenCalled();
+		}
+	);
 
 	test('live state changes update the query while preserving other parameters', async () => {
 		renderInputs();

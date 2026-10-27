@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import { onDestroy, onMount, untrack } from 'svelte';
+	import { flip } from 'svelte/animate';
 	import { fly } from 'svelte/transition';
 
 	import { goto } from '$app/navigation';
@@ -10,6 +11,7 @@
 	import type { MessageExtended, QuestionExtended } from '$lib/types';
 
 	import CardOverlay from '../CardOverlay.svelte';
+	import CommentAnswer from '../CommentAnswer.svelte';
 	import CommentInput from '../CommentInput.svelte';
 	import {
 		currentInput,
@@ -29,7 +31,9 @@
 	let { data }: { data: PageData } = $props();
 	let stateSocket = $state<SocketIO<QuestionExtended>>();
 	let answerSocket = $state<SocketIO<MessageExtended>>();
+	let questionsCommentsSocket = $state<SocketIO<MessageExtended>>();
 	let name = $state('');
+	let showQuestionInput = $state(false);
 	let showNameInput = $state(true);
 	let ownPlaces = $state<Place[]>([]);
 	let comment = $state('');
@@ -142,11 +146,29 @@
 			failed = true;
 			notice = 'Connection unavailable. Please try again.';
 		});
+		questionsCommentsSocket = new SocketIO<MessageExtended>(
+			{
+				namespace: '/message',
+				parentId: data.inputQuestions['cbs-comments'],
+				queryParams: { 'request-access-data': true }
+			},
+			{
+				snapshot: data.commentsSnapshot,
+				template: { content: '', language: 'en' }
+			}
+		);
+		questionsCommentsSocket.createSortedSelection('sortedCommentsAnswers', 'creation_date', false);
 	});
+
 	onDestroy(() => {
 		stateSocket?.client.disconnect();
 		answerSocket?.client.disconnect();
+		questionsCommentsSocket?.client.disconnect();
 	});
+
+	let commentsAnswersSorted = $derived(
+		questionsCommentsSocket?.getSelectedEntities('sortedCommentsAnswers') ?? []
+	);
 </script>
 
 <svelte:head><title>Presentation inputs</title></svelte:head>
@@ -177,7 +199,15 @@
 			<Icon icon="tabler:chevron-right" class="size-6" />
 		</button>
 		<button
-			class="btn btn-text btn-circle text-secondary btn-sm mx-2"
+			class="btn btn-text btn-circle text-secondary btn-sm"
+			aria-label="Ask a question or leave a comment"
+			title="Ask a question or leave a comment"
+			onclick={() => (showQuestionInput = !showQuestionInput)}
+		>
+			<Icon icon="fluent-emoji-high-contrast:exclamation-question-mark" class="size-6" />
+		</button>
+		<button
+			class="btn btn-text btn-circle text-secondary btn-sm mr-2"
 			aria-label="Change your name"
 			title="Change your name"
 			onclick={() => (showNameInput = !showNameInput)}
@@ -185,6 +215,55 @@
 			<Icon icon="fa6-solid:user" class="size-6" />
 		</button>
 	</header>
+
+	{#snippet questionsComments(closeButton: boolean = false)}
+		<div class="flex-between flex gap-2">
+			<h2 class="mb-4 text-lg font-semibold">
+				⁉️ Do you have comments or questions?
+				<!-- <br /> -->
+				<!-- 📖 Which books would you recommend? -->
+			</h2>
+			<!-- {#if closeButton}
+				<button
+					class="btn btn-circle btn-text btn-sm absolute end-3 top-3"
+					aria-label="Close"
+					title="Close"
+					onclick={() => (showQuestionInput = false)}
+				>
+					<Icon icon="tabler:x" class="size-5" />
+				</button>
+			{/if} -->
+		</div>
+		{#if data.inputQuestions['cbs-comments']}<CommentInput
+				socketio={answerSocket}
+				parentId={data.inputQuestions['cbs-comments']}
+				bind:name
+				bind:text={comment}
+				onsubmit={submitting}
+				oncancel={closeButton ? () => (showQuestionInput = false) : undefined}
+			/>
+		{:else}
+			<p>This input is unavailable.</p>
+		{/if}
+		<div class="mt-8 max-h-[600px] w-full gap-4 overflow-y-auto">
+			{#each commentsAnswersSorted as answer, index (answer.id)}
+				<div animate:flip={{ duration: 300 }}>
+					<CommentAnswer
+						name={answer.confidential || 'Anonymous'}
+						// date={answer.creation_date}
+						{index}
+					>
+						{answer.content}
+					</CommentAnswer>
+					<!-- <div class="border-base-content/15 border-b p-4">
+					<div class="font-semibold">{answer.confidential || 'Anonymous'}</div>
+					<div>{answer.content}</div>
+					<div class="text-base-content/60 text-sm">index {index}</div>
+				</div> -->
+				</div>
+			{/each}
+		</div>
+	{/snippet}
 
 	{#if showNameInput}
 		<form
@@ -213,6 +292,8 @@
 				type="submit">Continue</button
 			>
 		</form>
+	{:else if showQuestionInput}
+		{@render questionsComments(true)}
 	{:else}
 		<main class="relative flex-1 overflow-x-clip p-4">
 			{#key selected}
@@ -303,7 +384,8 @@
 							>
 						</details>
 					{:else if selected === 'cbs-comments'}
-						<h2 class="mb-4 text-lg font-semibold">
+						{@render questionsComments()}
+						<!-- <h2 class="mb-4 text-lg font-semibold">
 							⁉️ Do you have comments or questions? <br />
 							📖 Which books would you recommend?
 						</h2>
@@ -313,7 +395,7 @@
 								bind:name
 								bind:text={comment}
 								onsubmit={submitting}
-							/>{:else}<p>This input is unavailable.</p>{/if}
+							/>{:else}<p>This input is unavailable.</p>{/if} -->
 					{:else}
 						{@render waitingForPresenter()}
 					{/if}
