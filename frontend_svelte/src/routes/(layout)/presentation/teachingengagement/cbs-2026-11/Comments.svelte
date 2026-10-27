@@ -56,7 +56,7 @@
 					)} -->
 					<CommentAnswer
 						name={answer.confidential || 'Anonymous'}
-						date={answer.creation_date}
+						// date={answer.creation_date}
 						{index}
 					>
 						{answer.content}
