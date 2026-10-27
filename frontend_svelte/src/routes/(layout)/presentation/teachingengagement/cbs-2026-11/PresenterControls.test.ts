@@ -25,13 +25,19 @@ vi.mock('$app/state', () => ({
 	}
 }));
 
-function renderControls(options: { right?: Action; slideId?: string; ready?: boolean } = {}) {
-	const { slideId = 'welcome', ready = true } = options;
+function renderControls(
+	options: { right?: Action; slideId?: string; ready?: boolean; stateQuestion?: string } = {}
+) {
+	const {
+		slideId = 'welcome',
+		ready = true,
+		stateQuestion = 'cbs-presentation-state-books'
+	} = options;
 	const right = 'right' in options ? options.right : Action.WRITE;
 	const revealHandlers = new Map<string, (event?: Event) => void>();
 	const socketHandlers = new Map<string, (event: unknown) => void>();
 	const socketio = {
-		entities: [{ id: 'state', question: 'cbs-presentation-state-books', access_right: right }],
+		entities: [{ id: 'state', question: stateQuestion, access_right: right }],
 		submitEntity: vi.fn(),
 		client: {
 			on: vi.fn((event, handler) => socketHandlers.set(event, handler)),
@@ -60,6 +66,33 @@ beforeEach(() => {
 });
 
 describe('Presenter controls', () => {
+	test.each([
+		['context-map', 'cbs-presentation-state-places'],
+		['inspiration', 'cbs-presentation-state-books'],
+		['comments-and-questions', 'cbs-presentation-state-comments']
+	])('Reset appears after publishing %s from the reset state', async (slideId, nextState) => {
+		const { socketio, showSlide, rerender } = renderControls({
+			stateQuestion: 'cbs-presentation-state-'
+		});
+		expect(screen.queryByRole('button', { name: 'Reset' })).not.toBeInTheDocument();
+		await showSlide(slideId);
+		expect(socketio.submitEntity).toHaveBeenCalledExactlyOnceWith(
+			expect.objectContaining({ id: 'state', question: nextState })
+		);
+		await rerender({
+			socketio: {
+				...socketio,
+				entities: [{ ...socketio.entities[0], question: nextState }]
+			} as unknown as SocketIO<QuestionExtended>
+		});
+		await showSlide('welcome');
+		expect(screen.getByRole('button', { name: 'Reset' })).toBeEnabled();
+		await fireEvent.click(screen.getByRole('button', { name: 'Reset' }));
+		expect(socketio.submitEntity).toHaveBeenLastCalledWith(
+			expect.objectContaining({ id: 'state', question: 'cbs-presentation-state-' })
+		);
+	});
+
 	test('welcome does not publish, and Reset changes only the state to names', async () => {
 		const { socketio, rerender } = renderControls();
 		expect(socketio.submitEntity).not.toHaveBeenCalled();
@@ -95,7 +128,7 @@ describe('Presenter controls', () => {
 	test.each([Action.READ, Action.CONNECT, undefined])(
 		'never publishes or shows controls with right %s',
 		async (right) => {
-			const { socketio, reveal } = renderControls({ right, slideId: 'checkin-map' });
+			const { socketio, reveal } = renderControls({ right, slideId: 'context-map' });
 			expect(socketio.submitEntity).not.toHaveBeenCalled();
 			expect(reveal.on).not.toHaveBeenCalled();
 			expect(screen.queryByRole('button')).not.toBeInTheDocument();
@@ -106,7 +139,7 @@ describe('Presenter controls', () => {
 		'delegates presenter-mode gating to the page when mounted (%s)',
 		(query) => {
 			browser.url = `https://example.org/presentation/test${query}`;
-			const { socketio, reveal } = renderControls({ slideId: 'checkin-map' });
+			const { socketio, reveal } = renderControls({ slideId: 'context-map' });
 			expect(socketio.submitEntity).toHaveBeenCalledExactlyOnceWith(
 				expect.objectContaining({ question: 'cbs-presentation-state-places' })
 			);
@@ -117,7 +150,7 @@ describe('Presenter controls', () => {
 
 	test('logged-out presenter mode shows Login, disables Reset and never publishes', () => {
 		browser.session = undefined;
-		const { socketio, reveal } = renderControls({ slideId: 'checkin-map' });
+		const { socketio, reveal } = renderControls({ slideId: 'context-map' });
 		expect(screen.getByRole('button', { name: 'Log In' })).toBeInTheDocument();
 		expect(screen.getByRole('button', { name: 'Reset' })).toBeDisabled();
 		expect(socketio.submitEntity).not.toHaveBeenCalled();
@@ -132,7 +165,7 @@ describe('Presenter controls', () => {
 
 	test('losing write permission stops slide updates and hides Reset', async () => {
 		const { socketio, reveal, revealHandlers, showSlide, rerender } = renderControls();
-		await showSlide('checkin-map');
+		await showSlide('context-map');
 		expect(socketio.submitEntity).toHaveBeenCalledOnce();
 		await rerender({
 			socketio: {
@@ -150,26 +183,32 @@ describe('Presenter controls', () => {
 		'publishes relevant slides with %s and suppresses duplicates',
 		async (right) => {
 			const { socketio, showSlide } = renderControls({ right });
-			await showSlide('checkin-map');
-			await showSlide('checkin-map');
+			await showSlide('context-map');
+			await showSlide('context-map');
 			expect(socketio.submitEntity).toHaveBeenCalledTimes(1);
 			expect(socketio.submitEntity).toHaveBeenLastCalledWith(
 				expect.objectContaining({ question: 'cbs-presentation-state-places' })
 			);
-			await showSlide('inspiration-books');
+			await showSlide('inspiration');
+			expect(socketio.submitEntity).toHaveBeenCalledTimes(2);
+			expect(socketio.submitEntity).toHaveBeenLastCalledWith(
+				expect.objectContaining({ question: 'cbs-presentation-state-books' })
+			);
 			await showSlide('comments-and-questions');
 			expect(socketio.submitEntity).toHaveBeenCalledTimes(3);
 			expect(socketio.submitEntity).toHaveBeenLastCalledWith(
 				expect.objectContaining({ question: 'cbs-presentation-state-comments' })
 			);
 			await showSlide('context-courses');
+			await showSlide('inspiration-others');
+			await showSlide('inspiration-change');
 			await showSlide('welcome');
 			expect(socketio.submitEntity).toHaveBeenCalledTimes(3);
 		}
 	);
 
 	test('handles opening directly on an interactive slide after Reveal is ready', () => {
-		const { socketio } = renderControls({ slideId: 'checkin-map' });
+		const { socketio } = renderControls({ slideId: 'context-map' });
 		expect(socketio.submitEntity).toHaveBeenCalledExactlyOnceWith(
 			expect.objectContaining({ question: 'cbs-presentation-state-places' })
 		);
@@ -180,7 +219,7 @@ describe('Presenter controls', () => {
 			{ ready: false }
 		);
 		expect(socketio.submitEntity).not.toHaveBeenCalled();
-		await showSlide('checkin-map', 'ready');
+		await showSlide('context-map', 'ready');
 		expect(socketio.submitEntity).toHaveBeenCalledOnce();
 		unmount();
 		expect(reveal.off).toHaveBeenCalledWith('ready', revealHandlers.get('ready'));
