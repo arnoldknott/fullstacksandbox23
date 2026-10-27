@@ -14,7 +14,8 @@
 		name = $bindable(''),
 		text = $bindable(''),
 		label = 'Do you have comments or questions?',
-		onsubmit
+		onsubmit,
+		oncancel
 	}: {
 		socketio?: SocketIO<MessageExtended>;
 		parentId?: string;
@@ -23,6 +24,7 @@
 		text?: string;
 		label?: string;
 		onsubmit?: () => void;
+		oncancel?: () => void;
 	} = $props();
 	const inputId = $props.id();
 	let submissionParentId = $derived(parentId ?? socketio?.parentId);
@@ -64,6 +66,15 @@
 		<label class="textarea-filled-label" for={inputId}>{label}</label>
 	</div>
 	<div class="text-right">
+		{#if oncancel}
+			<button
+				type="button"
+				class="btn btn-secondary-container btn-gradient btn-sm shadow-outline rounded-full shadow-sm"
+				onclick={oncancel}
+			>
+				<Icon icon="tabler:x" class="size-5" />Cancel
+			</button>
+		{/if}
 		<button
 			type="submit"
 			class="btn btn-primary-container btn-gradient btn-sm shadow-outline rounded-full shadow-sm"

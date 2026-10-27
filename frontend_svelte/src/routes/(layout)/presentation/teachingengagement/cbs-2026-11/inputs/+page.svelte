@@ -30,6 +30,7 @@
 	let stateSocket = $state<SocketIO<QuestionExtended>>();
 	let answerSocket = $state<SocketIO<MessageExtended>>();
 	let name = $state('');
+	let showQuestionInput = $state(false);
 	let showNameInput = $state(true);
 	let ownPlaces = $state<Place[]>([]);
 	let comment = $state('');
@@ -178,6 +179,14 @@
 		</button>
 		<button
 			class="btn btn-text btn-circle text-secondary btn-sm mx-2"
+			aria-label="Ask a question or leave a comment"
+			title="Ask a question or leave a comment"
+			onclick={() => (showQuestionInput = !showQuestionInput)}
+		>
+			<Icon icon="fluent-emoji-high-contrast:exclamation-question-mark" class="size-6" />
+		</button>
+		<button
+			class="btn btn-text btn-circle text-secondary btn-sm mx-2"
 			aria-label="Change your name"
 			title="Change your name"
 			onclick={() => (showNameInput = !showNameInput)}
@@ -185,6 +194,34 @@
 			<Icon icon="fa6-solid:user" class="size-6" />
 		</button>
 	</header>
+
+	{#snippet questionsComments(closeButton: boolean = false)}
+		<div class="flex-between flex gap-2">
+			<h2 class="mb-4 text-lg font-semibold">
+				⁉️ Do you have comments or questions?
+				<!-- <br /> -->
+				<!-- 📖 Which books would you recommend? -->
+			</h2>
+			<!-- {#if closeButton}
+				<button
+					class="btn btn-circle btn-text btn-sm absolute end-3 top-3"
+					aria-label="Close"
+					title="Close"
+					onclick={() => (showQuestionInput = false)}
+				>
+					<Icon icon="tabler:x" class="size-5" />
+				</button>
+			{/if} -->
+		</div>
+		{#if data.inputQuestions['cbs-comments']}<CommentInput
+				socketio={answerSocket}
+				parentId={data.inputQuestions['cbs-comments']}
+				bind:name
+				bind:text={comment}
+				onsubmit={submitting}
+				oncancel={closeButton ? () => (showQuestionInput = false) : undefined}
+			/>{:else}<p>This input is unavailable.</p>{/if}
+	{/snippet}
 
 	{#if showNameInput}
 		<form
@@ -213,6 +250,8 @@
 				type="submit">Continue</button
 			>
 		</form>
+	{:else if showQuestionInput}
+		{@render questionsComments(true)}
 	{:else}
 		<main class="relative flex-1 overflow-x-clip p-4">
 			{#key selected}
@@ -303,7 +342,8 @@
 							>
 						</details>
 					{:else if selected === 'cbs-comments'}
-						<h2 class="mb-4 text-lg font-semibold">
+						{@render questionsComments()}
+						<!-- <h2 class="mb-4 text-lg font-semibold">
 							⁉️ Do you have comments or questions? <br />
 							📖 Which books would you recommend?
 						</h2>
@@ -313,7 +353,7 @@
 								bind:name
 								bind:text={comment}
 								onsubmit={submitting}
-							/>{:else}<p>This input is unavailable.</p>{/if}
+							/>{:else}<p>This input is unavailable.</p>{/if} -->
 					{:else}
 						{@render waitingForPresenter()}
 					{/if}
