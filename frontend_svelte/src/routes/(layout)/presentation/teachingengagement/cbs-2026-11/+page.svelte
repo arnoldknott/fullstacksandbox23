@@ -1,11 +1,12 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import type { RevealApi } from 'reveal.js';
-	import { onDestroy, onMount } from 'svelte';
+	import { getContext, onDestroy, onMount } from 'svelte';
 
 	import { page } from '$app/state';
 	import RevealJs, { toggleOnFragment } from '$components/RevealJS.svelte';
 	import { SocketIO } from '$lib/socketio.svelte';
+	import { FSSB23_THEME_KEY, type ThemeRuntimeContext } from '$lib/theming';
 	import type { MessageExtended, QuestionExtended } from '$lib/types';
 
 	import type { PageData } from './$types';
@@ -139,6 +140,8 @@
 		socketioBooks?.client.disconnect();
 		socketioComments?.client.disconnect();
 	});
+
+	const themeRuntime = getContext<ThemeRuntimeContext>(FSSB23_THEME_KEY);
 
 	let qrCodeModalsHidden: Record<string, boolean> = $state({
 		names: true,
@@ -661,6 +664,39 @@
 		{/snippet}
 	</FramedSlide>
 	<section>
+		<FramedSlide part="context" section="courses" title="Courses">
+			<div class="flex h-full flex-col justify-around gap-4">
+				<div
+					class="bg-secondary text-secondary-content shadow-base-shadow flex h-fit flex-col gap-2 rounded-4xl p-6 shadow-inner"
+				>
+					<div class="text-center text-5xl font-bold">2nd semester</div>
+					<dl>
+						<dt>mandatory course on electrical engineering</dt>
+						<dd>core competences</dd>
+						<dd>~ 120 students</dd>
+						<dd>very pressured semester</dd>
+					</dl>
+				</div>
+				<div
+					class="bg-secondary text-secondary-content shadow-base-shadow flex h-fit flex-col gap-2 rounded-4xl p-6 shadow-inner"
+				>
+					<div class="text-center text-5xl font-bold">4th semester</div>
+					<dl>
+						<dt>introduction to specialization</dt>
+						<dd>hybrid online/presence</dd>
+						<dd>~ 100 students</dd>
+					</dl>
+				</div>
+				<div
+					class="bg-secondary text-secondary-content shadow-base-shadow flex h-fit flex-col gap-2 rounded-4xl p-6 shadow-inner"
+				>
+					<div class="text-center text-5xl font-bold">Master level</div>
+					<dl>
+						<dt>close to applications and product design</dt>
+					</dl>
+				</div>
+			</div>
+		</FramedSlide>
 		<FramedSlide part="context" section="2nd-semester" title="Course: 2nd semester">
 			<div class="grid h-full grid-cols-2 gap-6">
 				<div
@@ -668,6 +704,14 @@
 				>
 					<div class="text-center text-5xl font-bold">Outer Ecosystem</div>
 					<ul class="list-disc">
+						<li>
+							<a
+								href="https://kurser.dtu.dk/course/34601"
+								class="link link-animated"
+								target="_blank"
+								rel="noopener noreferrer">Course description</a
+							>
+						</li>
 						<li>core competences in<br />electrical engineering</li>
 						<li>mandatory for two study lines</li>
 						<li>~ 10 different study lines</li>
@@ -680,7 +724,7 @@
 					</ul>
 				</div>
 				<div
-					class="bg-primary fragment text-primary-content shadow-base-shadow flex h-fit flex-col gap-2 rounded-4xl p-6 shadow-inner"
+					class="bg-primary text-primary-content shadow-base-shadow flex h-fit flex-col gap-2 rounded-4xl p-6 shadow-inner"
 				>
 					<div class="text-center text-5xl font-bold">Inner Ecosystem</div>
 
@@ -741,6 +785,14 @@
 				>
 					<div class="text-center text-5xl font-bold">Outer Ecosystem</div>
 					<ul class="list-disc">
+						<li>
+							<a
+								href="https://kurser.dtu.dk/course/34620"
+								class="link link-animated"
+								target="_blank"
+								rel="noopener noreferrer">Course description</a
+							>
+						</li>
 						<li>introduction to<br />specialisation</li>
 						<li>recommended / electable course</li>
 						<li>online and physical</li>
@@ -751,7 +803,7 @@
 					</ul>
 				</div>
 				<div
-					class="bg-primary fragment text-primary-content shadow-base-shadow flex h-fit flex-col gap-2 rounded-4xl p-6 shadow-inner"
+					class="bg-primary text-primary-content shadow-base-shadow flex h-fit flex-col gap-2 rounded-4xl p-6 shadow-inner"
 				>
 					<div class="text-center text-5xl font-bold">Inner Ecosystem</div>
 
@@ -813,6 +865,14 @@
 				>
 					<div class="text-center text-5xl font-bold">Outer Ecosystem</div>
 					<ul class="list-disc">
+						<li>
+							<a
+								href="https://kurser.dtu.dk/course/34654"
+								class="link link-animated"
+								target="_blank"
+								rel="noopener noreferrer">Course description</a
+							>
+						</li>
 						<li>electable course</li>
 						<li>
 							high diversity
@@ -829,7 +889,7 @@
 					</ul>
 				</div>
 				<div
-					class="bg-primary fragment text-primary-content shadow-base-shadow flex h-fit flex-col gap-2 rounded-4xl p-6 shadow-inner"
+					class="bg-primary text-primary-content shadow-base-shadow flex h-fit flex-col gap-2 rounded-4xl p-6 shadow-inner"
 				>
 					<div class="text-center text-5xl font-bold">Inner Ecosystem</div>
 					<div class="flex justify-between gap-4 py-4">
@@ -857,76 +917,130 @@
 			</div>
 		</FramedSlide>
 	</section>
-	<section>
-		<FramedSlide part="context" section="applications" title="Applications">
-			Sound, power supplies, renewable Energies, LED lighting
-		</FramedSlide>
-		<FramedSlide part="context" section="research" title="Research">
-			Hypothesis: smaller, lighter, use less material, some energy efficiency<br />
-			3 industrial research projects<br />
-			4 start-ups<br />
-			Example: LED lighting leads Rebound effect
-		</FramedSlide>
-		<FramedSlide part="context" section="cheese" title="Cheese or holes?">
-			I was trained to see the wholes in the cheese<br />
-			Mindset of scarcity<br />
-			Only growth can move us on.<br />
-		</FramedSlide>
-		<FramedSlide part="context" section="research-methodology" title="Base of research methodology">
-			Sir Francis Bacon?<br />
-			Find the paper!
-		</FramedSlide>
-		<FramedSlide part="context" section="grades" title="Invention of Grades">
-			Yale - see the happiness lab podcast
-		</FramedSlide>
-		<FramedSlide part="context" section="planetary-boundaries" title="Planetary Boundaries">
-			<img
-				src="https://www.stockholmresilience.org/images/200.1283cdff1a0ad97c666a37/1790600427312/PB_2026.png"
-				alt="Planetary Boundaries"
-				class="shadow-base-shadow h-fit w-fit self-center rounded-4xl shadow-lg"
-			/>
-			{#snippet footerRight()}
-				<div class="text-right text-xl">
-					Link:
-					<a
-						href="https://www.stockholmresilience.org/research/planetary-boundaries.html"
-						class="link link-animated"
-					>
-						🌐 https://www.stockholmresilience.org
-					</a>
-				</div>
-			{/snippet}
-		</FramedSlide>
-		<FramedSlide part="context" section="stress" title="Regenerative approach">
-			<img
-				src="/teachingengagement/stress-interconnection.png"
-				alt="Interconnection of Stress"
-				class="shadow-base-shadow h-fit w-3/4 self-center rounded-4xl shadow-lg"
-			/>
-			{#snippet footerRight()}
-				<div class="text-right text-xl">
-					Link:
-					<a href="https://www.regenerators.co" class="link link-animated">
-						🌐 Regenerators Academy, Laura Storm
-					</a>
-				</div>
-			{/snippet}
-		</FramedSlide>
-	</section>
+	<!-- <section> -->
+	<FramedSlide part="context" section="applications" title="Applications">
+		<img
+			src={`/teachingengagement/${themeRuntime.mode === 'light' ? 'applications-light.png' : 'applications-dark.png'}`}
+			alt="Business Case"
+			class="shadow-base-shadow h-fit w-3/4 self-center rounded-4xl shadow-lg"
+		/>
+	</FramedSlide>
+	<FramedSlide part="context" section="research" title="Research">
+		<img
+			src="/teachingengagement/business-case.png"
+			alt="Business Case"
+			class="shadow-base-shadow h-fit w-3/4 self-center rounded-4xl shadow-lg"
+		/>
+	</FramedSlide>
+	<FramedSlide part="context" section="cheese" title="Cheese or holes?">
+		I was trained to see the wholes in the cheese<br />
+		Mindset of scarcity<br />
+		Only growth can move us on.<br />
+		3 industrial research projects<br />
+		4 start-ups<br />
+		Example: LED lighting leads Rebound effect
+	</FramedSlide>
+	<FramedSlide part="context" section="planetary-boundaries" title="Planetary Boundaries">
+		<img
+			src="https://www.stockholmresilience.org/images/200.1283cdff1a0ad97c666a37/1790600427312/PB_2026.png"
+			alt="Planetary Boundaries"
+			class="shadow-base-shadow h-fit w-fit self-center rounded-4xl shadow-lg"
+		/>
+		{#snippet footerRight()}
+			<div class="text-right text-xl">
+				Link:
+				<a
+					href="https://www.stockholmresilience.org/research/planetary-boundaries.html"
+					class="link link-animated"
+				>
+					🌐 https://www.stockholmresilience.org
+				</a>
+			</div>
+		{/snippet}
+	</FramedSlide>
+	<FramedSlide part="context" section="stress" title="Interconnected stress">
+		<img
+			src="/teachingengagement/stress-interconnection.png"
+			alt="Interconnection of Stress"
+			class="shadow-base-shadow h-fit w-3/4 self-center rounded-4xl shadow-lg"
+		/>
+		{#snippet footerRight()}
+			<div class="text-right text-xl">
+				Link:
+				<a href="https://www.regenerators.co" class="link link-animated">
+					🌐 Regenerators Academy, Laura Storm
+				</a>
+			</div>
+		{/snippet}
+	</FramedSlide>
+	<FramedSlide part="context" section="grades" title="History">
+		<div class="flex h-full flex-col justify-around gap-4">
+			<div
+				class="bg-secondary text-secondary-content shadow-base-shadow flex h-fit gap-2 rounded-4xl p-6 shadow-inner"
+			>
+				<dl>
+					<dt>Invention of Grading</dt>
+					<dd>1785: Yale University</dd>
+				</dl>
+				<dl>
+					<dt>Scarcity of positions (Oxford / Cambridge)</dt>
+					<dd>1800 - 1900: from patronage to merit</dd>
+					<dd>From apprenticeship to power-over dynamics</dd>
+				</dl>
+			</div>
+
+			<iframe
+				class="shadow-base-shadow w-full self-center rounded-4xl shadow-lg"
+				title=""
+				data-testid="embed-iframe"
+				style="border-radius:12px"
+				src="https://open.spotify.com/embed/episode/54y6QqXOFMOcFn0vOkj32B?utm_source=generator&si=469510dd65bb4afd"
+				width="100%"
+				height="352"
+				frameBorder="0"
+				allowfullscreen={false}
+				allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+				loading="lazy"
+			></iframe>
+			<div
+				class="bg-secondary text-secondary-content shadow-base-shadow flex h-fit w-1/2 flex-col gap-2 rounded-4xl p-6 shadow-inner"
+			>
+				<dl>
+					<dt>
+						Today at <a href="https://goodlifecenter.yale.edu" class="link link-animated"
+							>Yale Good Life Center</a
+						>
+					</dt>
+					<dd>Trying to remove grading</dd>
+				</dl>
+			</div>
+		</div>
+		{#snippet footerRight()}
+			<div class="text-xl">
+				🙏 Thanks to <a
+					href="https://www.cbs.dk/research/departments/department-management-society-and-communication/annemette-kjaergaard"
+					class="link link-animated"
+				>
+					🌐 Annemette Kjærgaard
+				</a>
+			</div>
+		{/snippet}
+	</FramedSlide>
+	<!-- </section> -->
 	<FramedSlide part="context" section="complexity" title="Complexity">
 		<img
 			src="https://www.businessillustrator.com/wp-content/uploads/2025/12/complexity-outside-linear-cube-cartoon_businessillustrator.com_1200px-600x314.png.webp"
 			alt="Reality strikes back - cartoon"
-			class="shadow-base-shadow h-fit w-4/5 self-center rounded-4xl shadow-lg"
+			class="shadow-base-shadow h-fit w-3/5 self-center rounded-4xl shadow-lg"
 		/>
 		<iframe
-			class="shadow-base-shadow w-4/5 self-center rounded-4xl shadow-lg"
+			class="shadow-base-shadow w-3/5 self-center rounded-4xl shadow-lg"
 			title="The Story of the Chinese Farmer - Allan Watts"
 			data-testid="embed-iframe"
 			style="border-radius:12px"
 			src="https://open.spotify.com/embed/track/5QTIGUgV4eFrg0o3k8lGTp?utm_source=generator&si=7bc38a38196f43c5"
 			width="100%"
-			height="352"
+			height="80"
 			frameBorder="0"
 			allowfullscreen={false}
 			allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
@@ -947,6 +1061,14 @@
 	<FramedSlide part="context" section="change" title="Change?">
 		Do you want to see change in the world?<br />
 		Results of change
+		{#snippet footerRight()}
+			<div class="text-right text-xl">
+				🤔 Inspired by <a
+					href="https://www.linkedin.com/in/jacob-rask-b4b805139/"
+					class="link link-animated">Jacob Rask</a
+				>
+			</div>
+		{/snippet}
 	</FramedSlide>
 	<FramedSlide>
 		<img
@@ -1371,6 +1493,14 @@
 		Invitation for doing it as homework - and I'd be happy to hold space for what come sup in you<br
 		/>
 		Session around bonfire!
+		{#snippet footerRight()}
+			<div class="text-right text-xl">
+				🤔 Inspired by <a
+					href="https://www.linkedin.com/in/jacob-rask-b4b805139/"
+					class="link link-animated">Jacob Rask</a
+				>
+			</div>
+		{/snippet}
 	</FramedSlide>
 	<FramedSlide part="comments-and-questions" hideProgressBar>
 		{#if commentsQuestion}
