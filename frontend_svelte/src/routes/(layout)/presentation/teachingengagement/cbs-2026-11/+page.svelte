@@ -143,6 +143,8 @@
 
 	const themeRuntime = getContext<ThemeRuntimeContext>(FSSB23_THEME_KEY);
 
+	let businessCaseImage: HTMLImageElement | undefined = $state();
+
 	let qrCodeModalsHidden: Record<string, boolean> = $state({
 		names: true,
 		map: true, // TBD: change to false after developing
@@ -398,15 +400,15 @@
 				{
 					icon: 'bi:bar-chart',
 					title: 'Results'
-				}
+				},
 				// {
 				// 	icon: 'ci:star',
 				// 	title: 'Present Moment'
 				// },
-				// {
-				// 	icon: 'glyphs:books-bold',
-				// 	title: 'Inspiration'
-				// }
+				{
+					icon: 'glyphs:books-bold',
+					title: 'Inspiration'
+				}
 			]}
 		/>
 		<!-- <div class="absolute top-0 right-0 h-[100px] w-[800px]">
@@ -934,18 +936,57 @@
 	</FramedSlide>
 	<FramedSlide part="context" section="research" title="Research">
 		<img
+			bind:this={businessCaseImage}
 			src="/teachingengagement/business-case.png"
 			alt="Business Case"
 			class="shadow-base-shadow h-fit w-3/4 self-center rounded-4xl shadow-lg"
 		/>
+		<div
+			class="fragment fade-in bg-primary-container text-primary-container-content shadow-base-shadow absolute top-3/4 left-1/2 flex h-50 w-150 -translate-x-1/2 -translate-y-1/2 transform items-center justify-center rounded-[50%] text-6xl shadow"
+			{@attach toggleOnFragment(revealInstance!, businessCaseImage, 'opacity-60')}
+		>
+			3 industrial<br />
+			research projects
+		</div>
+		<div
+			class="fragment fade-in bg-primary-container text-primary-container-content shadow-base-shadow absolute top-1/3 left-3/10 flex h-50 w-120 -translate-x-1/2 -translate-y-1/2 transform items-center justify-center rounded-[50%] text-6xl shadow"
+			{@attach toggleOnFragment(revealInstance!, businessCaseImage, 'opacity-60', true)}
+			{@attach toggleOnFragment(revealInstance!, businessCaseImage, 'opacity-30')}
+		>
+			4 start-up<br />
+			companies
+		</div>
+		<div
+			class="fragment fade-in"
+			{@attach toggleOnFragment(revealInstance!, businessCaseImage, 'opacity-30', true)}
+			{@attach toggleOnFragment(revealInstance!, businessCaseImage, 'opacity-10')}
+		>
+			<Icon
+				icon="emojione:cheese-wedge"
+				class="absolute top-1/3 left-7/10 size-130 -translate-x-1/2 -translate-y-1/2 transform text-6xl"
+			/>
+		</div>
 	</FramedSlide>
-	<FramedSlide part="context" section="cheese" title="Cheese or holes?">
-		I was trained to see the wholes in the cheese<br />
-		Mindset of scarcity<br />
-		Only growth can move us on.<br />
-		3 industrial research projects<br />
-		4 start-ups<br />
-		Example: LED lighting leads Rebound effect
+	<FramedSlide part="context" section="rebound" title="Rebound Effect">
+		<div class="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] place-items-center gap-8">
+			<img
+				src={`/teachingengagement/${themeRuntime.mode === 'light' ? 'lightbulb-light.png' : 'lightbulb-dark.png'}`}
+				alt="Light Bulb"
+				class=" h-fit w-1/2 self-center"
+			/>
+			<Icon icon="at-icons:arrow-right" class="size-30 self-center" />
+			<img
+				src={`/teachingengagement/${themeRuntime.mode === 'light' ? 'lightbulb-led-light.png' : 'lightbulb-led-dark.png'}`}
+				alt="Light Bulb"
+				class=" h-fit w-1/2 self-center"
+			/>
+			<div class="label text-8xl">💡 50 W</div>
+			<Icon icon="at-icons:arrow-down-right" class="text-success size-30 self-center" />
+			<div class="label text-8xl">💡 5 W</div>
+			<div class="label text-8xl">🌍 2.8 TWh</div>
+			<Icon icon="gravity-ui:equal" class="text-error size-30 self-center" />
+			<div class="label text-8xl">🌍 ~3 TWh</div>
+		</div>
 	</FramedSlide>
 	<FramedSlide part="context" section="planetary-boundaries" title="Planetary Boundaries">
 		<img
@@ -961,6 +1002,24 @@
 					class="link link-animated"
 				>
 					🌐 https://www.stockholmresilience.org
+				</a>
+			</div>
+		{/snippet}
+	</FramedSlide>
+	<FramedSlide part="context" section="country-overshoot" title="Country Overshoot">
+		<img
+			src="https://overshoot.footprintnetwork.org/content/uploads/2025/12/GFN-Country-Overshoot-Day-2026_Smallest.jpg"
+			alt="Country Overshoot Days"
+			class="shadow-base-shadow h-fit w-fit self-center rounded-4xl shadow-lg"
+		/>
+		{#snippet footerRight()}
+			<div class="text-right text-xl">
+				Link:
+				<a
+					href="https://overshoot.footprintnetwork.org/newsroom/country-overshoot-days/"
+					class="link link-animated"
+				>
+					🌐 https://overshoot.footprintnetwork.org/newsroom/country-overshoot-days/
 				</a>
 			</div>
 		{/snippet}
@@ -1280,7 +1339,7 @@
 			class="shadow-base-shadow h-fit w-3/4 self-center rounded-4xl shadow-lg"
 		/>
 	</FramedSlide>
-	<FramedSlide part="results" section="master-course" title="Results: technical">
+	<FramedSlide part="results" title="Results: technical">
 		<div class="flex w-full items-center gap-4 px-10 pb-32">
 			{#snippet circularIcon(label: string)}
 				<div
@@ -1297,7 +1356,7 @@
 						class="border-primary shadow-base-shadow flex h-15 w-15 flex-shrink-0 shrink items-center justify-center rounded-full border-4 bg-transparent shadow-lg"
 					>
 						<Icon
-							class="text-primary-container  size-8"
+							class="text-primary-container size-8"
 							icon="fluent-emoji-high-contrast:thinking-face"
 						/>
 					</div>
