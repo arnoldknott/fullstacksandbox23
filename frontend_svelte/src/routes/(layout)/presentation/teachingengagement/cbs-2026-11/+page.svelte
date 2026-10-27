@@ -1125,8 +1125,24 @@
 		{/snippet}
 	</FramedSlide>
 	<FramedSlide part="context" section="change" title="Change?">
-		Do you want to see change in the world?<br />
-		Results of change
+		<div class="label text-9xl font-bold">
+			Who wants <br /> <span class="invisible">to</span> change?
+		</div>
+		<div
+			class="fragment base-content-variant bg-base-300 shadow-base-shadow absolute top-1/10 left-0 m-5 rounded-[50%] p-15 shadow"
+		>
+			What change <br />do you want to <br />see in the world?
+		</div>
+		<div
+			class="fragment base-content-variant bg-base-300 shadow-base-shadow absolute top-1/10 left-7/10 m-5 rounded-[50%] p-15 shadow"
+		>
+			What qualities <br />does change reveal<br />in a better world?
+		</div>
+		<div
+			class="fragment base-content-variant bg-base-300 shadow-base-shadow absolute top-6/10 left-0 m-5 rounded-[50%] p-15 shadow"
+		>
+			How would you like us<br /> to leave the world to<br />the next 1-7 generations?
+		</div>
 		{#snippet footerRight()}
 			<div class="text-right text-xl">
 				🤔 Inspired by <a
@@ -1554,6 +1570,9 @@
 		Regnerative Educatorship in The Netherlands<br />
 	</FramedSlide>
 	<FramedSlide part="inspiration" section="change" title="Change?">
+		<div class="label text-9xl font-bold">
+			Who wants <br /> <span class="fragment">to</span> change?
+		</div>
 		Who wants (to) change?<br />
 		Yes / no here.<br />
 		Invitation for doing it as homework - and I'd be happy to hold space for what come sup in you<br
@@ -1570,7 +1589,7 @@
 	</FramedSlide>
 	<FramedSlide part="comments-and-questions" hideProgressBar>
 		{#if commentsQuestion}
-			<Comments socketio={socketioComments} />
+			<Comments socketio={socketioComments} {presenterMode} />
 		{:else}
 			{@render interactiveElementNotAvailable('comments and questions dialog')}
 		{/if}

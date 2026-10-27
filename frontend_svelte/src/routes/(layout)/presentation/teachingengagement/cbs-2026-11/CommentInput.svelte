@@ -13,7 +13,7 @@
 		bookId,
 		name = $bindable(''),
 		text = $bindable(''),
-		label = 'Do you have comments or questions?',
+		label = '✍️ Type your inputs here...',
 		onsubmit,
 		oncancel
 	}: {
@@ -63,7 +63,7 @@
 					submit();
 				}
 			}}></textarea>
-		<label class="textarea-filled-label" for={inputId}>{label}</label>
+		<label class="textarea-filled-label text-xl" for={inputId}>{label}</label>
 	</div>
 	<div class="text-right">
 		{#if oncancel}
