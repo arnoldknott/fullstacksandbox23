@@ -84,6 +84,14 @@
 			alt: 'Sangild, Torben (2024). Følelsernes bog. Zetland Bøger. ISBN: 9788793761513.'
 		},
 		{
+			id: 'factfulness',
+			title: 'Factfulness',
+			author: 'Hans Rosling',
+			link: 'https://www.saxo.com/dk/factfulness_hans-rosling_paperback_9781473637467?srsltid=AU7gw4VUMGLlJwDFGpm9CB0BqwfhpbGGh32d2SVGPz0rieyHDQ9KdeuT',
+			image: 'https://imgcdn.saxo.com/_9781473637467',
+			alt: "Rosling, Hans, & Rosling, Ola, & Rönnlund, Anna (2018). Factfulness: Ten Reasons We're Wrong About the World – and Why Things Are Better Than You Think. Flatiron Books. ISBN: 9781473637467."
+		},
+		{
 			id: 'loving-what-is',
 			title: 'Loving what is',
 			author: 'Byron Katie',
