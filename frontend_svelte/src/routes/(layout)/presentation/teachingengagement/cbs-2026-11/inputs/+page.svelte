@@ -178,7 +178,7 @@
 			<Icon icon="tabler:chevron-right" class="size-6" />
 		</button>
 		<button
-			class="btn btn-text btn-circle text-secondary btn-sm mx-2"
+			class="btn btn-text btn-circle text-secondary btn-sm"
 			aria-label="Ask a question or leave a comment"
 			title="Ask a question or leave a comment"
 			onclick={() => (showQuestionInput = !showQuestionInput)}
@@ -186,7 +186,7 @@
 			<Icon icon="fluent-emoji-high-contrast:exclamation-question-mark" class="size-6" />
 		</button>
 		<button
-			class="btn btn-text btn-circle text-secondary btn-sm mx-2"
+			class="btn btn-text btn-circle text-secondary btn-sm mr-2"
 			aria-label="Change your name"
 			title="Change your name"
 			onclick={() => (showNameInput = !showNameInput)}
