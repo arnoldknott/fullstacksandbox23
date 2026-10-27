@@ -1537,13 +1537,11 @@
 	<FramedSlide part="results" section="emotional" title="Results: emotional">
 		<div class="text-[600px]">🫶</div>
 	</FramedSlide>
-	<FramedSlide part="context" section="change-citation" title="Colleague Compliment">
-		citations about change in 10 years
-	</FramedSlide>
 	<FramedSlide part="results" section="colleagues" title="Results: colleagues">
 		6 courses: no degradation <br />
 		1 colleague went to press <br />
-		Citation of encouragement: keep getting hit - because you are shaking the coconut tree
+		Citation of encouragement: keep getting hit - because you are shaking the coconut tree Compliment:
+		citations about change in 10 years
 	</FramedSlide>
 	<FramedSlide part="results" section="inner-development" title="Results: reflection">
 		integrity, meaningful, inner growth, strength, resilience, connectedness to nature and lots of

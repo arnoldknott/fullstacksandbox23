@@ -23,8 +23,8 @@
 	let lastRequestedState: string | undefined;
 
 	const slideInputs: Record<string, InputQuestion> = {
-		'checkin-map': 'cbs-places',
-		'inspiration-books': 'cbs-books',
+		'context-map': 'cbs-places',
+		inspiration: 'cbs-books',
 		'comments-and-questions': 'cbs-comments'
 	};
 
