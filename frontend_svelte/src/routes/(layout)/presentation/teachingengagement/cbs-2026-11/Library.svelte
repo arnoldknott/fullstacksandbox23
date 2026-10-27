@@ -140,6 +140,14 @@
 			alt: 'Raworth, Kate (2018). Doughnut Economics: Seven Ways to Think Like a 21st-Century Economist. Random House Business Books. ISBN: 9781847941398.'
 		},
 		{
+			id: 'in-love-with-future',
+			title: 'How to fall in love with the future',
+			author: 'Rob Hopkins',
+			link: 'https://www.saxo.com/dk/how-to-fall-in-love-with-the-future_bog_9781915294517?srsltid=AYCX9vIWJ2kb4SoNryya8xXIlKdDV7M-d9iLKS2Sx3S2pR7UfT52WJD0',
+			image: 'https://imgcdn.saxo.com/_9781915294517',
+			alt: "Hopkins, Rob (2025). How to Fall in Love with the Future: A Time Traveller's Guide to Changing the World. Chelsea Green Publishing UK. ISBN: 9781915294517."
+		},
+		{
 			id: 'reinventing-organizations',
 			title: 'Reinventing Organizations',
 			author: 'Frederic Laloux',
