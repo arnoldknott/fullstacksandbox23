@@ -65,7 +65,7 @@
 			}}></textarea>
 		<label class="textarea-filled-label text-xl" for={inputId}>{label}</label>
 	</div>
-	<div class="text-right">
+	<div class="-mt-3 text-right">
 		{#if oncancel}
 			<button
 				type="button"
