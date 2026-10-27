@@ -4,6 +4,7 @@
 	import { type SocketIO } from '$lib/socketio.svelte';
 	import type { MessageExtended } from '$lib/types';
 
+	import CommentAnswer from './CommentAnswer.svelte';
 	import CommentInput from './CommentInput.svelte';
 	let { socketio }: { socketio?: SocketIO<MessageExtended> } = $props();
 
@@ -21,7 +22,7 @@
 		<CommentInput {socketio} bind:name />
 	</div>
 
-	{#snippet messageAnswer(name: string, text: string, date: Date | undefined, index: number)}
+	<!-- {#snippet messageAnswer(name: string, text: string, date: Date | undefined, index: number)}
 		<div class="chat chat-receiver">
 			<div
 				class="chat-bubble text-left text-wrap break-words {index % 2
@@ -42,17 +43,24 @@
 				</div>
 			</div>
 		</div>
-	{/snippet}
+	{/snippet} -->
 	<div class="heading mt-8">
 		<div class="mx-5 grid max-h-[600px] grid-cols-3 gap-6 overflow-y-auto">
 			{#each commentsAnswersSorted as answer, index (answer.id)}
 				<div animate:flip={{ duration: 300 }}>
-					{@render messageAnswer(
+					<!-- {@render messageAnswer(
 						answer.confidential || 'Anonymous',
 						answer.content,
 						answer.creation_date,
 						index
-					)}
+					)} -->
+					<CommentAnswer
+						name={answer.confidential || 'Anonymous'}
+						date={answer.creation_date}
+						{index}
+					>
+						{answer.content}
+					</CommentAnswer>
 				</div>
 			{/each}
 		</div>

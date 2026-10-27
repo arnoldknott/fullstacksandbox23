@@ -924,6 +924,13 @@
 			alt="Business Case"
 			class="shadow-base-shadow h-fit w-3/4 self-center rounded-4xl shadow-lg"
 		/>
+		{#snippet footerRight()}
+			<div class="text-right text-xl">
+				Picture created by 🤖 <a href="https://chat.openai.com" class="link link-animated"
+					>ChatGPT</a
+				>
+			</div>
+		{/snippet}
 	</FramedSlide>
 	<FramedSlide part="context" section="research" title="Research">
 		<img
