@@ -79,7 +79,7 @@
 		// },
 		{
 			part: 'comments-and-questions',
-			title: 'Thank you 🙏'
+			title: '🙏 Thank you'
 		}
 	];
 	const progressBarItems: ProgressBarItem[] = content.filter(
