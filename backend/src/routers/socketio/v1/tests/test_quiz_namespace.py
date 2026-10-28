@@ -374,6 +374,69 @@ class TestMessage(BaseSocketIOTest):
     _test_data_update = message_update_data
     _parent_model = Question
 
+    @pytest.mark.anyio
+    @pytest.mark.parametrize("public_action", [Action.write, Action.read])
+    async def test_anonymous_submit_update_requires_public_write(
+        self, socketio_test_client, public_action
+    ):
+        connection = await socketio_test_client(client_config=self.client_config())
+        await connection.connect()
+        await connection.client.emit(
+            "submit",
+            {
+                "payload": {**one_test_message},
+                "access_policies": [{"public": True, "action": public_action.value}],
+            },
+            namespace=self.namespace_path,
+        )
+        await connection.client.sleep(0.5)
+        created = next(
+            status
+            for status in connection.responses("status", self.namespace_path)
+            if status.get("success") == "created"
+        )
+        resource_id = UUID(created["id"])
+        await connection.client.emit(
+            "submit",
+            {"payload": {"id": str(resource_id), **message_update_data}},
+            namespace=self.namespace_path,
+        )
+        await connection.client.sleep(0.5)
+
+        statuses = connection.responses("status", self.namespace_path)
+        updated_status = {"success": "updated", "id": str(resource_id)}
+        if public_action == Action.write:
+            assert updated_status in statuses
+            transferred = connection.responses("transferred", self.namespace_path)[-1]
+            assert transferred["id"] == str(resource_id)
+            for key, value in message_update_data.items():
+                assert transferred[key] == value
+        else:
+            assert updated_status not in statuses
+            assert any(status.get("error") for status in statuses)
+
+        async with MessageCRUD() as crud:
+            stored = await crud.read_by_id(resource_id)
+            expected = (
+                message_update_data
+                if public_action == Action.write
+                else one_test_message
+            )
+            for key, value in expected.items():
+                assert getattr(stored, key) == value
+            logs = await crud.logging_crud.read(
+                resource_id=resource_id,
+                action=Action.write,
+                required_action=Action.read,
+            )
+            if public_action == Action.write:
+                assert len(logs) == 1
+                assert logs[0].identity_id is None
+                assert logs[0].status_code == 200
+            else:
+                assert logs == []
+        await connection.client.disconnect()
+
     # Submit Create Tests
     @pytest.mark.anyio
     @pytest.mark.parametrize(
