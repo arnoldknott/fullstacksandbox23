@@ -669,7 +669,7 @@
 		<FramedSlide part="context" section="courses" title="Courses">
 			<div class="flex h-full flex-col justify-around gap-4">
 				<div
-					class="bg-secondary text-secondary-content shadow-base-shadow flex h-fit flex-col gap-2 rounded-4xl p-6 shadow-inner"
+					class="bg-secondary text-secondary-content shadow-base-shadow flex h-fit flex-col gap-2 rounded-4xl p-5 shadow-inner"
 				>
 					<div class="text-center text-5xl font-bold">2nd semester</div>
 					<dl>
@@ -680,7 +680,7 @@
 					</dl>
 				</div>
 				<div
-					class="bg-secondary text-secondary-content shadow-base-shadow flex h-fit flex-col gap-2 rounded-4xl p-6 shadow-inner"
+					class="bg-secondary text-secondary-content shadow-base-shadow flex h-fit flex-col gap-2 rounded-4xl p-5 shadow-inner"
 				>
 					<div class="text-center text-5xl font-bold">4th semester</div>
 					<dl>
@@ -690,7 +690,7 @@
 					</dl>
 				</div>
 				<div
-					class="bg-secondary text-secondary-content shadow-base-shadow flex h-fit flex-col gap-2 rounded-4xl p-6 shadow-inner"
+					class="bg-secondary text-secondary-content shadow-base-shadow flex h-fit flex-col gap-2 rounded-4xl p-5 shadow-inner"
 				>
 					<div class="text-center text-5xl font-bold">Master level</div>
 					<dl>
@@ -983,9 +983,13 @@
 			<div class="label text-8xl">💡 50 W</div>
 			<Icon icon="at-icons:arrow-down-right" class="text-success size-30 self-center" />
 			<div class="label text-8xl">💡 5 W</div>
-			<div class="label text-8xl">🌍 2.8 TWh</div>
-			<Icon icon="gravity-ui:equal" class="text-error size-30 self-center" />
-			<div class="label text-8xl">🌍 ~3 TWh</div>
+			<div class="fragment label text-8xl" data-fragment-index="0">🌍 2.8 TWh</div>
+			<Icon
+				icon="gravity-ui:equal"
+				class="fragment text-error size-30 self-center"
+				data-fragment-index="0"
+			/>
+			<div class="fragment label text-8xl" data-fragment-index="0">🌍 ~3 TWh</div>
 		</div>
 	</FramedSlide>
 	<FramedSlide part="context" section="planetary-boundaries" title="Planetary Boundaries">
@@ -1071,7 +1075,7 @@
 			</div>
 		{/snippet}
 	</FramedSlide>
-	<FramedSlide part="context" section="change" title="Change?">
+	<FramedSlide part="context" section="change" title="Outer change?">
 		<div class="label text-9xl font-bold">
 			Who wants <br /> <span class="invisible">to</span> change?
 		</div>
@@ -1089,6 +1093,9 @@
 			class="fragment base-content-variant bg-base-300 shadow-base-shadow absolute top-6/10 left-0 m-5 rounded-[50%] p-15 shadow"
 		>
 			How would you like us<br /> to leave the world to<br />the next 1-7 generations?
+		</div>
+		<div class="fragment absolute top-6/10 left-8/10">
+			<Icon icon="emojione-monotone:globe-with-meridians" class="text-success text-[250px]" />
 		</div>
 		{#snippet footerRight()}
 			<div class="text-right text-xl">
@@ -1168,9 +1175,164 @@
 				/>{/if}
 		{/snippet}
 	</FramedSlide>
+	<FramedSlide part="inspiration" section="law" title="Law">
+		<div
+			class="bg-secondary text-secondary-content shadow-base-shadow shadow-base-shadow m-5 grid grid-cols-[500px_1fr] gap-6 rounded-4xl p-6 shadow"
+		>
+			<div class="label col-span-2 text-8xl">Eksamensbekendtgørelesen</div>
+			<div class="label text-[200px]">
+				<Icon icon="fa6-solid:section" class="mr-0 inline size-[200px]" />11
+			</div>
+			<div class="text-left text-[70px]">
+				All elements of the education <br /> finish with an exam.
+			</div>
+		</div>
+	</FramedSlide>
 	<FramedSlide part="inspiration" section="others" title="What are others doing?">
-		Tobias at ETH<br />
-		Regnerative Educatorship in The Netherlands<br />
+		<div class="grid h-full grid-cols-2 gap-6">
+			<div
+				class="bg-secondary text-secondary-content shadow-base-shadow flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-6 text-4xl shadow-inner"
+			>
+				<div class="text-center text-5xl font-bold">Arnolds encounters</div>
+				<ul class="list-disc space-y-2">
+					<li>
+						<a
+							href="https://www.cbs.dk/research/departments/department-management-society-and-communication/annemette-kjaergaard"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Annemette Kjærgaard</a
+						>, Copenhagen Business School
+					</li>
+					<li>
+						<a
+							href="https://www.cefu.dk/emner/om-cefu/forskere/noemi-katznelson.aspx"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Noemi Katznelson</a
+						>, Aalborg University
+					</li>
+					<li>
+						<a
+							href="https://www.regenerative-educators.com/theartofregenerativeeducatorship"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Regenerative Educatorship</a
+						>, The Netherlands/Belgium
+					</li>
+					<li>
+						<a
+							href="https://www.jacobrask.dk"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Jacob Rask</a
+						>, Roskilde University
+					</li>
+					<li>
+						<a
+							href="https://www.keg.lu.se/en/vasna-ramasar"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Vasna Ramasar</a
+						>, Lund University
+					</li>
+					<li>
+						<a
+							href="https://ibi.ethz.ch/en/das-institut/people/person-detail.tobias-luthe.html"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Tobias Luthe</a
+						>, ETH Zürich
+					</li>
+					<li>
+						<a
+							href="https://www.opheinonen.com/bio"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Olli-Pekka Heinonen</a
+						>, International Baccalaureate
+					</li>
+				</ul>
+			</div>
+			<div
+				class="bg-secondary text-secondary-content shadow-base-shadow flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-6 text-4xl shadow-inner"
+			>
+				<div class="text-center text-5xl font-bold">Selected sources from Annemette</div>
+				<ul class="list-disc space-y-2">
+					<li>
+						<a
+							href="https://www.alfiekohn.org"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Alfie Kohn</a
+						>, Author and Educator
+					</li>
+					<li>
+						<a
+							href="https://www.emich.edu/cob/faculty/j_beatty.php"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Joy Beatty</a
+						>, Eastern Michigan University
+					</li>
+					<li>
+						<a
+							href="https://profiles.ucl.ac.uk/52741-stuart-tannock/publications"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Stuart Tannock</a
+						>, University College London
+					</li>
+					<li>
+						<a
+							href="https://link.springer.com/article/10.1007/s10459-009-9211-1"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Casey B. White</a
+						>, University of Michigan Medical School
+					</li>
+					<li>
+						<a
+							href="https://www.tandfonline.com/doi/full/10.1080/0309877X.2019.1619073"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Chris McMorran</a
+						>, National University of Singapore
+					</li>
+					<li>
+						<a
+							href="https://academic.oup.com/academicmedicine/article-abstract/84/5/655/8353384?redirectedFrom=fulltext"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Robert A. Bloodgood</a
+						>, University of Virginia School of Medicine
+					</li>
+					<li>
+						<a
+							href="https://www.mayoclinicproceedings.org/article/S0025-6196(11)61250-0/abstract"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Daniel E. Rohe</a
+						>, Mayo Clinic
+					</li>
+					<li>
+						<a
+							href="https://www.tandfonline.com/doi/full/10.1080/13562510902757260"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Lars O. Dahlgren</a
+						>, Linköping University
+					</li>
+					<li>
+						<a
+							href="https://www.tandfonline.com/doi/full/10.3109/0142159X.2012.652243"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Faysal Altahawi</a
+						>, Case Western Reserve University
+					</li>
+				</ul>
+			</div>
+		</div>
 	</FramedSlide>
 	<FramedSlide part="inspiration" title="Motivation">
 		<div class="mx-5 grid grid-cols-3 gap-10">
@@ -1422,10 +1584,16 @@
 			{@render circularIcon('Closing')}
 		</div>
 		<div class="grid h-3/4">
-			<div class="fragment fade-in-then-out col-start-1 row-start-1 mt-30">
+			<!-- <div class="fragment fade-in-then-out col-start-1 row-start-1 mt-30">
 				<ChatBubble variant="secondary" tailAngle={160} tailLength={35} tailBase={15}>
 					<div class="text-4xl font-bold">No "deadlines" ☠️<br />only "living lines" 🌱.</div>
 				</ChatBubble>
+			</div> -->
+			<div
+				class="fragment fade-in-then-out bg-primary-container text-primary-container-content shadow-base-shadow absolute top-1/2 left-1/2 col-start-1 row-start-1 mt-30 flex h-50 w-150 -translate-x-1/2 -translate-y-1/2 transform items-center justify-center rounded-[50%] text-5xl font-bold shadow"
+			>
+				No "deadlines" ☠️<br />
+				only "living lines" 🌱!
 			</div>
 			<div class="fragment col-start-1 row-start-1">
 				<CardOverlay
@@ -1548,17 +1716,136 @@
 		</FramedSlide>
 	{/each}
 	<FramedSlide part="results" section="emotional" title="Results: emotional">
-		<div class="text-[600px]">🫶</div>
+		<div class="flex min-h-screen items-center justify-center">
+			<Icon icon="fluent-emoji-flat:heart-hands" class="h-[600px] w-[600px]" />
+		</div>
 	</FramedSlide>
 	<FramedSlide part="results" section="colleagues" title="Results: colleagues">
-		6 courses: no degradation <br />
-		1 colleague went to press <br />
-		Citation of encouragement: keep getting hit - because you are shaking the coconut tree Compliment:
-		citations about change in 10 years
+		<div class="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] place-items-center gap-8">
+			<div
+				class="fragment fade-out bg-secondary text-secondary-content shadow-base-shadow flex h-fit flex-col gap-2 rounded-4xl p-5 shadow-inner"
+				data-fragment-index="0"
+			>
+				<dl>
+					<dt>Interviewed colleagues</dt>
+					<dd>from 6 follow-up courses</dd>
+					<dd>where my courses are prerequisites</dd>
+				</dl>
+			</div>
+			<Icon
+				icon="at-icons:arrow-right"
+				class="fragment fade-out size-30 self-center"
+				data-fragment-index="0"
+			/>
+			<div
+				class="fragment fade-out bg-secondary text-secondary-content shadow-base-shadow flex h-fit flex-col gap-2 rounded-4xl p-5 shadow-inner"
+				data-fragment-index="0"
+			>
+				<dl>
+					<dt>No indication that students know less</dt>
+					<dd>all pleased with students preparation</dd>
+				</dl>
+			</div>
+			<div
+				class="fragment fade-in-then-out bg-primary text-primary-content shadow-base-shadow 3 absolute col-span-3 flex h-fit flex-col gap-2 rounded-4xl p-5 shadow-inner"
+				data-fragment-index="0"
+			>
+				<dl>
+					<dt>One colleage went anonymously to press</dt>
+					<dd>screenshots of my teaching material</dd>
+					<dd>judges: "bad videos" and "incomprehensible exercises"</dd>
+					<dd>
+						🗞️ Ingeniøren: <a
+							href="https://ing.dk/artikel/dtu-drops-exams-students-can-decide-themselves-if-they-have-passed"
+							target="_blank"
+							rel="noopener noreferrer">DTU drops exams</a
+						>
+					</dd>
+				</dl>
+			</div>
+			<div class="fragment fade-in absolute col-span-3 w-full" data-fragment-index="2">
+				<ChatBubble variant="secondary" class="p-8" tailAngle={130} tailLength={100} tailBase={40}>
+					<div class="mt-5 mb-3 text-5xl italic">
+						🥥 "You are getting hit, because you shake the coconut tree. And in a way I wish you to
+						get hit, because it means you are not loosing ground, you continue to crack the nut."<br
+						/>
+					</div>
+					Christèle Galpin, cofounding manager,
+					<a href="https://www.alfalfaz.com/en/home/" target="_blank" rel="noopener noreferrer"
+						>Alfalfaz</a
+					>*
+				</ChatBubble>
+			</div>
+		</div>
+		{#snippet footerRight()}
+			<div class="fragment text-right text-xl" data-fragment-index="2">
+				* Christèle and I are "travel companions" on the <a
+					href="https://www.regenerators.co"
+					target="_blank"
+					rel="noopener noreferrer"
+					>Regenerative Leadership Journey 2026
+				</a>
+				by Laura Storm
+			</div>
+		{/snippet}
 	</FramedSlide>
 	<FramedSlide part="results" section="inner-development" title="Results: reflection">
-		integrity, meaningful, inner growth, strength, resilience, connectedness to nature and lots of
-		power; consider removing - or put up in a way of story telling.
+		<div class=" flex flex-wrap justify-center gap-5 px-10">
+			<div
+				class="bg-primary-container text-primary-container-content shadow-base-shadow m-5 flex h-fit w-fit items-center justify-center rounded-[50%] p-10 text-5xl font-bold shadow"
+			>
+				Integrity
+			</div>
+			<div
+				class="bg-primary-container text-primary-container-content shadow-base-shadow m-5 flex h-fit w-fit items-center justify-center rounded-[50%] p-10 text-5xl font-bold shadow"
+			>
+				Meaning
+			</div>
+			<div
+				class="bg-primary-container text-primary-container-content shadow-base-shadow m-5 flex h-fit w-fit items-center justify-center rounded-[50%] p-10 text-5xl font-bold shadow"
+			>
+				Resilience
+			</div>
+			<div
+				class="bg-primary-container text-primary-container-content shadow-base-shadow m-5 flex h-fit w-fit items-center justify-center rounded-[50%] p-10 text-5xl font-bold shadow"
+			>
+				Inner <br /> Growth
+			</div>
+			<div
+				class="bg-primary-container text-primary-container-content shadow-base-shadow m-5 flex h-fit w-fit items-center justify-center rounded-[50%] p-10 text-5xl font-bold shadow"
+			>
+				Connection <br /> to Nature
+			</div>
+			<div
+				class="bg-primary-container text-primary-container-content shadow-base-shadow m-5 flex h-fit w-fit items-center justify-center rounded-[50%] p-10 text-5xl font-bold shadow"
+			>
+				Strength
+			</div>
+			<div
+				class="bg-primary-container text-primary-container-content shadow-base-shadow m-5 flex h-fit w-fit items-center justify-center rounded-[50%] p-10 text-5xl font-bold shadow"
+			>
+				Time
+			</div>
+			<div
+				class="bg-primary-container text-primary-container-content shadow-base-shadow m-5 flex h-fit w-fit items-center justify-center rounded-[50%] p-10 text-5xl font-bold shadow"
+			>
+				No more <br />reports
+			</div>
+		</div>
+		<div class="fragment fade-in w-full" data-fragment-index="2">
+			<ChatBubble variant="secondary" tailAngle={210} tailLength={80} tailBase={40}>
+				<div class="mt-5 mb-3 text-5xl italic">
+					<Icon icon="mdi:autorenew" class="mr-2 inline-block size-4" /> "You are the person, that I have
+					seen <br />
+					changing most over the last 10 years."
+				</div>
+				<a
+					href="https://www.dtu.dk/english/person/tiberiu-gabriel-zsurzsan?id=62516&entity=profile"
+					target="_blank"
+					rel="noopener noreferrer">Tiberiu Gabriel Zsurzsan</a
+				>, close colleague
+			</ChatBubble>
+		</div>
 	</FramedSlide>
 	<FramedSlide>
 		<img
@@ -1567,15 +1854,31 @@
 			class="shadow-base-shadow h-fit w-3/4 self-center rounded-4xl shadow-lg"
 		/>
 	</FramedSlide>
-	<FramedSlide part="inner-change" title="Change?" hideProgressBar>
+	<FramedSlide part="inner-change" title="Inner change?" hideProgressBar>
 		<div class="label text-9xl font-bold">
 			Who wants <br /> <span class="fragment">to</span> change?
 		</div>
-		Who wants (to) change?<br />
-		Yes / no here.<br />
-		Invitation for doing it as homework - and I'd be happy to hold space for what come sup in you<br
-		/>
-		Session around bonfire!
+		<div
+			class="fragment base-content-variant bg-base-300 shadow-base-shadow absolute top-1/10 left-0 m-5 rounded-[50%] p-15 shadow"
+		>
+			How can you connect deeper to your inner nature?
+		</div>
+		<div
+			class="fragment base-content-variant bg-base-300 shadow-base-shadow absolute top-1/10 left-7/10 m-5 rounded-[50%] p-15 shadow"
+		>
+			What can you start doing today,<br />
+			to love yourself more?
+		</div>
+		<div
+			class="fragment base-content-variant bg-base-300 shadow-base-shadow absolute top-7/10 left-0 m-5 rounded-[50%] p-15 shadow"
+		>
+			How are you affected by the <br />
+			coloniality of the last 1-7 generations?
+		</div>
+		<div class="fragment absolute top-6/10 left-8/10">
+			<Icon icon="andrsrxn:playing-heart" class="text-error text-[250px]" />
+		</div>
+		<!-- Session around bonfire! -->
 		{#snippet footerRight()}
 			<div class="text-right text-xl">
 				🤔 Inspired by <a
