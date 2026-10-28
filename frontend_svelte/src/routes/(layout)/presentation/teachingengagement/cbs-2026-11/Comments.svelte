@@ -23,7 +23,10 @@
 <div class="flex min-h-0 w-full flex-1 flex-col px-5">
 	<div class="w-full shrink-0 text-left">
 		<div class="heading mb-6 flex w-full justify-between text-6xl">
-			<div>⁉️ Do you have comments or questions? <br />📚 Which books do you want me to read?</div>
+			<div class="flex flex-col">
+				<span class="mb-5">⁉️ Do you have comments or questions?</span>
+				<span>📚 Which books do you want me to read?</span>
+			</div>
 			{#if presenterMode}
 				<button
 					type="button"

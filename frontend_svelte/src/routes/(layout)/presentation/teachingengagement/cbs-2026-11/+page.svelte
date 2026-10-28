@@ -1888,6 +1888,13 @@
 			</div>
 		{/snippet}
 	</FramedSlide>
+	<FramedSlide>
+		<img
+			src="/sunset-vejlesoen.jpg"
+			alt="Sunset Vejlesøen"
+			class="shadow-base-shadow h-fit w-3/4 self-center rounded-4xl shadow-lg"
+		/>
+	</FramedSlide>
 	<FramedSlide part="comments-and-questions" hideProgressBar>
 		{#if commentsQuestion}
 			<Comments socketio={socketioComments} {presenterMode} />
@@ -1905,13 +1912,6 @@
 		planetary boundaries -> inner work -> trust<br />
 		stressed people -> stressed systems -> stressed planet (from regenerative leadership)
 	</FramedSlide> -->
-	<FramedSlide>
-		<img
-			src="/sunset-vejlesoen.jpg"
-			alt="Sunset Vejlesøen"
-			class="shadow-base-shadow h-fit w-3/4 self-center rounded-4xl shadow-lg"
-		/>
-	</FramedSlide>
 	<FramedSlide part="terms-and-conditions">
 		<TermsAndConditions presentationMode />
 		{#if returnToSlide}
