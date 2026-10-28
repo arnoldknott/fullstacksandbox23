@@ -1000,7 +1000,7 @@
 		/>
 		{#snippet footerRight()}
 			<div class="text-right text-xl">
-				Link:
+				Source:
 				<a
 					href="https://www.stockholmresilience.org/research/planetary-boundaries.html"
 					class="link link-animated"
@@ -1018,7 +1018,7 @@
 		/>
 		{#snippet footerRight()}
 			<div class="text-right text-xl">
-				Link:
+				Source:
 				<a
 					href="https://overshoot.footprintnetwork.org/newsroom/country-overshoot-days/"
 					class="link link-animated"
@@ -1036,10 +1036,10 @@
 		/>
 		{#snippet footerRight()}
 			<div class="text-right text-xl">
-				Link:
+				Source:
 				<a href="https://www.regenerators.co" class="link link-animated">
-					🌐 Regenerators Academy, Laura Storm
-				</a>
+					🌐 Regenerators Academy
+				</a> by Laura Storm
 			</div>
 		{/snippet}
 	</FramedSlide>
