@@ -394,21 +394,21 @@
 				// 	title: 'Before'
 				// },
 				{
+					icon: 'glyphs:books-bold',
+					title: 'Inspiration'
+				},
+				{
 					icon: 'carbon:development',
 					title: 'Implementation'
 				},
 				{
 					icon: 'bi:bar-chart',
 					title: 'Results'
-				},
+				}
 				// {
 				// 	icon: 'ci:star',
 				// 	title: 'Present Moment'
 				// },
-				{
-					icon: 'glyphs:books-bold',
-					title: 'Inspiration'
-				}
 			]}
 		/>
 		<!-- <div class="absolute top-0 right-0 h-[100px] w-[800px]">
@@ -1039,59 +1039,6 @@
 			</div>
 		{/snippet}
 	</FramedSlide>
-	<FramedSlide part="context" section="grades" title="History">
-		<div class="flex h-full flex-col justify-around gap-4">
-			<div
-				class="bg-secondary text-secondary-content shadow-base-shadow flex h-fit gap-2 rounded-4xl p-6 shadow-inner"
-			>
-				<dl>
-					<dt>Invention of Grading</dt>
-					<dd>1785: Yale University</dd>
-				</dl>
-				<dl>
-					<dt>Scarcity of positions (Oxford / Cambridge)</dt>
-					<dd>1800 - 1900: from patronage to merit</dd>
-					<dd>From apprenticeship to power-over dynamics</dd>
-				</dl>
-			</div>
-
-			<iframe
-				class="shadow-base-shadow w-full self-center rounded-4xl shadow-lg"
-				title=""
-				data-testid="embed-iframe"
-				style="border-radius:12px"
-				src="https://open.spotify.com/embed/episode/54y6QqXOFMOcFn0vOkj32B?utm_source=generator&si=469510dd65bb4afd"
-				width="100%"
-				height="352"
-				frameBorder="0"
-				allowfullscreen={false}
-				allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-				loading="lazy"
-			></iframe>
-			<div
-				class="bg-secondary text-secondary-content shadow-base-shadow flex h-fit w-1/2 flex-col gap-2 rounded-4xl p-6 shadow-inner"
-			>
-				<dl>
-					<dt>
-						Today at <a href="https://goodlifecenter.yale.edu" class="link link-animated"
-							>Yale Good Life Center</a
-						>
-					</dt>
-					<dd>Trying to remove grading</dd>
-				</dl>
-			</div>
-		</div>
-		{#snippet footerRight()}
-			<div class="text-xl">
-				🙏 Thanks to <a
-					href="https://www.cbs.dk/research/departments/department-management-society-and-communication/annemette-kjaergaard"
-					class="link link-animated"
-				>
-					🌐 Annemette Kjærgaard
-				</a>
-			</div>
-		{/snippet}
-	</FramedSlide>
 	<!-- </section> -->
 	<FramedSlide part="context" section="complexity" title="Complexity">
 		<img
@@ -1159,7 +1106,73 @@
 			class="shadow-base-shadow h-fit w-3/4 self-center rounded-4xl shadow-lg"
 		/>
 	</FramedSlide>
-	<FramedSlide part="implementation" title="Motivation">
+	<FramedSlide part="inspiration" section="grades" title="History">
+		<div class="flex h-full flex-col justify-around gap-4">
+			<div
+				class="bg-secondary text-secondary-content shadow-base-shadow flex h-fit gap-2 rounded-4xl p-6 shadow-inner"
+			>
+				<dl>
+					<dt>Invention of Grading</dt>
+					<dd>1785: Yale University</dd>
+				</dl>
+				<dl>
+					<dt>Scarcity of positions (Oxford / Cambridge)</dt>
+					<dd>1800 - 1900: from patronage to merit</dd>
+					<dd>From apprenticeship to power-over dynamics</dd>
+				</dl>
+			</div>
+
+			<iframe
+				class="shadow-base-shadow w-full self-center rounded-4xl shadow-lg"
+				title=""
+				data-testid="embed-iframe"
+				style="border-radius:12px"
+				src="https://open.spotify.com/embed/episode/54y6QqXOFMOcFn0vOkj32B?utm_source=generator&si=469510dd65bb4afd"
+				width="100%"
+				height="352"
+				frameBorder="0"
+				allowfullscreen={false}
+				allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+				loading="lazy"
+			></iframe>
+			<div
+				class="bg-secondary text-secondary-content shadow-base-shadow flex h-fit w-1/2 flex-col gap-2 rounded-4xl p-6 shadow-inner"
+			>
+				<dl>
+					<dt>
+						Today at <a href="https://goodlifecenter.yale.edu" class="link link-animated"
+							>Yale Good Life Center</a
+						>
+					</dt>
+					<dd>Trying to remove grading</dd>
+				</dl>
+			</div>
+		</div>
+		{#snippet footerRight()}
+			<div class="text-xl">
+				🙏 Thanks to <a
+					href="https://www.cbs.dk/research/departments/department-management-society-and-communication/annemette-kjaergaard"
+					class="link link-animated"
+				>
+					🌐 Annemette Kjærgaard
+				</a>
+			</div>
+		{/snippet}
+	</FramedSlide>
+	<FramedSlide part="inspiration" section="books" title="Literature">
+		<Library socketio={socketioBooks} />
+		{#snippet footerLeft()}
+			{#if booksQuestion && presenterMode}<QrCode
+					url={getInputsUrl(page.url, 'cbs-books')}
+					bind:modalHidden={qrCodeModalsHidden.books}
+				/>{/if}
+		{/snippet}
+	</FramedSlide>
+	<FramedSlide part="inspiration" section="others" title="What are others doing?">
+		Tobias at ETH<br />
+		Regnerative Educatorship in The Netherlands<br />
+	</FramedSlide>
+	<FramedSlide part="inspiration" title="Motivation">
 		<div class="mx-5 grid grid-cols-3 gap-10">
 			<CardOverlay class="bg-primary text-primary-content z-50 pt-6 text-4xl" hidden={false}>
 				<div class="mb-10 text-7xl font-bold">Relatedness</div>
@@ -1193,16 +1206,16 @@
 			<div class="text-right text-xl">📖 Ib Ravn: Selvbestemmelsesteorien</div>
 		{/snippet}
 	</FramedSlide>
-	<FramedSlide part="implementation" section="motivation-examples" title="Motivation: Examples">
+	<FramedSlide part="inspiration" section="motivation-examples" title="Motivation: Examples">
 		<MotivationTable color="secondary" />
 	</FramedSlide>
-	<!-- <FramedSlide>
+	<FramedSlide>
 		<img
 			src="/snow-lake.jpg"
 			alt="Snow Lake"
 			class="shadow-base-shadow h-fit w-3/4 self-center rounded-4xl shadow-lg"
 		/>
-	</FramedSlide> -->
+	</FramedSlide>
 	<FramedSlide part="implementation" title="Inner change">
 		<div class="flex flex-wrap justify-center gap-8">
 			<ChatBubble variant="secondary" tailAngle={100} tailLength={20} tailBase={10}>
@@ -1554,20 +1567,7 @@
 			class="shadow-base-shadow h-fit w-3/4 self-center rounded-4xl shadow-lg"
 		/>
 	</FramedSlide>
-	<FramedSlide part="inspiration">
-		<Library socketio={socketioBooks} />
-		{#snippet footerLeft()}
-			{#if booksQuestion && presenterMode}<QrCode
-					url={getInputsUrl(page.url, 'cbs-books')}
-					bind:modalHidden={qrCodeModalsHidden.books}
-				/>{/if}
-		{/snippet}
-	</FramedSlide>
-	<FramedSlide part="inspiration" section="others" title="What are others doing?">
-		Tobias at ETH<br />
-		Regnerative Educatorship in The Netherlands<br />
-	</FramedSlide>
-	<FramedSlide part="inspiration" section="change" title="Change?">
+	<FramedSlide part="inner-change" title="Change?" hideProgressBar>
 		<div class="label text-9xl font-bold">
 			Who wants <br /> <span class="fragment">to</span> change?
 		</div>
