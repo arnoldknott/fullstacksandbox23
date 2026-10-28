@@ -46,8 +46,8 @@
 				? 'chat-bubble-accent'
 				: 'chat-bubble-primary'}"
 		>
-			<dl class="ml-2!">
-				<dt class="font-semibold italic">{name || 'Anonymous'}:</dt>
+			<dl class="ml-2! text-3xl">
+				<dt class="mb-2 text-4xl font-semibold italic">{name || 'Anonymous'}:</dt>
 				<dd>{@render children()}</dd>
 			</dl>
 			<!-- <div class="label text-right">

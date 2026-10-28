@@ -72,6 +72,7 @@ vi.mock('@floating-ui/dom', () => ({
 }));
 vi.mock('$lib/socketio.svelte', () => ({
 	SocketIO: class {
+		parentId?: string;
 		entities = $state<(QuestionExtended | MessageExtended)[]>([]);
 		pendingEntities = [{ id: 'new_message', content: '', confidential: '' }];
 		client = { on: vi.fn(), disconnect: vi.fn() };
@@ -82,6 +83,7 @@ vi.mock('$lib/socketio.svelte', () => ({
 				submitOnly?: boolean;
 			}
 		) {
+			this.parentId = connection.parentId;
 			mock.configurations.push(configuration);
 			this.entities = configuration.snapshot?.entities ?? [];
 			if (connection.namespace === '/question') mock.state = this;
@@ -457,6 +459,7 @@ describe('Mobile inputs page', () => {
 			}
 			expect(mock.getSelectedEntities).toHaveBeenCalledWith('sortedCommentsAnswers');
 			expect(screen.getByText('An existing question')).toBeInTheDocument();
+			expect(screen.getByLabelText('2 votes')).toBeInTheDocument();
 			expect(screen.getByText('Alex:')).toBeInTheDocument();
 			expect(
 				screen.queryByText(
@@ -478,8 +481,33 @@ describe('Mobile inputs page', () => {
 			expect(await screen.findByText('A new anonymous question')).toBeInTheDocument();
 			expect(screen.getByText('Anonymous:')).toBeInTheDocument();
 			expect(screen.getByText('An updated question')).toBeInTheDocument();
+			expect(screen.getByLabelText('3 votes')).toBeInTheDocument();
 			expect(screen.queryByText('An existing question')).not.toBeInTheDocument();
 			expect(mock.submitted).not.toHaveBeenCalled();
+			await fireEvent.click(screen.getAllByRole('button', { name: '+1' })[1]);
+			expect(mock.submitted).toHaveBeenLastCalledWith(
+				expect.objectContaining({
+					id: comment.id,
+					content: JSON.stringify({ votes: 4, comment: 'An updated question' }),
+					confidential: 'Alex'
+				}),
+				'comments-question'
+			);
+			mock.comments!.entities = [
+				{
+					...comment,
+					content: JSON.stringify({ votes: 4, comment: 'An updated question' })
+				}
+			];
+			await screen.findByLabelText('4 votes');
+			await fireEvent.click(screen.getByRole('button', { name: '-1' }));
+			expect(mock.submitted).toHaveBeenLastCalledWith(
+				expect.objectContaining({
+					id: comment.id,
+					content: JSON.stringify({ votes: 3, comment: 'An updated question' })
+				}),
+				'comments-question'
+			);
 		}
 	);
 

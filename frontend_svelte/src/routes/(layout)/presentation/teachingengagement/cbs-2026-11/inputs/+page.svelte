@@ -13,6 +13,7 @@
 	import CardOverlay from '../CardOverlay.svelte';
 	import CommentAnswer from '../CommentAnswer.svelte';
 	import CommentInput from '../CommentInput.svelte';
+	import { updateVotes } from '../Comments.svelte';
 	import {
 		currentInput,
 		inputEnabled,
@@ -252,7 +253,10 @@
 					<CommentAnswer
 						name={answer.confidential || 'Anonymous'}
 						// date={answer.creation_date}
-						// bind:votes={() => content.votes, (votes) => updateVotes(answer, content.comment, votes)}
+						bind:votes={
+							() => content.votes,
+							(votes) => updateVotes(questionsCommentsSocket, answer, content.comment, votes)
+						}
 						{index}
 					>
 						{content.comment}

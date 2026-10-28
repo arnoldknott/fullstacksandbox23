@@ -1,10 +1,26 @@
+<script module lang="ts">
+	import type { SocketIO } from '$lib/socketio.svelte';
+	import type { MessageExtended } from '$lib/types';
+
+	export function updateVotes(
+		socketio: SocketIO<MessageExtended> | undefined,
+		answer: MessageExtended,
+		comment: string,
+		votes: number
+	) {
+		if (!comment) return;
+		if (!socketio?.parentId) return;
+		socketio.submitEntity(
+			{ ...answer, content: JSON.stringify({ votes, comment }) },
+			socketio.parentId
+		);
+	}
+</script>
+
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import { flip } from 'svelte/animate';
 	import { slide } from 'svelte/transition';
-
-	import { type SocketIO } from '$lib/socketio.svelte';
-	import type { MessageExtended } from '$lib/types';
 
 	import CommentAnswer from './CommentAnswer.svelte';
 	import CommentInput from './CommentInput.svelte';
@@ -18,15 +34,6 @@
 		socketio?.getSelectedEntities('sortedCommentsAnswers') ?? []
 	);
 	let name = $state('');
-
-	const updateVotes = (answer: MessageExtended, comment: string, votes: number) => {
-		if (!comment) return;
-		if (!socketio?.parentId) return;
-		socketio?.submitEntity(
-			{ ...answer, content: JSON.stringify({ votes, comment }) },
-			socketio?.parentId
-		);
-	};
 </script>
 
 <div class="flex min-h-0 w-full flex-1 flex-col px-5">
@@ -99,7 +106,9 @@
 					<CommentAnswer
 						name={answer.confidential || 'Anonymous'}
 						// date={answer.creation_date}
-						bind:votes={() => content.votes, (votes) => updateVotes(answer, content.comment, votes)}
+						bind:votes={
+							() => content.votes, (votes) => updateVotes(socketio, answer, content.comment, votes)
+						}
 						{index}
 					>
 						{content.comment}
