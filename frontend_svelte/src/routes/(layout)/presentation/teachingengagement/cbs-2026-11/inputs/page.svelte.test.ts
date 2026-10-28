@@ -252,7 +252,10 @@ describe('Mobile inputs page', () => {
 		});
 		await fireEvent.click(screen.getByRole('button', { name: 'Send' }));
 		expect(mock.submitted).toHaveBeenLastCalledWith(
-			expect.objectContaining({ content: 'My question', confidential: 'Alex' }),
+			expect.objectContaining({
+				content: JSON.stringify({ votes: 0, comment: 'My question' }),
+				confidential: 'Alex'
+			}),
 			'comments-question'
 		);
 		await fireEvent.click(screen.getByRole('button', { name: 'Previous input' }));
@@ -351,7 +354,10 @@ describe('Mobile inputs page', () => {
 		});
 		await fireEvent.click(screen.getByRole('button', { name: 'Send' }));
 		expect(mock.submitted).toHaveBeenCalledExactlyOnceWith(
-			expect.objectContaining({ content: 'My early question', confidential: 'Alex' }),
+			expect.objectContaining({
+				content: JSON.stringify({ votes: 0, comment: 'My early question' }),
+				confidential: 'Alex'
+			}),
 			'comments-question'
 		);
 		expect(screen.getByRole('textbox', { name: /Type your inputs here/ })).toHaveValue('');
@@ -426,7 +432,7 @@ describe('Mobile inputs page', () => {
 		async (manuallyOpened) => {
 			const comment: MessageExtended = {
 				id: 'existing-comment',
-				content: 'An existing question',
+				content: JSON.stringify({ votes: 2, comment: 'An existing question' }),
 				confidential: 'Alex',
 				language: 'en',
 				creation_date: new Date('2026-10-27T12:00:00Z')
@@ -442,7 +448,7 @@ describe('Mobile inputs page', () => {
 				'creation_date',
 				false
 			);
-			expect(screen.queryByText(comment.content)).not.toBeInTheDocument();
+			expect(screen.queryByText('An existing question')).not.toBeInTheDocument();
 			await fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
 			if (manuallyOpened) {
 				await fireEvent.click(
@@ -450,7 +456,7 @@ describe('Mobile inputs page', () => {
 				);
 			}
 			expect(mock.getSelectedEntities).toHaveBeenCalledWith('sortedCommentsAnswers');
-			expect(screen.getByText(comment.content)).toBeInTheDocument();
+			expect(screen.getByText('An existing question')).toBeInTheDocument();
 			expect(screen.getByText('Alex:')).toBeInTheDocument();
 			expect(
 				screen.queryByText(
@@ -462,13 +468,17 @@ describe('Mobile inputs page', () => {
 			).not.toBeInTheDocument();
 
 			mock.comments!.entities = [
-				{ id: 'live-comment', content: 'A new anonymous question', language: 'en' },
-				{ ...comment, content: 'An updated question' }
+				{
+					id: 'live-comment',
+					content: JSON.stringify({ votes: 0, comment: 'A new anonymous question' }),
+					language: 'en'
+				},
+				{ ...comment, content: JSON.stringify({ votes: 3, comment: 'An updated question' }) }
 			];
 			expect(await screen.findByText('A new anonymous question')).toBeInTheDocument();
 			expect(screen.getByText('Anonymous:')).toBeInTheDocument();
 			expect(screen.getByText('An updated question')).toBeInTheDocument();
-			expect(screen.queryByText(comment.content)).not.toBeInTheDocument();
+			expect(screen.queryByText('An existing question')).not.toBeInTheDocument();
 			expect(mock.submitted).not.toHaveBeenCalled();
 		}
 	);
