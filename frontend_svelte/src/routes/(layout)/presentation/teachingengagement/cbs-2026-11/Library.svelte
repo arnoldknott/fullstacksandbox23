@@ -92,6 +92,14 @@
 			alt: "Rosling, Hans, & Rosling, Ola, & Rönnlund, Anna (2018). Factfulness: Ten Reasons We're Wrong About the World – and Why Things Are Better Than You Think. Flatiron Books. ISBN: 9781473637467."
 		},
 		{
+			id: 'varmluftstrategi',
+			title: 'Varmluftstrategi for begyndere',
+			author: 'Per Helge Sørensen',
+			link: 'https://www.saxo.com/dk/varmluftsstrategi-for-begyndere_per-helge-soerensen_haeftet_9788702288445?srsltid=AYCX9vLINlG4S-ZyWqMMJUBbZlXIZpwn2l1N3ahbNHEyvBxDiMykRLU6',
+			image: 'https://imgcdn.saxo.com/_9788702288445',
+			alt: 'Sørensen, Per Helge (2024). Varmluftstrategi for begyndere. Saxo. ISBN: 9788702288445.'
+		},
+		{
 			id: 'loving-what-is',
 			title: 'Loving what is',
 			author: 'Byron Katie',

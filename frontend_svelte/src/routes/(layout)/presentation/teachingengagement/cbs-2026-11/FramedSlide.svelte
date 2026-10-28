@@ -58,6 +58,11 @@
 		// 	title: 'Before'
 		// },
 		{
+			part: 'inspiration',
+			icon: 'glyphs:books-bold',
+			title: 'Inspiration'
+		},
+		{
 			part: 'implementation',
 			icon: 'carbon:development',
 			title: 'Implementation'
@@ -72,11 +77,6 @@
 		// 	icon: 'ci:star',
 		// 	title: 'Present Moment'
 		// },
-		{
-			part: 'inspiration',
-			icon: 'glyphs:books-bold',
-			title: 'Inspiration'
-		},
 		{
 			part: 'comments-and-questions',
 			title: 'Thank you 🙏'

@@ -24,7 +24,7 @@
 
 	const slideInputs: Record<string, InputQuestion> = {
 		'context-map': 'cbs-places',
-		inspiration: 'cbs-books',
+		'inspiration-books': 'cbs-books',
 		'comments-and-questions': 'cbs-comments'
 	};
 
