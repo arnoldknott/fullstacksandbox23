@@ -245,15 +245,17 @@
 		{:else}
 			<p>This input is unavailable.</p>
 		{/if}
-		<div class="mt-8 max-h-[600px] w-full gap-4 overflow-y-auto">
+		<div class="mt-8 max-h-[600px] w-full gap-4 overflow-y-auto pr-5">
 			{#each commentsAnswersSorted as answer, index (answer.id)}
+				{@const content = JSON.parse(answer.content)}
 				<div animate:flip={{ duration: 300 }}>
 					<CommentAnswer
 						name={answer.confidential || 'Anonymous'}
 						// date={answer.creation_date}
+						// bind:votes={() => content.votes, (votes) => updateVotes(answer, content.comment, votes)}
 						{index}
 					>
-						{answer.content}
+						{content.comment}
 					</CommentAnswer>
 					<!-- <div class="border-base-content/15 border-b p-4">
 					<div class="font-semibold">{answer.confidential || 'Anonymous'}</div>

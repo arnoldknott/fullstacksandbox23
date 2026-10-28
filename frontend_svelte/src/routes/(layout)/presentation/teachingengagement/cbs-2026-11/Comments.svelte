@@ -18,6 +18,15 @@
 		socketio?.getSelectedEntities('sortedCommentsAnswers') ?? []
 	);
 	let name = $state('');
+
+	const updateVotes = (answer: MessageExtended, comment: string, votes: number) => {
+		if (!comment) return;
+		if (!socketio?.parentId) return;
+		socketio?.submitEntity(
+			{ ...answer, content: JSON.stringify({ votes, comment }) },
+			socketio?.parentId
+		);
+	};
 </script>
 
 <div class="flex min-h-0 w-full flex-1 flex-col px-5">
@@ -79,6 +88,7 @@
 	<div class="heading mt-4 min-h-0 flex-1 overflow-y-auto">
 		<div class="grid grid-cols-3 gap-6">
 			{#each commentsAnswersSorted as answer, index (answer.id)}
+				{@const content = JSON.parse(answer.content)}
 				<div animate:flip={{ duration: 300 }}>
 					<!-- {@render messageAnswer(
 						answer.confidential || 'Anonymous',
@@ -89,9 +99,10 @@
 					<CommentAnswer
 						name={answer.confidential || 'Anonymous'}
 						// date={answer.creation_date}
+						bind:votes={() => content.votes, (votes) => updateVotes(answer, content.comment, votes)}
 						{index}
 					>
-						{answer.content}
+						{content.comment}
 					</CommentAnswer>
 				</div>
 			{/each}
