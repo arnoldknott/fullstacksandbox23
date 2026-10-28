@@ -101,7 +101,7 @@ describe('Library comments', () => {
 		expect(pending.confidential).toBe('Alex');
 		expect(socketio.addPendingAccessPolicy).toHaveBeenCalledWith(pending.id, {
 			public: true,
-			action: Action.READ
+			action: Action.WRITE
 		});
 		expect(socketio.submitEntity).toHaveBeenCalledWith(pending, 'books-question', true);
 		expect(socketio.createPending).toHaveBeenCalledOnce();
@@ -144,17 +144,21 @@ describe('Library comments', () => {
 		const textarea = screen.getByRole('textbox', { name: /Type your inputs here/ });
 		await fireEvent.input(textarea, { target: { value: 'My named comment' } });
 		await fireEvent.click(screen.getByRole('button', { name: 'Send' }));
-		expect(pending.content).toBe('My named comment');
+		expect(JSON.parse(pending.content)).toEqual({ votes: 0, comment: 'My named comment' });
 		expect(pending.confidential).toBe('Alex');
+		expect(socketio.addPendingAccessPolicy).toHaveBeenCalledWith(pending.id, {
+			public: true,
+			action: Action.WRITE
+		});
 		await fireEvent.input(screen.getByLabelText('Name:'), { target: { value: '   ' } });
 		await fireEvent.input(textarea, { target: { value: 'My anonymous comment' } });
 		await fireEvent.click(screen.getByRole('button', { name: 'Send' }));
-		expect(pending.content).toBe('My anonymous comment');
+		expect(JSON.parse(pending.content)).toEqual({ votes: 0, comment: 'My anonymous comment' });
 		expect(pending.confidential).toBe('Anonymous');
 		await fireEvent.input(screen.getByLabelText('Name:'), { target: { value: 'Sam' } });
 		await fireEvent.input(textarea, { target: { value: 'Now with my name' } });
 		await fireEvent.click(screen.getByRole('button', { name: 'Send' }));
-		expect(pending.content).toBe('Now with my name');
+		expect(JSON.parse(pending.content)).toEqual({ votes: 0, comment: 'Now with my name' });
 		expect(pending.confidential).toBe('Sam');
 		expect(socketio.submitEntity).toHaveBeenLastCalledWith(pending, 'comments-question', true);
 	});

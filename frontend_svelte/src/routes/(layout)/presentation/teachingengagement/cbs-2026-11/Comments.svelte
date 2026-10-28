@@ -1,10 +1,26 @@
+<script module lang="ts">
+	import type { SocketIO } from '$lib/socketio.svelte';
+	import type { MessageExtended } from '$lib/types';
+
+	export function updateVotes(
+		socketio: SocketIO<MessageExtended> | undefined,
+		answer: MessageExtended,
+		comment: string,
+		votes: number
+	) {
+		if (!comment) return;
+		if (!socketio?.parentId) return;
+		socketio.submitEntity(
+			{ ...answer, content: JSON.stringify({ votes, comment }) },
+			socketio.parentId
+		);
+	}
+</script>
+
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import { flip } from 'svelte/animate';
 	import { slide } from 'svelte/transition';
-
-	import { type SocketIO } from '$lib/socketio.svelte';
-	import type { MessageExtended } from '$lib/types';
 
 	import CommentAnswer from './CommentAnswer.svelte';
 	import CommentInput from './CommentInput.svelte';
@@ -79,6 +95,7 @@
 	<div class="heading mt-4 min-h-0 flex-1 overflow-y-auto">
 		<div class="grid grid-cols-3 gap-6">
 			{#each commentsAnswersSorted as answer, index (answer.id)}
+				{@const content = JSON.parse(answer.content)}
 				<div animate:flip={{ duration: 300 }}>
 					<!-- {@render messageAnswer(
 						answer.confidential || 'Anonymous',
@@ -89,9 +106,12 @@
 					<CommentAnswer
 						name={answer.confidential || 'Anonymous'}
 						// date={answer.creation_date}
+						bind:votes={
+							() => content.votes, (votes) => updateVotes(socketio, answer, content.comment, votes)
+						}
 						{index}
 					>
-						{answer.content}
+						{content.comment}
 					</CommentAnswer>
 				</div>
 			{/each}

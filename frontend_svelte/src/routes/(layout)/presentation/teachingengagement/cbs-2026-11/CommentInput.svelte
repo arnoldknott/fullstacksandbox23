@@ -32,9 +32,11 @@
 	const submit = () => {
 		const pending = socketio?.pendingEntities[0];
 		if (!socketio || !pending || !submissionParentId || !text.trim()) return;
-		pending.content = bookId ? JSON.stringify({ bookdid: bookId, comment: text }) : text;
+		pending.content = bookId
+			? JSON.stringify({ bookdid: bookId, comment: text })
+			: JSON.stringify({ votes: 0, comment: text });
 		pending.confidential = name.trim() || 'Anonymous';
-		socketio.addPendingAccessPolicy(pending.id, { public: true, action: Action.READ });
+		socketio.addPendingAccessPolicy(pending.id, { public: true, action: Action.WRITE });
 		socketio.submitEntity(pending, submissionParentId, true);
 		socketio.createPending();
 		text = '';

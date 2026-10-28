@@ -47,6 +47,8 @@ A stronger grant satisfies checks for every weaker action. Therefore:
 
 In the generic CRUD path, reads require `read`, updates require `write`, and deletion requires `own`. Managing access policies also normally requires effective `own` access to the target resource. Resource-specific code may impose additional requirements; it must not weaken these checks.
 
+When an endpoint or event admits anonymous updates, the target still requires a direct public `write` or `own` policy. Update access logs use an absent `identity_id` for anonymous callers.
+
 ## Identity inheritance
 
 `IdentityHierarchy` relates a parent identity, such as a group, to a child identity, such as a user or subgroup. The edge's `inherit` flag controls permission propagation.

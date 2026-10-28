@@ -80,6 +80,7 @@ message_guards = [
         guards=Guards(
             MicrosoftGuard(scopes=["socketio", "api.write"], roles=["User"]),
             LinkedInGuard(),
+            AllowAnonymous(),
         )(),
     ),
     EventGuard(

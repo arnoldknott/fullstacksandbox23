@@ -775,7 +775,7 @@ class BaseCRUD(
 
     async def update(
         self,
-        current_user: "CurrentUserData",
+        current_user: Optional["CurrentUserData"],
         object_id: uuid.UUID,
         new: BaseSchemaTypeUpdate | SQLModel,
     ) -> BaseModelType:
@@ -809,7 +809,7 @@ class BaseCRUD(
             access_log = AccessLogCreate(
                 resource_id=current.id,
                 action=Action.write,
-                identity_id=current_user.user_id,
+                identity_id=current_user.user_id if current_user else None,
                 status_code=200,
             )
             await self.logging_crud.create(access_log)
@@ -823,11 +823,11 @@ class BaseCRUD(
                 current_id = (
                     getattr(current, "id", None) if "current" in locals() else None  # type: ignore[possibly-undefined]
                 )
-                if current_id and current_user:
+                if current_id:
                     access_log = AccessLogCreate(
                         resource_id=current_id,
                         action=Action.write,
-                        identity_id=current_user.user_id,
+                        identity_id=current_user.user_id if current_user else None,
                         status_code=404,
                     )
                     await self.logging_crud.create(access_log)
