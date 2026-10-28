@@ -68,7 +68,7 @@ beforeEach(() => {
 describe('Presenter controls', () => {
 	test.each([
 		['context-map', 'cbs-presentation-state-places'],
-		['inspiration', 'cbs-presentation-state-books'],
+		['inspiration-books', 'cbs-presentation-state-books'],
 		['comments-and-questions', 'cbs-presentation-state-comments']
 	])('Reset appears after publishing %s from the reset state', async (slideId, nextState) => {
 		const { socketio, showSlide, rerender } = renderControls({
@@ -189,7 +189,7 @@ describe('Presenter controls', () => {
 			expect(socketio.submitEntity).toHaveBeenLastCalledWith(
 				expect.objectContaining({ question: 'cbs-presentation-state-places' })
 			);
-			await showSlide('inspiration');
+			await showSlide('inspiration-books');
 			expect(socketio.submitEntity).toHaveBeenCalledTimes(2);
 			expect(socketio.submitEntity).toHaveBeenLastCalledWith(
 				expect.objectContaining({ question: 'cbs-presentation-state-books' })
