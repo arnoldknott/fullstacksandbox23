@@ -32,7 +32,7 @@
 			{voted ? '-1' : '+1'}
 		</button>
 	</span>
-	{#if votes > -1}
+	{#if votes > 0}
 		<span
 			class="indicator-item badge badge-neutral h-9 w-9 rounded-full text-xl shadow-sm"
 			aria-label={`${votes} ${votes === 1 ? 'vote' : 'votes'}`}
