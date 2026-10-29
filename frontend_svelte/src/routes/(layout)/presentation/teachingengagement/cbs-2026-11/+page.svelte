@@ -23,7 +23,7 @@
 	import Overview from './Overview.svelte';
 	import PresenterControls from './PresenterControls.svelte';
 	import QrCode from './QrCode.svelte';
-	import QualitativeFeedback from './QualitativeFeedback.svelte';
+	// import QualitativeFeedback from './QualitativeFeedback.svelte';
 	import TermsAndConditions from './TermsAndConditions.svelte';
 
 	let { data }: { data: PageData } = $props();
@@ -1113,7 +1113,7 @@
 			class="shadow-base-shadow h-fit w-3/4 self-center rounded-4xl shadow-lg"
 		/>
 	</FramedSlide>
-	<FramedSlide part="inspiration" section="grades" title="History">
+	<FramedSlide part="inspiration" title="History">
 		<div class="flex h-full flex-col justify-around gap-4">
 			<div
 				class="bg-secondary text-secondary-content shadow-base-shadow flex h-fit gap-2 rounded-4xl p-6 shadow-inner"
@@ -1334,7 +1334,7 @@
 			</div>
 		</div>
 	</FramedSlide>
-	<FramedSlide part="inspiration" title="Motivation">
+	<FramedSlide part="inspiration" section="motivation" title="Motivation">
 		<div class="mx-5 grid grid-cols-3 gap-10">
 			<CardOverlay class="bg-primary text-primary-content z-50 pt-6 text-4xl" hidden={false}>
 				<div class="mb-10 text-7xl font-bold">Relatedness</div>
@@ -1707,14 +1707,190 @@
 		Quantitative results: learning, responsibility, meditation, sharing comments
 	</FramedSlide> -->
 	<!-- <div>Summary from 2000+ answers</div> -->
-	<FramedSlide part="results" section="qualitative" title="Results: qualitative">
-		Remember to add data to qualitative feedback question
+	<FramedSlide part="results" section="qualitative-good" title="Results: qualitative">
+		<div class="my-5 grid h-full grid-cols-2 gap-4">
+			<div class="col-span-2">
+				👍 What was good about having the learning reflections <br />instead of other exam forms in
+				this course? (524 answers)
+			</div>
+
+			<div class="h-full overflow-y-scroll">
+				<div
+					class="fragment fade-in bg-secondary text-secondary-content shadow-base-shadow flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-4 text-4xl shadow-inner"
+				>
+					<dl>
+						<dt class="font-bold">Stress</dt>
+						<dd>~2/3: less <span class="italic">stress, anxiety, pressure</span>.</dd>
+						<dd><span class="italic">Healthier mindset</span>; fewer anxiety triggers.</dd>
+						<dd>Frees <span class="italic">mental bandwidth</span> to reflect rather than rush.</dd>
+						<dd>
+							Supports <span class="italic">well-being</span>; learning feels more
+							<span class="italic">sustainable</span>.
+						</dd>
+					</dl>
+				</div>
+				<div
+					class="fragment fade-in bg-secondary text-secondary-content shadow-base-shadow mt-4 flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-4 text-4xl shadow-inner"
+				>
+					<dl>
+						<dt class="font-bold">Deeper learning</dt>
+						<dd>
+							Focus on <span class="italic">understanding</span> and learning rather than cramming an
+							exam.
+						</dd>
+						<dd>
+							Calmer pacing improves <span class="italic">confidence</span> with difficult topics.
+						</dd>
+					</dl>
+				</div>
+				<div
+					class="fragment fade-in bg-secondary text-secondary-content shadow-base-shadow mt-4 flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-4 text-4xl shadow-inner"
+				>
+					<dl>
+						<dt class="font-bold">Freedom to explore</dt>
+						<dd>
+							Encourages <span class="italic">curiosity</span> instead of formula-driven exam preparation.
+						</dd>
+						<dd>
+							Allows <span class="italic">deeper dives</span> into topics of interest.
+						</dd>
+						<dd>
+							Removes <span class="italic">fear</span> of "falling behind".
+						</dd>
+					</dl>
+				</div>
+			</div>
+			<div class="h-full overflow-y-scroll">
+				<div
+					class="fragment fade-in bg-secondary text-secondary-content shadow-base-shadow flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-4 text-4xl shadow-inner"
+				>
+					<dl>
+						<dt class="font-bold">Flexibility</dt>
+						<dd>Own-tempo: easier to <span class="italic">adjust workload</span>.</dd>
+						<dd>
+							<span class="italic">Shift effort</span> between courses possible.
+						</dd>
+						<dd>Frees <span class="italic">mental bandwidth</span> to reflect.</dd>
+						<dd><span class="italic">Autonomy</span> increases enjoyment of content.</dd>
+						<dd>
+							More time to <span class="italic">revisit challenging topics</span>.
+						</dd>
+					</dl>
+				</div>
+				<div
+					class="fragment fade-in bg-secondary text-secondary-content shadow-base-shadow mt-5 flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-4 text-4xl shadow-inner"
+				>
+					<dl>
+						<dt class="font-bold">Reflections support understanding</dt>
+						<dd>Forces <span class="italic">consolidation</span> after each topic.</dd>
+						<dd>
+							<span class="italic">Strengthens memory</span> of new insight.
+						</dd>
+						<dd>
+							Creates <span class="italic">awareness</span> of what is understood.
+						</dd>
+						<dd>
+							Promotes <span class="italic">personal ownership</span>.
+						</dd>
+					</dl>
+				</div>
+				<div
+					class="fragment fade-in bg-secondary text-secondary-content shadow-base-shadow mt-4 flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-4 text-4xl shadow-inner"
+				>
+					<dl>
+						<dt class="font-bold">Course setup</dt>
+						<dd>
+							Structured <span class="italic">e-learning environment</span> appreciated.
+						</dd>
+						<dd>
+							Quizzes provide <span class="italic">small checks without pressure</span>.
+						</dd>
+						<dd>
+							Course <span class="italic">atmosphere</span> perceived as
+							<span class="italic">motivating and friendly</span>.
+						</dd>
+					</dl>
+				</div>
+			</div>
+		</div>
 	</FramedSlide>
-	{#each data.payload.qualitativeFeedbackSnapshot.entities as feedback, idx (idx)}
+	<FramedSlide part="results" section="qualitative-bad" title="Results: qualitative">
+		<div class="my-5 grid h-full grid-cols-2 gap-4">
+			<div class="col-span-2">
+				👎 What was bad about having the learning reflections <br />instead of other exam forms in
+				this course? (508 answers)
+			</div>
+			<div class="h-full overflow-scroll">
+				<div
+					class="fragment fade-in bg-primary text-primary-content shadow-base-shadow flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-4 text-4xl shadow-inner"
+				>
+					<dl>
+						<dt class="font-bold">Motivation drop</dt>
+						<dd>
+							Hard to stay <span class="italic">disciplined</span> when other courses pile up pressure.
+						</dd>
+						<dd>
+							<span class="italic">Momentum weakens</span> during busy periods in
+							<span class="italic">other courses</span>.
+						</dd>
+						<dd>
+							Self-driven learning <span class="italic">feels difficult</span> for part of the group.
+						</dd>
+					</dl>
+				</div>
+				<div
+					class="fragment fade-in bg-primary text-primary-content shadow-base-shadow mt-4 flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-4 text-4xl shadow-inner"
+				>
+					<dl>
+						<dt class="font-bold">Exercise solutions</dt>
+						<dd>
+							Need for <span class="italic">solutions</span> to verify understanding.
+						</dd>
+						<dd>
+							Desire for <span class="italic">mandatory checkpoints</span> to maintain engagement.
+						</dd>
+					</dl>
+				</div>
+			</div>
+			<div class="h-full overflow-scroll">
+				<div
+					class="fragment fade-in bg-primary text-primary-content shadow-base-shadow flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-4 text-4xl shadow-inner"
+				>
+					<dl>
+						<dt class="font-bold">Individual perception</dt>
+						<dd>High <span class="italic">self-discipline</span> differs from person to person.</dd>
+						<dd>
+							Low external pressure reveals who needs <span class="italic">more structure</span>.
+						</dd>
+						<dd>
+							Different preferences between <span class="italic"
+								>media: videos, quizzes, book, lectures</span
+							>.
+						</dd>
+					</dl>
+				</div>
+				<div
+					class="fragment fade-in bg-primary text-primary-content shadow-base-shadow mt-5 flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-4 text-4xl shadow-inner"
+				>
+					<dl>
+						<dt class="font-bold">Experimental</dt>
+						<dd>Feeling of being a "<span class="italic">guinea pig</span>".</dd>
+						<dd>
+							Need for <span class="italic">small guard rails</span>.
+						</dd>
+						<dd>
+							Format works well if <span class="italic">more courses</span> align with same philosophy.
+						</dd>
+					</dl>
+				</div>
+			</div>
+		</div>
+	</FramedSlide>
+	<!-- {#each data.payload.qualitativeFeedbackSnapshot.entities as feedback, idx (idx)}
 		<FramedSlide part="results" section={`qualitative-${idx}`} title="Results: qualitative">
 			<QualitativeFeedback content={feedback.content} />
 		</FramedSlide>
-	{/each}
+	{/each} -->
 	<FramedSlide part="results" section="emotional" title="Results: emotional">
 		<div class="flex min-h-screen items-center justify-center">
 			<Icon icon="fluent-emoji-flat:heart-hands" class="h-[600px] w-[600px]" />
