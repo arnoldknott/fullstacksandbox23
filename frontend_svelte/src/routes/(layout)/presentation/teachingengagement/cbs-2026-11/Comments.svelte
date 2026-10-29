@@ -93,7 +93,7 @@
 		</div>
 	{/snippet} -->
 	<div class="heading mt-4 min-h-0 flex-1 overflow-y-auto">
-		<div class="grid grid-cols-3 gap-6">
+		<div class="grid grid-cols-3 gap-6 pr-5">
 			{#each commentsAnswersSorted as answer, index (answer.id)}
 				{@const content = JSON.parse(answer.content)}
 				<div animate:flip={{ duration: 300 }}>
