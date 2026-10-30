@@ -281,11 +281,6 @@
 		>
 			<div class="text-xl font-semibold">How shall we call you?</div>
 			<NameInput bind:name />
-			<Notification>
-				If you leave it empty, you participate as "Anonymous".<br /> You can change your name at any
-				time clicking the
-				<Icon icon="fa6-solid:user" class="inline size-3" /> button in the upper right corner.
-			</Notification>
 			<!-- <p
 				class="text-base-content-variant label-small bg-base-300 shadow-base-shadow rounded-xl p-2 shadow"
 			>
@@ -297,6 +292,15 @@
 				class="btn btn-primary-container btn-gradient justify-self-end rounded-full"
 				type="submit">Continue</button
 			>
+			<Notification>
+				Leave empty to participate as "Anonymous". Change name at any time clicking the
+				<Icon icon="fa6-solid:user" class="inline size-3" /> button (upper right corner).
+			</Notification>
+			<Notification>
+				Comment or ask a question at any time clicking the
+				<Icon icon="fluent-emoji-high-contrast:exclamation-question-mark" class="inline size-3" /> button
+				(upper right corner).
+			</Notification>
 		</form>
 	{:else if showQuestionInput}
 		{@render questionsComments(true)}

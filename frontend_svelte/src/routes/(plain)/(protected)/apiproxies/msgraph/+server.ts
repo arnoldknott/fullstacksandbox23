@@ -1,4 +1,4 @@
-import { error, type RequestHandler } from '@sveltejs/kit';
+import { error, isHttpError, type RequestHandler } from '@sveltejs/kit';
 
 import { microsoftGraph } from '$lib/server/apis/msgraph';
 
@@ -24,7 +24,8 @@ export const GET: RequestHandler = async ({ locals, url, setHeaders }): Promise<
 			console.error('apiproxies - msgraph - GET - failed');
 			console.log('MS Graph status code: ' + response.status);
 		}
-	} catch {
+	} catch (err) {
+		if (isHttpError(err)) throw err;
 		console.error('apiproxies - msgraph - GET - failed');
 		throw error(500, 'Getting data from Microsoft Graph failed');
 	}

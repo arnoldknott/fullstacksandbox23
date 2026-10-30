@@ -1,4 +1,4 @@
-import { redirect } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 
 import { getRequestEvent } from '$app/server';
 import { IdentityProvider } from '$lib/identityProvider';
@@ -65,10 +65,22 @@ export function redirectToReauthentication(
 	provider: IdentityProvider = IdentityProvider.MICROSOFT
 ): never {
 	let targetUrl = '/';
+	let event: ReturnType<typeof getRequestEvent> | undefined;
 	try {
-		targetUrl = getRequestEvent().url.href;
+		event = getRequestEvent();
+		targetUrl = event.url.href;
 	} catch {
 		// Request context is unavailable in isolated unit tests.
+	}
+	// Fetching a login page cannot complete browser authentication and may overwrite
+	// the active OAuth transaction. Let the client recover from its current URL.
+	if (
+		event &&
+		!event.isDataRequest &&
+		event.request.headers.get('x-sveltekit-action') !== 'true' &&
+		!event.request.headers.get('accept')?.includes('text/html')
+	) {
+		error(401, 'Reauthentication required');
 	}
 	redirect(307, `/login/${provider}?target-url=${encodeURIComponent(targetUrl)}`);
 }

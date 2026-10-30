@@ -315,33 +315,19 @@
 	>
 		{#snippet header()}
 			<div class="text-5xl font-bold">{bookInModal?.title}</div>
+			<br />
+			<div class="flex items-center justify-center gap-2 text-center">
+				<Icon icon="fa-solid:pen-fancy" class="size-4 shrink-0" />
+				<div class="text-3xl font-bold">{bookInModal?.author}</div>
+			</div>
 		{/snippet}
 		<!-- {#if bookInModal} -->
-		<dl class="text-left text-3xl">
+		<!-- <dl class="text-left text-3xl">
 			<dt class="inline-flex items-center gap-2 whitespace-nowrap">
 				<Icon icon="fa-solid:pen-fancy" />Author:
 			</dt>
 			<dd>{bookInModal?.author}</dd>
-		</dl>
-		<dl class="text-left text-3xl">
-			<dt class="inline-flex items-center gap-2 whitespace-nowrap">
-				<Icon icon="akar-icons:link-chain" />Source:
-			</dt>
-			<dd>
-				<a
-					class="link link-animated break-all whitespace-normal"
-					href={bookInModal?.link}
-					target="_blank"
-					rel="noopener noreferrer">{bookInModal?.link}</a
-				>
-			</dd>
-		</dl>
-		<dl class="text-left text-3xl">
-			<dt class="inline-flex items-center gap-2 whitespace-nowrap">
-				<Icon icon="si:quote-line" /> Reference:
-			</dt>
-			<dd>{bookInModal?.alt}</dd>
-		</dl>
+		</dl> -->
 		<dl class="text-left text-3xl">
 			<dt class="inline-flex items-center gap-2 whitespace-nowrap">
 				<Icon icon="fa7-regular:comments" /> Comments:
@@ -401,7 +387,25 @@
 				</div>
 			</dd>
 		</dl>
-
+		<dl class="text-left text-3xl">
+			<dt class="inline-flex items-center gap-2 whitespace-nowrap">
+				<Icon icon="si:quote-line" /> Reference:
+			</dt>
+			<dd>{bookInModal?.alt}</dd>
+		</dl>
+		<dl class="text-left text-3xl">
+			<dt class="inline-flex items-center gap-2 whitespace-nowrap">
+				<Icon icon="akar-icons:link-chain" />Source:
+			</dt>
+			<dd>
+				<a
+					class="link link-animated break-all whitespace-normal"
+					href={bookInModal?.link}
+					target="_blank"
+					rel="noopener noreferrer">{bookInModal?.link}</a
+				>
+			</dd>
+		</dl>
 		<!-- {/if} -->
 	</CardOverlay>
 </div>

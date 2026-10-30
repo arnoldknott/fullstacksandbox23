@@ -9,6 +9,7 @@
 	import { FSSB23_THEME_KEY, type ThemeRuntimeContext } from '$lib/theming';
 	import type { MessageExtended, QuestionExtended } from '$lib/types';
 
+	import DataList from '../DataList.svelte';
 	import type { PageData } from './$types';
 	import CardOverlay from './CardOverlay.svelte';
 	import ChatBubble from './ChatBubble.svelte';
@@ -333,7 +334,7 @@
 	</div>
 {/snippet}
 
-<RevealJs bind:reveal={revealInstance}>
+<RevealJs bind:reveal={revealInstance} options={{ hash: true, fragmentInURL: true }}>
 	<FramedSlide part="welcome" hideProgressBar>
 		<div
 			class="text-base-content-variant flex h-full items-center justify-center text-[200px] font-bold"
@@ -488,14 +489,14 @@
 				</dt>
 				<dd class="mb-4 pl-4">for 1.5 years</dd>
 			</dl>
-			<dl
+			<!-- <dl
 				class="bg-warning-container text-warning-container-content shadow-base-shadow rounded-2xl text-5xl shadow"
 			>
 				<dt class="mt-5 mb-4 font-bold text-nowrap">
 					<Icon icon="fluent-color:warning-28" class="mr-2 inline-block" /> Fun job
 				</dt>
 				<dd class="mb-4 pl-4">worked many hours a week</dd>
-			</dl>
+			</dl> -->
 		</CardOverlay>
 		<CardOverlay
 			class="bg-base-250 text-base-content absolute top-1/2 left-1/2 z-50 w-fit -translate-x-1/2 -translate-y-1/2 pt-6 text-4xl"
@@ -532,14 +533,14 @@
 				<dd class="mb-4 pl-4">good time at CBS!</dd>
 				<dd class="mb-4 pl-4">won a prize</dd>
 			</dl>
-			<dl
+			<!-- <dl
 				class="bg-warning-container text-warning-container-content shadow-base-shadow rounded-2xl text-5xl shadow"
 			>
 				<dt class="mt-5 mb-4 font-bold text-nowrap">
 					<Icon icon="fluent-color:warning-28" class="mr-2 inline-block" /> Two part time contracts
 				</dt>
 				<dd class="mb-4 pl-4">Two times 3/4 of full time</dd>
-			</dl>
+			</dl> -->
 		</CardOverlay>
 		<CardOverlay
 			class="bg-base-250 text-base-content absolute top-1/2 left-1/2 z-50 w-fit -translate-x-1/2 -translate-y-1/2 pt-6 text-4xl"
@@ -562,13 +563,13 @@
 				<dd class="mb-4 pl-4">4 start-up companies</dd>
 				<dd class="mb-4 pl-4">2 courses</dd>
 			</dl>
-			<dl
+			<!-- <dl
 				class="bg-warning-container text-warning-container-content shadow-base-shadow rounded-2xl text-5xl shadow"
 			>
 				<dt class="mt-5 mb-4 font-bold text-nowrap">
 					<Icon icon="fluent-color:warning-28" class="mr-2 inline-block" /> Meetings / Courses / Supervision
 				</dt>
-			</dl>
+			</dl> -->
 		</CardOverlay>
 		<!-- TBD: make it a bang here? -->
 		<CardOverlay
@@ -586,14 +587,13 @@
 				<dd class="mb-4 pl-4">Hiking and outdoor activities</dd>
 				<!-- <dd class="mb-4 pl-4">Amplifiers</dd> -->
 			</dl>
-
-			<dl
+			<!-- <dl
 				class="bg-success-container text-success-container-content shadow-base-shadow rounded-2xl text-5xl shadow"
 			>
 				<dt class="mt-5 mb-4 font-bold text-nowrap">
 					<Icon icon="fluent-color:checkmark-circle-32" class="mr-2 inline-block" /> Batteries refilled
 				</dt>
-			</dl>
+			</dl> -->
 		</CardOverlay>
 		<CardOverlay
 			class="bg-base-250 text-base-content absolute top-1/2 left-1/2 z-50 w-fit -translate-x-1/2 -translate-y-1/2 pt-6 text-4xl"
@@ -1188,160 +1188,6 @@
 			</div>
 		</div>
 	</FramedSlide>
-	<FramedSlide part="inspiration" section="others" title="What are others doing?">
-		<div class="grid h-full grid-cols-2 gap-6">
-			<div
-				class="bg-secondary text-secondary-content shadow-base-shadow flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-6 text-4xl shadow-inner"
-			>
-				<div class="text-center text-5xl font-bold">Arnolds encounters</div>
-				<ul class="list-disc space-y-2">
-					<li>
-						<a
-							href="https://www.cbs.dk/research/departments/department-management-society-and-communication/annemette-kjaergaard"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Annemette Kjærgaard</a
-						>, Copenhagen Business School
-					</li>
-					<li>
-						<a
-							href="https://www.cefu.dk/emner/om-cefu/forskere/noemi-katznelson.aspx"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Noemi Katznelson</a
-						>, Aalborg University
-					</li>
-					<li>
-						<a
-							href="https://rflect.ch/"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">rflect.ch</a
-						>, Switzerland
-					</li>
-					<li>
-						<a
-							href="https://www.regenerative-educators.com/theartofregenerativeeducatorship"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Regenerative Educatorship</a
-						>, The Netherlands/Belgium
-					</li>
-					<li>
-						<a
-							href="https://www.jacobrask.dk"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Jacob Rask</a
-						>, Roskilde University
-					</li>
-					<li>
-						<a
-							href="https://www.keg.lu.se/en/vasna-ramasar"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Vasna Ramasar</a
-						>, Lund University
-					</li>
-					<li>
-						<a
-							href="https://ibi.ethz.ch/en/das-institut/people/person-detail.tobias-luthe.html"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Tobias Luthe</a
-						>, ETH Zürich
-					</li>
-					<li>
-						<a
-							href="https://www.opheinonen.com/bio"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Olli-Pekka Heinonen</a
-						>, International Baccalaureate
-					</li>
-				</ul>
-			</div>
-			<div
-				class="bg-secondary text-secondary-content shadow-base-shadow flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-6 text-4xl shadow-inner"
-			>
-				<div class="text-center text-5xl font-bold">Selected sources from Annemette</div>
-				<ul class="list-disc space-y-2">
-					<li>
-						<a
-							href="https://www.alfiekohn.org"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Alfie Kohn</a
-						>, Author and Educator
-					</li>
-					<li>
-						<a
-							href="https://www.emich.edu/cob/faculty/j_beatty.php"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Joy Beatty</a
-						>, Eastern Michigan University
-					</li>
-					<li>
-						<a
-							href="https://profiles.ucl.ac.uk/52741-stuart-tannock/publications"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Stuart Tannock</a
-						>, University College London
-					</li>
-					<li>
-						<a
-							href="https://link.springer.com/article/10.1007/s10459-009-9211-1"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Casey B. White</a
-						>, University of Michigan Medical School
-					</li>
-					<li>
-						<a
-							href="https://www.tandfonline.com/doi/full/10.1080/0309877X.2019.1619073"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Chris McMorran</a
-						>, National University of Singapore
-					</li>
-					<li>
-						<a
-							href="https://academic.oup.com/academicmedicine/article-abstract/84/5/655/8353384?redirectedFrom=fulltext"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Robert A. Bloodgood</a
-						>, University of Virginia School of Medicine
-					</li>
-					<li>
-						<a
-							href="https://www.mayoclinicproceedings.org/article/S0025-6196(11)61250-0/abstract"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Daniel E. Rohe</a
-						>, Mayo Clinic
-					</li>
-					<li>
-						<a
-							href="https://www.tandfonline.com/doi/full/10.1080/13562510902757260"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Lars O. Dahlgren</a
-						>, Linköping University
-					</li>
-					<li>
-						<a
-							href="https://www.tandfonline.com/doi/full/10.3109/0142159X.2012.652243"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Faysal Altahawi</a
-						>, Case Western Reserve University
-					</li>
-				</ul>
-			</div>
-		</div>
-	</FramedSlide>
 	<FramedSlide part="inspiration" section="motivation" title="Motivation">
 		<div class="mx-5 grid grid-cols-3 gap-10">
 			<CardOverlay class="bg-primary text-primary-content z-50 pt-6 text-4xl" hidden={false}>
@@ -1716,115 +1562,101 @@
 	</FramedSlide> -->
 	<!-- <div>Summary from 2000+ answers</div> -->
 	<FramedSlide part="results" section="qualitative-good" title="Results: qualitative">
-		<div class="my-5 grid h-full grid-cols-2 gap-4">
-			<div class="col-span-2">
+		<div class="my-5 grid h-full grid-cols-2 grid-rows-[auto_minmax(0,1fr)] gap-4">
+			<div class="col-span-2 min-h-0">
 				👍 What was good about having the learning reflections <br />instead of other exam forms in
 				this course? (524 answers)
 			</div>
-
 			<div class="h-full overflow-y-scroll">
 				<div
 					class="fragment fade-in bg-secondary text-secondary-content shadow-base-shadow flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-4 text-4xl shadow-inner"
 				>
-					<dl>
-						<dt class="font-bold">Stress</dt>
-						<dd>~2/3: less <span class="italic">stress, anxiety, pressure</span>.</dd>
-						<dd><span class="italic">Healthier mindset</span>; fewer anxiety triggers.</dd>
-						<dd>Frees <span class="italic">mental bandwidth</span> to reflect rather than rush.</dd>
-						<dd>
-							Supports <span class="italic">well-being</span>; learning feels more
-							<span class="italic">sustainable</span>.
-						</dd>
-					</dl>
+					<DataList
+						title="~2/3: less stress, more well-being"
+						content={[
+							'less <span class="italic">stress, anxiety, pressure</span>.',
+							'<span class="italic">Healthier mindset</span>; fewer anxiety triggers.',
+							'Frees <span class="italic">mental bandwidth</span> to reflect rather than rush.',
+							'Supports <span class="italic">well-being</span>; learning feels more <span class="italic">sustainable</span>.'
+						]}
+						color="secondary"
+					/>
 				</div>
 				<div
 					class="fragment fade-in bg-secondary text-secondary-content shadow-base-shadow mt-4 flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-4 text-4xl shadow-inner"
 				>
-					<dl>
-						<dt class="font-bold">Deeper learning</dt>
-						<dd>
-							Focus on <span class="italic">understanding</span> and learning rather than cramming an
-							exam.
-						</dd>
-						<dd>
-							Calmer pacing improves <span class="italic">confidence</span> with difficult topics.
-						</dd>
-					</dl>
+					<DataList
+						title="~1/2: deeper learning"
+						content={[
+							'Focus on <span class="italic">understanding</span> and learning rather than cramming an exam.',
+							'Calmer pacing improves <span class="italic">confidence</span> with difficult topics.'
+						]}
+						color="secondary"
+					/>
 				</div>
 				<div
 					class="fragment fade-in bg-secondary text-secondary-content shadow-base-shadow mt-4 flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-4 text-4xl shadow-inner"
 				>
-					<dl>
-						<dt class="font-bold">Freedom to explore</dt>
-						<dd>
-							Encourages <span class="italic">curiosity</span> instead of formula-driven exam preparation.
-						</dd>
-						<dd>
-							Allows <span class="italic">deeper dives</span> into topics of interest.
-						</dd>
-						<dd>
-							Removes <span class="italic">fear</span> of "falling behind".
-						</dd>
-					</dl>
+					<DataList
+						title="Freedom to explore"
+						content={[
+							'Encourages <span class="italic">curiosity</span> instead of formula-driven exam preparation.',
+							'Allows <span class="italic">deeper dives</span> into topics of interest.',
+							'Removes <span class="italic">fear</span> of "falling behind".'
+						]}
+						color="secondary"
+					/>
 				</div>
 			</div>
 			<div class="h-full overflow-y-scroll">
 				<div
 					class="fragment fade-in bg-secondary text-secondary-content shadow-base-shadow flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-4 text-4xl shadow-inner"
 				>
-					<dl>
-						<dt class="font-bold">Flexibility</dt>
-						<dd>Own-tempo: easier to <span class="italic">adjust workload</span>.</dd>
-						<dd>
-							<span class="italic">Shift effort</span> between courses possible.
-						</dd>
-						<dd>Frees <span class="italic">mental bandwidth</span> to reflect.</dd>
-						<dd><span class="italic">Autonomy</span> increases enjoyment of content.</dd>
-						<dd>
-							More time to <span class="italic">revisit challenging topics</span>.
-						</dd>
-					</dl>
+					<DataList
+						title="Flexibility"
+						content={[
+							'Own-tempo: easier to <span class="italic">adjust workload</span>.',
+							'<span class="italic">Shift effort</span> between courses possible.',
+							'Frees <span class="italic">mental bandwidth</span> to reflect.',
+							'<span class="italic">Autonomy</span> increases enjoyment of content.',
+							'More time to <span class="italic">revisit challenging topics</span>.'
+						]}
+						color="secondary"
+					/>
 				</div>
 				<div
 					class="fragment fade-in bg-secondary text-secondary-content shadow-base-shadow mt-5 flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-4 text-4xl shadow-inner"
 				>
-					<dl>
-						<dt class="font-bold">Reflections support understanding</dt>
-						<dd>Forces <span class="italic">consolidation</span> after each topic.</dd>
-						<dd>
-							<span class="italic">Strengthens memory</span> of new insight.
-						</dd>
-						<dd>
-							Creates <span class="italic">awareness</span> of what is understood.
-						</dd>
-						<dd>
-							Promotes <span class="italic">personal ownership</span>.
-						</dd>
-					</dl>
+					<DataList
+						title="Reflections support understanding"
+						content={[
+							'Forces <span class="italic">consolidation</span> after each topic.',
+							'<span class="italic">Strengthens memory</span> of new insight.',
+							'Creates <span class="italic">awareness</span> of what is understood.',
+							'Promotes <span class="italic">personal ownership</span>.'
+						]}
+						color="secondary"
+					/>
 				</div>
 				<div
 					class="fragment fade-in bg-secondary text-secondary-content shadow-base-shadow mt-4 flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-4 text-4xl shadow-inner"
 				>
-					<dl>
-						<dt class="font-bold">Course setup</dt>
-						<dd>
-							Structured <span class="italic">e-learning environment</span> appreciated.
-						</dd>
-						<dd>
-							Quizzes provide <span class="italic">small checks without pressure</span>.
-						</dd>
-						<dd>
-							Course <span class="italic">atmosphere</span> perceived as
-							<span class="italic">motivating and friendly</span>.
-						</dd>
-					</dl>
+					<DataList
+						title="Course setup"
+						content={[
+							'Structured <span class="italic">e-learning environment</span> appreciated.',
+							'Quizzes provide <span class="italic">small checks without pressure</span>.',
+							'Course <span class="italic">atmosphere</span> perceived as <span class="italic">motivating and friendly</span>.'
+						]}
+						color="secondary"
+					/>
 				</div>
 			</div>
 		</div>
 	</FramedSlide>
 	<FramedSlide part="results" section="qualitative-bad" title="Results: qualitative">
-		<div class="my-5 grid h-full grid-cols-2 gap-4">
-			<div class="col-span-2">
+		<div class="my-5 grid h-full grid-cols-2 grid-rows-[auto_minmax(0,1fr)] gap-4">
+			<div class="col-span-2 min-h-0">
 				👎 What was bad about having the learning reflections <br />instead of other exam forms in
 				this course? (508 answers)
 			</div>
@@ -1832,64 +1664,51 @@
 				<div
 					class="fragment fade-in bg-primary text-primary-content shadow-base-shadow flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-4 text-4xl shadow-inner"
 				>
-					<dl>
-						<dt class="font-bold">Motivation drop</dt>
-						<dd>
-							Hard to stay <span class="italic">disciplined</span> when other courses pile up pressure.
-						</dd>
-						<dd>
-							<span class="italic">Momentum weakens</span> during busy periods in
-							<span class="italic">other courses</span>.
-						</dd>
-						<dd>
-							Self-driven learning <span class="italic">feels difficult</span> for part of the group.
-						</dd>
-					</dl>
+					<DataList
+						title="Motivation drop"
+						content={[
+							'Hard to stay <span class="italic">disciplined</span> when other courses pile up pressure.',
+							'<span class="italic">Momentum weakens</span> during busy periods in <span class="italic">other courses</span>.',
+							'Self-driven learning <span class="italic">feels difficult</span> for part of the group.'
+						]}
+					/>
 				</div>
 				<div
 					class="fragment fade-in bg-primary text-primary-content shadow-base-shadow mt-4 flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-4 text-4xl shadow-inner"
 				>
-					<dl>
-						<dt class="font-bold">Exercise solutions</dt>
-						<dd>
-							Need for <span class="italic">solutions</span> to verify understanding.
-						</dd>
-						<dd>
-							Desire for <span class="italic">mandatory checkpoints</span> to maintain engagement.
-						</dd>
-					</dl>
+					<DataList
+						title="Exercise solutions"
+						content={[
+							'Need for <span class="italic">solutions</span> to verify understanding.',
+							'Desire for <span class="italic">mandatory checkpoints</span> to maintain engagement.'
+						]}
+					/>
 				</div>
 			</div>
 			<div class="h-full overflow-scroll">
 				<div
 					class="fragment fade-in bg-primary text-primary-content shadow-base-shadow flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-4 text-4xl shadow-inner"
 				>
-					<dl>
-						<dt class="font-bold">Individual perception</dt>
-						<dd>High <span class="italic">self-discipline</span> differs from person to person.</dd>
-						<dd>
-							Low external pressure reveals who needs <span class="italic">more structure</span>.
-						</dd>
-						<dd>
-							Different preferences between <span class="italic"
-								>media: videos, quizzes, book, lectures</span
-							>.
-						</dd>
-					</dl>
+					<DataList
+						title="Individual perception"
+						content={[
+							'High <span class="italic">self-discipline</span> differs from person to person.',
+							'Low external pressure reveals who needs <span class="italic">more structure</span>.',
+							'Different preferences between <span class="italic">media: videos, quizzes, book, lectures</span>.'
+						]}
+					/>
 				</div>
 				<div
 					class="fragment fade-in bg-primary text-primary-content shadow-base-shadow mt-5 flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-4 text-4xl shadow-inner"
 				>
-					<dl>
-						<dt class="font-bold">Experimental</dt>
-						<dd>Feeling of being a "<span class="italic">guinea pig</span>".</dd>
-						<dd>
-							Need for <span class="italic">small guard rails</span>.
-						</dd>
-						<dd>
-							Format works well if <span class="italic">more courses</span> align with same philosophy.
-						</dd>
-					</dl>
+					<DataList
+						title="Experimental"
+						content={[
+							'Feeling of being a "<span class="italic">guinea pig</span>".',
+							'Need for <span class="italic">small guard rails</span>.',
+							'Format works well if <span class="italic">more courses</span> align with same philosophy.'
+						]}
+					/>
 				</div>
 			</div>
 		</div>
@@ -2096,6 +1915,160 @@
 		planetary boundaries -> inner work -> trust<br />
 		stressed people -> stressed systems -> stressed planet (from regenerative leadership)
 	</FramedSlide> -->
+	<FramedSlide part="others-engagement" title="What are others doing?">
+		<div class="grid h-full grid-cols-2 gap-6">
+			<div
+				class="bg-secondary text-secondary-content shadow-base-shadow flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-6 text-4xl shadow-inner"
+			>
+				<div class="text-center text-5xl font-bold">Arnolds encounters</div>
+				<ul class="list-disc space-y-2">
+					<li>
+						<a
+							href="https://www.cbs.dk/research/departments/department-management-society-and-communication/annemette-kjaergaard"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Annemette Kjærgaard</a
+						>, Copenhagen Business School
+					</li>
+					<li>
+						<a
+							href="https://www.cefu.dk/emner/om-cefu/forskere/noemi-katznelson.aspx"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Noemi Katznelson</a
+						>, Aalborg University
+					</li>
+					<li>
+						<a
+							href="https://rflect.ch/"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">rflect.ch</a
+						>, Switzerland
+					</li>
+					<li>
+						<a
+							href="https://www.regenerative-educators.com/theartofregenerativeeducatorship"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Regenerative Educatorship</a
+						>, The Netherlands/Belgium
+					</li>
+					<li>
+						<a
+							href="https://www.jacobrask.dk"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Jacob Rask</a
+						>, Roskilde University
+					</li>
+					<li>
+						<a
+							href="https://www.keg.lu.se/en/vasna-ramasar"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Vasna Ramasar</a
+						>, Lund University
+					</li>
+					<li>
+						<a
+							href="https://ibi.ethz.ch/en/das-institut/people/person-detail.tobias-luthe.html"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Tobias Luthe</a
+						>, ETH Zürich
+					</li>
+					<li>
+						<a
+							href="https://www.opheinonen.com/bio"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Olli-Pekka Heinonen</a
+						>, International Baccalaureate
+					</li>
+				</ul>
+			</div>
+			<div
+				class="bg-secondary text-secondary-content shadow-base-shadow flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-6 text-4xl shadow-inner"
+			>
+				<div class="text-center text-5xl font-bold">Selected sources from Annemette</div>
+				<ul class="list-disc space-y-2">
+					<li>
+						<a
+							href="https://www.alfiekohn.org"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Alfie Kohn</a
+						>, Author and Educator
+					</li>
+					<li>
+						<a
+							href="https://www.emich.edu/cob/faculty/j_beatty.php"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Joy Beatty</a
+						>, Eastern Michigan University
+					</li>
+					<li>
+						<a
+							href="https://profiles.ucl.ac.uk/52741-stuart-tannock/publications"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Stuart Tannock</a
+						>, University College London
+					</li>
+					<li>
+						<a
+							href="https://link.springer.com/article/10.1007/s10459-009-9211-1"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Casey B. White</a
+						>, University of Michigan Medical School
+					</li>
+					<li>
+						<a
+							href="https://www.tandfonline.com/doi/full/10.1080/0309877X.2019.1619073"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Chris McMorran</a
+						>, National University of Singapore
+					</li>
+					<li>
+						<a
+							href="https://academic.oup.com/academicmedicine/article-abstract/84/5/655/8353384?redirectedFrom=fulltext"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Robert A. Bloodgood</a
+						>, University of Virginia School of Medicine
+					</li>
+					<li>
+						<a
+							href="https://www.mayoclinicproceedings.org/article/S0025-6196(11)61250-0/abstract"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Daniel E. Rohe</a
+						>, Mayo Clinic
+					</li>
+					<li>
+						<a
+							href="https://www.tandfonline.com/doi/full/10.1080/13562510902757260"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Lars O. Dahlgren</a
+						>, Linköping University
+					</li>
+					<li>
+						<a
+							href="https://www.tandfonline.com/doi/full/10.3109/0142159X.2012.652243"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Faysal Altahawi</a
+						>, Case Western Reserve University
+					</li>
+				</ul>
+			</div>
+		</div>
+	</FramedSlide>
 	<FramedSlide part="terms-and-conditions">
 		<TermsAndConditions presentationMode />
 		{#if returnToSlide}
