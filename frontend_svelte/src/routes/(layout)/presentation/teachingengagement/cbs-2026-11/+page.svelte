@@ -333,7 +333,7 @@
 	</div>
 {/snippet}
 
-<RevealJs bind:reveal={revealInstance}>
+<RevealJs bind:reveal={revealInstance} options={{ hash: true, fragmentInURL: true }}>
 	<FramedSlide part="welcome" hideProgressBar>
 		<div
 			class="text-base-content-variant flex h-full items-center justify-center text-[200px] font-bold"

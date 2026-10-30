@@ -73,6 +73,8 @@
 	import revealThemeWhiteHref from 'reveal.js/theme/white.css?url';
 	import { onMount, type Snippet } from 'svelte';
 
+	import { getSessionLifecycleContext } from '$lib/session';
+
 	export const ssr = false;
 	// let { children, keyboard=true }: {  children: Snippet, keyboard: boolean} = $props();
 	let {
@@ -81,6 +83,7 @@
 		reveal = $bindable()
 	}: { children: Snippet; options?: RevealConfig; reveal?: RevealApi } = $props();
 	const THEME_LINK_ID = 'reveal-theme-link';
+	const sessionLifecycle = getSessionLifecycleContext();
 
 	const ensureRevealThemeLink = (): HTMLLinkElement => {
 		let link = document.getElementById(THEME_LINK_ID) as HTMLLinkElement | null;
@@ -111,8 +114,9 @@
 		applyRevealTheme(mediaQuery.matches);
 		mediaQuery.addEventListener('change', handleThemeChange);
 
-		reveal = new Reveal({});
-		reveal.initialize({
+		const deck = new Reveal({});
+		reveal = deck;
+		deck.initialize({
 			// Default options
 			embedded: true,
 			slideNumber: 'c/t',
@@ -122,6 +126,14 @@
 			// Override with external options
 			...options
 		});
+		// Reveal throttles hash updates. Capture the live position even if
+		// authentication expires immediately after a slide or fragment change.
+		const unregisterTarget = options.hash
+			? sessionLifecycle.registerReauthenticationTarget(() => {
+					const { origin, pathname, search } = window.location;
+					return `${origin}${pathname}${search}#${deck.getSlidePath()}`;
+				})
+			: undefined;
 		// reveal.on('fragmentshown', (event) => {
 		// 	console.log('=== fragment shown ===');
 		// 	console.log(event);
@@ -129,6 +141,8 @@
 
 		return () => {
 			mediaQuery.removeEventListener('change', handleThemeChange);
+			unregisterTarget?.();
+			deck.destroy();
 		};
 	});
 </script>

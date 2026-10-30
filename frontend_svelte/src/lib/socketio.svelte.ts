@@ -129,6 +129,10 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 				}
 				try {
 					const response = await fetch('/api/v1/socketio-ticket', { method: 'POST' });
+					if (response.status === 401) {
+						this.sessionLifecycle.reauthenticate(this.client);
+						return;
+					}
 					if (!response.ok) {
 						callback({});
 						return;

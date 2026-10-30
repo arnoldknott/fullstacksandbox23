@@ -19,7 +19,7 @@ const appConfig = await AppConfig.getInstance();
 // console.log('=== layout.server.ts - appConfig ===');
 // console.log(appConfig);
 
-export const load: LayoutServerLoad = async ({ locals }) => {
+export const load: LayoutServerLoad = async ({ locals, url, untrack }) => {
 	// let loggedIn = false;
 	// let sessionData: Session | null = null;
 	const backendAPIConfiguration: BackendAPIConfiguration = {
@@ -37,11 +37,25 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 	if (locals.sessionData && locals.sessionData.loggedIn) {
 		let microsoftProfile: MicrosoftProfile | undefined;
 		let linkedinProfile: LinkedInProfile | undefined;
+		const pathname = untrack(() => url.pathname);
+		const authenticating =
+			pathname === '/login' ||
+			pathname.startsWith('/login/') ||
+			pathname === '/oauth/callback' ||
+			pathname.startsWith('/oauth/callback/');
 		try {
-			if (locals.sessionData.sessionOwnerProvider === IdentityProvider.MICROSOFT) {
+			// Provider credentials are being repaired on these routes; do not renew
+			// them concurrently with the authorization-code exchange.
+			if (
+				!authenticating &&
+				locals.sessionData.sessionOwnerProvider === IdentityProvider.MICROSOFT
+			) {
 				const response = await microsoftGraph.get(locals.sessionData.sessionId, '/me');
 				if (response.ok) microsoftProfile = (await response.json()) as MicrosoftProfile;
-			} else if (locals.sessionData.sessionOwnerProvider === IdentityProvider.LINKEDIN) {
+			} else if (
+				!authenticating &&
+				locals.sessionData.sessionOwnerProvider === IdentityProvider.LINKEDIN
+			) {
 				linkedinProfile = await linkedInAPI.getUserInfo(locals.sessionData.sessionId);
 			}
 		} catch (error) {

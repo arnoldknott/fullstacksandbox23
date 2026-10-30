@@ -20,6 +20,14 @@ export class SessionLifecycle {
 	private lastTouchAttemptAt = 0;
 	private touchInFlight?: Promise<void>;
 	private reauthenticationStarted = false;
+	private reauthenticationTarget?: () => string;
+
+	registerReauthenticationTarget(getTarget: () => string): () => void {
+		this.reauthenticationTarget = getTarget;
+		return () => {
+			if (this.reauthenticationTarget === getTarget) this.reauthenticationTarget = undefined;
+		};
+	}
 
 	async touchIfDue(socket?: Socket): Promise<void> {
 		if (page.data.session?.loggedIn !== true) return;
@@ -51,7 +59,7 @@ export class SessionLifecycle {
 			throw new Error('Reauthentication required, but no suitable identity provider found.');
 		}
 		this.reauthenticationStarted = true;
-		const targetUrl = encodeURIComponent(window.location.href);
+		const targetUrl = encodeURIComponent(this.reauthenticationTarget?.() ?? window.location.href);
 		const path = provider === IdentityProvider.MICROSOFT ? '/login/microsoft' : '/login/linkedin';
 		void Promise.resolve(goto(resolve(`${path}?target-url=${targetUrl}`))).catch(() => {
 			this.reauthenticationStarted = false;
