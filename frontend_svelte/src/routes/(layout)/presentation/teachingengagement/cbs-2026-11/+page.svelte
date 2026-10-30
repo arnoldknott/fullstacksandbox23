@@ -488,14 +488,14 @@
 				</dt>
 				<dd class="mb-4 pl-4">for 1.5 years</dd>
 			</dl>
-			<dl
+			<!-- <dl
 				class="bg-warning-container text-warning-container-content shadow-base-shadow rounded-2xl text-5xl shadow"
 			>
 				<dt class="mt-5 mb-4 font-bold text-nowrap">
 					<Icon icon="fluent-color:warning-28" class="mr-2 inline-block" /> Fun job
 				</dt>
 				<dd class="mb-4 pl-4">worked many hours a week</dd>
-			</dl>
+			</dl> -->
 		</CardOverlay>
 		<CardOverlay
 			class="bg-base-250 text-base-content absolute top-1/2 left-1/2 z-50 w-fit -translate-x-1/2 -translate-y-1/2 pt-6 text-4xl"
@@ -532,14 +532,14 @@
 				<dd class="mb-4 pl-4">good time at CBS!</dd>
 				<dd class="mb-4 pl-4">won a prize</dd>
 			</dl>
-			<dl
+			<!-- <dl
 				class="bg-warning-container text-warning-container-content shadow-base-shadow rounded-2xl text-5xl shadow"
 			>
 				<dt class="mt-5 mb-4 font-bold text-nowrap">
 					<Icon icon="fluent-color:warning-28" class="mr-2 inline-block" /> Two part time contracts
 				</dt>
 				<dd class="mb-4 pl-4">Two times 3/4 of full time</dd>
-			</dl>
+			</dl> -->
 		</CardOverlay>
 		<CardOverlay
 			class="bg-base-250 text-base-content absolute top-1/2 left-1/2 z-50 w-fit -translate-x-1/2 -translate-y-1/2 pt-6 text-4xl"
@@ -562,13 +562,13 @@
 				<dd class="mb-4 pl-4">4 start-up companies</dd>
 				<dd class="mb-4 pl-4">2 courses</dd>
 			</dl>
-			<dl
+			<!-- <dl
 				class="bg-warning-container text-warning-container-content shadow-base-shadow rounded-2xl text-5xl shadow"
 			>
 				<dt class="mt-5 mb-4 font-bold text-nowrap">
 					<Icon icon="fluent-color:warning-28" class="mr-2 inline-block" /> Meetings / Courses / Supervision
 				</dt>
-			</dl>
+			</dl> -->
 		</CardOverlay>
 		<!-- TBD: make it a bang here? -->
 		<CardOverlay
@@ -586,14 +586,13 @@
 				<dd class="mb-4 pl-4">Hiking and outdoor activities</dd>
 				<!-- <dd class="mb-4 pl-4">Amplifiers</dd> -->
 			</dl>
-
-			<dl
+			<!-- <dl
 				class="bg-success-container text-success-container-content shadow-base-shadow rounded-2xl text-5xl shadow"
 			>
 				<dt class="mt-5 mb-4 font-bold text-nowrap">
 					<Icon icon="fluent-color:checkmark-circle-32" class="mr-2 inline-block" /> Batteries refilled
 				</dt>
-			</dl>
+			</dl> -->
 		</CardOverlay>
 		<CardOverlay
 			class="bg-base-250 text-base-content absolute top-1/2 left-1/2 z-50 w-fit -translate-x-1/2 -translate-y-1/2 pt-6 text-4xl"
@@ -1721,14 +1720,13 @@
 				👍 What was good about having the learning reflections <br />instead of other exam forms in
 				this course? (524 answers)
 			</div>
-
 			<div class="h-full overflow-y-scroll">
 				<div
 					class="fragment fade-in bg-secondary text-secondary-content shadow-base-shadow flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-4 text-4xl shadow-inner"
 				>
 					<dl>
-						<dt class="font-bold">Stress</dt>
-						<dd>~2/3: less <span class="italic">stress, anxiety, pressure</span>.</dd>
+						<dt class="font-bold">~2/3: less stress, more well-being</dt>
+						<dd>less <span class="italic">stress, anxiety, pressure</span>.</dd>
 						<dd><span class="italic">Healthier mindset</span>; fewer anxiety triggers.</dd>
 						<dd>Frees <span class="italic">mental bandwidth</span> to reflect rather than rush.</dd>
 						<dd>
