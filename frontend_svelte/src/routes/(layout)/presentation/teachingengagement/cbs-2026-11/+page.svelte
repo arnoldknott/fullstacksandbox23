@@ -9,6 +9,7 @@
 	import { FSSB23_THEME_KEY, type ThemeRuntimeContext } from '$lib/theming';
 	import type { MessageExtended, QuestionExtended } from '$lib/types';
 
+	import DataList from '../DataList.svelte';
 	import type { PageData } from './$types';
 	import CardOverlay from './CardOverlay.svelte';
 	import ChatBubble from './ChatBubble.svelte';
@@ -1715,8 +1716,8 @@
 	</FramedSlide> -->
 	<!-- <div>Summary from 2000+ answers</div> -->
 	<FramedSlide part="results" section="qualitative-good" title="Results: qualitative">
-		<div class="my-5 grid h-full grid-cols-2 gap-4">
-			<div class="col-span-2">
+		<div class="my-5 grid h-full grid-cols-2 grid-rows-[auto_minmax(0,1fr)] gap-4">
+			<div class="col-span-2 min-h-0">
 				👍 What was good about having the learning reflections <br />instead of other exam forms in
 				this course? (524 answers)
 			</div>
@@ -1724,105 +1725,92 @@
 				<div
 					class="fragment fade-in bg-secondary text-secondary-content shadow-base-shadow flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-4 text-4xl shadow-inner"
 				>
-					<dl>
-						<dt class="font-bold">~2/3: less stress, more well-being</dt>
-						<dd>less <span class="italic">stress, anxiety, pressure</span>.</dd>
-						<dd><span class="italic">Healthier mindset</span>; fewer anxiety triggers.</dd>
-						<dd>Frees <span class="italic">mental bandwidth</span> to reflect rather than rush.</dd>
-						<dd>
-							Supports <span class="italic">well-being</span>; learning feels more
-							<span class="italic">sustainable</span>.
-						</dd>
-					</dl>
+					<DataList
+						title="~2/3: less stress, more well-being"
+						content={[
+							'less <span class="italic">stress, anxiety, pressure</span>.',
+							'<span class="italic">Healthier mindset</span>; fewer anxiety triggers.',
+							'Frees <span class="italic">mental bandwidth</span> to reflect rather than rush.',
+							'Supports <span class="italic">well-being</span>; learning feels more <span class="italic">sustainable</span>.'
+						]}
+						color="secondary"
+					/>
 				</div>
 				<div
 					class="fragment fade-in bg-secondary text-secondary-content shadow-base-shadow mt-4 flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-4 text-4xl shadow-inner"
 				>
-					<dl>
-						<dt class="font-bold">Deeper learning</dt>
-						<dd>
-							Focus on <span class="italic">understanding</span> and learning rather than cramming an
-							exam.
-						</dd>
-						<dd>
-							Calmer pacing improves <span class="italic">confidence</span> with difficult topics.
-						</dd>
-					</dl>
+					<DataList
+						title="~1/2: deeper learning"
+						content={[
+							'Focus on <span class="italic">understanding</span> and learning rather than cramming an exam.',
+							'Calmer pacing improves <span class="italic">confidence</span> with difficult topics.'
+						]}
+						color="secondary"
+					/>
 				</div>
 				<div
 					class="fragment fade-in bg-secondary text-secondary-content shadow-base-shadow mt-4 flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-4 text-4xl shadow-inner"
 				>
-					<dl>
-						<dt class="font-bold">Freedom to explore</dt>
-						<dd>
-							Encourages <span class="italic">curiosity</span> instead of formula-driven exam preparation.
-						</dd>
-						<dd>
-							Allows <span class="italic">deeper dives</span> into topics of interest.
-						</dd>
-						<dd>
-							Removes <span class="italic">fear</span> of "falling behind".
-						</dd>
-					</dl>
+					<DataList
+						title="Freedom to explore"
+						content={[
+							'Encourages <span class="italic">curiosity</span> instead of formula-driven exam preparation.',
+							'Allows <span class="italic">deeper dives</span> into topics of interest.',
+							'Removes <span class="italic">fear</span> of "falling behind".'
+						]}
+						color="secondary"
+					/>
 				</div>
 			</div>
 			<div class="h-full overflow-y-scroll">
 				<div
 					class="fragment fade-in bg-secondary text-secondary-content shadow-base-shadow flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-4 text-4xl shadow-inner"
 				>
-					<dl>
-						<dt class="font-bold">Flexibility</dt>
-						<dd>Own-tempo: easier to <span class="italic">adjust workload</span>.</dd>
-						<dd>
-							<span class="italic">Shift effort</span> between courses possible.
-						</dd>
-						<dd>Frees <span class="italic">mental bandwidth</span> to reflect.</dd>
-						<dd><span class="italic">Autonomy</span> increases enjoyment of content.</dd>
-						<dd>
-							More time to <span class="italic">revisit challenging topics</span>.
-						</dd>
-					</dl>
+					<DataList
+						title="Flexibility"
+						content={[
+							'Own-tempo: easier to <span class="italic">adjust workload</span>.',
+							'<span class="italic">Shift effort</span> between courses possible.',
+							'Frees <span class="italic">mental bandwidth</span> to reflect.',
+							'<span class="italic">Autonomy</span> increases enjoyment of content.',
+							'More time to <span class="italic">revisit challenging topics</span>.'
+						]}
+						color="secondary"
+					/>
 				</div>
 				<div
 					class="fragment fade-in bg-secondary text-secondary-content shadow-base-shadow mt-5 flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-4 text-4xl shadow-inner"
 				>
-					<dl>
-						<dt class="font-bold">Reflections support understanding</dt>
-						<dd>Forces <span class="italic">consolidation</span> after each topic.</dd>
-						<dd>
-							<span class="italic">Strengthens memory</span> of new insight.
-						</dd>
-						<dd>
-							Creates <span class="italic">awareness</span> of what is understood.
-						</dd>
-						<dd>
-							Promotes <span class="italic">personal ownership</span>.
-						</dd>
-					</dl>
+					<DataList
+						title="Reflections support understanding"
+						content={[
+							'Forces <span class="italic">consolidation</span> after each topic.',
+							'<span class="italic">Strengthens memory</span> of new insight.',
+							'Creates <span class="italic">awareness</span> of what is understood.',
+							'Promotes <span class="italic">personal ownership</span>.'
+						]}
+						color="secondary"
+					/>
 				</div>
 				<div
 					class="fragment fade-in bg-secondary text-secondary-content shadow-base-shadow mt-4 flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-4 text-4xl shadow-inner"
 				>
-					<dl>
-						<dt class="font-bold">Course setup</dt>
-						<dd>
-							Structured <span class="italic">e-learning environment</span> appreciated.
-						</dd>
-						<dd>
-							Quizzes provide <span class="italic">small checks without pressure</span>.
-						</dd>
-						<dd>
-							Course <span class="italic">atmosphere</span> perceived as
-							<span class="italic">motivating and friendly</span>.
-						</dd>
-					</dl>
+					<DataList
+						title="Course setup"
+						content={[
+							'Structured <span class="italic">e-learning environment</span> appreciated.',
+							'Quizzes provide <span class="italic">small checks without pressure</span>.',
+							'Course <span class="italic">atmosphere</span> perceived as <span class="italic">motivating and friendly</span>.'
+						]}
+						color="secondary"
+					/>
 				</div>
 			</div>
 		</div>
 	</FramedSlide>
 	<FramedSlide part="results" section="qualitative-bad" title="Results: qualitative">
-		<div class="my-5 grid h-full grid-cols-2 gap-4">
-			<div class="col-span-2">
+		<div class="my-5 grid h-full grid-cols-2 grid-rows-[auto_minmax(0,1fr)] gap-4">
+			<div class="col-span-2 min-h-0">
 				👎 What was bad about having the learning reflections <br />instead of other exam forms in
 				this course? (508 answers)
 			</div>
@@ -1830,64 +1818,51 @@
 				<div
 					class="fragment fade-in bg-primary text-primary-content shadow-base-shadow flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-4 text-4xl shadow-inner"
 				>
-					<dl>
-						<dt class="font-bold">Motivation drop</dt>
-						<dd>
-							Hard to stay <span class="italic">disciplined</span> when other courses pile up pressure.
-						</dd>
-						<dd>
-							<span class="italic">Momentum weakens</span> during busy periods in
-							<span class="italic">other courses</span>.
-						</dd>
-						<dd>
-							Self-driven learning <span class="italic">feels difficult</span> for part of the group.
-						</dd>
-					</dl>
+					<DataList
+						title="Motivation drop"
+						content={[
+							'Hard to stay <span class="italic">disciplined</span> when other courses pile up pressure.',
+							'<span class="italic">Momentum weakens</span> during busy periods in <span class="italic">other courses</span>.',
+							'Self-driven learning <span class="italic">feels difficult</span> for part of the group.'
+						]}
+					/>
 				</div>
 				<div
 					class="fragment fade-in bg-primary text-primary-content shadow-base-shadow mt-4 flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-4 text-4xl shadow-inner"
 				>
-					<dl>
-						<dt class="font-bold">Exercise solutions</dt>
-						<dd>
-							Need for <span class="italic">solutions</span> to verify understanding.
-						</dd>
-						<dd>
-							Desire for <span class="italic">mandatory checkpoints</span> to maintain engagement.
-						</dd>
-					</dl>
+					<DataList
+						title="Exercise solutions"
+						content={[
+							'Need for <span class="italic">solutions</span> to verify understanding.',
+							'Desire for <span class="italic">mandatory checkpoints</span> to maintain engagement.'
+						]}
+					/>
 				</div>
 			</div>
 			<div class="h-full overflow-scroll">
 				<div
 					class="fragment fade-in bg-primary text-primary-content shadow-base-shadow flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-4 text-4xl shadow-inner"
 				>
-					<dl>
-						<dt class="font-bold">Individual perception</dt>
-						<dd>High <span class="italic">self-discipline</span> differs from person to person.</dd>
-						<dd>
-							Low external pressure reveals who needs <span class="italic">more structure</span>.
-						</dd>
-						<dd>
-							Different preferences between <span class="italic"
-								>media: videos, quizzes, book, lectures</span
-							>.
-						</dd>
-					</dl>
+					<DataList
+						title="Individual perception"
+						content={[
+							'High <span class="italic">self-discipline</span> differs from person to person.',
+							'Low external pressure reveals who needs <span class="italic">more structure</span>.',
+							'Different preferences between <span class="italic">media: videos, quizzes, book, lectures</span>.'
+						]}
+					/>
 				</div>
 				<div
 					class="fragment fade-in bg-primary text-primary-content shadow-base-shadow mt-5 flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-4 text-4xl shadow-inner"
 				>
-					<dl>
-						<dt class="font-bold">Experimental</dt>
-						<dd>Feeling of being a "<span class="italic">guinea pig</span>".</dd>
-						<dd>
-							Need for <span class="italic">small guard rails</span>.
-						</dd>
-						<dd>
-							Format works well if <span class="italic">more courses</span> align with same philosophy.
-						</dd>
-					</dl>
+					<DataList
+						title="Experimental"
+						content={[
+							'Feeling of being a "<span class="italic">guinea pig</span>".',
+							'Need for <span class="italic">small guard rails</span>.',
+							'Format works well if <span class="italic">more courses</span> align with same philosophy.'
+						]}
+					/>
 				</div>
 			</div>
 		</div>
