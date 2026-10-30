@@ -1188,160 +1188,6 @@
 			</div>
 		</div>
 	</FramedSlide>
-	<FramedSlide part="inspiration" section="others" title="What are others doing?">
-		<div class="grid h-full grid-cols-2 gap-6">
-			<div
-				class="bg-secondary text-secondary-content shadow-base-shadow flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-6 text-4xl shadow-inner"
-			>
-				<div class="text-center text-5xl font-bold">Arnolds encounters</div>
-				<ul class="list-disc space-y-2">
-					<li>
-						<a
-							href="https://www.cbs.dk/research/departments/department-management-society-and-communication/annemette-kjaergaard"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Annemette Kjærgaard</a
-						>, Copenhagen Business School
-					</li>
-					<li>
-						<a
-							href="https://www.cefu.dk/emner/om-cefu/forskere/noemi-katznelson.aspx"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Noemi Katznelson</a
-						>, Aalborg University
-					</li>
-					<li>
-						<a
-							href="https://rflect.ch/"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">rflect.ch</a
-						>, Switzerland
-					</li>
-					<li>
-						<a
-							href="https://www.regenerative-educators.com/theartofregenerativeeducatorship"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Regenerative Educatorship</a
-						>, The Netherlands/Belgium
-					</li>
-					<li>
-						<a
-							href="https://www.jacobrask.dk"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Jacob Rask</a
-						>, Roskilde University
-					</li>
-					<li>
-						<a
-							href="https://www.keg.lu.se/en/vasna-ramasar"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Vasna Ramasar</a
-						>, Lund University
-					</li>
-					<li>
-						<a
-							href="https://ibi.ethz.ch/en/das-institut/people/person-detail.tobias-luthe.html"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Tobias Luthe</a
-						>, ETH Zürich
-					</li>
-					<li>
-						<a
-							href="https://www.opheinonen.com/bio"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Olli-Pekka Heinonen</a
-						>, International Baccalaureate
-					</li>
-				</ul>
-			</div>
-			<div
-				class="bg-secondary text-secondary-content shadow-base-shadow flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-6 text-4xl shadow-inner"
-			>
-				<div class="text-center text-5xl font-bold">Selected sources from Annemette</div>
-				<ul class="list-disc space-y-2">
-					<li>
-						<a
-							href="https://www.alfiekohn.org"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Alfie Kohn</a
-						>, Author and Educator
-					</li>
-					<li>
-						<a
-							href="https://www.emich.edu/cob/faculty/j_beatty.php"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Joy Beatty</a
-						>, Eastern Michigan University
-					</li>
-					<li>
-						<a
-							href="https://profiles.ucl.ac.uk/52741-stuart-tannock/publications"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Stuart Tannock</a
-						>, University College London
-					</li>
-					<li>
-						<a
-							href="https://link.springer.com/article/10.1007/s10459-009-9211-1"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Casey B. White</a
-						>, University of Michigan Medical School
-					</li>
-					<li>
-						<a
-							href="https://www.tandfonline.com/doi/full/10.1080/0309877X.2019.1619073"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Chris McMorran</a
-						>, National University of Singapore
-					</li>
-					<li>
-						<a
-							href="https://academic.oup.com/academicmedicine/article-abstract/84/5/655/8353384?redirectedFrom=fulltext"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Robert A. Bloodgood</a
-						>, University of Virginia School of Medicine
-					</li>
-					<li>
-						<a
-							href="https://www.mayoclinicproceedings.org/article/S0025-6196(11)61250-0/abstract"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Daniel E. Rohe</a
-						>, Mayo Clinic
-					</li>
-					<li>
-						<a
-							href="https://www.tandfonline.com/doi/full/10.1080/13562510902757260"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Lars O. Dahlgren</a
-						>, Linköping University
-					</li>
-					<li>
-						<a
-							href="https://www.tandfonline.com/doi/full/10.3109/0142159X.2012.652243"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Faysal Altahawi</a
-						>, Case Western Reserve University
-					</li>
-				</ul>
-			</div>
-		</div>
-	</FramedSlide>
 	<FramedSlide part="inspiration" section="motivation" title="Motivation">
 		<div class="mx-5 grid grid-cols-3 gap-10">
 			<CardOverlay class="bg-primary text-primary-content z-50 pt-6 text-4xl" hidden={false}>
@@ -2069,6 +1915,160 @@
 		planetary boundaries -> inner work -> trust<br />
 		stressed people -> stressed systems -> stressed planet (from regenerative leadership)
 	</FramedSlide> -->
+	<FramedSlide part="others-engagement" title="What are others doing?">
+		<div class="grid h-full grid-cols-2 gap-6">
+			<div
+				class="bg-secondary text-secondary-content shadow-base-shadow flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-6 text-4xl shadow-inner"
+			>
+				<div class="text-center text-5xl font-bold">Arnolds encounters</div>
+				<ul class="list-disc space-y-2">
+					<li>
+						<a
+							href="https://www.cbs.dk/research/departments/department-management-society-and-communication/annemette-kjaergaard"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Annemette Kjærgaard</a
+						>, Copenhagen Business School
+					</li>
+					<li>
+						<a
+							href="https://www.cefu.dk/emner/om-cefu/forskere/noemi-katznelson.aspx"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Noemi Katznelson</a
+						>, Aalborg University
+					</li>
+					<li>
+						<a
+							href="https://rflect.ch/"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">rflect.ch</a
+						>, Switzerland
+					</li>
+					<li>
+						<a
+							href="https://www.regenerative-educators.com/theartofregenerativeeducatorship"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Regenerative Educatorship</a
+						>, The Netherlands/Belgium
+					</li>
+					<li>
+						<a
+							href="https://www.jacobrask.dk"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Jacob Rask</a
+						>, Roskilde University
+					</li>
+					<li>
+						<a
+							href="https://www.keg.lu.se/en/vasna-ramasar"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Vasna Ramasar</a
+						>, Lund University
+					</li>
+					<li>
+						<a
+							href="https://ibi.ethz.ch/en/das-institut/people/person-detail.tobias-luthe.html"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Tobias Luthe</a
+						>, ETH Zürich
+					</li>
+					<li>
+						<a
+							href="https://www.opheinonen.com/bio"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Olli-Pekka Heinonen</a
+						>, International Baccalaureate
+					</li>
+				</ul>
+			</div>
+			<div
+				class="bg-secondary text-secondary-content shadow-base-shadow flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-6 text-4xl shadow-inner"
+			>
+				<div class="text-center text-5xl font-bold">Selected sources from Annemette</div>
+				<ul class="list-disc space-y-2">
+					<li>
+						<a
+							href="https://www.alfiekohn.org"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Alfie Kohn</a
+						>, Author and Educator
+					</li>
+					<li>
+						<a
+							href="https://www.emich.edu/cob/faculty/j_beatty.php"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Joy Beatty</a
+						>, Eastern Michigan University
+					</li>
+					<li>
+						<a
+							href="https://profiles.ucl.ac.uk/52741-stuart-tannock/publications"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Stuart Tannock</a
+						>, University College London
+					</li>
+					<li>
+						<a
+							href="https://link.springer.com/article/10.1007/s10459-009-9211-1"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Casey B. White</a
+						>, University of Michigan Medical School
+					</li>
+					<li>
+						<a
+							href="https://www.tandfonline.com/doi/full/10.1080/0309877X.2019.1619073"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Chris McMorran</a
+						>, National University of Singapore
+					</li>
+					<li>
+						<a
+							href="https://academic.oup.com/academicmedicine/article-abstract/84/5/655/8353384?redirectedFrom=fulltext"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Robert A. Bloodgood</a
+						>, University of Virginia School of Medicine
+					</li>
+					<li>
+						<a
+							href="https://www.mayoclinicproceedings.org/article/S0025-6196(11)61250-0/abstract"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Daniel E. Rohe</a
+						>, Mayo Clinic
+					</li>
+					<li>
+						<a
+							href="https://www.tandfonline.com/doi/full/10.1080/13562510902757260"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Lars O. Dahlgren</a
+						>, Linköping University
+					</li>
+					<li>
+						<a
+							href="https://www.tandfonline.com/doi/full/10.3109/0142159X.2012.652243"
+							class="link link-animated"
+							target="_blank"
+							rel="noopener noreferrer">Faysal Altahawi</a
+						>, Case Western Reserve University
+					</li>
+				</ul>
+			</div>
+		</div>
+	</FramedSlide>
 	<FramedSlide part="terms-and-conditions">
 		<TermsAndConditions presentationMode />
 		{#if returnToSlide}
