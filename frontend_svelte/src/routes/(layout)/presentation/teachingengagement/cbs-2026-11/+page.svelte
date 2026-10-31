@@ -1922,28 +1922,6 @@
 		planetary boundaries -> inner work -> trust<br />
 		stressed people -> stressed systems -> stressed planet (from regenerative leadership)
 	</FramedSlide> -->
-	<FramedSlide part="bonfire" title="Invitation to Bonfire Session" hideProgressBar>
-		<div class="grid h-full min-h-0 grid-cols-2 grid-rows-[minmax(0,1fr)] items-center gap-6">
-			<video
-				class="shadow-base-shadow max-h-full w-3/4 justify-self-center rounded-4xl object-fill shadow-lg"
-				controls
-				src="/teachingengagement/bonfire.mp4"><track default kind="captions" /></video
-			>
-			<div class="flex flex-col items-center justify-center gap-4">
-				{#await qrCodeEmailPromise}
-					<p>Generating QR code…</p>
-				{:then qrCodeEmailUrl}
-					<img src={qrCodeEmailUrl} class="h-150 w-150" alt="QR Code for email" />
-				{/await}
-				<a
-					href="mailto:knott@dtu.dk?subject=Follow-up on CBS Library event, November 2nd 2026"
-					class="link link-animated"
-				>
-					knott@dtu.dk
-				</a>
-			</div>
-		</div>
-	</FramedSlide>
 	<FramedSlide part="others-engagement" title="What are others doing?">
 		<div class="grid h-full grid-cols-2 gap-6">
 			<div
@@ -2098,6 +2076,30 @@
 			</div>
 		</div>
 	</FramedSlide>
+	{#if presenterMode}
+		<FramedSlide part="bonfire" title="Invitation to Bonfire Session" hideProgressBar>
+			<div class="grid h-full min-h-0 grid-cols-2 grid-rows-[minmax(0,1fr)] items-center gap-6">
+				<video
+					class="shadow-base-shadow max-h-full w-3/4 justify-self-center rounded-4xl object-fill shadow-lg"
+					controls
+					src="/teachingengagement/bonfire.mp4"><track default kind="captions" /></video
+				>
+				<div class="flex flex-col items-center justify-center gap-4">
+					{#await qrCodeEmailPromise}
+						<p>Generating QR code…</p>
+					{:then qrCodeEmailUrl}
+						<img src={qrCodeEmailUrl} class="h-150 w-150" alt="QR Code for email" />
+					{/await}
+					<a
+						href="mailto:knott@dtu.dk?subject=Follow-up on CBS Library event, November 2nd 2026"
+						class="link link-animated"
+					>
+						knott@dtu.dk
+					</a>
+				</div>
+			</div>
+		</FramedSlide>
+	{/if}
 	<FramedSlide part="terms-and-conditions">
 		<TermsAndConditions presentationMode />
 		{#if returnToSlide}
