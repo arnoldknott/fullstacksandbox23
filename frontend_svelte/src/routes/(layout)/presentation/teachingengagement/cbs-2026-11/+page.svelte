@@ -1281,19 +1281,6 @@
 			</div>
 		{/snippet}
 	</FramedSlide>
-	<FramedSlide part="inspiration" section="law" title="Law">
-		<div
-			class="bg-secondary text-secondary-content shadow-base-shadow shadow-base-shadow m-5 grid grid-cols-[500px_1fr] gap-6 rounded-4xl p-6 shadow"
-		>
-			<div class="label col-span-2 text-8xl">Eksamensbekendtgørelsen</div>
-			<div class="label text-[200px]">
-				<Icon icon="fa6-solid:section" class="mr-0 inline size-[200px]" />11
-			</div>
-			<div class="text-left text-[70px]">
-				All elements of the education <br /> finish with an exam.
-			</div>
-		</div>
-	</FramedSlide>
 	<FramedSlide part="inspiration" section="communities" title="Communities">
 		<div class="relative flex h-full w-full items-center justify-center">
 			<div
@@ -2248,6 +2235,19 @@
 						>, Case Western Reserve University
 					</li>
 				</ul>
+			</div>
+		</div>
+	</FramedSlide>
+	<FramedSlide part="inspiration" section="law" title="Law">
+		<div
+			class="bg-secondary text-secondary-content shadow-base-shadow shadow-base-shadow m-5 grid grid-cols-[500px_1fr] gap-6 rounded-4xl p-6 shadow"
+		>
+			<div class="label col-span-2 text-8xl">Eksamensbekendtgørelsen</div>
+			<div class="label text-[200px]">
+				<Icon icon="fa6-solid:section" class="mr-0 inline size-[200px]" />11
+			</div>
+			<div class="text-left text-[70px]">
+				All elements of the education <br /> finish with an exam.
 			</div>
 		</div>
 	</FramedSlide>
