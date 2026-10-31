@@ -30,6 +30,8 @@
 	import ZoomableImage from './ZoomableImage.svelte';
 
 	let { data }: { data: PageData } = $props();
+	let welcomeWidth = $state(0);
+	let welcomeHeight = $state(0);
 
 	let presenterMode = $derived(page.url.searchParams.get('presenter') === 'true');
 	let revealInstance = $state<RevealApi | undefined>(undefined);
@@ -344,16 +346,24 @@
 
 <RevealJs bind:reveal={revealInstance} options={{ hash: true, fragmentInURL: true }}>
 	<FramedSlide part="welcome" hideProgressBar>
-		<div
-			class="text-base-content-variant flex h-full items-center justify-center text-[200px] font-bold"
-		>
-			Welcome
+		<div class="relative grid h-full min-h-0 w-full">
+			<div
+				class="text-base-content-variant h-fit w-fit place-self-center text-[200px] font-bold"
+				bind:clientWidth={welcomeWidth}
+				bind:clientHeight={welcomeHeight}
+			>
+				Welcome
+			</div>
+			{#each socketioNames?.entities as entity (entity.id)}
+				{#if entity.confidential}
+					<NameCloud
+						text={entity.confidential}
+						excludeWidth={welcomeWidth}
+						excludeHeight={welcomeHeight}
+					/>
+				{/if}
+			{/each}
 		</div>
-		{#each socketioNames?.entities as entity (entity.id)}
-			{#if entity.confidential}
-				<NameCloud text={entity.confidential} />
-			{/if}
-		{/each}
 		{#snippet footerRight()}
 			{#if presenterMode}
 				<PresenterControls {revealInstance} socketio={socketioPresenterState} />

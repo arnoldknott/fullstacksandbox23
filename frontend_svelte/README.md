@@ -47,3 +47,8 @@ drag-to-pan, and vertically stacked FlyonUI + / − / reset controls in the top-
 The reset button restores the full image
 and its original pan position. Its rounded frame, shadow, and footer clearance
 are built in; no map tiles or additional dependencies are needed.
+
+The welcome slide measures its centered heading using Svelte dimension bindings
+and passes `excludeWidth` and `excludeHeight` to `NameCloud`. Random name placements
+avoid that centered area with 16 pixels of clearance, recalculating when the
+container, name, or heading changes size.
