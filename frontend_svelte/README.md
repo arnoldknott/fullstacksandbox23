@@ -36,3 +36,14 @@ bun build
 You can preview the production build with `bun preview`.
 
 > To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+
+## Presentation image zoom
+
+The Country Overshoot slide uses
+[`ZoomableImage.svelte`](<./src/routes/(layout)/presentation/teachingengagement/cbs-2026-11/ZoomableImage.svelte>).
+Pass the image address through its required `url` prop. The component fits the
+image into the available slide space and provides Leaflet scroll-wheel zoom,
+drag-to-pan, and vertically stacked FlyonUI + / − / reset controls in the top-left.
+The reset button restores the full image
+and its original pan position. Its rounded frame, shadow, and footer clearance
+are built in; no map tiles or additional dependencies are needed.

@@ -163,13 +163,21 @@
 			image: 'https://imgcdn.saxo.com/_9781915294517',
 			alt: "Hopkins, Rob (2025). How to Fall in Love with the Future: A Time Traveller's Guide to Changing the World. Chelsea Green Publishing UK. ISBN: 9781915294517."
 		},
+		// {
+		// 	id: 'five-love-languages',
+		// 	title: 'The 5 Love Languages',
+		// 	author: 'Gary Chapman',
+		// 	link: 'https://www.saxo.com/dk/the-5-love-languages-hardcover-special-edition_bog_9780802438461?srsltid=AYCX9vJmVNGZvdqxpwRSsURRwXEujU0w9uEcKbrbBWsgi8RmChx4D2lV',
+		// 	image: 'https://imgcdn.saxo.com/_9780802438461',
+		// 	alt: 'Chapman, Gary (1995). The 5 Love Languages: The Secret to Love that Lasts. Northfield Publishing. ISBN: 9780802438461.'
+		// },
 		{
-			id: 'five-love-languages',
-			title: 'The 5 Love Languages',
-			author: 'Gary Chapman',
-			link: 'https://www.saxo.com/dk/the-5-love-languages-hardcover-special-edition_bog_9780802438461?srsltid=AYCX9vJmVNGZvdqxpwRSsURRwXEujU0w9uEcKbrbBWsgi8RmChx4D2lV',
-			image: 'https://imgcdn.saxo.com/_9780802438461',
-			alt: 'Chapman, Gary (1995). The 5 Love Languages: The Secret to Love that Lasts. Northfield Publishing. ISBN: 9780802438461.'
+			id: 'quiet',
+			title: 'Quiet',
+			author: 'Susan Cain',
+			link: 'https://www.saxo.com/dk/quiet-the-power-of-introverts-in-a-world-that-cant-stop-talking_susan-cain_paperback_9780307352156?srsltid=AU7gw4VrcT_NmDNQAEyUvyamqGJj11OVOApXceIgjmaRKnOvAOjM3fNL',
+			image: 'https://imgcdn.saxo.com/_9780307352156',
+			alt: "Cain, Susan (2012). Quiet: The Power of Introverts in a World That Can't Stop Talking. Crown Publishing Group. ISBN: 9780307352156."
 		},
 		{
 			id: 'reinventing-organizations',

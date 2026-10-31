@@ -25,6 +25,7 @@
 		tailLength = 72,
 		tailBase = 84,
 		maxWidth = '72%',
+		class: className,
 		...rest
 	}: ChatBubbleProps = $props();
 
@@ -93,7 +94,7 @@
 	});
 </script>
 
-<div class="chat-bubble-wrapper {rest.class}" style="--bubble-max-width: {maxWidth};" {...rest}>
+<div {...rest} class={['chat-bubble-wrapper', className]} style="--bubble-max-width: {maxWidth};">
 	<div
 		class={`bubble-oval ${shadow ? `shadow-base-shadow shadow-lg` : ''} ` +
 			`bg-${variant} text-${variant}-content`}
