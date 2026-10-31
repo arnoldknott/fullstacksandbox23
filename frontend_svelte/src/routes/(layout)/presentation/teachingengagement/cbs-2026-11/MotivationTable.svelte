@@ -67,7 +67,10 @@
 	</div>
 {/snippet } -->
 
-<div class="grid h-180 grid-cols-6 gap-3 text-{color || 'primary'}">
+<div
+	class="grid h-180 grid-cols-6 grid-rows-[auto_minmax(0,1fr)] gap-x-3 gap-y-0 text-{color ||
+		'primary'}"
+>
 	<div>Amotivation</div>
 	<div class="col-span-4">Extrinsic</div>
 	<div>Intrinsic</div>
@@ -89,9 +92,9 @@
 			}}
 		>
 			<p>"I can’t be bothered.”</p>
-			<p>"What’s the point?”</p>
+			<!-- <p>"What’s the point?”</p> -->
 			<p>"It won’t make a difference anyway.”</p>
-			<p>"I don’t know why I’m even doing this.”</p>
+			<!-- <p>"I don’t know why I’m even doing this.”</p> -->
 		</button>
 	</div>
 	<div class="heading fragment flex flex-col">
@@ -106,8 +109,8 @@
 			}}
 		>
 			<p>"I'm doing it because I have to."</p>
-			<p>"So I don't get in trouble."</p>
-			<p>"Because I'll get paid / a grade."</p>
+			<!-- <p>"So I don't get in trouble."</p> -->
+			<!-- <p>"Because I'll get paid / a grade."</p> -->
 			<p>"Because they told me to."</p>
 		</button>
 	</div>
@@ -122,10 +125,10 @@
 				// sendMotvationNumerical(40);
 			}}
 		>
-			<p>"I’d feel guilty if I didn’t.”</p>
-			<p>"I don’t want to disappoint anyone.”</p>
+			<p>"I’d feel guilty / ashamed if I didn’t.”</p>
+			<!-- <p>"I don’t want to disappoint anyone.”</p> -->
 			<p>"I need to prove I’m good enough.”</p>
-			<p>"I’ll feel ashamed if I fail.”</p>
+			<!-- <p>"I’ll feel ashamed if I fail.”</p> -->
 		</button>
 	</div>
 	<div class="heading fragment flex flex-col">
@@ -139,9 +142,9 @@
 				// sendMotvationNumerical(60);
 			}}
 		>
-			<p>"It’s important to me.”</p>
+			<!-- <p>"It’s important to me.”</p> -->
 			<p>"I’m doing it because it’s good for my future.”</p>
-			<p>"It helps me reach my goals.”</p>
+			<!-- <p>"It helps me reach my goals.”</p> -->
 			<p>"I don’t love it, but I believe it’s worth it.”</p>
 		</button>
 	</div>
@@ -158,8 +161,8 @@
 		>
 			<p>"This fits who I am.”</p>
 			<p>"It matches my values.”</p>
-			<p>"This is part of the kind of person I want to be.”</p>
-			<p>"Doing this is just how I live my life.”</p>
+			<!-- <p>"This is part of the kind of person I want to be.”</p> -->
+			<!-- <p>"Doing this is just how I live my life.”</p> -->
 		</button>
 	</div>
 	<div class="heading fragment flex flex-col">
@@ -174,9 +177,9 @@
 			}}
 		>
 			<p>"I’m here because it’s fun.”</p>
-			<p>"I’m doing it because I enjoy it.”</p>
+			<!-- <p>"I’m doing it because I enjoy it.”</p> -->
 			<p>"I’m curious — I want to learn more.”</p>
-			<p>"I like the challenge.”</p>
+			<!-- <p>"I like the challenge.”</p> -->
 		</button>
 	</div>
 	<div class="fragment hidden">Dummy to trigger color event</div>
