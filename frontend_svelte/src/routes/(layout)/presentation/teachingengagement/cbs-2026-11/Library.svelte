@@ -20,6 +20,14 @@
 			alt: 'Ravn, Ib (2021). Selvbestemmelsesteorien. Hans Reitzels Forlag. ISBN: 9788741274461.'
 		},
 		{
+			id: 'self-determination-theory',
+			title: 'Self-Determination Theory',
+			author: 'Edward L. Deci & Richard M. Ryan',
+			link: 'https://www.saxo.com/dk/self-determination-theory_richard-m-ryan_hardback_9781462528769?srsltid=AYCX9vJGRHPmrveHpcI5-0WL0UUZzbBvptunL27bWipW-iDMBjXP-TG9',
+			image: 'https://imgcdn.saxo.com/_9781462528769',
+			alt: 'Deci, Edward L., & Ryan, Richard M. (2017). Self-Determination Theory: Basic Psychological Needs in Motivation, Development, and Wellness. Guilford Press. ISBN: 9781462528769.'
+		},
+		{
 			id: 'skole-uden-proever-og-karakterer',
 			title: 'Skole uden prøver og karakterer',
 			author: 'Noemi Katznelson, et al.',
@@ -44,6 +52,14 @@
 			alt: 'Csikszentmihalyi, Mihaly (2008). Flow: The Psychology of Optimal Experience. HarperCollins. ISBN: 9780061339202.'
 		},
 		{
+			id: 'bullshit-jobs',
+			title: 'Bullshit Jobs',
+			author: 'David Graeber',
+			link: 'https://www.saxo.com/dk/bullshit-jobs_paperback_9780141983479?srsltid=AU7gw4Xw-NbzTZpF4D0wnU9U1HCUZxcBnrzqyz7XgXXcPIyeKl8DeRDE',
+			image: 'https://imgcdn.saxo.com/_9780141983479',
+			alt: 'Graeber, David (2019). Bullshit Jobs: The Rise of Pointless Work, and What We Can Do About It. Penguin Books. ISBN: 9780141983479.'
+		},
+		{
 			id: 'pseudoarbejde',
 			title: 'Pseudoarbejde',
 			author: 'Denis Nørmark & Anders Fogh Jensen',
@@ -58,14 +74,6 @@
 			link: 'https://www.saxo.com/dk/tilbage-til-arbejdet_dennis-noermark_haeftet_9788702303612',
 			image: 'https://imgcdn.saxo.com/_9788702303612',
 			alt: 'Nørmark, Dennis (2021). Tilbage til arbejdet: Sådan bekæmper vi pseudoarbejde i organisationer. Gyldendal Business. ISBN: 9788702303612.'
-		},
-		{
-			id: 'bullshit-jobs',
-			title: 'Bullshit Jobs',
-			author: 'David Graeber',
-			link: 'https://www.saxo.com/dk/bullshit-jobs_paperback_9780141983479?srsltid=AU7gw4Xw-NbzTZpF4D0wnU9U1HCUZxcBnrzqyz7XgXXcPIyeKl8DeRDE',
-			image: 'https://imgcdn.saxo.com/_9780141983479',
-			alt: 'Graeber, David (2019). Bullshit Jobs: The Rise of Pointless Work, and What We Can Do About It. Penguin Books. ISBN: 9780141983479.'
 		},
 		{
 			id: 'atlas-of-the-heart',

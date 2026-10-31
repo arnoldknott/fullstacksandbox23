@@ -19,7 +19,7 @@
 	import FramedSlide from './FramedSlide.svelte';
 	import { getInputsUrl } from './inputs';
 	import Library from './Library.svelte';
-	import MapAnnotation from './MapAnnotation.svelte';
+	// import MapAnnotation from './MapAnnotation.svelte';
 	import MotivationTable from './MotivationTable.svelte';
 	import NameCloud from './NameCloud.svelte';
 	import Overview from './Overview.svelte';
@@ -639,9 +639,8 @@
 			</dl> -->
 		</CardOverlay>
 	</FramedSlide>
-	<FramedSlide part="context" section="map" hideProgressBar title="About you?">
+	<!-- <FramedSlide part="context" section="map" hideProgressBar title="About you?">
 		{#if placesQuestion}
-			<!-- <div class="text-secondary text-center text-7xl font-bold">Check in</div> -->
 			<MapAnnotation {revealInstance} socketio={socketioPlaces} />
 		{:else}
 			{@render interactiveElementNotAvailable('map')}
@@ -652,29 +651,9 @@
 					url={getInputsUrl(page.url, 'cbs-places')}
 					bind:modalHidden={qrCodeModalsHidden.map}
 				/>
-				<!-- <button
-					class="btn btn-info-container btn-gradient label btn shadow-outline relative z-[1000] mx-4 h-20 w-20 rounded-full shadow-sm"
-					aria-label="QR Code"
-					onclick={() => (qrCodeModalsHidden.map = !qrCodeModalsHidden.map)}
-				>
-					<Icon icon="bi:qr-code" class="size-8" />
-				</button>
-				<div
-					class="fixed top-1/2 left-1/2 z-[1000] h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2"
-				>
-					<CardOverlay
-						class="bg-info-container text-info-container-content h-full rounded-2xl"
-						bind:hidden={
-							() => qrCodeModalsHidden.map,
-							(hidden) => {
-								if (hidden) qrCodeModalsHidden.map = true;
-							}
-						}>QR Code here</CardOverlay
-					>
-				</div> -->
 			{/if}
 		{/snippet}
-	</FramedSlide>
+	</FramedSlide> -->
 	<section>
 		<FramedSlide part="context" section="courses" title="Courses">
 			<div class="flex h-full flex-col justify-around gap-4">
@@ -1004,8 +983,8 @@
 	</FramedSlide>
 	<FramedSlide part="context" section="planetary-boundaries" title="Planetary Boundaries">
 		<div class="grid h-full min-h-0 grid-cols-1 grid-rows-1 pb-12">
-			<div class="col-start-1 row-start-1 mt-30 grid place-items-center text-[230px]">🌍</div>
-			<div
+			<div class="col-start-1 row-start-1 grid place-items-center text-[230px]">🌍</div>
+			<!-- <div
 				class="fragment fade-in-then-out col-start-1 row-start-1 grid min-h-0 grid-rows-[72px_minmax(0,1fr)] gap-y-2"
 			>
 				<div class="self-center text-center text-5xl font-bold">2009: before LED</div>
@@ -1018,11 +997,9 @@
 						class="absolute top-[-30.46%] left-[-14.98%] !m-0 h-auto !max-h-none w-[494.13%] !max-w-none"
 					/>
 				</div>
-			</div>
-			<div
-				class="fragment col-start-1 row-start-1 grid min-h-0 grid-rows-[72px_minmax(0,1fr)] gap-y-2"
-			>
-				<div class="self-center text-center text-5xl font-bold">2026</div>
+			</div> -->
+			<div class="fragment col-start-1 row-start-1 grid min-h-0 grid-rows-1">
+				<!-- <div class="self-center text-center text-5xl font-bold">2026</div> -->
 				<div
 					class="shadow-base-shadow relative aspect-[1619/1530] h-full place-self-center overflow-hidden rounded-4xl bg-white shadow-lg"
 				>
@@ -1145,51 +1122,6 @@
 		{/snippet}
 	</FramedSlide>
 	<!-- </section> -->
-	<FramedSlide part="context" section="complexity" title="Complexity">
-		<div
-			class="grid h-full min-h-0 grid-cols-[auto] grid-rows-[minmax(0,1fr)_80px] justify-center gap-y-2 pb-12"
-		>
-			<div
-				class="shadow-base-shadow relative col-start-1 row-start-1 aspect-[30/17] h-full max-w-full place-self-center overflow-hidden rounded-4xl bg-white shadow-lg"
-			>
-				<img
-					src="https://www.businessillustrator.com/wp-content/uploads/2025/12/linear-office-blank-web.png.webp"
-					alt="Reality strikes back - cartoon"
-					class="absolute top-[1.8%] left-[14.7%] !m-0 h-auto !max-h-none w-[69.5%] !max-w-none [clip-path:inset(0_0_8%_0)]"
-				/>
-				<img
-					//src="https://www.businessillustrator.com/wp-content/uploads/2025/12/complexity-outside-linear-cube-cartoon_businessillustrator.com_1200px-600x314.png.webp"
-					src="https://www.businessillustrator.com/wp-content/uploads/2021/05/Complexity-outside-linear-office-cartoon-1200-1200px-2.png.webp"
-					alt="Reality strikes back - cartoon"
-					class="fragment absolute inset-0 z-10 !m-0 h-full !max-h-none w-full !max-w-none object-cover object-center"
-				/>
-			</div>
-			<iframe
-				class="shadow-base-shadow fragment col-start-1 row-start-2 !m-0 h-20 !max-h-none w-full !max-w-none place-self-center rounded-4xl shadow-lg"
-				title="The Story of the Chinese Farmer - Allan Watts"
-				data-testid="embed-iframe"
-				style="border-radius:12px"
-				src="https://open.spotify.com/embed/track/5QTIGUgV4eFrg0o3k8lGTp?utm_source=generator&si=7bc38a38196f43c5"
-				width="100%"
-				height="80"
-				frameBorder="0"
-				allowfullscreen={false}
-				allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-				loading="lazy"
-			></iframe>
-		</div>
-		{#snippet footerRight()}
-			<div class="text-right text-xl">
-				Cartoon by
-				<a href="mailto:Virpi@businessillustrator.com" class="link link-animated">
-					📧 Virpi@businessillustrator.com
-				</a>,
-				<a href="https://www.businessillustrator.com/blog" class="link link-animated">
-					🌐 www.businessillustrator.com/blog
-				</a>
-			</div>
-		{/snippet}
-	</FramedSlide>
 	<FramedSlide part="context" section="change" title="Outer change?">
 		<div class="label text-9xl font-bold">
 			Who wants <br /> <span class="invisible">to</span> change?
@@ -1281,44 +1213,6 @@
 			</div>
 		{/snippet}
 	</FramedSlide>
-	<FramedSlide part="inspiration" section="law" title="Law">
-		<div
-			class="bg-secondary text-secondary-content shadow-base-shadow shadow-base-shadow m-5 grid grid-cols-[500px_1fr] gap-6 rounded-4xl p-6 shadow"
-		>
-			<div class="label col-span-2 text-8xl">Eksamensbekendtgørelsen</div>
-			<div class="label text-[200px]">
-				<Icon icon="fa6-solid:section" class="mr-0 inline size-[200px]" />11
-			</div>
-			<div class="text-left text-[70px]">
-				All elements of the education <br /> finish with an exam.
-			</div>
-		</div>
-	</FramedSlide>
-	<FramedSlide part="inspiration" section="communities" title="Communities">
-		<div class="relative flex h-full w-full items-center justify-center">
-			<div
-				class="bg-primary-container text-primary-container-content shadow-base-shadow h-fit w-fit gap-2 rounded-4xl p-6 py-10 text-6xl shadow-inner"
-			>
-				<ul>
-					<li class="mb-6">
-						<a href="https://www.regenerators.co" class="link link-animated">
-							Regenerative Leadership Journey</a
-						> by Laura Storm
-					</li>
-					<li class="mb-6">
-						<a href="https://www.innerdevelopmentgoals.org" class="link link-animated"
-							>Inner Development Goals</a
-						>
-					</li>
-					<li>
-						<a href="https://doughnuteconomics.org" class="link link-animated"
-							>Doughnut Economics Action Lab</a
-						> Kate Raworth, et. al
-					</li>
-				</ul>
-			</div>
-		</div>
-	</FramedSlide>
 	<FramedSlide part="inspiration" section="books" title="Literature">
 		<Library socketio={socketioBooks} />
 		{#snippet footerLeft()}
@@ -1330,32 +1224,26 @@
 	</FramedSlide>
 	<FramedSlide part="inspiration" section="motivation" title="Motivation">
 		<div class="mx-5 grid grid-cols-3 gap-10">
-			<CardOverlay class="bg-primary text-primary-content z-50 pt-6 text-4xl" hidden={false}>
-				<div class="mb-10 text-7xl font-bold">Relatedness</div>
-				<div class="mb-6 pl-4 text-left text-5xl">Sense of belonging</div>
-				<div class="mb-6 pl-4 text-left text-5xl">Community</div>
+			<CardOverlay class="bg-primary text-primary-content z-50 py-6 text-4xl" hidden={false}>
+				<div class="text-7xl font-bold">Relatedness</div>
+				<!-- <div class="mb-6 pl-4 text-left text-5xl">Sense of belonging</div> -->
+				<!-- <div class="mb-6 pl-4 text-left text-5xl">Community</div>
 				<div class="mb-6 pl-4 text-left text-5xl">Connection</div>
 				<div class="mb-6 pl-4 text-left text-5xl">Feeling cared for</div>
-				<div class="mb-6 pl-4 text-left text-5xl">Ability to care for others</div>
+				<div class="mb-6 pl-4 text-left text-5xl">Ability to care for others</div> -->
 			</CardOverlay>
-			<CardOverlay
-				class="bg-primary fragment fade-in text-primary-content z-50 pt-6 text-4xl"
-				hidden={false}
-			>
-				<div class="mb-10 text-7xl font-bold">Autonomy</div>
-				<div class="mb-6 pl-4 text-left text-5xl">Making your own decisions</div>
-				<div class="mb-6 pl-4 text-left text-5xl">Be in the driver seat of your life</div>
-				<div class="mb-6 pl-4 text-left text-5xl">Reflection</div>
+			<CardOverlay class="bg-primary text-primary-content z-50 py-6 text-4xl" hidden={false}>
+				<div class="text-7xl font-bold">Autonomy</div>
+				<!-- <div class="mb-6 pl-4 text-left text-5xl">Making your own decisions</div>
+				<div class="mb-6 pl-4 text-left text-5xl">Be in the driver seat of your life</div> -->
+				<!-- <div class="mb-6 pl-4 text-left text-5xl">Reflection</div> -->
 			</CardOverlay>
-			<CardOverlay
-				class="bg-primary fragment fade-in text-primary-content z-50 pt-6 text-4xl"
-				hidden={false}
-			>
-				<div class="mb-10 text-7xl font-bold">Competence</div>
-				<div class="mb-6 pl-4 text-left text-5xl">Gaining mastery</div>
-				<div class="mb-6 pl-4 text-left text-5xl">Being in flow</div>
+			<CardOverlay class="bg-primary text-primary-content z-50 py-6 text-4xl" hidden={false}>
+				<div class="text-7xl font-bold">Competence</div>
+				<!-- <div class="mb-6 pl-4 text-left text-5xl">Gaining mastery</div> -->
+				<!-- <div class="mb-6 pl-4 text-left text-5xl">Being in flow</div>
 				<div class="mb-6 pl-4 text-left text-5xl">Making an impact</div>
-				<div class="mb-6 pl-4 text-left text-5xl">Build self-esteem</div>
+				<div class="mb-6 pl-4 text-left text-5xl">Build self-esteem</div> -->
 			</CardOverlay>
 		</div>
 		{#snippet footerRight()}
@@ -1377,61 +1265,51 @@
 			<ChatBubble variant="secondary" tailAngle={100} tailLength={20} tailBase={10}>
 				<div class="text-4xl font-bold">Trust based on<br />DTU's Honours Codex</div>
 			</ChatBubble>
-			<!-- <div class="fragment"> -->
 			<ChatBubble
 				variant="secondary"
-				class="fragment"
+				// class="fragment"
 				tailAngle={130}
 				tailLength={25}
 				tailBase={10}
 			>
 				<div class="text-4xl font-bold">Everything is an invitation.</div>
 			</ChatBubble>
-			<!-- </div> -->
-			<!-- <div class="fragment"> -->
-			<ChatBubble variant="secondary" class="fragment" tailAngle={50} tailLength={20} tailBase={10}>
+
+			<ChatBubble variant="secondary" tailAngle={50} tailLength={20} tailBase={10}>
 				<div class="text-4xl font-bold">Starting Lectures with <br />guided meditation</div>
 			</ChatBubble>
-			<!-- </div> -->
 			<div class="w-[300px]"></div>
-			<!-- <div class="fragment"> -->
 			<ChatBubble
 				variant="secondary"
-				class="fragment"
+				// class="fragment"
 				tailAngle={130}
 				tailLength={20}
 				tailBase={10}
 			>
 				<div class="text-4xl font-bold">No ambitions on <br />other peoples behalf!</div>
 			</ChatBubble>
-			<!-- </div> -->
-			<!-- <div class="fragment"> -->
 			<ChatBubble
 				variant="secondary"
-				class="fragment"
+				// class="fragment"
 				tailAngle={160}
 				tailLength={20}
 				tailBase={10}
 			>
 				<div class="text-4xl font-bold">No "deadlines" ☠️<br />only "living lines" 🌱.</div>
 			</ChatBubble>
-			<!-- </div> -->
 			<div class="w-[300px]"></div>
-			<!-- <div class="fragment"> -->
 			<ChatBubble
 				variant="secondary"
-				class="fragment"
+				// class="fragment"
 				tailAngle={130}
 				tailLength={20}
 				tailBase={10}
 			>
 				<div class="text-4xl font-bold">You never disturb,<br />you always contribute.</div>
 			</ChatBubble>
-			<!-- </div> -->
-			<!-- <div class="fragment"> -->
 			<ChatBubble
 				variant="secondary"
-				class="fragment"
+				// class="fragment"
 				tailAngle={305}
 				tailLength={20}
 				tailBase={10}
@@ -1475,15 +1353,14 @@
 					{/snippet}
 					<dl>
 						<dt>Course segementation</dt>
-						<dd>4 modules in each course</dd>
-						<dd>~ 2 - 4 weeks per module</dd>
-						<dd>one learning reflection per module</dd>
+						<dd class="mt-2">4 modules in each course</dd>
+						<dd class="mt-2">~ 2 - 4 weeks per module</dd>
+						<!-- <dd>one learning reflection per module</dd> -->
 					</dl>
 					<dl class="pt-5">
 						<dt>Question</dt>
-						<dd class="italic">What have you learned in the last module?</dd>
-						<dd>as the only mandatory sharing from the students</dd>
-						<dd>only technical question</dd>
+						<dd class="mt-2 italic">What have you learned in the last module?</dd>
+						<dd class="mt-2">only mandatory question</dd>
 					</dl>
 
 					<!-- <dl class="pt-5">
@@ -1502,14 +1379,14 @@
 					{/snippet}
 					<dl>
 						<dt>~ 30 quantitative questions per course</dt>
-						<dd>x out of 5 rating</dd>
-						<dd>some multiple choice</dd>
-						<dd>some yes / no / maybe</dd>
+						<!-- <dd class="mt-2">5-point rating</dd>
+						<dd class="mt-2">some multiple choice</dd>
+						<dd class="mt-2">some yes / no / maybe</dd> -->
 					</dl>
 
 					<dl class="pt-5">
 						<dt>Content</dt>
-						<dd>
+						<dd class="mt-2">
 							wellbeing<br />
 							<ul>
 								<li>responsibility</li>
@@ -1520,7 +1397,7 @@
 								<li>dicipline</li>
 							</ul>
 						</dd>
-						<dd>use of teaching material and artificial intelligence</dd>
+						<dd class="mt-2">teaching material & artificial intelligence</dd>
 					</dl>
 				</CardOverlay>
 				<CardOverlay
@@ -1532,13 +1409,13 @@
 					{/snippet}
 					<dl>
 						<dt>~10 open questions per course</dt>
-						<dd>free text</dd>
-						<dd>always one text field for <span class="italic">any comments</span></dd>
+						<dd class="mt-2">free text</dd>
+						<dd class="mt-2">always one text field for <span class="italic">any comments</span></dd>
 					</dl>
 					<dl class="pt-5">
 						<dt>Content</dt>
-						<dd>use of teaching material and artificial intelligence</dd>
-						<dd>
+						<dd class="mt-2">teaching material & artificial intelligence</dd>
+						<dd class="mt-2">
 							motivation:<br />
 							<ul>
 								<li>sense of belonging</li>
@@ -1546,14 +1423,14 @@
 								<li>competence</li>
 							</ul>
 						</dd>
-						<dd>
+						<!-- <dd class="mt-2">
 							exam:<br />
 							<ul>
 								<li class="italic">
 									What was good / bad about learning reflections instead of exams?
 								</li>
 							</ul>
-						</dd>
+						</dd> -->
 					</dl>
 				</CardOverlay>
 			</div>
@@ -1645,18 +1522,18 @@
 					</dl>
 					<dl>
 						<dt>Last lecture</dt>
-						<dd>Only 8 out of 74 students missing to hand at least 3.</dd>
+						<dd>Only 8 out of 74 students.</dd>
 					</dl>
 					<dl>
 						<dt>Reminder</dt>
-						<dd>Personal email to the 8 missing: asking how much more time they need.</dd>
-						<dd>Announcement to all, that those emails were sent.</dd>
-						<dd>3 days after all missing mandatory reflections shared.</dd>
+						<dd>Personal to the 8 missing</dd>
+						<dd>Announcement to all</dd>
+						<dd>3 days after all missing mandatory reflections shared</dd>
 					</dl>
 
 					<dl class="pt-5">
 						<dt>One week after reminder</dt>
-						<dd>70 % handed in all 4 learning reflections.</dd>
+						<dd>52 (70 %) handed in all 4 learning reflections</dd>
 					</dl>
 				</CardOverlay>
 			</div>
@@ -1952,8 +1829,8 @@
 				<ChatBubble variant="secondary" class="p-8" tailAngle={130} tailLength={100} tailBase={40}>
 					<div class="mt-5 mb-3 text-5xl italic">
 						🥥 "You are getting hit, because you shake the coconut tree. And in a way I wish you to
-						get hit, because it means you are not loosing ground, you continue to crack the nut."<br
-						/>
+						get hit more, because it means you are not loosing ground, you continue to crack the
+						nut."<br />
 					</div>
 					Christèle Galpin, cofounding manager,
 					<a href="https://www.alfalfaz.com/en/home/" target="_blank" rel="noopener noreferrer"
@@ -2020,8 +1897,8 @@
 		<div class="fragment fade-in w-full" data-fragment-index="2">
 			<ChatBubble variant="secondary" tailAngle={210} tailLength={80} tailBase={40}>
 				<div class="mt-5 mb-3 text-5xl italic">
-					<Icon icon="mdi:autorenew" class="mr-2 inline-block size-4" /> "You are the person, that I have
-					seen <br />
+					<Icon icon="mdi:autorenew" class="mr-2 inline-block size-10" /> "You are the person, that I
+					have seen <br />
 					changing most over the last 10 years."
 				</div>
 				<a
@@ -2031,13 +1908,6 @@
 				>, close colleague
 			</ChatBubble>
 		</div>
-	</FramedSlide>
-	<FramedSlide>
-		<img
-			src="/clouds-jotunheimen.jpg"
-			alt="Clouds Jotunheimen"
-			class="shadow-base-shadow h-fit w-3/4 self-center rounded-4xl shadow-lg"
-		/>
 	</FramedSlide>
 	<FramedSlide part="inner-change" title="Inner change?" hideProgressBar>
 		<div class="label text-9xl font-bold">
@@ -2063,7 +1933,6 @@
 		<div class="fragment absolute top-6/10 left-8/10">
 			<Icon icon="andrsrxn:playing-heart" class="text-error text-[250px]" />
 		</div>
-		<!-- Session around bonfire! -->
 		{#snippet footerRight()}
 			<div class="text-right text-xl">
 				🤔 Inspired by <a
@@ -2075,8 +1944,8 @@
 	</FramedSlide>
 	<FramedSlide>
 		<img
-			src="/sunset-vejlesoen.jpg"
-			alt="Sunset Vejlesøen"
+			src="/clouds-jotunheimen.jpg"
+			alt="Clouds Jotunheimen"
 			class="shadow-base-shadow h-fit w-3/4 self-center rounded-4xl shadow-lg"
 		/>
 	</FramedSlide>
@@ -2093,164 +1962,263 @@
 				/>{/if}
 		{/snippet}
 	</FramedSlide>
+	<FramedSlide>
+		<img
+			src="/sunset-vejlesoen.jpg"
+			alt="Sunset Vejlesøen"
+			class="shadow-base-shadow h-fit w-3/4 self-center rounded-4xl shadow-lg"
+		/>
+	</FramedSlide>
 	<!-- <FramedSlide>
 		planetary boundaries -> inner work -> trust<br />
 		stressed people -> stressed systems -> stressed planet (from regenerative leadership)
 	</FramedSlide> -->
-	<FramedSlide part="others-engagement" title="What are others doing?">
-		<div class="grid h-full grid-cols-2 gap-6">
+	<section>
+		<FramedSlide part="welcome" hideProgressBar>
 			<div
-				class="bg-secondary text-secondary-content shadow-base-shadow flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-6 text-4xl shadow-inner"
+				class="text-base-content-variant flex h-full items-center justify-center text-[200px] font-bold"
 			>
-				<div class="text-center text-5xl font-bold">Arnolds encounters</div>
-				<ul class="list-disc space-y-2">
-					<li>
-						<a
-							href="https://www.cbs.dk/research/departments/department-management-society-and-communication/annemette-kjaergaard"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Annemette Kjærgaard</a
-						>, Copenhagen Business School
-					</li>
-					<li>
-						<a
-							href="https://www.cefu.dk/emner/om-cefu/forskere/noemi-katznelson.aspx"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Noemi Katznelson</a
-						>, Aalborg University
-					</li>
-					<li>
-						<a
-							href="https://rflect.ch/"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">rflect.ch</a
-						>, Switzerland
-					</li>
-					<li>
-						<a
-							href="https://www.regenerative-educators.com/theartofregenerativeeducatorship"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Regenerative Educatorship</a
-						>, The Netherlands/Belgium
-					</li>
-					<li>
-						<a
-							href="https://www.jacobrask.dk"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Jacob Rask</a
-						>, Roskilde University
-					</li>
-					<li>
-						<a
-							href="https://www.keg.lu.se/en/vasna-ramasar"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Vasna Ramasar</a
-						>, Lund University
-					</li>
-					<li>
-						<a
-							href="https://ibi.ethz.ch/en/das-institut/people/person-detail.tobias-luthe.html"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Tobias Luthe</a
-						>, ETH Zürich
-					</li>
-					<li>
-						<a
-							href="https://www.opheinonen.com/bio"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Olli-Pekka Heinonen</a
-						>, International Baccalaureate
-					</li>
-				</ul>
+				Backup Slides
 			</div>
+		</FramedSlide>
+		<FramedSlide part="context" section="complexity" title="Complexity">
 			<div
-				class="bg-secondary text-secondary-content shadow-base-shadow flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-6 text-4xl shadow-inner"
+				class="grid h-full min-h-0 grid-cols-[auto] grid-rows-[minmax(0,1fr)_80px] justify-center gap-y-2 pb-12"
 			>
-				<div class="text-center text-5xl font-bold">Selected sources from Annemette</div>
-				<ul class="list-disc space-y-2">
-					<li>
-						<a
-							href="https://www.alfiekohn.org"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Alfie Kohn</a
-						>, Author and Educator
-					</li>
-					<li>
-						<a
-							href="https://www.emich.edu/cob/faculty/j_beatty.php"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Joy Beatty</a
-						>, Eastern Michigan University
-					</li>
-					<li>
-						<a
-							href="https://profiles.ucl.ac.uk/52741-stuart-tannock/publications"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Stuart Tannock</a
-						>, University College London
-					</li>
-					<li>
-						<a
-							href="https://link.springer.com/article/10.1007/s10459-009-9211-1"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Casey B. White</a
-						>, University of Michigan Medical School
-					</li>
-					<li>
-						<a
-							href="https://www.tandfonline.com/doi/full/10.1080/0309877X.2019.1619073"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Chris McMorran</a
-						>, National University of Singapore
-					</li>
-					<li>
-						<a
-							href="https://academic.oup.com/academicmedicine/article-abstract/84/5/655/8353384?redirectedFrom=fulltext"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Robert A. Bloodgood</a
-						>, University of Virginia School of Medicine
-					</li>
-					<li>
-						<a
-							href="https://www.mayoclinicproceedings.org/article/S0025-6196(11)61250-0/abstract"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Daniel E. Rohe</a
-						>, Mayo Clinic
-					</li>
-					<li>
-						<a
-							href="https://www.tandfonline.com/doi/full/10.1080/13562510902757260"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Lars O. Dahlgren</a
-						>, Linköping University
-					</li>
-					<li>
-						<a
-							href="https://www.tandfonline.com/doi/full/10.3109/0142159X.2012.652243"
-							class="link link-animated"
-							target="_blank"
-							rel="noopener noreferrer">Faysal Altahawi</a
-						>, Case Western Reserve University
-					</li>
-				</ul>
+				<div
+					class="shadow-base-shadow relative col-start-1 row-start-1 aspect-[30/17] h-full max-w-full place-self-center overflow-hidden rounded-4xl bg-white shadow-lg"
+				>
+					<img
+						src="https://www.businessillustrator.com/wp-content/uploads/2025/12/linear-office-blank-web.png.webp"
+						alt="Reality strikes back - cartoon"
+						class="absolute top-[1.8%] left-[14.7%] !m-0 h-auto !max-h-none w-[69.5%] !max-w-none [clip-path:inset(0_0_8%_0)]"
+					/>
+					<img
+						//src="https://www.businessillustrator.com/wp-content/uploads/2025/12/complexity-outside-linear-cube-cartoon_businessillustrator.com_1200px-600x314.png.webp"
+						src="https://www.businessillustrator.com/wp-content/uploads/2021/05/Complexity-outside-linear-office-cartoon-1200-1200px-2.png.webp"
+						alt="Reality strikes back - cartoon"
+						class="fragment absolute inset-0 z-10 !m-0 h-full !max-h-none w-full !max-w-none object-cover object-center"
+					/>
+				</div>
+				<iframe
+					class="shadow-base-shadow fragment col-start-1 row-start-2 !m-0 h-20 !max-h-none w-full !max-w-none place-self-center rounded-4xl shadow-lg"
+					title="The Story of the Chinese Farmer - Allan Watts"
+					data-testid="embed-iframe"
+					style="border-radius:12px"
+					src="https://open.spotify.com/embed/track/5QTIGUgV4eFrg0o3k8lGTp?utm_source=generator&si=7bc38a38196f43c5"
+					width="100%"
+					height="80"
+					frameBorder="0"
+					allowfullscreen={false}
+					allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+					loading="lazy"
+				></iframe>
 			</div>
-		</div>
-	</FramedSlide>
+			{#snippet footerRight()}
+				<div class="text-right text-xl">
+					Cartoon by
+					<a href="mailto:Virpi@businessillustrator.com" class="link link-animated">
+						📧 Virpi@businessillustrator.com
+					</a>,
+					<a href="https://www.businessillustrator.com/blog" class="link link-animated">
+						🌐 www.businessillustrator.com/blog
+					</a>
+				</div>
+			{/snippet}
+		</FramedSlide>
+		<FramedSlide part="inspiration" section="communities" title="Communities">
+			<div class="relative flex h-full w-full items-center justify-center">
+				<div
+					class="bg-primary-container text-primary-container-content shadow-base-shadow h-fit w-fit gap-2 rounded-4xl p-6 py-10 text-6xl shadow-inner"
+				>
+					<ul>
+						<li class="mb-6">
+							<a href="https://www.regenerators.co" class="link link-animated">
+								Regenerative Leadership Journey</a
+							> by Laura Storm
+						</li>
+						<li class="mb-6">
+							<a href="https://www.innerdevelopmentgoals.org" class="link link-animated"
+								>Inner Development Goals</a
+							>
+						</li>
+						<li>
+							<a href="https://doughnuteconomics.org" class="link link-animated"
+								>Doughnut Economics Action Lab</a
+							> Kate Raworth, et. al
+						</li>
+					</ul>
+				</div>
+			</div>
+		</FramedSlide>
+		<FramedSlide part="others-engagement" title="What are others doing?">
+			<div class="grid h-full grid-cols-2 gap-6">
+				<div
+					class="bg-secondary text-secondary-content shadow-base-shadow flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-6 text-4xl shadow-inner"
+				>
+					<div class="text-center text-5xl font-bold">Arnolds encounters</div>
+					<ul class="list-disc space-y-2">
+						<li>
+							<a
+								href="https://www.cbs.dk/research/departments/department-management-society-and-communication/annemette-kjaergaard"
+								class="link link-animated"
+								target="_blank"
+								rel="noopener noreferrer">Annemette Kjærgaard</a
+							>, Copenhagen Business School
+						</li>
+						<li>
+							<a
+								href="https://www.cefu.dk/emner/om-cefu/forskere/noemi-katznelson.aspx"
+								class="link link-animated"
+								target="_blank"
+								rel="noopener noreferrer">Noemi Katznelson</a
+							>, Aalborg University
+						</li>
+						<li>
+							<a
+								href="https://rflect.ch/"
+								class="link link-animated"
+								target="_blank"
+								rel="noopener noreferrer">rflect.ch</a
+							>, Switzerland
+						</li>
+						<li>
+							<a
+								href="https://www.regenerative-educators.com/theartofregenerativeeducatorship"
+								class="link link-animated"
+								target="_blank"
+								rel="noopener noreferrer">Regenerative Educatorship</a
+							>, The Netherlands/Belgium
+						</li>
+						<li>
+							<a
+								href="https://www.jacobrask.dk"
+								class="link link-animated"
+								target="_blank"
+								rel="noopener noreferrer">Jacob Rask</a
+							>, Roskilde University
+						</li>
+						<li>
+							<a
+								href="https://www.keg.lu.se/en/vasna-ramasar"
+								class="link link-animated"
+								target="_blank"
+								rel="noopener noreferrer">Vasna Ramasar</a
+							>, Lund University
+						</li>
+						<li>
+							<a
+								href="https://ibi.ethz.ch/en/das-institut/people/person-detail.tobias-luthe.html"
+								class="link link-animated"
+								target="_blank"
+								rel="noopener noreferrer">Tobias Luthe</a
+							>, ETH Zürich
+						</li>
+						<li>
+							<a
+								href="https://www.opheinonen.com/bio"
+								class="link link-animated"
+								target="_blank"
+								rel="noopener noreferrer">Olli-Pekka Heinonen</a
+							>, International Baccalaureate
+						</li>
+					</ul>
+				</div>
+				<div
+					class="bg-secondary text-secondary-content shadow-base-shadow flex h-fit flex-col gap-2 overflow-y-auto rounded-4xl p-6 text-4xl shadow-inner"
+				>
+					<div class="text-center text-5xl font-bold">Selected sources from Annemette</div>
+					<ul class="list-disc space-y-2">
+						<li>
+							<a
+								href="https://www.alfiekohn.org"
+								class="link link-animated"
+								target="_blank"
+								rel="noopener noreferrer">Alfie Kohn</a
+							>, Author and Educator
+						</li>
+						<li>
+							<a
+								href="https://www.emich.edu/cob/faculty/j_beatty.php"
+								class="link link-animated"
+								target="_blank"
+								rel="noopener noreferrer">Joy Beatty</a
+							>, Eastern Michigan University
+						</li>
+						<li>
+							<a
+								href="https://profiles.ucl.ac.uk/52741-stuart-tannock/publications"
+								class="link link-animated"
+								target="_blank"
+								rel="noopener noreferrer">Stuart Tannock</a
+							>, University College London
+						</li>
+						<li>
+							<a
+								href="https://link.springer.com/article/10.1007/s10459-009-9211-1"
+								class="link link-animated"
+								target="_blank"
+								rel="noopener noreferrer">Casey B. White</a
+							>, University of Michigan Medical School
+						</li>
+						<li>
+							<a
+								href="https://www.tandfonline.com/doi/full/10.1080/0309877X.2019.1619073"
+								class="link link-animated"
+								target="_blank"
+								rel="noopener noreferrer">Chris McMorran</a
+							>, National University of Singapore
+						</li>
+						<li>
+							<a
+								href="https://academic.oup.com/academicmedicine/article-abstract/84/5/655/8353384?redirectedFrom=fulltext"
+								class="link link-animated"
+								target="_blank"
+								rel="noopener noreferrer">Robert A. Bloodgood</a
+							>, University of Virginia School of Medicine
+						</li>
+						<li>
+							<a
+								href="https://www.mayoclinicproceedings.org/article/S0025-6196(11)61250-0/abstract"
+								class="link link-animated"
+								target="_blank"
+								rel="noopener noreferrer">Daniel E. Rohe</a
+							>, Mayo Clinic
+						</li>
+						<li>
+							<a
+								href="https://www.tandfonline.com/doi/full/10.1080/13562510902757260"
+								class="link link-animated"
+								target="_blank"
+								rel="noopener noreferrer">Lars O. Dahlgren</a
+							>, Linköping University
+						</li>
+						<li>
+							<a
+								href="https://www.tandfonline.com/doi/full/10.3109/0142159X.2012.652243"
+								class="link link-animated"
+								target="_blank"
+								rel="noopener noreferrer">Faysal Altahawi</a
+							>, Case Western Reserve University
+						</li>
+					</ul>
+				</div>
+			</div>
+		</FramedSlide>
+		<FramedSlide part="inspiration" section="law" title="Law">
+			<div
+				class="bg-secondary text-secondary-content shadow-base-shadow shadow-base-shadow m-5 grid grid-cols-[500px_1fr] gap-6 rounded-4xl p-6 shadow"
+			>
+				<div class="label col-span-2 text-8xl">Eksamensbekendtgørelsen</div>
+				<div class="label text-[200px]">
+					<Icon icon="fa6-solid:section" class="mr-0 inline size-[200px]" />11
+				</div>
+				<div class="text-left text-[70px]">
+					All elements of the education <br /> finish with an exam.
+				</div>
+			</div>
+		</FramedSlide>
+	</section>
 	{#if presenterMode}
 		<FramedSlide part="bonfire" title="Invitation to Bonfire Session" hideProgressBar>
 			<div class="grid h-full min-h-0 grid-cols-2 grid-rows-[minmax(0,1fr)] items-center gap-6">
