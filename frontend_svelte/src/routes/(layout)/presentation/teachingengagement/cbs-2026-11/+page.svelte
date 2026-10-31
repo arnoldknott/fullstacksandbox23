@@ -1122,51 +1122,6 @@
 		{/snippet}
 	</FramedSlide>
 	<!-- </section> -->
-	<FramedSlide part="context" section="complexity" title="Complexity">
-		<div
-			class="grid h-full min-h-0 grid-cols-[auto] grid-rows-[minmax(0,1fr)_80px] justify-center gap-y-2 pb-12"
-		>
-			<div
-				class="shadow-base-shadow relative col-start-1 row-start-1 aspect-[30/17] h-full max-w-full place-self-center overflow-hidden rounded-4xl bg-white shadow-lg"
-			>
-				<img
-					src="https://www.businessillustrator.com/wp-content/uploads/2025/12/linear-office-blank-web.png.webp"
-					alt="Reality strikes back - cartoon"
-					class="absolute top-[1.8%] left-[14.7%] !m-0 h-auto !max-h-none w-[69.5%] !max-w-none [clip-path:inset(0_0_8%_0)]"
-				/>
-				<img
-					//src="https://www.businessillustrator.com/wp-content/uploads/2025/12/complexity-outside-linear-cube-cartoon_businessillustrator.com_1200px-600x314.png.webp"
-					src="https://www.businessillustrator.com/wp-content/uploads/2021/05/Complexity-outside-linear-office-cartoon-1200-1200px-2.png.webp"
-					alt="Reality strikes back - cartoon"
-					class="fragment absolute inset-0 z-10 !m-0 h-full !max-h-none w-full !max-w-none object-cover object-center"
-				/>
-			</div>
-			<iframe
-				class="shadow-base-shadow fragment col-start-1 row-start-2 !m-0 h-20 !max-h-none w-full !max-w-none place-self-center rounded-4xl shadow-lg"
-				title="The Story of the Chinese Farmer - Allan Watts"
-				data-testid="embed-iframe"
-				style="border-radius:12px"
-				src="https://open.spotify.com/embed/track/5QTIGUgV4eFrg0o3k8lGTp?utm_source=generator&si=7bc38a38196f43c5"
-				width="100%"
-				height="80"
-				frameBorder="0"
-				allowfullscreen={false}
-				allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-				loading="lazy"
-			></iframe>
-		</div>
-		{#snippet footerRight()}
-			<div class="text-right text-xl">
-				Cartoon by
-				<a href="mailto:Virpi@businessillustrator.com" class="link link-animated">
-					📧 Virpi@businessillustrator.com
-				</a>,
-				<a href="https://www.businessillustrator.com/blog" class="link link-animated">
-					🌐 www.businessillustrator.com/blog
-				</a>
-			</div>
-		{/snippet}
-	</FramedSlide>
 	<FramedSlide part="context" section="change" title="Outer change?">
 		<div class="label text-9xl font-bold">
 			Who wants <br /> <span class="invisible">to</span> change?
@@ -2018,6 +1973,51 @@
 		planetary boundaries -> inner work -> trust<br />
 		stressed people -> stressed systems -> stressed planet (from regenerative leadership)
 	</FramedSlide> -->
+	<FramedSlide part="context" section="complexity" title="Complexity">
+		<div
+			class="grid h-full min-h-0 grid-cols-[auto] grid-rows-[minmax(0,1fr)_80px] justify-center gap-y-2 pb-12"
+		>
+			<div
+				class="shadow-base-shadow relative col-start-1 row-start-1 aspect-[30/17] h-full max-w-full place-self-center overflow-hidden rounded-4xl bg-white shadow-lg"
+			>
+				<img
+					src="https://www.businessillustrator.com/wp-content/uploads/2025/12/linear-office-blank-web.png.webp"
+					alt="Reality strikes back - cartoon"
+					class="absolute top-[1.8%] left-[14.7%] !m-0 h-auto !max-h-none w-[69.5%] !max-w-none [clip-path:inset(0_0_8%_0)]"
+				/>
+				<img
+					//src="https://www.businessillustrator.com/wp-content/uploads/2025/12/complexity-outside-linear-cube-cartoon_businessillustrator.com_1200px-600x314.png.webp"
+					src="https://www.businessillustrator.com/wp-content/uploads/2021/05/Complexity-outside-linear-office-cartoon-1200-1200px-2.png.webp"
+					alt="Reality strikes back - cartoon"
+					class="fragment absolute inset-0 z-10 !m-0 h-full !max-h-none w-full !max-w-none object-cover object-center"
+				/>
+			</div>
+			<iframe
+				class="shadow-base-shadow fragment col-start-1 row-start-2 !m-0 h-20 !max-h-none w-full !max-w-none place-self-center rounded-4xl shadow-lg"
+				title="The Story of the Chinese Farmer - Allan Watts"
+				data-testid="embed-iframe"
+				style="border-radius:12px"
+				src="https://open.spotify.com/embed/track/5QTIGUgV4eFrg0o3k8lGTp?utm_source=generator&si=7bc38a38196f43c5"
+				width="100%"
+				height="80"
+				frameBorder="0"
+				allowfullscreen={false}
+				allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+				loading="lazy"
+			></iframe>
+		</div>
+		{#snippet footerRight()}
+			<div class="text-right text-xl">
+				Cartoon by
+				<a href="mailto:Virpi@businessillustrator.com" class="link link-animated">
+					📧 Virpi@businessillustrator.com
+				</a>,
+				<a href="https://www.businessillustrator.com/blog" class="link link-animated">
+					🌐 www.businessillustrator.com/blog
+				</a>
+			</div>
+		{/snippet}
+	</FramedSlide>
 	<FramedSlide part="inspiration" section="communities" title="Communities">
 		<div class="relative flex h-full w-full items-center justify-center">
 			<div
