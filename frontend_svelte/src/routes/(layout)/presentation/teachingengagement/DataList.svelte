@@ -19,8 +19,8 @@
 				type="button"
 				class="btn btn-circle btn-sm btn-{color}-container btn-gradient mr-2 self-center"
 				aria-label="Toggle inputs"
+				aria-expanded={showContent}
 				onclick={() => (showContent = !showContent)}
-				onkeydown={() => (showContent = !showContent)}
 			>
 				<Icon
 					icon="tabler:chevron-down"
