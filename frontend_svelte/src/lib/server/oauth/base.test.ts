@@ -1,6 +1,50 @@
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 
-import { createOAuthTransaction, validateOAuthIntent, validateOAuthTransaction } from './base';
+import { getRequestEvent } from '$app/server';
+
+import {
+	createOAuthTransaction,
+	redirectToReauthentication,
+	validateOAuthIntent,
+	validateOAuthTransaction
+} from './base';
+
+vi.mock('$app/server', () => ({ getRequestEvent: vi.fn() }));
+
+describe('reauthentication entry points', () => {
+	test.each([
+		{ accept: 'text/html', isDataRequest: false, action: 'false' },
+		{ accept: '*/*', isDataRequest: true, action: 'false' },
+		{ accept: 'application/json', isDataRequest: false, action: 'true' }
+	])('redirects page requests while preserving path and query (%j)', (request) => {
+		const url = new URL('https://app.example/presentation/cbs?presenter=true');
+		vi.mocked(getRequestEvent).mockReturnValue({
+			url,
+			isDataRequest: request.isDataRequest,
+			request: new Request(url, {
+				headers: { accept: request.accept, 'x-sveltekit-action': request.action }
+			})
+		} as never);
+
+		expect(() => redirectToReauthentication()).toThrow(
+			expect.objectContaining({
+				status: 307,
+				location: `/login/microsoft?target-url=${encodeURIComponent(url.href)}`
+			})
+		);
+	});
+
+	test('rejects background requests rather than starting authorization in a fetch', () => {
+		const url = new URL('https://app.example/apiproxies/msgraph?endpoint=/me/photo/$value');
+		vi.mocked(getRequestEvent).mockReturnValue({
+			url,
+			isDataRequest: false,
+			request: new Request(url)
+		} as never);
+
+		expect(() => redirectToReauthentication()).toThrow(expect.objectContaining({ status: 401 }));
+	});
+});
 
 describe('OAuth transactions', () => {
 	test('binds state, intent, data, and an independent expiry', () => {

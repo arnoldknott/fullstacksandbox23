@@ -277,6 +277,26 @@ describe('SocketIO for DemoResources', () => {
 		expect(testSocketio.client.connected).toBe(false);
 	});
 
+	test('reauthenticates from the current page when ticket acquisition rejects expired credentials', async () => {
+		vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status: 401 })));
+		let socket!: SocketIO<DemoResource>;
+		const cleanup = $effect.root(() => {
+			socket = new SocketIO({ namespace: '/demo-resource', sessionId: 'expired-session' });
+		});
+		try {
+			await vi.waitFor(() =>
+				expect(goto).toHaveBeenCalledWith(
+					`/login/microsoft?target-url=${encodeURIComponent(window.location.href)}`
+				)
+			);
+			expect(socket.client.connected).toBe(false);
+		} finally {
+			socket.client.disconnect();
+			cleanup();
+			vi.unstubAllGlobals();
+		}
+	});
+
 	test('preseeds entities and subscribes in bounded batches with the snapshot cursor', async () => {
 		const entities = Array.from({ length: 510 }, (_, index) => ({
 			id: `00000000-0000-4000-8000-${index.toString().padStart(12, '0')}`,

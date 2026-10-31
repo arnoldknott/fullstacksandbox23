@@ -45,4 +45,44 @@ describe('SessionLifecycle', () => {
 			`/login/linkedin?target-url=${encodeURIComponent(window.location.href)}`
 		);
 	});
+
+	test('captures the exact presenter slide and fragment once across multiple expired sockets', () => {
+		const originalUrl = window.location.href;
+		window.history.replaceState(
+			{},
+			'',
+			'/presentation/teachingengagement/cbs-2026-11?presenter=true#/inspiration-books/2'
+		);
+		try {
+			const lifecycle = new SessionLifecycle();
+			const sockets = [{ disconnect: vi.fn() }, { disconnect: vi.fn() }];
+			for (const socket of sockets) lifecycle.reauthenticate(socket as never);
+
+			expect(goto).toHaveBeenCalledOnce();
+			const loginUrl = new URL(vi.mocked(goto).mock.calls[0][0], window.location.origin);
+			expect(loginUrl.searchParams.get('target-url')).toBe(window.location.href);
+			for (const socket of sockets) expect(socket.disconnect).toHaveBeenCalledOnce();
+		} finally {
+			window.history.replaceState({}, '', originalUrl);
+		}
+	});
+
+	test('captures live presentation state before its debounced URL update', () => {
+		const lifecycle = new SessionLifecycle();
+		const target = `${window.location.origin}/presentation/cbs?presenter=true#/inspiration-books/1`;
+		const unregister = lifecycle.registerReauthenticationTarget(() => target);
+		lifecycle.reauthenticate({ disconnect: vi.fn() } as never);
+		expect(goto).toHaveBeenCalledWith(`/login/linkedin?target-url=${encodeURIComponent(target)}`);
+		unregister();
+	});
+
+	test('removes the presentation-specific return target when the presentation unmounts', () => {
+		const lifecycle = new SessionLifecycle();
+		const unregister = lifecycle.registerReauthenticationTarget(() => 'https://stale.example/');
+		unregister();
+		lifecycle.reauthenticate({ disconnect: vi.fn() } as never);
+		expect(goto).toHaveBeenCalledWith(
+			`/login/linkedin?target-url=${encodeURIComponent(window.location.href)}`
+		);
+	});
 });

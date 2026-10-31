@@ -173,6 +173,7 @@
 					<li>
 						<a
 							class="dropdown-item dropdown-close"
+							data-sveltekit-preload-data="off"
 							href="/login/linkedin?intent=link&target-url={accountLinkTarget}"
 						>
 							<span class="icon-[cib--linkedin-in] bg-secondary size-5"></span>
@@ -184,6 +185,7 @@
 					<li>
 						<a
 							class="dropdown-item dropdown-close"
+							data-sveltekit-preload-data="off"
 							href="/login/microsoft?intent=link&target-url={accountLinkTarget}"
 						>
 							<span class="icon-[codicon--microsoft] size-5"></span>

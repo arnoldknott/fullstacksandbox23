@@ -1,6 +1,6 @@
 /** @type {import('@sveltejs/kit').Handle} */
 // TBD: import to ES6 typescript import
-import { type Handle, type HandleFetch, redirect } from '@sveltejs/kit';
+import { error, type Handle, type HandleFetch, redirect } from '@sveltejs/kit';
 
 import { backendAPI } from '$lib/server/apis/backendApi';
 import { redisCache } from '$lib/server/cache';
@@ -91,6 +91,14 @@ export const handle: Handle = async ({ event, resolve }) => {
 			'🔥 🎣 hooks - server - access to this protected route failed (potentially session expired):'
 		);
 		console.log(event.url.href);
+		if (
+			redirectTarget !== '/' &&
+			!event.isDataRequest &&
+			event.request.headers.get('x-sveltekit-action') !== 'true' &&
+			!event.request.headers.get('accept')?.includes('text/html')
+		) {
+			error(401, 'Authentication required');
+		}
 		// A 307 would preserve a rejected form action's POST method and repost it to
 		// /login, which has no form actions. A 303 always enters the login page via GET.
 		redirect(303, redirectTarget);

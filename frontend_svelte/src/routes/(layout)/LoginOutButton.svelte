@@ -26,8 +26,10 @@
 
 {#if !loggedIn}
 	<button class="btn btn-neutral shadow-base-shadow ml-2 rounded-full shadow" aria-label="Log In">
-		<a class="text-inherit!" href={`/login/${provider}${loginQuery ? `?${loginQuery}` : ''}`}
-			>Log in</a
+		<a
+			class="text-inherit!"
+			data-sveltekit-preload-data="off"
+			href={`/login/${provider}${loginQuery ? `?${loginQuery}` : ''}`}>Log in</a
 		>
 	</button>
 {:else}
