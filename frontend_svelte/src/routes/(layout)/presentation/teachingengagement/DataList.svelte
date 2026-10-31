@@ -36,7 +36,7 @@
 	</dt>
 	{#if showContent}
 		{#each content as item, index (index)}
-			<dd transition:slide={{ duration: 600 }}>
+			<dd class="mb-2" class:mt-3={index === 0} transition:slide={{ duration: 600 }}>
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 				{@html item}
 			</dd>
