@@ -1067,12 +1067,12 @@
 				{/if}
 			{/snippet}
 			<div
-				class="bg-primary-container text-primary-container-content shadow-base-shadow col-span-3 m-5 mb-25 flex h-fit w-fit items-center justify-center rounded-[50%] p-20 text-5xl font-bold shadow"
+				class="bg-primary text-primary-content shadow-base-shadow col-span-3 m-5 mb-25 flex h-fit w-fit items-center justify-center rounded-[50%] p-20 text-5xl font-bold shadow"
 			>
 				Stressed <br />People
 			</div>
 			<div
-				class="bg-primary-container text-primary-container-content shadow-base-shadow m-5 flex h-fit w-fit items-center justify-center rounded-[50%] p-20 text-5xl font-bold shadow"
+				class="bg-primary text-primary-content shadow-base-shadow m-5 flex h-fit w-fit items-center justify-center rounded-[50%] p-20 text-5xl font-bold shadow"
 			>
 				Stressed <br />Systems
 			</div>
@@ -1094,7 +1094,7 @@
 				</svg>
 			</div>
 			<div
-				class="bg-primary-container text-primary-container-content shadow-base-shadow m-5 flex h-fit w-fit items-center justify-center rounded-[50%] p-20 text-5xl font-bold shadow"
+				class="bg-primary text-primary-content shadow-base-shadow m-5 flex h-fit w-fit items-center justify-center rounded-[50%] p-20 text-5xl font-bold shadow"
 			>
 				Stressed <br />Planet
 			</div>
