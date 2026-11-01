@@ -1,4 +1,4 @@
-import { render, waitFor } from '@testing-library/svelte';
+import { cleanup, render } from '@testing-library/svelte';
 import type { RevealApi } from 'reveal.js';
 import { createRawSnippet } from 'svelte';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
@@ -35,6 +35,7 @@ const children = createRawSnippet(() => ({
 
 describe('resumable Reveal.js presentations', () => {
 	beforeEach(() => {
+		vi.useFakeTimers();
 		vi.clearAllMocks();
 		window.history.replaceState({}, '', '/presentation/cbs?presenter=true');
 		vi.stubGlobal(
@@ -43,21 +44,30 @@ describe('resumable Reveal.js presentations', () => {
 		);
 	});
 
-	afterEach(() => {
-		vi.unstubAllGlobals();
-		window.history.replaceState({}, '', '/');
+	afterEach(async () => {
+		try {
+			cleanup();
+			// Reveal's bundled text fitter queues window callbacks that deck.destroy() does not cancel.
+			await vi.runOnlyPendingTimersAsync();
+		} finally {
+			// Reveal also leaves a recurring scroll-prevention interval after destroy().
+			vi.clearAllTimers();
+			vi.useRealTimers();
+			vi.unstubAllGlobals();
+			window.history.replaceState({}, '', '/');
+		}
 	});
 
 	test('updates the URL and restores the same slide and fragment after a remount', async () => {
 		const props = { children, options: { hash: true, fragmentInURL: true } };
 		const first = render(RevealJS, { props });
-		await waitFor(() => expect(mocks.deck?.isReady()).toBe(true));
+		await vi.waitFor(() => expect(mocks.deck?.isReady()).toBe(true));
 		mocks.deck!.slide(0, 1, 1);
 		const getTarget = mocks.registerTarget.mock.calls[0][0];
 		expect(getTarget()).toBe(
 			`${window.location.origin}/presentation/cbs?presenter=true#/inspiration-books/1`
 		);
-		await waitFor(() => expect(window.location.hash).toBe('#/inspiration-books/1'), {
+		await vi.waitFor(() => expect(window.location.hash).toBe('#/inspiration-books/1'), {
 			timeout: 2000
 		});
 		const returnUrl = window.location.href;
@@ -66,7 +76,7 @@ describe('resumable Reveal.js presentations', () => {
 
 		const second = render(RevealJS, { props });
 		try {
-			await waitFor(() => expect(mocks.deck?.isReady()).toBe(true));
+			await vi.waitFor(() => expect(mocks.deck?.isReady()).toBe(true));
 			expect(mocks.deck?.getCurrentSlide().id).toBe('inspiration-books');
 			expect(mocks.deck?.getIndices().f).toBe(1);
 			expect(window.location.href).toBe(returnUrl);
@@ -75,5 +85,19 @@ describe('resumable Reveal.js presentations', () => {
 		} finally {
 			second.unmount();
 		}
+	});
+
+	test('drains delayed window resize callbacks after the presentation is unmounted', async () => {
+		const presentation = render(RevealJS, { props: { children } });
+		await vi.waitFor(() => expect(mocks.deck?.isReady()).toBe(true));
+		await vi.runOnlyPendingTimersAsync();
+		const idleTimerCount = vi.getTimerCount();
+
+		window.dispatchEvent(new Event('resize'));
+		presentation.unmount();
+		expect(vi.getTimerCount()).toBeGreaterThan(idleTimerCount);
+
+		await vi.runOnlyPendingTimersAsync();
+		expect(vi.getTimerCount()).toBe(idleTimerCount);
 	});
 });
