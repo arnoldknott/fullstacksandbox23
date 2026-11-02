@@ -2036,6 +2036,28 @@
 				</div>
 			{/snippet}
 		</FramedSlide>
+		<FramedSlide part="context" section="awareness" title="Awareness">
+			<iframe
+				src="https://www.youtube.com/embed/vJG698U2Mvo?si=T1Gl_Ut2vfpo_Gc4"
+				class="shadow-base-shadow h-full max-h-full w-3/4 self-center rounded-4xl object-fill shadow-lg"
+				title="Basketball Awareness Test"
+				frameborder="0"
+				allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+				referrerpolicy="strict-origin-when-cross-origin"
+				allowfullscreen
+			></iframe>
+		</FramedSlide>
+		<FramedSlide part="context" section="corn" title="Corn">
+			<div class="fragment fade-out label absolute text-9xl font-bold" data-fragment-index="0">
+				🌽 I invite you to close your eyes and imagine harvest of corn.
+			</div>
+			<img
+				src="https://www.bitesizedgardening.co.uk/wp-content/uploads/2022/10/corn-colours--300x200.jpeg"
+				alt="Corn Colours"
+				class="shadow-base-shadow fragment absolute h-3/4 w-fit self-center rounded-4xl shadow-lg"
+				data-fragment-index="0"
+			/>
+		</FramedSlide>
 		<FramedSlide part="inspiration" section="communities" title="Communities">
 			<div class="relative flex h-full w-full items-center justify-center">
 				<div
