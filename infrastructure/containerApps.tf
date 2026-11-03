@@ -6,10 +6,9 @@ resource "azurerm_log_analytics_workspace" "logAnalytics" {
 }
 
 resource "azurerm_monitor_diagnostic_setting" "ContainerEnvironmentLogs" {
-  name                           = "${var.project_name}-container-logs-${terraform.workspace}"
-  target_resource_id             = azurerm_container_app_environment.ContainerEnvironment.id
-  log_analytics_workspace_id     = azurerm_log_analytics_workspace.logAnalytics.id
-  log_analytics_destination_type = "Dedicated"
+  name                       = "${var.project_name}-container-logs-${terraform.workspace}"
+  target_resource_id         = azurerm_container_app_environment.ContainerEnvironment.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.logAnalytics.id
 
   enabled_log {
     category = "ContainerAppConsoleLogs"
