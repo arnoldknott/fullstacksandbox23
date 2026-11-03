@@ -9,6 +9,7 @@ services:
         ALPINE_VERSION: ${ALPINE_VERSION}
         UV_VERSION: ${UV_VERSION}
         BUN_VERSION: ${BUN_VERSION}
+        OPENTOFU_VERSION: ${OPENTOFU_VERSION}
     command: sleep infinity
     init: true
     volumes:
