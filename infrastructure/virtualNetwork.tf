@@ -62,7 +62,10 @@ resource "azurerm_subnet" "subnetPostgres" {
   resource_group_name  = azurerm_resource_group.resourceGroup.name
   virtual_network_name = azurerm_virtual_network.virtualNetwork.name
   address_prefixes     = ["10.0.8.0/24"]
-  service_endpoints    = ["Microsoft.Storage"]
+
+  service_endpoint {
+    service = "Microsoft.Storage"
+  }
 
   lifecycle {
     ignore_changes = [private_endpoint_network_policies]
@@ -93,7 +96,10 @@ resource "azurerm_subnet" "subnetPostgres" {
 #   resource_group_name  = azurerm_resource_group.resourceGroup.name
 #   virtual_network_name = azurerm_virtual_network.virtualNetwork.name
 #   address_prefixes     = ["10.0.12.0/24"]
-#   service_endpoints    = ["Microsoft.Storage"]
+
+#   service_endpoint {
+#     service = "Microsoft.Storage"
+#   }
 # }
 
 # resource "azurerm_subnet" "subnetPrivateLinks" {
@@ -117,10 +123,9 @@ resource "azurerm_private_dns_zone" "privateDNSZone" {
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "privateDNSZoneLink" {
-  name                  = "${var.project_short_name}vnetlink"
-  private_dns_zone_name = azurerm_private_dns_zone.privateDNSZone.name
-  virtual_network_id    = azurerm_virtual_network.virtualNetwork.id
-  resource_group_name   = azurerm_resource_group.resourceGroup.name
+  name                = "${var.project_short_name}vnetlink"
+  private_dns_zone_id = azurerm_private_dns_zone.privateDNSZone.id
+  virtual_network_id  = azurerm_virtual_network.virtualNetwork.id
 }
 
 # resource "azurerm_public_ip" "adminVirtualMachineIPadress" {

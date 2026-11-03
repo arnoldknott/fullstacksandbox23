@@ -5,12 +5,27 @@ resource "azurerm_log_analytics_workspace" "logAnalytics" {
   sku                 = "PerGB2018"
 }
 
+resource "azurerm_monitor_diagnostic_setting" "ContainerEnvironmentLogs" {
+  name                           = "${var.project_name}-container-logs-${terraform.workspace}"
+  target_resource_id             = azurerm_container_app_environment.ContainerEnvironment.id
+  log_analytics_workspace_id     = azurerm_log_analytics_workspace.logAnalytics.id
+  log_analytics_destination_type = "Dedicated"
+
+  enabled_log {
+    category = "ContainerAppConsoleLogs"
+  }
+
+  enabled_log {
+    category = "ContainerAppSystemLogs"
+  }
+}
+
 resource "azurerm_container_app_environment" "ContainerEnvironment" {
-  name                       = "${var.project_name}-containers-${terraform.workspace}"
-  location                   = azurerm_resource_group.resourceGroup.location
-  resource_group_name        = azurerm_resource_group.resourceGroup.name
-  log_analytics_workspace_id = azurerm_log_analytics_workspace.logAnalytics.id
-  infrastructure_subnet_id   = azurerm_subnet.subnetContainerapp.id
+  name                     = "${var.project_name}-containers-${terraform.workspace}"
+  location                 = azurerm_resource_group.resourceGroup.location
+  resource_group_name      = azurerm_resource_group.resourceGroup.name
+  logs_destination         = "azure-monitor"
+  infrastructure_subnet_id = azurerm_subnet.subnetContainerapp.id
 
   tags = {
     Costcenter  = var.costcenter
