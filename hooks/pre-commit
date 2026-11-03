@@ -23,8 +23,11 @@ set +a
 docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env build
 docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env up -d
 # TBD: put back in, when frontend is further developed:
-docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T backend_api sh -c "isort --profile black ."
-ISORT_EXIT_CODE=$?
+# isort is not enforced in CI (backendAPI.yml runs only black, ruff, pyright) and ruff does not
+# include import-sorting rules, so running it here only creates churn — including in
+# src/migrations/, which black and pyright exclude but isort does not.
+# docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T backend_api sh -c "isort --profile black ."
+# ISORT_EXIT_CODE=$?
 docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T backend_api sh -c "ruff check --fix ."
 RUFF_EXIT_CODE=$?
 docker compose -f compose.yml -f compose.override.test.yml --env-file backend/src/tests/.env exec -T backend_api sh -c "black ."
@@ -62,7 +65,7 @@ print_result() {
     fi
 }
 
-print_result $ISORT_EXIT_CODE "isort"
+# print_result $ISORT_EXIT_CODE "isort"
 print_result $RUFF_EXIT_CODE "ruff"
 print_result $BLACK_EXIT_CODE "black"
 print_result $PYRIGHT_EXIT_CODE "pyright"
