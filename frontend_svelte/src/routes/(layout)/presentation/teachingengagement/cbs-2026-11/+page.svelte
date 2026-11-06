@@ -923,7 +923,7 @@
 		<img
 			src={`/teachingengagement/${themeRuntime.mode === 'light' ? 'applications-light.png' : 'applications-dark.png'}`}
 			alt="Business Case"
-			class="shadow-base-shadow h-fit w-3/4 self-center rounded-4xl shadow-lg"
+			class="shadow-base-shadow h-auto w-3/4 self-center rounded-4xl shadow-lg"
 		/>
 		{#snippet footerRight()}
 			<div class="text-right text-xl">
@@ -938,7 +938,7 @@
 			bind:this={businessCaseImage}
 			src="/teachingengagement/business-case.png"
 			alt="Business Case"
-			class="shadow-base-shadow h-fit w-3/4 self-center rounded-4xl shadow-lg"
+			class="shadow-base-shadow h-auto w-3/4 self-center rounded-4xl shadow-lg"
 		/>
 		<div
 			class="fragment fade-in bg-primary-container text-primary-container-content shadow-base-shadow absolute top-3/4 left-1/2 flex h-50 w-150 -translate-x-1/2 -translate-y-1/2 transform items-center justify-center rounded-[50%] text-6xl shadow"
@@ -971,13 +971,13 @@
 			<img
 				src={`/teachingengagement/${themeRuntime.mode === 'light' ? 'lightbulb-light.png' : 'lightbulb-dark.png'}`}
 				alt="Light Bulb"
-				class=" h-fit w-1/2 self-center"
+				class="h-auto w-1/2 self-center"
 			/>
 			<Icon icon="at-icons:arrow-right" class="size-30 self-center" />
 			<img
 				src={`/teachingengagement/${themeRuntime.mode === 'light' ? 'lightbulb-led-light.png' : 'lightbulb-led-dark.png'}`}
 				alt="Light Bulb"
-				class=" h-fit w-1/2 self-center"
+				class="h-auto w-1/2 self-center"
 			/>
 			<div class="label text-8xl">💡 50 W</div>
 			<Icon icon="at-icons:arrow-down-right" class="text-success size-30 self-center" />
@@ -1120,7 +1120,7 @@
 		<!-- <img
 			src="/teachingengagement/stress-interconnection.png"
 			alt="Interconnection of Stress"
-			class="shadow-base-shadow h-fit w-3/4 self-center rounded-4xl shadow-lg"
+			class="shadow-base-shadow h-auto w-3/4 self-center rounded-4xl shadow-lg"
 		/> -->
 		{#snippet footerRight()}
 			<div class="text-right text-xl">
@@ -1167,7 +1167,7 @@
 		<img
 			src="/flower.jpg"
 			alt="Flower"
-			class="shadow-base-shadow h-fit w-3/4 self-center rounded-4xl shadow-lg"
+			class="shadow-base-shadow h-auto w-3/4 self-center rounded-4xl shadow-lg"
 		/>
 	</FramedSlide>
 	<FramedSlide part="inspiration" title="History">
@@ -1267,7 +1267,7 @@
 		<img
 			src="/snow-lake.jpg"
 			alt="Snow Lake"
-			class="shadow-base-shadow h-fit w-3/4 self-center rounded-4xl shadow-lg"
+			class="shadow-base-shadow h-auto w-3/4 self-center rounded-4xl shadow-lg"
 		/>
 	</FramedSlide>
 	<FramedSlide part="implementation" title="Inner change">
@@ -1450,7 +1450,7 @@
 		<img
 			src="/besseggen.jpg"
 			alt="Besseggen"
-			class="shadow-base-shadow h-fit w-3/4 self-center rounded-4xl shadow-lg"
+			class="shadow-base-shadow h-auto w-3/4 self-center rounded-4xl shadow-lg"
 		/>
 	</FramedSlide>
 	<FramedSlide part="results" title="Results: technical">
@@ -1956,7 +1956,7 @@
 		<img
 			src="/clouds-jotunheimen.jpg"
 			alt="Clouds Jotunheimen"
-			class="shadow-base-shadow h-fit w-3/4 self-center rounded-4xl shadow-lg"
+			class="shadow-base-shadow h-auto w-3/4 self-center rounded-4xl shadow-lg"
 		/>
 	</FramedSlide>
 	<FramedSlide part="comments-and-questions" hideProgressBar>
@@ -1976,7 +1976,7 @@
 		<img
 			src="/sunset-vejlesoen.jpg"
 			alt="Sunset Vejlesøen"
-			class="shadow-base-shadow h-fit w-3/4 self-center rounded-4xl shadow-lg"
+			class="shadow-base-shadow h-auto w-3/4 self-center rounded-4xl shadow-lg"
 		/>
 	</FramedSlide>
 	<!-- <FramedSlide>
