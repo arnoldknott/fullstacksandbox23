@@ -74,22 +74,30 @@ Labels may be publicly visible and must not contain secrets. They identify the
 element's resource, not every live response submitted to it. Responses can remain
 unlabeled and use resource and parent/child identifiers.
 
-Labels must be unique among a parent's labeled Text and Number children, across
-both types. Resolve a coded
-binding by `(parent identifier, label)`, then retain the resolved resource
-identifier for updates and subscriptions.
+Labels must be unique among a parent's labeled children of the same resource
+type. Resolve a coded binding by `(parent identifier, resource type, label)`,
+then retain the resolved resource identifier for updates and subscriptions.
 
 The rules are:
 
 - Different parents can have different resources labeled `heading`.
 - The same resource, with its row-level label unchanged, can be reused under
   multiple parents.
-- A parent cannot have two different children labeled `heading`, even when one
-  is Text and the other Number.
+- A parent cannot have two different Text children labeled `heading`, or two
+  different Number children labeled `heading`.
+- A parent can have a Text child and a Number child both labeled `heading`.
 - Any number of unlabeled children are allowed.
-- Linking a labeled child must check its new parent's labeled children.
-- Changing a shared child's label must check every existing parent.
+- Linking a labeled child must check its new parent's labeled children of the
+  same type.
+- Changing a shared child's label must check every existing parent for children
+  of the same type.
 - Standalone labels need not be unique until the resource is attached.
+
+Enforce this uniqueness at the database level, including concurrent links and
+renames. A unique constraint on a resource's label alone is insufficient because
+parent relationships are stored separately and resources can have multiple
+parents. Keep any database representation of the binding consistent with
+resource labels and hierarchy changes.
 
 A label is an addressable role, not a sorting key. A coded presentation can place
 `heading` and `closing` in separate layout slots without consulting hierarchy
@@ -311,8 +319,10 @@ Run tests inside the dedicated test environment using existing tooling. Cover:
 - nullable language, numeric validation, and confidential encryption/decryption,
   including related texts loaded from a Number or Presentation;
 - optional labels and allowed characters, deterministic access-filtered label
-  resolution, rejection of duplicate labeled siblings
-  across both types, shared-child link/rename conflicts, and unlabeled responses;
+  resolution by parent and resource type, rejection of same-type duplicate
+  labeled siblings, acceptance of matching labels across types and parents,
+  shared-child link/rename conflicts, concurrent uniqueness, and unlabeled
+  responses;
 - optional categories on both resource types, validation of allowed characters,
   repeated categories among siblings, and category updates through the existing
   access-controlled interfaces;

@@ -139,8 +139,9 @@ A presentation can have collections of texts and numbers. Both resources can
 have multiple parents, without stored generation numbers. Labels are optional
 even for children and use lowercase ASCII letters, digits, and hyphens only.
 They bind coded interactive elements to resources; live responses can remain
-unlabeled. Labels must be unique within each parent across both Text and Number;
-different parents can reuse the same label.
+unlabeled. Labels must be unique within each parent and resource type; a Text
+and a Number under the same parent, or resources under different parents, can
+reuse the same label.
 
 Optional categories use the same lowercase ASCII letters, digits, and hyphens
 constraint. Frontends can use freely chosen categories to select components and
