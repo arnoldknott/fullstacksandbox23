@@ -11,7 +11,7 @@
   "remoteEnv": {
     "HOST_WORKSPACE_FOLDER": "${localWorkspaceFolder}"
   },
-  "postCreateCommand": "apk add --no-cache mandoc man-pages git-doc && uv pip install --system -e ${containerWorkspaceFolder}/backend[dev] && npm install -g @google/gemini-cli",
+  "postCreateCommand": "apk add --no-cache mandoc man-pages git-doc && cd \"${containerWorkspaceFolder}/backend\" && uv export --frozen --extra dev --no-hashes --output-file /tmp/fssb23-backend-requirements.txt && uv pip install --python /usr/local/bin/python -r /tmp/fssb23-backend-requirements.txt && uv pip install --python /usr/local/bin/python --no-deps -e . && rm /tmp/fssb23-backend-requirements.txt && npm install -g @google/gemini-cli",
   "forwardPorts": [8660, 8661, 5432, 5533, 5540, 5555, 8001],
   "portsAttributes": {
     "8660": {
