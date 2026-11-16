@@ -252,18 +252,6 @@ class ResourceHierarchy(BaseHierarchyCreate, BaseHierarchy, table=True):
         ResourceType.protected_child: [
             ResourceType.protected_grand_child,
         ],
-        ResourceType.module: [
-            ResourceType.section,
-            ResourceType.topic,
-            ResourceType.element,
-        ],
-        ResourceType.section: [
-            ResourceType.subsection,
-            ResourceType.topic,
-            ResourceType.element,
-        ],
-        ResourceType.subsection: [ResourceType.topic, ResourceType.element],
-        ResourceType.topic: [ResourceType.element],
     }
 
 

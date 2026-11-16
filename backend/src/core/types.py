@@ -181,11 +181,6 @@ class ResourceType(EntityType):
     protected_child = "ProtectedChild"
     protected_grand_child = "ProtectedGrandChild"
     public_resource = "PublicResource"
-    module = "Module"
-    section = "Section"
-    subsection = "Subsection"
-    topic = "Topic"
-    element = "Element"
     demo_file = "DemoFile"
 
 
