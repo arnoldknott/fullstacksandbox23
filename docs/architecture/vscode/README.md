@@ -27,8 +27,14 @@ install locked dependencies into `/py` and do not supply Pylance's packages.
 - The bind-mounted repository, including uncommitted changes and workspace-local
   environment files, remains on the host.
 - Named volumes remain unless explicitly deleted. These include the frontend
-  dependency volume and Codex data volume declared in
+  dependency volume, Codex data volume, Copilot session storage (`/root/.copilot`),
+  and remote VS Code state (`/root/.vscode-server/data`) declared in
   [the devcontainer Compose configuration](../../../.devcontainer/compose.devcontainer.yml).
+  Before the first rebuild that introduces these mounts, back up the existing
+  directories outside the container and restore them into the mounted volumes
+  afterward. Adding mounts does not migrate data from the old container.
+  Do not delete these volumes (for example with `docker compose down -v`) if their
+  contents are still needed.
 - Application database and cache volumes are separate from the devcontainer.
   Rebuilding the devcontainer does not itself delete them.
 - Files and manual package installations stored only in the old container's writable

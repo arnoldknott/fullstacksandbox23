@@ -16,6 +16,8 @@ services:
       - .:/workspaces/fullStackSandbox23:cached
       - frontend-svelte-node-modules:/workspaces/fullStackSandbox23/frontend_svelte/node_modules
       - codex-data:/root/.codex
+      - copilot-data:/root/.copilot
+      - vscode-server-data:/root/.vscode-server/data
       - /var/run/docker.sock:/var/run/docker.sock
       - ${HOME}/.ssh:/root/.ssh:ro
 
@@ -24,3 +26,7 @@ volumes:
     name: fssb23-frontend-svelte-node-modules
   codex-data:
     name: fssb23-codex-data
+  copilot-data:
+    name: fssb23-copilot-data
+  vscode-server-data:
+    name: fssb23-vscode-server-data
