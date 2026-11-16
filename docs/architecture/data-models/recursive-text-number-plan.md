@@ -36,8 +36,8 @@ parallel hierarchy table or a single-parent foreign key.
 
 | Model | Attributes |
 | --- | --- |
-| `Text` | Required string `content`; nullable string `label`; nullable language code `language`; nullable encrypted string `confidential`; nullable fields default to null |
-| `Number` | Required numeric `value`; nullable string `label`, defaulting to null; no language or tolerance field |
+| `Text` | Required string `content`; nullable string `label` and `category`; nullable language code `language`; nullable encrypted string `confidential`; nullable fields default to null |
+| `Number` | Required numeric `value`; nullable string `label` and `category`, defaulting to null; no language or tolerance field |
 
 The proposed numeric representation is the existing Numerical model's
 floating-point representation. Confirm a requirement for exact decimal arithmetic
@@ -94,6 +94,26 @@ The rules are:
 A label is an addressable role, not a sorting key. A coded presentation can place
 `heading` and `closing` in separate layout slots without consulting hierarchy
 order. Hierarchy order still applies to consumers that render a generic sequence.
+
+### Categories for frontend interpretation
+
+Text and Number each have an optional `category`, defaulting to null. When set,
+it must be non-empty and contain only lowercase ASCII letters, digits, and
+hyphens: `^[a-z0-9-]+$`. Reject invalid values rather than silently normalizing
+them. Categories are freely chosen strings, not a backend-defined taxonomy.
+
+The frontend can use a category to choose a component or how to display and
+interact with a resource. For example, `question`, `answer`, or `description`
+might select different text components, while `vote-count` might select a numeric
+display. These are illustrative frontend conventions, not backend-enforced
+meanings. The next presentation can explore what is useful.
+
+Unlike a label, a category does not identify a particular resource. It is not
+unique: multiple resources, including siblings and resources of different types,
+may share it. A category belongs to the resource and therefore stays the same
+under all its parents. It does not grant access or change hierarchy semantics;
+the frontend must not rely on it for authorization. Content and category remain
+visible to callers allowed to read the resource.
 
 ### Ordering
 
@@ -293,6 +313,9 @@ Run tests inside the dedicated test environment using existing tooling. Cover:
 - optional labels and allowed characters, deterministic access-filtered label
   resolution, rejection of duplicate labeled siblings
   across both types, shared-child link/rename conflicts, and unlabeled responses;
+- optional categories on both resource types, validation of allowed characters,
+  repeated categories among siblings, and category updates through the existing
+  access-controlled interfaces;
 - public read versus connect versus write, anonymous submission/update failures,
   authenticated standalone creation, and ownership-protected operations;
 - snapshots, cursors, subscriptions, parent-scoped replay, and incremental events;
@@ -312,13 +335,14 @@ do not hand-author or pre-generate ordinary schema revisions.
 ## Step 3: build the next presentation
 
 The developer builds the next presentation using the parallel Text/Number
-interfaces, labeled interactive elements, and live submissions. Leave existing
-presentations on their current interfaces.
+interfaces, labeled interactive elements, optional categories, and live
+submissions. Leave existing presentations on their current interfaces.
 
 ## Step 4: evaluate the new presentation
 
 Evaluate the new models' behavior and usability in that presentation, including
-labels, nested responses, access policies, ordering, and real-time updates.
+labels, category-driven components, nested responses, access policies, ordering,
+and real-time updates.
 Use the results to decide whether adjustments are needed before migrating old
 presentations. Steps 3 and 4 are separate from implementing steps 1 and 2.
 

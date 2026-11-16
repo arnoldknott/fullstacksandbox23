@@ -124,8 +124,8 @@ These models are planned, not implemented:
 
 | Model | Proposed attributes |
 | --- | --- |
-| `Text` | Required `content`; optional `label`, `language`, and encrypted-at-rest `confidential` |
-| `Number` | Required numeric `value`; optional `label`; no language or tolerance |
+| `Text` | Required `content`; optional `label`, `category`, `language`, and encrypted-at-rest `confidential` |
+| `Number` | Required numeric `value`; optional `label` and `category`; no language or tolerance |
 
 Both belong to the Resource family and reuse `ResourceHierarchy`:
 
@@ -141,6 +141,11 @@ even for children and use lowercase ASCII letters, digits, and hyphens only.
 They bind coded interactive elements to resources; live responses can remain
 unlabeled. Labels must be unique within each parent across both Text and Number;
 different parents can reuse the same label.
+
+Optional categories use the same lowercase ASCII letters, digits, and hyphens
+constraint. Frontends can use freely chosen categories to select components and
+handling; categories may repeat and do not control access. They belong to the
+resource, so a shared child has the same category under every parent.
 
 Keep existing resources and interfaces available. The next presentation will
 evaluate the new models before any legacy presentation migration.
