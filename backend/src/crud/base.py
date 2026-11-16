@@ -475,6 +475,8 @@ class BaseCRUD(
                         f"Error in BaseCRUD.create of an object of type {self.model}, action: {Action.own}, current_user: {current_user}, status_code: {404} results in  {log_error}"
                     )
             logger.error(f"Error in BaseCRUD.create: {e}")
+            if isinstance(e, HTTPException) and e.status_code == 409:
+                raise
             raise HTTPException(
                 status_code=403,
                 detail=f"{self.model.__name__} - Forbidden.",

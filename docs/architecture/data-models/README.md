@@ -86,9 +86,12 @@ AzureGroup → User
 ```
 
 These illustrate supported paths, not the complete allowed-edge maps. Existing
-type restrictions make many paths generation-specific. Direct self-links are
-validated today; indirect-cycle prevention is proposed in the
-[recursive resource plan](recursive-text-number-plan.md#step-1-shared-cycle-prevention).
+type restrictions make many paths generation-specific. Shared hierarchy creation
+rejects direct self-links and indirect cycles in both tables after authorization
+and allowed-type checks. Reachability includes non-inheriting edges and
+inaccessible intermediate nodes; cycle conflicts do not expose the path.
+See [hierarchy cycle prevention](../security/inner-access-control.md#hierarchy-cycle-prevention)
+for the error contract, concurrency limitation, and pre-deployment data check.
 
 ### Permission inheritance versus content loading
 

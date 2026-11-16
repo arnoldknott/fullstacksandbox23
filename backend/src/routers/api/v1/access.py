@@ -547,13 +547,6 @@ async def post_relationship(
 ) -> ResourceHierarchyRead | IdentityHierarchyRead:
     """Creates a new relationship between a child and a parent resource."""
     logger.info("POST view to add child to parent calls add_child_to_parent CRUD")
-    BaseHierarchyCreate.model_validate(
-        {
-            "parent_id": parent_id,
-            "child_id": child_id,
-            "inherit": inherit,
-        }
-    )
     current_user = await check_token_against_guards(token_payload, guards)
     if current_user is None:
         raise HTTPException(status_code=401, detail="Authentication required.")

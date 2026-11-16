@@ -6,10 +6,13 @@ from uuid import uuid4
 
 import pytest
 
-from core.types import Action, ResourceType
+from core.types import Action, IdentityType, ResourceType
+from models.access import IdentityHierarchy, ResourceHierarchy
 from models.demo_resource import DemoResource, DemoResourceExtended, DemoResourceRead
+from models.identity import Group
 from routers.socketio.v1.base import BaseNamespace
 from routers.socketio.v1.demo_resource import DemoResourceNamespace
+from routers.socketio.v1.identities import GroupNamespace
 from routers.socketio.v1.presentation_namespace import PresentationNamespace
 from routers.socketio.v1.quiz_namespace import MessageNamespace, QuestionNamespace
 
@@ -36,6 +39,55 @@ class FakeCRUD:
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         return None
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "namespace_type, hierarchy, model, entity_type",
+    [
+        (
+            DemoResourceNamespace,
+            ResourceHierarchy,
+            DemoResource,
+            ResourceType.demo_resource,
+        ),
+        (GroupNamespace, IdentityHierarchy, Group, IdentityType.group),
+    ],
+    ids=["resource", "identity"],
+)
+async def test_link_emits_cycle_conflict_without_success(
+    namespace_type,
+    hierarchy,
+    model,
+    entity_type,
+    register_current_user,
+    register_one_resource,
+    get_async_test_session,
+    monkeypatch,
+):
+    monkeypatch.setitem(hierarchy.relations, entity_type, [entity_type])
+    current_user = await register_current_user()
+    parent_id, child_id = uuid4(), uuid4()
+    for node_id in (parent_id, child_id):
+        await register_one_resource(node_id, model)
+    session = get_async_test_session
+    session.add(hierarchy(parent_id=child_id, child_id=parent_id, inherit=False))
+    await session.commit()
+    server = SimpleNamespace(emit=AsyncMock())
+    namespace = namespace_type(server=server)
+    namespace._get_current_user_and_check_guard = AsyncMock(return_value=current_user)
+
+    await namespace.on_link(
+        "sid", {"parent_id": str(parent_id), "child_id": str(child_id)}
+    )
+
+    server.emit.assert_awaited_once_with(
+        "status",
+        {"error": "other", "detail": "409: Hierarchy cycle detected."},
+        namespace=namespace.namespace,
+        to=["sid", "role:Admin"],
+    )
+    assert await session.get(hierarchy, (parent_id, child_id)) is None
 
 
 @pytest.mark.anyio

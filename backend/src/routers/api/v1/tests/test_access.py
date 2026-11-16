@@ -13,7 +13,9 @@ from models.access import (
     AccessLogRead,
     AccessPolicy,
     AccessPolicyRead,
+    IdentityHierarchy,
     IdentityHierarchyRead,
+    ResourceHierarchy,
     ResourceHierarchyRead,
 )
 from models.demo_resource import DemoResource
@@ -4847,6 +4849,68 @@ async def test_add_prohibited_groups_to_ueber_group(
 
     assert response.status_code == 403
     assert response.json() == {"detail": "Forbidden."}
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload",
+    [token_admin_read_write],
+    indirect=True,
+)
+@pytest.mark.parametrize(
+    "hierarchy, model, entity_type",
+    [
+        (ResourceHierarchy, ProtectedResource, ResourceType.protected_resource),
+        (IdentityHierarchy, User, IdentityType.user),
+    ],
+    ids=["resource", "identity"],
+)
+@pytest.mark.parametrize("bulk", [False, True], ids=["single", "bulk"])
+async def test_hierarchy_endpoints_reject_cycles(
+    async_client,
+    app_override_provide_http_token_payload,
+    register_one_resource,
+    get_async_test_session,
+    monkeypatch,
+    hierarchy,
+    model,
+    entity_type,
+    bulk,
+):
+    monkeypatch.setitem(hierarchy.relations, entity_type, [entity_type])
+    node_ids = [uuid.uuid4() for _ in range(3)]
+    for node_id in node_ids:
+        await register_one_resource(node_id, model)
+    session = get_async_test_session
+    session.add_all(
+        [
+            hierarchy(parent_id=node_ids[0], child_id=node_ids[1], inherit=False),
+            hierarchy(parent_id=node_ids[1], child_id=node_ids[2], inherit=False),
+        ]
+    )
+    await session.commit()
+
+    parent_id, child_id = node_ids[2], node_ids[0]
+    if bulk:
+        response = await async_client.post(
+            "/api/v1/access/hierarchies",
+            json=[{"parent_id": str(parent_id), "child_id": str(child_id)}],
+        )
+    else:
+        response = await async_client.post(
+            f"/api/v1/access/hierarchy/{parent_id}/child/{child_id}"
+        )
+
+    assert response.status_code == 409
+    assert response.json() == {"detail": "Hierarchy cycle detected."}
+    assert await session.get(hierarchy, (parent_id, child_id)) is None
+
+    if not bulk:
+        self_link = await async_client.post(
+            f"/api/v1/access/hierarchy/{parent_id}/child/{parent_id}"
+        )
+        assert self_link.status_code == 409
+        assert self_link.json() == {"detail": "Hierarchy cycle detected."}
 
 
 @pytest.mark.anyio

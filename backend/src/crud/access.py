@@ -1162,6 +1162,29 @@ class BaseHierarchyCRUD(
     def _session(self) -> AsyncSession:
         return cast(AsyncSession, self.session)
 
+    async def _check_cycle(self, parent_id: UUID, child_id: UUID) -> None:
+        """Reject structural cycles without filtering the graph by permissions."""
+        if parent_id == child_id:
+            raise HTTPException(status_code=409, detail="Hierarchy cycle detected.")
+
+        model = cast(type[ResourceHierarchy] | type[IdentityHierarchy], self.model)
+        parent_column = col(model.parent_id)
+        child_column = col(model.child_id)
+        descendants = (
+            select(child_column.label("id"))
+            .where(parent_column == child_id)
+            .cte("hierarchy_descendants", recursive=True)
+        )
+        # UNION deduplicates visited identifiers even if stored data contains cycles.
+        descendants = descendants.union(
+            select(child_column.label("id")).where(parent_column == descendants.c.id)
+        )
+        result = await self._session().exec(
+            select(descendants.c.id).where(descendants.c.id == parent_id).limit(1)
+        )
+        if result.first() is not None:
+            raise HTTPException(status_code=409, detail="Hierarchy cycle detected.")
+
     async def create(
         self,
         current_user: CurrentUserData,
@@ -1197,6 +1220,7 @@ class BaseHierarchyCRUD(
 
             # Create hierarchy relation
             if child_type in allowed_children:
+                await self._check_cycle(parent_id, child_id)
                 relation = self.model(
                     parent_id=parent_id,
                     child_id=child_id,
@@ -1216,8 +1240,12 @@ class BaseHierarchyCRUD(
                 logger.error("Bad request: child type not allowed for parent.")
                 raise HTTPException(
                     status_code=403,
-                    detail="Bad request: child type not allowed for parent.",
+                    detail="Forbidden.",
                 )
+        except HTTPException as err:
+            await self._session().rollback()
+            logger.error("Error in creating hierarchy: %s", err)
+            raise
         except Exception as err:
             session = self._session()
             await session.rollback()

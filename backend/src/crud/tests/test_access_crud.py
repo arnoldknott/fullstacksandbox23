@@ -4,9 +4,10 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 from fastapi import HTTPException
+from sqlmodel import select, text
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from core.types import Action, CurrentUserData, ResourceType
+from core.types import Action, CurrentUserData, IdentityType, ResourceType
 from crud.access import (
     AccessLoggingCRUD,
     AccessPolicyCRUD,
@@ -20,6 +21,7 @@ from models.access import (
     AccessPolicyDelete,
     AccessPolicyUpdate,
     IdentityHierarchy,
+    ResourceHierarchy,
 )
 from models.demo_resource import DemoResource
 from models.identity import SubGroup, SubSubGroup, User
@@ -1553,6 +1555,139 @@ async def test_read_access_rights_uses_highest_allowed_action():
 # endregion AccessLogging CRUD tests
 
 # region ResourceHierarchy CRUD tests
+
+
+@pytest.fixture(
+    params=[
+        (ResourceHierarchyCRUD, ProtectedResource, ResourceType.protected_resource),
+        (IdentityHierarchyCRUD, SubGroup, IdentityType.sub_group),
+    ],
+    ids=["resource", "identity"],
+)
+async def recursive_hierarchy_graph(
+    request,
+    monkeypatch,
+    register_current_user,
+    register_one_resource,
+    add_one_test_access_policy,
+    get_async_test_session,
+):
+    crud_type, model, entity_type = request.param
+    hierarchy = (
+        ResourceHierarchy if crud_type is ResourceHierarchyCRUD else IdentityHierarchy
+    )
+    # Exercise recursive structures without changing the production type allowlists.
+    monkeypatch.setitem(hierarchy.relations, entity_type, [entity_type])
+    current_user = await register_current_user(current_user_data_user1)
+    node_ids = [uuid.uuid4() for _ in range(4)]
+    for index, node_id in enumerate(node_ids):
+        await register_one_resource(node_id, model)
+        if index in (0, 3):
+            await add_one_test_access_policy(
+                {
+                    "resource_id": str(node_id),
+                    "identity_id": str(current_user.user_id),
+                    "action": Action.own,
+                },
+                model=model,
+            )
+    return crud_type, current_user, node_ids, get_async_test_session
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "edges, inherit",
+    [
+        ([(0, 1), (1, 2), (2, 3)], False),
+        ([(0, 1), (1, 2), (2, 3)], True),
+        ([(0, 1), (1, 2), (2, 1), (2, 3)], False),
+    ],
+    ids=["non-inheriting-path", "inheriting-path", "pre-existing-cycle"],
+)
+async def test_hierarchy_rejects_indirect_cycles(
+    recursive_hierarchy_graph, edges, inherit
+):
+    crud_type, current_user, node_ids, session = recursive_hierarchy_graph
+    async with crud_type(session=session) as crud:
+        session.add_all(
+            [
+                crud.model(
+                    parent_id=node_ids[parent],
+                    child_id=node_ids[child],
+                    inherit=inherit,
+                )
+                for parent, child in edges
+            ]
+        )
+        await session.commit()
+        await session.exec(text("SET LOCAL statement_timeout = '2s'"))
+
+        with pytest.raises(HTTPException) as error:
+            await crud.create(current_user, node_ids[3], node_ids[0])
+
+        assert error.value.status_code == 409
+        assert error.value.detail == "Hierarchy cycle detected."
+        assert await session.get(crud.model, (node_ids[3], node_ids[0])) is None
+
+
+@pytest.mark.anyio
+async def test_hierarchy_traversal_terminates_with_unrelated_stored_cycle(
+    recursive_hierarchy_graph,
+):
+    crud_type, current_user, node_ids, session = recursive_hierarchy_graph
+    async with crud_type(session=session) as crud:
+        session.add_all(
+            [
+                crud.model(parent_id=node_ids[parent], child_id=node_ids[child])
+                for parent, child in [(0, 1), (1, 2), (2, 1)]
+            ]
+        )
+        await session.commit()
+        await session.exec(text("SET LOCAL statement_timeout = '2s'"))
+
+        relation = await crud.create(current_user, node_ids[3], node_ids[0])
+
+        assert relation.parent_id == node_ids[3]
+        assert relation.child_id == node_ids[0]
+
+
+@pytest.mark.anyio
+async def test_hierarchy_rejects_self_links_after_type_checks(
+    recursive_hierarchy_graph,
+):
+    crud_type, current_user, node_ids, session = recursive_hierarchy_graph
+    async with crud_type(session=session) as crud:
+        with pytest.raises(HTTPException) as error:
+            await crud.create(current_user, node_ids[0], node_ids[0])
+
+        assert error.value.status_code == 409
+        assert error.value.detail == "Hierarchy cycle detected."
+
+
+@pytest.mark.anyio
+async def test_hierarchy_allows_diamond_and_shortcut(recursive_hierarchy_graph):
+    crud_type, _, node_ids, session = recursive_hierarchy_graph
+    current_user = CurrentUserData.model_validate(current_user_data_admin)
+    async with crud_type(session=session) as crud:
+        edges = [(0, 1), (0, 2), (1, 3), (2, 3), (0, 3)]
+        for parent, child in edges:
+            await crud.create(current_user, node_ids[parent], node_ids[child])
+
+        assert len((await session.exec(select(crud.model))).all()) == len(edges)
+
+
+@pytest.mark.anyio
+async def test_hierarchy_checks_authorization_before_cycles(recursive_hierarchy_graph):
+    crud_type, current_user, node_ids, session = recursive_hierarchy_graph
+    async with crud_type(session=session) as crud:
+        session.add(crud.model(parent_id=node_ids[0], child_id=node_ids[1]))
+        await session.commit()
+
+        with pytest.raises(HTTPException) as error:
+            await crud.create(current_user, node_ids[1], node_ids[0])
+
+        assert error.value.status_code == 403
+        assert error.value.detail == "Forbidden."
 
 
 @pytest.mark.anyio

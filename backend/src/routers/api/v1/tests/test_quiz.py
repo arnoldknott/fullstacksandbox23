@@ -1,11 +1,14 @@
 """Tests for Quiz, Question, Message and Numerical API endpoints."""
 
+from unittest.mock import AsyncMock
 from uuid import UUID, uuid4
 
 import pytest
+from fastapi import HTTPException
 
 from core.databases import get_async_session
 from core.encryption import is_encryption_envelope
+from crud.access import ResourceHierarchyCRUD
 from crud.quiz import MessageCRUD, NumericalCRUD, QuestionCRUD
 from models.presentation import Presentation
 from models.quiz import Message, Numerical, Question
@@ -435,6 +438,34 @@ class TestMessage(BaseTest):
         deleted = await self.async_client.delete(f"{self.router_path}{resource_id}")
         assert updated.status_code == 200
         assert deleted.status_code == 200
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize(
+        "mocked_provide_http_token_payload", [token_admin_read_write], indirect=True
+    )
+    async def test_parent_attached_creation_preserves_hierarchy_conflict(
+        self, mocked_provide_http_token_payload, add_one_test_access_policy, monkeypatch
+    ):
+        parent_id = uuid4()
+        await add_one_test_access_policy(
+            {"resource_id": str(parent_id), "action": "connect", "public": True},
+            model=Question,
+        )
+        cycle_check = AsyncMock(
+            side_effect=HTTPException(
+                status_code=409, detail="Hierarchy cycle detected."
+            )
+        )
+        monkeypatch.setattr(ResourceHierarchyCRUD, "_check_cycle", cycle_check)
+
+        response = await self.async_client.post(
+            f"/api/v1/quiz/question/{parent_id}/message/",
+            json={"content": "answer"},
+        )
+
+        cycle_check.assert_awaited_once()
+        assert response.status_code == 409
+        assert response.json() == {"detail": "Hierarchy cycle detected."}
 
     @pytest.mark.anyio
     @pytest.mark.parametrize(

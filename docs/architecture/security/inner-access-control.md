@@ -85,6 +85,47 @@ Resource inheritance does not copy policy rows. It computes effective access whe
 
 Identity and resource inheritance compose. For example, a group policy on a parent resource reaches a user on a descendant resource only when the identity path from user to group and the resource path from parent to descendant both consist of `inherit=true` edges.
 
+## Hierarchy cycle prevention
+
+Both hierarchies reject new edges that would create a direct self-link or an
+indirect cycle. The shared hierarchy creation boundary first requires `own` on
+the child, `connect` on the parent, and an allowed parent/child type combination.
+It then checks whether the proposed parent is reachable from the child through
+any structural edges, including `inherit=false` edges and inaccessible nodes.
+This does not change effective permission evaluation or the allowed-type maps.
+
+The reachability query uses a recursive Common Table Expression (CTE) with
+deduplicating `UNION`, so this check terminates even if stored data contains a
+cycle. Authorized, type-allowed cycle attempts return Hypertext Transfer Protocol
+(HTTP) `409 Conflict` with `Hierarchy cycle detected.` rather than a path that
+could expose inaccessible nodes. Authorization failures retain `403 Forbidden`.
+Socket.IO link failures emit the existing error status, with the conflict in its
+detail, and do not emit a successful link notification. Input schemas retain
+their direct self-link validation.
+
+There are no concurrency locks: the check covers the graph visible to the
+request, but simultaneous requests may collectively create a cycle.
+
+Before deploying against existing data, run this read-only check for each
+hierarchy, substituting `identityhierarchy` for `resourcehierarchy` on the second
+run:
+
+```sql
+WITH RECURSIVE reachability (parent_id, child_id) AS (
+    SELECT parent_id, child_id FROM resourcehierarchy
+    UNION
+    SELECT path.parent_id, edge.child_id
+    FROM reachability AS path
+    JOIN resourcehierarchy AS edge ON edge.parent_id = path.child_id
+)
+SELECT parent_id AS cycle_member_id
+FROM reachability
+WHERE parent_id = child_id;
+```
+
+Report returned identifiers for deliberate correction; do not automatically
+delete edges. The query checks all edges, independently of permission inheritance.
+
 ## Public sharing
 
 Public sharing is represented by an `AccessPolicy` row with `public=true`, no `identity_id`, and an action. It is an action-scoped grant, not a property that makes every operation unrestricted. A public `read` policy permits reading; it does not permit writing or ownership operations.
