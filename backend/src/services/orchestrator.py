@@ -29,7 +29,7 @@ class Event(str, Enum):
 
 
 # TBD: inside the jobs,
-# use IdentityTypeLink
+# use IdentifierTypeLink
 # followed by EntityType.getModel()
 # to allow building the data retrieval dynamically.
 # Use the CRUD's read with skip_services = True.

@@ -17,8 +17,8 @@ from sqlalchemy.ext.asyncio import async_sessionmaker
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from core.cache import encryption, redis_session_client
 from core.authentication.base import VerifiedIdentity
+from core.cache import encryption, redis_session_client
 from core.databases import postgres_async_engine  # should be SQLite here only!
 from core.security import (
     CurrentAccessToken,
@@ -256,7 +256,7 @@ async def setup_redis_session_data():
         redis_session_client.json().delete(f"session:{next(iter(session))}")
 
 
-async def register_entity_to_identity_type_link_table(
+async def register_entity_to_identifier_type_link_table(
     entity_id: UUID, model: type[BaseSQLModel] = ProtectedResource
 ):
     """Registers an identity to the identifier link table."""
@@ -277,7 +277,7 @@ async def register_entity_to_identity_type_link_table(
 #     pprint(many_entity_type_links)
 
 #     for entity_id, entity_type in many_entity_type_links:
-#         await register_entity_to_identity_type_link_table(UUID(entity_id), entity_type)
+#         await register_entity_to_identifier_type_link_table(UUID(entity_id), entity_type)
 
 #     yield many_entity_type_links
 
@@ -294,7 +294,7 @@ async def register_current_user():
         current_user_data: Optional[dict[str, Any]] = None,
     ) -> CurrentUserData:
         current_user = CurrentUserData(**(current_user_data or current_user_data_admin))
-        await register_entity_to_identity_type_link_table(current_user.user_id, User)
+        await register_entity_to_identifier_type_link_table(current_user.user_id, User)
         return current_user
 
     yield _register_current_user
@@ -308,7 +308,7 @@ async def register_many_current_users():
     current_users = []
     for current_user_data in many_current_users_data:
         current_user_data = CurrentUserData(**current_user_data)
-        await register_entity_to_identity_type_link_table(
+        await register_entity_to_identifier_type_link_table(
             current_user_data.user_id, User
         )
         current_users.append(current_user_data)
@@ -322,7 +322,7 @@ async def register_one_resource():
     """Registers a resource id and its type in the database."""
 
     async def _register_one_resource(resource_id: UUID, model: type[BaseSQLModel]):
-        await register_entity_to_identity_type_link_table(resource_id, model)
+        await register_entity_to_identifier_type_link_table(resource_id, model)
 
     yield _register_one_resource
 
@@ -332,7 +332,7 @@ async def register_many_resources():
     """Registers many protected resources with id and its type in the database."""
 
     for resource_id in many_resource_ids:
-        await register_entity_to_identity_type_link_table(
+        await register_entity_to_identifier_type_link_table(
             UUID(resource_id), ProtectedResource
         )
 
@@ -344,7 +344,7 @@ async def register_one_protected_child():
     """Registers many protected resources with id and its type in the database."""
 
     child_id = uuid4()
-    await register_entity_to_identity_type_link_table(child_id, ProtectedChild)
+    await register_entity_to_identifier_type_link_table(child_id, ProtectedChild)
 
     yield child_id
 
@@ -359,7 +359,7 @@ async def register_one_identity():
     ):
         """Registers a resource id and its type in the database."""
         identity_id = identity_id or uuid4()
-        await register_entity_to_identity_type_link_table(identity_id, model)
+        await register_entity_to_identifier_type_link_table(identity_id, model)
         return identity_id
 
     yield _register_one_identity
@@ -370,7 +370,7 @@ async def register_one_sub_group():
     """Registers many protected resources with id and its type in the database."""
 
     child_id = uuid4()
-    await register_entity_to_identity_type_link_table(child_id, SubGroup)
+    await register_entity_to_identifier_type_link_table(child_id, SubGroup)
 
     yield child_id
 
@@ -381,7 +381,7 @@ async def register_one_sub_group():
 
 #     many_registered_identity_ids = []
 #     for identity in many_identity_ids:
-#         await register_entity_to_identity_type_link_table(
+#         await register_entity_to_identifier_type_link_table(
 #             UUID(identity["id"]), IdentityType.get_model(identity["type"])
 #         )
 #         many_registered_identity_ids.append(UUID(identity["id"]))
@@ -412,7 +412,7 @@ async def register_many_entities(get_async_test_session: AsyncSession):
 
 
 # for entity in many_entity_type_links:
-#     await register_entity_to_identity_type_link_table(
+#     await register_entity_to_identifier_type_link_table(
 #         UUID(entity["id"]), entity["type"]
 #     )
 
@@ -437,7 +437,7 @@ async def access_to_one_parent(
 
         parent_id = uuid4()
 
-        await register_entity_to_identity_type_link_table(parent_id, model)
+        await register_entity_to_identifier_type_link_table(parent_id, model)
         if public:
             access_policy = {
                 "resource_id": str(parent_id),
@@ -468,7 +468,7 @@ async def add_test_access_policy(
     async with AccessPolicyCRUD() as crud:
         if current_user is None:
             current_user = CurrentUserData(**current_user_data_admin)
-        await register_entity_to_identity_type_link_table(
+        await register_entity_to_identifier_type_link_table(
             UUID(policy["resource_id"]), model
         )
         created_policy = await crud.create(AccessPolicyCreate(**policy), current_user)
@@ -490,7 +490,7 @@ async def add_one_test_access_policy():
         # async with AccessPolicyCRUD() as crud:
         #     if current_user is None:
         #         current_user = CurrentUserData(**current_user_data_admin)
-        #     await register_entity_to_identity_type_link_table(
+        #     await register_entity_to_identifier_type_link_table(
         #         UUID(policy["resource_id"]), ProtectedResource
         #     )
         #     policy = await crud.create(AccessPolicyCreate(**policy), current_user)
@@ -561,9 +561,9 @@ async def add_parent_child_resource_relationship(
     inherit: bool = False,
 ):
     """Adds a parent-child relationship to the resource hierarchy table."""
-    await register_entity_to_identity_type_link_table(
+    await register_entity_to_identifier_type_link_table(
         child_id, ResourceType.get_model(child_type)
-    )  # TBD: pass the model here - or refactor register_entity_to_identity_type_link_table() to use type
+    )  # TBD: pass the model here - or refactor register_entity_to_identifier_type_link_table() to use type
     async with ResourceHierarchyCRUD() as crud:
         created_relationship = await crud.create(
             current_user=CurrentUserData(**current_user_data_admin),
@@ -602,11 +602,11 @@ async def add_many_parent_child_resource_relationships(
 ):
     """Adds many parent-child relationships to the resource hierarchy table."""
 
-    await register_entity_to_identity_type_link_table(
+    await register_entity_to_identifier_type_link_table(
         UUID(parent_resource_id), ProtectedResource
     )
     for resource_id in many_resource_ids:
-        await register_entity_to_identity_type_link_table(
+        await register_entity_to_identifier_type_link_table(
             UUID(resource_id), ProtectedChild
         )
 
@@ -626,7 +626,7 @@ async def add_parent_child_identity_relationship(
     inherit: bool = False,
 ):
     """Adds a parent-child relationship to the identity hierarchy table."""
-    await register_entity_to_identity_type_link_table(
+    await register_entity_to_identifier_type_link_table(
         child_id, IdentityType.get_model(child_type)
     )
 
