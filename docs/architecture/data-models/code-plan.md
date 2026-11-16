@@ -3,6 +3,10 @@
 This is a future design plan, not an implemented model or an expansion of
 [Text/Number steps 1–4](recursive-text-number-plan.md).
 
+Use the generic `data.py` modules at each backend layer described in
+[source organization](recursive-text-number-plan.md#source-organization).
+Keep the existing application-specific Presentation modules separate.
+
 ## Purpose and model
 
 Generalize code-backed resources into a Resource named `Code`. A frontend-defined

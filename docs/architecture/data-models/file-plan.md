@@ -5,6 +5,10 @@ This is a separate future refactoring plan based on the existing
 [file operations](../../../backend/src/crud/base.py). It does not expand
 [Text/Number steps 1–4](recursive-text-number-plan.md).
 
+Use the generic `data.py` modules at each backend layer described in
+[source organization](recursive-text-number-plan.md#source-organization).
+Keep the existing DemoFile modules available until their migration is complete.
+
 ## Storage and naming
 
 Use one Resource model, `File`, rather than separate models for pictures, audio,

@@ -27,6 +27,21 @@ implementation. Its frontend is currently a developer playground rather than an
 end-user dependency; its existing data and authorization behavior still need to
 be preserved.
 
+### Source organization
+
+Group generic resources in `data.py` modules at each backend layer:
+
+- `backend/src/models/data.py`
+- `backend/src/crud/data.py`
+- `backend/src/routers/api/v1/data.py`
+- `backend/src/routers/socketio/v1/data.py`
+
+These modules contain Text and Number in step 2, and later File, Code, and other
+generic resources when their respective plans are implemented. Keep
+application-specific resources such as Presentation in their own modules.
+Sharing a source module does not merge resource models, endpoints, or namespaces.
+File and Code remain outside the initial implementation scope.
+
 ## Resource model
 
 Use the existing [model factory](../../../backend/src/models/base.py),
