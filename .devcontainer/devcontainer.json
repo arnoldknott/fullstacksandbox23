@@ -62,7 +62,6 @@
         "esbenp.prettier-vscode",
         "openai.chatgpt",
         "opentofu.vscode-opentofu",
-        "google.geminiclicompanion",
         "tamasfe.even-better-toml",
         "google.gemini-cli-vscode-ide-companion"
       ]

@@ -28,13 +28,21 @@ install locked dependencies into `/py` and do not supply Pylance's packages.
   environment files, remains on the host.
 - Named volumes remain unless explicitly deleted. These include the frontend
   dependency volume, Codex data volume, Copilot session storage (`/root/.copilot`),
-  and remote VS Code state (`/root/.vscode-server/data`) declared in
+  remote VS Code state (`/root/.vscode-server/data`), and remote extensions
+  (`/root/.vscode-server/extensions`) declared in
   [the devcontainer Compose configuration](../../../.devcontainer/compose.devcontainer.yml).
   Before the first rebuild that introduces these mounts, back up the existing
   directories outside the container and restore them into the mounted volumes
   afterward. Adding mounts does not migrate data from the old container.
   Do not delete these volumes (for example with `docker compose down -v`) if their
   contents are still needed.
+- When the remote extension volume is empty, the container clears VS Code's
+  extension-installation marker before starting, allowing the extensions listed
+  in the devcontainer configuration to be installed again. The first rebuild
+  with this volume does not migrate extensions installed only in the old
+  container; back those up first if they are not listed in the configuration.
+  Workspace Model Context Protocol (MCP) servers, including Context7, are
+  configured separately in [.vscode/mcp.json](../../../.vscode/mcp.json).
 - Application database and cache volumes are separate from the devcontainer.
   Rebuilding the devcontainer does not itself delete them.
 - Files and manual package installations stored only in the old container's writable

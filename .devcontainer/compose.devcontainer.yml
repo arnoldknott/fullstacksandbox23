@@ -10,7 +10,14 @@ services:
         UV_VERSION: ${UV_VERSION}
         BUN_VERSION: ${BUN_VERSION}
         OPENTOFU_VERSION: ${OPENTOFU_VERSION}
-    command: sleep infinity
+    command:
+      - sh
+      - -c
+      - |
+        if [ ! -f /root/.vscode-server/extensions/extensions.json ]; then
+          rm -f /root/.vscode-server/data/Machine/.installExtensionsMarker
+        fi
+        exec sleep infinity
     init: true
     volumes:
       - .:/workspaces/fullStackSandbox23:cached
@@ -18,6 +25,7 @@ services:
       - codex-data:/root/.codex
       - copilot-data:/root/.copilot
       - vscode-server-data:/root/.vscode-server/data
+      - vscode-server-extensions:/root/.vscode-server/extensions
       - /var/run/docker.sock:/var/run/docker.sock
       - ${HOME}/.ssh:/root/.ssh:ro
 
@@ -30,3 +38,5 @@ volumes:
     name: fssb23-copilot-data
   vscode-server-data:
     name: fssb23-vscode-server-data
+  vscode-server-extensions:
+    name: fssb23-vscode-server-extensions
