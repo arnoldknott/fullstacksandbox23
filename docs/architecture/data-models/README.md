@@ -169,7 +169,19 @@ Shared cycle prevention is part of the initial work; application-group
 consolidation is a later step. Existing memberships, policies, identifiers, and
 frontend consumers must be migrated before old group interfaces are removed.
 
-## Implementation plan
+## Future Code and File resources
+
+Presentation stays unchanged for now. A later Code resource could classify
+code-backed functionality through frontend-defined categories while preserving
+source-location and routing requirements. See the [Code plan](code-plan.md) for
+category-scoped path uniqueness and source-verification decisions.
+
+A separate [File plan](file-plan.md) covers identifier-based disk filenames,
+non-unique display names, server-detected media types, and recursive relationships
+with Text and Number. Media-specific rendering does not require separate resource
+models.
+
+## Implementation plans
 
 The [recursive Text/Number and Group plan](recursive-text-number-plan.md) owns
 the detailed proposed changes, ordering and labels, public admission rules,
