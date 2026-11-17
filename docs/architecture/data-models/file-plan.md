@@ -68,8 +68,8 @@ meaning. Atomic counter updates and vote rules require explicit behavior; the
 hierarchy does not supply them.
 
 Apply existing parent-link, row-access, and bounded-read contracts. Do not
-automatically copy Text/Number label uniqueness rules to File without agreeing
-whether File needs that attribute.
+automatically copy Text/Number relationship-label rules to File without agreeing
+whether relationships to File need labels.
 
 ## Uploads and migration
 

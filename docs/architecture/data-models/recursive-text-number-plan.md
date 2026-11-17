@@ -18,9 +18,10 @@ after their existing data and all consuming presentations and frontend endpoints
 have been migrated.
 
 Multiple parents are supported. There is no stored generation number or
-type-defined maximum depth. Concurrency locking and concurrent cycle-creation
-guarantees are explicitly out of scope. Audio, video, pictures, a generic media
-framework, and an `internalText` interface are also out of scope.
+type-defined maximum depth. Concurrent hierarchy mutations use one
+transaction-scoped advisory lock per hierarchy to protect cycle prevention and
+relationship-label uniqueness. Audio, video, pictures, a generic media framework,
+and an `internalText` interface are out of scope.
 
 Application-group consolidation is planned below, but is not part of the initial
 implementation. Its frontend is currently a developer playground rather than an
@@ -51,8 +52,10 @@ parallel hierarchy table or a single-parent foreign key.
 
 | Model | Attributes |
 | --- | --- |
-| `Text` | Required string `content`; nullable string `label` and `category`; nullable language code `language`; nullable encrypted string `confidential`; nullable fields default to null |
-| `Number` | Required numeric `value`; nullable string `label` and `category`, defaulting to null; no language or tolerance field |
+| `Text` | Required string `content`; nullable string `category`; nullable language code `language`; nullable encrypted string `confidential`; nullable fields default to null |
+| `Number` | Required numeric `value`; nullable string `category`, defaulting to null; no language or tolerance field |
+
+Labels belong to parent-child relationships, not to Text or Number rows.
 
 The proposed numeric representation is the existing Numerical model's
 floating-point representation. Confirm a requirement for exact decimal arithmetic
@@ -78,7 +81,12 @@ alongside its new Text and Number relationships.
 
 ### Labels for coded interactive elements
 
-Labels are optional on both Text and Number, including resources with parents.
+Add an optional `label` to `ResourceHierarchy` for relationships whose child is
+Text or Number, defaulting to null. Standalone resources have no label; each
+parent can assign its own label to a shared child. Do not add a resource-row
+label or duplicate the child's registered type on the edge. Identity relationship
+labels remain outside this step.
+
 When present, a label must be non-empty and contain only lowercase ASCII letters,
 digits, and hyphens: `^[a-z0-9-]+$`. Reject invalid values rather than silently
 lowercasing or sanitizing them. An absent label is null.
@@ -86,8 +94,9 @@ lowercasing or sanitizing them. An absent label is null.
 A presentation can hard-code semantic labels such as `heading`, `closing`, or
 `participant-count` to bind its interactive elements to database resources.
 Labels may be publicly visible and must not contain secrets. They identify the
-element's resource, not every live response submitted to it. Responses can remain
-unlabeled and use resource and parent/child identifiers.
+element's resource under its parent, not every live response submitted to it.
+Response relationships can remain unlabeled and use resource and parent/child
+identifiers.
 
 Labels must be unique among a parent's labeled children of the same resource
 type. Resolve a coded binding by `(parent identifier, resource type, label)`,
@@ -96,23 +105,29 @@ then retain the resolved resource identifier for updates and subscriptions.
 The rules are:
 
 - Different parents can have different resources labeled `heading`.
-- The same resource, with its row-level label unchanged, can be reused under
-  multiple parents.
+- The same resource can be reused under multiple parents with different labels,
+  the same label, or no label on each relationship.
 - A parent cannot have two different Text children labeled `heading`, or two
   different Number children labeled `heading`.
 - A parent can have a Text child and a Number child both labeled `heading`.
-- Any number of unlabeled children are allowed.
-- Linking a labeled child must check its new parent's labeled children of the
-  same type.
-- Changing a shared child's label must check every existing parent for children
-  of the same type.
-- Standalone labels need not be unique until the resource is attached.
+- Any number of unlabeled child relationships are allowed.
+- Creating or linking a child with a relationship label must check its parent's
+  labeled children of the same type.
+- Changing a relationship's label checks that parent only and does not change
+  labels under other parents.
+- Removing a relationship removes its label binding, not the shared child.
 
-Enforce this uniqueness at the database level, including concurrent links and
-renames. A unique constraint on a resource's label alone is insufficient because
-parent relationships are stored separately and resources can have multiple
-parents. Keep any database representation of the binding consistent with
-resource labels and hierarchy changes.
+Enforce uniqueness in the shared hierarchy mutation transaction under the
+resource-hierarchy advisory lock described below, including concurrent links and
+relationship-label changes. Join child identifiers to `IdentifierTypeLink` to
+compare resource types. Check all same-type siblings, including inaccessible
+ones, after ordinary authorization; return a generic conflict without disclosing
+the conflicting child.
+
+Pydantic validates label syntax, not concurrent uniqueness. Do not introduce a
+cross-type `UNIQUE(parent_id, label)` constraint or duplicate resource types to
+construct a unique constraint. All application writers must follow the shared
+transaction and locking protocol.
 
 A label is an addressable role, not a sorting key. A coded presentation can place
 `heading` and `closing` in separate layout slots without consulting hierarchy
@@ -224,9 +239,52 @@ turned into success-shaped results. Inspect existing hierarchy data before
 deployment; report existing cycles for deliberate correction, not automatic
 deletion.
 
-Do not add locks or concurrency machinery. This check prevents cycles against
-the graph visible to the request, but simultaneous requests could still create a
-cycle collectively. This limitation must remain explicit.
+### Concurrent hierarchy mutations
+
+Use PostgreSQL transaction-scoped advisory locks, not physical table locks or
+session-scoped advisory locks. Use one stable, application-wide lock key for
+`ResourceHierarchy` mutations and a different key for `IdentityHierarchy`
+mutations. The locks require no additional stored rows or copied entity data.
+Resource and identity hierarchy mutations can proceed independently; mutations
+within one hierarchy serialize.
+
+Every application hierarchy writer must use the shared protocol, including REST,
+Socket.IO, parent-attached creation, unlinking and deletion cleanup, relationship
+label and ordering changes, provider membership synchronization, and account-merge
+hierarchy remapping. Operations touching both hierarchies acquire both locks in a
+fixed global order. Locking only the proposed parent and child is insufficient:
+concurrent edges with disjoint endpoints can collectively close a cycle through
+existing paths.
+
+Keep the protected transaction short:
+
+1. Perform outer endpoint/event admission before acquiring the lock.
+2. Acquire the appropriate advisory transaction lock before graph-dependent
+   authorization, validation, and mutation.
+3. Preserve existing row authorization and allowed-type checks. Run reachability
+   and applicable label checks against the graph visible after acquiring the
+   lock, not a stale pre-lock snapshot.
+4. Apply the mutation and its dependent database changes in the same transaction.
+   Shared helpers must not commit partway through the operation; use flushing
+   where necessary and let the operation's transaction owner commit or roll back.
+5. Commit before publishing success or incremental mutation notifications.
+
+Release is automatic on commit or rollback, and when PostgreSQL detects a lost
+connection and aborts its transaction. Explicitly roll back failed or cancelled
+operations before reusing a connection. Bound lock waits and statement execution,
+and handle idle-in-transaction abandonment with appropriate database timeouts.
+A statement timeout does not replace transaction rollback. Log and propagate
+timeout failures explicitly; do not report an uncommitted operation as successful.
+
+Ordinary reads and content-only updates do not acquire these advisory locks.
+Do not hold the critical section across external network calls or frontend
+interaction. Hierarchy-write contention can increase waiting time, but these
+advisory locks do not themselves block ordinary reads.
+
+The guarantee depends on every hierarchy writer participating. Direct database
+maintenance must follow the same locking and validation protocol; advisory locks
+do not constrain arbitrary SQL that ignores it. Existing cycles still require
+the pre-deployment audit and deliberate correction described above.
 
 ### Permission traversal remains independent
 
@@ -263,6 +321,39 @@ Plan REST interfaces under `/api/v1/text` and `/api/v1/number`, with:
 - parent-filtered snapshots with existing include/sort options;
 - standalone or parent-attached creation;
 - updates and deletion.
+
+Accept labels as relationship input on parent-attached creation and hierarchy
+link/update operations, not as Text/Number content attributes. Require a parent
+for a supplied relationship label, and preserve existing hierarchy-update
+authorization when changing it.
+
+Support frontend-to-backend label lookup through the resource collection
+endpoints, for example:
+
+```text
+GET /api/v1/text?parent-id=<parent-id>&label=heading
+GET /api/v1/number?parent-id=<parent-id>&label=participant-count
+```
+
+The endpoint selects the resource type, and `parent-id` is required when filtering
+by `label`. Preserve the collection response shape and apply the existing parent
+and child read-access checks; an inaccessible match must not be disclosed.
+Consumers can retain the resolved child identifier for subsequent operations.
+
+Whenever a parent transfers immediate children, include the corresponding
+access-filtered relationship metadata in that same payload, including
+`parent_id`, `child_id`, nullable `label`, `order`, and `inherit`. This applies to
+Presentation, Text, and Number parent reads through collection and identifier
+endpoints, snapshots, and Socket.IO transfers whenever children are included.
+Label metadata is part of the child-relationship representation, not an optional
+enrichment that requires an additional request. The frontend must be able to
+match labels to the appropriate typed child collection using the child identifier.
+
+Only transfer relationship labels for returned, accessible children under that
+parent; do not expose hidden children or a shared child's bindings under other
+parents. Keep labels on relationship records, not as a global attribute of a
+transferred child. Include the same parent-scoped label metadata in link and
+relationship-update notifications.
 
 Use explicit framework aliases for first-party query parameters such as
 `parent-id` and `public-action`. Resource types must allow all three parent types
@@ -326,6 +417,11 @@ Run tests inside the dedicated test environment using existing tooling. Cover:
 - self-links and indirect cycles in both hierarchy tables, including
   non-inheriting edges and inaccessible intermediate nodes;
 - allowed shared-child/diamond graphs, with no false cycle rejection;
+- concurrent links that would collectively create a cycle, including disjoint
+  endpoints, in both hierarchies; lock release after commit, rollback, and
+  cancellation; lock-wait timeout handling without partial mutations or
+  successful notifications; independent resource/identity locks and ordinary
+  reads remaining available during contention;
 - same-type and cross-type Text/Number edges and Presentation children;
 - effective permissions beyond the single fetched content level;
 - inaccessible immediate relationships being omitted without hiding an
@@ -333,11 +429,16 @@ Run tests inside the dedicated test environment using existing tooling. Cover:
 - bounded representations for both identifier and collection reads;
 - nullable language, numeric validation, and confidential encryption/decryption,
   including related texts loaded from a Number or Presentation;
-- optional labels and allowed characters, deterministic access-filtered label
-  resolution by parent and resource type, rejection of same-type duplicate
-  labeled siblings, acceptance of matching labels across types and parents,
-  shared-child link/rename conflicts, concurrent uniqueness, and unlabeled
-  responses;
+- optional relationship labels and allowed characters, deterministic
+  access-filtered label resolution by parent and resource type, rejection of
+  same-type duplicate labeled siblings, acceptance of matching labels across
+  types and parents, different labels for a shared child under different parents,
+  parent-local label changes, concurrent uniqueness, and unlabeled response
+  relationships;
+- endpoint lookup by parent and label, requiring a parent for label filtering;
+  relationship labels accompanying children in parent reads and transfers without
+  optional includes or follow-up requests; correct parent-scoped labels in
+  relationship notifications, without disclosing inaccessible bindings;
 - optional categories on both resource types, validation of allowed characters,
   repeated categories among siblings, and category updates through the existing
   access-controlled interfaces;
@@ -413,11 +514,11 @@ These categories replace separate generation-specific interface families; they
 do not introduce new models, endpoints, or namespaces per category. Categories do not
 determine hierarchy depth, membership, or authorization.
 
-Unlike Text/Number labels that identify a specific child within a parent, Group
-categories are reusable classifications. Multiple groups, including siblings,
-can share a category; Text/Number's per-parent label uniqueness rule does not
-apply. Keep `label` available as a separate future attribute if groups later need
-addressable identifiers; do not add it in this step.
+Unlike Text/Number relationship labels that identify a specific child within a
+parent, Group categories are reusable classifications. Multiple groups,
+including siblings, can share a category; Text/Number's per-parent label
+uniqueness rule does not apply. Consider identity relationship labels separately
+if groups later need addressable bindings; do not add them in this step.
 Confirm category optionality before implementing step 5; this decision does not
 block steps 1 and 2.
 

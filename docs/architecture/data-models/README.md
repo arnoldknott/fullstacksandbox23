@@ -127,8 +127,8 @@ These models are planned, not implemented:
 
 | Model | Proposed attributes |
 | --- | --- |
-| `Text` | Required `content`; optional `label`, `category`, `language`, and encrypted-at-rest `confidential` |
-| `Number` | Required numeric `value`; optional `label` and `category`; no language or tolerance |
+| `Text` | Required `content`; optional `category`, `language`, and encrypted-at-rest `confidential` |
+| `Number` | Required numeric `value`; optional `category`; no language or tolerance |
 
 Both belong to the Resource family and reuse `ResourceHierarchy`:
 
@@ -139,12 +139,26 @@ Number       → Text | Number
 ```
 
 A presentation can have collections of texts and numbers. Both resources can
-have multiple parents, without stored generation numbers. Labels are optional
-even for children and use lowercase ASCII letters, digits, and hyphens only.
-They bind coded interactive elements to resources; live responses can remain
+have multiple parents, without stored generation numbers. Optional labels belong
+to `ResourceHierarchy` relationships, not resource rows; standalone resources
+have no label, and different parents can label the same child differently.
+Labels use lowercase ASCII letters, digits, and hyphens only. They bind coded
+interactive elements to resources; live response relationships can remain
 unlabeled. Labels must be unique within each parent and resource type; a Text
-and a Number under the same parent, or resources under different parents, can
-reuse the same label.
+and a Number under the same parent, or relationships under different parents,
+can reuse the same label.
+
+Planned Text/Number collection endpoints support lookup by `parent-id` and
+`label`. Parent responses that include children also include their accessible
+relationship labels in the same payload, so the frontend can resolve coded
+bindings without another request. Labels remain parent-scoped relationship
+metadata, not attributes of the child resource.
+
+The planned concurrency protocol uses one transaction-scoped advisory lock per
+hierarchy, protecting cycle checks and relationship-label uniqueness through
+commit. Types remain in `IdentifierTypeLink`; no copied type or resource-row
+label is needed. Ordinary reads and content-only updates do not acquire these
+locks. See the [concurrency design](recursive-text-number-plan.md#concurrent-hierarchy-mutations).
 
 Optional categories use the same lowercase ASCII letters, digits, and hyphens
 constraint. Frontends can use freely chosen categories to select components and
@@ -171,8 +185,8 @@ allowing the frontend to select icons or other presentation behavior for values 
 `ueber-group` and `sub-group` without separate interfaces. These categories do not
 control permissions or hierarchy depth and can be shared by multiple groups,
 including siblings. Category optionality remains a decision for step 5.
-Text/Number's per-parent label uniqueness rule does not apply; a separate Group
-`label` can be considered later if needed.
+Text/Number's per-parent relationship-label uniqueness rule does not apply;
+identity relationship labels can be considered separately later if needed.
 
 Shared cycle prevention is part of the initial work; application-group
 consolidation is a later step. Existing memberships, policies, identifiers, and
