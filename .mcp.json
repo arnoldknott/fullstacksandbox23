@@ -1,0 +1,15 @@
+{
+	"mcpServers": {
+		"flyonui-mcp": {
+			"type": "stdio",
+			"command": "npx",
+			"args": [
+				"-y",
+				"flyonui-mcp"
+			],
+			"tools": [
+				"*"
+			]
+		}
+	}
+}
