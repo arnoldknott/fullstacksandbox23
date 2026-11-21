@@ -2,7 +2,9 @@
 
 ## Scope and decisions
 
-This is an implementation plan, not a description of implemented interfaces.
+This plan defines the Text/Number resource contracts and the subsequent
+presentation evaluation and identity consolidation. Current interface behavior is
+documented in the [data-model overview](README.md).
 
 The initial work is limited to:
 
@@ -57,8 +59,8 @@ parallel hierarchy table or a single-parent foreign key.
 
 Labels belong to parent-child relationships, not to Text or Number rows.
 
-The proposed numeric representation is the existing Numerical model's
-floating-point representation. Confirm a requirement for exact decimal arithmetic
+The numeric representation is a finite floating-point value, following Numerical.
+Confirm a requirement for exact decimal arithmetic
 before changing that representation; do not silently stringify values.
 
 `confidential` preserves Message's existing behavior: plaintext in authorized
@@ -81,11 +83,11 @@ alongside its new Text and Number relationships.
 
 ### Labels for coded interactive elements
 
-Add an optional `label` to `ResourceHierarchy` for relationships whose child is
-Text or Number, defaulting to null. Standalone resources have no label; each
-parent can assign its own label to a shared child. Do not add a resource-row
-label or duplicate the child's registered type on the edge. Identity relationship
-labels remain outside this step.
+Both hierarchies share an optional `label` field, defaulting to null. Standalone
+entities have no label; each parent can assign its own label to a shared child.
+Do not add a resource-row
+label or duplicate the child's registered type on the edge. Only resource
+relationships carry an `order`.
 
 When present, a label must be non-empty and contain only lowercase ASCII letters,
 digits, and hyphens: `^[a-z0-9-]+$`. Reject invalid values rather than silently
@@ -98,8 +100,8 @@ element's resource under its parent, not every live response submitted to it.
 Response relationships can remain unlabeled and use resource and parent/child
 identifiers.
 
-Labels must be unique among a parent's labeled children of the same resource
-type. Resolve a coded binding by `(parent identifier, resource type, label)`,
+Labels must be unique among a parent's labeled children of the same concrete
+type. Resolve a coded resource binding by `(parent identifier, resource type, label)`,
 then retain the resolved resource identifier for updates and subscriptions.
 
 The rules are:
@@ -118,14 +120,14 @@ The rules are:
 - Removing a relationship removes its label binding, not the shared child.
 
 Enforce uniqueness in the shared hierarchy mutation transaction under the
-resource-hierarchy advisory lock described below, including concurrent links and
+corresponding hierarchy's advisory lock, including concurrent links and
 relationship-label changes. Join child identifiers to `IdentifierTypeLink` to
-compare resource types. Check all same-type siblings, including inaccessible
+compare child types. Check all same-type siblings, including inaccessible
 ones, after ordinary authorization; return a generic conflict without disclosing
 the conflicting child.
 
 Pydantic validates label syntax, not concurrent uniqueness. Do not introduce a
-cross-type `UNIQUE(parent_id, label)` constraint or duplicate resource types to
+cross-type `UNIQUE(parent_id, label)` constraint or duplicate child types to
 construct a unique constraint. All application writers must follow the shared
 transaction and locking protocol.
 
@@ -299,10 +301,11 @@ Preserve [effective permission evaluation](../security/inner-access-control.md):
 
 Do not limit permission traversal to the content returned by a read.
 
-The current [BaseCRUD.read](../../../backend/src/crud/base.py) separately loads
-immediate declared hierarchy relationships with `selectinload`, applying
-`filters_allowed(Action.read)` through `with_loader_criteria` to related rows.
-It includes configured parent relationships as well as child relationships.
+[BaseCRUD.read](../../../backend/src/crud/base.py) separately loads immediate
+declared hierarchy relationships using `selectinload` and independent
+`filters_allowed(Action.read)` checks. Models with self-links apply those
+criteria per relationship loader. Ordinary reads do not fetch edge metadata.
+Configured parent relationships are included as well as child relationships.
 Recursive permission CTEs compute accessibility; they do not recursively fetch
 content. See [collection child loading](../security/collection-child-loading.md).
 
@@ -340,20 +343,12 @@ by `label`. Preserve the collection response shape and apply the existing parent
 and child read-access checks; an inaccessible match must not be disclosed.
 Consumers can retain the resolved child identifier for subsequent operations.
 
-Whenever a parent transfers immediate children, include the corresponding
-access-filtered relationship metadata in that same payload, including
-`parent_id`, `child_id`, nullable `label`, `order`, and `inherit`. This applies to
-Presentation, Text, and Number parent reads through collection and identifier
-endpoints, snapshots, and Socket.IO transfers whenever children are included.
-Label metadata is part of the child-relationship representation, not an optional
-enrichment that requires an additional request. The frontend must be able to
-match labels to the appropriate typed child collection using the child identifier.
-
-Only transfer relationship labels for returned, accessible children under that
-parent; do not expose hidden children or a shared child's bindings under other
-parents. Keep labels on relationship records, not as a global attribute of a
-transferred child. Include the same parent-scoped label metadata in link and
-relationship-update notifications.
+Return labels in the existing extended Socket.IO read (`request-access-data=true`),
+alongside the other access-filtered edge fields: `parent_id`, `child_id`, `inherit`,
+and `order` for resource edges. The frontend can match edges to children by
+identifier. Ordinary entity reads, snapshots, and incremental notifications do
+not include labels. Dedicated hierarchy endpoints still return edge records,
+and label lookup by parent remains available without requesting extended data.
 
 Use explicit framework aliases for first-party query parameters such as
 `parent-id` and `public-action`. Resource types must allow all three parent types
@@ -371,8 +366,9 @@ an additional full collection transfer.
 
 Keep content responses one hierarchy level deep. Self-related and mutually
 related models must not serialize the whole graph or recurse back through parent
-references. Use shallow related-entity representations where necessary, retaining
-identifier and attribute information and independent row-level filtering.
+references. Keep direct related entities attribute-only through the shared read
+path, reusing normal Read schemas without per-model depth flags or a legacy mode.
+Retain identifier and attribute information and independent row-level filtering.
 
 Verify this for collection reads as well as identifier reads: loading several
 related top-level entities in one database session must not accidentally produce
@@ -436,9 +432,8 @@ Run tests inside the dedicated test environment using existing tooling. Cover:
   parent-local label changes, concurrent uniqueness, and unlabeled response
   relationships;
 - endpoint lookup by parent and label, requiring a parent for label filtering;
-  relationship labels accompanying children in parent reads and transfers without
-  optional includes or follow-up requests; correct parent-scoped labels in
-  relationship notifications, without disclosing inaccessible bindings;
+  correct parent-scoped labels in extended reads without disclosing inaccessible
+  bindings, and no labels in ordinary entity reads or notifications;
 - optional categories on both resource types, validation of allowed characters,
   repeated categories among siblings, and category updates through the existing
   access-controlled interfaces;
@@ -516,9 +511,8 @@ determine hierarchy depth, membership, or authorization.
 
 Unlike Text/Number relationship labels that identify a specific child within a
 parent, Group categories are reusable classifications. Multiple groups,
-including siblings, can share a category; Text/Number's per-parent label
-uniqueness rule does not apply. Consider identity relationship labels separately
-if groups later need addressable bindings; do not add them in this step.
+including siblings, can share a category; the per-parent relationship label
+uniqueness rule does not apply to categories.
 Confirm category optionality before implementing step 5; this decision does not
 block steps 1 and 2.
 

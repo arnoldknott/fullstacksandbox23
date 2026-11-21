@@ -73,6 +73,18 @@ Presentation = create_model(
     #     )
     # ],
     relationships=[
+        Relationship(
+            name="texts",
+            back_populates="presentations",
+            related_entity=ResourceType.text,
+            hierarchy_type=RelationshipHierarchyType.parent,
+        ),
+        Relationship(
+            name="numbers",
+            back_populates="presentations",
+            related_entity=ResourceType.number,
+            hierarchy_type=RelationshipHierarchyType.parent,
+        ),
         # Relationship(
         #     name="quizzes",
         #     back_populates="presentations",

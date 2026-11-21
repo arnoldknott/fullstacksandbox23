@@ -5,6 +5,7 @@ from socketio import AsyncRedisManager, AsyncServer
 
 from core.config import config
 from routers.socketio.v1.demo_namespace import DemoNamespace
+from routers.socketio.v1.data import TextNamespace, NumberNamespace
 from routers.socketio.v1.demo_resource import DemoResourceNamespace
 from routers.socketio.v1.identities import (
     GroupNamespace,
@@ -82,6 +83,8 @@ async def catch_all(event, sid, data):
 
 
 def mount_socketio_app(fastapi_app: FastAPI):
+    socketio_server.register_namespace(TextNamespace(server=socketio_server))
+    socketio_server.register_namespace(NumberNamespace(server=socketio_server))
 
     socketio_server.register_namespace(PublicNamespace(server=socketio_server))
     socketio_server.register_namespace(DemoNamespace(server=socketio_server))

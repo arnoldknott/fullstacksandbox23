@@ -19,10 +19,12 @@ from fastapi.responses import FileResponse
 from sqlalchemy import inspect as sa_inspect
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import aliased, class_mapper, selectinload, with_loader_criteria
+from sqlalchemy.orm.attributes import set_committed_value
 from sqlmodel import SQLModel, asc, col, delete, desc, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from core.cache import encryption
+from crud.transactions import finish_write, hierarchy_write
 from core.databases import get_async_session
 from crud import registry_CRUDs
 from crud.access import (
@@ -41,7 +43,10 @@ from models.access import (
     IdentityHierarchy,
     ResourceHierarchy,
 )
-from models.base import BaseExtendedSQLModel, BaseSQLModel
+from models.base import (
+    BaseExtendedSQLModel,
+    BaseSQLModel,
+)
 
 if TYPE_CHECKING:
     pass
@@ -157,7 +162,7 @@ class BaseCRUD(
         return f"{self.model.__tablename__}:{object_id}"
 
     def _decrypt_in_place(  # noqa: C901
-        self, instance, _seen: Optional[set[int]] = None
+        self, instance, _seen: Optional[dict[int, BaseSQLModel]] = None
     ) -> None:
         """Replace encryption envelopes with plaintext on a row and its loaded children.
 
@@ -168,10 +173,10 @@ class BaseCRUD(
         """
         if instance is None:
             return
-        _seen = _seen if _seen is not None else set()
+        _seen = _seen if _seen is not None else {}
         if id(instance) in _seen:
             return
-        _seen.add(id(instance))
+        _seen[id(instance)] = instance
         for relationship in class_mapper(type(instance)).relationships:
             if relationship.key not in instance.__dict__:
                 continue
@@ -262,7 +267,7 @@ class BaseCRUD(
         """Creates an resource type link entry."""
         statement = self._add_identifier_type_link_to_session(object_id, type)
         await self.session.exec(statement)
-        await self.session.commit()
+        await finish_write(self.session)
 
     def _provide_data_directory(
         self,
@@ -275,6 +280,7 @@ class BaseCRUD(
         except Exception as e:
             raise Exception(f"Path not found: {e}")
 
+    @hierarchy_write
     async def create(  # noqa: C901
         self,
         object: BaseSchemaTypeCreate | dict[str, Any],
@@ -288,6 +294,7 @@ class BaseCRUD(
         # Caller should call AccessPolicyCRUD.create to create additional policies, if needed.
         public: Optional[bool] = False,
         public_action: Optional[Action] = None,
+        label: Optional[str] = None,
     ) -> BaseModelType:
         """Creates a new object.
 
@@ -306,6 +313,17 @@ class BaseCRUD(
         database_object: Optional[BaseModelType] = None
         try:
             # Early validation
+            if label is not None and parent_id is None:
+                raise HTTPException(
+                    status_code=422, detail="A relationship label requires a parent."
+                )
+            if public_action is not None:
+                try:
+                    public_action = Action(public_action)
+                except ValueError as error:
+                    raise HTTPException(
+                        status_code=422, detail="Invalid public action."
+                    ) from error
             if inherit and not parent_id:
                 raise HTTPException(
                     status_code=400,
@@ -324,6 +342,20 @@ class BaseCRUD(
                     detail="Authentication required.",
                 )
             elif not current_user:
+                if self.entity_type in (ResourceType.text, ResourceType.number):
+                    if parent_id is None or public_action is None:
+                        raise HTTPException(
+                            status_code=403,
+                            detail="Public submission requires a parent and an explicit public policy.",
+                        )
+                    if not await self.policy_crud.allows(
+                        AccessRequest(
+                            resource_id=parent_id,
+                            action=Action.connect,
+                            current_user=None,
+                        )
+                    ):
+                        raise HTTPException(status_code=403, detail="Forbidden.")
                 public_user_id = uuid.uuid4()
                 await self._write_identifier_type_link(
                     public_user_id, IdentityType.public
@@ -425,10 +457,11 @@ class BaseCRUD(
                     parent_id=parent_id,
                     child_id=database_object.id,
                     inherit=inherit,
+                    label=label,
                 )
 
             # Commit the object to the database
-            await self.session.commit()
+            await finish_write(self.session)
             await self.session.refresh(database_object)
 
             # Create public access policy
@@ -475,7 +508,7 @@ class BaseCRUD(
                         f"Error in BaseCRUD.create of an object of type {self.model}, action: {Action.own}, current_user: {current_user}, status_code: {404} results in  {log_error}"
                     )
             logger.error(f"Error in BaseCRUD.create: {e}")
-            if isinstance(e, HTTPException) and e.status_code == 409:
+            if isinstance(e, HTTPException) and e.status_code in (409, 422):
                 raise
             raise HTTPException(
                 status_code=403,
@@ -593,6 +626,31 @@ class BaseCRUD(
 
         return EntityCollectionSnapshot(items=items, cursor=cursor)
 
+    @staticmethod
+    def _read_result(instance: BaseModelType, depth: int = 1) -> BaseModelType:
+        """Copy loaded values without revalidation or shared session identity state."""
+        result = type(instance)(
+            **{field: getattr(instance, field) for field in type(instance).model_fields}
+        )
+        if depth == 0:
+            return result
+        for relationship in class_mapper(type(instance)).relationships:
+            if relationship.key not in instance.__dict__:
+                continue
+            related = instance.__dict__[relationship.key]
+            if relationship.uselist:
+                value = [
+                    BaseCRUD._read_result(child, depth - 1) for child in related or []
+                ]
+            else:
+                value = (
+                    BaseCRUD._read_result(related, depth - 1)
+                    if related is not None
+                    else None
+                )
+            set_committed_value(result, relationship.key, value)
+        return result
+
     async def read(  # noqa: C901
         self,
         current_user: Optional["CurrentUserData"] = None,
@@ -623,6 +681,10 @@ class BaseCRUD(
             # sibling collections add rows instead of multiplying (cartesian) them. The
             # `with_loader_criteria` applies `filters_allowed` to the child entity so
             # reading a parent never grants access to children the user cannot read.
+            scoped_relationships = any(
+                rel.mapper.class_ is self.model
+                for rel in class_mapper(self.model).relationships
+            )
             for relationship in class_mapper(self.model).relationships:
                 related_model = self.type.get_model(relationship.mapper.class_.__name__)
                 related_attribute = getattr(self.model, relationship.key)
@@ -639,12 +701,23 @@ class BaseCRUD(
                 if not is_hierarchy_relationship:
                     continue
 
+                access_model = (
+                    IdentifierTypeLink if scoped_relationships else related_model
+                )
                 access_ids = self.policy_crud.filters_allowed(
-                    select(related_model.id),
+                    select(access_model.id),
                     action=Action.read,
-                    model=related_model,
+                    model=access_model,
                     current_user=current_user,
                 )
+                if scoped_relationships:
+                    # Keep recursive relationship filters local to each loader, not its subquery.
+                    statement = statement.options(
+                        selectinload(
+                            related_attribute.and_(related_model.id.in_(access_ids))
+                        )
+                    )
+                    continue
                 statement = statement.options(
                     selectinload(related_attribute),
                     with_loader_criteria(
@@ -704,8 +777,13 @@ class BaseCRUD(
             # loaded encrypted children, detaching them so a later commit cannot
             # flush the plaintext back into an encrypted column.
             if not select_args:
+                seen: dict[int, BaseSQLModel] = {}
                 for result in results:
-                    self._decrypt_in_place(result)
+                    self._decrypt_in_place(result, seen)
+                return cast(
+                    list[BaseSchemaTypeRead],
+                    [self._read_result(result) for result in results],
+                )
 
             return results
         except Exception as err:
@@ -815,7 +893,7 @@ class BaseCRUD(
                 status_code=200,
             )
             await self.logging_crud.create(access_log)
-            await session.commit()
+            await finish_write(session)
             await session.refresh(current)
             self._decrypt_in_place(current)
             return current
@@ -890,6 +968,7 @@ class BaseCRUD(
                 detail=f"{self.model.__name__} - Forbidden.",
             )
 
+    @hierarchy_write
     async def delete(  # noqa: C901
         self,
         current_user: "CurrentUserData",
@@ -918,7 +997,7 @@ class BaseCRUD(
                 raise HTTPException(
                     status_code=404, detail=f"{self.model.__name__} not found."
                 )
-            await self.session.commit()
+            await finish_write(self.session)
 
             # Delete all stand-alone orphan children of the object
             # might leave some children, that the current_user does not have access to,
@@ -947,43 +1026,23 @@ class BaseCRUD(
 
             # Delete all hierarchy entries for the object
             # Delete all parent-child relationships, where object_id is parent:
-            try:
-                await hierarchy_CRUD.delete(
-                    current_user=current_user, parent_id=object_id
-                )
-            except Exception:
-                pass
+            await hierarchy_CRUD.delete(current_user=current_user, parent_id=object_id)
 
             # Delete all parent-child relationships, where object_id is child:
-            try:
-                await hierarchy_CRUD.delete(
-                    current_user=current_user, child_id=object_id
-                )
-            except Exception:
-                pass
+            await hierarchy_CRUD.delete(current_user=current_user, child_id=object_id)
 
             # Delete all access policies, where object_id is resource:
             # The resource_id can be an identity_id!
             # TBD: write a test for deleting a policy, where the resource_id is an identity_id
-            try:
-                # async with self.policy_crud as policy_crud:
+            await self.policy_crud.delete(
+                current_user,
+                AccessPolicyDelete(resource_id=object_id),
+            )
+            if self.type == IdentityType:
                 await self.policy_crud.delete(
                     current_user,
-                    AccessPolicyDelete(
-                        resource_id=object_id,
-                    ),
+                    AccessPolicyDelete(identity_id=object_id),
                 )
-            except Exception:
-                pass
-            if self.type == IdentityType:
-                try:
-                    # async with self.policy_crud as policy_crud:
-                    await self.policy_crud.delete(
-                        current_user,
-                        AccessPolicyDelete(identity_id=object_id),
-                    )
-                except Exception:
-                    pass
 
             # Create the successful access log
             access_log = AccessLogCreate(

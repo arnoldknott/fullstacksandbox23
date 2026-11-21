@@ -3,8 +3,10 @@ from enum import Enum
 from typing import Annotated, List, Literal, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 from sqlmodel import SQLModel
+
+KebabCase = Annotated[str, StringConstraints(pattern=r"^[a-z0-9-]+$")]
 
 
 def get_all_models(SQLModel=SQLModel):
@@ -166,6 +168,8 @@ class ResourceType(EntityType):
     # or make this enum a collection of the models and add
     # a method __str__(self) that returns the name of the model?
     presentation = "Presentation"
+    text = "Text"
+    number = "Number"
     # quiz = "Quiz"
     question = "Question"
     # Messages are useful anywhere:

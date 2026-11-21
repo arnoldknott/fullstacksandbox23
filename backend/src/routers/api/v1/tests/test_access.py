@@ -4526,9 +4526,11 @@ async def test_add_identity_hierarchy_and_remove_again(
 
     mocked_ueber_groups = await add_many_test_ueber_groups()
 
+    edge_url = (
+        f"/api/v1/access/hierarchy/{mocked_ueber_groups[1].id}/child/{existing_user.id}"
+    )
     response = await async_client.post(
-        f"/api/v1/access/hierarchy/{str(mocked_ueber_groups[1].id)}/child/{existing_user.id}",
-        params={"inherit": True},
+        edge_url, params={"inherit": True, "label": "member"}
     )
 
     assert response.status_code == 201
@@ -4536,6 +4538,59 @@ async def test_add_identity_hierarchy_and_remove_again(
     assert created_ueber_group_membership["parent_id"] == str(mocked_ueber_groups[1].id)
     assert created_ueber_group_membership["child_id"] == str(existing_user.id)
     assert created_ueber_group_membership["inherit"] is True
+    assert created_ueber_group_membership["label"] == "member"
+    assert "order" not in created_ueber_group_membership
+
+    for invalid_label in ("", "Invalid", "two words", "under_score"):
+        invalid_create = await async_client.post(
+            edge_url, params={"label": invalid_label}
+        )
+        assert invalid_create.status_code == 422, invalid_create.text
+        invalid_update = await async_client.put(edge_url, json={"label": invalid_label})
+        assert invalid_update.status_code == 422, invalid_update.text
+
+    second_user = await add_one_azure_test_user(1)  # type: ignore[call-arg]
+    duplicate = await async_client.post(
+        f"/api/v1/access/hierarchy/{mocked_ueber_groups[1].id}/child/{second_user.id}",
+        params={"label": "member"},
+    )
+    assert duplicate.status_code == 409, duplicate.text
+    renamed = await async_client.put(edge_url, json={"label": "renamed"})
+    assert renamed.status_code == 200, renamed.text
+    assert renamed.json()["label"] == "renamed"
+    assert renamed.json()["inherit"] is True
+    inheritance_only = await async_client.put(edge_url, json={"inherit": False})
+    assert inheritance_only.status_code == 200, inheritance_only.text
+    assert inheritance_only.json()["inherit"] is False
+    assert inheritance_only.json()["label"] == "renamed"
+    both = await async_client.put(edge_url, json={"inherit": True, "label": "member"})
+    assert both.status_code == 200, both.text
+    assert both.json()["inherit"] is True
+    assert both.json()["label"] == "member"
+    unchanged = await async_client.put(edge_url, json={})
+    assert unchanged.status_code == 200, unchanged.text
+    assert unchanged.json()["inherit"] is True
+    assert unchanged.json()["label"] == "member"
+    for unexpected in (
+        {"parent_id": str(uuid.uuid4())},
+        {"child_id": str(uuid.uuid4())},
+        {"clear-label": True},
+    ):
+        invalid = await async_client.put(edge_url, json=unexpected)
+        assert invalid.status_code == 422, invalid.text
+    legacy = await async_client.put(edge_url, params={"inherit": False})
+    assert legacy.status_code == 422, legacy.text
+    for parameter, value in (
+        ("inherit", False),
+        ("label", "member"),
+        ("clear-label", True),
+    ):
+        legacy = await async_client.put(edge_url, params={parameter: value}, json={})
+        assert legacy.status_code == 422, legacy.text
+    cleared = await async_client.put(edge_url, json={"label": None})
+    assert cleared.status_code == 200, cleared.text
+    assert cleared.json()["label"] is None
+    assert cleared.json()["inherit"] is True
 
     ueber_group_response = await async_client.get(
         f"/api/v1/uebergroup/{str(mocked_ueber_groups[1].id)}"
@@ -5761,13 +5816,46 @@ async def test_update_protected_child_relationship_to_parent(
 
     # updating the relationship to inherit:
     response = await async_client.put(
-        f"/api/v1/access/hierarchy/{str(mocked_protected_resources[0].id)}/child/{str(mocked_protected_children[0].id)}?inherit=True",
+        f"/api/v1/access/hierarchy/{str(mocked_protected_resources[0].id)}/child/{str(mocked_protected_children[0].id)}",
+        json={"inherit": True},
     )
     assert response.status_code == 200
     updated_hierarchy = ResourceHierarchyRead(**response.json())
     assert updated_hierarchy.parent_id == mocked_protected_resources[0].id
     assert updated_hierarchy.child_id == mocked_protected_children[0].id
     assert updated_hierarchy.inherit is True
+
+
+@pytest.mark.anyio
+async def test_update_hierarchy_requires_authentication(async_client: AsyncClient):
+    response = await async_client.put(
+        f"/api/v1/access/hierarchy/{uuid.uuid4()}/child/{uuid.uuid4()}",
+        json={"inherit": True},
+    )
+    assert response.status_code == 401
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "mocked_provide_http_token_payload", [token_user1_read_write], indirect=True
+)
+async def test_update_hierarchy_without_write_access_fails(
+    async_client: AsyncClient,
+    app_override_provide_http_token_payload: FastAPI,
+    mocked_provide_http_token_payload,
+    current_user_from_azure_token,
+    register_one_protected_child,
+    add_one_parent_child_resource_relationship,
+):
+    await current_user_from_azure_token(mocked_provide_http_token_payload)
+    relationship = await add_one_parent_child_resource_relationship(
+        register_one_protected_child
+    )
+    response = await async_client.put(
+        f"/api/v1/access/hierarchy/{relationship.parent_id}/child/{relationship.child_id}",
+        json={"inherit": True},
+    )
+    assert response.status_code == 404
 
 
 @pytest.mark.anyio

@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Annotated, AsyncGenerator, List, cast
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 
 from core.databases import get_async_session
 from core.security import (
@@ -14,7 +14,7 @@ from core.security import (
     check_token_against_guards,
     get_http_access_token_payload,
 )
-from core.types import Action, IdentityType, ResourceType
+from core.types import Action, IdentityType, KebabCase, ResourceType
 from crud.access import (
     AccessLoggingCRUD,
     AccessPolicyCRUD,
@@ -31,6 +31,8 @@ from models.access import (
     AccessPolicyUpdate,
     BaseHierarchyCreate,
     BaseHierarchyDelete,
+    BaseHierarchyUpdate,
+    HierarchyUpdateBody,
     IdentityHierarchyRead,
     ResourceHierarchyRead,
 )
@@ -52,14 +54,16 @@ access_write_guards = Guards(
 access_policy_view = BaseView(AccessPolicyCRUD)
 
 
-@router.post("/policy", status_code=201)
+@router.post("/policy", status_code=201, response_model=AccessPolicy)
 async def post_access_policy(
     access_policy: AccessPolicyCreate,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(access_write_guards),
-) -> AccessPolicy:
+) -> AccessPolicyRead:
     """Creates a new access policy."""
-    return await access_policy_view.post(access_policy, token_payload, guards=guards)
+    current_user = await check_token_against_guards(token_payload, guards)
+    async with AccessPolicyCRUD() as crud:
+        return await crud.create(access_policy, current_user)
 
 
 @router.get("/policies", status_code=200)
@@ -541,6 +545,7 @@ async def post_relationship(
     parent_id: UUID,
     child_id: UUID,
     inherit: Annotated[bool, Query()] = False,
+    label: Annotated[KebabCase | None, Query()] = None,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(access_write_guards),
     # ) -> List[ResourceHierarchyRead] | List[IdentityHierarchyRead]:
@@ -564,7 +569,11 @@ async def post_relationship(
     created_hierarchy = None
     async for hierarchy_CRUD in choose_hierarchy_CRUD([parent_id, child_id]):
         created_hierarchy = await hierarchy_CRUD.create(
-            current_user, parent_id, child_id, inherit
+            current_user,
+            parent_id,
+            child_id,
+            inherit,
+            label,
         )
     if created_hierarchy is None:
         raise HTTPException(status_code=400, detail="Hierarchy could not be created.")
@@ -589,7 +598,11 @@ async def post_relationships(
             [hierarchy.parent_id, hierarchy.child_id]
         ):
             created_hierarchy = await hierarchy_CRUD.create(
-                current_user, hierarchy.parent_id, hierarchy.child_id, hierarchy.inherit
+                current_user,
+                hierarchy.parent_id,
+                hierarchy.child_id,
+                hierarchy.inherit,
+                hierarchy.label,
             )
             created_hierarchies.append(created_hierarchy)
     return created_hierarchies
@@ -661,7 +674,8 @@ async def post_reorder_children(
 async def put_relationship(
     parent_id: UUID,
     child_id: UUID,
-    inherit: bool,
+    hierarchy: HierarchyUpdateBody,
+    request: Request,
     token_payload=Depends(get_http_access_token_payload),
     guards: GuardTypes = Depends(access_write_guards),
 ) -> ResourceHierarchyRead | IdentityHierarchyRead:
@@ -669,10 +683,22 @@ async def put_relationship(
     current_user = await check_token_against_guards(token_payload, guards)
     if current_user is None:
         raise HTTPException(status_code=401, detail="Authentication required.")
+    if any(key in request.query_params for key in ("inherit", "label", "clear-label")):
+        raise HTTPException(
+            status_code=422, detail="Provide hierarchy updates in the JSON body."
+        )
+    hierarchy_update = BaseHierarchyUpdate.model_validate(
+        {
+            "parent_id": parent_id,
+            "child_id": child_id,
+            **hierarchy.model_dump(exclude_unset=True),
+        }
+    )
     updated_hierarchy = cast(ResourceHierarchyRead | IdentityHierarchyRead, None)
     async for hierarchy_CRUD in choose_hierarchy_CRUD([parent_id, child_id]):
         updated_hierarchy = await hierarchy_CRUD.update(
-            current_user, parent_id, child_id, inherit
+            current_user,
+            hierarchy_update,
         )
     return updated_hierarchy
 

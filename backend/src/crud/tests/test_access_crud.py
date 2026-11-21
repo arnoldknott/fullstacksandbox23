@@ -1,13 +1,17 @@
+import asyncio
 import uuid
 from datetime import datetime
 from unittest.mock import AsyncMock, Mock
 
 import pytest
 from fastapi import HTTPException
+from pydantic import ValidationError
 from sqlmodel import select, text
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from core.types import Action, CurrentUserData, IdentityType, ResourceType
+from core.databases import get_async_session
+from crud.transactions import hierarchy_transaction
 from crud.access import (
     AccessLoggingCRUD,
     AccessPolicyCRUD,
@@ -20,6 +24,7 @@ from models.access import (
     AccessPolicyCreate,
     AccessPolicyDelete,
     AccessPolicyUpdate,
+    BaseHierarchyUpdate,
     IdentityHierarchy,
     ResourceHierarchy,
 )
@@ -1410,6 +1415,7 @@ async def test_create_access_log(register_many_current_users, register_many_reso
 async def test_create_many_access_logs_commits_once():
     """Test creating multiple access logs in one transaction."""
     session = Mock(spec=AsyncSession)
+    session.info = {}
     session.commit = AsyncMock()
     session.rollback = AsyncMock()
     access_logs = [
@@ -1688,6 +1694,97 @@ async def test_hierarchy_checks_authorization_before_cycles(recursive_hierarchy_
 
         assert error.value.status_code == 403
         assert error.value.detail == "Forbidden."
+
+
+@pytest.mark.anyio
+async def test_concurrent_disjoint_links_cannot_collectively_create_cycle(
+    recursive_hierarchy_graph, monkeypatch
+):
+    crud_type, _, node_ids, session = recursive_hierarchy_graph
+    current_user = CurrentUserData.model_validate(current_user_data_admin)
+    async with crud_type(session=session) as crud:
+        for parent, child in [(0, 1), (2, 3)]:
+            await crud.create(current_user, node_ids[parent], node_ids[child])
+        hierarchy_model = crud.model
+    first_checked, release = asyncio.Event(), asyncio.Event()
+    original = crud_type._check_cycle
+    checks = []
+
+    async def hold_first_check(self, parent_id, child_id):
+        await original(self, parent_id, child_id)
+        checks.append((parent_id, child_id))
+        if parent_id == node_ids[1]:
+            first_checked.set()
+            await release.wait()
+
+    monkeypatch.setattr(crud_type, "_check_cycle", hold_first_check)
+    async with crud_type() as first, crud_type() as second:
+        first_task = asyncio.create_task(
+            first.create(current_user, node_ids[1], node_ids[2])
+        )
+        second_task = None
+        try:
+            await asyncio.wait_for(first_checked.wait(), timeout=2)
+            second_task = asyncio.create_task(
+                second.create(current_user, node_ids[3], node_ids[0])
+            )
+            await asyncio.sleep(0.05)
+            assert not second_task.done()
+            assert len(checks) == 1
+        finally:
+            release.set()
+            await first_task
+        with pytest.raises(HTTPException) as error:
+            await second_task
+        assert error.value.status_code == 409
+    assert await session.get(hierarchy_model, (node_ids[3], node_ids[0])) is None
+
+
+@pytest.mark.anyio
+async def test_hierarchy_lock_releases_after_cancellation_and_does_not_block_reads(
+    get_async_test_session,
+):
+    acquired = asyncio.Event()
+
+    async def hold():
+        async with await get_async_session() as session:
+            async with hierarchy_transaction(session, ResourceHierarchy):
+                acquired.set()
+                await asyncio.Event().wait()
+
+    task = asyncio.create_task(hold())
+    try:
+        await asyncio.wait_for(acquired.wait(), timeout=2)
+        async with hierarchy_transaction(get_async_test_session, IdentityHierarchy):
+            await asyncio.wait_for(
+                get_async_test_session.exec(select(ResourceHierarchy)), timeout=1
+            )
+        task.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await task
+        async with hierarchy_transaction(get_async_test_session, ResourceHierarchy):
+            pass
+    finally:
+        if not task.done():
+            task.cancel()
+            await asyncio.gather(task, return_exceptions=True)
+
+
+@pytest.mark.anyio
+async def test_hierarchy_lock_wait_timeout_is_explicit_and_rolls_back(
+    get_async_test_session,
+):
+    async with await get_async_session() as blocker:
+        async with hierarchy_transaction(blocker, ResourceHierarchy):
+            with pytest.raises(HTTPException) as error:
+                async with hierarchy_transaction(
+                    get_async_test_session, ResourceHierarchy
+                ):
+                    pytest.fail("A conflicting hierarchy lock must wait.")
+            assert error.value.status_code == 503
+            assert not get_async_test_session.in_transaction()
+    async with hierarchy_transaction(get_async_test_session, ResourceHierarchy):
+        pass
 
 
 @pytest.mark.anyio
@@ -2304,9 +2401,11 @@ async def test_admin_updates_resource_hierarchy_to_add_inheritance(
     async with ResourceHierarchyCRUD() as hierarchy_crud:
         updated_hierarchy = await hierarchy_crud.update(
             current_user=current_admin_user,
-            parent_id=relationship.parent_id,
-            child_id=relationship.child_id,
-            inherit=True,
+            hierarchy=BaseHierarchyUpdate(
+                parent_id=relationship.parent_id,
+                child_id=relationship.child_id,
+                inherit=True,
+            ),
         )
 
     assert updated_hierarchy.parent_id == relationship.parent_id
@@ -2330,9 +2429,11 @@ async def test_admin_updates_resource_hierarchy_to_remove_inheritance(
     async with ResourceHierarchyCRUD() as hierarchy_crud:
         updated_hierarchy = await hierarchy_crud.update(
             current_user=current_admin_user,
-            parent_id=relationship.parent_id,
-            child_id=relationship.child_id,
-            inherit=False,
+            hierarchy=BaseHierarchyUpdate(
+                parent_id=relationship.parent_id,
+                child_id=relationship.child_id,
+                inherit=False,
+            ),
         )
 
     assert updated_hierarchy.parent_id == relationship.parent_id
@@ -2353,9 +2454,9 @@ async def test_admin_updates_resource_hierarchy_with_nonexisting_relationship_fa
         try:
             await hierarchy_crud.update(
                 current_user=current_admin_user,
-                parent_id=parent_id,
-                child_id=child_id,
-                inherit=True,
+                hierarchy=BaseHierarchyUpdate(
+                    parent_id=parent_id, child_id=child_id, inherit=True
+                ),
             )
         except HTTPException as err:
             assert err.status_code == 404
@@ -2379,9 +2480,11 @@ async def test_admin_updates_order_in_resource_hierarchy_is_ignored(
         try:
             await hierarchy_crud.update(
                 current_user=current_admin_user,
-                parent_id=relationship.parent_id,
-                child_id=relationship.child_id,
-                inherit=True,
+                hierarchy=BaseHierarchyUpdate(
+                    parent_id=relationship.parent_id,
+                    child_id=relationship.child_id,
+                    inherit=True,
+                ),
                 order=2,  # type: ignore[unexpected-keyword-arg]
             )
         except TypeError as err:
@@ -2391,6 +2494,33 @@ async def test_admin_updates_order_in_resource_hierarchy_is_ignored(
             )
         else:
             pytest.fail("No Type Error raised!")
+
+
+@pytest.mark.anyio
+async def test_hierarchy_update_model_rejects_order():
+    with pytest.raises(ValidationError):
+        BaseHierarchyUpdate.model_validate(
+            {"parent_id": uuid.uuid4(), "child_id": uuid.uuid4(), "order": 2}
+        )
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize("label", ["", "Invalid", "two words", "under_score"])
+async def test_hierarchy_update_model_rejects_invalid_labels(label):
+    with pytest.raises(ValidationError):
+        BaseHierarchyUpdate.model_validate(
+            {"parent_id": uuid.uuid4(), "child_id": uuid.uuid4(), "label": label}
+        )
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize("missing", ["parent_id", "child_id"])
+async def test_hierarchy_update_model_requires_both_identifiers(missing):
+    identifiers = {"parent_id": uuid.uuid4(), "child_id": uuid.uuid4()}
+    del identifiers[missing]
+    with pytest.raises(ValidationError) as error:
+        BaseHierarchyUpdate.model_validate(identifiers)
+    assert error.value.errors()[0]["loc"] == (missing,)
 
 
 @pytest.mark.anyio
@@ -2422,9 +2552,11 @@ async def test_user_updates_resource_hierarchy_to_add_inheritance(
     async with ResourceHierarchyCRUD() as hierarchy_crud:
         updated_hierarchy = await hierarchy_crud.update(
             current_user=current_user,
-            parent_id=relationship.parent_id,
-            child_id=relationship.child_id,
-            inherit=True,
+            hierarchy=BaseHierarchyUpdate(
+                parent_id=relationship.parent_id,
+                child_id=relationship.child_id,
+                inherit=True,
+            ),
         )
 
     assert updated_hierarchy.parent_id == relationship.parent_id
@@ -2463,9 +2595,11 @@ async def test_user_updates_resource_hierarchy_to_remove_inheritance(
     async with ResourceHierarchyCRUD() as hierarchy_crud:
         updated_hierarchy = await hierarchy_crud.update(
             current_user=current_user,
-            parent_id=relationship.parent_id,
-            child_id=relationship.child_id,
-            inherit=False,
+            hierarchy=BaseHierarchyUpdate(
+                parent_id=relationship.parent_id,
+                child_id=relationship.child_id,
+                inherit=False,
+            ),
         )
 
     assert updated_hierarchy.parent_id == relationship.parent_id
@@ -2488,9 +2622,11 @@ async def test_user_updates_resource_hierarchy_without_access_to_child_fails(
         try:
             await hierarchy_crud.update(
                 current_user=current_user,
-                parent_id=relationship.parent_id,
-                child_id=relationship.child_id,
-                inherit=True,
+                hierarchy=BaseHierarchyUpdate(
+                    parent_id=relationship.parent_id,
+                    child_id=relationship.child_id,
+                    inherit=True,
+                ),
             )
         except HTTPException as err:
             assert err.status_code == 404
@@ -2514,9 +2650,11 @@ async def test_user_updates_resource_hierarchy_without_access_to_parent_fails(
         try:
             await hierarchy_crud.update(
                 current_user=current_user,
-                parent_id=relationship.parent_id,
-                child_id=relationship.child_id,
-                inherit=True,
+                hierarchy=BaseHierarchyUpdate(
+                    parent_id=relationship.parent_id,
+                    child_id=relationship.child_id,
+                    inherit=True,
+                ),
             )
         except HTTPException as err:
             assert err.status_code == 404
@@ -2540,9 +2678,11 @@ async def test_user_updates_resource_hierarchy_with_read_only_access_to_child_fa
         try:
             await hierarchy_crud.update(
                 current_user=current_user,
-                parent_id=relationship.parent_id,
-                child_id=relationship.child_id,
-                inherit=True,
+                hierarchy=BaseHierarchyUpdate(
+                    parent_id=relationship.parent_id,
+                    child_id=relationship.child_id,
+                    inherit=True,
+                ),
             )
         except HTTPException as err:
             assert err.status_code == 404
@@ -2566,9 +2706,11 @@ async def test_user_updates_resource_hierarchy_with_read_only_access_to_parent_f
         try:
             await hierarchy_crud.update(
                 current_user=current_user,
-                parent_id=relationship.parent_id,
-                child_id=relationship.child_id,
-                inherit=True,
+                hierarchy=BaseHierarchyUpdate(
+                    parent_id=relationship.parent_id,
+                    child_id=relationship.child_id,
+                    inherit=True,
+                ),
             )
         except HTTPException as err:
             assert err.status_code == 404

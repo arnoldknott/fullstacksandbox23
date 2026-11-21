@@ -24,6 +24,8 @@ from models.identity import (
 )
 
 from .identity import UserCRUD
+from .access import IdentityHierarchyCRUD, ResourceHierarchyCRUD
+from .transactions import finish_write, hierarchy_transaction
 
 
 class AccountMergeCRUD(UserCRUD):
@@ -221,14 +223,17 @@ class AccountMergeCRUD(UserCRUD):
     ) -> tuple[UUID, UUID]:
         """Atomically retain the initiating user and remove the other internal user."""
         try:
-            return await self._merge_provider_users(
-                survivor_provider,
-                survivor_claims,
-                source_provider,
-                source_claims,
-                preview_hash,
-                choices,
-            )
+            async with hierarchy_transaction(
+                self.session, ResourceHierarchy, IdentityHierarchy
+            ):
+                return await self._merge_provider_users(
+                    survivor_provider,
+                    survivor_claims,
+                    source_provider,
+                    source_claims,
+                    preview_hash,
+                    choices,
+                )
         except BaseException:
             await self.session.rollback()
             raise
@@ -335,7 +340,7 @@ class AccountMergeCRUD(UserCRUD):
                 col(IdentifierTypeLink.id).in_(list(mapping))
             )
         )
-        await self.session.commit()
+        await finish_write(self.session)
         return survivor_id, source_id
 
     @staticmethod
@@ -514,3 +519,15 @@ class AccountMergeCRUD(UserCRUD):
                 relation.child_id = child_id
                 self.session.add(relation)
             await self.session.flush()
+        crud_type = (
+            ResourceHierarchyCRUD
+            if model is ResourceHierarchy
+            else IdentityHierarchyCRUD
+        )
+        crud = crud_type(session=self.session)
+        for relation in affected:
+            if relation in self.session:
+                await crud._check_cycle(relation.parent_id, relation.child_id)
+                await crud._check_label(
+                    relation.parent_id, relation.child_id, relation.label
+                )

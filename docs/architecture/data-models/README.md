@@ -9,7 +9,7 @@ Entity = Resource | Identity
 ```
 
 - A **Resource** represents application content or another managed object, such
-  as a Presentation, Question, Message, or Numerical.
+  as a Presentation, Text, Number, Question, Message, or Numerical.
 - An **Identity** represents an application user, group, or related identity
   record. Users and groups receive access grants.
 
@@ -64,8 +64,8 @@ parent column in every concrete entity table:
 
 | Table/model | Edge fields | Additional behavior |
 | --- | --- | --- |
-| `ResourceHierarchy` | `parent_id`, `child_id`, `inherit` | Optional `order`, scoped to the parent |
-| `IdentityHierarchy` | `parent_id`, `child_id`, `inherit` | No resource-order column |
+| `ResourceHierarchy` | `parent_id`, `child_id`, `inherit` | Optional parent-scoped `order` and `label` |
+| `IdentityHierarchy` | `parent_id`, `child_id`, `inherit` | Optional parent-scoped `label`; no `order` |
 
 Both models are defined in [access.py](../../../backend/src/models/access.py).
 The parent/child pair identifies an edge; a child can have multiple parents.
@@ -78,6 +78,8 @@ Current examples include:
 ```text
 Resource hierarchy:
 Presentation → Question → Message | Numerical
+Presentation → Text | Number
+Text | Number → Text | Number
 ProtectedResource → ProtectedChild → ProtectedGrandChild
 
 Identity hierarchy:
@@ -91,7 +93,7 @@ rejects direct self-links and indirect cycles in both tables after authorization
 and allowed-type checks. Reachability includes non-inheriting edges and
 inaccessible intermediate nodes; cycle conflicts do not expose the path.
 See [hierarchy cycle prevention](../security/inner-access-control.md#hierarchy-cycle-prevention)
-for the error contract, concurrency limitation, and pre-deployment data check.
+for the error contract, transaction locking, and pre-deployment data check.
 
 ### Permission inheritance versus content loading
 
@@ -121,14 +123,18 @@ See [inner access control](../security/inner-access-control.md) and
 [collection child loading](../security/collection-child-loading.md) for the
 authoritative permission and loading contracts.
 
-## Proposed recursive resources: Text and Number
+## Recursive resources: Text and Number
 
-These models are planned, not implemented:
+Generic resources are defined in [`models/data.py`](../../../backend/src/models/data.py),
+with matching [`crud/data.py`](../../../backend/src/crud/data.py),
+[`routers/api/v1/data.py`](../../../backend/src/routers/api/v1/data.py), and
+[`routers/socketio/v1/data.py`](../../../backend/src/routers/socketio/v1/data.py).
+Application-specific resources such as Presentation retain their own modules.
 
-| Model | Proposed attributes |
+| Model | Attributes |
 | --- | --- |
 | `Text` | Required `content`; optional `category`, `language`, and encrypted-at-rest `confidential` |
-| `Number` | Required numeric `value`; optional `category`; no language or tolerance |
+| `Number` | Required finite floating-point `value`; optional `category`; no language or tolerance |
 
 Both belong to the Resource family and reuse `ResourceHierarchy`:
 
@@ -148,13 +154,19 @@ unlabeled. Labels must be unique within each parent and resource type; a Text
 and a Number under the same parent, or relationships under different parents,
 can reuse the same label.
 
-Planned Text/Number collection endpoints support lookup by `parent-id` and
-`label`. Parent responses that include children also include their accessible
-relationship labels in the same payload, so the frontend can resolve coded
-bindings without another request. Labels remain parent-scoped relationship
-metadata, not attributes of the child resource.
+The `/api/v1/text` and `/api/v1/number` collection endpoints support lookup by `parent-id` and
+`label`. Ordinary entity responses do not include relationship labels. Extended
+Socket.IO reads requested with `request-access-data=true` return accessible labels
+alongside `order` in the existing `hierarchies` field. Labels remain parent-scoped
+relationship metadata, not attributes of the child resource.
 
-The planned concurrency protocol uses one transaction-scoped advisory lock per
+Update relationship metadata with
+`PUT /api/v1/access/hierarchy/{parent_id}/child/{child_id}` and a JSON object
+containing `inherit` and/or `label`. Omitted fields stay unchanged;
+`"label": null` clears a label. The identifiers come from the URL; update
+values passed as query parameters are rejected.
+
+The concurrency protocol uses one transaction-scoped advisory lock per
 hierarchy, protecting cycle checks and relationship-label uniqueness through
 commit. Types remain in `IdentifierTypeLink`; no copied type or resource-row
 label is needed. Ordinary reads and content-only updates do not acquire these
@@ -165,8 +177,28 @@ constraint. Frontends can use freely chosen categories to select components and
 handling; categories may repeat and do not control access. They belong to the
 resource, so a shared child has the same category under every parent.
 
-Keep existing resources and interfaces available. The next presentation will
-evaluate the new models before any legacy presentation migration.
+Text language defaults to null and accepts alpha-2 language codes. Content is
+required, including when only `confidential` is meaningful (use an empty string).
+Confidential content is encrypted at rest but returned decrypted to authorized
+readers; it is not a separate permission boundary.
+
+Collection, identifier, and snapshot reads return one level of independently
+access-filtered relationships. The shared read path returns direct related
+records without expanding their relationships, using the existing Read schemas
+for all models. Parent-scoped edge labels are included only in extended reads.
+Both namespaces support incremental reads,
+subscriptions, submissions, linking, unlinking, relationship changes, sharing,
+and deletion without a connect-time full collection transfer.
+
+Authenticated callers can create standalone resources. Anonymous submissions
+require a parent with direct public `connect` access and an explicit resulting
+public policy. Anonymous updates require direct public `write` or `own`.
+Delete and policy management retain authenticated admission.
+
+Existing resources and interfaces remain available. The next presentation will
+evaluate the new models before any legacy presentation migration. Generate and
+apply the development database migration using the existing workflow before
+using the new tables and relationship label column.
 
 ## Proposed recursive application Group
 
@@ -185,8 +217,8 @@ allowing the frontend to select icons or other presentation behavior for values 
 `ueber-group` and `sub-group` without separate interfaces. These categories do not
 control permissions or hierarchy depth and can be shared by multiple groups,
 including siblings. Category optionality remains a decision for step 5.
-Text/Number's per-parent relationship-label uniqueness rule does not apply;
-identity relationship labels can be considered separately later if needed.
+The per-parent relationship-label uniqueness rule does not apply to categories.
+Identity hierarchies support labels using the same rules as resource hierarchies.
 
 Shared cycle prevention is part of the initial work; application-group
 consolidation is a later step. Existing memberships, policies, identifiers, and
@@ -194,7 +226,7 @@ frontend consumers must be migrated before old group interfaces are removed.
 
 ## Future Code and File resources
 
-Presentation stays unchanged for now. A later Code resource could classify
+Presentation retains its existing interfaces. A later Code resource could classify
 code-backed functionality through frontend-defined categories while preserving
 source-location and routing requirements. See the [Code plan](code-plan.md) for
 category-scoped path uniqueness and source-verification decisions.
@@ -207,7 +239,5 @@ models.
 ## Implementation plans
 
 The [recursive Text/Number and Group plan](recursive-text-number-plan.md) owns
-the detailed proposed changes, ordering and labels, public admission rules,
-cycle-prevention scope, validation, evaluation, and migration boundaries. No
-model, endpoint, namespace, or database migration is implemented by these
-documentation changes.
+the resource contracts, ordering and labels, public admission rules,
+cycle-prevention scope, validation, evaluation, and migration boundaries.

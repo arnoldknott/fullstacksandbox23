@@ -48,12 +48,19 @@ class BaseView:
         inherit=False,
         public=False,
         public_action=None,
+        label=None,
     ):
         logger.info("POST view calls create CRUD")
         current_user = await check_token_against_guards(token_payload, guards)
         async with self.crud() as crud:
             created_object = await crud.create(
-                object, current_user, parent_id, inherit, public, public_action
+                object,
+                current_user,
+                parent_id,
+                inherit,
+                public,
+                public_action,
+                label,
             )
             # if parent_id is not None:
             #     created_object = await crud.create(object, current_user, parent_id)

@@ -10,6 +10,22 @@ The outer layer establishes a trusted caller context. The inner layer uses the i
 
 The implementation is centered on [`AccessPolicyCRUD`](../../../backend/src/crud/access.py), with the data model in [`models/access.py`](../../../backend/src/models/access.py). Application create/read/update/delete (CRUD) classes apply it through [`BaseCRUD`](../../../backend/src/crud/base.py).
 
+## Database session boundaries
+
+Each REST request and Socket.IO event must use its own CRUD instances and
+database sessions. Never share them between requests or events, including
+requests from the same user. Helpers may share a session within one operation
+to participate in the same transaction. Shared views and namespaces may hold
+CRUD classes, but not live CRUD instances or database sessions for reuse across
+operations. Database connections may still be reused by the connection pool
+after a session closes.
+
+Session isolation between operations does not prevent unfiltered relationships
+from being loaded earlier within the same operation. The current child loader
+does not necessarily replace an already-loaded relationship with its filtered
+contents; avoid preloading unfiltered relationships before an access-controlled
+read. See [collection child-loading](collection-child-loading.md).
+
 ## Access policies
 
 An access policy grants one action on one resource to either an identity or the public:
@@ -103,8 +119,28 @@ Socket.IO link failures emit the existing error status, with the conflict in its
 detail, and do not emit a successful link notification. Input schemas retain
 their direct self-link validation.
 
-There are no concurrency locks: the check covers the graph visible to the
-request, but simultaneous requests may collectively create a cycle.
+All application graph writers use
+[`hierarchy_transaction`](../../../backend/src/crud/transactions.py): one
+PostgreSQL transaction-scoped advisory lock for resource edges (key `70101`) and
+another for identity edges (`70102`). Operations touching both acquire resource
+then identity. Authorization, cycle checks, label uniqueness, ordering, and the
+dependent mutation run after acquiring the lock and commit together; nested
+helpers flush rather than commit. Deletion cleanup, provider membership
+synchronization, and account merging participate in the same protocol.
+
+Lock waits are bounded to five seconds, statements to thirty seconds, and idle
+transactions to thirty seconds. Failed or cancelled operations explicitly roll
+back. Lock/statement timeouts at the transaction boundary return `503 Service
+Unavailable`; no successful notification precedes commit. PostgreSQL releases
+transaction locks on commit, rollback, or connection loss. Ordinary reads and
+content-only updates do not acquire these locks. Direct maintenance must use
+the same protocol; advisory locks do not constrain arbitrary SQL.
+
+Relationship labels in either hierarchy are unique within a parent and child type,
+resolved through `IdentifierTypeLink`, without copied type data or a cross-type
+database uniqueness constraint. Authorized duplicate-label attempts return a
+generic `409 Conflict`, including when the existing sibling is inaccessible.
+Changing a label preserves normal relationship-update authorization.
 
 Before deploying against existing data, run this read-only check for each
 hierarchy, substituting `identityhierarchy` for `resourcehierarchy` on the second

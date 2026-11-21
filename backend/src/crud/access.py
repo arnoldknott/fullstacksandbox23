@@ -27,8 +27,10 @@ from core.types import (
     Action,
     CurrentUserData,
     IdentityType,
+    KebabCase,
     ResourceType,
 )
+from crud.transactions import finish_write, hierarchy_write
 from models.access import (
     AccessLog,
     AccessLogCreate,
@@ -41,6 +43,7 @@ from models.access import (
     AccessRequest,
     BaseHierarchy,
     BaseHierarchyCreate,
+    BaseHierarchyUpdate,
     IdentifierTypeLink,
     IdentityHierarchy,
     IdentityHierarchyRead,
@@ -476,7 +479,7 @@ class AccessPolicyCRUD:
                     )
 
             session.add(policy)
-            await session.commit()
+            await finish_write(session)
             # TBD: consider gathering all the commits in one transaction:
             # if self._owns_session:
             #     await self.session.commit()
@@ -693,7 +696,7 @@ class AccessPolicyCRUD:
                     public=access_policy.public,
                 )
                 session.add(new_policy)
-                await session.commit()
+                await finish_write(session)
                 # TBD: consider gathering all the commits in one transaction:
                 # if self._owns_session:
                 #     await self.session.commit()
@@ -746,7 +749,7 @@ class AccessPolicyCRUD:
 
             response = await session.exec(statement)
 
-            await session.commit()
+            await finish_write(session)
 
             return response.rowcount
 
@@ -918,7 +921,7 @@ class AccessLoggingCRUD:
             session = self._session()
             access_log = AccessLog.model_validate(access_log)
             session.add(access_log)
-            await session.commit()
+            await finish_write(session)
             # TBD: consider gathering all the commits in one transaction:
             # if self._owns_session:
             #     await self.session.commit()
@@ -943,7 +946,7 @@ class AccessLoggingCRUD:
                 session = self._session()
                 database_logs = [AccessLog.model_validate(log) for log in access_logs]
                 session.add_all(database_logs)
-                await session.commit()
+                await finish_write(session)
                 return database_logs
             except Exception as e:
                 session = self._session()
@@ -1162,6 +1165,37 @@ class BaseHierarchyCRUD(
     def _session(self) -> AsyncSession:
         return cast(AsyncSession, self.session)
 
+    async def _log_relationship_changes(
+        self, current_user: Optional[CurrentUserData], identifiers: set[UUID]
+    ) -> None:
+        if self.hierarchy is not ResourceHierarchy or not identifiers:
+            return
+        affected = (
+            await self._session().exec(
+                select(IdentifierTypeLink.id).where(
+                    col(IdentifierTypeLink.id).in_(identifiers),
+                    col(IdentifierTypeLink.type).in_(
+                        [
+                            ResourceType.presentation.value,
+                            ResourceType.text.value,
+                            ResourceType.number.value,
+                        ]
+                    ),
+                )
+            )
+        ).all()
+        await AccessLoggingCRUD(session=self._session()).create_many(
+            [
+                AccessLogCreate(
+                    resource_id=identifier,
+                    identity_id=current_user.user_id if current_user else None,
+                    action=Action.write,
+                    status_code=200,
+                )
+                for identifier in affected
+            ]
+        )
+
     async def _check_cycle(self, parent_id: UUID, child_id: UUID) -> None:
         """Reject structural cycles without filtering the graph by permissions."""
         if parent_id == child_id:
@@ -1185,6 +1219,7 @@ class BaseHierarchyCRUD(
         if result.first() is not None:
             raise HTTPException(status_code=409, detail="Hierarchy cycle detected.")
 
+    @hierarchy_write
     async def create(
         self,
         current_user: CurrentUserData,
@@ -1192,6 +1227,7 @@ class BaseHierarchyCRUD(
         # child_type: ResourceType | IdentityType,
         child_id: UUID,
         inherit: Optional[bool] = False,
+        label: Optional[str] = None,
     ) -> BaseHierarchyModelRead:
         """Checks access and type matching and potentially creates parent-child relationship."""
         try:
@@ -1221,14 +1257,26 @@ class BaseHierarchyCRUD(
             # Create hierarchy relation
             if child_type in allowed_children:
                 await self._check_cycle(parent_id, child_id)
+                await self._check_label(parent_id, child_id, label)
                 relation = self.model(
                     parent_id=parent_id,
                     child_id=child_id,
                     inherit=inherit,
+                    label=label,
                 )
+                if isinstance(relation, ResourceHierarchy):
+                    maximum = await session.exec(
+                        select(func.max(ResourceHierarchy.order)).where(
+                            ResourceHierarchy.parent_id == parent_id
+                        )
+                    )
+                    relation.order = (maximum.one() or 0) + 1
                 relation = self.model.model_validate(relation)
                 session.add(relation)
-                await session.commit()
+                await finish_write(session)
+                await self._log_relationship_changes(
+                    current_user, {parent_id, child_id}
+                )
                 # TBD: consider gathering all the commits in one transaction:
                 # if self._owns_session:
                 #     await self.session.commit()
@@ -1251,6 +1299,37 @@ class BaseHierarchyCRUD(
             await session.rollback()
             logger.error(f"Error in creating hierarchy: {err}")
             raise HTTPException(status_code=403, detail="Forbidden.")
+
+    async def _check_label(self, parent_id: UUID, child_id: UUID, label: Optional[str]):
+        if label is None:
+            return
+        from pydantic import TypeAdapter, ValidationError
+
+        try:
+            TypeAdapter(KebabCase).validate_python(label)
+        except ValidationError as error:
+            raise HTTPException(
+                status_code=422, detail="Invalid relationship label."
+            ) from error
+        child_type = (await get_types_from_ids(self._session(), [child_id]))[0]
+        model = cast(type[ResourceHierarchy] | type[IdentityHierarchy], self.model)
+        statement = (
+            select(model.child_id)
+            .join(
+                IdentifierTypeLink,
+                col(IdentifierTypeLink.id) == col(model.child_id),
+            )
+            .where(
+                model.parent_id == parent_id,
+                model.child_id != child_id,
+                model.label == label,
+                IdentifierTypeLink.type == child_type,
+            )
+        )
+        if (await self._session().exec(statement)).first() is not None:
+            raise HTTPException(
+                status_code=409, detail="Relationship label already exists."
+            )
 
     # TBD: consider exposing as endpoint and/or sock.io event?
     # Currently not absolutely necesary,
@@ -1308,15 +1387,15 @@ class BaseHierarchyCRUD(
             logger.error(f"Error in reading hierarchy: {err}")
             raise HTTPException(status_code=404, detail="Hierarchy not found.")
 
+    @hierarchy_write
     async def update(
         self,
         current_user: CurrentUserData,
-        parent_id: UUID,
-        child_id: UUID,
-        inherit: Optional[bool] = None,
+        hierarchy: BaseHierarchyUpdate,
     ) -> BaseHierarchyModelRead:
         """Updates a parent-child relationship."""
         try:
+            parent_id, child_id = hierarchy.parent_id, hierarchy.child_id
             session = self._session()
             model = cast(Any, self.model)
             model_alias = cast(Any, aliased(self.model))
@@ -1364,10 +1443,20 @@ class BaseHierarchyCRUD(
             relation = response.one_or_none()
             if not relation:
                 raise HTTPException(status_code=404, detail="Hierarchy not found.")
-            if inherit is not None:
-                relation.inherit = inherit
+            updated = hierarchy.model_dump(
+                exclude={"parent_id", "child_id"}, exclude_unset=True
+            )
+            if "label" in updated:
+                await self._check_label(parent_id, child_id, hierarchy.label)
+                relation.label = hierarchy.label
+            if hierarchy.inherit is not None or "label" in updated:
+                if hierarchy.inherit is not None:
+                    relation.inherit = hierarchy.inherit
                 session.add(relation)
-                await session.commit()
+                await finish_write(session)
+                await self._log_relationship_changes(
+                    current_user, {parent_id, child_id}
+                )
                 # TBD: consider gathering all the commits in one transaction:
                 # if self._owns_session:
                 #     await self.session.commit()
@@ -1380,10 +1469,13 @@ class BaseHierarchyCRUD(
             session = self._session()
             await session.rollback()
             logger.error(f"Error in updating hierarchy: {err}")
+            if isinstance(err, HTTPException) and err.status_code in (409, 422):
+                raise
             raise HTTPException(status_code=404, detail="Hierarchy not found.")
 
     # TBD: potentially make parent_id optional:
     # in case a child gets deleted and all parent-child relations to all parents need to be deleted
+    @hierarchy_write
     async def delete(
         self,
         current_user: CurrentUserData,
@@ -1432,10 +1524,15 @@ class BaseHierarchyCRUD(
             if child_id:
                 statement = statement.where(model.child_id == child_id)
 
+            statement = statement.returning(model.parent_id, model.child_id)
             response = await session.exec(statement)
-            await session.commit()
+            removed = response.all()
+            await self._log_relationship_changes(
+                current_user, {identifier for pair in removed for identifier in pair}
+            )
+            await finish_write(session)
 
-            return response.rowcount
+            return len(removed)
             # TBD: consider if 0 rows deleted should raise a 404 or
             # return 0 and let the client decide if that is an error or not.
             # deleted_rows = response.rowcount
@@ -1472,6 +1569,7 @@ class ResourceHierarchyCRUD(
         # child_type: ResourceType,
         child_id: UUID,
         inherit: Optional[bool] = False,
+        label: Optional[str] = None,
     ) -> ResourceHierarchyRead:
         """Creates a new resource hierarchy."""
         hierarchy = await super().create(
@@ -1479,33 +1577,11 @@ class ResourceHierarchyCRUD(
             parent_id,
             child_id,
             inherit,
+            label,
         )
-        hierarchy_row = cast(ResourceHierarchy, hierarchy)
-        session = self._session()
+        return ResourceHierarchyRead.model_validate(hierarchy)
 
-        # Add order to the hierarchy:
-
-        # Get the next order value
-        result = await session.exec(
-            select(func.max(ResourceHierarchy.order)).where(
-                ResourceHierarchy.parent_id == parent_id
-            )
-        )
-        max_order = result.one_or_none()
-        next_order = (max_order or 0) + 1
-
-        # Update the hierarchy with the order value:
-        hierarchy_row.order = next_order
-        await session.commit()
-        # TBD: consider gathering all the commits in one transaction:
-        # if self._owns_session:
-        #     await self.session.commit()
-        # else:
-        #     await self.session.flush()
-        await session.refresh(hierarchy_row)
-
-        return ResourceHierarchyRead.model_validate(hierarchy_row)
-
+    @hierarchy_write
     async def reorder_children(  # noqa: C901
         self,
         current_user: CurrentUserData,
@@ -1601,7 +1677,10 @@ class ResourceHierarchyCRUD(
                     children[i].order = cast(int, children[i].order) + 1
 
             # Update the database
-            await session.commit()
+            await finish_write(session)
+            await self._log_relationship_changes(
+                current_user, {parent_id, *(child.child_id for child in children)}
+            )
             # TBD: consider gathering all the commits in one transaction:
             # if self._owns_session:
             #     await self.session.commit()

@@ -46,6 +46,7 @@ from models.identity import (  # AzureGroupUserLink,
 # from .azure_group import AzureGroupCRUD
 from .access import IdentityHierarchyCRUD
 from .base import BaseCRUD
+from .transactions import finish_write, hierarchy_write
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +79,7 @@ class AzureGroupCRUD(
                 assert database_group.id is not None
                 await self._write_identifier_type_link(database_group.id)
                 session.add(database_group)
-                await session.commit()
+                await finish_write(session)
                 await session.refresh(database_group)
                 existing_group = database_group
             return AzureGroupRead.model_validate(existing_group)
@@ -198,8 +199,8 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                     )
                 await session.refresh(user)
                 result = UserRead.model_validate(user)
-                await session.commit()
-            await self.session.commit()
+                await finish_write(session)
+            await finish_write(self.session)
             return result, status
         except IntegrityError as err:
             await self.session.rollback()
@@ -290,6 +291,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
         )
         return user, status
 
+    @hierarchy_write
     async def _sync_azure_groups(
         self,
         current_user: User,
@@ -401,7 +403,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             await self._write_identifier_type_link(database_user.id)
 
             self.session.add(database_user)
-            await self.session.commit()
+            await finish_write(self.session)
             await self.session.refresh(database_user)
 
             # The new user owns itself - not the user, that invites!
@@ -497,7 +499,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
                     setattr(current_profile, key, value)
                 self.session.add(current_profile)
 
-            await self.session.commit()
+            await finish_write(self.session)
             await self.session.refresh(current_account)
             await self.session.refresh(current_profile)
             user.user_account = current_account
@@ -535,7 +537,7 @@ class UserCRUD(BaseCRUD[User, UserCreate, UserRead, UserUpdate]):
             col(UserProfile.user_id) == user_id,
         )
         await self.session.exec(delete_user_profile)
-        await self.session.commit()
+        await finish_write(self.session)
 
 
 class UeberGroupCRUD(

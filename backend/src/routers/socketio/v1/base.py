@@ -53,6 +53,7 @@ from models.access import (
     AccessPolicyUpdate,
     AccessRequest,
     BaseHierarchyCreate,
+    BaseHierarchyUpdate,
     IdentityHierarchy,
     IdentityHierarchyRead,
     ResourceHierarchy,
@@ -421,13 +422,14 @@ class BaseNamespace(
             parent_id = await self._get_session_query_string(sid, "parent_id")
             if self.crud is not None:
                 hierarchy_crud = self.crud().hierarchy_CRUD(session=session)
-                resource_as_parent = await hierarchy_crud.read(
+                resource.hierarchies = await hierarchy_crud.read(
                     current_user=current_user, parent_id=resource.id
                 )
-                resource.hierarchies = resource_as_parent
                 if parent_id is not None:
                     resource_as_child = await hierarchy_crud.read(
-                        current_user=current_user, child_id=resource.id
+                        current_user=current_user,
+                        child_id=resource.id,
+                        parent_id=parent_id,
                     )
                     resource.hierarchies = (
                         [*resource.hierarchies, *resource_as_child]
@@ -484,6 +486,14 @@ class BaseNamespace(
                 "detail": generic_detail if generic_detail is not None else str(error),
             },
         )
+
+    async def _emit_relationship_status(
+        self, sid: str, status: dict, parent_type, child_rooms: list[str]
+    ) -> None:
+        parent_namespace = registry_namespaces.get(parent_type) or self.namespace
+        parent_rooms = [f"resource:{status['parent_id']}"]
+        await self._emit_status(sid, status, child_rooms)
+        await self._emit_status(sid, status, parent_rooms, namespace=parent_namespace)
 
     async def _handle_read_error(
         self, sid: str, resource_id: Optional[UUID], error: Exception
@@ -1168,6 +1178,7 @@ class BaseNamespace(
                                 inherit,
                                 public,
                                 public_action,
+                                label=data.get("label"),
                             )
                             submitted_id = payload.get("id", None)
                             for idx, policy in enumerate(access_policies):
@@ -1251,18 +1262,8 @@ class BaseNamespace(
                                     rooms_for_linked_status.append(
                                         f"parent:{parent_id}"
                                     )
-                                await self._emit_status(
-                                    sid,
-                                    status,
-                                    rooms_for_linked_status,
-                                )
-                                # Within the parent namespace access control takes care of how can receive the status.
-                                parent_namespace = registry_namespaces.get(parent_type)
-                                await self._emit_status(
-                                    sid,
-                                    status,
-                                    [f"resource:{str(parent_id)}"],
-                                    namespace=parent_namespace,
+                                await self._emit_relationship_status(
+                                    sid, status, parent_type, rooms_for_linked_status
                                 )
                             rooms_shared_event = None
                             # If the
@@ -1490,6 +1491,7 @@ class BaseNamespace(
                     parent_id=hierarchy_obj.parent_id,
                     child_id=hierarchy_obj.child_id,
                     inherit=hierarchy_obj.inherit,
+                    label=hierarchy_obj.label,
                 )
                 parent_types = await get_types_from_ids(
                     crud.session, [hierarchy_obj.parent_id]
@@ -1506,21 +1508,50 @@ class BaseNamespace(
                 status["order"] = hierarchy_obj.order
             elif crud.model.__name__ in IdentityType.list():
                 hierarchy_obj = IdentityHierarchyRead.model_validate(hierarchy_obj)
-            await self._emit_status(
-                sid, status, [f"resource:{str(hierarchy_obj.child_id)}"]
-            )
-            parent_namespace = registry_namespaces.get(parent_type)
-            await self._emit_status(
-                sid,
-                status,
-                [f"resource:{str(hierarchy_obj.parent_id)}"],
-                namespace=parent_namespace,
+            await self._emit_relationship_status(
+                sid, status, parent_type, [f"resource:{hierarchy_obj.child_id}"]
             )
         except Exception as error:
             await self._handle_event_error(sid, error, context="Failed to link item")
 
-    # TBD: implement and write tests for this:
-    # async def on_changelink(self, sid, hierarchy: Dict[str, Any]):
+    async def on_changelink(self, sid, hierarchy: Dict[str, Any]):
+        """Update authorized relationship metadata without changing content."""
+        if self.crud is None:
+            await self._emit_status(
+                sid, {"error": "other", "detail": "No CRUD configured."}
+            )
+            return
+        try:
+            current_user = await self._get_current_user_and_check_guard(
+                sid, "submit:update"
+            )
+            parent_id, child_id = UUID(hierarchy["parent_id"]), UUID(
+                hierarchy["child_id"]
+            )
+            changes = {"parent_id": parent_id, "child_id": child_id}
+            if hierarchy.get("inherit") is not None:
+                changes["inherit"] = hierarchy["inherit"]
+            if "label" in hierarchy:
+                changes["label"] = hierarchy["label"]
+            hierarchy_update = BaseHierarchyUpdate.model_validate(changes)
+            async with self.crud() as crud:
+                edge = await crud.hierarchy_CRUD(session=crud.session).update(
+                    current_user,
+                    hierarchy_update,
+                )
+                parent_type = (await get_types_from_ids(crud.session, [parent_id]))[0]
+            status = {
+                "success": "link-updated",
+                "id": str(child_id),
+                **edge.model_dump(mode="json", exclude={"label"}),
+            }
+            await self._emit_relationship_status(
+                sid, status, parent_type, [f"resource:{child_id}"]
+            )
+        except Exception as error:
+            await self._handle_event_error(
+                sid, error, context="Failed to update relationship"
+            )
 
     # TBD: write tests for this:
     async def on_unlink(self, sid, hierarchy: Dict[str, Any]):

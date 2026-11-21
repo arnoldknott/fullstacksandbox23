@@ -460,7 +460,7 @@ def create_model(
     Create = type(f"{name}Create", (SQLModel,), create_fields)
 
     # ===== Build Read Schema =====
-    read_annotations, read_fields = _build_annotations_and_fields(
+    _, read_fields = _build_annotations_and_fields(
         attributes, relationships, SchemaType.READ
     )
     # read_annotations = {**create_annotations}

@@ -8,6 +8,7 @@ from models.base import rebuild_model_forward_refs
 from .access import IdentityHierarchy  # noqa F401
 from .access import ResourceHierarchy  # noqa F401
 from .category import Category  # noqa F401
+from .data import Text, TextRead, Number, NumberRead  # noqa F401
 from .demo_file import DemoFile  # noqa F401
 from .demo_resource import DemoResource  # noqa F401
 
@@ -54,4 +55,4 @@ NumericalUpdate = Numerical.Update
 NumericalExtended = Numerical.Extended
 
 # rebuild_model_forward_refs(Presentation, Quiz, Question, Message, Numerical)
-rebuild_model_forward_refs(Presentation, Question, Message, Numerical)
+rebuild_model_forward_refs(Presentation, Question, Message, Numerical, Text, Number)

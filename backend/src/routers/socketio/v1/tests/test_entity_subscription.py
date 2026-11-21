@@ -12,9 +12,200 @@ from models.demo_resource import DemoResource, DemoResourceExtended, DemoResourc
 from models.identity import Group
 from routers.socketio.v1.base import BaseNamespace
 from routers.socketio.v1.demo_resource import DemoResourceNamespace
+from routers.socketio.v1.data import NumberNamespace, TextNamespace
+from crud.data import NumberCRUD, TextCRUD
+from models.data import Number, Text
 from routers.socketio.v1.identities import GroupNamespace
 from routers.socketio.v1.presentation_namespace import PresentationNamespace
 from routers.socketio.v1.quiz_namespace import MessageNamespace, QuestionNamespace
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "namespace_type, crud_type, model, content, updated",
+    [
+        (
+            TextNamespace,
+            TextCRUD,
+            Text,
+            {"content": "child", "confidential": "secret"},
+            {"content": "updated"},
+        ),
+        (NumberNamespace, NumberCRUD, Number, {"value": 2}, {"value": 3.5}),
+    ],
+)
+async def test_data_socket_mutations_and_parent_scoped_transfers(
+    namespace_type, crud_type, model, content, updated, register_current_user
+):
+    user = await register_current_user()
+    async with TextCRUD() as crud:
+        parent = await crud.create(Text.Create(content="parent"), user)
+        other_parent = await crud.create(Text.Create(content="other"), user)
+    server = SimpleNamespace(
+        emit=AsyncMock(),
+        rooms=Mock(return_value=[]),
+        enter_room=AsyncMock(),
+        close_room=AsyncMock(),
+        get_session=AsyncMock(return_value={}),
+        save_session=AsyncMock(),
+    )
+    namespace = namespace_type(server=server)
+    namespace._get_current_user_and_check_guard = AsyncMock(return_value=user)
+    namespace._get_session_query_string = AsyncMock(return_value=None)
+    assert namespace.callback_on_connect is None
+    await namespace.on_submit(
+        "sid",
+        {
+            "payload": content,
+            "parent_id": str(parent.id),
+            "label": "answer",
+            "inherit": True,
+        },
+    )
+    statuses = [
+        call.args[1] for call in server.emit.await_args_list if call.args[0] == "status"
+    ]
+    assert not [status for status in statuses if "error" in status], statuses
+    created = next(status for status in statuses if status.get("success") == "created")
+    child_id = created["id"]
+    linked = [status for status in statuses if status.get("success") == "linked"]
+    assert linked and all("label" not in status for status in linked)
+    server.emit.reset_mock()
+    await namespace.on_submit(
+        "sid", {"payload": content, "parent_id": str(parent.id), "label": "answer"}
+    )
+    assert server.emit.await_count == 1
+    assert "409" in server.emit.await_args.args[1]["detail"]
+    server.emit.reset_mock()
+    await namespace.on_link(
+        "sid",
+        {"parent_id": str(other_parent.id), "child_id": child_id, "label": "other"},
+    )
+    assert all("label" not in call.args[1] for call in server.emit.await_args_list)
+    server.emit.reset_mock()
+    async with TextCRUD() as crud:
+        cursor = await crud.logging_crud.read_cursor()
+    await namespace.on_changelink(
+        "sid", {"parent_id": str(parent.id), "child_id": child_id, "label": "renamed"}
+    )
+    assert all("label" not in call.args[1] for call in server.emit.await_args_list)
+    await namespace.on_submit("sid", {"payload": {"id": child_id, **updated}})
+    async with crud_type() as crud:
+        child = await crud.read_by_id(child_id, user)
+        assert all(getattr(child, key) == value for key, value in updated.items())
+    parent_namespace = TextNamespace(server=server)
+    parent_namespace._get_current_user_and_check_guard = AsyncMock(return_value=user)
+    parent_namespace._get_session_query_string = AsyncMock(return_value=None)
+    server.emit.reset_mock()
+    await parent_namespace.on_read("sid", parent.id)
+    plain = next(
+        call.args[1]
+        for call in server.emit.await_args_list
+        if call.args[0] == "transferred"
+    )
+    assert "hierarchies" not in plain
+    # Metadata enrichment must not disclose the child's binding under other_parent.
+    parent_namespace._get_session_query_string = AsyncMock(
+        side_effect=lambda sid, name: True if name == "request_access_data" else None
+    )
+    server.emit.reset_mock()
+    await parent_namespace.on_read("sid", parent.id)
+    transferred = next(
+        call.args[1]
+        for call in server.emit.await_args_list
+        if call.args[0] == "transferred"
+    )
+    assert len(transferred["hierarchies"]) == 1
+    assert transferred["hierarchies"][0]["label"] == "renamed"
+    assert transferred["hierarchies"][0]["parent_id"] == str(parent.id)
+    children = transferred["texts"] if model is Text else transferred["numbers"]
+    assert children[0]["id"] == child_id
+    if model is Text:
+        assert children[0]["confidential"] == "secret"
+    server.emit.reset_mock()
+    parent_namespace._get_session_query_string = AsyncMock(return_value=None)
+    subscribed = await parent_namespace.on_subscribe(
+        "sid", {"entity_ids": [str(parent.id)], "cursor": cursor}
+    )
+    assert subscribed.get("subscribed") == [str(parent.id)]
+    replay = [
+        call.args[1]
+        for call in server.emit.await_args_list
+        if call.args[0] == "transferred" and call.args[1]["id"] == str(parent.id)
+    ]
+    assert len(replay) == 1
+    assert not replay[0]["hierarchies"]
+    await namespace.on_changelink(
+        "sid",
+        {"parent_id": str(parent.id), "child_id": child_id, "inherit": False},
+    )
+    async with crud_type() as crud:
+        edges = await crud.hierarchy_CRUD(session=crud.session).read(
+            user, parent.id, child.id
+        )
+        assert edges[0].inherit is False
+        assert edges[0].label == "renamed"
+    await namespace.on_changelink(
+        "sid",
+        {"parent_id": str(parent.id), "child_id": child_id, "label": None},
+    )
+    async with crud_type() as crud:
+        edges = await crud.hierarchy_CRUD(session=crud.session).read(
+            user, parent.id, child.id
+        )
+        assert edges[0].inherit is False
+        assert edges[0].label is None
+    await namespace.on_changelink(
+        "sid",
+        {
+            "parent_id": str(parent.id),
+            "child_id": child_id,
+            "inherit": True,
+            "label": "restored",
+        },
+    )
+    await namespace.on_changelink(
+        "sid",
+        {"parent_id": str(parent.id), "child_id": child_id, "inherit": None},
+    )
+    async with crud_type() as crud:
+        edges = await crud.hierarchy_CRUD(session=crud.session).read(
+            user, parent.id, child.id
+        )
+        assert edges[0].inherit is True
+        assert edges[0].label == "restored"
+    server.emit.reset_mock()
+    await namespace.on_changelink(
+        "sid",
+        {"parent_id": str(parent.id), "child_id": child_id, "label": "Invalid label"},
+    )
+    assert server.emit.await_count == 1
+    assert server.emit.await_args.args[1]["error"]
+    async with crud_type() as crud:
+        edges = await crud.hierarchy_CRUD(session=crud.session).read(
+            user, parent.id, child.id
+        )
+        assert edges[0].inherit is True
+        assert edges[0].label == "restored"
+    await namespace.on_unlink(
+        "sid", {"parent_id": str(parent.id), "child_id": child_id}
+    )
+    async with crud_type() as crud:
+        assert (await crud.read_by_id(child_id, user)).id
+    await namespace.on_delete("sid", child_id)
+    assert any(call.args[0] == "deleted" for call in server.emit.await_args_list)
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize("namespace_type", [TextNamespace, NumberNamespace])
+async def test_anonymous_data_socket_cannot_create_standalone(namespace_type):
+    server = SimpleNamespace(emit=AsyncMock())
+    namespace = namespace_type(server=server)
+    namespace._get_current_user_and_check_guard = AsyncMock(return_value=None)
+    content = {"content": "text"} if namespace_type is TextNamespace else {"value": 2}
+    await namespace.on_submit("sid", {"payload": content})
+    assert server.emit.await_count == 1
+    assert server.emit.await_args.args[1]["error"]
 
 
 class FakeResult:

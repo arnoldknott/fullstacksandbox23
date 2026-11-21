@@ -19,6 +19,29 @@ with `selectinload`. For every hierarchy relationship of the model it adds:
 Because each relationship is loaded in its own query, sibling collections add rows rather than
 multiplying them, and the child access filter is evaluated once per relationship.
 
+Text and Number also use `selectinload`. For models with self-referential
+relationships, the access criterion is scoped to each relationship loader
+instead of applied globally. The allowed identifiers are selected with
+`filters_allowed(Action.read)` against `IdentifierTypeLink`, so the loader
+criterion does not rewrite its own access query. Presentation uses the regular
+loader.
+
+After loading and decryption, the shared read path copies each result's scalar
+attributes and its direct relationships into independent, session-free records.
+Embedded records contain scalar attributes only. The normal Read and Extended
+schemas are reused for every model, with no per-model depth flags or additional
+schemas. Unexpanded relationship fields retain their schema defaults (null or
+empty lists). If both A and its child B are top-level results, A's embedded B
+does not expand B's children, while top-level B still includes its direct
+children. Session-managed objects are not truncated or modified for this purpose.
+
+Ordinary entity reads do not fetch hierarchy metadata. With
+`request-access-data=true`, the existing Socket.IO extended read includes
+access-filtered `hierarchies` with nullable `label`, alongside `order` for
+resource edges. Incoming metadata is scoped to the requested parent.
+Mutation acknowledgments and cursor replay do not carry labels; consumers can
+refresh bindings with an extended read.
+
 The hierarchy relationships themselves are declared by `_build_hierarchy_relationship` in
 [`backend/src/models/base.py`](../../../backend/src/models/base.py) as `viewonly`, `lazy="noload"`
 secondary relationships whose link model is `ResourceHierarchy` or `IdentityHierarchy`. Non-hierarchy

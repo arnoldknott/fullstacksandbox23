@@ -7,7 +7,7 @@ from sqlalchemy import Index, UniqueConstraint, text
 from sqlmodel import Field, SQLModel
 
 # if TYPE_CHECKING:
-from core.types import Action, CurrentUserData, IdentityType, ResourceType
+from core.types import Action, CurrentUserData, IdentityType, KebabCase, ResourceType
 
 
 class IdentifierTypeLink(SQLModel, table=True):
@@ -198,6 +198,7 @@ class BaseHierarchyCreate(SQLModel):
         default=False,
         description="Set to true, if the child inherits permissions from this parent.",
     )
+    label: Optional[KebabCase] = Field(default=None, index=True)
 
     @model_validator(mode="after")
     def not_child_to_self(self):
@@ -205,6 +206,22 @@ class BaseHierarchyCreate(SQLModel):
         if self.parent_id == self.child_id:
             raise ValueError("An entity cannot be its own child.")
         return self
+
+
+class HierarchyUpdateBody(SQLModel):
+    """Fields that can be changed on a hierarchy relationship."""
+
+    model_config = {"extra": "forbid"}
+
+    inherit: Optional[bool] = None
+    label: Optional[KebabCase] = None
+
+
+class BaseHierarchyUpdate(HierarchyUpdateBody):
+    """Identifies a relationship and the fields to update."""
+
+    parent_id: uuid.UUID
+    child_id: uuid.UUID
 
 
 class BaseHierarchyDelete(SQLModel):
@@ -233,7 +250,13 @@ class ResourceHierarchy(BaseHierarchyCreate, BaseHierarchy, table=True):
     # TBD: add the required relations: children, that cannot be standalone, but need a parent.
     relations: ClassVar = {
         # ResourceType.presentation: [ResourceType.quiz],
-        ResourceType.presentation: [ResourceType.question],
+        ResourceType.presentation: [
+            ResourceType.question,
+            ResourceType.text,
+            ResourceType.number,
+        ],
+        ResourceType.text: [ResourceType.text, ResourceType.number],
+        ResourceType.number: [ResourceType.text, ResourceType.number],
         # ResourceType.quiz: [ResourceType.question],
         ResourceType.question: [ResourceType.message, ResourceType.numerical],
         ResourceType.demo_resource: [
@@ -258,10 +281,10 @@ class ResourceHierarchy(BaseHierarchyCreate, BaseHierarchy, table=True):
 class ResourceHierarchyRead(BaseHierarchyCreate):
     """Read model for resource hierarchy"""
 
-    order: int
+    order: Optional[int]
 
 
-class ResourceHierarchyUpdate(BaseHierarchyCreate):
+class ResourceHierarchyUpdate(BaseHierarchyUpdate):
     """Update model for resource hierarchy"""
 
     pass
@@ -290,7 +313,7 @@ class IdentityHierarchyRead(BaseHierarchyCreate):
     pass
 
 
-class IdentityHierarchyUpdate(BaseHierarchyCreate):
+class IdentityHierarchyUpdate(BaseHierarchyUpdate):
     """Update model for identity hierarchy"""
 
     pass

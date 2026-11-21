@@ -5,10 +5,39 @@ from typing import Any
 from unittest.mock import AsyncMock, Mock
 
 import pytest
+from sqlalchemy.orm.attributes import set_committed_value
 
 from core.types import CollectionInclude, CollectionSort, SortDirection
 from crud.base import BaseCRUD
 from models.presentation import Presentation, PresentationRead
+from models.quiz import Message, Question, QuestionRead
+
+
+@pytest.mark.anyio
+async def test_read_result_bounds_legacy_relationships_without_truncating_shared_objects():
+    presentation = Presentation.model_validate({"source": "intern:", "path": None})
+    question = Question.model_validate({"question": "Question?"})
+    message = Message.model_validate({"content": "Answer"})
+    set_committed_value(presentation, "questions", [question])
+    set_committed_value(question, "presentations", [presentation])
+    set_committed_value(question, "messages", [message])
+    set_committed_value(message, "questions", [question])
+
+    parent_result = PresentationRead.model_validate(
+        BaseCRUD._read_result(presentation)
+    ).model_dump()
+    question_result = QuestionRead.model_validate(
+        BaseCRUD._read_result(question)
+    ).model_dump()
+
+    assert parent_result["questions"][0]["id"] == question.id
+    assert not parent_result["questions"][0]["messages"]
+    assert not parent_result["questions"][0]["presentations"]
+    assert question_result["messages"][0]["id"] == message.id
+    assert not question_result["messages"][0]["questions"]
+    assert question.__dict__["messages"][0] is message
+    assert message.__dict__["questions"][0] is question
+    assert presentation.__dict__["questions"][0] is question
 
 
 @pytest.mark.anyio
