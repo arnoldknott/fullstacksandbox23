@@ -191,6 +191,30 @@ export interface Presentation {
 	questions?: Question[];
 }
 
+export interface Text {
+	id: string;
+	content: string;
+	category?: string;
+	language: string;
+	confidential?: string | null;
+	presentation?: Presentation[];
+	text_parents?: Text[];
+	texts?: Text[];
+	number_parents?: Number[];
+	numbers?: Number[];
+}
+
+export interface Number {
+	id: string;
+	value: number;
+	category?: string;
+	presentation?: Presentation[];
+	text_parents?: Text[];
+	texts?: Text[];
+	number_parents?: Number[];
+	numbers?: Number[];
+}
+
 export interface Question {
 	id: string;
 	question: string;
@@ -216,6 +240,8 @@ export interface Numerical {
 // add all specific resources that share the extension properties here:
 export type DemoResourceExtended = ExtendEntity<DemoResource>;
 export type PresentationExtended = ExtendEntity<Presentation>;
+export type TextExtended = ExtendEntity<Text>;
+export type NumberExtended = ExtendEntity<Number>;
 export type QuestionExtended = ExtendEntity<Question>;
 export type MessageExtended = ExtendEntity<Message>;
 export type NumericalExtended = ExtendEntity<Numerical>;

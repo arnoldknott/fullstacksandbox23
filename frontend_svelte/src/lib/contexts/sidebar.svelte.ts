@@ -186,6 +186,18 @@ export const initialProtectedSidebarLinks: SidebarItemContent[] = $state([
 				id: 'questions'
 			},
 			{
+				name: 'Texts',
+				pathname: resolve('/(layout)/text/(protected)/setup'),
+				icon: 'icon-[andrsrxn--text]',
+				id: 'texts'
+			},
+			{
+				name: 'Numbers',
+				pathname: resolve('/(layout)/number/(protected)/setup'),
+				icon: 'icon-[tabler--number]',
+				id: 'numbers'
+			},
+			{
 				name: 'Hierarchical Resources',
 				pathname: resolve('/(layout)/(protected)/backend-protected-hierarchy'),
 				icon: 'icon-[fluent-mdl2--family]',
