@@ -1,12 +1,10 @@
-from typing import Annotated, Optional
+from typing import Optional
 
-from pydantic import FiniteFloat, StringConstraints
+from pydantic import FiniteFloat
 from pydantic_extra_types.language_code import LanguageAlpha2
 
-from core.types import ResourceType
+from core.types import KebabCase, ResourceType
 from models.base import Attribute, Relationship, RelationshipHierarchyType, create_model
-
-Category = Annotated[str, StringConstraints(pattern=r"^[a-z0-9-]+$")]
 
 
 def _relationships():
@@ -48,7 +46,7 @@ Text = create_model(
     name="Text",
     attributes=[
         Attribute(name="content", type=str),
-        Attribute(name="category", type=Optional[Category]),
+        Attribute(name="category", type=Optional[KebabCase]),
         Attribute(name="language", type=Optional[LanguageAlpha2]),
         Attribute(name="confidential", type=Optional[str], encrypt=True),
     ],
@@ -66,7 +64,7 @@ Number = create_model(
     name="Number",
     attributes=[
         Attribute(name="value", type=FiniteFloat),
-        Attribute(name="category", type=Optional[Category]),
+        Attribute(name="category", type=Optional[KebabCase]),
     ],
     relationships=number_relationships,
 )
