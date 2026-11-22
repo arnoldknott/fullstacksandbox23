@@ -2,14 +2,12 @@ import asyncio
 from uuid import UUID, uuid4
 
 import pytest
-from sqlalchemy.orm import selectinload
 from sqlmodel import select
 
 from core.encryption import is_encryption_envelope
 from core.types import Action
-from crud.data import NumberCRUD, TextCRUD
 from models.access import AccessPolicy, ResourceHierarchy
-from models.data import Number, Text
+from models.data import Text
 from tests.utils import token_admin_read_write, token_user1_read_write
 
 
