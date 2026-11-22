@@ -4,6 +4,7 @@
 
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import ActionButtons from '$components/ActionButtons.svelte';
 	import Card from '$components/Card.svelte';
 	import Display from '$components/Display.svelte';
 	import JsonData from '$components/JsonData.svelte';
@@ -15,7 +16,6 @@
 
 	import IdBadge from '../../../(protected)/IdBadge.svelte';
 	import type { PageData } from './$types';
-	import ActionButtons from './ActionButtons.svelte';
 	import PresentationFormCard from './PresentationFormCard.svelte';
 
 	let { data }: { data: PageData } = $props();

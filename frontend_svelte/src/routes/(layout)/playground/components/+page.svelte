@@ -11,6 +11,7 @@
 	import Drawer from '$components/Drawer.svelte';
 	import HorizontalRule from '$components/HorizontalRule.svelte';
 	import NavigationCard from '$components/NavigationCard.svelte';
+	import ShareItem from '$components/ShareItem.svelte';
 	import Title from '$components/Title.svelte';
 	import { AccessHandler, Action, IdentityType } from '$lib/accessHandler';
 	import { type ArtificialIntelligenceConfig, Model } from '$lib/artificialIntelligence';
@@ -28,7 +29,6 @@
 	import ArtificialIntelligencePicker from './ArtificialIntelligencePicker.svelte';
 	import HelpTooltip from './HelpTooltip.svelte';
 	import Panes, { type PaneData } from './Panes.svelte';
-	import ShareItem from './ShareItem.svelte';
 	import ThemePicker from './ThemePicker.svelte';
 	// import Panes from './Panes.svelte';
 	// import JsonData from '$components/JsonData.svelte';

@@ -4,13 +4,10 @@
 
 	import { enhance } from '$app/forms';
 	import Card from '$components/Card.svelte';
+	import ShareItem from '$components/ShareItem.svelte';
 	import { AccessHandler, Action } from '$lib/accessHandler';
 	import type { AccessPolicy, DemoResourceExtended, Identity } from '$lib/types';
 	import { initDropdown } from '$lib/userInterface';
-
-	// import type { IHTMLElementFloatingUI, HSDropdown } from 'flyonui/flyonui';
-	// TBD: move to components folder
-	import ShareItem from '../../../playground/components/ShareItem.svelte';
 
 	let {
 		demoResource,

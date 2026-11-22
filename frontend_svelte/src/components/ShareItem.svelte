@@ -3,8 +3,6 @@
 	import { type SocketIO } from '$lib/socketio.svelte';
 	import type { AccessShareOption } from '$lib/types';
 	import { initDropdown } from '$lib/userInterface';
-	// import { enhance } from '$app/forms';
-	// import type { ActionResult } from '@sveltejs/kit';
 
 	let {
 		resourceId,

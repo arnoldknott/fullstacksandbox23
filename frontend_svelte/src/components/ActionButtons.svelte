@@ -5,7 +5,7 @@
 	import type { SocketIO } from '$lib/socketio.svelte';
 	import { initDropdown } from '$lib/userInterface';
 
-	import ShareItem from '../../../playground/components/ShareItem.svelte';
+	import ShareItem from './ShareItem.svelte';
 
 	let {
 		resourceId,
@@ -17,7 +17,7 @@
 		resourceId: string;
 		accessRight: Action | undefined;
 		socketio: SocketIO;
-		entityType?: 'presentation' | 'question';
+		entityType?: 'presentation' | 'text' | 'question'; //TBD: add 'number' |
 		actions?: (Action | undefined)[];
 	} = $props();
 

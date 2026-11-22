@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
 
+	import ShareItem from '$components/ShareItem.svelte';
 	import { AccessHandler, Action } from '$lib/accessHandler';
 	import { SocketIO } from '$lib/socketio.svelte';
 	import type { AccessShareOption, DemoResourceExtended, Identity } from '$lib/types';
 	import { initDropdown } from '$lib/userInterface';
 
-	import ShareItem from '../../../playground/components/ShareItem.svelte';
 	import IdBadge from '../../IdBadge.svelte';
 
 	let {

@@ -5,8 +5,10 @@
 
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import ActionButtons from '$components/ActionButtons.svelte';
 	import Card from '$components/Card.svelte';
 	import JsonData from '$components/JsonData.svelte';
+	import ShareItem from '$components/ShareItem.svelte';
 	import Table, { countIcon, icon, snippet, text, value } from '$components/Table.svelte';
 	import Title from '$components/Title.svelte';
 	import { AccessHandler, Action } from '$lib/accessHandler';
@@ -15,8 +17,6 @@
 	import { initTabs } from '$lib/userInterface';
 
 	import IdBadge from '../../../../(protected)/IdBadge.svelte';
-	import ShareItem from '../../../../playground/components/ShareItem.svelte';
-	import ActionButtons from '../ActionButtons.svelte';
 	import FormElement from '../FormElement.svelte';
 	import SelectionActionButtons from '../SelectionActionButtons.svelte';
 

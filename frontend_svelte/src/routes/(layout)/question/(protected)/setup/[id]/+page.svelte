@@ -4,6 +4,7 @@
 	// import { flip } from 'svelte/animate';
 	import { fade, slide } from 'svelte/transition';
 
+	import ActionButtons from '$components/ActionButtons.svelte';
 	import Card from '$components/Card.svelte';
 	import Display from '$components/Display.svelte';
 	import Heading from '$components/Heading.svelte';
@@ -22,7 +23,6 @@
 	import type { MessageExtended, NumericalExtended } from '$lib/types';
 	import { initTabs } from '$lib/userInterface';
 
-	import ActionButtons from '../../../../presentation/(protected)/setup/ActionButtons.svelte';
 	import SelectionActionButtons from '../../../../presentation/(protected)/setup/SelectionActionButtons.svelte';
 	import type { PageData } from './$types';
 
@@ -539,7 +539,6 @@
 		{#snippet languageCell(message: MessageExtended)}
 			<Icon icon={flag(message.language)} class="size-5" inline />
 		{/snippet}
-		<!-- TBD: move ActionButtons to components -->
 		{#snippet messageActionsCell(answer: MessageExtended)}
 			<ActionButtons
 				resourceId={answer.id}
@@ -888,7 +887,6 @@
 		</p>
 	</div>
 	<div class="w-full overflow-x-auto {numericalViewMode !== 'table' ? 'hidden' : ''}">
-		<!-- TBD: move ActionButtons to components -->
 		{#snippet numericalActionsCell(numerical: NumericalExtended)}
 			<ActionButtons
 				resourceId={numerical.id}

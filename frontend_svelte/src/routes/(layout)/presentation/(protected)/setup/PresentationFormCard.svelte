@@ -5,12 +5,12 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import Card from '$components/Card.svelte';
+	import ShareItem from '$components/ShareItem.svelte';
 	import { AccessHandler, Action } from '$lib/accessHandler';
 	import { SocketIO } from '$lib/socketio.svelte';
 	import type { AccessShareOption, PresentationExtended } from '$lib/types';
 
 	import IdBadge from '../../../(protected)/IdBadge.svelte';
-	import ShareItem from '../../../playground/components/ShareItem.svelte';
 	import FormElement from './FormElement.svelte';
 	let {
 		socketio,
