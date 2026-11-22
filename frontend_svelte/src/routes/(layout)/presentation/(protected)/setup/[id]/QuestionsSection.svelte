@@ -234,7 +234,7 @@ https://svelte.dev/e/transition_slide_display
 						</div>
 					</FormElement>
 					{#snippet accessDescription()}
-						Who has which access to this presentation?
+						Who has which access to this question?
 						<br />
 						Default is public <span class="icon-[gis--globe-earth-alt] size-4"></span>
 						and have read
@@ -368,7 +368,6 @@ https://svelte.dev/e/transition_slide_display
 						aria-label="Add new question"
 						onclick={() => (hideNewQuestionCard = false)}
 					>
-						<!-- onclick={() => goto(resolve('/(layout)/presentation/(protected)/setup/new'))} -->
 						<span class="icon-[fa6-solid--plus] size-5"></span>
 						<!-- <span class="hidden ">Add</span> -->
 						<span class="hidden sm:inline">Add new</span>
@@ -437,7 +436,7 @@ https://svelte.dev/e/transition_slide_display
 				href={resolve('/(layout)/question/(protected)/setup/[id]', {
 					id: question.id
 				})}
-				aria-label={`Setup presentation ${question.question || question.id}`}
+				aria-label={`Setup question ${question.question || question.id}`}
 				class="link link-primary link-animated block truncate"
 			>
 				{question.question || question.id}
@@ -507,70 +506,6 @@ https://svelte.dev/e/transition_slide_display
 				<th class="text-end"><SelectionActionButtons socketio={socketioQuestions} /></th>
 			{/snippet}
 		</Table>
-		<!-- <div
-			class="divider divider-warning label-large text-warning my-10 before:border-t-5 after:border-t-5"
-		>
-			implemented from component Table above and hard-coded below
-		</div>
-		<table class="table w-full">
-			<thead>
-				<tr>
-					<th class="title text-base-content w-3/5 font-medium normal-case">Id / Label</th>
-					<th class="title text-base-content font-medium normal-case">Access</th>
-					<th class="title text-base-content font-medium normal-case">
-						# <span class="icon-[mdi--text] size-4"></span>
-					</th>
-					<th class="title text-base-content font-medium normal-case">
-						# <span class="icon-[tabler--number] size-4"></span>
-					</th>
-					<th class="title text-base-content font-medium normal-case">
-						<span class="icon-[fluent-mdl2--offline-storage] size-4"></span>
-					</th>
-					<th class="title text-base-content w-px pr-0 font-medium whitespace-nowrap normal-case">
-						Actions
-					</th>
-				</tr>
-			</thead>
-			<tbody>
-				{#if (linkedQuestions.length ?? 0) === 0}
-					<tr>
-						<td colspan={8} class="text-center">
-							No presentations yet. Create one by sending a POST request to the /presentation
-							endpoint.
-						</td>
-					</tr>
-				{:else}
-					{#each linkedQuestions as question (question.id)}
-						<tr class="hover:bg-base-300">
-							<td class="max-w-0">
-								<IdBadge id={question.id} />
-								<a
-									href={resolve('/(layout)/question/(protected)/setup/[id]', {
-										id: question.id
-									})}
-									aria-label={`Setup presentation ${question.question || question.id}`}
-									class="link link-primary link-animated block truncate"
-								>
-									{question.question || question.id}
-								</a>
-							</td>
-							<td>[Access]</td>
-							<td>{question.messages?.length ?? 0}</td>
-							<td>{question.numericals?.length ?? 0}</td>
-							<td>[Size]</td>
-							<td class="w-px px-0 py-1 text-left align-middle whitespace-nowrap">
-								<ActionButtons
-									resourceId={question.id}
-									accessRight={socketioQuestions?.accessRights[question.id]}
-									socketio={socketioQuestions}
-									actions={[Action.OWN, Action.WRITE, Action.CONNECT, Action.READ, undefined]}
-								/>
-							</td>
-						</tr>
-					{/each}
-				{/if}
-			</tbody>
-		</table> -->
 	</div>
 </Card>
 
