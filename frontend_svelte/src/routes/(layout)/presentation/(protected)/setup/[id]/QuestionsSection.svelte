@@ -199,16 +199,11 @@ https://svelte.dev/e/transition_slide_display
 						{@render warning()} Forms to add new questions, with the ability to add multiple questions
 						at once and inherit access rights - default: true - from presentation.
 					</div>
-					{#snippet labelDescription()}
-						This label is the way to identify this particular quesion in the code of the
-						presentation. It is mandatory.
-					{/snippet}
-					<FormElement
-						title="Label"
-						mandatory
-						description={labelDescription}
-						extraClasses="max-w-300"
-					>
+					<FormElement title="Label" mandatory extraClasses="max-w-300">
+						{#snippet description()}
+							This label is the way to identify this particular quesion in the code of the
+							presentation. It is mandatory.
+						{/snippet}
 						<div class="input-filled input-primary w-full">
 							<input
 								type="text"
@@ -222,28 +217,28 @@ https://svelte.dev/e/transition_slide_display
 							>
 						</div>
 					</FormElement>
-					{#snippet languageDescription()}
-						Giving the language of the question text in the code. To allow automatic translation the
-						algorithm needs to know from what language to translate into all the others, so this is
-						the language of the source.
-					{/snippet}
-					<FormElement title="Language" description={languageDescription} extraClasses="max-w-300">
+					<FormElement title="Language" extraClasses="max-w-300">
+						{#snippet description()}
+							Giving the language of the question text in the code. To allow automatic translation
+							the algorithm needs to know from what language to translate into all the others, so
+							this is the language of the source.
+						{/snippet}
 						<div class="label">
 							{@render warning()} A drop-down field to select the language for the question, with a default
 							value of the presentation's language.
 						</div>
 					</FormElement>
-					{#snippet accessDescription()}
-						Who has which access to this question?
-						<br />
-						Default is public <span class="icon-[gis--globe-earth-alt] size-4"></span>
-						and have read
-						<span
-							class={`${AccessHandler.rightsIcon(Action.READ)} ${AccessHandler.rightsIconColor(Action.READ)} size-4`}
-						></span>
-						access.
-					{/snippet}
-					<FormElement title="Access" description={accessDescription} extraClasses="max-w-130">
+					<FormElement title="Access" extraClasses="max-w-130">
+						{#snippet description()}
+							Who has which access to this question?
+							<br />
+							Default is public <span class="icon-[gis--globe-earth-alt] size-4"></span>
+							and have read
+							<span
+								class={`${AccessHandler.rightsIcon(Action.READ)} ${AccessHandler.rightsIconColor(Action.READ)} size-4`}
+							></span>
+							access.
+						{/snippet}
 						<div class="label mb-2 flex flex-1 items-center gap-1">
 							<label class="label label-text text-base-content" for="new-question-inherit">
 								<input
