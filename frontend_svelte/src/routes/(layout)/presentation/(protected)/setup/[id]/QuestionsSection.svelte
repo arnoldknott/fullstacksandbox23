@@ -136,8 +136,8 @@ https://svelte.dev/e/transition_slide_display
 
 {#if socketioQuestions?.pendingEntities[0]}
 	<Card
-		id="add-questions"
-		title="Add Questions"
+		id="add-question"
+		title="Add Question"
 		closeButton
 		extraClasses="label-large"
 		bind:hidden={hideNewQuestionCard}
