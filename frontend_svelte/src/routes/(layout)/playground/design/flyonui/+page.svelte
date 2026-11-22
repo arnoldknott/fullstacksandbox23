@@ -2067,6 +2067,14 @@
 				</p>
 				<span class="icon-[solar--hashtag-circle-linear] size-12"></span>
 			</div>
+			<div>
+				<p class="label text-center">
+					<span class="label-prominent badge min-h-fit">Andrsrxn</span>
+				</p>
+				<span class="icon-[andrsrxn--text] size-12"></span>
+				<span class="icon-[andrsrxn--text-increase-size] size-12"></span>
+				<span class="icon-[andrsrxn--text-decrease-size] size-12"></span>
+			</div>
 		</div>
 		<HorizontalRule />
 	</div>
