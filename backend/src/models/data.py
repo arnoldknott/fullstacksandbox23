@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Literal, Optional
 
 from pydantic import FiniteFloat
 from pydantic_extra_types.language_code import LanguageAlpha2
@@ -7,37 +7,37 @@ from core.types import KebabCase, ResourceType
 from models.base import Attribute, Relationship, RelationshipHierarchyType, create_model
 
 
-def _relationships():
+def _relationships(resource: Literal["text", "number"]):
     return [
         Relationship(
             name="presentations",
             related_entity=ResourceType.presentation,
             hierarchy_type=RelationshipHierarchyType.child,
-            back_populates="texts",
+            back_populates=f"{resource}s",
         ),
         Relationship(
             name="text_parents",
             related_entity=ResourceType.text,
             hierarchy_type=RelationshipHierarchyType.child,
-            back_populates="texts",
+            back_populates=f"{resource}s",
         ),
         Relationship(
             name="number_parents",
             related_entity=ResourceType.number,
             hierarchy_type=RelationshipHierarchyType.child,
-            back_populates="texts",
+            back_populates=f"{resource}s",
         ),
         Relationship(
             name="texts",
             related_entity=ResourceType.text,
             hierarchy_type=RelationshipHierarchyType.parent,
-            back_populates="text_parents",
+            back_populates=f"{resource}_parents",
         ),
         Relationship(
             name="numbers",
             related_entity=ResourceType.number,
             hierarchy_type=RelationshipHierarchyType.parent,
-            back_populates="text_parents",
+            back_populates=f"{resource}_parents",
         ),
     ]
 
@@ -50,15 +50,8 @@ Text = create_model(
         Attribute(name="language", type=Optional[LanguageAlpha2]),
         Attribute(name="confidential", type=Optional[str], encrypt=True),
     ],
-    relationships=_relationships(),
+    relationships=_relationships("text"),
 )
-
-number_relationships = _relationships()
-for relationship in number_relationships:
-    if relationship.hierarchy_type == RelationshipHierarchyType.child:
-        relationship.back_populates = "numbers"
-    else:
-        relationship.back_populates = "number_parents"
 
 Number = create_model(
     name="Number",
@@ -66,7 +59,7 @@ Number = create_model(
         Attribute(name="value", type=FiniteFloat),
         Attribute(name="category", type=Optional[KebabCase]),
     ],
-    relationships=number_relationships,
+    relationships=_relationships("number"),
 )
 
 
