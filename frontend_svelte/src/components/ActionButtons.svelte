@@ -17,7 +17,7 @@
 		resourceId: string;
 		accessRight: Action | undefined;
 		socketio: SocketIO;
-		entityType?: 'presentation' | 'text' | 'question'; //TBD: add 'number' |
+		entityType?: 'presentation' | 'text' | 'number' | 'question';
 		actions?: (Action | undefined)[];
 	} = $props();
 
