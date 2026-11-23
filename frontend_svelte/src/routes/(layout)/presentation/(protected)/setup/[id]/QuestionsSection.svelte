@@ -137,7 +137,7 @@ https://svelte.dev/e/transition_slide_display
 {#if socketioQuestions?.pendingEntities[0]}
 	<Card
 		id="add-question"
-		title="Add Question"
+		title="New Question"
 		closeButton
 		extraClasses="label-large"
 		bind:hidden={hideNewQuestionCard}
@@ -148,7 +148,7 @@ https://svelte.dev/e/transition_slide_display
 	</p> -->
 		<div class="bg-base-150 shadow-base-shadow overflow-y-auto rounded-lg shadow-inner">
 			<div
-				class="tabs tabs-lifted tabs-secondary m-1"
+				class="tabs tabs-lifted tabs-secondary m-0!"
 				// class="tabs tabs-lifted to-secondary m-1 rounded-lg bg-linear-to-b from-transparent"
 				// class="tabs tabs-lifted to-secondary m-1 bg-linear-to-b from-transparent"
 				aria-label="Tabs"

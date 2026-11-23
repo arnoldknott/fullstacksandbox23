@@ -115,7 +115,6 @@
 					accessed via the presentation api and used in the presentation.
 				</FormElement>
 			</div>
-
 			<FormElement title="Access" extraClasses="max-w-100">
 				{#snippet description()}
 					Who has which access to this presentation?
