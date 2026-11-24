@@ -8,17 +8,15 @@
 	import ActionButtons from '$components/ActionButtons.svelte';
 	import Card from '$components/Card.svelte';
 	import JsonData from '$components/JsonData.svelte';
-	import ShareItem from '$components/ShareItem.svelte';
 	import Table, { countIcon, icon, snippet, text, value } from '$components/Table.svelte';
 	import Title from '$components/Title.svelte';
-	import { AccessHandler, Action } from '$lib/accessHandler';
 	import { SocketIO } from '$lib/socketio.svelte';
-	import type { AccessShareOption, Identity, Question, QuestionExtended } from '$lib/types';
+	import type { Identity, Question, QuestionExtended } from '$lib/types';
 	import { initTabs } from '$lib/userInterface';
 
 	import IdBadge from '../../../../(protected)/IdBadge.svelte';
-	import FormElement from '../FormElement.svelte';
 	import SelectionActionButtons from '../SelectionActionButtons.svelte';
+	import QuestionForm from './QuestionForm.svelte';
 
 	let {
 		parentId,
@@ -44,35 +42,17 @@
 		hideNewQuestionCard = page.url.searchParams.get('add-question') !== 'true';
 	});
 
-	let socketioQuestions: SocketIO<QuestionExtended> = $state()!;
+	let socketio: SocketIO<QuestionExtended> = $state()!;
 	let linkedQuestions = $derived<Question[]>(
-		socketioQuestions?.getSelectedEntities('linkedToPresentation') || []
+		socketio?.getSelectedEntities('linkedToPresentation') || []
 	);
 	let notLinkedQuestions = $derived<Question[]>(
-		socketioQuestions?.getSelectedEntities('notLinkedToPresentation') || []
+		socketio?.getSelectedEntities('notLinkedToPresentation') || []
 	);
 	let inheritPending = $state(true);
 
-	let shareOptionsForNewQuestion: AccessShareOption[] = $derived(
-		AccessHandler.createShareOptions(
-			socketioQuestions.identities,
-			socketioQuestions.accessPolicies[socketioQuestions.pendingEntities[0].id]
-		) || []
-	);
-
-	let multiplePending = $state(false);
-	let multipleSuffixes = $state({ start: 1, end: 2 });
-	let newSuffix = $derived(
-		multiplePending ? '_[' + multipleSuffixes.start + ':' + multipleSuffixes.end + ']' : null
-	);
-	$effect(() => {
-		if (multipleSuffixes.end <= multipleSuffixes.start) {
-			multipleSuffixes.end = multipleSuffixes.start + 1;
-		}
-	});
-
 	onMount(() => {
-		socketioQuestions = new SocketIO<QuestionExtended>(
+		socketio = new SocketIO<QuestionExtended>(
 			{
 				namespace: '/question',
 				sessionId: page.data.session.sessionId,
@@ -91,12 +71,12 @@
 				}
 			}
 		);
-		socketioQuestions.identities = identities;
-		socketioQuestions.createLinkedSelection('linkedToPresentation');
-		socketioQuestions.createLinkedSelection('notLinkedToPresentation', true);
+		socketio.identities = identities;
+		socketio.createLinkedSelection('linkedToPresentation');
+		socketio.createLinkedSelection('notLinkedToPresentation', true);
 	});
 	onDestroy(() => {
-		socketioQuestions?.client.disconnect();
+		socketio?.client.disconnect();
 	});
 
 	let viewMode = $state<'grid' | 'list' | 'table'>('table');
@@ -134,7 +114,7 @@ https://svelte.dev/e/transition_slide_display
 	<span class="icon-[fluent-color--warning-24] size-4"></span>
 {/snippet}
 
-{#if socketioQuestions?.pendingEntities[0]}
+{#if socketio?.pendingEntities[0]}
 	<Card
 		id="add-question"
 		title="New Question"
@@ -195,113 +175,7 @@ https://svelte.dev/e/transition_slide_display
 					role="tabpanel"
 					aria-labelledby="new-question-head"
 				>
-					<div class="label">
-						{@render warning()} Forms to add new questions, with the ability to add multiple questions
-						at once and inherit access rights - default: true - from presentation.
-					</div>
-					<FormElement title="Label" mandatory extraClasses="max-w-300">
-						{#snippet description()}
-							This label is the way to identify this particular quesion in the code of the
-							presentation. It is mandatory.
-						{/snippet}
-						<div class="input-filled input-primary w-full">
-							<input
-								type="text"
-								placeholder=""
-								class="input"
-								id="slugInput"
-								bind:value={socketioQuestions.pendingEntities[0].question}
-							/>
-							<label class="input-filled-label" for="slugInput"
-								>[use this label to identify the question in your presentation]{newSuffix}</label
-							>
-						</div>
-					</FormElement>
-					<FormElement title="Language" extraClasses="max-w-300">
-						{#snippet description()}
-							Giving the language of the question text in the code. To allow automatic translation
-							the algorithm needs to know from what language to translate into all the others, so
-							this is the language of the source.
-						{/snippet}
-						<div class="label">
-							{@render warning()} A drop-down field to select the language for the question, with a default
-							value of the presentation's language.
-						</div>
-					</FormElement>
-					<FormElement title="Access" extraClasses="max-w-130">
-						{#snippet description()}
-							Who has which access to this question?
-							<br />
-							Default is public <span class="icon-[gis--globe-earth-alt] size-4"></span>
-							and have read
-							<span
-								class={`${AccessHandler.rightsIcon(Action.READ)} ${AccessHandler.rightsIconColor(Action.READ)} size-4`}
-							></span>
-							access.
-						{/snippet}
-						<div class="label mb-2 flex flex-1 items-center gap-1">
-							<label class="label label-text text-base-content" for="new-question-inherit">
-								<input
-									id="new-question-inherit"
-									type="checkbox"
-									class="checkbox checkbox-primary"
-									bind:checked={inheritPending}
-								/>
-							</label>
-							inherit from {parentId}
-						</div>
-						<ul class="bg-base-150 shadow-base-shadow overflow-y-auto rounded-lg p-2 shadow-inner">
-							{#each shareOptionsForNewQuestion, i (i)}
-								<ShareItem
-									// TBD: adopt for multiple new!
-									resourceId={socketioQuestions.pendingEntities[0].id}
-									// No need to bind, as it is anyways handled through the entityContainer's methods and the socketio's submitEntity method.
-									shareOption={shareOptionsForNewQuestion[i]}
-									socketio={socketioQuestions}
-									actions={[Action.OWN, Action.WRITE, Action.CONNECT, Action.READ, undefined]}
-									// share={socketioQuestions?.shareEntity.bind(socketioQuestions)}
-									wide
-								/>
-							{/each}
-						</ul>
-					</FormElement>
-					<FormElement title="Add multiple questions">
-						<div class="mb-2 flex flex-1 flex-row items-center gap-1">
-							<label class="label label-text text-base-content" for="new-question-multiple">
-								<input
-									id="new-question-multiple"
-									type="checkbox"
-									disabled
-									// TBD: remove disabled, when functionality is implemented!
-									class="checkbox checkbox-primary"
-									bind:checked={multiplePending}
-								/>
-							</label>
-							with suffixes
-							<input
-								id="multiple-groups-start"
-								type="number"
-								placeholder={multipleSuffixes.start.toString()}
-								class="input shadow-shadow flex-2 shadow-inner"
-								name="multiple-groups-suffix-start"
-								disabled={!multiplePending}
-								bind:value={multipleSuffixes.start}
-							/>
-							<span class="label flex-1"> to</span>
-							<input
-								id="multiple-groups-end"
-								type="number"
-								placeholder={multipleSuffixes.end.toString()}
-								class="input shadow-shadow flex-2 shadow-inner"
-								name="multiple-groups-suffix-end"
-								disabled={!multiplePending}
-								bind:value={multipleSuffixes.end}
-							/>
-						</div>
-						<div class="label">
-							{@render warning()} Creation of multiple not functional yet
-						</div>
-					</FormElement>
+					<QuestionForm {socketio} {parentId} bind:inheritPending />
 				</div>
 				<div
 					id="existing-question-tab"
@@ -335,16 +209,16 @@ https://svelte.dev/e/transition_slide_display
 					class="btn btn-primary-container btn-gradient shadow-outline rounded-full shadow"
 					aria-label="Save new presentation"
 					onclick={() => {
-						socketioQuestions.submitBulk(parentId, inheritPending);
+						socketio.submitBulk(parentId, inheritPending);
 						hideNewQuestionCard = true;
 						// For buld submit the new pending needs manual creation:
-						socketioQuestions.createPending();
+						socketio.createPending();
 					}}><span class="icon-[tabler--send-2] size-5"></span>Save</button
 				>
 			</div>
 		{/snippet}
 	</Card>
-{:else if !socketioQuestions?.pendingEntities[0] && !hideNewQuestionCard}
+{:else if !socketio?.pendingEntities[0] && !hideNewQuestionCard}
 	<div class="label text-error" transition:slide={{ duration: 600 }}>
 		<span class="icon-[svg-spinners--12-dots-scale-rotate] size-6"></span>connecting ...
 	</div>
@@ -356,7 +230,7 @@ https://svelte.dev/e/transition_slide_display
 		<div class="flex justify-between">
 			<Title id="existingQuestions" class="grow">Overview</Title>
 			<div class="flex flex-row items-center justify-center">
-				{#if hideNewQuestionCard || !socketioQuestions?.pendingEntities[0]}
+				{#if hideNewQuestionCard || !socketio?.pendingEntities[0]}
 					<button
 						transition:fade={{ duration: 600 }}
 						class="btn btn-primary-container btn-gradient label btn shadow-outline mx-4 rounded-full shadow-sm"
@@ -443,8 +317,8 @@ https://svelte.dev/e/transition_slide_display
 		{#snippet questionActionsCell(question: QuestionExtended)}
 			<ActionButtons
 				resourceId={question.id}
-				accessRight={socketioQuestions?.accessRights[question.id]}
-				socketio={socketioQuestions}
+				accessRight={socketio?.accessRights[question.id]}
+				{socketio}
 				entityType="question"
 			/>
 		{/snippet}
@@ -493,12 +367,12 @@ https://svelte.dev/e/transition_slide_display
 					cellClass: 'w-px py-1 text-center align-middle whitespace-nowrap'
 				}
 			]}
-			entityContainer={socketioQuestions}
+			entityContainer={socketio}
 			displaySelection="linkedToPresentation"
 		>
 			{#snippet menu()}
 				<th colspan={6}></th>
-				<th class="text-end"><SelectionActionButtons socketio={socketioQuestions} /></th>
+				<th class="text-end"><SelectionActionButtons {socketio} /></th>
 			{/snippet}
 		</Table>
 	</div>
@@ -513,13 +387,13 @@ https://svelte.dev/e/transition_slide_display
 		<div class="grid grid-cols-1 gap-4 md:grid-cols-3">
 			<div>
 				<p class="label-prominent">Entities</p>
-				<JsonData data={socketioQuestions?.entities ?? []} />
+				<JsonData data={socketio?.entities ?? []} />
 			</div>
 			<div>
 				<p class="label-prominent">Pending Entities</p>
-				<JsonData data={socketioQuestions?.pendingEntities ?? []} />
+				<JsonData data={socketio?.pendingEntities ?? []} />
 				<p class="label-prominent">Selected Entities</p>
-				<JsonData data={socketioQuestions?.selections?.['selected'] ?? []} />
+				<JsonData data={socketio?.selections?.['selected'] ?? []} />
 				<p class="label-prominent">Linked Entities</p>
 				<JsonData data={linkedQuestions} />
 				<p class="label-prominent">Not Linked Entities</p>
@@ -527,11 +401,11 @@ https://svelte.dev/e/transition_slide_display
 			</div>
 			<div>
 				<p class="label-prominent">Access Policies</p>
-				<JsonData data={socketioQuestions?.accessPolicies ?? []} />
+				<JsonData data={socketio?.accessPolicies ?? []} />
 				<p class="label-prominent">Access Rights</p>
-				<JsonData data={socketioQuestions?.accessRights ?? []} />
+				<JsonData data={socketio?.accessRights ?? []} />
 				<p class="label-prominent">Identities</p>
-				<JsonData data={socketioQuestions?.identities ?? []} />
+				<JsonData data={socketio?.identities ?? []} />
 			</div>
 		</div>
 	</Card>
