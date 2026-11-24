@@ -80,9 +80,9 @@
 			notification.
 		</FormElement>
 		<FormElement title="Files" extraClasses="max-w-300">
-			{@render warning()}Select existing files or drop new files into a container to upload and make
-			available to the presentation. This is the place to store binaries, so they can be accessed
-			via the presentation api and used in the presentation.
+			{@render warning()} Select existing files or drop new files into a container to upload and make
+			available to the presentation. This is the place to store binaries, so they can be accessed via
+			the presentation api and used in the presentation.
 		</FormElement>
 	</div>
 	<FormElement title="Access" extraClasses="max-w-100">
