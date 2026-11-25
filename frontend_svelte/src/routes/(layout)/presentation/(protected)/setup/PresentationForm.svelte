@@ -1,30 +1,31 @@
+<script module lang="ts">
+	import type { PresentationExtended } from '$lib/types';
+
+	export const normalizePresentationPath = (presentation: PresentationExtended) => {
+		const newPath = presentation.path?.trim() ?? '';
+		presentation.path = newPath && !newPath.startsWith('/') ? `/${newPath}` : newPath;
+	};
+</script>
+
 <script lang="ts">
 	import { page } from '$app/state';
 	import ShareItem from '$components/ShareItem.svelte';
 	import { AccessHandler, Action } from '$lib/accessHandler';
 	import type { SocketIO } from '$lib/socketio.svelte';
-	import type { AccessShareOption, PresentationExtended } from '$lib/types';
+	import type { AccessShareOption } from '$lib/types';
 
 	import IdBadge from '../../../(protected)/IdBadge.svelte';
 	import FormElement from './FormElement.svelte';
 
 	let {
 		presentation,
+		shareOptions,
 		socketio
 	}: {
 		presentation: PresentationExtended;
+		shareOptions: AccessShareOption[];
 		socketio: SocketIO<PresentationExtended>;
 	} = $props();
-
-	// TBD: move this calculation to EntityContainer (or AccessHandler) class!
-	// Is it moved already or should the caller be simplified to a new caller:
-	// entityContainer.shareOptions(presentationId)?
-	let shareOptions: AccessShareOption[] = $derived(
-		AccessHandler.createShareOptions(
-			socketio.identities,
-			socketio.accessPolicies[presentation.id]
-		) || []
-	);
 </script>
 
 {#snippet warning()}

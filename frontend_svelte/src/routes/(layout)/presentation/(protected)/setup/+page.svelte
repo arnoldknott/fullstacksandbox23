@@ -5,6 +5,7 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import ActionButtons from '$components/ActionButtons.svelte';
+	import AddDataCard, { DataType } from '$components/AddDataCard.svelte';
 	import Card from '$components/Card.svelte';
 	import Display from '$components/Display.svelte';
 	import JsonData from '$components/JsonData.svelte';
@@ -16,7 +17,7 @@
 
 	import IdBadge from '../../../(protected)/IdBadge.svelte';
 	import type { PageData } from './$types';
-	import PresentationFormCard from './PresentationFormCard.svelte';
+	import PresentationForm, { normalizePresentationPath } from './PresentationForm.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -71,7 +72,17 @@
 <!-- <JsonData data={data.payload.identities} /> -->
 
 {#if socketioPresentations?.pendingEntities[0]}
-	<PresentationFormCard socketio={socketioPresentations} bind:hidden={hideNewPresentationCard} />
+	<AddDataCard
+		socketio={socketioPresentations}
+		datatype={DataType.PRESENTATION}
+		title={(presentation) => presentation.path}
+		beforeSubmit={normalizePresentationPath}
+		bind:hidden={hideNewPresentationCard}
+	>
+		{#snippet form(presentation, shareOptions)}
+			<PresentationForm {presentation} {shareOptions} socketio={socketioPresentations} />
+		{/snippet}
+	</AddDataCard>
 	<!-- <Card
 		id={socketioPresentations.pendingEntities[0].id}
 		title="New presentation"

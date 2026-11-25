@@ -2,16 +2,16 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
 	get: vi.fn(),
+	getEntity: vi.fn(),
 	getSnapshot: vi.fn(),
 	getAccessPolicies: vi.fn()
 }));
 
 vi.mock('$lib/server/apis/backendApi', () => ({
-	backendAPI: {
-		get: mocks.get,
-		getSnapshot: mocks.getSnapshot,
-		getAccessPolicies: mocks.getAccessPolicies
-	}
+	backendAPI: { ...mocks, getAllIdentities: vi.fn().mockResolvedValue([]) }
+}));
+vi.mock('$lib/server/apis/msgraph', () => ({
+	microsoftGraph: { getAttachedTeamsAsIdentities: vi.fn().mockResolvedValue([]) }
 }));
 
 import { load } from './+page.server';
@@ -25,7 +25,9 @@ const response = (body: unknown, status = 200) =>
 describe('question setup snapshot', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		mocks.getEntity.mockResolvedValue({ entity: { id: 'question-1' }, cursor: 10 });
 		mocks.getAccessPolicies.mockResolvedValue([
+			{ id: 3, resource_id: 'question-1', action: 'own', public: false },
 			{ id: 1, resource_id: 'message-1', action: 'own', public: false },
 			{ id: 2, resource_id: 'numerical-1', action: 'write', public: false }
 		]);
@@ -41,17 +43,12 @@ describe('question setup snapshot', () => {
 				cursor: 12
 			});
 		});
-		mocks.get.mockImplementation((_sessionId: string, path: string) => {
-			if (path === '/quiz/question/question-1') {
-				return Promise.resolve(response({ id: 'question-1' }));
-			}
-			return Promise.resolve(
-				response([
-					{ parent_id: 'question-1', child_id: 'message-1', inherit: true, order: 1 },
-					{ parent_id: 'question-1', child_id: 'numerical-1', inherit: false, order: 2 }
-				])
-			);
-		});
+		mocks.get.mockResolvedValue(
+			response([
+				{ parent_id: 'question-1', child_id: 'message-1', inherit: true, order: 1 },
+				{ parent_id: 'question-1', child_id: 'numerical-1', inherit: false, order: 2 }
+			])
+		);
 	});
 
 	test('restores extended access data before seeding Socket.IO', async () => {
@@ -67,7 +64,17 @@ describe('question setup snapshot', () => {
 				'include=creation-date&include=last-modified-date&include=access-right'
 			)
 		);
-		expect(mocks.getAccessPolicies).toHaveBeenCalledWith('session-1', ['message-1', 'numerical-1']);
+		expect(mocks.getEntity).toHaveBeenCalledWith('session-1', '/quiz/question/question-1');
+		expect(mocks.getAccessPolicies).toHaveBeenCalledWith('session-1', [
+			'question-1',
+			'message-1',
+			'numerical-1'
+		]);
+		expect(result.questionsData.questions.access_policies).toEqual([
+			{ id: 3, resource_id: 'question-1', action: 'own', public: false }
+		]);
+		expect(result.questionsData.questionCursor).toBe(10);
+		expect(result.questionsData.identities.at(-1)).toMatchObject({ id: 'public' });
 		expect(result.questionsData.messages[0]).toMatchObject({
 			id: 'message-1',
 			access_right: 'own',

@@ -1,18 +1,18 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import { onDestroy, onMount } from 'svelte';
-	import { fade, slide } from 'svelte/transition';
+	import { fade } from 'svelte/transition';
 
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import ActionButtons from '$components/ActionButtons.svelte';
+	import AddDataCard, { DataType } from '$components/AddDataCard.svelte';
 	import Card from '$components/Card.svelte';
 	import JsonData from '$components/JsonData.svelte';
 	import Table, { countIcon, icon, snippet, text, value } from '$components/Table.svelte';
 	import Title from '$components/Title.svelte';
 	import { SocketIO } from '$lib/socketio.svelte';
 	import type { Identity, Question, QuestionExtended } from '$lib/types';
-	import { initTabs } from '$lib/userInterface';
 
 	import IdBadge from '../../../../(protected)/IdBadge.svelte';
 	import SelectionActionButtons from '../SelectionActionButtons.svelte';
@@ -114,115 +114,29 @@ https://svelte.dev/e/transition_slide_display
 	<span class="icon-[fluent-color--warning-24] size-4"></span>
 {/snippet}
 
-{#if socketio?.pendingEntities[0]}
-	<Card
-		id="add-question"
-		title="New Question"
-		closeButton
-		extraClasses="label-large"
-		bind:hidden={hideNewQuestionCard}
-	>
-		<!-- <p class="label">
-		{@render warning()} Add questions with tabs for new and existing, where the existing questions get
-		the button to copy and link. Also a copy all selected and link all selected.
-	</p> -->
-		<div class="bg-base-150 shadow-base-shadow overflow-y-auto rounded-lg shadow-inner">
-			<div
-				class="tabs tabs-lifted tabs-secondary m-0!"
-				// class="tabs tabs-lifted to-secondary m-1 rounded-lg bg-linear-to-b from-transparent"
-				// class="tabs tabs-lifted to-secondary m-1 bg-linear-to-b from-transparent"
-				aria-label="Tabs"
-				role="tablist"
-				aria-orientation="horizontal"
-				{@attach initTabs}
-			>
-				<button
-					type="button"
-					// class="tab tab-secondary active w-full"
-					class="tab active w-full"
-					id="new-question-head"
-					data-tab="#new-question-tab"
-					aria-controls="new-question-tab"
-					role="tab"
-					aria-selected="true"
-				>
-					<span class="icon-[fa6-solid--plus] mr-2 size-4"></span>
-					<span class="hidden md:inline">Add</span>
-					<span class="hidden sm:inline">&nbsp;new</span>
-				</button>
-				<button
-					type="button"
-					// class="tab tab-secondary w-full"
-					class="tab w-full"
-					id="existing-question-head"
-					data-tab="#existing-question-tab"
-					aria-controls="existing-question-tab"
-					role="tab"
-					aria-selected="false"
-				>
-					<span class="icon-[tabler--copy] mr-2 size-4"></span>
-					<span class="hidden md:inline">Copy </span>
-					&nbsp;or&nbsp;
-					<span class="icon-[tabler--link] mx-2 size-4"></span>
-					<span class="hidden md:inline">link </span>
-					<span class="hidden sm:inline">&nbsp;existing</span>
-				</button>
+<!-- <p class="label">
+	{@render warning()} Add questions with tabs for new and existing, where the existing questions get
+	the button to copy and link. Also a copy all selected and link all selected.
+</p> -->
+<AddDataCard
+	{socketio}
+	datatype={DataType.QUESTION}
+	{parentId}
+	{inheritPending}
+	extraClasses="label-large"
+	bind:hidden={hideNewQuestionCard}
+>
+	{#snippet form(question, shareOptions)}
+		<QuestionForm {question} {shareOptions} {socketio} {parentId} bind:inheritPending />
+	{/snippet}
+	{#snippet existing()}
+		{#each notLinkedQuestions as linkedQuestion, idx (idx)}
+			<div class="linked-question">
+				<p>Q: {linkedQuestion.question}</p>
 			</div>
-			<div class="h-fit p-2">
-				<div
-					id="new-question-tab"
-					class="h-full max-h-120 overflow-scroll"
-					role="tabpanel"
-					aria-labelledby="new-question-head"
-				>
-					<QuestionForm {socketio} {parentId} bind:inheritPending />
-				</div>
-				<div
-					id="existing-question-tab"
-					class="hidden h-full max-h-100 overflow-scroll"
-					role="tabpanel"
-					aria-labelledby="existing-question-head"
-				>
-					<div class="label">
-						{@render warning()} Table of existing questions and functionality to link or copy them into
-						this presentation.
-					</div>
-					{#each notLinkedQuestions as linkedQuestion, idx (idx)}
-						<div class="linked-question">
-							<p>Q: {linkedQuestion.question}</p>
-						</div>
-					{/each}
-				</div>
-			</div>
-		</div>
-		<!-- Very similar to the new presentation footer - consider putting into component -->
-		{#snippet footer()}
-			<div class="ml-5 flex flex-row justify-end gap-4">
-				<button
-					class="btn btn-secondary-container btn-gradient shadow-outline rounded-full shadow"
-					aria-label="Cancel"
-					onclick={() => {
-						hideNewQuestionCard = true;
-					}}><span class="icon-[tabler--x] size-5"></span>Cancel</button
-				>
-				<button
-					class="btn btn-primary-container btn-gradient shadow-outline rounded-full shadow"
-					aria-label="Save new presentation"
-					onclick={() => {
-						socketio.submitBulk(parentId, inheritPending);
-						hideNewQuestionCard = true;
-						// For buld submit the new pending needs manual creation:
-						socketio.createPending();
-					}}><span class="icon-[tabler--send-2] size-5"></span>Save</button
-				>
-			</div>
-		{/snippet}
-	</Card>
-{:else if !socketio?.pendingEntities[0] && !hideNewQuestionCard}
-	<div class="label text-error" transition:slide={{ duration: 600 }}>
-		<span class="icon-[svg-spinners--12-dots-scale-rotate] size-6"></span>connecting ...
-	</div>
-{/if}
+		{/each}
+	{/snippet}
+</AddDataCard>
 
 <Card id="linked-questions" title="Linked Questions" extraClasses="label-large">
 	<!-- TBD: consider turning into a component, as it is very similar to the existing presentations section. -->

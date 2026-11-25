@@ -7,21 +7,18 @@
 	import FormElement from '../FormElement.svelte';
 
 	let {
+		question,
+		shareOptions,
 		socketio,
 		parentId,
 		inheritPending = $bindable()
 	}: {
+		question: QuestionExtended;
+		shareOptions: AccessShareOption[];
 		socketio: SocketIO<QuestionExtended>;
 		parentId?: string;
 		inheritPending: boolean;
 	} = $props();
-
-	let shareOptionsForNewQuestion: AccessShareOption[] = $derived(
-		AccessHandler.createShareOptions(
-			socketio.identities,
-			socketio.accessPolicies[socketio.pendingEntities[0].id]
-		) || []
-	);
 
 	let multiplePending = $state(false);
 	let multipleSuffixes = $state({ start: 1, end: 2 });
@@ -49,13 +46,7 @@
 		mandatory.
 	{/snippet}
 	<div class="input-filled input-primary w-full">
-		<input
-			type="text"
-			placeholder=""
-			class="input"
-			id="slugInput"
-			bind:value={socketio.pendingEntities[0].question}
-		/>
+		<input type="text" placeholder="" class="input" id="slugInput" bind:value={question.question} />
 		<label class="input-filled-label" for="slugInput"
 			>[use this label to identify the question in your presentation]{newSuffix}</label
 		>
@@ -97,12 +88,12 @@
 		</div>
 	{/if}
 	<ul class="bg-base-150 shadow-base-shadow overflow-y-auto rounded-lg p-2 shadow-inner">
-		{#each shareOptionsForNewQuestion, i (i)}
+		{#each shareOptions, i (i)}
 			<ShareItem
 				// TBD: adopt for multiple new!
-				resourceId={socketio.pendingEntities[0].id}
+				resourceId={question.id}
 				// No need to bind, as it is anyways handled through the entityContainer's methods and the socketio's submitEntity method.
-				shareOption={shareOptionsForNewQuestion[i]}
+				shareOption={shareOptions[i]}
 				{socketio}
 				actions={[Action.OWN, Action.WRITE, Action.CONNECT, Action.READ, undefined]}
 				// share={socketio?.shareEntity.bind(socketio)}

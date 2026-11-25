@@ -5,6 +5,7 @@
 	import { fade, slide } from 'svelte/transition';
 
 	import ActionButtons from '$components/ActionButtons.svelte';
+	import AddDataCard, { DataType } from '$components/AddDataCard.svelte';
 	import Card from '$components/Card.svelte';
 	import Display from '$components/Display.svelte';
 	import Heading from '$components/Heading.svelte';
@@ -20,9 +21,10 @@
 	import Title from '$components/Title.svelte';
 	import { Action } from '$lib/accessHandler';
 	import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
-	import type { MessageExtended, NumericalExtended } from '$lib/types';
+	import type { MessageExtended, NumericalExtended, QuestionExtended } from '$lib/types';
 	import { initTabs } from '$lib/userInterface';
 
+	import QuestionForm from '../../../../presentation/(protected)/setup/[id]/QuestionForm.svelte';
 	import SelectionActionButtons from '../../../../presentation/(protected)/setup/SelectionActionButtons.svelte';
 	import type { PageData } from './$types';
 
@@ -32,6 +34,7 @@
 	let messageMetaData = $state('');
 	let metadataError = $state('');
 	let questionId = $derived(data.questionsData?.questions.id || '');
+	let questionSocketio: SocketIO<QuestionExtended> = $state()!;
 	let messageSocketio: SocketIO<MessageExtended> = $state()!;
 	let numericalSocketio: SocketIO<NumericalExtended> = $state()!;
 	// let messageAnswers = $derived(messageSocketio?.entities ?? []);
@@ -73,6 +76,20 @@
 		queryParams: { 'request-access-data': true }
 	});
 	onMount(() => {
+		questionSocketio = new SocketIO<QuestionExtended>(
+			{
+				namespace: '/question',
+				sessionId: data?.session?.sessionId || '',
+				queryParams: { 'request-access-data': true }
+			},
+			{
+				snapshot: {
+					entities: [data.questionsData.questions],
+					cursor: data.questionsData.questionCursor
+				}
+			}
+		);
+		questionSocketio.identities = data.questionsData.identities;
 		messageSocketio = new SocketIO<MessageExtended>(messageConnection, {
 			snapshot: {
 				entities: data.questionsData.messages,
@@ -92,6 +109,7 @@
 	});
 
 	onDestroy(() => {
+		questionSocketio?.client.disconnect();
 		messageSocketio?.client.disconnect();
 		numericalSocketio?.client.disconnect();
 	});
@@ -201,6 +219,18 @@
 {#if !data.questionsData?.questions.question}
 	<Title id="note-on-query-string-question-id">Add id to question as query string (for now)!</Title>
 {/if}
+
+<AddDataCard
+	socketio={questionSocketio}
+	datatype={DataType.QUESTION}
+	entityId={questionId}
+	title={(question) => question.question}
+>
+	{#snippet form(question, shareOptions)}
+		<QuestionForm {question} {shareOptions} socketio={questionSocketio} inheritPending={false} />
+	{/snippet}
+</AddDataCard>
+
 <Heading id="add-an-answer">Add an answer</Heading>
 
 <div class="grid grid-cols-2 gap-2">

@@ -5,15 +5,16 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import AddDataCard, { DataType } from '$components/AddDataCard.svelte';
 	import Card from '$components/Card.svelte';
 	import Display from '$components/Display.svelte';
 	import Heading from '$components/Heading.svelte';
 	import JsonData from '$components/JsonData.svelte';
 	import Title from '$components/Title.svelte';
 	import { SocketIO } from '$lib/socketio.svelte';
-	import type { Presentation } from '$lib/types';
+	import type { PresentationExtended } from '$lib/types';
 
-	import PresentationFormCard from '../PresentationFormCard.svelte';
+	import PresentationForm, { normalizePresentationPath } from '../PresentationForm.svelte';
 	import type { PageData } from './$types';
 	import QuestionSection from './QuestionsSection.svelte';
 
@@ -25,14 +26,14 @@
 		debug = page.url.searchParams.get('debug') === 'true';
 	});
 
-	let socketioPresentation: SocketIO<Presentation> = $state()!;
+	let socketioPresentation: SocketIO<PresentationExtended> = $state()!;
 	// TBD: should presentations really return the get_all in the callback,
 	// or should it be controllable through resource_id's and / or other query parameters?
 	let presentation = $derived(
 		socketioPresentation?.entities.filter((entity) => entity.id === page.params.id)[0]
 	);
 	onMount(() => {
-		socketioPresentation = new SocketIO<Presentation>(
+		socketioPresentation = new SocketIO<PresentationExtended>(
 			{
 				namespace: '/presentation',
 				sessionId: page.data?.session?.sessionId || '',
@@ -113,11 +114,17 @@
 {#if socketioPresentation?.entities?.length > 0}
 	<!-- <JsonData data={socketioPresentation.entities} />
 	{page.params.id} -->
-	<PresentationFormCard
+	<AddDataCard
 		socketio={socketioPresentation}
-		presentationId={page.params.id}
-		hidden={false}
-	/>
+		datatype={DataType.PRESENTATION}
+		entityId={page.params.id}
+		title={(presentation) => presentation.path}
+		beforeSubmit={normalizePresentationPath}
+	>
+		{#snippet form(presentation, shareOptions)}
+			<PresentationForm {presentation} {shareOptions} socketio={socketioPresentation} />
+		{/snippet}
+	</AddDataCard>
 {:else}
 	<div class="label text-error" transition:slide={{ duration: 600 }}>
 		<span class="icon-[svg-spinners--12-dots-scale-rotate] size-6"></span>connecting ...
