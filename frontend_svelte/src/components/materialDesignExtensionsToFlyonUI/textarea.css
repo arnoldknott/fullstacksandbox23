@@ -24,7 +24,7 @@
 
 .textarea:has(> .textarea-filled) textarea {
 	@apply bg-base-content/10 border-primary mb-[4px] rounded-t-md rounded-b-none border-0 border-b placeholder:text-transparent;
-	@apply focus-visible:placeholder:text-base-content/50 pt-5 hover:border-0 hover:border-b focus:mb-0 focus:border-b-3 focus-visible:outline-0;
+	@apply focus-visible:placeholder:text-base-content/50 pt-5 hover:border-0 hover:border-b focus:inset-shadow-[0_-2px_0_var(--filled-border-color)] focus-visible:outline-0;
 }
 .textarea-filled-label {
 	@apply text-primary pointer-events-none absolute start-0 ms-4 w-fit overflow-hidden bg-transparent text-ellipsis;
@@ -39,10 +39,12 @@
 
 .textarea-filled {
 	@apply relative block w-full;
+	--filled-border-color: var(--color-primary);
 
 	.textarea {
 		@apply bg-base-content/10 border-primary rounded-t-md rounded-b-none border-0 border-b placeholder:text-transparent;
-		@apply focus-visible:placeholder:text-base-content/50 pt-5 hover:border-0 hover:border-b focus:border-b-3 focus-visible:outline-0;
+		/* Paint the thicker focus underline without changing the field's box. */
+		@apply focus-visible:placeholder:text-base-content/50 pt-5 hover:border-0 hover:border-b focus:inset-shadow-[0_-2px_0_var(--filled-border-color)] focus-visible:outline-0;
 		/* field-sizing: content; */
 
 		&:has(> textarea[disabled]),
@@ -89,9 +91,11 @@
 
 	.textarea.is-valid {
 		@apply bg-success/20 border-success;
+		--filled-border-color: var(--color-success);
 	}
 	.textarea.is-invalid {
 		@apply bg-error/20 border-error;
+		--filled-border-color: var(--color-error);
 	}
 
 	.textarea.is-valid ~ .textarea-filled-label {
@@ -106,6 +110,7 @@
 .textarea-filled.textarea-secondary {
 	.textarea {
 		@apply border-secondary;
+		--filled-border-color: var(--color-secondary);
 	}
 	.textarea-filled-label {
 		@apply text-secondary;
@@ -115,6 +120,7 @@
 .textarea-filled.textarea-accent {
 	.textarea {
 		@apply border-accent;
+		--filled-border-color: var(--color-accent);
 	}
 	.textarea-filled-label {
 		@apply text-accent;
@@ -124,6 +130,7 @@
 .textarea-filled.textarea-neutral {
 	.textarea {
 		@apply border-neutral;
+		--filled-border-color: var(--color-neutral);
 	}
 	.textarea-filled-label {
 		@apply text-neutral;
@@ -133,6 +140,7 @@
 .textarea-filled.textarea-info {
 	.textarea {
 		@apply border-info;
+		--filled-border-color: var(--color-info);
 	}
 	.textarea-filled-label {
 		@apply text-info;
@@ -142,6 +150,7 @@
 .textarea-filled.textarea-success {
 	.textarea {
 		@apply border-success;
+		--filled-border-color: var(--color-success);
 	}
 	.textarea-filled-label {
 		@apply text-success;
@@ -151,6 +160,7 @@
 .textarea-filled.textarea-warning {
 	.textarea {
 		@apply border-warning;
+		--filled-border-color: var(--color-warning);
 	}
 	.textarea-filled-label {
 		@apply text-warning;
@@ -160,6 +170,7 @@
 .textarea-filled.textarea-error {
 	.textarea {
 		@apply border-error;
+		--filled-border-color: var(--color-error);
 	}
 	.textarea-filled-label {
 		@apply text-error;
@@ -169,6 +180,7 @@
 .textarea-filled.textarea-primary-container {
 	.textarea {
 		@apply border-primary-container;
+		--filled-border-color: var(--color-primary-container);
 	}
 	.textarea-filled-label {
 		@apply text-primary-container;
@@ -178,6 +190,7 @@
 .textarea-filled.textarea-secondary-container {
 	.textarea {
 		@apply border-secondary-container;
+		--filled-border-color: var(--color-secondary-container);
 	}
 	.textarea-filled-label {
 		@apply text-secondary-container;
@@ -187,6 +200,7 @@
 .textarea-filled.textarea-accent-container {
 	.textarea {
 		@apply border-accent-container;
+		--filled-border-color: var(--color-accent-container);
 	}
 	.textarea-filled-label {
 		@apply text-accent-container;
@@ -196,6 +210,7 @@
 .textarea-filled.textarea-neutral-container {
 	.textarea {
 		@apply border-neutral-container;
+		--filled-border-color: var(--color-neutral-container);
 	}
 	.textarea-filled-label {
 		@apply text-neutral-container;
@@ -205,6 +220,7 @@
 .textarea-filled.textarea-info-container {
 	.textarea {
 		@apply border-info-container;
+		--filled-border-color: var(--color-info-container);
 	}
 	.textarea-filled-label {
 		@apply text-info-container;
@@ -214,6 +230,7 @@
 .textarea-filled.textarea-success-container {
 	.textarea {
 		@apply border-success-container;
+		--filled-border-color: var(--color-success-container);
 	}
 	.textarea-filled-label {
 		@apply text-success-container;
@@ -223,6 +240,7 @@
 .textarea-filled.textarea-warning-container {
 	.textarea {
 		@apply border-warning-container;
+		--filled-border-color: var(--color-warning-container);
 	}
 	.textarea-filled-label {
 		@apply text-warning-container;
@@ -232,6 +250,7 @@
 .textarea-filled.textarea-error-container {
 	.textarea {
 		@apply border-error-container;
+		--filled-border-color: var(--color-error-container);
 	}
 	.textarea-filled-label {
 		@apply text-error-container;
@@ -241,6 +260,7 @@
 .textarea-filled.textarea-base-content {
 	.textarea {
 		@apply border-base-content;
+		--filled-border-color: var(--color-base-content);
 	}
 	.textarea-filled-label {
 		@apply text-base-content;
@@ -250,6 +270,7 @@
 .textarea-filled.textarea-inverse-primary {
 	.textarea {
 		@apply border-inverse-primary;
+		--filled-border-color: var(--color-inverse-primary);
 	}
 	.textarea-filled-label {
 		@apply text-inverse-surface;
@@ -259,6 +280,7 @@
 .textarea-filled.textarea-primary-fixed-dim {
 	.textarea {
 		@apply border-primary-fixed-dim;
+		--filled-border-color: var(--color-primary-fixed-dim);
 	}
 	.textarea-filled-label {
 		@apply text-primary-fixed-content;
