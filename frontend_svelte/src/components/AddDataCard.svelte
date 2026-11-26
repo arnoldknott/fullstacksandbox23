@@ -1,12 +1,3 @@
-<script module lang="ts">
-	export enum DataType {
-		PRESENTATION = 'presentation',
-		QUESTION = 'question',
-		TEXT = 'text',
-		NUMBER = 'number'
-	}
-</script>
-
 <script lang="ts" generics="T extends AnyEntityExtended">
 	import type { Snippet } from 'svelte';
 	import { slide } from 'svelte/transition';
@@ -15,6 +6,7 @@
 	import { resolve } from '$app/paths';
 	import Card from '$components/Card.svelte';
 	import { AccessHandler } from '$lib/accessHandler';
+	import { EntityType } from '$lib/entityContainer.svelte';
 	import type { SocketIO } from '$lib/socketio.svelte';
 	import type { AccessShareOption, AnyEntityExtended } from '$lib/types';
 
@@ -22,26 +14,24 @@
 
 	let {
 		socketio,
-		datatype,
+		entityType,
 		entityId,
 		parentId,
 		inheritPending = false,
 		hidden = $bindable(false),
 		title,
-		extraClasses,
 		beforeSubmit,
 		form,
 		existing
 	}: {
 		socketio: SocketIO<T>;
-		datatype: DataType;
+		entityType: EntityType;
 		// Without entityId the card edits the pending (new) entity:
 		entityId?: string;
 		parentId?: string;
 		inheritPending?: boolean;
 		hidden?: boolean;
 		title?: (entity: T) => string | undefined;
-		extraClasses?: string;
 		beforeSubmit?: (entity: T) => void;
 		form: Snippet<[T, AccessShareOption[]]>;
 		existing?: Snippet;
@@ -59,7 +49,7 @@
 					[]
 			: []
 	);
-	let bulk = $derived(datatype !== DataType.PRESENTATION);
+	let bulk = $derived(entityType !== EntityType.PRESENTATION);
 
 	const submit = () => {
 		if (!entity) return;
@@ -78,20 +68,19 @@
 	const remove = () => {
 		if (!entity) return;
 		socketio.deleteEntity(entity.id);
-		goto(resolve(`/(layout)/${datatype}/(protected)/setup`));
+		goto(resolve(`/(layout)/${entityType}/(protected)/setup`));
 	};
 </script>
 
 {#if entity}
 	<Card
 		id={entity.id}
-		title={title?.(entity) || (isNew ? `New ${datatype}` : entity.id)}
+		title={title?.(entity) || (isNew ? `New ${entityType}` : entity.id)}
 		closeButton={isNew}
-		{extraClasses}
 		bind:hidden
 	>
 		{#if parentId}
-			<AddDataTabs {datatype} {existing}>
+			<AddDataTabs {entityType} {existing}>
 				{@render form(entity, shareOptions)}
 			</AddDataTabs>
 		{:else}
@@ -116,7 +105,7 @@
 				{/if}
 				<button
 					class="btn btn-primary-container btn-gradient shadow-outline rounded-full shadow"
-					aria-label={`Save ${datatype}`}
+					aria-label={`Save ${entityType}`}
 					onclick={submit}><span class="icon-[tabler--send-2] size-5"></span>Save</button
 				>
 			</div>
@@ -124,6 +113,6 @@
 	</Card>
 {:else if !hidden}
 	<div class="label text-error" transition:slide={{ duration: 600 }}>
-		No {datatype} data available.
+		No {entityType} data available.
 	</div>
 {/if}

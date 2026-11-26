@@ -81,7 +81,7 @@ export type SidebarFolderContent = SidebarLinkContent & {
 // 	icon: string;
 // 	items: SidebarItemContent[];
 // };
-type SidebarItemContent = SidebarFolderContent | SidebarLinkContent;
+export type SidebarItemContent = SidebarFolderContent | SidebarLinkContent;
 
 // Simplified after refactoring the Sidebar to use only one type:
 export type SidebarItem = {
@@ -90,7 +90,7 @@ export type SidebarItem = {
 	pathname?: string;
 	hash?: string;
 	icon: string;
-	items?: SidebarContent[];
+	items?: SidebarItem[];
 };
 
 // Access types:

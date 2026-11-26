@@ -8,12 +8,7 @@ import {
 	type EntityContainerInterface
 } from './entityContainer.svelte';
 import { getSessionLifecycleContext, type SessionLifecycle } from './session';
-import type {
-	AccessPolicy,
-	AnyEntityExtended,
-	BackendAPIConfiguration,
-	Hierarchy
-} from './types.d.ts';
+import type { AccessPolicy, AnyEntityExtended, BackendAPIConfiguration, Hierarchy } from './types';
 
 /**
  * Match backend configuration of what is read on connect

@@ -5,12 +5,13 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import AddDataCard, { DataType } from '$components/AddDataCard.svelte';
+	import AddDataCard from '$components/AddDataCard.svelte';
 	import Card from '$components/Card.svelte';
 	import Display from '$components/Display.svelte';
 	import Heading from '$components/Heading.svelte';
 	import JsonData from '$components/JsonData.svelte';
 	import Title from '$components/Title.svelte';
+	import { EntityType } from '$lib/entityContainer.svelte';
 	import { SocketIO } from '$lib/socketio.svelte';
 	import type { PresentationExtended } from '$lib/types';
 
@@ -116,7 +117,7 @@
 	{page.params.id} -->
 	<AddDataCard
 		socketio={socketioPresentation}
-		datatype={DataType.PRESENTATION}
+		entityType={EntityType.PRESENTATION}
 		entityId={page.params.id}
 		title={(presentation) => presentation.path}
 		beforeSubmit={normalizePresentationPath}

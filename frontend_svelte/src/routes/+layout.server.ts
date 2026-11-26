@@ -7,7 +7,7 @@ import AppConfig from '$lib/server/config';
 import { redirectToReauthentication } from '$lib/server/oauth/base';
 import { LinkedInReauthenticationRequiredError } from '$lib/server/oauth/linkedin';
 import type { LinkedInProfile } from '$lib/types';
-import type { BackendAPIConfiguration } from '$lib/types.d.ts';
+import type { BackendAPIConfiguration } from '$lib/types';
 
 import type { LayoutServerLoad } from './$types';
 // import { session } from '$lib/stores';

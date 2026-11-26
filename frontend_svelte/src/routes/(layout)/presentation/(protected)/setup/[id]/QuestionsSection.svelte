@@ -6,11 +6,12 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import ActionButtons from '$components/ActionButtons.svelte';
-	import AddDataCard, { DataType } from '$components/AddDataCard.svelte';
+	import AddDataCard from '$components/AddDataCard.svelte';
 	import Card from '$components/Card.svelte';
 	import JsonData from '$components/JsonData.svelte';
 	import Table, { countIcon, icon, snippet, text, value } from '$components/Table.svelte';
 	import Title from '$components/Title.svelte';
+	import { EntityType } from '$lib/entityContainer.svelte';
 	import { SocketIO } from '$lib/socketio.svelte';
 	import type { Identity, Question, QuestionExtended } from '$lib/types';
 
@@ -120,10 +121,9 @@ https://svelte.dev/e/transition_slide_display
 </p> -->
 <AddDataCard
 	{socketio}
-	datatype={DataType.QUESTION}
+	entityType={EntityType.QUESTION}
 	{parentId}
 	{inheritPending}
-	extraClasses="label-large"
 	bind:hidden={hideNewQuestionCard}
 >
 	{#snippet form(question, shareOptions)}

@@ -5,13 +5,14 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import ActionButtons from '$components/ActionButtons.svelte';
-	import AddDataCard, { DataType } from '$components/AddDataCard.svelte';
+	import AddDataCard from '$components/AddDataCard.svelte';
 	import Card from '$components/Card.svelte';
 	import Display from '$components/Display.svelte';
 	import JsonData from '$components/JsonData.svelte';
 	import Table, { countIcon, snippet, text, value } from '$components/Table.svelte';
 	import Title from '$components/Title.svelte';
 	import { Action } from '$lib/accessHandler';
+	import { EntityType } from '$lib/entityContainer.svelte';
 	import { SocketIO } from '$lib/socketio.svelte';
 	import type { PresentationExtended } from '$lib/types';
 
@@ -74,7 +75,7 @@
 {#if socketioPresentations?.pendingEntities[0]}
 	<AddDataCard
 		socketio={socketioPresentations}
-		datatype={DataType.PRESENTATION}
+		entityType={EntityType.PRESENTATION}
 		title={(presentation) => presentation.path}
 		beforeSubmit={normalizePresentationPath}
 		bind:hidden={hideNewPresentationCard}

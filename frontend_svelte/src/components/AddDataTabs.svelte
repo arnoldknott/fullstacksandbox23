@@ -1,16 +1,15 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 
+	import type { EntityType } from '$lib/entityContainer.svelte';
 	import { initTabs } from '$lib/userInterface';
 
-	import type { DataType } from './AddDataCard.svelte';
-
 	let {
-		datatype,
+		entityType,
 		children,
 		existing
 	}: {
-		datatype: DataType;
+		entityType: EntityType;
 		children: Snippet;
 		existing?: Snippet;
 	} = $props();
@@ -34,9 +33,9 @@
 			type="button"
 			// class="tab tab-secondary active w-full"
 			class="tab active w-full"
-			id={`new-${datatype}-head`}
-			data-tab={`#new-${datatype}-tab`}
-			aria-controls={`new-${datatype}-tab`}
+			id={`new-${entityType}-head`}
+			data-tab={`#new-${entityType}-tab`}
+			aria-controls={`new-${entityType}-tab`}
 			role="tab"
 			aria-selected="true"
 		>
@@ -48,9 +47,9 @@
 			type="button"
 			// class="tab tab-secondary w-full"
 			class="tab w-full"
-			id={`existing-${datatype}-head`}
-			data-tab={`#existing-${datatype}-tab`}
-			aria-controls={`existing-${datatype}-tab`}
+			id={`existing-${entityType}-head`}
+			data-tab={`#existing-${entityType}-tab`}
+			aria-controls={`existing-${entityType}-tab`}
 			role="tab"
 			aria-selected="false"
 		>
@@ -64,21 +63,21 @@
 	</div>
 	<div class="h-fit p-2">
 		<div
-			id={`new-${datatype}-tab`}
+			id={`new-${entityType}-tab`}
 			class="h-full max-h-120 overflow-scroll"
 			role="tabpanel"
-			aria-labelledby={`new-${datatype}-head`}
+			aria-labelledby={`new-${entityType}-head`}
 		>
 			{@render children()}
 		</div>
 		<div
-			id={`existing-${datatype}-tab`}
+			id={`existing-${entityType}-tab`}
 			class="hidden h-full max-h-100 overflow-scroll"
 			role="tabpanel"
-			aria-labelledby={`existing-${datatype}-head`}
+			aria-labelledby={`existing-${entityType}-head`}
 		>
 			<div class="label">
-				{@render warning()} Table of existing {datatype}s and functionality to link or copy them
+				{@render warning()} Table of existing {entityType}s and functionality to link or copy them
 				into the parent.
 			</div>
 			{@render existing?.()}

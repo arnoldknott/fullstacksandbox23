@@ -5,7 +5,7 @@
 	import { fade, slide } from 'svelte/transition';
 
 	import ActionButtons from '$components/ActionButtons.svelte';
-	import AddDataCard, { DataType } from '$components/AddDataCard.svelte';
+	import AddDataCard from '$components/AddDataCard.svelte';
 	import Card from '$components/Card.svelte';
 	import Display from '$components/Display.svelte';
 	import Heading from '$components/Heading.svelte';
@@ -20,6 +20,7 @@
 	} from '$components/Table.svelte';
 	import Title from '$components/Title.svelte';
 	import { Action } from '$lib/accessHandler';
+	import { EntityType } from '$lib/entityContainer.svelte';
 	import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
 	import type { MessageExtended, NumericalExtended, QuestionExtended } from '$lib/types';
 	import { initTabs } from '$lib/userInterface';
@@ -222,7 +223,7 @@
 
 <AddDataCard
 	socketio={questionSocketio}
-	datatype={DataType.QUESTION}
+	entityType={EntityType.QUESTION}
 	entityId={questionId}
 	title={(question) => question.question}
 >
