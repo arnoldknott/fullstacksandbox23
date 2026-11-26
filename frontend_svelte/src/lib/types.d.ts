@@ -115,6 +115,7 @@ export interface AccessShareOption {
 export interface Hierarchy {
 	child_id: string;
 	parent_id: string;
+	label?: string | null;
 	order?: number; // for ordered hierarchies, i.e. resource hierarchies
 	inherit?: boolean; // TBD: Is this one known at all, when receiving the data in frontend?
 }
@@ -189,15 +190,17 @@ export interface Presentation {
 	source: string;
 	path?: string;
 	questions?: Question[];
+	texts?: Text[];
+	numbers?: Number[];
 }
 
 export interface Text {
 	id: string;
 	content: string;
-	category?: string;
-	language: string;
+	category?: string | null;
+	language?: string;
 	confidential?: string | null;
-	presentation?: Presentation[];
+	presentations?: Presentation[];
 	text_parents?: Text[];
 	texts?: Text[];
 	number_parents?: Number[];
@@ -207,8 +210,8 @@ export interface Text {
 export interface Number {
 	id: string;
 	value: number;
-	category?: string;
-	presentation?: Presentation[];
+	category?: string | null;
+	presentations?: Presentation[];
 	text_parents?: Text[];
 	texts?: Text[];
 	number_parents?: Number[];
@@ -345,6 +348,8 @@ export type MicrosoftTeamExtended = MicrosoftTeam & Partial<WithAccessRights & W
 export type AnyEntityExtended =
 	| DemoResourceExtended
 	| PresentationExtended
+	| TextExtended
+	| NumberExtended
 	| NumericalExtended
 	| UserExtended
 	| MessageExtended

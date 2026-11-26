@@ -3,17 +3,6 @@ import { SvelteSet } from 'svelte/reactivity';
 import { Action } from './accessHandler';
 import type { AccessPolicy, AnyEntityExtended, Hierarchy, Identity } from './types';
 
-
-/**
- * Types of entities.
- */
-export enum EntityType {
-	PRESENTATION = 'presentation',
-	QUESTION = 'question',
-	TEXT = 'text',
-	NUMBER = 'number'
-}
-
 /**
  * For managing new entities before submitting them,
  * they are alive in the frontend only and EntityContainer holds space for them.

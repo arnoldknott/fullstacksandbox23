@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 
-	import type { EntityType } from '$lib/entityContainer.svelte';
+	import type { EntityType } from '$lib/entities';
 	import { initTabs } from '$lib/userInterface';
 
 	let {
@@ -64,7 +64,7 @@
 	<div class="h-fit p-2">
 		<div
 			id={`new-${entityType}-tab`}
-			class="h-full max-h-120 overflow-scroll"
+			class="h-full overflow-scroll"
 			role="tabpanel"
 			aria-labelledby={`new-${entityType}-head`}
 		>
@@ -72,7 +72,7 @@
 		</div>
 		<div
 			id={`existing-${entityType}-tab`}
-			class="hidden h-full max-h-100 overflow-scroll"
+			class="hidden h-full overflow-scroll"
 			role="tabpanel"
 			aria-labelledby={`existing-${entityType}-head`}
 		>

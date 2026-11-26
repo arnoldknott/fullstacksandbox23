@@ -272,7 +272,8 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 	submitEntity(
 		entity?: T,
 		parent_id?: string,
-		inherit?: boolean
+		inherit?: boolean,
+		label?: string
 		// TBD: consider whether to assign a default from the pendingSubmitOptions here
 		// or in constructor or below in the emit('submit')?
 		// inherit: boolean = this.pendingSubmitOptions?.inherit || false
@@ -284,6 +285,9 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 		const autoSubmit = entity === undefined;
 		const target = autoSubmit ? this.pendingEntities[0] : entity;
 		if (!target) return;
+		if (label !== undefined && !parent_id) {
+			throw new Error('A relationship label requires a parent.');
+		}
 		const newId = target.id.startsWith('new_') ? target.id : undefined;
 		const access_policies = newId ? this.accessPolicies[target.id] : [];
 		const hierarchies = newId ? this.hierarchies[target.id] : [];
@@ -291,6 +295,7 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 			payload: target,
 			...(parent_id ? { parent_id } : {}),
 			...(inherit ? { inherit } : {}),
+			...(label !== undefined ? { label } : {}),
 			// ...(inherit ? { inherit } : { inherit: this.pendingSubmitOptions?.inherit || false }),
 			...(access_policies ? { access_policies: access_policies } : {}),
 			...(hierarchies ? { hierarchies: hierarchies } : {})

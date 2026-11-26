@@ -182,6 +182,18 @@ required, including when only `confidential` is meaningful (use an empty string)
 Confidential content is encrypted at rest but returned decrypted to authorized
 readers; it is not a separate permission boundary.
 
+The Text and Number setup forms validate categories and parent-specific labels
+using the shared frontend [`isKebabCase`](../../../frontend_svelte/src/lib/entities.ts)
+helper. Invalid values block saving;
+cleared optional categories are sent as null. Creation forms with a known parent
+offer an optional relationship label and send it separately from the resource
+payload. A label does not become a Text or Number attribute.
+
+**TBD (vague idea; pending frontend user interface design):** When the frontend
+supports linking existing resources or copying them under a parent, consider
+providing a parent-link editor where users can set the label for each
+parent-child relationship. The design and placement are not decided.
+
 **TBD:** Replace `DemoResource` with `Text` in the long run. At that point,
 convert existing demo resource language values such as `en-US`, `da-DK`, and
 `de-DE` to the two-letter language codes accepted by `Text`, and remove the

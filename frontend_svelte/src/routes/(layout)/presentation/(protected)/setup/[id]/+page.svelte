@@ -5,16 +5,18 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import AddDataCard from '$components/AddDataCard.svelte';
+	import AddEntityCard from '$components/AddEntityCard.svelte';
 	import Card from '$components/Card.svelte';
 	import Display from '$components/Display.svelte';
 	import Heading from '$components/Heading.svelte';
 	import JsonData from '$components/JsonData.svelte';
 	import Title from '$components/Title.svelte';
-	import { EntityType } from '$lib/entityContainer.svelte';
+	import { EntityType } from '$lib/entities';
 	import { SocketIO } from '$lib/socketio.svelte';
 	import type { PresentationExtended } from '$lib/types';
 
+	import NumbersSection from '../../../../number/(protected)/setup/NumbersSection.svelte';
+	import TextsSection from '../../../../text/(protected)/setup/TextsSection.svelte';
 	import PresentationForm, { normalizePresentationPath } from '../PresentationForm.svelte';
 	import type { PageData } from './$types';
 	import QuestionSection from './QuestionsSection.svelte';
@@ -115,7 +117,7 @@
 {#if socketioPresentation?.entities?.length > 0}
 	<!-- <JsonData data={socketioPresentation.entities} />
 	{page.params.id} -->
-	<AddDataCard
+	<AddEntityCard
 		socketio={socketioPresentation}
 		entityType={EntityType.PRESENTATION}
 		entityId={page.params.id}
@@ -125,7 +127,7 @@
 		{#snippet form(presentation, shareOptions)}
 			<PresentationForm {presentation} {shareOptions} socketio={socketioPresentation} />
 		{/snippet}
-	</AddDataCard>
+	</AddEntityCard>
 {:else}
 	<div class="label text-error" transition:slide={{ duration: 600 }}>
 		<span class="icon-[svg-spinners--12-dots-scale-rotate] size-6"></span>connecting ...
@@ -158,9 +160,25 @@
 
 <Heading id="questions" sideBarEntry="Questions">Questions</Heading>
 <QuestionSection
-	parentId={page.params.id}
+	parentId={data.payload.presentation.id}
 	questions={data.payload.questions}
 	cursor={data.payload.cursor}
+	identities={data.payload.identities}
+/>
+
+<Heading id="texts" sideBarEntry="Texts">Texts</Heading>
+<TextsSection
+	parentId={data.payload.presentation.id}
+	texts={data.payload.texts}
+	cursor={data.payload.textCursor}
+	identities={data.payload.identities}
+/>
+
+<Heading id="numbers" sideBarEntry="Numbers">Numbers</Heading>
+<NumbersSection
+	parentId={data.payload.presentation.id}
+	numbers={data.payload.numbers}
+	cursor={data.payload.numberCursor}
 	identities={data.payload.identities}
 />
 

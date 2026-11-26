@@ -1,10 +1,10 @@
 <script lang="ts">
+	import FormElement from '$components/FormElement.svelte';
+	import FormMultipleSuffix from '$components/FormMultipleSuffix.svelte';
 	import ShareItem from '$components/ShareItem.svelte';
 	import { AccessHandler, Action } from '$lib/accessHandler';
 	import type { SocketIO } from '$lib/socketio.svelte';
 	import type { AccessShareOption, QuestionExtended } from '$lib/types';
-
-	import FormElement from '../FormElement.svelte';
 
 	let {
 		question,
@@ -20,16 +20,7 @@
 		inheritPending: boolean;
 	} = $props();
 
-	let multiplePending = $state(false);
-	let multipleSuffixes = $state({ start: 1, end: 2 });
-	$effect(() => {
-		if (multipleSuffixes.end <= multipleSuffixes.start) {
-			multipleSuffixes.end = multipleSuffixes.start + 1;
-		}
-	});
-	let newSuffix = $derived(
-		multiplePending ? '_[' + multipleSuffixes.start + ':' + multipleSuffixes.end + ']' : null
-	);
+	let suffix = $state('');
 </script>
 
 {#snippet warning()}
@@ -48,7 +39,7 @@
 	<div class="input-filled input-primary w-full">
 		<input type="text" placeholder="" class="input" id="slugInput" bind:value={question.question} />
 		<label class="input-filled-label" for="slugInput"
-			>[use this label to identify the question in your presentation]{newSuffix}</label
+			>[use this label to identify the question in your presentation]{suffix}</label
 		>
 	</div>
 </FormElement>
@@ -102,40 +93,4 @@
 		{/each}
 	</ul>
 </FormElement>
-<FormElement title="Add multiple questions">
-	<div class="mb-2 flex flex-1 flex-row items-center gap-1">
-		<label class="label label-text text-base-content" for="new-question-multiple">
-			<input
-				id="new-question-multiple"
-				type="checkbox"
-				disabled
-				// TBD: remove disabled, when functionality is implemented!
-				class="checkbox checkbox-primary"
-				bind:checked={multiplePending}
-			/>
-		</label>
-		with suffixes
-		<input
-			id="multiple-groups-start"
-			type="number"
-			placeholder={multipleSuffixes.start.toString()}
-			class="input shadow-shadow flex-2 shadow-inner"
-			name="multiple-groups-suffix-start"
-			disabled={!multiplePending}
-			bind:value={multipleSuffixes.start}
-		/>
-		<span class="label flex-1"> to</span>
-		<input
-			id="multiple-groups-end"
-			type="number"
-			placeholder={multipleSuffixes.end.toString()}
-			class="input shadow-shadow flex-2 shadow-inner"
-			name="multiple-groups-suffix-end"
-			disabled={!multiplePending}
-			bind:value={multipleSuffixes.end}
-		/>
-	</div>
-	<div class="label">
-		{@render warning()} Creation of multiple not functional yet
-	</div>
-</FormElement>
+<FormMultipleSuffix entityLabel="question" bind:suffix />

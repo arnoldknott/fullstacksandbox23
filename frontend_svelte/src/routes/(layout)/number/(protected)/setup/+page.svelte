@@ -5,17 +5,20 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import ActionButtons from '$components/ActionButtons.svelte';
+	import AddEntityCard from '$components/AddEntityCard.svelte';
 	import Card from '$components/Card.svelte';
 	import Display from '$components/Display.svelte';
 	import JsonData from '$components/JsonData.svelte';
 	import Table, { countIcon, field, snippet, text, value } from '$components/Table.svelte';
 	import Title from '$components/Title.svelte';
 	import { Action } from '$lib/accessHandler';
+	import { EntityType } from '$lib/entities';
 	import { SocketIO } from '$lib/socketio.svelte';
 	import type { NumberExtended } from '$lib/types';
 
 	import IdBadge from '../../../(protected)/IdBadge.svelte';
 	import type { PageData } from './$types';
+	import NumberForm from './NumberForm.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -44,7 +47,7 @@
 					cursor: data.payload.cursor
 				},
 				template: {
-					value: NaN,
+					value: 0,
 					access_right: Action.OWN
 					// creation_date: new Date(Date.now()) // TBD: Check if this is necessary?
 				}
@@ -59,28 +62,37 @@
 	});
 
 	let hideNewNumberCard: boolean = $state(!(page.url.searchParams.get('new') === 'true'));
+	let inheritPending = $state(true);
 
 	// For showing existing numbers:
 	let viewMode = $state<'grid' | 'list' | 'table'>('table');
 </script>
 
-<Display id="overview-texts">Numbers</Display>
+<Display id="overview-numbers">Numbers</Display>
 
 <!-- <JsonData data={data.payload.identities} /> -->
 
 {#if socketioNumbers?.pendingEntities[0]}
-	<!-- <NumberFormCard socketio={socketioNumbers} bind:hidden={hideNewNumberCard} /> -->
-	<p>Add a NumberFormCard here</p>
+	<AddEntityCard
+		socketio={socketioNumbers}
+		entityType={EntityType.NUMBER}
+		bind:inheritPending
+		bind:hidden={hideNewNumberCard}
+	>
+		{#snippet form(number, shareOptions)}
+			<NumberForm {number} {shareOptions} socketio={socketioNumbers} bind:inheritPending />
+		{/snippet}
+	</AddEntityCard>
 {:else if !socketioNumbers?.pendingEntities[0] && !hideNewNumberCard}
 	<div class="label text-error" transition:slide={{ duration: 600 }}>
 		<span class="icon-[svg-spinners--12-dots-scale-rotate] size-6"></span>connecting ...
 	</div>
 {/if}
 
-<Card id="existing-texts" extraClasses="mt-6">
+<Card id="existing-numbers" extraClasses="mt-6">
 	{#snippet header()}
 		<div class="flex justify-between">
-			<Title id="existingTexts" class="grow">Overview</Title>
+			<Title id="existingNumbers" class="grow">Overview</Title>
 			<div class="flex flex-row items-center justify-center">
 				{#if hideNewNumberCard || !socketioNumbers?.pendingEntities[0]}
 					<button
@@ -108,7 +120,7 @@
 					</button> -->
 					<button
 						aria-label="Grid"
-						class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline py-4 shadow {viewMode !==
+						class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline rounded-l-full py-4 shadow {viewMode !==
 						'grid'
 							? 'opacity-60'
 							: ''}"
@@ -160,10 +172,10 @@
 				href={resolve('/(layout)/number/(protected)/setup/[id]', {
 					id: number.id
 				})}
-				aria-label={`Setup number ${number.value || number.id}`}
+				aria-label={`Setup number ${number.value ?? number.id}`}
 				class="link link-primary link-animated block truncate"
 			>
-				{number.value || number.id}
+				{number.value ?? number.id}
 			</a>
 		{/snippet}
 		{#snippet numberActionsCell(number: NumberExtended)}
@@ -177,7 +189,7 @@
 		<Table
 			columns={[
 				{
-					header: text('Id / Slug'),
+					header: text('Value / Id'),
 					cell: snippet(numberIdCell),
 					headerClass: 'w-3/5',
 					cellClass: 'max-w-0'
@@ -196,13 +208,13 @@
 				},
 				{
 					header: countIcon('andrsrxn:text-decrease-size'),
-					cell: value<NumberExtended>((text) => text.texts?.length ?? 0),
+					cell: value<NumberExtended>((entity) => entity.texts?.length ?? 0),
 					headerClass: 'text-center',
 					cellClass: 'text-center'
 				},
 				{
 					header: countIcon('andrsrxn:text-increase-size'),
-					cell: value<NumberExtended>((text) => text.text_parents?.length ?? 0),
+					cell: value<NumberExtended>((entity) => entity.numbers?.length ?? 0),
 					headerClass: 'text-center',
 					cellClass: 'text-center'
 				},

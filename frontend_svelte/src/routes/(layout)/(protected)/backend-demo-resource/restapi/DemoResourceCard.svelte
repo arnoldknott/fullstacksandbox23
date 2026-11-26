@@ -6,6 +6,7 @@
 	import Card from '$components/Card.svelte';
 	import ShareItem from '$components/ShareItem.svelte';
 	import { AccessHandler, Action } from '$lib/accessHandler';
+	import { getLanguageFlag } from '$lib/entities';
 	import type { AccessPolicy, DemoResourceExtended, Identity } from '$lib/types';
 	import { initDropdown } from '$lib/userInterface';
 
@@ -36,15 +37,7 @@
 	// TBD. move to accessHandler.ts
 	let shareOptions = $derived(AccessHandler.createShareOptions(identities, accessPolicies));
 
-	let flag = $derived(
-		language === 'en-US'
-			? 'united-states'
-			: language === 'da-DK'
-				? 'denmark'
-				: language === 'de-DE'
-					? 'germany'
-					: false
-	);
+	let flag = $derived(getLanguageFlag(language));
 
 	let card: Card;
 	let createUpdateForm = $state<HTMLFormElement | null>(null);
@@ -163,7 +156,7 @@
 				</span>
 			{/if}
 			{#if flag}
-				<span class="icon-[twemoji--flag-{flag}] size-6"></span>
+				<span class="{flag} size-6"></span>
 			{/if}
 			{#if accessRight === Action.WRITE || accessRight === Action.OWN}
 				<div

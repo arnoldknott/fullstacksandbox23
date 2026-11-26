@@ -9,13 +9,13 @@
 
 <script lang="ts">
 	import { page } from '$app/state';
+	import FormElement from '$components/FormElement.svelte';
 	import ShareItem from '$components/ShareItem.svelte';
 	import { AccessHandler, Action } from '$lib/accessHandler';
 	import type { SocketIO } from '$lib/socketio.svelte';
 	import type { AccessShareOption } from '$lib/types';
 
 	import IdBadge from '../../../(protected)/IdBadge.svelte';
-	import FormElement from './FormElement.svelte';
 
 	let {
 		presentation,

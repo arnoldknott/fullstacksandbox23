@@ -1,22 +1,24 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import { onDestroy, onMount } from 'svelte';
 	import { fade, slide } from 'svelte/transition';
 
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import ActionButtons from '$components/ActionButtons.svelte';
+	import AddEntityCard from '$components/AddEntityCard.svelte';
 	import Card from '$components/Card.svelte';
 	import Display from '$components/Display.svelte';
 	import JsonData from '$components/JsonData.svelte';
 	import Table, { countIcon, field, icon, snippet, text, value } from '$components/Table.svelte';
 	import Title from '$components/Title.svelte';
 	import { Action } from '$lib/accessHandler';
+	import { EntityType, getLanguageFlag } from '$lib/entities';
 	import { SocketIO } from '$lib/socketio.svelte';
 	import type { TextExtended } from '$lib/types';
 
 	import IdBadge from '../../../(protected)/IdBadge.svelte';
 	import type { PageData } from './$types';
+	import TextForm from './TextForm.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -46,6 +48,7 @@
 				},
 				template: {
 					content: '',
+					language: 'en',
 					access_right: Action.OWN
 					// creation_date: new Date(Date.now()) // TBD: Check if this is necessary?
 				}
@@ -60,18 +63,10 @@
 	});
 
 	let hideNewTextCard: boolean = $state(!(page.url.searchParams.get('new') === 'true'));
+	let inheritPending = $state(true);
 
 	// For showing existing texts:
 	let viewMode = $state<'grid' | 'list' | 'table'>('table');
-
-	const flag = (language: string) =>
-		language === 'en-US'
-			? 'flagpack:us'
-			: language === 'da-DK'
-				? 'flagpack:dk'
-				: language === 'de-DE'
-					? 'flagpack:de'
-					: 'flagpack:gb-ukm';
 </script>
 
 <Display id="overview-texts">Texts</Display>
@@ -79,8 +74,16 @@
 <!-- <JsonData data={data.payload.identities} /> -->
 
 {#if socketioTexts?.pendingEntities[0]}
-	<!-- <TextFormCard socketio={socketioTexts} bind:hidden={hideNewTextCard} /> -->
-	<p>Add a TextFormCard here</p>
+	<AddEntityCard
+		socketio={socketioTexts}
+		entityType={EntityType.TEXT}
+		bind:inheritPending
+		bind:hidden={hideNewTextCard}
+	>
+		{#snippet form(text, shareOptions)}
+			<TextForm {text} {shareOptions} socketio={socketioTexts} bind:inheritPending />
+		{/snippet}
+	</AddEntityCard>
 {:else if !socketioTexts?.pendingEntities[0] && !hideNewTextCard}
 	<div class="label text-error" transition:slide={{ duration: 600 }}>
 		<span class="icon-[svg-spinners--12-dots-scale-rotate] size-6"></span>connecting ...
@@ -118,7 +121,7 @@
 					</button> -->
 					<button
 						aria-label="Grid"
-						class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline py-4 shadow {viewMode !==
+						class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline rounded-l-full py-4 shadow {viewMode !==
 						'grid'
 							? 'opacity-60'
 							: ''}"
@@ -177,7 +180,8 @@
 			</a>
 		{/snippet}
 		{#snippet languageCell(text: TextExtended)}
-			<Icon icon={flag(text.language)} class="size-5" inline />
+			<span class="{getLanguageFlag(text.language) ?? 'icon-[twemoji--flag-united-kingdom]'} size-5"
+			></span>
 		{/snippet}
 
 		{#snippet textActionsCell(text: TextExtended)}

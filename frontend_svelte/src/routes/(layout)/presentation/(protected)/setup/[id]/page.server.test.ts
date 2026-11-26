@@ -35,7 +35,15 @@ describe('presentation setup resource-specific loading', () => {
 		vi.clearAllMocks();
 		mocks.getEntity.mockResolvedValue(presentationResult());
 		mocks.getAccessPolicies.mockResolvedValue([]);
-		mocks.getSnapshot.mockResolvedValue({ entities: [{ id: 'question-1' }], cursor: 42 });
+		mocks.getSnapshot.mockImplementation((_sessionId: string, path: string) => {
+			if (path.startsWith('/quiz/question/snapshot')) {
+				return Promise.resolve({ entities: [{ id: 'question-1' }], cursor: 42 });
+			}
+			if (path.startsWith('/text/snapshot')) {
+				return Promise.resolve({ entities: [{ id: 'text-1' }], cursor: 43 });
+			}
+			return Promise.resolve({ entities: [{ id: 'number-1' }], cursor: 44 });
+		});
 		mocks.get.mockImplementation((_sessionId: string, path: string) => {
 			if (path === policiesPath) return Promise.resolve(Response.json([policy]));
 			if (path === rightPath) return Promise.resolve(Response.json('own'));
@@ -43,7 +51,7 @@ describe('presentation setup resource-specific loading', () => {
 		});
 	});
 
-	test('loads only the selected presentation and its access data with a separate replay cursor', async () => {
+	test('loads the presentation and linked question, text and number snapshots', async () => {
 		const result = await load(event as never);
 		if (!result) throw new Error('Presentation setup load returned no data.');
 		expect(result.payload.presentation).toMatchObject({
@@ -52,17 +60,33 @@ describe('presentation setup resource-specific loading', () => {
 			access_policies: [policy]
 		});
 		expect(mocks.getEntity).toHaveBeenCalledWith('session-1', presentationPath);
-		expect(mocks.getAccessPolicies).toHaveBeenCalledWith('session-1', ['question-1']);
+		expect(mocks.getAccessPolicies).toHaveBeenCalledWith('session-1', [
+			'question-1',
+			'text-1',
+			'number-1'
+		]);
 		expect(result.payload.presentationCursor).toBe(21);
 		expect(result.payload.cursor).toBe(42);
 		expect(result.payload.questions[0].access_policies).toEqual([]);
+		expect(result.payload.texts).toMatchObject([{ id: 'text-1', access_policies: [] }]);
+		expect(result.payload.numbers).toMatchObject([{ id: 'number-1', access_policies: [] }]);
+		expect(result.payload.textCursor).toBe(43);
+		expect(result.payload.numberCursor).toBe(44);
 		for (const path of [policiesPath, rightPath]) {
 			expect(mocks.get).toHaveBeenCalledWith('session-1', path);
 		}
-		expect(mocks.getSnapshot).toHaveBeenCalledTimes(1);
+		expect(mocks.getSnapshot).toHaveBeenCalledTimes(3);
 		expect(mocks.getSnapshot).toHaveBeenCalledWith(
 			'session-1',
 			expect.stringContaining('/quiz/question/snapshot?')
+		);
+		expect(mocks.getSnapshot).toHaveBeenCalledWith(
+			'session-1',
+			expect.stringContaining('/text/snapshot?')
+		);
+		expect(mocks.getSnapshot).toHaveBeenCalledWith(
+			'session-1',
+			expect.stringContaining('/number/snapshot?')
 		);
 		expect(mocks.get).not.toHaveBeenCalledWith(
 			expect.anything(),

@@ -1,63 +1,49 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import { onDestroy, onMount } from 'svelte';
-	import { fade } from 'svelte/transition';
 
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import ActionButtons from '$components/ActionButtons.svelte';
-	import AddDataCard from '$components/AddDataCard.svelte';
+	import AddEntityCard from '$components/AddEntityCard.svelte';
 	import Card from '$components/Card.svelte';
+	import EntitySection from '$components/EntitySection.svelte';
 	import JsonData from '$components/JsonData.svelte';
+	import SelectionActionButtons from '$components/SelectionActionButtons.svelte';
 	import Table, { countIcon, icon, snippet, text, value } from '$components/Table.svelte';
-	import Title from '$components/Title.svelte';
-	import { EntityType } from '$lib/entityContainer.svelte';
+	import { EntityType, getLanguageFlag } from '$lib/entities';
 	import { SocketIO } from '$lib/socketio.svelte';
-	import type { Identity, Question, QuestionExtended } from '$lib/types';
+	import type { Identity, QuestionExtended } from '$lib/types';
 
 	import IdBadge from '../../../../(protected)/IdBadge.svelte';
-	import SelectionActionButtons from '../SelectionActionButtons.svelte';
 	import QuestionForm from './QuestionForm.svelte';
 
 	let {
 		parentId,
-		questions = [],
+		questions,
 		cursor,
-		identities = []
+		identities
 	}: {
-		parentId?: string;
+		parentId: string;
 		questions: QuestionExtended[];
 		cursor: number;
 		identities: Identity[];
 	} = $props();
 
-	// uses the one, that gets set in sidebar and communicated
-	// through the search params of the url
-	let debug = $derived(page.url.searchParams.get('debug') === 'true' ? true : false);
-	let hideNewQuestionCard: boolean = $derived(
-		!(page.url.searchParams.get('add-question') === 'true')
-	);
-
-	$effect(() => {
-		debug = page.url.searchParams.get('debug') === 'true';
-		hideNewQuestionCard = page.url.searchParams.get('add-question') !== 'true';
-	});
+	let debug = $derived(page.url.searchParams.get('debug') === 'true');
+	let hideNew = $derived(page.url.searchParams.get('add-question') !== 'true');
+	let viewMode = $state<'grid' | 'list' | 'table'>('table');
+	let inheritPending = $state(true);
 
 	let socketio: SocketIO<QuestionExtended> = $state()!;
-	let linkedQuestions = $derived<Question[]>(
-		socketio?.getSelectedEntities('linkedToPresentation') || []
-	);
-	let notLinkedQuestions = $derived<Question[]>(
-		socketio?.getSelectedEntities('notLinkedToPresentation') || []
-	);
-	let inheritPending = $state(true);
+	let linkedQuestions = $derived(socketio?.getSelectedEntities('linkedToPresentation') ?? []);
+	let notLinkedQuestions = $derived(socketio?.getSelectedEntities('notLinkedToPresentation') ?? []);
 
 	onMount(() => {
 		socketio = new SocketIO<QuestionExtended>(
 			{
 				namespace: '/question',
 				sessionId: page.data.session.sessionId,
-				parentId: parentId,
+				parentId,
 				queryParams: {
 					'identity-ids': identities.map((identity) => identity.id).join(','),
 					'request-access-data': true
@@ -66,159 +52,66 @@
 			{
 				snapshot: { entities: questions, cursor },
 				inherit: inheritPending,
-				template: {
-					question: '',
-					language: 'en'
-				}
+				template: { question: '', language: 'en' }
 			}
 		);
 		socketio.identities = identities;
-		socketio.createLinkedSelection('linkedToPresentation');
-		socketio.createLinkedSelection('notLinkedToPresentation', true);
+		socketio.createLinkedSelection('linkedToPresentation', false, parentId);
+		socketio.createLinkedSelection('notLinkedToPresentation', true, parentId);
 	});
+
 	onDestroy(() => {
 		socketio?.client.disconnect();
 	});
-
-	let viewMode = $state<'grid' | 'list' | 'table'>('table');
-
-	const flag = (language: string) =>
-		language === 'en-US'
-			? 'flagpack:us'
-			: language === 'da-DK'
-				? 'flagpack:dk'
-				: language === 'de-DE'
-					? 'flagpack:de'
-					: 'flagpack:gb-ukm';
 </script>
-
-<!-- TBD: potentially move into existing questions Card, same way as the add new presentation, then no slide transition is necessary any more. -->
-<!--
-The `slide` transition does not work correctly for elements with `display: inline-flex`
-https://svelte.dev/e/transition_slide_display 
-
-=> Ignore for now, as this button anyways will be replaced by the buutton inside the Existing Question Card (see existing presentations)!
--->
-
-<!-- {#if hideNewQuestionCard}
-	<button
-		transition:slide={{ duration: 600 }}
-		class="btn btn-primary-container btn-gradient btn-sm shadow-outline rounded-full shadow-sm transition-all duration-600"
-		aria-label="Add new question"
-		onclick={() => (hideNewQuestionCard = false)}
-	>
-		<span class="icon-[fa6-solid--plus] size-4"></span>Add
-	</button>
-{/if} -->
 
 {#snippet warning()}
 	<span class="icon-[fluent-color--warning-24] size-4"></span>
 {/snippet}
 
-<!-- <p class="label">
-	{@render warning()} Add questions with tabs for new and existing, where the existing questions get
-	the button to copy and link. Also a copy all selected and link all selected.
-</p> -->
-<AddDataCard
+<AddEntityCard
 	{socketio}
 	entityType={EntityType.QUESTION}
 	{parentId}
-	{inheritPending}
-	bind:hidden={hideNewQuestionCard}
+	bind:inheritPending
+	bind:hidden={hideNew}
 >
 	{#snippet form(question, shareOptions)}
 		<QuestionForm {question} {shareOptions} {socketio} {parentId} bind:inheritPending />
 	{/snippet}
 	{#snippet existing()}
-		{#each notLinkedQuestions as linkedQuestion, idx (idx)}
-			<div class="linked-question">
-				<p>Q: {linkedQuestion.question}</p>
-			</div>
+		{#each notLinkedQuestions as question (question.id)}
+			<p>Q: {question.question}</p>
 		{/each}
 	{/snippet}
-</AddDataCard>
+</AddEntityCard>
 
-<Card id="linked-questions" title="Linked Questions" extraClasses="label-large">
-	<!-- TBD: consider turning into a component, as it is very similar to the existing presentations section. -->
-	{#snippet header()}
-		<div class="flex justify-between">
-			<Title id="existingQuestions" class="grow">Overview</Title>
-			<div class="flex flex-row items-center justify-center">
-				{#if hideNewQuestionCard || !socketio?.pendingEntities[0]}
-					<button
-						transition:fade={{ duration: 600 }}
-						class="btn btn-primary-container btn-gradient label btn shadow-outline mx-4 rounded-full shadow-sm"
-						aria-label="Add new question"
-						onclick={() => (hideNewQuestionCard = false)}
-					>
-						<span class="icon-[fa6-solid--plus] size-5"></span>
-						<!-- <span class="hidden ">Add</span> -->
-						<span class="hidden sm:inline">Add new</span>
-						<span class="hidden md:inline">question</span>
-					</button>
-				{/if}
-				<div class="join shadow-outline rounded-full shadow-sm">
-					<button
-						aria-label="Grid"
-						class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline rounded-l-full py-4 shadow {viewMode !==
-						'grid'
-							? 'opacity-60'
-							: ''}"
-						onclick={() => (viewMode = 'grid')}
-					>
-						<span class="icon-[gridicons--grid] size-5"></span>
-					</button>
-					<button
-						aria-label="List"
-						class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline py-4 shadow {viewMode !==
-						'list'
-							? 'opacity-60'
-							: ''}"
-						onclick={() => (viewMode = 'list')}
-					>
-						<span class="icon-[material-symbols--view-list-outline] size-5"></span>
-					</button>
-					<button
-						aria-label="Table"
-						class="btn join-item btn-secondary btn-gradient btn-sm shadow-outline rounded-r-full py-4 shadow {viewMode !==
-						'table'
-							? 'opacity-60'
-							: ''}"
-						onclick={() => (viewMode = 'table')}
-					>
-						<span class="icon-[material-symbols--table-outline] size-5"></span>
-					</button>
-				</div>
-			</div>
-		</div>
-	{/snippet}
-	<!-- {#each linkedQuestions as linkedQuestion, idx (idx)}
-		<div class="linked-question">
-			<p>Q: {linkedQuestion.question}</p>
-		</div>
-	{/each} -->
+<EntitySection
+	id="linked-questions"
+	title="Linked Questions"
+	entityLabel="question"
+	bind:hideNew
+	bind:viewMode
+	hasPending={Boolean(socketio?.pendingEntities[0])}
+>
 	<div class="label">
-		{@render warning()} Potentially as an accordion with the answers in the panel? Adding a question and
-		opening sidebar to select existing questions - for mode copy (don't keep the original answers and
-		don't keep in sync) or link (keeps answers in sync)
+		{@render warning()} Link questions to this presentation or create a copy without its answers.
 	</div>
-	<div class="w-full overflow-x-auto {viewMode !== 'grid' ? 'hidden' : ''}">
+	{#snippet grid()}
 		<p class="bg-warning text-warning-content rounded-lg p-4">
 			Grid view mode is not developed yet
 		</p>
-	</div>
-	<div class="w-full overflow-x-auto {viewMode !== 'list' ? 'hidden' : ''}">
+	{/snippet}
+	{#snippet list()}
 		<p class="bg-warning text-warning-content rounded-lg p-4">
 			List view mode is not developed yet
 		</p>
-	</div>
-	<div class="w-full overflow-x-auto {viewMode !== 'table' ? 'hidden' : ''}">
-		{#snippet questionIdCell(question: Question)}
+	{/snippet}
+	{#snippet table()}
+		{#snippet questionIdCell(question: QuestionExtended)}
 			<IdBadge id={question.id} />
 			<a
-				href={resolve('/(layout)/question/(protected)/setup/[id]', {
-					id: question.id
-				})}
+				href={resolve('/(layout)/question/(protected)/setup/[id]', { id: question.id })}
 				aria-label={`Setup question ${question.question || question.id}`}
 				class="link link-primary link-animated block truncate"
 			>
@@ -226,7 +119,9 @@ https://svelte.dev/e/transition_slide_display
 			</a>
 		{/snippet}
 		{#snippet languageCell(question: QuestionExtended)}
-			<Icon icon={flag(question.language)} class="size-5" inline />
+			<span
+				class="{getLanguageFlag(question.language) ?? 'icon-[twemoji--flag-united-kingdom]'} size-5"
+			></span>
 		{/snippet}
 		{#snippet questionActionsCell(question: QuestionExtended)}
 			<ActionButtons
@@ -258,15 +153,13 @@ https://svelte.dev/e/transition_slide_display
 				},
 				{
 					header: countIcon('mdi:text'),
-					cell: value<Question>((entity) => entity.messages?.length ?? 0),
-					headerClass: 'text-center',
-					cellClass: 'text-center'
+					cell: value<QuestionExtended>((entity) => entity.messages?.length ?? 0),
+					headerClass: 'text-center'
 				},
 				{
 					header: countIcon('tabler:number'),
-					cell: value<Question>((entity) => entity.numericals?.length ?? 0),
-					headerClass: 'text-center',
-					cellClass: 'text-center'
+					cell: value<QuestionExtended>((entity) => entity.numericals?.length ?? 0),
+					headerClass: 'text-center'
 				},
 				{
 					header: icon('fluent-mdl2:offline-storage'),
@@ -289,8 +182,8 @@ https://svelte.dev/e/transition_slide_display
 				<th class="text-end"><SelectionActionButtons {socketio} /></th>
 			{/snippet}
 		</Table>
-	</div>
-</Card>
+	{/snippet}
+</EntitySection>
 
 {#if debug}
 	<Card
@@ -307,7 +200,7 @@ https://svelte.dev/e/transition_slide_display
 				<p class="label-prominent">Pending Entities</p>
 				<JsonData data={socketio?.pendingEntities ?? []} />
 				<p class="label-prominent">Selected Entities</p>
-				<JsonData data={socketio?.selections?.['selected'] ?? []} />
+				<JsonData data={socketio?.selections?.selected ?? []} />
 				<p class="label-prominent">Linked Entities</p>
 				<JsonData data={linkedQuestions} />
 				<p class="label-prominent">Not Linked Entities</p>

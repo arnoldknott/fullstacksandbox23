@@ -1,15 +1,15 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import { onDestroy, onMount } from 'svelte';
 	// import { flip } from 'svelte/animate';
 	import { fade, slide } from 'svelte/transition';
 
 	import ActionButtons from '$components/ActionButtons.svelte';
-	import AddDataCard from '$components/AddDataCard.svelte';
+	import AddEntityCard from '$components/AddEntityCard.svelte';
 	import Card from '$components/Card.svelte';
 	import Display from '$components/Display.svelte';
 	import Heading from '$components/Heading.svelte';
 	import JsonData from '$components/JsonData.svelte';
+	import SelectionActionButtons from '$components/SelectionActionButtons.svelte';
 	import Table, {
 		field,
 		icon,
@@ -20,13 +20,12 @@
 	} from '$components/Table.svelte';
 	import Title from '$components/Title.svelte';
 	import { Action } from '$lib/accessHandler';
-	import { EntityType } from '$lib/entityContainer.svelte';
+	import { EntityType, getLanguageFlag } from '$lib/entities';
 	import { SocketIO, type SocketioConnection } from '$lib/socketio.svelte';
 	import type { MessageExtended, NumericalExtended, QuestionExtended } from '$lib/types';
 	import { initTabs } from '$lib/userInterface';
 
 	import QuestionForm from '../../../../presentation/(protected)/setup/[id]/QuestionForm.svelte';
-	import SelectionActionButtons from '../../../../presentation/(protected)/setup/SelectionActionButtons.svelte';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -175,15 +174,6 @@
 	let hideNewMessageAnswerCard = $state(true);
 	let messageViewMode = $state<'grid' | 'list' | 'table'>('table');
 
-	const flag = (language: string) =>
-		language === 'en-US'
-			? 'flagpack:us'
-			: language === 'da-DK'
-				? 'flagpack:dk'
-				: language === 'de-DE'
-					? 'flagpack:de'
-					: 'flagpack:gb-ukm';
-
 	let hideNewNumericalAnswerCard = $state(true);
 	let numericalViewMode = $state<'grid' | 'list' | 'table'>('table');
 </script>
@@ -221,7 +211,7 @@
 	<Title id="note-on-query-string-question-id">Add id to question as query string (for now)!</Title>
 {/if}
 
-<AddDataCard
+<AddEntityCard
 	socketio={questionSocketio}
 	entityType={EntityType.QUESTION}
 	entityId={questionId}
@@ -230,7 +220,7 @@
 	{#snippet form(question, shareOptions)}
 		<QuestionForm {question} {shareOptions} socketio={questionSocketio} inheritPending={false} />
 	{/snippet}
-</AddDataCard>
+</AddEntityCard>
 
 <Heading id="add-an-answer">Add an answer</Heading>
 
@@ -568,7 +558,9 @@
 	</div>
 	<div class="w-full overflow-x-auto {messageViewMode !== 'table' ? 'hidden' : ''}">
 		{#snippet languageCell(message: MessageExtended)}
-			<Icon icon={flag(message.language)} class="size-5" inline />
+			<span
+				class="{getLanguageFlag(message.language) ?? 'icon-[twemoji--flag-united-kingdom]'} size-5"
+			></span>
 		{/snippet}
 		{#snippet messageActionsCell(answer: MessageExtended)}
 			<ActionButtons

@@ -582,6 +582,38 @@ describe('SocketIO for DemoResources', () => {
 		});
 	});
 
+	test('submits a relationship label beside the resource payload for the specified parent', async () => {
+		const entity: DemoResource = { id: 'new_labeled', name: 'Labeled resource' };
+		testSocketio.submitEntity(entity, 'parent-1', true, 'heading');
+
+		await vi.waitFor(() => {
+			expect(serverMessages).toContainEqual({
+				event: 'submit',
+				data: [
+					{
+						payload: entity,
+						parent_id: 'parent-1',
+						inherit: true,
+						label: 'heading'
+					}
+				]
+			});
+		});
+		expect(entity).not.toHaveProperty('label');
+	});
+
+	test('rejects a relationship label without a parent before submitting', () => {
+		expect(() =>
+			testSocketio.submitEntity(
+				{ id: 'new_labeled', name: 'Resource' },
+				undefined,
+				false,
+				'heading'
+			)
+		).toThrow('A relationship label requires a parent.');
+		expect(serverMessages).toEqual([]);
+	});
+
 	test('submitEntity auto-submits pending entity when pendingTemplate is set and no entity is provided for submission', async () => {
 		testSocketio.pendingTemplate = { name: 'pending' };
 		testSocketio.createPending() as DemoResource; // Create a pending entity to trigger auto-submit

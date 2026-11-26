@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 
-	import HelpTooltip from '../../../playground/components/HelpTooltip.svelte';
+	import HelpTooltip from '../routes/(layout)/playground/components/HelpTooltip.svelte';
 
 	let {
 		title,
