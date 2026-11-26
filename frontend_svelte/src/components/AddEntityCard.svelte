@@ -87,9 +87,10 @@
 			socketio.submitEntity(entity);
 			return;
 		}
-		if (label !== undefined) socketio.submitEntity(entity, parentId, inheritPending, label);
-		else if (bulk) socketio.submitBulk(parentId, inheritPending);
-		else socketio.submitEntity(entity, parentId, inheritPending);
+		const inherit = parentId ? inheritPending : false;
+		if (label !== undefined) socketio.submitEntity(entity, parentId, inherit, label);
+		else if (bulk) socketio.submitBulk(parentId, inherit);
+		else socketio.submitEntity(entity, parentId, inherit);
 		// Bulk and explicit submits do not refill the pending entities:
 		socketio.createPending();
 		labelPending = '';

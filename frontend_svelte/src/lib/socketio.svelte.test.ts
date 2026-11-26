@@ -78,34 +78,36 @@ beforeAll(async () => {
 		});
 	});
 
-	socketioServer.of('/demo-resource').on('connection', async (socket) => {
-		// console.log('✅ Client connected'); // your "life sign"
-		serverSocket = await new Promise<ServerSocket>((resolve) => {
-			resolve(socket);
+	for (const namespace of ['/demo-resource', '/text', '/number']) {
+		socketioServer.of(namespace).on('connection', async (socket) => {
+			// console.log('✅ Client connected'); // your "life sign"
+			serverSocket = await new Promise<ServerSocket>((resolve) => {
+				resolve(socket);
+			});
+			serverSocket.emit('connection_ack', 'Connection established with test server');
+			socket.on(
+				'subscribe',
+				(
+					data: { entity_ids: string[] },
+					acknowledge: (result: { subscribed: string[]; rejected: string[] }) => void
+				) => {
+					acknowledge({
+						subscribed: data.entity_ids.filter((id) => !rejectedSubscriptionIds.includes(id)),
+						rejected: data.entity_ids.filter((id) => rejectedSubscriptionIds.includes(id))
+					});
+				}
+			);
+			socket.onAny((event: string, ...data: unknown[]) => {
+				// For debugging - server side logging of the received data:
+				// console.log('Server received event:', event, 'with data:', data);
+				serverMessages.push({ event, data });
+			});
+			// For debuging the connection - server can console.log a disconnect:
+			// socket.on('disconnect', () => {
+			// console.log('✅ Client disconnected'); // your "life sign"
+			// });
 		});
-		serverSocket.emit('connection_ack', 'Connection established with test server');
-		socket.on(
-			'subscribe',
-			(
-				data: { entity_ids: string[] },
-				acknowledge: (result: { subscribed: string[]; rejected: string[] }) => void
-			) => {
-				acknowledge({
-					subscribed: data.entity_ids.filter((id) => !rejectedSubscriptionIds.includes(id)),
-					rejected: data.entity_ids.filter((id) => rejectedSubscriptionIds.includes(id))
-				});
-			}
-		);
-		socket.onAny((event: string, ...data: unknown[]) => {
-			// For debugging - server side logging of the received data:
-			// console.log('Server received event:', event, 'with data:', data);
-			serverMessages.push({ event, data });
-		});
-		// For debuging the connection - server can console.log a disconnect:
-		// socket.on('disconnect', () => {
-		// console.log('✅ Client disconnected'); // your "life sign"
-		// });
-	});
+	}
 
 	socketioServer.of('/authentication-expired').use((_socket, next) => {
 		const error = new Error('Authentication expired.') as Error & {
@@ -581,6 +583,46 @@ describe('SocketIO for DemoResources', () => {
 			data: [expect.objectContaining({ payload: { id: 'abc', name: 'x' } })]
 		});
 	});
+
+	test.each([
+		['/text', { content: 'Example', confidential: 'private' }],
+		['/number', { value: 42 }]
+	])(
+		'submits editable %s fields without read-only metadata or relationships',
+		async (namespace, fields) => {
+			const handler = await SocketioClientHandler.create({ namespace });
+			try {
+				const client = handler.socketioClient;
+				for (const id of ['new_draft', 'existing-id']) {
+					const entity = {
+						id,
+						...fields,
+						access_right: Action.OWN,
+						access_policies: [],
+						hierarchies: [],
+						creation_date: new Date(),
+						last_modified_date: new Date(),
+						presentations: [],
+						text_parents: [],
+						number_parents: [],
+						texts: [],
+						numbers: []
+					};
+					client.submitEntity(entity as AnyEntityExtended);
+					await vi.waitFor(() =>
+						expect(serverMessages).toContainEqual({
+							event: 'submit',
+							data: [expect.objectContaining({ payload: { id, ...fields } })]
+						})
+					);
+					expect(entity.access_right).toBe(Action.OWN);
+					expect(entity.texts).toEqual([]);
+				}
+			} finally {
+				handler.disconnect();
+			}
+		}
+	);
 
 	test('submits a relationship label beside the resource payload for the specified parent', async () => {
 		const entity: DemoResource = { id: 'new_labeled', name: 'Labeled resource' };

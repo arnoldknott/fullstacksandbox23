@@ -1128,7 +1128,10 @@ class BaseNamespace(
                         # if id is not present, it is a create
                         # validate data with create model
                         assert self.create_model is not None
-                        object_create = self.create_model(**payload)
+                        create_payload = {
+                            key: value for key, value in payload.items() if key != "id"
+                        }
+                        object_create = self.create_model(**create_payload)
                         # TBD: refactor to use the submitted hierarchies instead of parent_id?
                         parent_id = data.get("parent_id", None)
                         # TBD: add tests for inherit, public and public_action flags

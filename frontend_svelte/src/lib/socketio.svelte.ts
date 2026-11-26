@@ -79,9 +79,11 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 	private static readonly subscriptionBatchLimit = 500;
 	public client: Socket;
 	private readonly sessionLifecycle: SessionLifecycle;
+	private readonly namespace: string | undefined;
 
 	constructor(connection: SocketioConnection, configuration: SocketioConfiguration<T> = {}) {
 		super({ parentId: connection.parentId, ...configuration });
+		this.namespace = connection.namespace;
 		this.sessionLifecycle = getSessionLifecycleContext();
 		if (configuration.snapshot) this.seedSnapshot(configuration.snapshot);
 		configuration = {
@@ -291,8 +293,22 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 		const newId = target.id.startsWith('new_') ? target.id : undefined;
 		const access_policies = newId ? this.accessPolicies[target.id] : [];
 		const hierarchies = newId ? this.hierarchies[target.id] : [];
+		const readOnlyFields = [
+			'access_right',
+			'access_policies',
+			'hierarchies',
+			'creation_date',
+			'last_modified_date'
+		];
+		// TBD: consider moving this somewhere else to avoid hard coding entity types in here.
+		if (this.namespace === '/text' || this.namespace === '/number') {
+			readOnlyFields.push('presentations', 'text_parents', 'number_parents', 'texts', 'numbers');
+		}
+		const payload = Object.fromEntries(
+			Object.entries(target).filter(([field]) => !readOnlyFields.includes(field))
+		);
 		this.client.emit('submit', {
-			payload: target,
+			payload,
 			...(parent_id ? { parent_id } : {}),
 			...(inherit ? { inherit } : {}),
 			...(label !== undefined ? { label } : {}),

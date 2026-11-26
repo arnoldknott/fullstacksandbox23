@@ -6,6 +6,8 @@ Initial collection state is loaded through REST snapshot endpoints. The frontend
 
 Submit-only connections also set `data-on-connect=false`, omit `parent-id`, and do not emit `subscribe`. They disable incoming entity handlers but retain submission status events. The submission itself specifies its parent identifier, and normal authentication and authorization checks still apply.
 
+Socket.IO submissions retain an entity identifier for updates or a temporary `new_*` identifier for correlating a creation status to a frontend draft. The backend excludes that temporary identifier before validating the create model and returns it as `submitted_id`. The frontend excludes read-only access and timestamp metadata from create and update payloads; for Text and Number it also excludes loaded relationships, which are managed separately.
+
 ## REST snapshots
 
 Snapshot endpoints return an array of extended entity representations and expose the snapshot mutation position in the `X-Entity-Cursor` response header. [BaseCRUD.read_entity_snapshot()](../../../../backend/src/crud/base.py) applies authorization and supports optional parent filtering, metadata enrichment, effective access-right enrichment, and ordering.

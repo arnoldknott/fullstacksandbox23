@@ -56,7 +56,7 @@ async def test_data_socket_mutations_and_parent_scoped_transfers(
     await namespace.on_submit(
         "sid",
         {
-            "payload": content,
+            "payload": {"id": "new_draft", **content},
             "parent_id": str(parent.id),
             "label": "answer",
             "inherit": True,
@@ -67,9 +67,17 @@ async def test_data_socket_mutations_and_parent_scoped_transfers(
     ]
     assert not [status for status in statuses if "error" in status], statuses
     created = next(status for status in statuses if status.get("success") == "created")
+    assert created["submitted_id"] == "new_draft"
     child_id = created["id"]
     linked = [status for status in statuses if status.get("success") == "linked"]
     assert linked and all("label" not in status for status in linked)
+    server.emit.reset_mock()
+    await namespace.on_submit(
+        "sid",
+        {"payload": {"id": "new_invalid", **content, "unexpected": True}},
+    )
+    assert server.emit.await_count == 1
+    assert server.emit.await_args.args[1]["error"]
     server.emit.reset_mock()
     await namespace.on_submit(
         "sid", {"payload": content, "parent_id": str(parent.id), "label": "answer"}

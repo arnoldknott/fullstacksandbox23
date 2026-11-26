@@ -44,6 +44,29 @@ describe('AddEntityCard validation', () => {
 		expect(socketio.submitBulk).toHaveBeenCalledWith(undefined, false);
 	});
 
+	test.each([EntityType.TEXT, EntityType.NUMBER])(
+		'does not request inheritance when creating a standalone %s',
+		async (entityType) => {
+			const socketio = new SocketIO<TextExtended>({});
+			render(AddEntityCard, { socketio, entityType, inheritPending: true, form });
+			await fireEvent.click(screen.getByRole('button', { name: `Save ${entityType}` }));
+			expect(socketio.submitBulk).toHaveBeenCalledWith(undefined, false);
+		}
+	);
+
+	test('preserves inheritance when creating an unlabeled child', async () => {
+		const socketio = new SocketIO<TextExtended>({});
+		render(AddEntityCard, {
+			socketio,
+			entityType: EntityType.TEXT,
+			parentId: 'parent-1',
+			inheritPending: true,
+			form
+		});
+		await fireEvent.click(screen.getByRole('button', { name: 'Save text' }));
+		expect(socketio.submitBulk).toHaveBeenCalledWith('parent-1', true);
+	});
+
 	test('submits a valid label for its parent without adding it to the resource', async () => {
 		const socketio = new SocketIO<TextExtended>({});
 		const entity = socketio.pendingEntities[0];
