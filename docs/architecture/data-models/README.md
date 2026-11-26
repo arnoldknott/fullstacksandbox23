@@ -182,6 +182,14 @@ required, including when only `confidential` is meaningful (use an empty string)
 Confidential content is encrypted at rest but returned decrypted to authorized
 readers; it is not a separate permission boundary.
 
+**TBD:** Replace `DemoResource` with `Text` in the long run. At that point,
+convert existing demo resource language values such as `en-US`, `da-DK`, and
+`de-DE` to the two-letter language codes accepted by `Text`, and remove the
+locale-specific cases from
+[`getLanguageFlag`](../../../frontend_svelte/src/lib/entities.ts). Review the
+English flag choice: `en-US` currently displays the United States flag, while
+`en` displays the United Kingdom flag.
+
 Collection, identifier, and snapshot reads return one level of independently
 access-filtered relationships. The shared read path returns direct related
 records without expanding their relationships, using the existing Read schemas
