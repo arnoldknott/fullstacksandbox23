@@ -188,6 +188,11 @@ helper. Invalid values block saving;
 cleared optional categories are sent as null. Creation forms with a known parent
 offer an optional relationship label and send it separately from the resource
 payload. A label does not become a Text or Number attribute.
+The linked Text and Number tables show the label for the current parent, or `—`
+for an unlabeled relationship. Socket.IO notifications for a new link or a link
+update under that parent trigger an authorized re-read of the child to refresh its label. REST
+relationship updates do not emit a Socket.IO status; a reload or subsequent read
+refreshes the display.
 
 **TBD (vague idea; pending frontend user interface design):** When the frontend
 supports linking existing resources or copying them under a parent, consider

@@ -967,12 +967,19 @@ describe('SocketIO for DemoResources', () => {
 		});
 	});
 
-	test('handleStatus for "success:linked" and existing hierarchy updates the hierarchy and does not trigger read for the child entity', async () => {
+	test('preserves an existing label on linked status without an extra read by default', async () => {
 		testSocketio.hierarchies = {
 			'child-1': [
-				{ child_id: 'child-1', parent_id: 'parent-from-describe', inherit: false, order: 0 }
+				{
+					child_id: 'child-1',
+					parent_id: 'parent-from-describe',
+					inherit: false,
+					order: 0,
+					label: 'existing-label'
+				}
 			]
 		};
+		const emitSpy = vi.spyOn(testSocketio.client, 'emit');
 		serverSocket.emit('status', {
 			success: 'linked',
 			id: 'child-1',
@@ -981,13 +988,17 @@ describe('SocketIO for DemoResources', () => {
 			order: 0
 		});
 
-		const emitSpy = vi.spyOn(testSocketio.client, 'emit');
-
 		await vi.waitFor(() => {
 			expect(Object.keys(testSocketio.hierarchies).length).toBe(1);
 			expect(testSocketio.hierarchies['child-1'].length).toBe(1);
 			expect(testSocketio.hierarchies['child-1']).toEqual([
-				{ child_id: 'child-1', parent_id: 'parent-from-describe', inherit: true, order: 0 }
+				{
+					child_id: 'child-1',
+					parent_id: 'parent-from-describe',
+					inherit: true,
+					order: 0,
+					label: 'existing-label'
+				}
 			]);
 			expect(emitSpy).not.toHaveBeenCalledWith('read', 'child-1');
 		});
@@ -1025,6 +1036,60 @@ describe('SocketIO for DemoResources', () => {
 			expect(Object.keys(testSocketio.hierarchies).length).toBe(0);
 			expect(emitSpy).not.toHaveBeenCalledWith('read', 'child-1');
 		});
+	});
+
+	test('re-reads a child when a relationship label is updated for the current parent', async () => {
+		const handler = await SocketioClientHandler.create<DemoResource>({
+			namespace: '/demo-resource',
+			parentId
+		});
+		try {
+			const client = handler.socketioClient;
+			client.entities = [{ id: 'child-1', name: 'Child' } as DemoResource];
+			client.hierarchies = {
+				'child-1': [{ child_id: 'child-1', parent_id: parentId, inherit: true, label: 'old-label' }]
+			};
+			serverSocket.once('read', (id: string) => {
+				serverSocket.emit('transferred', {
+					id,
+					hierarchies: [{ child_id: id, parent_id: parentId, inherit: true, label: 'new-label' }]
+				});
+			});
+			serverSocket.emit('status', {
+				success: 'link-updated',
+				id: 'child-1',
+				child_id: 'child-1',
+				parent_id: parentId
+			});
+
+			await vi.waitFor(() => expect(client.hierarchies['child-1'][0].label).toBe('new-label'));
+		} finally {
+			handler.disconnect();
+		}
+	});
+
+	test('does not re-read a child for a relationship update under another parent', async () => {
+		const handler = await SocketioClientHandler.create<DemoResource>({
+			namespace: '/demo-resource',
+			parentId
+		});
+		try {
+			const client = handler.socketioClient;
+			const emitSpy = vi.spyOn(client.client, 'emit');
+			const received = new Promise<void>((resolve) =>
+				client.client.once('status', () => resolve())
+			);
+			serverSocket.emit('status', {
+				success: 'link-updated',
+				id: 'child-1',
+				child_id: 'child-1',
+				parent_id: 'other-parent'
+			});
+			await received;
+			expect(emitSpy).not.toHaveBeenCalledWith('read', 'child-1');
+		} finally {
+			handler.disconnect();
+		}
 	});
 
 	test('handleStatus for "success:unlinked" removes the hierarchy and triggers read for the child entity', async () => {

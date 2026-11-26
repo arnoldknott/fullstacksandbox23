@@ -11,7 +11,7 @@
 	import Table, { countIcon, field, icon, snippet, text, value } from '$components/Table.svelte';
 	import Title from '$components/Title.svelte';
 	import { Action } from '$lib/accessHandler';
-	import { EntityType, getLanguageFlag } from '$lib/entities';
+	import { EntityType, getLanguageFlag, getRelationshipLabel } from '$lib/entities';
 	import { SocketIO } from '$lib/socketio.svelte';
 	import type { Identity, TextExtended } from '$lib/types';
 
@@ -139,6 +139,13 @@
 					headerClass: 'w-3/5',
 					cellClass: 'max-w-0'
 				},
+				{
+					header: text('Label'),
+					cell: value<TextExtended>(
+						(entity) =>
+							getRelationshipLabel(socketio?.hierarchies[entity.id], parentId, entity.id) ?? '—'
+					)
+				},
 				{ header: text('Category'), cell: field<TextExtended>('category') },
 				{ header: icon('tabler:language'), cell: snippet(languageCell) },
 				{
@@ -166,7 +173,7 @@
 			displaySelection="linkedToParent"
 		>
 			{#snippet menu()}
-				<th colspan={6}></th>
+				<th colspan={7}></th>
 				<th class="text-end"><SelectionActionButtons {socketio} /></th>
 			{/snippet}
 		</Table>

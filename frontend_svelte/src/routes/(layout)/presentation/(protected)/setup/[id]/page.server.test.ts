@@ -19,6 +19,7 @@ import { load } from './+page.server';
 const presentationPath = '/presentation/presentation-1';
 const policiesPath = '/access/policy/resource/presentation-1';
 const rightPath = '/access/right/resource/presentation-1';
+const hierarchiesPath = '/access/hierarchies?parent-id=presentation-1';
 const policy = { resource_id: 'presentation-1', identity_id: 'group-1', action: 'write' };
 const event = {
 	params: { id: 'presentation-1' },
@@ -47,6 +48,13 @@ describe('presentation setup resource-specific loading', () => {
 		mocks.get.mockImplementation((_sessionId: string, path: string) => {
 			if (path === policiesPath) return Promise.resolve(Response.json([policy]));
 			if (path === rightPath) return Promise.resolve(Response.json('own'));
+			if (path === hierarchiesPath)
+				return Promise.resolve(
+					Response.json([
+						{ parent_id: 'presentation-1', child_id: 'text-1', label: 'heading' },
+						{ parent_id: 'presentation-1', child_id: 'number-1', label: 'count' }
+					])
+				);
 			return Promise.resolve(Response.json([]));
 		});
 	});
@@ -68,11 +76,15 @@ describe('presentation setup resource-specific loading', () => {
 		expect(result.payload.presentationCursor).toBe(21);
 		expect(result.payload.cursor).toBe(42);
 		expect(result.payload.questions[0].access_policies).toEqual([]);
-		expect(result.payload.texts).toMatchObject([{ id: 'text-1', access_policies: [] }]);
-		expect(result.payload.numbers).toMatchObject([{ id: 'number-1', access_policies: [] }]);
+		expect(result.payload.texts).toMatchObject([
+			{ id: 'text-1', access_policies: [], hierarchies: [{ label: 'heading' }] }
+		]);
+		expect(result.payload.numbers).toMatchObject([
+			{ id: 'number-1', access_policies: [], hierarchies: [{ label: 'count' }] }
+		]);
 		expect(result.payload.textCursor).toBe(43);
 		expect(result.payload.numberCursor).toBe(44);
-		for (const path of [policiesPath, rightPath]) {
+		for (const path of [policiesPath, rightPath, hierarchiesPath]) {
 			expect(mocks.get).toHaveBeenCalledWith('session-1', path);
 		}
 		expect(mocks.getSnapshot).toHaveBeenCalledTimes(3);

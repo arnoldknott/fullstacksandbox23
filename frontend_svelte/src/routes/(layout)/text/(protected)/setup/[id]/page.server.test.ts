@@ -37,8 +37,14 @@ describe('text setup snapshot', () => {
 		]);
 		mocks.get.mockResolvedValue(
 			Response.json([
-				{ parent_id: 'text-1', child_id: 'child-text-1', inherit: true, order: 1 },
-				{ parent_id: 'text-1', child_id: 'number-1', inherit: false, order: 2 }
+				{
+					parent_id: 'text-1',
+					child_id: 'child-text-1',
+					inherit: true,
+					order: 1,
+					label: 'heading'
+				},
+				{ parent_id: 'text-1', child_id: 'number-1', inherit: false, order: 2, label: 'count' }
 			])
 		);
 	});
@@ -67,11 +73,20 @@ describe('text setup snapshot', () => {
 		expect(result.payload.texts[0]).toMatchObject({
 			id: 'child-text-1',
 			access_policies: [{ resource_id: 'child-text-1', action: 'read' }],
-			hierarchies: [{ parent_id: 'text-1', child_id: 'child-text-1', inherit: true, order: 1 }]
+			hierarchies: [
+				{
+					parent_id: 'text-1',
+					child_id: 'child-text-1',
+					inherit: true,
+					order: 1,
+					label: 'heading'
+				}
+			]
 		});
 		expect(result.payload.numbers[0]).toMatchObject({
 			id: 'number-1',
-			access_policies: [{ resource_id: 'number-1', action: 'write' }]
+			access_policies: [{ resource_id: 'number-1', action: 'write' }],
+			hierarchies: [{ parent_id: 'text-1', child_id: 'number-1', label: 'count' }]
 		});
 		expect(result.payload.textCursor).toBe(10);
 		expect(result.payload.textsCursor).toBe(11);

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { getLanguageFlag, isKebabCase } from './entities';
+import { getLanguageFlag, getRelationshipLabel, isKebabCase } from './entities';
 
 describe('isKebabCase', () => {
 	test.each(['heading', 'vote-count', 'answer-42', '--'])('accepts %s', (value) => {
@@ -13,6 +13,19 @@ describe('isKebabCase', () => {
 			expect(isKebabCase(value)).toBe(false);
 		}
 	);
+});
+
+describe('getRelationshipLabel', () => {
+	test('matches both the parent and child of the relationship', () => {
+		const hierarchies = [
+			{ parent_id: 'parent-1', child_id: 'another-child', label: 'wrong-child' },
+			{ parent_id: 'another-parent', child_id: 'child-1', label: 'wrong-parent' },
+			{ parent_id: 'parent-1', child_id: 'child-1', label: 'correct-label' }
+		];
+
+		expect(getRelationshipLabel(hierarchies, 'parent-1', 'child-1')).toBe('correct-label');
+		expect(getRelationshipLabel(hierarchies, 'missing-parent', 'child-1')).toBeUndefined();
+	});
 });
 
 describe('getLanguageFlag', () => {

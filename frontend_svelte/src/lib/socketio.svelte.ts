@@ -40,6 +40,7 @@ export type SocketioStatus =
 	| { success: 'shared'; id: string }
 	| { success: 'unshared'; id: string }
 	| { success: 'linked'; id: string; parent_id: string; inherit: boolean; order?: number }
+	| { success: 'link-updated'; id: string; parent_id: string }
 	| { success: 'unlinked'; id: string; parent_id: string }
 	| { error: 'access'; code: 'authentication-expired' | 'authorization-failed' }
 	| { error: 'connection'; code: 'connection-failed' }
@@ -502,15 +503,15 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 					if (existingHierarchyIndex > -1) {
 						// Update existing hierarchy in place
 						this.hierarchies[status.id][existingHierarchyIndex] = {
+							...this.hierarchies[status.id][existingHierarchyIndex],
 							child_id: status.id,
 							parent_id: status.parent_id,
 							inherit: status.inherit,
 							order: status.order
 						};
 					} else {
-						// Re-read the linked entity
+						// Re-read the linked entity and add the new hierarchy link to the local state.
 						this.client.emit('read', status.id);
-						// And add the new hierarchy link to the local state.
 						// TBD: should this one be removed and leave it to the read reconciliation?
 						this.hierarchies[status.id] = [
 							{
@@ -522,6 +523,9 @@ export class SocketIO<T extends AnyEntityExtended = AnyEntityExtended>
 						];
 					}
 				}
+			} else if (status.success === 'link-updated') {
+				// Status omits the label; retrieve the changed relationship through an authorized read.
+				if (status.parent_id === this.parentId) this.client.emit('read', status.id);
 			} else if (status.success === 'unlinked') {
 				if (status.parent_id === this.parentId) {
 					this.hierarchies[status.id] = this.hierarchies[status.id]?.filter(
